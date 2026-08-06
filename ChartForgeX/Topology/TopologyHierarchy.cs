@@ -58,6 +58,9 @@ public sealed class TopologyHierarchyItem {
     /// <summary>Gets or sets the preferred node height.</summary>
     public double? Height { get; set; }
 
+    /// <summary>Gets or sets the layout policy applied to this item and its descendant subtree. Null inherits the parent policy.</summary>
+    public TopologyHierarchyLayoutPolicy? LayoutPolicy { get; set; }
+
     /// <summary>Gets arbitrary item metadata copied to the generated node.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 
@@ -94,6 +97,9 @@ public sealed class TopologyHierarchyOptions {
 
     /// <summary>Gets or sets the layered flow direction.</summary>
     public TopologyLayoutDirection LayoutDirection { get; set; } = TopologyLayoutDirection.TopToBottom;
+
+    /// <summary>Gets or sets the default hierarchy layout policy inherited by items without an explicit policy.</summary>
+    public TopologyHierarchyLayoutPolicy LayoutPolicy { get; set; } = TopologyHierarchyLayoutPolicy.Auto;
 
     /// <summary>Gets or sets the default generated node display mode.</summary>
     public TopologyNodeDisplayMode? NodeDisplayMode { get; set; }
@@ -152,6 +158,9 @@ public sealed class TopologyTeamMember {
     /// <summary>Gets or sets an optional icon id from a topology icon catalog.</summary>
     public string? IconId { get; set; }
 
+    /// <summary>Gets or sets the layout policy applied to this member and its descendant subtree. Null inherits the manager policy.</summary>
+    public TopologyHierarchyLayoutPolicy? LayoutPolicy { get; set; }
+
     /// <summary>Gets arbitrary member metadata copied to the generated person node.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 }
@@ -187,6 +196,9 @@ public sealed class TopologyTeamOptions {
     /// <summary>Gets or sets the layered flow direction.</summary>
     public TopologyLayoutDirection LayoutDirection { get; set; } = TopologyLayoutDirection.TopToBottom;
 
+    /// <summary>Gets or sets the default hierarchy layout policy inherited by members without an explicit policy.</summary>
+    public TopologyHierarchyLayoutPolicy LayoutPolicy { get; set; } = TopologyHierarchyLayoutPolicy.Auto;
+
     /// <summary>Gets or sets the generated relationship edge kind.</summary>
     public TopologyEdgeKind EdgeKind { get; set; } = TopologyEdgeKind.Ownership;
 }
@@ -214,6 +226,7 @@ public static class TopologyHierarchyExtensions {
 
         var existing = new HashSet<string>(chart.Nodes.Select(node => node.Id), StringComparer.Ordinal);
         var levels = ResolveLevels(materialized, byId, options.RootLevel);
+        var layoutPolicies = ResolveLayoutPolicies(materialized, byId, options.LayoutPolicy);
         var primaryIds = ResolvePrimaryIds(materialized, levels, options);
         var visibleIds = ResolveVisibleIds(primaryIds, byId, options);
         var visible = materialized.Where(item => visibleIds.Contains(item.Id)).OrderBy(item => levels[item.Id]).ThenBy(item => item.Id, StringComparer.Ordinal).ToList();
@@ -227,6 +240,7 @@ public static class TopologyHierarchyExtensions {
             node.Metadata["layer"] = levels[item.Id].ToString(CultureInfo.InvariantCulture);
             node.Metadata["hierarchy.level"] = node.Metadata["layer"];
             node.Metadata["hierarchy.context"] = primaryIds.Contains(item.Id) ? "primary" : "ancestor";
+            node.Metadata["hierarchy.layoutPolicy"] = layoutPolicies[item.Id].ToString();
             if (!string.IsNullOrWhiteSpace(item.ParentId)) node.Metadata["hierarchy.parentId"] = item.ParentId!;
             foreach (var pair in item.Metadata) node.Metadata[pair.Key] = pair.Value;
         }
@@ -253,12 +267,12 @@ public static class TopologyHierarchyExtensions {
         if (options.IncludeTeamNode) hierarchy.Add(new TopologyHierarchyItem(rootId, teamLabel) { Level = 0, Kind = options.TeamNodeKind, IconId = options.TeamIconId, Status = TopologyHealthStatus.Healthy, Symbol = "TM" });
         foreach (var member in members) {
             var parent = string.IsNullOrWhiteSpace(member.ParentId) && options.IncludeTeamNode ? rootId : member.ParentId;
-            var item = new TopologyHierarchyItem(member.Id, member.Name, parent) { Level = member.Level, Kind = TopologyNodeKind.Person, Status = member.Status, Subtitle = member.Role, IconId = member.IconId ?? options.MemberIconId, Symbol = "U", Width = 164, Height = 64 };
+            var item = new TopologyHierarchyItem(member.Id, member.Name, parent) { Level = member.Level, Kind = TopologyNodeKind.Person, Status = member.Status, Subtitle = member.Role, IconId = member.IconId ?? options.MemberIconId, Symbol = "U", Width = 164, Height = 64, LayoutPolicy = member.LayoutPolicy };
             foreach (var pair in member.Metadata) item.Metadata[pair.Key] = pair.Value;
             hierarchy.Add(item);
         }
 
-        return chart.AddHierarchy(hierarchy, new TopologyHierarchyOptions { MinLevel = options.MinLevel, MaxLevel = options.MaxLevel, IncludeAncestorContext = options.IncludeAncestorContext, NodeDisplayMode = options.NodeDisplayMode, LayoutDirection = options.LayoutDirection, EdgeKind = options.EdgeKind, EdgeStatus = TopologyHealthStatus.Healthy, EdgeDirection = VisualLinkDirection.Forward, NodeWidth = 164, NodeHeight = 64 });
+        return chart.AddHierarchy(hierarchy, new TopologyHierarchyOptions { MinLevel = options.MinLevel, MaxLevel = options.MaxLevel, IncludeAncestorContext = options.IncludeAncestorContext, NodeDisplayMode = options.NodeDisplayMode, LayoutDirection = options.LayoutDirection, LayoutPolicy = options.LayoutPolicy, EdgeKind = options.EdgeKind, EdgeStatus = TopologyHealthStatus.Healthy, EdgeDirection = VisualLinkDirection.Forward, NodeWidth = 164, NodeHeight = 64 });
     }
 
     private static void ValidateOptions(TopologyHierarchyOptions options) {
@@ -266,6 +280,7 @@ public static class TopologyHierarchyExtensions {
         TopologyModelGuards.PositiveFinite(options.NodeWidth, nameof(options.NodeWidth));
         TopologyModelGuards.PositiveFinite(options.NodeHeight, nameof(options.NodeHeight));
         TopologyModelGuards.EnumDefined(options.LayoutDirection, nameof(options.LayoutDirection));
+        TopologyModelGuards.EnumDefined(options.LayoutPolicy, nameof(options.LayoutPolicy));
         TopologyModelGuards.EnumDefined(options.EdgeKind, nameof(options.EdgeKind));
         TopologyModelGuards.EnumDefined(options.EdgeStatus, nameof(options.EdgeStatus));
         TopologyModelGuards.EnumDefined(options.EdgeDirection, nameof(options.EdgeDirection));
@@ -278,6 +293,7 @@ public static class TopologyHierarchyExtensions {
         if (options.MinLevel.HasValue && options.MaxLevel.HasValue && options.MinLevel.Value > options.MaxLevel.Value) throw new ArgumentOutOfRangeException(nameof(options.MinLevel), options.MinLevel.Value, "Minimum team level cannot be greater than maximum team level.");
         TopologyModelGuards.EnumDefined(options.TeamNodeKind, nameof(options.TeamNodeKind));
         TopologyModelGuards.EnumDefined(options.LayoutDirection, nameof(options.LayoutDirection));
+        TopologyModelGuards.EnumDefined(options.LayoutPolicy, nameof(options.LayoutPolicy));
         TopologyModelGuards.EnumDefined(options.EdgeKind, nameof(options.EdgeKind));
         if (options.NodeDisplayMode.HasValue) TopologyModelGuards.EnumDefined(options.NodeDisplayMode.Value, nameof(options.NodeDisplayMode));
     }
@@ -332,6 +348,31 @@ public static class TopologyHierarchyExtensions {
         var visiting = new HashSet<string>(StringComparer.Ordinal);
         foreach (var item in items) ResolveLevel(item, byId, levels, visiting, rootLevel);
         return levels;
+    }
+
+    private static Dictionary<string, TopologyHierarchyLayoutPolicy> ResolveLayoutPolicies(IReadOnlyList<TopologyHierarchyItem> items, IReadOnlyDictionary<string, TopologyHierarchyItem> byId, TopologyHierarchyLayoutPolicy defaultPolicy) {
+        var policies = new Dictionary<string, TopologyHierarchyLayoutPolicy>(StringComparer.Ordinal);
+        var visiting = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var item in items) ResolveLayoutPolicy(item, byId, policies, visiting, defaultPolicy);
+        return policies;
+    }
+
+    private static TopologyHierarchyLayoutPolicy ResolveLayoutPolicy(TopologyHierarchyItem item, IReadOnlyDictionary<string, TopologyHierarchyItem> byId, Dictionary<string, TopologyHierarchyLayoutPolicy> policies, HashSet<string> visiting, TopologyHierarchyLayoutPolicy defaultPolicy) {
+        if (policies.TryGetValue(item.Id, out var cached)) return cached;
+        if (!visiting.Add(item.Id)) throw new ArgumentException("Topology hierarchy contains a parent cycle at '" + item.Id + "'.");
+        TopologyHierarchyLayoutPolicy policy;
+        if (item.LayoutPolicy.HasValue) {
+            TopologyModelGuards.EnumDefined(item.LayoutPolicy.Value, nameof(item.LayoutPolicy));
+            policy = item.LayoutPolicy.Value;
+        } else if (!string.IsNullOrWhiteSpace(item.ParentId) && byId.TryGetValue(item.ParentId!, out var parent)) {
+            policy = ResolveLayoutPolicy(parent, byId, policies, visiting, defaultPolicy);
+        } else {
+            policy = defaultPolicy;
+        }
+
+        visiting.Remove(item.Id);
+        policies[item.Id] = policy;
+        return policy;
     }
 
     private static int ResolveLevel(TopologyHierarchyItem item, IReadOnlyDictionary<string, TopologyHierarchyItem> byId, Dictionary<string, int> levels, HashSet<string> visiting, int rootLevel) {

@@ -56,8 +56,84 @@ internal static partial class SmokeTests {
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var children = prepared.Nodes.Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == "root").ToList();
         Assert(children.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() > 1, "Crowded hierarchy levels should wrap into multiple rows.");
+        Assert(children.All(node => node.Metadata["layout.hierarchyPolicy"] == TopologyHierarchyLayoutPolicy.Compact.ToString()), "Auto hierarchy layout should resolve crowded sibling bands to compact packing.");
         Assert(!AnyOverlap(children), "Wrapped hierarchy levels should not place sibling nodes on top of each other.");
         Assert(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Contains("data-layout-mode=\"Layered\"", StringComparison.Ordinal), "Wrapped hierarchy diagrams should render with layered metadata.");
+    }
+
+    private static void TopologyHierarchyLayoutPoliciesInheritPerSubtree() {
+        var items = new List<TopologyHierarchyItem> {
+            new("root", "Organization") { Kind = TopologyNodeKind.Team },
+            new("standard", "Standard branch", "root") { Kind = TopologyNodeKind.Team, LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard },
+            new("compact", "Compact branch", "root") { Kind = TopologyNodeKind.Team, LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact },
+            new("vertical", "Vertical branch", "root") { Kind = TopologyNodeKind.Team, LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical }
+        };
+        for (var i = 0; i < 5; i++) {
+            var suffix = i.ToString("00", CultureInfo.InvariantCulture);
+            items.Add(new TopologyHierarchyItem("standard-" + suffix, "Standard " + suffix, "standard") { Kind = TopologyNodeKind.Person });
+            items.Add(new TopologyHierarchyItem("compact-" + suffix, "Compact " + suffix, "compact") { Kind = TopologyNodeKind.Person });
+            items.Add(new TopologyHierarchyItem("vertical-" + suffix, "Vertical " + suffix, "vertical") { Kind = TopologyNodeKind.Person });
+        }
+
+        var chart = TopologyChart.Create()
+            .WithId("hierarchy-layout-policies")
+            .WithViewport(1800, 900, 24)
+            .WithLegend(null)
+            .AddHierarchy(items, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 88, NodeHeight = 48 });
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var standard = ChildrenOf(prepared, "standard");
+        var compact = ChildrenOf(prepared, "compact");
+        var vertical = ChildrenOf(prepared, "vertical");
+
+        Assert(standard.All(node => node.Metadata["hierarchy.layoutPolicy"] == TopologyHierarchyLayoutPolicy.Standard.ToString()), "Standard subtree policy should be inherited by descendants.");
+        Assert(compact.All(node => node.Metadata["hierarchy.layoutPolicy"] == TopologyHierarchyLayoutPolicy.Compact.ToString()), "Compact subtree policy should be inherited by descendants.");
+        Assert(vertical.All(node => node.Metadata["hierarchy.layoutPolicy"] == TopologyHierarchyLayoutPolicy.Vertical.ToString()), "Vertical subtree policy should be inherited by descendants.");
+        Assert(standard.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() == 1, "Standard branches should keep direct reports in one sibling band.");
+        Assert(compact.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() > 1 && compact.Select(node => node.Metadata["layout.column"]).Distinct(StringComparer.Ordinal).Count() > 1, "Compact branches should use balanced rows and columns.");
+        Assert(vertical.Select(node => node.Metadata["layout.column"]).Distinct(StringComparer.Ordinal).Count() == 1 && vertical.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() == vertical.Count, "Vertical branches should stack direct reports in one column.");
+        Assert(!AnyOverlap(prepared.Nodes), "Mixed hierarchy policies should keep every prepared node distinct.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Mixed hierarchy policies should render through the PNG path.");
+    }
+
+    private static void TopologyHierarchyAutoPolicyKeepsSmallSiblingBandsStandard() {
+        var chart = TopologyChart.Create()
+            .WithId("hierarchy-auto-standard")
+            .WithViewport(720, 360, 24)
+            .WithLegend(null)
+            .AddHierarchy(new[] {
+                new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team },
+                new TopologyHierarchyItem("one", "One", "root") { Kind = TopologyNodeKind.Person },
+                new TopologyHierarchyItem("two", "Two", "root") { Kind = TopologyNodeKind.Person },
+                new TopologyHierarchyItem("three", "Three", "root") { Kind = TopologyNodeKind.Person }
+            }, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 88, NodeHeight = 48 });
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+        var children = ChildrenOf(prepared, "root");
+
+        Assert(children.All(node => node.Metadata["layout.hierarchyPolicy"] == TopologyHierarchyLayoutPolicy.Standard.ToString()), "Auto hierarchy layout should preserve one standard sibling band when it fits.");
+        Assert(children.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() == 1, "Small auto branches should not resemble additional hierarchy levels.");
+        Assert(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, IncludeDataAttributes = true }).Contains("data-cfx-meta-hierarchy-layoutpolicy=\"Auto\"", StringComparison.Ordinal), "Hierarchy policy metadata should reach SVG output for host diagnostics.");
+    }
+
+    private static void TopologyHierarchyLayoutPoliciesSupportEveryDirection() {
+        foreach (var direction in Enum.GetValues<TopologyLayoutDirection>()) {
+            var items = new List<TopologyHierarchyItem> {
+                new("root", "Root") { Kind = TopologyNodeKind.Team, LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact }
+            };
+            for (var i = 0; i < 7; i++) items.Add(new TopologyHierarchyItem("child-" + i, "Child " + i, "root") { Kind = TopologyNodeKind.Person });
+
+            var chart = TopologyChart.Create()
+                .WithId("hierarchy-direction-" + direction)
+                .WithViewport(900, 700, 24)
+                .WithLegend(null)
+                .AddHierarchy(items, new TopologyHierarchyOptions { LayoutDirection = direction, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 88, NodeHeight = 48 });
+            var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
+            var children = ChildrenOf(prepared, "root");
+
+            Assert(children.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() > 1, "Compact hierarchy branches should retain multiple rows for " + direction + ".");
+            Assert(children.Select(node => node.Metadata["layout.column"]).Distinct(StringComparer.Ordinal).Count() > 1, "Compact hierarchy branches should retain multiple columns for " + direction + ".");
+            Assert(!AnyOverlap(prepared.Nodes), "Hierarchy policies should not overlap nodes for " + direction + ".");
+            Assert(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }).Contains("data-layout-direction=\"" + direction + "\"", StringComparison.Ordinal), "Hierarchy policies should render direction metadata for " + direction + ".");
+        }
     }
 
     private static void TopologyTeamBuilderCreatesOrgDiagrams() {
@@ -186,7 +262,14 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddHierarchy(SampleDirectoryHierarchy(), new TopologyHierarchyOptions { EdgeIdPrefix = " " }), "Hierarchy builders should reject empty edge id prefixes.");
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddHierarchy(new[] { new TopologyHierarchyItem("child", "Child", "missing") }), "Hierarchy builders should reject missing parents close to the caller.");
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddHierarchy(new[] { new TopologyHierarchyItem("a", "A", "b"), new TopologyHierarchyItem("b", "B", "a") }), "Hierarchy builders should reject parent cycles close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddHierarchy(new[] { new TopologyHierarchyItem("root", "Root") { LayoutPolicy = (TopologyHierarchyLayoutPolicy)99 } }), "Hierarchy builders should reject undefined item layout policies.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyChart.Create().AddHierarchy(SampleDirectoryHierarchy(), new TopologyHierarchyOptions { LayoutPolicy = (TopologyHierarchyLayoutPolicy)99 }), "Hierarchy builders should reject undefined default layout policies.");
     }
+
+    private static List<TopologyNode> ChildrenOf(TopologyChart chart, string parentId) => chart.Nodes
+        .Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == parentId)
+        .OrderBy(node => node.Id, StringComparer.Ordinal)
+        .ToList();
 
     private static bool AnyOverlap(IReadOnlyList<TopologyNode> nodes) {
         for (var i = 0; i < nodes.Count; i++) {

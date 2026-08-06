@@ -273,8 +273,8 @@ internal static partial class TopologyLayoutEngine {
         var y = top;
 
         foreach (var layer in prepared) {
-            if (TryPlaceHierarchyBucketsTopToBottom(layer, nodesById, pad, availableW, y)) {
-                y += layer.BlockSize + layerGap;
+            if (TryPlaceHierarchyBucketsTopToBottom(layer, nodesById, pad, availableW, y, out var hierarchyHeight)) {
+                y += Math.Max(layer.BlockSize, hierarchyHeight) + layerGap;
                 continue;
             }
 
@@ -314,8 +314,8 @@ internal static partial class TopologyLayoutEngine {
         var x = pad;
 
         foreach (var layer in prepared) {
-            if (TryPlaceHierarchyBucketsLeftToRight(layer, nodesById, x, top, availableH)) {
-                x += layer.BlockSize + layerGap;
+            if (TryPlaceHierarchyBucketsLeftToRight(layer, nodesById, x, top, availableH, out var hierarchyWidth)) {
+                x += Math.Max(layer.BlockSize, hierarchyWidth) + layerGap;
                 continue;
             }
 

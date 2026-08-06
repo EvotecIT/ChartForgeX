@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>Keeps guided series playback readable by highlighting the series without covering its marks in duplicate reveal labels.</PackageReleaseNotes>
+    <PackageReleaseNotes>Aligns self-contained HTML interaction and package compatibility with the ChartForgeX 1.4.0 hierarchy layout runtime.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
