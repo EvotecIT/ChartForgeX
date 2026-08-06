@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Host-neutral interaction contracts for ChartForgeX chart renderers and adapters.</Description>
-    <PackageReleaseNotes>Adds normalized region, node, link, and legend scenario targets plus capability-gated graph manipulation, state snapshots, box selection, and bounded history contracts.</PackageReleaseNotes>
+    <PackageReleaseNotes>Aligns host-neutral interaction contracts and package compatibility with the ChartForgeX 1.4.0 hierarchy layout runtime.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

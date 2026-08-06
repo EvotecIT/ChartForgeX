@@ -105,8 +105,8 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-directory-health-replication", BuildDirectoryHealthReplication(), "Directory Health Replication", "Small directory-health topology with site cards, domain controller nodes, and cross-site replication status.", routeOptions);
         SaveTopology(target, artifacts, "visual-service-dependency-map", BuildServiceDependencyMap(), "Service Dependency Map", "Generic service dependency topology showing upstream/downstream service health without TestimoX-specific types.");
         SaveTopology(target, artifacts, "visual-directory-level-window", BuildDirectoryLevelWindow(), "Directory Level Window", "Forest/domain/group/user hierarchy rendered as levels 2..3 with ancestor breadcrumb context.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
-        SaveTopology(target, artifacts, "visual-team-hierarchy-builder", BuildTeamHierarchyBuilder(), "Team Hierarchy Builder", "Team/org topology generated from parent-child member data with level filtering and wrapped crowded levels.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
-        SaveTopology(target, artifacts, "visual-nested-user-hierarchy", BuildNestedUserHierarchy(), "Nested User Hierarchy", "Parent-child directory fixture with nested OUs, groups, and users using tiered hierarchy buses and fit-to-panel rendering.", denseHierarchyOptions);
+        SaveTopology(target, artifacts, "visual-team-hierarchy-builder", BuildTeamHierarchyBuilder(), "Team Hierarchy Builder", "Team/org topology generated from parent-child member data with inherited standard, compact, and vertical subtree policies.", new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.WithMonitoringDashboardStyle());
+        SaveTopology(target, artifacts, "visual-nested-user-hierarchy", BuildNestedUserHierarchy(), "Nested User Hierarchy", "Parent-child directory fixture with nested OUs, groups, and users using shared first-band buses, exterior trunks for later bands, and fit-to-panel rendering.", denseHierarchyOptions);
         SaveTopology(target, artifacts, "visual-nested-user-hierarchy-left-right", BuildNestedUserHierarchy(TopologyLayoutDirection.LeftToRight), "Nested User Hierarchy Left-to-Right", "The same parent-child model rendered horizontally to validate alternate hierarchy flow and bus diagnostics.", denseHierarchyOptions);
         SaveTopology(target, artifacts, "visual-nested-user-hierarchy-bottom-top", BuildNestedUserHierarchy(TopologyLayoutDirection.BottomToTop), "Nested User Hierarchy Bottom-to-Top", "The same parent-child model mirrored vertically to validate upward hierarchy flow and bus diagnostics.", denseHierarchyOptions);
         SaveTopology(target, artifacts, "visual-nested-user-hierarchy-right-left", BuildNestedUserHierarchy(TopologyLayoutDirection.RightToLeft), "Nested User Hierarchy Right-to-Left", "The same parent-child model mirrored horizontally to validate reverse hierarchy flow and bus diagnostics.", denseHierarchyOptions);
@@ -598,16 +598,16 @@ internal static partial class TopologyVisualExamples {
         return TopologyChart.Create()
             .WithId("visual-team-hierarchy-builder")
             .WithTitle("Team Hierarchy Builder")
-            .WithSubtitle("Levels 0..3 generated from team member data; crowded levels wrap deterministically.")
+            .WithSubtitle("One hierarchy mixes standard, compact, and vertical descendant branches.")
             .WithViewport(1180, 620, 28)
             .WithLegend(TopologyLegend.Default()
                 .AddNodeKind("Team", TopologyNodeKind.Team, symbol: "TM")
                 .AddNodeKind("Person", TopologyNodeKind.Person, symbol: "U")
                 .AddEdgeKind("Ownership", TopologyEdgeKind.Ownership))
             .AddTeam("platform-team", "Platform Team", new[] {
-                new TopologyTeamMember("marcel", "Marcel", "Founder") { Status = TopologyHealthStatus.Healthy },
-                new TopologyTeamMember("jeremiah", "Jeremiah", "Head of Sales") { ParentId = "marcel", Status = TopologyHealthStatus.Healthy },
-                new TopologyTeamMember("deniz", "Deniz", "Project Manager") { ParentId = "marcel", Status = TopologyHealthStatus.Healthy },
+                new TopologyTeamMember("marcel", "Marcel", "Founder") { Status = TopologyHealthStatus.Healthy, LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard },
+                new TopologyTeamMember("jeremiah", "Jeremiah", "Head of Sales") { ParentId = "marcel", Status = TopologyHealthStatus.Healthy, LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical },
+                new TopologyTeamMember("deniz", "Deniz", "Project Manager") { ParentId = "marcel", Status = TopologyHealthStatus.Healthy, LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact },
                 new TopologyTeamMember("ersad", "Ersad", "Product Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },
                 new TopologyTeamMember("pawel", "Pawel", "Illustration Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Warning },
                 new TopologyTeamMember("darius", "Darius", "Illustration Designer") { ParentId = "deniz", Status = TopologyHealthStatus.Healthy },

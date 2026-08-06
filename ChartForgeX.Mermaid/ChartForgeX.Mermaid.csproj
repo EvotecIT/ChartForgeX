@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Native Mermaid compatibility parsing foundations for ChartForgeX visual artifact pipelines.</Description>
-    <PackageReleaseNotes>Aligns Mermaid compatibility and package dependencies with the ChartForgeX 1.3.0 runtime package set.</PackageReleaseNotes>
+    <PackageReleaseNotes>Aligns Mermaid compatibility and package dependencies with the ChartForgeX 1.4.0 runtime package set.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering and image composition for .NET charts, animated terminal presentations, visual stories, visual blocks, report tables, metric cards, wallpapers, and topology diagrams.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Adds generic source, terminal, media, and result stories with declared outcome validation, renderer-neutral syntax spans, script-free motion over named targets, deterministic completed PNG, reduced-motion and print fallbacks, GIF/APNG export, and portable transcripts.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds inherited per-subtree hierarchy layout policies with automatic standard-to-compact selection, explicit standard, compact, and vertical arrangements, deterministic routing metadata, and shared SVG, HTML, and PNG geometry.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>

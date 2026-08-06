@@ -407,7 +407,7 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(label.CenterY - routePoint.Y) > label.Height / 2 || Math.Abs(label.CenterX - routePoint.X) > label.Width / 2, "Monitoring-style one-line route labels should be offset from the route centerline instead of sitting directly on the edge.");
     }
 
-    private static void TopologyLayeredHierarchyRoutesUseTieredBusesForWrappedChildren() {
+    private static void TopologyLayeredHierarchyRoutesAvoidNodesForWrappedChildren() {
         var chart = TopologyChart.Create()
             .WithId("tiered-hierarchy-buses")
             .WithViewport(620, 520, 24)
@@ -417,17 +417,18 @@ internal static partial class SmokeTests {
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var children = prepared.Nodes.Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == "root").ToList();
         var edges = prepared.Edges.Where(edge => edge.SourceNodeId == "root").ToList();
-        var tiers = edges.Select(edge => edge.Metadata["hierarchy.route.tier"]).Distinct(StringComparer.Ordinal).Count();
-        var busYs = edges.Select(edge => double.Parse(edge.Metadata["hierarchy.route.busY"], CultureInfo.InvariantCulture)).Distinct().OrderBy(value => value).ToList();
+        var sharedBusEdges = edges.Where(edge => edge.Metadata["hierarchy.route"] == "shared-bus").ToList();
+        var tieredTrunkEdges = edges.Where(edge => edge.Metadata["hierarchy.route"] == "tiered-trunk").ToList();
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
 
         Assert(children.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() > 1, "The fixture should wrap many hierarchy children into multiple rows.");
-        Assert(tiers > 1, "Wrapped hierarchy fan-outs should allocate separate bus tiers instead of using one cramped junction lane.");
-        Assert(busYs.Count > 1, "Wrapped hierarchy fan-outs should expose distinct bus coordinates for host diagnostics.");
-        Assert(edges.All(edge => Math.Abs(double.Parse(edge.Metadata["hierarchy.route.busY"], CultureInfo.InvariantCulture) - edge.Waypoints[0].Y) < 0.001), "Hierarchy busY diagnostics should match the final normalized waypoint geometry.");
-        Assert(edges.All(edge => Math.Abs(edge.Waypoints[0].X - TopologyRenderPrimitives.CenterX(prepared.Nodes.Single(node => node.Id == edge.SourceNodeId))) < 0.001), "Hierarchy bus waypoints should stay aligned to the final normalized parent center.");
-        Assert(edges.All(edge => Math.Abs(edge.Waypoints[1].X - TopologyRenderPrimitives.CenterX(prepared.Nodes.Single(node => node.Id == edge.TargetNodeId))) < 0.001), "Hierarchy bus waypoints should stay aligned to the final normalized child center.");
-        Assert(busYs.All(busY => children.All(child => busY < child.Y || busY > child.Y + child.Height)), "Tiered hierarchy buses should sit between child rows instead of cutting through node cards.");
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Tiered hierarchy fan-outs should render as PNG.");
+        Assert(sharedBusEdges.Count > 0, "The first wrapped hierarchy band should retain a clean shared bus.");
+        Assert(tieredTrunkEdges.Count > 0 && tieredTrunkEdges.All(edge => edge.Routing == TopologyEdgeRouting.Orthogonal && edge.Waypoints.Count >= 4), "Later wrapped hierarchy bands should route through deterministic exterior trunks.");
+        Assert(tieredTrunkEdges.Select(edge => edge.Waypoints[1].X.ToString("0.###", CultureInfo.InvariantCulture)).Distinct(StringComparer.Ordinal).Count() == 1, "One wrapped subtree should share one exterior trunk instead of drawing a separate route cage per child.");
+        Assert(sharedBusEdges.All(edge => Math.Abs(double.Parse(edge.Metadata["hierarchy.route.busY"], CultureInfo.InvariantCulture) - edge.Waypoints[0].Y) < 0.001), "Shared hierarchy bus diagnostics should match the final normalized waypoint geometry.");
+        var routeHits = edges.Select(edge => new { edge.Id, Hits = TopologyRenderPrimitives.EdgeRouteDiagnostics(prepared, edge, nodes).ObstacleHits }).Where(item => item.Hits > 0).ToList();
+        Assert(routeHits.Count == 0, "Wrapped hierarchy routes should not cross any unrelated node card. Hits: " + string.Join(", ", routeHits.Select(item => item.Id + "=" + item.Hits)));
+        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Obstacle-aware hierarchy fan-outs should render as PNG.");
     }
 
     private static void TopologyLayeredHierarchySupportsReverseDirections() {
@@ -439,11 +440,13 @@ internal static partial class SmokeTests {
         var bottomRoot = bottomToTop.Nodes.Single(node => node.Id == "root");
         var bottomChildren = bottomToTop.Nodes.Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == "root").ToList();
         var bottomEdges = bottomToTop.Edges.Where(edge => edge.SourceNodeId == "root").ToList();
-        var bottomBusYs = bottomEdges.Select(edge => double.Parse(edge.Metadata["hierarchy.route.busY"], CultureInfo.InvariantCulture)).Distinct().ToList();
+        var bottomNodes = bottomToTop.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
 
         Assert(bottomRoot.Y > bottomChildren.Max(node => node.Y), "Bottom-to-top hierarchy should place parents below their children.");
         Assert(bottomEdges.All(edge => edge.TargetPort == TopologyEdgePort.Bottom), "Bottom-to-top hierarchy routes should enter children from below after mirroring.");
-        Assert(bottomBusYs.Count > 1, "Bottom-to-top wrapped fan-outs should preserve tiered bus diagnostics.");
+        Assert(bottomEdges.Any(edge => edge.Metadata["hierarchy.route"] == "tiered-trunk"), "Bottom-to-top wrapped fan-outs should preserve exterior-trunk later tiers.");
+        var bottomHits = bottomEdges.Select(edge => new { edge.Id, Hits = TopologyRenderPrimitives.EdgeRouteDiagnostics(bottomToTop, edge, bottomNodes).ObstacleHits }).Where(item => item.Hits > 0).ToList();
+        Assert(bottomHits.Count == 0, "Bottom-to-top wrapped routes should avoid node cards. Hits: " + string.Join(", ", bottomHits.Select(item => item.Id + "=" + item.Hits)));
 
         var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
             .WithId("right-to-left-hierarchy")
@@ -453,14 +456,13 @@ internal static partial class SmokeTests {
         var rightRoot = rightToLeft.Nodes.Single(node => node.Id == "root");
         var rightChildren = rightToLeft.Nodes.Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == "root").ToList();
         var rightEdges = rightToLeft.Edges.Where(edge => edge.SourceNodeId == "root").ToList();
-        var rightBusXs = rightEdges.Select(edge => double.Parse(edge.Metadata["hierarchy.route.busX"], CultureInfo.InvariantCulture)).Distinct().ToList();
+        var rightNodes = rightToLeft.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
 
         Assert(rightRoot.X > rightChildren.Max(node => node.X), "Right-to-left hierarchy should place parents to the right of their children.");
         Assert(rightEdges.All(edge => edge.TargetPort == TopologyEdgePort.Right), "Right-to-left hierarchy routes should enter children from the right after mirroring.");
-        Assert(rightBusXs.Count > 1, "Right-to-left wrapped fan-outs should preserve tiered bus diagnostics.");
-        Assert(rightEdges.All(edge => Math.Abs(double.Parse(edge.Metadata["hierarchy.route.busX"], CultureInfo.InvariantCulture) - edge.Waypoints[0].X) < 0.001), "Right-to-left hierarchy busX diagnostics should match final normalized waypoint geometry.");
-        Assert(rightEdges.All(edge => Math.Abs(edge.Waypoints[0].Y - TopologyRenderPrimitives.CenterY(rightToLeft.Nodes.Single(node => node.Id == edge.SourceNodeId))) < 0.001), "Right-to-left hierarchy bus waypoints should stay aligned to the final normalized parent center.");
-        Assert(rightEdges.All(edge => Math.Abs(edge.Waypoints[1].Y - TopologyRenderPrimitives.CenterY(rightToLeft.Nodes.Single(node => node.Id == edge.TargetNodeId))) < 0.001), "Right-to-left hierarchy bus waypoints should stay aligned to the final normalized child center.");
+        Assert(rightEdges.Any(edge => edge.Metadata["hierarchy.route"] == "tiered-trunk"), "Right-to-left wrapped fan-outs should preserve exterior-trunk later tiers.");
+        var rightHits = rightEdges.Select(edge => new { edge.Id, Hits = TopologyRenderPrimitives.EdgeRouteDiagnostics(rightToLeft, edge, rightNodes).ObstacleHits }).Where(item => item.Hits > 0).ToList();
+        Assert(rightHits.Count == 0, "Right-to-left wrapped routes should avoid node cards. Hits: " + string.Join(", ", rightHits.Select(item => item.Id + "=" + item.Hits)));
     }
 
     private static void TopologyLayeredHierarchyMirrorsSingleChildPorts() {

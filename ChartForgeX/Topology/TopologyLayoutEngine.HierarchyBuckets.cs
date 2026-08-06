@@ -11,11 +11,12 @@ internal static partial class TopologyLayoutEngine {
     private const double HierarchyBucketNodeGapX = 24;
     private const double HierarchyBucketNodeGapY = 28;
 
-    private static bool TryPlaceHierarchyBucketsTopToBottom(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double left, double availableW, double y) {
+    private static bool TryPlaceHierarchyBucketsTopToBottom(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double left, double availableW, double y, out double occupiedHeight) {
+        occupiedHeight = 0;
         var buckets = BuildHorizontalHierarchyBuckets(layer, nodesById, availableW);
-        if (buckets.Count < 2) return false;
+        if (buckets.Count == 0 || buckets.Sum(bucket => bucket.Nodes.Count) != layer.Nodes.Count) return false;
+        occupiedHeight = buckets.Max(bucket => bucket.Height);
         var totalWidth = buckets.Sum(bucket => bucket.Width) + (buckets.Count - 1) * HierarchyBucketGap;
-        if (totalWidth > availableW + 0.0001) return false;
         var minLeft = left;
         var maxRight = left + availableW;
         var currentLeft = minLeft + Math.Max(0, (availableW - totalWidth) / 2);
@@ -24,17 +25,7 @@ internal static partial class TopologyLayoutEngine {
             currentLeft = bucket.Left + bucket.Width + HierarchyBucketGap;
         }
 
-        var overflow = buckets[buckets.Count - 1].Left + buckets[buckets.Count - 1].Width - maxRight;
-        if (overflow > 0) {
-            foreach (var bucket in buckets) bucket.Left -= overflow;
-        }
-
-        if (buckets[0].Left < minLeft) {
-            var shift = minLeft - buckets[0].Left;
-            foreach (var bucket in buckets) bucket.Left += shift;
-        }
-
-        if (buckets[buckets.Count - 1].Left + buckets[buckets.Count - 1].Width > maxRight + 0.0001) return false;
+        if (totalWidth <= availableW + 0.0001) FitHorizontalBuckets(buckets, minLeft, maxRight);
         var occupied = new HashSet<string>(StringComparer.Ordinal);
         foreach (var bucket in buckets) {
             for (var i = 0; i < bucket.Nodes.Count; i++) {
@@ -44,6 +35,7 @@ internal static partial class TopologyLayoutEngine {
                 var rowCount = Math.Min(bucket.Columns, bucket.Nodes.Count - row * bucket.Columns);
                 var rowLeft = BucketRowLeft(bucket, row, rowCount, layer.MaxWidth, HierarchyBucketNodeGapX);
                 ApplyLayerMetadata(node, layer, row, col);
+                node.Metadata["layout.hierarchyPolicy"] = bucket.AppliedPolicy.ToString();
                 occupied.Add(node.Id);
                 if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
                 node.X = rowLeft + col * (layer.MaxWidth + HierarchyBucketNodeGapX) + (layer.MaxWidth - node.Width) / 2;
@@ -54,11 +46,12 @@ internal static partial class TopologyLayoutEngine {
         return occupied.Count == layer.Nodes.Count;
     }
 
-    private static bool TryPlaceHierarchyBucketsLeftToRight(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double x, double top, double availableH) {
+    private static bool TryPlaceHierarchyBucketsLeftToRight(LayerPlacement layer, IReadOnlyDictionary<string, TopologyNode> nodesById, double x, double top, double availableH, out double occupiedWidth) {
+        occupiedWidth = 0;
         var buckets = BuildVerticalHierarchyBuckets(layer, nodesById, availableH);
-        if (buckets.Count < 2) return false;
+        if (buckets.Count == 0 || buckets.Sum(bucket => bucket.Nodes.Count) != layer.Nodes.Count) return false;
+        occupiedWidth = buckets.Max(bucket => bucket.Width);
         var totalHeight = buckets.Sum(bucket => bucket.Height) + (buckets.Count - 1) * HierarchyBucketGap;
-        if (totalHeight > availableH + 0.0001) return false;
         var minTop = top;
         var maxBottom = top + availableH;
         var currentTop = minTop + Math.Max(0, (availableH - totalHeight) / 2);
@@ -67,17 +60,7 @@ internal static partial class TopologyLayoutEngine {
             currentTop = bucket.Top + bucket.Height + HierarchyBucketGap;
         }
 
-        var overflow = buckets[buckets.Count - 1].Top + buckets[buckets.Count - 1].Height - maxBottom;
-        if (overflow > 0) {
-            foreach (var bucket in buckets) bucket.Top -= overflow;
-        }
-
-        if (buckets[0].Top < minTop) {
-            var shift = minTop - buckets[0].Top;
-            foreach (var bucket in buckets) bucket.Top += shift;
-        }
-
-        if (buckets[buckets.Count - 1].Top + buckets[buckets.Count - 1].Height > maxBottom + 0.0001) return false;
+        if (totalHeight <= availableH + 0.0001) FitVerticalBuckets(buckets, minTop, maxBottom);
         var occupied = new HashSet<string>(StringComparer.Ordinal);
         foreach (var bucket in buckets) {
             for (var i = 0; i < bucket.Nodes.Count; i++) {
@@ -87,6 +70,7 @@ internal static partial class TopologyLayoutEngine {
                 var columnCount = Math.Min(bucket.Rows, bucket.Nodes.Count - col * bucket.Rows);
                 var columnTop = BucketColumnTop(bucket, col, columnCount, layer.MaxHeight, HierarchyBucketNodeGapY);
                 ApplyLayerMetadata(node, layer, row, col);
+                node.Metadata["layout.hierarchyPolicy"] = bucket.AppliedPolicy.ToString();
                 occupied.Add(node.Id);
                 if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
                 node.X = x + col * (layer.MaxWidth + HierarchyBucketNodeGapX) + (layer.MaxWidth - node.Width) / 2;
@@ -107,10 +91,11 @@ internal static partial class TopologyLayoutEngine {
         return grouped
             .Select(group => {
                 var parent = nodesById[group.ParentId];
-                var columns = LayerColumns(group.Nodes.Count, bucketWidth, layer.MaxWidth, HierarchyBucketNodeGapX);
-                if (group.Nodes.Count > columns && columns > 2) columns--;
+                var fitted = LayerColumns(group.Nodes.Count, bucketWidth, layer.MaxWidth, HierarchyBucketNodeGapX);
+                var policy = AppliedHierarchyLayoutPolicy(parent, group.Nodes.Count, fitted);
+                var columns = HierarchyColumns(group.Nodes.Count, fitted, policy);
                 var rows = (int)Math.Ceiling(group.Nodes.Count / (double)columns);
-                return new HierarchyBucket(group.Nodes, columns, rows, CenterX(parent));
+                return new HierarchyBucket(group.Nodes, columns, rows, CenterX(parent), policy);
             })
             .OrderBy(bucket => bucket.Center)
             .ThenBy(bucket => bucket.Nodes[0].Id, StringComparer.Ordinal)
@@ -126,11 +111,12 @@ internal static partial class TopologyLayoutEngine {
         var bucketHeight = grouped.Count <= 0 ? availableH : Math.Max(layer.MaxHeight, (availableH - Math.Max(0, grouped.Count - 1) * HierarchyBucketGap) / grouped.Count);
         return grouped
             .Select(group => {
-                var rows = LayerColumns(group.Nodes.Count, bucketHeight, layer.MaxHeight, HierarchyBucketNodeGapY);
-                if (group.Nodes.Count > rows && rows > 2) rows--;
-                var columns = (int)Math.Ceiling(group.Nodes.Count / (double)rows);
                 var parent = nodesById[group.ParentId];
-                return new HierarchyBucket(group.Nodes, columns, rows, CenterY(parent));
+                var fitted = LayerColumns(group.Nodes.Count, bucketHeight, layer.MaxHeight, HierarchyBucketNodeGapY);
+                var policy = AppliedHierarchyLayoutPolicy(parent, group.Nodes.Count, fitted);
+                var rows = HierarchyRows(group.Nodes.Count, fitted, policy);
+                var columns = (int)Math.Ceiling(group.Nodes.Count / (double)rows);
+                return new HierarchyBucket(group.Nodes, columns, rows, CenterY(parent), policy);
             })
             .OrderBy(bucket => bucket.Center)
             .ThenBy(bucket => bucket.Nodes[0].Id, StringComparer.Ordinal)
@@ -138,6 +124,46 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private static string? ParentId(TopologyNode node) => node.Metadata.TryGetValue("hierarchy.parentId", out var parentId) ? parentId : null;
+
+    private static TopologyHierarchyLayoutPolicy AppliedHierarchyLayoutPolicy(TopologyNode parent, int childCount, int fitted) {
+        var configured = TopologyHierarchyLayoutPolicy.Auto;
+        if (parent.Metadata.TryGetValue("hierarchy.layoutPolicy", out var value) && Enum.TryParse(value, out TopologyHierarchyLayoutPolicy parsed) && Enum.IsDefined(typeof(TopologyHierarchyLayoutPolicy), parsed)) configured = parsed;
+        if (configured != TopologyHierarchyLayoutPolicy.Auto) return configured;
+        return childCount <= fitted ? TopologyHierarchyLayoutPolicy.Standard : TopologyHierarchyLayoutPolicy.Compact;
+    }
+
+    private static int HierarchyColumns(int count, int fitted, TopologyHierarchyLayoutPolicy policy) {
+        if (policy == TopologyHierarchyLayoutPolicy.Standard) return Math.Max(1, count);
+        if (policy == TopologyHierarchyLayoutPolicy.Vertical) return 1;
+        return Math.Max(1, Math.Min(fitted, (int)Math.Ceiling(Math.Sqrt(Math.Max(1, count)))));
+    }
+
+    private static int HierarchyRows(int count, int fitted, TopologyHierarchyLayoutPolicy policy) {
+        if (policy is TopologyHierarchyLayoutPolicy.Standard or TopologyHierarchyLayoutPolicy.Vertical) return Math.Max(1, count);
+        return Math.Max(1, Math.Min(fitted, (int)Math.Ceiling(Math.Sqrt(Math.Max(1, count)))));
+    }
+
+    private static void FitHorizontalBuckets(IReadOnlyList<HierarchyBucket> buckets, double minLeft, double maxRight) {
+        var overflow = buckets[buckets.Count - 1].Left + buckets[buckets.Count - 1].Width - maxRight;
+        if (overflow > 0) {
+            foreach (var bucket in buckets) bucket.Left -= overflow;
+        }
+
+        if (buckets[0].Left >= minLeft) return;
+        var shift = minLeft - buckets[0].Left;
+        foreach (var bucket in buckets) bucket.Left += shift;
+    }
+
+    private static void FitVerticalBuckets(IReadOnlyList<HierarchyBucket> buckets, double minTop, double maxBottom) {
+        var overflow = buckets[buckets.Count - 1].Top + buckets[buckets.Count - 1].Height - maxBottom;
+        if (overflow > 0) {
+            foreach (var bucket in buckets) bucket.Top -= overflow;
+        }
+
+        if (buckets[0].Top >= minTop) return;
+        var shift = minTop - buckets[0].Top;
+        foreach (var bucket in buckets) bucket.Top += shift;
+    }
 
     private static void ApplyLayerMetadata(TopologyNode node, LayerPlacement layer, int row, int column) {
         node.Metadata["layout.layer"] = layer.Layer.ToString(CultureInfo.InvariantCulture);
@@ -170,11 +196,12 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private sealed class HierarchyBucket {
-        public HierarchyBucket(List<TopologyNode> nodes, int columns, int rows, double center) {
+        public HierarchyBucket(List<TopologyNode> nodes, int columns, int rows, double center, TopologyHierarchyLayoutPolicy appliedPolicy) {
             Nodes = nodes;
             Columns = Math.Max(1, columns);
             Rows = Math.Max(1, rows);
             Center = center;
+            AppliedPolicy = appliedPolicy;
             var itemWidth = Nodes.Select(node => node.Width).DefaultIfEmpty(80).Max();
             var itemHeight = Nodes.Select(node => node.Height).DefaultIfEmpty(46).Max();
             Width = Columns * itemWidth + Math.Max(0, Columns - 1) * HierarchyBucketNodeGapX + (Rows > 1 && Columns > 1 ? (itemWidth + HierarchyBucketNodeGapX) / 2 : 0);
@@ -185,6 +212,7 @@ internal static partial class TopologyLayoutEngine {
         public int Columns { get; }
         public int Rows { get; }
         public double Center { get; }
+        public TopologyHierarchyLayoutPolicy AppliedPolicy { get; }
         public double Width { get; }
         public double Height { get; }
         public double Left { get; set; }
