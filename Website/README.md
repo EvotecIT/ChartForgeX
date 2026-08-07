@@ -37,6 +37,12 @@ The generated examples are copied opportunistically from:
 Those folders are produced by the repository build and are not the source of
 truth for the site.
 
+The evotec.xyz API reference consumes the matched core assembly and XML pair in
+`WebsiteArtifacts/apidocs/dotnet`. Keep `ChartForgeX.dll` and
+`ChartForgeX.xml` from the same release build. Adapter packages are explained
+in the project guides and keep their package-specific reference material in
+their NuGet packages rather than being mixed into the core API model.
+
 The browsable examples are data-driven:
 
 - `data/showcase.json` controls the curated examples on `/examples/`.
