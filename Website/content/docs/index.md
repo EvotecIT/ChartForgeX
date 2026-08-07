@@ -43,7 +43,8 @@ data-driven so new ChartForgeX work can add visuals without rewriting the
 website shell:
 
 - `data/showcase.json` feeds the selected examples on `/examples/`;
-- `data/gallery.json` feeds the generated catalog on `/gallery/`;
+- `data/gallery.json` feeds the full generated catalog on `/gallery/`;
+- `/examples/promoted-cases.json` is the curated, accessible demo manifest consumed by the central Evotec demo gallery;
 - `static/examples/generated/` stores seed SVG/PNG/HTML artifacts for the site;
 - `build/Sync-GeneratedExamples.ps1` can refresh the gallery data from the
   example output folder.
