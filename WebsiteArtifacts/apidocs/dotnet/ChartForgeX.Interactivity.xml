@@ -1,0 +1,1763 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ChartForgeX.Interactivity</name>
+    </assembly>
+    <members>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionFeatures">
+            <summary>
+            Describes interaction capabilities that a host adapter may expose for a ChartForgeX chart.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.None">
+            <summary>
+            Disables all interactive affordances.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Tooltips">
+            <summary>
+            Shows formatted metadata while hovering or focusing chart regions.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Selection">
+            <summary>
+            Allows chart regions to be selected through pointer or keyboard input.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.LegendToggles">
+            <summary>
+            Allows legend items to toggle the visibility or emphasis of matching series.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.KeyboardNavigation">
+            <summary>
+            Allows keyboard navigation or keyboard activation for interactive regions.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom">
+            <summary>
+            Allows an adapter to zoom into chart data or chart geometry.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Pan">
+            <summary>
+            Allows an adapter to pan a zoomed chart view.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Brush">
+            <summary>
+            Allows an adapter to select a range such as a brushed x-axis interval.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.SynchronizedCharts">
+            <summary>
+            Allows charts with the same group name to synchronize hover, selection, zoom, or brush state.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Export">
+            <summary>
+            Allows an adapter to expose chart, image, or data export commands.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios">
+            <summary>
+            Allows an adapter to switch between named scenarios, flows, or alternate analytical paths.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback">
+            <summary>
+            Allows an adapter to step through ordered route, scenario, or annotation states.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.DeepLinks">
+            <summary>
+            Allows an adapter to publish or consume links that restore interactive chart state.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.Crosshair">
+            <summary>
+            Allows an adapter to show nearest-point crosshair exploration.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.CompareMarkers">
+            <summary>
+            Allows an adapter to summarize selected targets for quick visual comparison.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.FocusTrail">
+            <summary>
+            Allows an adapter to keep a short visual breadcrumb of recently focused targets.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.RevealLabels">
+            <summary>
+            Allows an adapter to reveal compact labels beside the current hover, focus, or route targets.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.StateBookmarks">
+            <summary>
+            Allows an adapter or host page to capture and reapply reusable interaction snapshots.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionFeatures.ReportReview">
+            <summary>
+            Enables the first report-friendly interaction set for generated dashboards.
+            </summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionOptions">
+            <summary>
+            Holds host-neutral interaction settings that can be consumed by HTML, desktop, or future interactive adapters.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ChartForgeX.Interactivity.ChartInteractionOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionOptions.ChartId">
+            <summary>
+            Gets or sets a stable chart identifier used by host adapters for DOM IDs, chart registries, or event routing.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionOptions.GroupName">
+            <summary>
+            Gets or sets the optional synchronized-chart group name.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionOptions.Scenarios">
+            <summary>
+            Gets interaction scenarios that host adapters may expose as alternate chart paths, flows, or analytical states.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionOptions.ActiveScenarioId">
+            <summary>
+            Gets or sets the initial active scenario id.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionOptions.EnableDeepLinkState">
+            <summary>
+            Gets or sets a value indicating whether adapters may synchronize interaction state with URL or host deep links.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionOptions.Features">
+            <summary>
+            Gets or sets the enabled interaction feature flags.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionOptions.ReportReview">
+            <summary>
+            Returns a configured copy of the default report-review interaction profile.
+            </summary>
+            <returns>A new default interaction options instance.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionOptions.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures)">
+            <summary>
+            Determines whether the specified interaction feature is enabled.
+            </summary>
+            <param name="feature">The interaction feature to check.</param>
+            <returns><c>true</c> when the feature is enabled; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionOptions.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures)">
+            <summary>
+            Enables one or more interaction features.
+            </summary>
+            <param name="features">The features to enable.</param>
+            <returns>The current options instance.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionOptions.Disable(ChartForgeX.Interactivity.ChartInteractionFeatures)">
+            <summary>
+            Disables one or more interaction features.
+            </summary>
+            <param name="features">The features to disable.</param>
+            <returns>The current options instance.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionScenario">
+            <summary>
+            Describes a named interactive path, flow, or alternate analytical state for a chart adapter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.Id">
+            <summary>Gets or sets the stable scenario identifier.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.Label">
+            <summary>Gets or sets the scenario label shown by host controls.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.Description">
+            <summary>Gets or sets an optional scenario description.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.Color">
+            <summary>Gets or sets an optional scenario accent color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.PlaybackDelayMilliseconds">
+            <summary>Gets or sets the default time each step remains visible during playback.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.LoopPlayback">
+            <summary>Gets or sets whether playback returns to the first step after the last step.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.AutoPlay">
+            <summary>Gets or sets whether a browser adapter may start playback automatically when motion is allowed.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.FocusMode">
+            <summary>Gets or sets how strongly non-target context is visually de-emphasized.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.Steps">
+            <summary>Gets ordered target references that participate in the scenario.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenario.Metadata">
+            <summary>Gets arbitrary scenario metadata for host adapters.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionScenarioStep">
+            <summary>
+            Describes one target reference inside a host-neutral interaction scenario.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenarioStep.TargetKind">
+            <summary>Gets or sets the adapter-defined target kind, such as series, point, node, edge, or annotation.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenarioStep.TargetId">
+            <summary>Gets or sets the adapter-defined target identifier.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenarioStep.Label">
+            <summary>Gets or sets an optional step label.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenarioStep.Description">
+            <summary>Gets or sets an optional step description.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenarioStep.DurationMilliseconds">
+            <summary>Gets or sets an optional playback duration that overrides the scenario default.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.ChartInteractionScenarioStep.Metadata">
+            <summary>Gets arbitrary step metadata for route inspectors and host adapters.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionScenarioFocusMode">
+            <summary>Controls whether a scenario preserves surrounding context or spotlights only its targets.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionScenarioFocusMode.Highlight">
+            <summary>Emphasizes active targets while retaining the surrounding visual context.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionScenarioFocusMode.Spotlight">
+            <summary>Dims non-target data marks to create a stronger focused review.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions">
+            <summary>
+            Provides fluent helpers for host-neutral interaction scenarios.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddScenario(ChartForgeX.Interactivity.ChartInteractionOptions,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenario})">
+            <summary>
+            Adds a named scenario to the interaction options and enables scenario interactivity.
+            </summary>
+            <param name="options">The interaction options.</param>
+            <param name="id">The scenario id.</param>
+            <param name="label">The scenario label.</param>
+            <param name="configure">Optional scenario configuration.</param>
+            <returns>The current interaction options.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithActiveScenario(ChartForgeX.Interactivity.ChartInteractionOptions,System.String)">
+            <summary>
+            Sets the active scenario id and enables scenario interactivity.
+            </summary>
+            <param name="options">The interaction options.</param>
+            <param name="scenarioId">The active scenario id.</param>
+            <returns>The current interaction options.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithoutActiveScenario(ChartForgeX.Interactivity.ChartInteractionOptions)">
+            <summary>
+            Clears the active scenario id.
+            </summary>
+            <param name="options">The interaction options.</param>
+            <returns>The current interaction options.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithDeepLinkState(ChartForgeX.Interactivity.ChartInteractionOptions,System.Boolean)">
+            <summary>
+            Controls whether adapter state may be synchronized with a deep link.
+            </summary>
+            <param name="options">The interaction options.</param>
+            <param name="enabled">Whether deep-link state is enabled.</param>
+            <returns>The current interaction options.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithColor(ChartForgeX.Interactivity.ChartInteractionScenario,System.String)">
+            <summary>
+            Sets an optional scenario accent color.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="color">The scenario color.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithDescription(ChartForgeX.Interactivity.ChartInteractionScenario,System.String)">
+            <summary>
+            Sets an optional scenario description.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="description">The scenario description.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithPlayback(ChartForgeX.Interactivity.ChartInteractionScenario,System.Int32,System.Boolean,System.Boolean)">
+            <summary>Configures scenario timeline playback without enabling automatic playback by default.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithFocusMode(ChartForgeX.Interactivity.ChartInteractionScenario,ChartForgeX.Interactivity.ChartInteractionScenarioFocusMode)">
+            <summary>Controls whether the route highlights targets or spotlights them by dimming other data marks.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithMetadata(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String)">
+            <summary>
+            Adds host-readable metadata to an interaction scenario.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="key">The metadata key.</param>
+            <param name="value">The metadata value.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>
+            Adds an ordered target reference to an interaction scenario.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="targetKind">The adapter-defined target kind.</param>
+            <param name="targetId">The adapter-defined target id.</param>
+            <param name="label">The optional step label.</param>
+            <param name="description">The optional step description.</param>
+            <param name="configure">Optional step configuration.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddSeriesStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>
+            Adds an ordered step that targets a rendered chart series.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="seriesId">The adapter-defined series id or zero-based series index.</param>
+            <param name="label">The optional step label.</param>
+            <param name="description">The optional step description.</param>
+            <param name="configure">Optional step configuration.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddPointStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>
+            Adds an ordered step that targets a rendered chart point.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="pointId">The adapter-defined point id.</param>
+            <param name="label">The optional step label.</param>
+            <param name="description">The optional step description.</param>
+            <param name="configure">Optional step configuration.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddAnnotationStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>
+            Adds an ordered step that targets a rendered annotation or mark.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="annotationId">The adapter-defined annotation id.</param>
+            <param name="label">The optional step label.</param>
+            <param name="description">The optional step description.</param>
+            <param name="configure">Optional step configuration.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddRegionStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>Adds an ordered step that targets a rendered map, matrix, or categorical region.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddNodeStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>Adds an ordered step that targets a rendered hierarchy, flow, or relationship node.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddLinkStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>Adds an ordered step that targets a rendered hierarchy, flow, route, or relationship link.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddLegendStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>Adds an ordered step that targets a rendered legend entry.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddElementStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>
+            Adds an ordered step that targets a rendered element by SVG id or adapter data id.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="elementId">The rendered SVG id or adapter data id.</param>
+            <param name="label">The optional step label.</param>
+            <param name="description">The optional step description.</param>
+            <param name="configure">Optional step configuration.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.AddRoleStep(ChartForgeX.Interactivity.ChartInteractionScenario,System.String,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.ChartInteractionScenarioStep})">
+            <summary>
+            Adds an ordered step that targets a rendered element by role plus value or label.
+            </summary>
+            <param name="scenario">The interaction scenario.</param>
+            <param name="role">The rendered element role.</param>
+            <param name="valueOrLabel">The rendered element value or label.</param>
+            <param name="label">The optional step label.</param>
+            <param name="description">The optional step description.</param>
+            <param name="configure">Optional step configuration.</param>
+            <returns>The current scenario.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithMetadata(ChartForgeX.Interactivity.ChartInteractionScenarioStep,System.String,System.String)">
+            <summary>
+            Adds host-readable metadata to an interaction scenario step.
+            </summary>
+            <param name="step">The interaction scenario step.</param>
+            <param name="key">The metadata key.</param>
+            <param name="value">The metadata value.</param>
+            <returns>The current scenario step.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.ChartInteractionScenarioExtensions.WithDuration(ChartForgeX.Interactivity.ChartInteractionScenarioStep,System.Int32)">
+            <summary>Overrides how long this step remains visible during timeline playback.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.ChartInteractionTargetKinds">
+            <summary>
+            Provides common adapter target-kind tokens for reusable interaction scenarios.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Series">
+            <summary>Targets a rendered chart series, usually by zero-based series index or adapter series id.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Point">
+            <summary>Targets a rendered chart point, usually by adapter point id.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Annotation">
+            <summary>Targets a rendered annotation, mark, or threshold element.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Region">
+            <summary>Targets a rendered geographic, matrix, or categorical region.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Node">
+            <summary>Targets a rendered hierarchy, flow, or relationship node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Link">
+            <summary>Targets a rendered hierarchy, flow, route, or relationship link.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Legend">
+            <summary>Targets a rendered legend entry.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Element">
+            <summary>Targets an element by rendered SVG id or adapter-specific data id.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.ChartInteractionTargetKinds.Role">
+            <summary>Targets a rendered element by role plus value or label.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphClusterOptions">
+            <summary>
+            Describes reusable clustering behavior for graph adapters that can collapse, summarize, or derive large-scene communities.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphClusterOptions.Mode">
+            <summary>Gets or sets how adapters should interpret clusters when the scene is rendered.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphClusterOptions.Adaptive">
+            <summary>Gets or sets whether adapters may create runtime clusters from graph structure when explicit clusters are not enough.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphClusterOptions.CollapseOnLoad">
+            <summary>Gets or sets whether cluster summaries should start collapsed when supported by the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphClusterOptions.MinimumClusterSize">
+            <summary>Gets or sets the minimum member count before an adapter should present a cluster as collapsible.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphClusterOptions.TargetClusterSize">
+            <summary>Gets or sets the preferred maximum number of visible members before adaptive clustering should summarize a community.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphClusterMode">
+            <summary>
+            Names reusable clustering strategies that adapters can map to Canvas, WebGL, desktop, or native graph controls.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphClusterMode.Explicit">
+            <summary>Use only clusters declared on the scene.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphClusterMode.ByGroup">
+            <summary>Derive cluster membership from node group ids while preserving explicit clusters that callers supplied.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphClusterMode.Adaptive">
+            <summary>Let the adapter derive communities from graph structure and level-of-detail budgets.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphClusterMode.Hybrid">
+            <summary>Use declared clusters first, then allow adaptive summaries for oversized communities.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphHierarchyOptions">
+            <summary>
+            Describes reusable parent-child navigation behavior for graph explorer adapters.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchyOptions.InitialRootNodeId">
+            <summary>Gets or sets the node initially used as the root of a drill-down view. Null starts at the complete graph.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchyOptions.InitialDepth">
+            <summary>Gets or sets the maximum descendant depth shown below the active root. Zero shows only the root.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchyOptions.IncludeAncestorBreadcrumbs">
+            <summary>Gets or sets whether breadcrumb controls should retain the active root's ancestor chain.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchyOptions.AutoFitOnNavigate">
+            <summary>Gets or sets whether adapters should fit the visible graph after hierarchy navigation.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchyOptions.DrillDownOnActivate">
+            <summary>Gets or sets whether a node activation gesture may enter a child view.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphInteractionOptions">
+            <summary>Controls reusable graph pointer and topology-change behavior.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.NodeDragBehavior">
+            <summary>Gets or sets what happens to a node after it is dragged.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.SimulateConnectedNodesWhileDragging">
+            <summary>Gets or sets whether connected movable nodes continue responding while a node is held.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.DragMomentum">
+            <summary>Gets or sets how much recent pointer velocity is transferred to a released node, from zero to one.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.ReheatAfterDrag">
+            <summary>Gets or sets whether runtime physics reheats after a node is dropped.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.ReheatAfterClusterChange">
+            <summary>Gets or sets whether runtime physics reheats after clusters expand or collapse.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.ReheatAfterHierarchyChange">
+            <summary>Gets or sets whether runtime physics reheats after hierarchy navigation changes visible nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphInteractionOptions.ReheatAfterGraphChange">
+            <summary>Gets or sets whether runtime physics reheats after incremental nodes, edges, or clusters change.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphNodeDragBehavior">
+            <summary>Names supported node release policies after interactive dragging.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeDragBehavior.PinOnDrop">
+            <summary>Keep the node fixed at its dropped position while allowing the remaining graph to settle.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeDragBehavior.ReleaseAndReheat">
+            <summary>Restore the node's original fixed state and reheat the graph so springs settle into a new equilibrium.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphLayoutOptions">
+            <summary>
+            Describes deterministic graph layout preferences shared by static and interactive graph adapters.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLayoutOptions.Mode">
+            <summary>Gets or sets the prepared layout family used before adapter-side runtime physics begins.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLayoutOptions.Direction">
+            <summary>Gets or sets the direction used by hierarchical layouts.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLayoutOptions.LevelSeparation">
+            <summary>Gets or sets the distance between adjacent hierarchy levels in scene units.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLayoutOptions.NodeSpacing">
+            <summary>Gets or sets the distance between nodes in the same hierarchy level in scene units.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLayoutOptions.ComponentSpacing">
+            <summary>Gets or sets additional distance between disconnected hierarchical components.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLayoutOptions.InferLevelsFromEdges">
+            <summary>Gets or sets whether missing hierarchy levels may be inferred from directed edges.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphLayoutMode">
+            <summary>
+            Names deterministic graph layout families that adapters can share.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphLayoutMode.StructuredPrepared">
+            <summary>Use ChartForgeX's graph-aware prepared layout.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphLayoutMode.Hierarchical">
+            <summary>Place nodes in deterministic hierarchy levels, similar to vis-network hierarchical layout.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphLayoutDirection">
+            <summary>
+            Names hierarchy flow directions for layered graph layouts.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphLayoutDirection.TopToBottom">
+            <summary>Place parent or source levels above children.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphLayoutDirection.BottomToTop">
+            <summary>Place parent or source levels below children.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphLayoutDirection.LeftToRight">
+            <summary>Place parent or source levels at the left.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphLayoutDirection.RightToLeft">
+            <summary>Place parent or source levels at the right.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphLevelOfDetailOptions">
+            <summary>
+            Describes clustering and detail-reduction thresholds for graph explorer adapters.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.ClusterNodeThreshold">
+            <summary>Gets or sets the node count at which adapters should prefer collapsed or summarized views.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.HideEdgeLabelsThreshold">
+            <summary>Gets or sets the edge count at which adapters should hide edge labels until focus or selection.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.CompactNodeThreshold">
+            <summary>Gets or sets the node count at which adapters should prefer compact dot rendering over full labels.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.CanvasPreferredNodeThreshold">
+            <summary>Gets or sets the node count at which Canvas or WebGL adapters should be preferred over SVG.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.WebGlPreferredNodeThreshold">
+            <summary>Gets or sets the node count at which WebGL adapters should be preferred over Canvas when available.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.OverviewScaleThreshold">
+            <summary>Gets or sets the viewport scale at or below which adapters should show an overview representation.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.DetailScaleThreshold">
+            <summary>Gets or sets the viewport scale at or above which adapters should show full labels, badges, and imagery.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphLevelOfDetailOptions.CollapseClustersOnLoad">
+            <summary>Gets or sets whether clusters should be collapsed when the scene first renders.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphManipulationOptions">
+            <summary>
+            Describes opt-in editing capabilities for graph adapters without making static rendering mutable by default.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanAddNodes">
+            <summary>Gets or sets whether users can create nodes in the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanEditNodes">
+            <summary>Gets or sets whether users can edit node labels, metadata, or visual hints in the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanDeleteNodes">
+            <summary>Gets or sets whether users can delete nodes in the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanAddEdges">
+            <summary>Gets or sets whether users can create edges between existing nodes in the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanEditEdges">
+            <summary>Gets or sets whether users can edit edge labels, metadata, or visual hints in the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanDeleteEdges">
+            <summary>Gets or sets whether users can delete edges in the adapter.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanDragGroups">
+            <summary>Gets or sets whether adapters can move a collapsed group or cluster as one unit.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.CanPersistPositions">
+            <summary>Gets or sets whether adapters can export user-adjusted node positions for host persistence.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.ConfirmDestructiveChanges">
+            <summary>Gets or sets whether adapters should ask for confirmation before deleting graph items.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphManipulationOptions.MaximumHistoryEntries">
+            <summary>Gets or sets the maximum number of undo snapshots retained by adapters.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphManipulationOptions.EnableEditing">
+            <summary>
+            Enables the common edit surface used by graph explorers that support topology authoring or repair workflows.
+            </summary>
+            <returns>The current options instance.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphPerformanceOptions">
+            <summary>
+            Describes graph explorer performance budgets that adapters can enforce before interaction becomes expensive.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.FrameBudgetMilliseconds">
+            <summary>Gets or sets the desired frame budget in milliseconds for interactive graph work.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.MaxInteractiveSvgNodes">
+            <summary>Gets or sets the maximum SVG node count that should run fully interactive browser physics.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.MaxInteractiveSvgEdges">
+            <summary>Gets or sets the maximum SVG edge count that should run fully interactive browser physics.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.MaxInteractiveCanvasNodes">
+            <summary>Gets or sets the maximum Canvas node count that should run fully interactive browser physics.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.MaxInteractiveCanvasEdges">
+            <summary>Gets or sets the maximum Canvas edge count that should run fully interactive browser physics.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.MaxInteractiveWebGlNodes">
+            <summary>Gets or sets the maximum WebGL node count that should remain fully interactive.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.MaxInteractiveWebGlEdges">
+            <summary>Gets or sets the maximum WebGL edge count that should remain fully interactive.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.TelemetrySampleInterval">
+            <summary>Gets or sets how many simulation ticks should pass between telemetry events.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.WarmupFrameCount">
+            <summary>Gets or sets how many initial browser frames are reported as warmup without affecting the steady-state frame budget.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPerformanceOptions.WorkerProgressInterval">
+            <summary>Gets or sets how many worker solver ticks may run between browser-visible layout updates.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphPhysicsOptions">
+            <summary>
+            Describes graph physics, solver tuning, and stabilization without binding callers to a browser implementation.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.Solver">
+            <summary>Gets or sets the solver requested from graph adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.Stabilization">
+            <summary>Gets common stabilization settings.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.MinVelocity">
+            <summary>Gets or sets the velocity threshold below which a graph is considered stabilized.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.MaxVelocity">
+            <summary>Gets or sets the maximum node velocity allowed by runtime physics adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.Timestep">
+            <summary>Gets or sets the minimum discrete simulation timestep.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.AdaptiveTimestep">
+            <summary>Gets or sets whether the adapter may increase its timestep while stabilizing.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.BarnesHut">
+            <summary>Gets Barnes-Hut solver settings.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.ForceAtlas2">
+            <summary>Gets ForceAtlas2-style solver settings.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.Repulsion">
+            <summary>Gets direct repulsion solver settings.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsOptions.HierarchicalRepulsion">
+            <summary>Gets hierarchical repulsion solver settings.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphPhysicsStabilizationOptions">
+            <summary>Controls initial and reheated graph stabilization.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsStabilizationOptions.Enabled">
+            <summary>Gets or sets whether runtime adapters should stabilize automatically on load.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsStabilizationOptions.Iterations">
+            <summary>Gets or sets the maximum simulation iterations in one stabilization run.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsStabilizationOptions.UpdateInterval">
+            <summary>Gets or sets how often a worker reports stabilization progress.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsStabilizationOptions.Fit">
+            <summary>Gets or sets whether the viewport should fit after automatic stabilization.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphPhysicsSolverOptions">
+            <summary>Contains the spring, damping, gravity, and overlap settings shared by force solvers.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsSolverOptions.CentralGravity">
+            <summary>Gets or sets the attraction toward the graph center.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsSolverOptions.SpringLength">
+            <summary>Gets or sets the resting length of physics-enabled edges.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsSolverOptions.SpringConstant">
+            <summary>Gets or sets the strength of edge springs.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsSolverOptions.Damping">
+            <summary>Gets or sets how much velocity is discarded per simulation tick.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphPhysicsSolverOptions.AvoidOverlap">
+            <summary>Gets or sets how strongly node dimensions contribute to collision avoidance, from zero to one.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphBarnesHutPhysicsOptions">
+            <summary>Configures quadtree-accelerated Barnes-Hut gravity and springs.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphBarnesHutPhysicsOptions.#ctor">
+            <summary>Creates vis-network-like Barnes-Hut defaults.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphBarnesHutPhysicsOptions.Theta">
+            <summary>Gets or sets the quadtree approximation threshold; larger values are faster and less precise.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphBarnesHutPhysicsOptions.GravitationalConstant">
+            <summary>Gets or sets the negative gravitational constant used as node repulsion.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphForceAtlas2PhysicsOptions">
+            <summary>Configures a degree-weighted ForceAtlas2-style gravity and spring model.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphForceAtlas2PhysicsOptions.#ctor">
+            <summary>Creates vis-network-like ForceAtlas2 defaults.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphForceAtlas2PhysicsOptions.Theta">
+            <summary>Gets or sets the quadtree approximation threshold.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphForceAtlas2PhysicsOptions.GravitationalConstant">
+            <summary>Gets or sets the negative degree-weighted gravitational constant.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphRepulsionPhysicsOptions">
+            <summary>Configures direct distance-limited node repulsion and edge springs.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphRepulsionPhysicsOptions.#ctor">
+            <summary>Creates vis-network-like direct repulsion defaults.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphRepulsionPhysicsOptions.NodeDistance">
+            <summary>Gets or sets the effective radius of each node's repulsion field.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphRepulsionPhysicsOptions.Strength">
+            <summary>Gets or sets a multiplier for direct repulsion forces.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphHierarchicalRepulsionPhysicsOptions">
+            <summary>Configures level-aware repulsion and springs for directed hierarchical graphs.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphHierarchicalRepulsionPhysicsOptions.#ctor">
+            <summary>Creates vis-network-like hierarchical repulsion defaults.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchicalRepulsionPhysicsOptions.NodeDistance">
+            <summary>Gets or sets the preferred distance between nodes on the same hierarchy level.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphHierarchicalRepulsionPhysicsOptions.Strength">
+            <summary>Gets or sets a multiplier for level-aware repulsion forces.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphPhysicsSolver">
+            <summary>Names graph physics solver families implemented by runtime adapters.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphPhysicsSolver.None">
+            <summary>Do not run physics; render caller-provided or server-prepared positions.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphPhysicsSolver.StaticPrepared">
+            <summary>Use deterministic positions prepared by ChartForgeX before adapter rendering.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphPhysicsSolver.Repulsion">
+            <summary>Use distance-limited node repulsion with edge springs.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphPhysicsSolver.BarnesHut">
+            <summary>Use a Barnes-Hut quadtree for scalable inverse-square repulsion.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphPhysicsSolver.ForceAtlas2">
+            <summary>Use a degree-weighted ForceAtlas2-style solver accelerated by a quadtree for large scenes.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphPhysicsSolver.HierarchicalRepulsion">
+            <summary>Use level-aware repulsion for directed layered graphs.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphScene">
+            <summary>
+            Describes a host-neutral graph exploration scene that adapters can render with SVG, Canvas, WebGL, desktop, or native controls.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Id">
+            <summary>Gets or sets the stable scene identifier used for host events and persisted state.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Title">
+            <summary>Gets or sets the human-readable scene title.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Subtitle">
+            <summary>Gets or sets an optional scene subtitle.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Nodes">
+            <summary>Gets graph nodes keyed by stable node id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Edges">
+            <summary>Gets graph edges keyed by stable edge id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Clusters">
+            <summary>Gets semantic or computed clusters that an adapter can collapse, expand, or summarize.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Options">
+            <summary>Gets reusable graph exploration settings and capability hints.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScene.Metadata">
+            <summary>Gets arbitrary scene-level metadata for host adapters and diagnostics.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphScene.Create(System.String,System.String)">
+            <summary>
+            Creates a new graph scene.
+            </summary>
+            <param name="id">Stable scene identifier.</param>
+            <param name="title">Human-readable scene title.</param>
+            <returns>A new graph scene.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphScene.Validate">
+            <summary>
+            Validates node, edge, and cluster references before an adapter renders or mutates the scene.
+            </summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneCluster">
+            <summary>
+            Describes a semantic or computed group of graph nodes that an adapter may collapse, expand, or summarize.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.Id">
+            <summary>Gets or sets the stable cluster identifier.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.Label">
+            <summary>Gets or sets the cluster label shown by host controls and inspectors.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.Kind">
+            <summary>Gets or sets an optional cluster kind such as hub, community, group, path, or outlier.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.ParentClusterId">
+            <summary>Gets or sets an optional parent cluster id for nested group navigation.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.NodeIds">
+            <summary>Gets node ids contained by this cluster.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.Collapsed">
+            <summary>Gets or sets whether adapters should render this cluster collapsed by default.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneCluster.Metadata">
+            <summary>Gets arbitrary cluster metadata for search, tooltips, inspectors, and host event payloads.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneClusterExtensions">
+            <summary>
+            Provides reusable cluster materialization helpers for graph adapters.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneClusterExtensions.GetEffectiveClusters(ChartForgeX.Interactivity.GraphScene)">
+            <summary>
+            Gets declared clusters plus any reusable clusters derived from the active cluster policy.
+            </summary>
+            <param name="scene">The source graph scene.</param>
+            <returns>Cluster definitions that adapters should render, collapse, search, export, and expose through host events.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneEdge">
+            <summary>
+            Describes a graph edge independently from renderer-specific line geometry.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Id">
+            <summary>Gets or sets the stable edge identifier.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.SourceNodeId">
+            <summary>Gets or sets the source node id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.TargetNodeId">
+            <summary>Gets or sets the target node id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Label">
+            <summary>Gets or sets an optional relationship label.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Kind">
+            <summary>Gets or sets an optional product-neutral edge kind such as dependency, ownership, authentication, or dataflow.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Status">
+            <summary>Gets or sets an optional semantic status such as healthy, warning, critical, unknown, or muted.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Weight">
+            <summary>Gets or sets the relationship weight used by physics and clustering adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Length">
+            <summary>Gets or sets the preferred spring length for physics adapters. A value of zero lets the active profile decide.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Directed">
+            <summary>Gets or sets whether adapters should render a directional arrow toward the target node.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.LayoutDirected">
+            <summary>Gets or sets whether hierarchical layout inference should follow source-to-target order without requiring a rendered arrow.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.SourceArrow">
+            <summary>Gets or sets whether adapters should render a directional arrow at the source node.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.TargetArrow">
+            <summary>Gets or sets whether adapters should render a directional arrow at the target node. When unset, <see cref="P:ChartForgeX.Interactivity.GraphSceneEdge.Directed"/> keeps its target-arrow compatibility behavior.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Shape">
+            <summary>Gets or sets the preferred edge geometry used by adapters that support richer graph lines.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Curvature">
+            <summary>Gets or sets the curve offset in scene units for curved edge rendering.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Dashed">
+            <summary>Gets or sets whether adapters should draw the edge with a dashed stroke.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.ShowLabel">
+            <summary>Gets or sets whether adapters should draw the relationship label when labels are enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Style">
+            <summary>Gets reusable edge styling hints for adapters that support richer graph lines.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.RoutePoints">
+            <summary>Gets optional prepared route points for adapters that can render deterministic polylines.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneEdge.Metadata">
+            <summary>Gets arbitrary edge metadata for search, tooltips, inspectors, and host event payloads.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphScenePoint">
+            <summary>
+            Describes a prepared point in graph scene coordinates.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphScenePoint.#ctor(System.Double,System.Double)">
+            <summary>
+            Creates a graph scene point.
+            </summary>
+            <param name="x">Horizontal scene coordinate.</param>
+            <param name="y">Vertical scene coordinate.</param>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePoint.X">
+            <summary>Gets the horizontal scene coordinate.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePoint.Y">
+            <summary>Gets the vertical scene coordinate.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphEdgeShape">
+            <summary>
+            Describes adapter-neutral graph edge geometry preferences.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphEdgeShape.Line">
+            <summary>Use a straight edge.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphEdgeShape.Curve">
+            <summary>Use a quadratic curved edge.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphEdgeShape.DynamicCurve">
+            <summary>Use a dynamic curved edge whose side can be chosen by the adapter.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphEdgeShape.ContinuousCurve">
+            <summary>Use a cubic-like continuous curve when an adapter supports it.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphEdgeShape.SelfReference">
+            <summary>Use a self-reference loop for edges whose source and target are the same node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphEdgeShape.Polyline">
+            <summary>Use prepared route points as a deterministic polyline.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneExtensions">
+            <summary>
+            Provides fluent helpers for building graph scenes without exposing adapter-specific DTOs.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneExtensions.AddNode(ChartForgeX.Interactivity.GraphScene,System.String,System.String,System.Action{ChartForgeX.Interactivity.GraphSceneNode})">
+            <summary>
+            Adds a node to the graph scene.
+            </summary>
+            <param name="scene">The graph scene.</param>
+            <param name="id">Stable node id.</param>
+            <param name="label">Node label.</param>
+            <param name="configure">Optional node configuration callback.</param>
+            <returns>The current graph scene.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneExtensions.AddEdge(ChartForgeX.Interactivity.GraphScene,System.String,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.GraphSceneEdge})">
+            <summary>
+            Adds an edge to the graph scene.
+            </summary>
+            <param name="scene">The graph scene.</param>
+            <param name="id">Stable edge id.</param>
+            <param name="sourceNodeId">Source node id.</param>
+            <param name="targetNodeId">Target node id.</param>
+            <param name="label">Optional edge label.</param>
+            <param name="configure">Optional edge configuration callback.</param>
+            <returns>The current graph scene.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneExtensions.AddCluster(ChartForgeX.Interactivity.GraphScene,System.String,System.String,System.String[],System.Action{ChartForgeX.Interactivity.GraphSceneCluster})">
+            <summary>
+            Adds a cluster to the graph scene.
+            </summary>
+            <param name="scene">The graph scene.</param>
+            <param name="id">Stable cluster id.</param>
+            <param name="label">Cluster label.</param>
+            <param name="nodeIds">Node ids contained by the cluster.</param>
+            <param name="configure">Optional cluster configuration callback.</param>
+            <returns>The current graph scene.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneNode">
+            <summary>
+            Describes a graph node independently from a particular renderer or browser runtime.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Id">
+            <summary>Gets or sets the stable node identifier.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Label">
+            <summary>Gets or sets the node label shown by adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Kind">
+            <summary>Gets or sets an optional product-neutral node kind such as service, identity, endpoint, database, or person.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.GroupId">
+            <summary>Gets or sets an optional logical group id used for filtering, color, or layout gravity.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.ClusterId">
+            <summary>Gets or sets an optional cluster id used for collapsed large-graph summaries.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.ParentId">
+            <summary>Gets or sets an optional parent node id used for hierarchy navigation and semantic drill-down.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Status">
+            <summary>Gets or sets an optional semantic status such as healthy, warning, critical, unknown, or muted.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Shape">
+            <summary>Gets or sets the preferred node shape used by adapters that support richer graph marks.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Level">
+            <summary>Gets or sets an optional hierarchy level used by deterministic hierarchical graph layouts.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.ImageUrl">
+            <summary>Gets or sets an optional image URI for image-backed graph nodes. Data URIs keep static output self-contained.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.ImageAlt">
+            <summary>Gets or sets optional alternative text for image-backed graph nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.IconText">
+            <summary>Gets or sets an optional short icon glyph or text shown inside the node mark.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.SecondaryLabel">
+            <summary>Gets or sets an optional secondary label shown in detailed semantic-zoom views and inspectors.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.BadgeText">
+            <summary>Gets or sets optional short badge text such as a count, role, or alert total.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.X">
+            <summary>Gets or sets the current x-coordinate in graph scene space.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Y">
+            <summary>Gets or sets the current y-coordinate in graph scene space.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.HasExplicitPosition">
+            <summary>Gets whether a caller explicitly supplied scene coordinates, including the origin.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Size">
+            <summary>Gets or sets the node radius or half-size used by lightweight adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Fixed">
+            <summary>Gets or sets whether physics adapters should keep the node at its current position.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Hidden">
+            <summary>Gets or sets whether adapters should keep the node available for routing while hiding its visible mark.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Style">
+            <summary>Gets reusable node styling hints for adapters that support richer graph marks.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneNode.Metadata">
+            <summary>Gets arbitrary node metadata for search, tooltips, inspectors, and host event payloads.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphNodeShape">
+            <summary>
+            Describes adapter-neutral graph node mark preferences.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Circle">
+            <summary>Use a circular node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Box">
+            <summary>Use a rounded rectangular node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Image">
+            <summary>Use an image-backed node mark when an image URI is available.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Ellipse">
+            <summary>Use an elliptical node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Square">
+            <summary>Use a square node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Diamond">
+            <summary>Use a diamond node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Triangle">
+            <summary>Use an upward triangle node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.TriangleDown">
+            <summary>Use a downward triangle node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Star">
+            <summary>Use a star-like node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Database">
+            <summary>Use a database cylinder-like node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.Text">
+            <summary>Use a text-only node mark.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphNodeShape.RectangularImage">
+            <summary>Use an image-backed rectangular node mark when an image URI is available.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneOptions">
+            <summary>
+            Holds host-neutral graph exploration settings that browser, native, and static adapters can share.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Features">
+            <summary>Gets or sets the enabled graph explorer feature flags.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Physics">
+            <summary>Gets graph physics settings for adapters that support runtime or prepared layouts.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Interaction">
+            <summary>Gets node dragging and topology-change interaction behavior.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.LevelOfDetail">
+            <summary>Gets large-graph level-of-detail thresholds.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Performance">
+            <summary>Gets graph runtime performance budgets and telemetry settings.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Layout">
+            <summary>Gets deterministic graph layout settings shared by static and interactive adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Cluster">
+            <summary>Gets clustering policy for semantic, group-derived, or adaptive large-scene summaries.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Manipulation">
+            <summary>Gets opt-in graph editing and manipulation capabilities for adapters that support authoring workflows.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneOptions.Hierarchy">
+            <summary>Gets hierarchy navigation settings for adapters that support top-level and drill-down graph views.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneOptions.HasFeature(ChartForgeX.Interactivity.GraphSceneFeatures)">
+            <summary>
+            Determines whether all bits in the requested feature set are enabled.
+            </summary>
+            <param name="feature">The feature or feature group to check.</param>
+            <returns><c>true</c> when the feature is enabled; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneOptions.Enable(ChartForgeX.Interactivity.GraphSceneFeatures)">
+            <summary>
+            Enables one or more graph scene features.
+            </summary>
+            <param name="features">The features to enable.</param>
+            <returns>The current options instance.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneOptions.Disable(ChartForgeX.Interactivity.GraphSceneFeatures)">
+            <summary>
+            Disables one or more graph scene features.
+            </summary>
+            <param name="features">The features to disable.</param>
+            <returns>The current options instance.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneFeatures">
+            <summary>
+            Names reusable graph explorer features that adapters may support.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.None">
+            <summary>No graph explorer behavior is enabled.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Selection">
+            <summary>Nodes, edges, or clusters can be selected.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.MultiSelection">
+            <summary>Multiple graph items can be selected together.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Search">
+            <summary>Graph items can be searched by label, kind, status, and metadata.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Filtering">
+            <summary>Graph items can be filtered by reusable facets.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Viewport">
+            <summary>The adapter can pan, zoom, or fit the visible graph viewport.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.DragNodes">
+            <summary>Users can drag nodes to update runtime positions.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.RuntimePhysics">
+            <summary>The adapter can run browser or native runtime physics.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Stabilization">
+            <summary>The adapter can stabilize a graph layout over several simulation ticks.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Clustering">
+            <summary>The adapter can collapse, expand, or summarize graph clusters.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.LevelOfDetail">
+            <summary>The adapter can reduce labels or rendering detail for large scenes.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.IncrementalUpdates">
+            <summary>The adapter can accept incremental state updates after initial render.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Export">
+            <summary>The adapter can export current graph state or artwork.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.NeighborhoodFocus">
+            <summary>The adapter can focus the selected node's immediate neighborhood.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.PerformanceTelemetry">
+            <summary>The adapter can publish runtime performance telemetry.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Manipulation">
+            <summary>The adapter can add, edit, delete, or persist graph structure through an opt-in authoring surface.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.HierarchyNavigation">
+            <summary>The adapter can navigate explicit parent-child relationships as top-level and drill-down views.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.BoxSelection">
+            <summary>The adapter can select several visible graph items with a rectangular pointer gesture.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.StateSnapshots">
+            <summary>The adapter can capture and restore reusable viewport, selection, cluster, physics, and position state.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.History">
+            <summary>The adapter can undo and redo validated graph document or position changes.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.GraphSceneFeatures.Explorer">
+            <summary>Common graph explorer surface for dependency-free visual exploration.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphScenePatch">
+            <summary>
+            Describes an atomic set of graph document changes that hosts and interactive adapters can exchange.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.UpsertNodes">
+            <summary>Gets nodes to add or replace by stable id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.UpsertEdges">
+            <summary>Gets edges to add or replace by stable id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.UpsertClusters">
+            <summary>Gets clusters to add or replace by stable id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.RemoveNodeIds">
+            <summary>Gets node ids to remove.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.RemoveEdgeIds">
+            <summary>Gets edge ids to remove.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.RemoveClusterIds">
+            <summary>Gets cluster ids to remove.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatch.RemoveIncidentReferences">
+            <summary>Gets or sets whether removing nodes also removes incident edges and cluster membership.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphScenePatchResult">
+            <summary>
+            Reports the graph document size after an atomic patch succeeds.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatchResult.NodeCount">
+            <summary>Gets the resulting node count.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatchResult.EdgeCount">
+            <summary>Gets the resulting edge count.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphScenePatchResult.ClusterCount">
+            <summary>Gets the resulting cluster count.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphScenePatchExtensions">
+            <summary>
+            Applies typed incremental changes to graph scenes.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphScenePatchExtensions.ApplyPatch(ChartForgeX.Interactivity.GraphScene,ChartForgeX.Interactivity.GraphScenePatch)">
+            <summary>
+            Applies a patch atomically and validates the complete scene before committing it.
+            </summary>
+            <param name="scene">The graph document to update.</param>
+            <param name="patch">The requested additions, replacements, and removals.</param>
+            <returns>The resulting graph document counts.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneStage">
+            <summary>Describes one deterministic hierarchy view of a graph scene.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.Index">
+            <summary>Gets the one-based stage index used for stable file names.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.Depth">
+            <summary>Gets the maximum descendant depth visible in this stage.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.Name">
+            <summary>Gets a stable, human-readable stage name.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.IsFullScene">
+            <summary>Gets whether this stage contains the complete selected hierarchy scope.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.RootNodeId">
+            <summary>Gets the optional root used to plan this stage.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.VisibleNodeIds">
+            <summary>Gets stable node ids visible in this stage.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.VisibleEdgeIds">
+            <summary>Gets stable edge ids whose endpoints are both visible in this stage.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.FrontierNodeIds">
+            <summary>Gets visible nodes that summarize descendants hidden by this stage depth.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStage.HiddenNodeCount">
+            <summary>Gets the number of nodes hidden outside this stage.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneStageOptions">
+            <summary>Controls deterministic hierarchy stages used by static and interactive graph adapters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStageOptions.StageCount">
+            <summary>Gets or sets the requested number of automatically selected stages. The planner may return fewer stages when the hierarchy has fewer distinct depths.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStageOptions.Depths">
+            <summary>Gets explicit descendant depths to render. When empty, depths are selected evenly from overview through the deepest level.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStageOptions.RootNodeId">
+            <summary>Gets or sets an optional hierarchy root. Null plans all top-level trees in the scene.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphSceneStageOptions.IncludeFullScene">
+            <summary>Gets or sets whether the deepest complete view is always included.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneStagePlanner">
+            <summary>Plans deterministic hierarchy snapshots without depending on a browser or rendering backend.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneStagePlanner.CreateStages(ChartForgeX.Interactivity.GraphScene,System.Action{ChartForgeX.Interactivity.GraphSceneStageOptions})">
+            <summary>Creates overview-to-detail stages for a graph scene.</summary>
+            <param name="scene">The graph scene to plan.</param>
+            <param name="configure">Optional stage planning configuration.</param>
+            <returns>Ordered deterministic graph stages.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphSceneSuperTopologyExtensions">
+            <summary>
+            Provides reusable presets for large topology and relationship-graph exploration.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.GraphSceneSuperTopologyExtensions.UseSuperTopologyDefaults(ChartForgeX.Interactivity.GraphSceneOptions,System.Boolean)">
+            <summary>
+            Applies large-topology defaults that keep the scene model host-neutral while preparing adapters for vis-network-style exploration.
+            </summary>
+            <param name="options">The graph scene options to configure.</param>
+            <param name="enableManipulation">Whether opt-in editing/manipulation capabilities should be advertised.</param>
+            <returns>The current options instance.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphNodeStyle">
+            <summary>
+            Describes adapter-neutral graph node styling hints, including common vis-network node option concepts.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphNodeStyle.BackgroundColor">
+            <summary>Gets or sets the node fill color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphNodeStyle.BorderColor">
+            <summary>Gets or sets the node border color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphNodeStyle.LabelColor">
+            <summary>Gets or sets the node label color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphNodeStyle.LabelBackgroundColor">
+            <summary>Gets or sets an optional label background color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphNodeStyle.Shadow">
+            <summary>Gets or sets whether the adapter should render a node shadow when supported.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.GraphEdgeStyle">
+            <summary>
+            Describes adapter-neutral graph edge styling hints, including common vis-network edge option concepts.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphEdgeStyle.Color">
+            <summary>Gets or sets the edge stroke color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphEdgeStyle.LabelColor">
+            <summary>Gets or sets the edge label color.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphEdgeStyle.Width">
+            <summary>Gets or sets the preferred edge stroke width.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphEdgeStyle.DashPattern">
+            <summary>Gets or sets an optional SVG-style dash pattern such as "8 5" or "2 5".</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphEdgeStyle.Physics">
+            <summary>Gets or sets whether the edge participates in runtime physics solvers.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.GraphEdgeStyle.Hidden">
+            <summary>Gets or sets whether the edge is hidden from visual output while remaining available in metadata.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkGraph">
+            <summary>
+            Provides a typed compatibility envelope for common vis-network data and option concepts.
+            The converter keeps <see cref="T:ChartForgeX.Interactivity.GraphScene"/> as the reusable ChartForgeX graph contract.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGraph.Nodes">
+            <summary>Gets the vis-style node collection.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGraph.Edges">
+            <summary>Gets the vis-style edge collection.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGraph.Groups">
+            <summary>Gets group defaults keyed by group id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGraph.Options">
+            <summary>Gets vis-style graph options.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.VisNetworkGraph.Create">
+            <summary>
+            Creates a new compatibility graph.
+            </summary>
+            <returns>A graph that can be converted to <see cref="T:ChartForgeX.Interactivity.GraphScene"/>.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.VisNetworkGraph.AddNode(System.String,System.String,System.Action{ChartForgeX.Interactivity.VisNetworkNode})">
+            <summary>
+            Adds a node to the compatibility graph.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.VisNetworkGraph.AddEdge(System.String,System.String,System.String,System.String,System.Action{ChartForgeX.Interactivity.VisNetworkEdge})">
+            <summary>
+            Adds an edge to the compatibility graph.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.VisNetworkGraph.ToGraphScene(System.String,System.String)">
+            <summary>
+            Converts this compatibility graph into the reusable ChartForgeX graph scene model.
+            </summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkNode">
+            <summary>
+            Describes a vis-network-style node before conversion to <see cref="T:ChartForgeX.Interactivity.GraphSceneNode"/>.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Id">
+            <summary>Gets or sets the node id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Label">
+            <summary>Gets or sets the node label.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Group">
+            <summary>Gets or sets the optional group id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Level">
+            <summary>Gets or sets the optional hierarchy level.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Shape">
+            <summary>Gets or sets the node shape.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Size">
+            <summary>Gets or sets the node size.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Image">
+            <summary>Gets or sets optional image URI for image nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Icon">
+            <summary>Gets or sets optional icon text for icon-like nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.X">
+            <summary>Gets or sets optional x-coordinate.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Y">
+            <summary>Gets or sets optional y-coordinate.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Fixed">
+            <summary>Gets or sets whether the node is fixed in prepared or runtime layouts.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkNode.Style">
+            <summary>Gets node style hints.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkEdge">
+            <summary>
+            Describes a vis-network-style edge before conversion to <see cref="T:ChartForgeX.Interactivity.GraphSceneEdge"/>.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Id">
+            <summary>Gets or sets the edge id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.From">
+            <summary>Gets or sets the source node id, matching vis-network's from field.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.To">
+            <summary>Gets or sets the target node id, matching vis-network's to field.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Label">
+            <summary>Gets or sets the optional edge label.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Kind">
+            <summary>Gets or sets the optional edge kind.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.ArrowsTo">
+            <summary>Gets or sets whether the edge should show an arrow at the target side.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.ArrowsFrom">
+            <summary>Gets or sets whether the edge should show an arrow at the source side.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.ArrowsMiddle">
+            <summary>Gets or sets whether the edge should show a middle arrow marker where adapters support it.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Dashes">
+            <summary>Gets or sets whether the edge is dashed.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Smooth">
+            <summary>Gets or sets optional smooth edge behavior.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Length">
+            <summary>Gets or sets optional spring length.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkEdge.Style">
+            <summary>Gets edge style hints.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkGroupOptions">
+            <summary>
+            Describes group defaults similar to vis-network's groups option.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Label">
+            <summary>Gets or sets the display label used for the generated group cluster.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Kind">
+            <summary>Gets or sets the product-neutral kind applied to group members.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Shape">
+            <summary>Gets or sets the default group node shape.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Size">
+            <summary>Gets or sets the default group node size.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Image">
+            <summary>Gets or sets the default group node image URI.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Icon">
+            <summary>Gets or sets default group icon text.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkGroupOptions.Style">
+            <summary>Gets default group styling hints.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkOptions">
+            <summary>
+            Describes vis-network-style top-level options supported by the ChartForgeX compatibility converter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkOptions.Layout">
+            <summary>Gets layout options.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkOptions.Physics">
+            <summary>Gets physics options.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkOptions.Interaction">
+            <summary>Gets interaction options.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkOptions.Manipulation">
+            <summary>Gets manipulation options.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkLayoutOptions">
+            <summary>
+            Describes vis-network-style layout options.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkLayoutOptions.Hierarchical">
+            <summary>Gets hierarchical layout options.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions">
+            <summary>
+            Describes vis-network-style hierarchical layout options.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions.Enabled">
+            <summary>Gets or sets whether hierarchical layout is enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions.Direction">
+            <summary>Gets or sets hierarchy direction.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions.LevelSeparation">
+            <summary>Gets or sets distance between hierarchy levels.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions.NodeSpacing">
+            <summary>Gets or sets distance between nodes in a level.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions.ComponentSpacing">
+            <summary>Gets or sets distance between disconnected components.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkHierarchicalLayoutOptions.InferLevelsFromEdges">
+            <summary>Gets or sets whether missing node levels can be inferred from directed edges.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkPhysicsOptions">
+            <summary>
+            Describes vis-network-style physics options supported by the converter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.Enabled">
+            <summary>Gets or sets whether runtime physics is enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.Solver">
+            <summary>Gets or sets the solver family.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.StabilizationIterations">
+            <summary>Gets or sets stabilization iterations.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.LinkDistance">
+            <summary>Gets or sets default link distance.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.Repulsion">
+            <summary>Gets or sets node repulsion.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.Damping">
+            <summary>Gets or sets damping.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkPhysicsOptions.AdaptiveTimestep">
+            <summary>Gets or sets whether timestep may be adaptive.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkInteractionOptions">
+            <summary>
+            Describes vis-network-style interaction options supported by the converter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkInteractionOptions.DragNodes">
+            <summary>Gets or sets whether nodes can be dragged.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkInteractionOptions.Hover">
+            <summary>Gets or sets whether hover-capable adapters should emit hover intent metadata.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkInteractionOptions.NavigationButtons">
+            <summary>Gets or sets whether navigation buttons are requested.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkManipulationOptions">
+            <summary>
+            Describes vis-network-style manipulation options supported by the converter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.Enabled">
+            <summary>Gets or sets whether manipulation is enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.AddNode">
+            <summary>Gets or sets whether adapters may add nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.EditNode">
+            <summary>Gets or sets whether adapters may edit nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.DeleteNode">
+            <summary>Gets or sets whether adapters may delete nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.AddEdge">
+            <summary>Gets or sets whether adapters may add edges.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.EditEdge">
+            <summary>Gets or sets whether adapters may edit edges.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.DeleteEdge">
+            <summary>Gets or sets whether adapters may delete edges.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.VisNetworkManipulationOptions.PersistPositions">
+            <summary>Gets or sets whether adapters may persist positions.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkNodeShape">
+            <summary>
+            Names common vis-network node shapes.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Dot">
+            <summary>Use a small circular dot.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Circle">
+            <summary>Use a circular node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Ellipse">
+            <summary>Use an elliptical node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Box">
+            <summary>Use a box node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Database">
+            <summary>Use a database-like node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Text">
+            <summary>Use a text-oriented node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Image">
+            <summary>Use an image-backed node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.CircularImage">
+            <summary>Use an image-backed circular node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Diamond">
+            <summary>Use a diamond node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Square">
+            <summary>Use a square node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Star">
+            <summary>Use a star node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Triangle">
+            <summary>Use an upward triangle node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.TriangleDown">
+            <summary>Use a downward triangle node.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkNodeShape.Icon">
+            <summary>Use an icon-style node.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.VisNetworkSmoothType">
+            <summary>
+            Names common vis-network smooth edge modes.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkSmoothType.Disabled">
+            <summary>Do not smooth edges.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkSmoothType.Dynamic">
+            <summary>Use adapter-selected dynamic smoothing.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkSmoothType.Continuous">
+            <summary>Use continuous curve smoothing when supported.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.VisNetworkSmoothType.SelfReference">
+            <summary>Use self-reference smoothing for loop edges.</summary>
+        </member>
+    </members>
+</doc>

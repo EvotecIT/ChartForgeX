@@ -1,0 +1,634 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ChartForgeX.Interactivity.Html</name>
+    </assembly>
+    <members>
+        <member name="T:ChartForgeX.Interactivity.Html.GraphExplorerExtensions">
+            <summary>
+            Provides convenience methods for rendering graph scenes through the HTML graph explorer adapter.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.GraphExplorerExtensions.ToGraphExplorerHtmlPage(ChartForgeX.Interactivity.GraphScene,System.Action{ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions})">
+            <summary>
+            Renders the graph scene to a complete self-contained HTML page.
+            </summary>
+            <param name="scene">The graph scene to render.</param>
+            <param name="configure">Optional adapter configuration callback.</param>
+            <returns>A complete HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.GraphExplorerExtensions.ToGraphExplorerHtmlFragment(ChartForgeX.Interactivity.GraphScene,System.Action{ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions})">
+            <summary>
+            Renders the graph scene to an embeddable fragment with inline assets.
+            </summary>
+            <param name="scene">The graph scene to render.</param>
+            <param name="configure">Optional adapter configuration callback.</param>
+            <returns>An embeddable HTML fragment.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.GraphSceneStaticExtensions">
+            <summary>Provides script-free SVG and PNG export helpers for graph scenes and hierarchy stages.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.GraphSceneStaticExtensions.ToGraphSvg(ChartForgeX.Interactivity.GraphScene,ChartForgeX.Interactivity.GraphSceneStage,System.Action{ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions})">
+            <summary>Renders a graph scene or planned stage to script-free SVG.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.GraphSceneStaticExtensions.ToGraphPng(ChartForgeX.Interactivity.GraphScene,ChartForgeX.Interactivity.GraphSceneStage,System.Action{ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions})">
+            <summary>Renders a graph scene or planned stage to PNG bytes without opening a browser.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.GraphSceneStaticExtensions.SaveGraphStageImages(ChartForgeX.Interactivity.GraphScene,System.String,System.String,System.Action{ChartForgeX.Interactivity.Html.GraphSceneStageImageOptions})">
+            <summary>Saves deterministic overview-to-detail graph stage images without creating interactive HTML.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions">
+            <summary>Controls script-free SVG and PNG graph output.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions.Width">
+            <summary>Gets or sets the output width in pixels.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions.Height">
+            <summary>Gets or sets the output height in pixels.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions.MaximumNodeLabels">
+            <summary>Gets or sets the maximum number of node labels painted into a static image. Important summaries and high-degree nodes are selected deterministically.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.GraphSceneStageImageOptions">
+            <summary>Controls a set of deterministic graph stage image files.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStageImageOptions.Stages">
+            <summary>Gets hierarchy stage planning options.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStageImageOptions.Render">
+            <summary>Gets static image rendering options.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStageImageOptions.Formats">
+            <summary>Gets or sets the output image formats.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.GraphSceneStaticImageFormat">
+            <summary>Names dependency-free static graph image formats.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.GraphSceneStaticImageFormat.None">
+            <summary>Do not write an image.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.GraphSceneStaticImageFormat.Svg">
+            <summary>Write script-free scalable vector graphics.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.GraphSceneStaticImageFormat.Png">
+            <summary>Write dependency-free portable network graphics.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.GraphSceneStaticImageFormat.Both">
+            <summary>Write both SVG and PNG files.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.GraphSceneStageImageResult">
+            <summary>Reports the files written for one deterministic graph stage.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStageImageResult.Stage">
+            <summary>Gets the stage represented by the written files.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStageImageResult.SvgPath">
+            <summary>Gets the SVG file path when SVG output was requested.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.GraphSceneStageImageResult.PngPath">
+            <summary>Gets the PNG file path when PNG output was requested.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions">
+            <summary>
+            Holds settings used by the self-contained HTML interaction adapter.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.Interaction">
+            <summary>
+            Gets the host-neutral interaction options consumed by the HTML adapter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.PageTitle">
+            <summary>
+            Gets or sets the optional HTML document title. When null, the chart title is used.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.IdScope">
+            <summary>
+            Gets or sets a deterministic SVG ID scope for the embedded chart.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.ScriptNonce">
+            <summary>
+            Gets or sets an optional nonce applied to the generated script tag for content security policies.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.IncludeResetButton">
+            <summary>
+            Gets or sets whether the generated page includes a reset button for selections and legend toggles.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions.ResponsiveLayout">
+            <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlChartResponsiveLayout">
+            <summary>Controls how a fixed-design SVG behaves inside a responsive HTML container.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlChartResponsiveLayout.Fit">
+            <summary>Always scales the full chart to the available width.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlChartResponsiveLayout.Readable">
+            <summary>Preserves a readable minimum chart width inside a contained horizontal viewport on narrow screens.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions">
+            <summary>
+            Configures the self-contained HTML graph explorer adapter.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.PageTitle">
+            <summary>Gets or sets an optional page title for complete HTML documents.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.ScriptNonce">
+            <summary>Gets or sets an optional CSP nonce for inline script elements.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IdScope">
+            <summary>Gets or sets an optional deterministic SVG id scope for repeated embeds of the same scene on one page.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.RenderBackend">
+            <summary>Gets or sets the initial graph renderer backend advertised to host code.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.AllowCanvasFallback">
+            <summary>Gets or sets whether large SVG scenes may switch to the dependency-free Canvas runtime.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludeSearch">
+            <summary>Gets or sets whether the built-in search field should be rendered.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludeFilters">
+            <summary>Gets or sets whether basic status and kind filter controls should be rendered.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludeClusterControls">
+            <summary>Gets or sets whether clustering controls should be rendered when the scene advertises clusters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludeViewportControls">
+            <summary>Gets or sets whether viewport fit and zoom controls should be rendered when viewport behavior is enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludePhysicsControls">
+            <summary>Gets or sets whether physics controls should be rendered when runtime physics is enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludePhysicsConfigurator">
+            <summary>Gets or sets whether an expandable development-time physics configurator should be rendered.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludeManipulationControls">
+            <summary>Gets or sets whether the opt-in graph authoring controls should be rendered when manipulation is enabled.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.Theme">
+            <summary>Gets or sets the explorer color theme used when the document first opens.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.IncludeThemeToggle">
+            <summary>Gets or sets whether the built-in appearance control should let people choose system, light, or dark mode.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.PersistThemePreference">
+            <summary>Gets or sets whether an appearance choice made in the browser should be reused by other graph explorers on the same origin.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.PersistInteractionState">
+            <summary>Gets or sets whether reusable graph interaction state should be restored from and saved to browser local storage.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.InteractionStateStorageKey">
+            <summary>Gets or sets an optional browser storage key used when <see cref="P:ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions.PersistInteractionState"/> is enabled.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlGraphExplorerTheme">
+            <summary>
+            Names the initial color theme of a browser graph explorer.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlGraphExplorerTheme.System">
+            <summary>Follow the browser or operating-system color preference until the user chooses another theme.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlGraphExplorerTheme.Light">
+            <summary>Use the light color theme.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlGraphExplorerTheme.Dark">
+            <summary>Use the dark color theme.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlGraphRenderBackend">
+            <summary>
+            Names browser rendering backends supported or planned by the graph explorer adapter.
+            </summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlGraphRenderBackend.Svg">
+            <summary>Render the initial graph as inline SVG.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlGraphRenderBackend.Canvas">
+            <summary>Reserve the scene for a Canvas-backed runtime renderer.</summary>
+        </member>
+        <member name="F:ChartForgeX.Interactivity.Html.HtmlGraphRenderBackend.WebGl">
+            <summary>Render large graph geometry with the dependency-free WebGL2 runtime, falling back to Canvas when unavailable.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer">
+            <summary>
+            Renders <see cref="T:ChartForgeX.Interactivity.GraphScene"/> instances as self-contained dependency-free HTML graph explorers.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer.RenderPage(ChartForgeX.Interactivity.GraphScene,System.Action{ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions})">
+            <summary>
+            Renders a complete HTML page containing the graph explorer and its inline assets.
+            </summary>
+            <param name="scene">The graph scene to render.</param>
+            <param name="configure">Optional adapter configuration callback.</param>
+            <returns>A complete self-contained HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer.RenderFragment(ChartForgeX.Interactivity.GraphScene,System.Action{ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions})">
+            <summary>
+            Renders an embeddable graph explorer fragment containing scoped inline assets.
+            </summary>
+            <param name="scene">The graph scene to render.</param>
+            <param name="configure">Optional adapter configuration callback.</param>
+            <returns>A self-contained HTML fragment.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer.BuildFragmentStyle">
+            <summary>
+            Gets the scoped graph explorer CSS that hosts can register once.
+            </summary>
+            <returns>The raw graph explorer CSS.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer.BuildInteractionScript">
+            <summary>
+            Gets the raw dependency-free graph explorer browser runtime.
+            </summary>
+            <returns>The raw JavaScript graph explorer runtime.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer.RenderStaticSvg(ChartForgeX.Interactivity.GraphScene,ChartForgeX.Interactivity.GraphSceneStage,System.Action{ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions})">
+            <summary>Renders a complete graph or planned hierarchy stage as deterministic, script-free SVG.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlGraphExplorerRenderer.RenderStaticPng(ChartForgeX.Interactivity.GraphScene,ChartForgeX.Interactivity.GraphSceneStage,System.Action{ChartForgeX.Interactivity.Html.GraphSceneStaticRenderOptions})">
+            <summary>Renders a complete graph or planned hierarchy stage as deterministic PNG bytes.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer">
+            <summary>
+            Renders a ChartForgeX chart as a self-contained interactive HTML document.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.RenderPage(ChartForgeX.Core.Chart)">
+            <summary>
+            Renders the specified chart to a complete interactive HTML document.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <returns>A complete HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.RenderPage(ChartForgeX.Core.Chart,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Renders the specified chart to a complete interactive HTML document.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+            <returns>A complete HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.RenderFragment(ChartForgeX.Core.Chart)">
+            <summary>
+            Renders the specified chart to a self-contained embeddable interactive HTML fragment.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <returns>An embeddable interactive HTML fragment.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.RenderFragment(ChartForgeX.Core.Chart,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Renders the specified chart to a self-contained embeddable interactive HTML fragment.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+            <returns>An embeddable interactive HTML fragment.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.RenderFragmentWithoutAssets(ChartForgeX.Core.Chart)">
+            <summary>
+            Renders the specified chart to an embeddable interactive HTML fragment without stylesheet or script assets.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <returns>An embeddable interactive HTML fragment that expects the caller to register interactive chart assets.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.RenderFragmentWithoutAssets(ChartForgeX.Core.Chart,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Renders the specified chart to an embeddable interactive HTML fragment without stylesheet or script assets.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+            <returns>An embeddable interactive HTML fragment that expects the caller to register interactive chart assets.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.BuildFragmentStyle">
+            <summary>
+            Builds the stylesheet used by embeddable interactive chart fragments.
+            </summary>
+            <returns>CSS ready to register once in a host document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.BuildInteractionScript">
+            <summary>
+            Builds the JavaScript runtime used by embeddable interactive chart fragments.
+            </summary>
+            <returns>JavaScript ready to register once in a host document.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions">
+            <summary>
+            Holds settings used by the self-contained HTML dashboard interaction adapter.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.Interaction">
+            <summary>
+            Gets the host-neutral interaction options shared by all dashboard charts.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.PageTitle">
+            <summary>
+            Gets or sets the optional HTML document title.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.IdScope">
+            <summary>
+            Gets or sets a deterministic ID scope used for generated child chart IDs.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.ScriptNonce">
+            <summary>
+            Gets or sets an optional nonce applied to the generated script tag for content security policies.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.Columns">
+            <summary>
+            Gets or sets the preferred dashboard column count.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.IncludeResetButton">
+            <summary>
+            Gets or sets whether each chart includes a reset button for selections and legend toggles.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions.ResponsiveLayout">
+            <summary>Gets or sets how every dashboard chart protects readability in narrow containers.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardRenderer">
+            <summary>
+            Renders several ChartForgeX charts as one self-contained interactive HTML dashboard.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardRenderer.RenderPage(System.Collections.Generic.IEnumerable{ChartForgeX.Core.Chart})">
+            <summary>
+            Renders the specified charts to a complete interactive dashboard document.
+            </summary>
+            <param name="charts">The charts to render.</param>
+            <returns>A complete HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardRenderer.RenderPage(System.Collections.Generic.IEnumerable{ChartForgeX.Core.Chart},System.Action{ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions})">
+            <summary>
+            Renders the specified charts to a complete interactive dashboard document.
+            </summary>
+            <param name="charts">The charts to render.</param>
+            <param name="configure">An optional configuration callback for the HTML dashboard adapter.</param>
+            <returns>A complete HTML document.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.HtmlInteractiveTopologyRenderer">
+            <summary>
+            Renders topology charts with the adapter-owned browser interaction runtime.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveTopologyRenderer.RenderFragment(ChartForgeX.Topology.TopologyChart,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Renders a self-contained interactive topology HTML fragment.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveTopologyRenderer.RenderFragmentWithoutAssets(ChartForgeX.Topology.TopologyChart,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Renders interactive topology markup without CSS or JavaScript assets.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveTopologyRenderer.RenderPage(ChartForgeX.Topology.TopologyChart,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Renders a complete self-contained interactive topology HTML page.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.HtmlInteractiveTopologyRenderer.BuildInteractionScript(ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Builds the raw JavaScript runtime for host-level asset registration.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.InteractiveChartExtensions">
+            <summary>
+            Provides convenience methods for rendering charts with opt-in HTML interactivity.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlPage(ChartForgeX.Core.Chart)">
+            <summary>
+            Renders a chart to a self-contained interactive HTML document.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <returns>A complete interactive HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlPage(ChartForgeX.Core.Chart,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Renders a chart to a self-contained interactive HTML document.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+            <returns>A complete interactive HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlFragment(ChartForgeX.Core.Chart)">
+            <summary>
+            Renders a chart to a self-contained interactive HTML fragment that can be embedded in a host page.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <returns>An embeddable interactive HTML fragment.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlFragment(ChartForgeX.Core.Chart,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Renders a chart to a self-contained interactive HTML fragment that can be embedded in a host page.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+            <returns>An embeddable interactive HTML fragment.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlFragmentWithoutAssets(ChartForgeX.Core.Chart)">
+            <summary>
+            Renders a chart to an interactive HTML fragment without stylesheet or script assets.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <returns>An embeddable interactive HTML fragment that expects the host document to register interactive chart assets.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlFragmentWithoutAssets(ChartForgeX.Core.Chart,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Renders a chart to an interactive HTML fragment without stylesheet or script assets.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+            <returns>An embeddable interactive HTML fragment that expects the host document to register interactive chart assets.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.SaveInteractiveHtml(ChartForgeX.Core.Chart,System.String)">
+            <summary>
+            Saves a chart as a self-contained interactive HTML document.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="path">The output file path.</param>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.SaveInteractiveHtml(ChartForgeX.Core.Chart,System.String,System.Action{ChartForgeX.Interactivity.Html.HtmlChartInteractionOptions})">
+            <summary>
+            Saves a chart as a self-contained interactive HTML document.
+            </summary>
+            <param name="chart">The chart to render.</param>
+            <param name="path">The output file path.</param>
+            <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlDashboardPage(System.Collections.Generic.IEnumerable{ChartForgeX.Core.Chart})">
+            <summary>
+            Renders several charts to one self-contained interactive dashboard HTML document.
+            </summary>
+            <param name="charts">The charts to render.</param>
+            <returns>A complete interactive dashboard document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.ToInteractiveHtmlDashboardPage(System.Collections.Generic.IEnumerable{ChartForgeX.Core.Chart},System.Action{ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions})">
+            <summary>
+            Renders several charts to one self-contained interactive dashboard HTML document.
+            </summary>
+            <param name="charts">The charts to render.</param>
+            <param name="configure">An optional configuration callback for the HTML dashboard adapter.</param>
+            <returns>A complete interactive dashboard document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.SaveInteractiveHtmlDashboard(System.Collections.Generic.IEnumerable{ChartForgeX.Core.Chart},System.String)">
+            <summary>
+            Saves several charts as one self-contained interactive dashboard HTML document.
+            </summary>
+            <param name="charts">The charts to render.</param>
+            <param name="path">The output file path.</param>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveChartExtensions.SaveInteractiveHtmlDashboard(System.Collections.Generic.IEnumerable{ChartForgeX.Core.Chart},System.String,System.Action{ChartForgeX.Interactivity.Html.HtmlInteractiveDashboardOptions})">
+            <summary>
+            Saves several charts as one self-contained interactive dashboard HTML document.
+            </summary>
+            <param name="charts">The charts to render.</param>
+            <param name="path">The output file path.</param>
+            <param name="configure">An optional configuration callback for the HTML dashboard adapter.</param>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.InteractiveTopologyExtensions">
+            <summary>Provides adapter-owned interactive HTML output for topology charts.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveTopologyExtensions.ToInteractiveHtmlFragment(ChartForgeX.Topology.TopologyChart,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Renders a self-contained interactive topology HTML fragment.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveTopologyExtensions.ToInteractiveHtmlFragmentWithoutAssets(ChartForgeX.Topology.TopologyChart,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Renders interactive topology markup without renderer-owned assets.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveTopologyExtensions.ToInteractiveHtmlPage(ChartForgeX.Topology.TopologyChart,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Renders a complete self-contained interactive topology HTML page.</summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.InteractiveTopologyExtensions.SaveInteractiveHtml(ChartForgeX.Topology.TopologyChart,System.String,ChartForgeX.Topology.TopologyRenderOptions)">
+            <summary>Saves a complete self-contained interactive topology HTML page.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.TopologyGraphExplorerExtensions">
+            <summary>
+            Bridges static topology models into the reusable graph explorer scene contract.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.TopologyGraphExplorerExtensions.ToGraphScene(ChartForgeX.Topology.TopologyChart,System.Action{ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions})">
+            <summary>
+            Projects a topology chart into a host-neutral graph scene for large interactive exploration.
+            </summary>
+            <param name="chart">The source topology chart.</param>
+            <param name="configure">Optional bridge configuration callback.</param>
+            <returns>A graph scene that preserves topology ids, metadata, groups, and relationships.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.TopologyGraphExplorerExtensions.ToGraphExplorerHtmlPage(ChartForgeX.Topology.TopologyChart,System.Action{ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions},System.Action{ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions})">
+            <summary>
+            Renders a topology chart through the graph explorer adapter by first projecting it into <see cref="T:ChartForgeX.Interactivity.GraphScene"/>.
+            </summary>
+            <param name="chart">The source topology chart.</param>
+            <param name="configureScene">Optional topology-to-graph projection configuration.</param>
+            <param name="configureHtml">Optional graph explorer HTML configuration.</param>
+            <returns>A complete self-contained HTML document.</returns>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.TopologyGraphExplorerExtensions.ToGraphExplorerHtmlFragment(ChartForgeX.Topology.TopologyChart,System.Action{ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions},System.Action{ChartForgeX.Interactivity.Html.HtmlGraphExplorerOptions})">
+            <summary>
+            Renders a topology chart as an embeddable graph explorer fragment by first projecting it into <see cref="T:ChartForgeX.Interactivity.GraphScene"/>.
+            </summary>
+            <param name="chart">The source topology chart.</param>
+            <param name="configureScene">Optional topology-to-graph projection configuration.</param>
+            <param name="configureHtml">Optional graph explorer HTML configuration.</param>
+            <returns>A self-contained HTML fragment.</returns>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions">
+            <summary>
+            Controls how a static <see cref="T:ChartForgeX.Topology.TopologyChart"/> is projected into a reusable graph exploration scene.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.IconCatalog">
+            <summary>Gets or sets the icon catalog used to resolve topology icon symbols, colors, shapes, and artwork.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.IncludeResolvedIconArtwork">
+            <summary>Gets or sets whether safe node and catalog artwork should become graph image nodes.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.PreserveHierarchyMetadata">
+            <summary>Gets or sets whether hierarchy parent and level metadata should become native graph hierarchy fields.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.IncludeGroupsAsClusters">
+            <summary>Gets or sets whether topology groups should become graph clusters.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.UseGroupsAsClusterIds">
+            <summary>Gets or sets whether topology groups should also create graph cluster membership through node <c>GroupId</c>.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.PreserveManualCoordinates">
+            <summary>Gets or sets whether manual topology coordinates should seed graph node positions.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.PreserveNonZeroCoordinates">
+            <summary>Gets or sets whether non-zero topology coordinates from prepared or caller-supplied nodes should seed graph node positions.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.UseSuperTopologyDefaults">
+            <summary>Gets or sets whether large-topology graph exploration defaults should be applied to the resulting graph scene.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyGraphSceneOptions.EnableManipulation">
+            <summary>Gets or sets whether opt-in manipulation capabilities should be advertised by the resulting graph scene.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions">
+            <summary>
+            Defines settings for rendering a topology icon catalog as a stencil browser page.
+            </summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.Id">
+            <summary>Gets or sets the browser DOM id.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.Title">
+            <summary>Gets or sets the page title.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.Subtitle">
+            <summary>Gets or sets the page subtitle.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.SearchPlaceholder">
+            <summary>Gets or sets placeholder text for the client-side search box.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.SearchText">
+            <summary>Gets or sets free-text search applied before the page is rendered.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.PackIds">
+            <summary>Gets pack ids to include. Empty means all packs.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.Vendors">
+            <summary>Gets vendors to include. Empty means all vendors.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.Categories">
+            <summary>Gets icon categories to include. Empty means all categories.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.Tags">
+            <summary>Gets search tags to include. Empty means all tags.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.IncludeBuiltInPacks">
+            <summary>Gets or sets whether built-in packs should be included.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.IncludeCustomPacks">
+            <summary>Gets or sets whether custom or vendor packs should be included.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.PacksPerRow">
+            <summary>Gets or sets the number of icon-pack groups per row.</summary>
+        </member>
+        <member name="P:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions.ColumnsPerPack">
+            <summary>Gets or sets the maximum icon columns inside each pack group.</summary>
+        </member>
+        <member name="T:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserExtensions">
+            <summary>
+            Renders topology icon catalogs as host-facing stencil browser pages.
+            </summary>
+        </member>
+        <member name="M:ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserExtensions.ToStencilBrowserHtmlPage(ChartForgeX.Topology.TopologyIconCatalog,ChartForgeX.Interactivity.Html.TopologyIconStencilBrowserOptions)">
+            <summary>
+            Builds a complete HTML page with catalog folders, filters, a palette diagram, and selection details.
+            </summary>
+            <param name="catalog">The source icon catalog.</param>
+            <param name="options">Optional stencil browser settings.</param>
+            <returns>A complete HTML document.</returns>
+        </member>
+    </members>
+</doc>
