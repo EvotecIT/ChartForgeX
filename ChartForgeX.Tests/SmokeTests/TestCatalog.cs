@@ -21,6 +21,7 @@ internal static partial class SmokeTests {
         ("Example app clears generated output before writing", ExampleAppClearsGeneratedOutputBeforeWriting),
         ("Generated examples stay assigned to catalog families", GeneratedExamplesStayAssignedToCatalogFamilies),
         ("Generated website links resolve to seed assets", GeneratedWebsiteLinksResolveToSeedAssets),
+        ("Promoted demo manifest stays accessible and source-linked", PromotedDemoManifestStaysAccessibleAndSourceLinked),
         ("SVG markup writer streams escaped elements", SvgMarkupWriterStreamsEscapedElements),
         ("HTML markup writer streams escaped elements", HtmlMarkupWriterStreamsEscapedElements),
         ("SVG AST builds editable ordered markup", SvgAstBuildsEditableOrderedMarkup),
