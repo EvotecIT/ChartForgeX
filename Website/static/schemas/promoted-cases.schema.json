@@ -13,6 +13,7 @@
     "projectSlug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
     "summary": { "type": "string", "minLength": 24 },
     "sourceUrl": { "type": "string", "format": "uri" },
+    "catalogUrl": { "type": "string", "format": "uri" },
     "generatedAtSource": { "type": "string", "minLength": 1 },
     "assetRoot": { "type": "string", "minLength": 1 },
     "categories": {

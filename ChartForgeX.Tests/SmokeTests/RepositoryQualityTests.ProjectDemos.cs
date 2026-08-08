@@ -16,6 +16,7 @@ internal static partial class SmokeTests {
         Assert(manifest.GetProperty("schemaVersion").GetInt32() == 1, "Promoted demo manifest should use the current schema version.");
         Assert(manifest.GetProperty("projectSlug").GetString() == "chartforgex", "Promoted demo manifest should identify the project slug used by the central gallery.");
         Assert(manifest.GetProperty("$schema").GetString() == "https://evotec.xyz/schemas/project-demos.schema.json", "Promoted demo manifest should reference the reusable Evotec project-demo schema.");
+        Assert(manifest.GetProperty("catalogUrl").GetString() == "https://chartforgex.evotec.xyz/gallery/", "Promoted demo manifest should point readers from the curated tour to the complete maintained catalog.");
 
         var assetRootValue = manifest.GetProperty("assetRoot").GetString();
         Assert(!string.IsNullOrWhiteSpace(assetRootValue), "Promoted demo manifest should declare its source asset root.");
