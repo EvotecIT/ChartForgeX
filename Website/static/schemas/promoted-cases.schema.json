@@ -1,116 +1,106 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://chartforgex.evotec.xyz/schemas/promoted-cases.schema.json",
-  "title": "PowerForge promoted example cases",
-  "description": "Source-linked rendered examples for a dedicated Evotec project site.",
+  "$id": "https://evotec.xyz/schemas/project-demos.schema.json",
+  "title": "Evotec project demo manifest",
+  "description": "A curated, accessible collection of source-linked project demonstrations and their generated artifacts.",
   "type": "object",
-  "required": ["project", "cases"],
+  "required": ["$schema", "schemaVersion", "project", "projectSlug", "summary", "sourceUrl", "assetRoot", "categories", "cases"],
   "additionalProperties": false,
   "properties": {
-    "$schema": {
-      "type": "string",
-      "format": "uri"
-    },
-    "project": {
-      "type": "string",
-      "minLength": 1
-    },
-    "generatedAtSource": {
-      "type": "string",
-      "minLength": 1
+    "$schema": { "const": "https://evotec.xyz/schemas/project-demos.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "project": { "type": "string", "minLength": 1 },
+    "projectSlug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "summary": { "type": "string", "minLength": 24 },
+    "sourceUrl": { "type": "string", "format": "uri" },
+    "catalogUrl": { "type": "string", "format": "uri" },
+    "generatedAtSource": { "type": "string", "minLength": 1 },
+    "assetRoot": { "type": "string", "minLength": 1 },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/category" }
     },
     "cases": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/case"
-      }
+      "items": { "$ref": "#/$defs/case" }
     }
   },
   "$defs": {
-    "case": {
+    "category": {
       "type": "object",
-      "required": ["id", "title", "category", "summary", "source", "build", "artifacts"],
+      "required": ["id", "label", "description"],
       "additionalProperties": false,
       "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]*$"
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "category": {
-          "type": "string",
-          "minLength": 1
-        },
-        "summary": {
-          "type": "string",
-          "minLength": 1
-        },
-        "tags": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 12 }
+      }
+    },
+    "case": {
+      "type": "object",
+      "required": ["id", "title", "category", "summary", "alt", "useCase", "capabilities", "source", "build", "artifacts"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "summary": { "type": "string", "minLength": 24 },
+        "alt": { "type": "string", "minLength": 24 },
+        "useCase": { "type": "string", "minLength": 24 },
+        "capabilities": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
           "uniqueItems": true
         },
-        "source": {
-          "type": "object",
-          "required": ["path", "entry", "url"],
-          "additionalProperties": false,
-          "properties": {
-            "path": {
-              "type": "string",
-              "minLength": 1
-            },
-            "entry": {
-              "type": "string",
-              "minLength": 1
-            },
-            "url": {
-              "type": "string",
-              "format": "uri"
-            }
-          }
-        },
-        "build": {
-          "type": "object",
-          "required": ["command", "outputPath"],
-          "additionalProperties": false,
-          "properties": {
-            "command": {
-              "type": "string",
-              "minLength": 1
-            },
-            "outputPath": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        },
-        "artifacts": {
-          "type": "object",
-          "required": ["svg"],
-          "additionalProperties": false,
-          "properties": {
-            "html": {
-              "type": "string",
-              "pattern": "^/"
-            },
-            "svg": {
-              "type": "string",
-              "pattern": "^/"
-            },
-            "png": {
-              "type": "string",
-              "pattern": "^/"
-            }
-          }
-        }
+        "featured": { "type": "boolean" },
+        "source": { "$ref": "#/$defs/source" },
+        "build": { "$ref": "#/$defs/build" },
+        "artifacts": { "$ref": "#/$defs/artifacts" }
       }
+    },
+    "source": {
+      "type": "object",
+      "required": ["path", "entry", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "entry": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "build": {
+      "type": "object",
+      "required": ["command", "outputPath"],
+      "additionalProperties": false,
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "outputPath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["preview", "width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "preview": { "type": "string", "pattern": "^/" },
+        "html": { "type": "string", "pattern": "^/" },
+        "svg": { "type": "string", "pattern": "^/" },
+        "png": { "type": "string", "pattern": "^/" },
+        "webp": { "type": "string", "pattern": "^/" },
+        "code": { "type": "string", "pattern": "^/" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      },
+      "anyOf": [
+        { "required": ["html"] },
+        { "required": ["svg"] },
+        { "required": ["png"] },
+        { "required": ["webp"] }
+      ]
     }
   }
 }
