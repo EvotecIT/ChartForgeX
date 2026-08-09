@@ -6,6 +6,17 @@ using ChartForgeX.SvgRaster;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void PublicSvgRasterizerPreservesViewportAndDpiMetadata() {
+        const string svg = "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='60' viewBox='0 0 120 60'><rect width='120' height='60' fill='#2563eb'/></svg>";
+        byte[] png = SvgRasterizer.ToPng(svg, options: new ChartForgeX.Core.RasterImageOptions { Dpi = 144D });
+        Assert(png.Length > 100, "Public SVG rasterization should produce a non-empty PNG.");
+        Assert(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "Public SVG rasterization should emit a PNG signature.");
+        Assert(System.Text.Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Public SVG rasterization should preserve PNG DPI metadata.");
+        AssertThrows<ArgumentOutOfRangeException>(() => SvgRasterizer.ToPng(svg, 0, 60), "Public SVG rasterization should reject invalid output dimensions.");
+        const string svgWithDtd = "<!DOCTYPE svg [<!ENTITY external SYSTEM 'file:///not-allowed'>]><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>&external;</text></svg>";
+        AssertThrows<FormatException>(() => SvgRasterizer.ToPng(svgWithDtd), "Public SVG rasterization should reject DTD and external-entity input.");
+    }
+
     private static void SvgRasterDocumentsUseIntrinsicDimensionsAndCssImageClipping() {
         var document = SvgRasterParser.ParseDocument("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><rect width='100' height='40'/></svg>");
         Assert(Math.Abs(document.ViewBox.Width - 100) < 0.001 && Math.Abs(document.ViewBox.Height - 40) < 0.001, "SVG documents without a viewBox should derive their raster viewport from intrinsic width and height.");

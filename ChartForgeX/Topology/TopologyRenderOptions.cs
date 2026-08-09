@@ -8,6 +8,8 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public sealed class TopologyRenderOptions {
     private ChartLineVisualStyle? _edgeVisualStyle;
+    private double? _layeredNodeSpacing;
+    private double? _layeredRankSpacing;
 
     /// <summary>
     /// Creates render options from a reusable topology view preset.
@@ -57,6 +59,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether edge labels should be rendered.</summary>
     public bool IncludeEdgeLabels { get; set; } = true;
 
+    /// <summary>Gets or sets whether source and target endpoint labels should be rendered.</summary>
+    public bool IncludeEndpointLabels { get; set; } = true;
+
     /// <summary>Gets or sets whether edge labels should render a subtle background plate.</summary>
     public bool IncludeEdgeLabelBackplates { get; set; } = true;
 
@@ -80,6 +85,9 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets whether element metadata and metrics should be emitted as SVG data attributes.</summary>
     public bool IncludeDataAttributes { get; set; } = true;
+
+    /// <summary>Gets or sets whether renderers should draw a developer-oriented layout geometry overlay.</summary>
+    public bool IncludeLayoutDiagnosticOverlay { get; set; }
 
     /// <summary>Gets or sets whether the SVG should include responsive sizing style.</summary>
     public bool UseResponsiveSvg { get; set; } = true;
@@ -164,6 +172,27 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets a reusable render preset.</summary>
     public TopologyViewPreset Preset { get; set; } = TopologyViewPreset.Default;
+
+    /// <summary>Gets or sets a reusable spacing and presentation profile.</summary>
+    public TopologyLayoutPreset LayoutPreset { get; set; } = TopologyLayoutPreset.Automatic;
+
+    /// <summary>Gets or sets an optional minimum gap between nodes within a layered rank.</summary>
+    public double? LayeredNodeSpacing {
+        get => _layeredNodeSpacing;
+        set {
+            if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value < 0)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Layered node spacing must be finite and non-negative.");
+            _layeredNodeSpacing = value;
+        }
+    }
+
+    /// <summary>Gets or sets an optional minimum gap between layered ranks.</summary>
+    public double? LayeredRankSpacing {
+        get => _layeredRankSpacing;
+        set {
+            if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value < 0)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Layered rank spacing must be finite and non-negative.");
+            _layeredRankSpacing = value;
+        }
+    }
 
     /// <summary>Gets or sets the reusable visual treatment used by renderers.</summary>
     public TopologyVisualStyle VisualStyle { get; set; } = TopologyVisualStyle.Default;
@@ -270,7 +299,8 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the PNG output scale used by the topology PNG renderer.</summary>
     public int PngOutputScale { get; set; } = 1;
 
-    internal TopologyRenderOptions ForInteractiveHtmlRendering() {
+    /// <summary>Creates an independent copy suitable for adapter-specific adjustments.</summary>
+    public TopologyRenderOptions Clone() {
         var snapshot = (TopologyRenderOptions)MemberwiseClone();
         snapshot._edgeVisualStyle = _edgeVisualStyle?.Clone();
         snapshot.Motion = Motion?.Clone();
@@ -282,6 +312,11 @@ public sealed class TopologyRenderOptions {
         snapshot.SelectedGroupIds = new List<string>(SelectedGroupIds);
         snapshot.SelectedNodeIds = new List<string>(SelectedNodeIds);
         snapshot.SelectedEdgeIds = new List<string>(SelectedEdgeIds);
+        return snapshot;
+    }
+
+    internal TopologyRenderOptions ForInteractiveHtmlRendering() {
+        var snapshot = Clone();
         snapshot.EnableHtmlInteractions = true;
         return snapshot;
     }

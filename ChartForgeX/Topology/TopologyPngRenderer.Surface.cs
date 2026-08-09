@@ -48,4 +48,24 @@ public sealed partial class TopologyPngRenderer {
                 break;
         }
     }
+
+    private static void DrawEndpointMarker(RgbaCanvas canvas, ChartPoint from, ChartPoint to, ChartColor color, TopologyMarkerKind kind, TopologyRenderOptions options) {
+        switch (kind) {
+            case TopologyMarkerKind.Arrow:
+                DrawArrow(canvas, from, to, color, options);
+                break;
+            case TopologyMarkerKind.Circle:
+                canvas.DrawCircle(to.X, to.Y, 4, color);
+                break;
+            case TopologyMarkerKind.Diamond:
+                var angle = Math.Atan2(to.Y - from.Y, to.X - from.X);
+                const double radius = 6;
+                var forward = new ChartPoint(to.X + Math.Cos(angle) * radius, to.Y + Math.Sin(angle) * radius);
+                var backward = new ChartPoint(to.X - Math.Cos(angle) * radius, to.Y - Math.Sin(angle) * radius);
+                var left = new ChartPoint(to.X + Math.Cos(angle + Math.PI / 2) * radius * 0.72, to.Y + Math.Sin(angle + Math.PI / 2) * radius * 0.72);
+                var right = new ChartPoint(to.X + Math.Cos(angle - Math.PI / 2) * radius * 0.72, to.Y + Math.Sin(angle - Math.PI / 2) * radius * 0.72);
+                canvas.FillPolygon(new[] { forward, left, backward, right }, color);
+                break;
+        }
+    }
 }

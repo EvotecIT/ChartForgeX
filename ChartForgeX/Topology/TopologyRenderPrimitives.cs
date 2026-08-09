@@ -24,6 +24,7 @@ internal static partial class TopologyRenderPrimitives {
         UseNeutralGroupSurface(options) ? theme.Card : StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.055 : 0.10);
 
     public static double EdgeStrokeWidth(TopologyEdge edge, bool selected, TopologyRenderOptions options) {
+        if (edge.StrokeWidth.HasValue) return selected ? edge.StrokeWidth.Value * 1.25 : edge.StrokeWidth.Value;
         if (options.UseForceGraphPresentation) return selected ? 2.1 : edge.Emphasis == TopologyEdgeEmphasis.Strong ? 1.25 : edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle ? MinimumReadableFineStrokeWidth : ForceGraphNormalEdgeStrokeWidth;
         if (!IsMonitoringDashboardStyle(options)) return selected ? 3.4 : edge.IsMuted ? 1.45 : 2.2;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !selected) return 1.05;
@@ -32,6 +33,7 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static double EdgeOpacity(TopologyEdge edge, TopologyRenderOptions options) {
+        if (edge.Opacity.HasValue) return edge.Opacity.Value;
         if (options.UseForceGraphPresentation) return edge.Emphasis == TopologyEdgeEmphasis.Strong ? 0.66 : edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle ? 0.14 : 0.26;
         if (!IsMonitoringDashboardStyle(options)) return edge.IsMuted ? 0.72 : 0.94;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle) return edge.IsMuted ? 0.42 : 0.48;
@@ -94,15 +96,6 @@ internal static partial class TopologyRenderPrimitives {
             TopologyHealthStatus.Unknown => "5 6",
             TopologyHealthStatus.Disabled => "3 6",
             _ => "none"
-        };
-    }
-
-    public static string EdgeDash(TopologyEdge edge) {
-        return edge.LineStyle switch {
-            TopologyEdgeLineStyle.Solid => "none",
-            TopologyEdgeLineStyle.Dashed => "8 5",
-            TopologyEdgeLineStyle.Dotted => "2 5",
-            _ => EdgeDash(edge.Status)
         };
     }
 
@@ -288,14 +281,18 @@ internal static partial class TopologyRenderPrimitives {
 
     private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
-        if (edge.SourcePort != TopologyEdgePort.Auto) {
+        if (!string.IsNullOrWhiteSpace(edge.SourcePortId)) {
+            ApplyNamedEndpoint(source, edge.SourcePortId!, edge, points, 0, 1);
+        } else if (edge.SourcePort != TopologyEdgePort.Auto) {
             var original = points[0];
             var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
             points[0] = spread;
             PreserveOrthogonalEndpointLeg(edge, points, 1, edge.SourcePort, original, spread);
         }
 
-        if (edge.TargetPort != TopologyEdgePort.Auto) {
+        if (!string.IsNullOrWhiteSpace(edge.TargetPortId)) {
+            ApplyNamedEndpoint(target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
+        } else if (edge.TargetPort != TopologyEdgePort.Auto) {
             var targetIndex = points.Count - 1;
             var original = points[targetIndex];
             var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);

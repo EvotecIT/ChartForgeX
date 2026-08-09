@@ -32,6 +32,7 @@ public sealed partial class TopologySvgRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= new TopologyRenderOptions();
         if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
+        if (options.LayoutPreset != TopologyLayoutPreset.Automatic) options.ApplyLayoutPreset(options.LayoutPreset);
         var requestedWidth = chart.Viewport.Width;
         var requestedHeight = chart.Viewport.Height;
         var validator = new TopologyChartValidator();
@@ -112,6 +113,7 @@ public sealed partial class TopologySvgRenderer {
         if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
         AddEdges(root, chart, prefix, theme, options, id, highlight);
         AddEdgeLabels(root, chart, prefix, theme, options, highlight);
+        AddEndpointLabels(root, chart, prefix, theme, options, highlight);
         var motionPlan = TopologyMotionPlanner.Build(chart, options);
         AddMotionRouteLayer(root, chart, prefix, theme, options, motionPlan);
         AddNodes(root, chart, prefix, theme, options, highlight);
@@ -119,6 +121,7 @@ public sealed partial class TopologySvgRenderer {
         AddMotionMarkerLayer(root, chart, prefix, theme, options, motionPlan);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicCallouts(root, chart, prefix, theme, options, highlight);
         if (options.IncludeLegend && chart.Legend != null) AddLegend(root, chart, prefix, theme, options);
+        if (options.IncludeLayoutDiagnosticOverlay) AddLayoutDiagnosticOverlay(root, chart, prefix, options);
     }
 
     private static void AddGeographicFrame(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
@@ -298,6 +301,11 @@ public sealed partial class TopologySvgRenderer {
         foreach (var edge in chart.Edges) {
             var color = EdgeColor(edge, theme, options);
             if (markerTokens.Add(ArrowMarkerToken(color))) AddArrowMarker(defs, ArrowMarkerId(id, color), color, options);
+            foreach (var kind in new[] { EffectiveSourceMarker(edge), EffectiveTargetMarker(edge) }) {
+                if (kind is TopologyMarkerKind.None or TopologyMarkerKind.Arrow) continue;
+                var token = kind + ":" + ArrowMarkerToken(color);
+                if (markerTokens.Add(token)) AddEndpointMarker(defs, EndpointMarkerId(id, color, kind), color, kind, options);
+            }
         }
 
         return defs;
@@ -533,6 +541,16 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-edge-color", string.IsNullOrWhiteSpace(edge.Color) ? null : color)
                     .Attribute("data-edge-line-style", edge.LineStyle.ToString())
                     .Attribute("data-edge-emphasis", edge.Emphasis.ToString())
+                    .Attribute("data-edge-stroke-width", edge.StrokeWidth.HasValue ? F(edge.StrokeWidth.Value) : null)
+                    .Attribute("data-edge-opacity", edge.Opacity.HasValue ? F(edge.Opacity.Value) : null)
+                    .Attribute("data-edge-dash-pattern", edge.DashPattern.Count == 0 ? null : EdgeDash(edge))
+                    .Attribute("data-source-marker", EffectiveSourceMarker(edge).ToString())
+                    .Attribute("data-target-marker", EffectiveTargetMarker(edge).ToString())
+                    .Attribute("data-edge-preferred-length", edge.PreferredLength.HasValue ? F(edge.PreferredLength.Value) : null)
+                    .Attribute("data-edge-minimum-rank-span", edge.MinimumRankSpan)
+                    .Attribute("data-edge-routing-priority", edge.RoutingPriority)
+                    .Attribute("data-source-label", edge.SourceLabel)
+                    .Attribute("data-target-label", edge.TargetLabel)
                     .Attribute("data-edge-render-order", renderOrder)
                     .Attribute("data-edge-layout-inference", EdgeLayoutInferenceToken(edge.LayoutInference))
                     .Attribute("data-route-strategy", diagnostics.Strategy)
@@ -552,6 +570,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-route-curve", isGeographicCurve ? "geographic" : edge.Routing.ToString())
                     .Attribute("data-source-port", edge.SourcePort.ToString())
                     .Attribute("data-target-port", edge.TargetPort.ToString())
+                    .Attribute("data-source-port-id", edge.SourcePortId)
+                    .Attribute("data-target-port-id", edge.TargetPortId)
                     .Attribute("data-route-lane", edge.RouteLane)
                     .Attribute("data-label-offset-x", edge.LabelOffsetX)
                     .Attribute("data-label-offset-y", edge.LabelOffsetY)

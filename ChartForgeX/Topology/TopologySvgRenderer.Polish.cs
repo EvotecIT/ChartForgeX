@@ -45,8 +45,7 @@ public sealed partial class TopologySvgRenderer {
             var opacity = EdgeOpacity(edge, options) * layerOpacity;
             if (opacity < 1) path.Attribute("opacity", opacity);
             if (!foreground) return;
-            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, markerColor) + ")");
-            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, markerColor) + ")");
+            AddEndpointMarkerAttributes(path, edge, options, svgId, markerColor);
         });
     }
 
@@ -70,10 +69,19 @@ public sealed partial class TopologySvgRenderer {
             var opacity = EdgeOpacity(edge, options) * layerOpacity;
             if (opacity < 1) path.Attribute("opacity", opacity);
             if (!foreground) return;
-            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional) path.Attribute("marker-start", "url(#" + ArrowMarkerId(svgId, color) + ")");
-            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional) path.Attribute("marker-end", "url(#" + ArrowMarkerId(svgId, color) + ")");
+            AddEndpointMarkerAttributes(path, edge, options, svgId, color);
         });
     }
+
+    private static void AddEndpointMarkerAttributes(SvgElement path, TopologyEdge edge, TopologyRenderOptions options, string svgId, string color) {
+        if (!options.IncludeDirectionMarkers) return;
+        var source = EffectiveSourceMarker(edge);
+        var target = EffectiveTargetMarker(edge);
+        if (source != TopologyMarkerKind.None) path.Attribute("marker-start", "url(#" + MarkerId(svgId, color, source) + ")");
+        if (target != TopologyMarkerKind.None) path.Attribute("marker-end", "url(#" + MarkerId(svgId, color, target) + ")");
+    }
+
+    private static string MarkerId(string svgId, string color, TopologyMarkerKind kind) => kind == TopologyMarkerKind.Arrow ? ArrowMarkerId(svgId, color) : EndpointMarkerId(svgId, color, kind);
 
     private static double EdgeLabelHaloStrokeWidth(double fontSize, bool emphasized) => ChartTextHalo.SvgStrokeWidth(fontSize, emphasized);
 }

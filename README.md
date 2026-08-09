@@ -188,7 +188,9 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | SVG markup | `chart.ToSvg()` or `chart.SaveSvg("chart.svg")` |
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | Interactive topology HTML | `topology.ToInteractiveHtmlFragment()`, `topology.ToInteractiveHtmlPage()`, or `topology.SaveInteractiveHtml("topology.html")` from `ChartForgeX.Interactivity.Html` |
-| PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
+| PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")`; `RasterImageOptions.Dpi` writes physical PNG density metadata without changing pixel dimensions |
+| Artifact watermark | `artifact.ToSvg(renderOptions)`, `artifact.ToHtmlPage(renderOptions)`, or `artifact.ToPng(renderOptions)` with one or more text/image `VisualWatermark` values |
+| Office document handoff | `ToVisualArtifact()` on charts, chart grids, canvases, stories, topology, flow, sequence, tables, and visual blocks; consume the envelope through the optional `OfficeIMO.ChartForgeX` adapter when Word, Excel, PowerPoint, or PDF placement is needed |
 | Direct RGBA pixels | `chart.ToRgbaImage()`, `topology.ToRgbaImage(options)`, or the equivalent grid, visual-block, and canvas helpers when a host will compose the result instead of saving it |
 | Layered visual canvas | `VisualCanvas.CreateSocialPreview()`, `VisualCanvas.CreateDesktopWallpaper()`, `canvas.ToSvg()`, `canvas.SavePng("social-preview.png")`, or `canvas.Save("social-preview.jpg", rasterOptions)` for fixed-size wallpaper, social image, report cover, and hero compositions |
 | Reusable image composition | `ImageComposition.FromFile("wallpaper.jpg").DrawImage(...).DrawText(...).StrokeRectangle(...).Save("wallpaper-output.jpg")`, `composition.Write(stream, RasterImageFormat.Png)`, or `ImageComposition.TryFromBytes(...)` for dependency-free background plus overlay generation |
@@ -196,7 +198,7 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.gif")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")`; topology also supports animated `topology.Save("route.gif", options)` and `topology.Save("route.apng", options)` |
 | Advanced raster output | `ToRasterImage`, `WriteRasterImage`, and `SaveRasterImage` for PNG, GIF, JPEG, BMP, PPM, and TIFF; plus format helpers such as `ToBmp`, `ToPpm`, and `ToTiff` |
 
-`Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.gif`, `.jpg`, `.jpeg`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Topology `Save(path, options)` also infers animated `.gif` and `.apng` when `TopologyMotionOptions` describes a route. Animated GIF output uses an adaptive palette, error diffusion, and cropped delta frames for compatibility-friendly previews. APNG keeps full RGBA color and also crops unchanged frame regions for high-fidelity animated raster output, while SVG remains the highest-fidelity script-free animated surface. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` controls JPEG quality, PNG compression level, and the background used when alpha must be flattened.
+`Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.gif`, `.jpg`, `.jpeg`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Topology `Save(path, options)` also infers animated `.gif` and `.apng` when `TopologyMotionOptions` describes a route. Animated GIF output uses an adaptive palette, error diffusion, and cropped delta frames for compatibility-friendly previews. APNG keeps full RGBA color and also crops unchanged frame regions for high-fidelity animated raster output, while SVG remains the highest-fidelity script-free animated surface. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` controls JPEG quality, PNG compression level, physical DPI metadata, and the background used when alpha must be flattened.
 
 ## Typed Data, Axes, and Facets
 
@@ -481,6 +483,8 @@ topology.SaveBmp("service-map.bmp");
 topology.SavePpm("service-map.ppm");
 topology.SaveTiff("service-map.tiff");
 ```
+
+Advanced edges may use named node ports, independent source/target markers, endpoint labels, custom width/opacity/dash patterns, and layout hints. Typed node detail rows keep operational facts inside a card without forcing callers to pre-render text. `TopologyLayoutPreset` provides dense, compact, balanced, and presentation spacing profiles, while `TopologyLayoutDiagnostics.Analyze(...)` exposes prepared node, port, route, obstacle, and collision geometry. Set `IncludeLayoutDiagnosticOverlay` only for authoring/debug output; it is off by default.
 
 Supported topology layout modes are `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`. Geographic topology uses `ChartMapViewport` with typed coordinates, route arcs, region hulls, and optional callouts while keeping the model reusable across infrastructure, cloud, tenant, inventory, and domain-specific hosts.
 

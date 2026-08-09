@@ -109,6 +109,20 @@ public enum TopologyViewPreset {
     RelationshipOverview
 }
 
+/// <summary>Defines reusable topology spacing and presentation profiles.</summary>
+public enum TopologyLayoutPreset {
+    /// <summary>Preserve established renderer defaults.</summary>
+    Automatic,
+    /// <summary>Minimize whitespace for large operational maps.</summary>
+    Dense,
+    /// <summary>Use compact cards and reduced spacing for dashboard surfaces.</summary>
+    Compact,
+    /// <summary>Use balanced general-purpose spacing.</summary>
+    Balanced,
+    /// <summary>Use generous spacing and readable labels for slides and documents.</summary>
+    Presentation
+}
+
 /// <summary>
 /// Defines what kind of topology element a scenario step references.
 /// </summary>

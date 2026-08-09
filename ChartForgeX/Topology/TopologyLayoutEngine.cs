@@ -10,6 +10,7 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var copy = Clone(chart);
+        ApplyNamedPortSides(copy);
         if (options != null) {
             ApplyNodeDisplayMode(copy, options.NodeDisplayMode, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
@@ -24,7 +25,7 @@ internal static partial class TopologyLayoutEngine {
                 ApplyHubAndSpoke(copy);
                 break;
             case TopologyLayoutMode.Layered:
-                ApplyLayered(copy);
+                ApplyLayered(copy, options);
                 break;
             case TopologyLayoutMode.Matrix:
                 ApplyMatrix(copy);
@@ -51,9 +52,30 @@ internal static partial class TopologyLayoutEngine {
         return copy;
     }
 
+    private static void ApplyNamedPortSides(TopologyChart chart) {
+        var nodes = new Dictionary<string, TopologyNode>(StringComparer.Ordinal);
+        foreach (var node in chart.Nodes) {
+            if (!nodes.ContainsKey(node.Id)) nodes.Add(node.Id, node);
+        }
+        foreach (var edge in chart.Edges) {
+            if (!string.IsNullOrWhiteSpace(edge.SourcePortId) && nodes.TryGetValue(edge.SourceNodeId, out var source)) {
+                var port = source.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, edge.SourcePortId, StringComparison.Ordinal));
+                if (port != null) edge.SourcePort = port.Side;
+            }
+            if (!string.IsNullOrWhiteSpace(edge.TargetPortId) && nodes.TryGetValue(edge.TargetNodeId, out var target)) {
+                var port = target.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, edge.TargetPortId, StringComparison.Ordinal));
+                if (port != null) edge.TargetPort = port.Side;
+            }
+        }
+    }
+
     private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyNodeDisplayMode displayMode, bool preserveMindMapSizes) {
         foreach (var node in chart.Nodes) {
             if (node.PreserveDisplayModeSize) continue;
+            if (node.Details.Count > 0 && (node.DisplayMode ?? displayMode) == TopologyNodeDisplayMode.Card) {
+                node.Width = Math.Max(node.Width, 184);
+                node.Height = Math.Max(node.Height, 64 + node.Details.Count * 18);
+            }
             switch (node.DisplayMode ?? displayMode) {
                 case TopologyNodeDisplayMode.CompactCard:
                     if (!preserveMindMapSizes) {
@@ -241,34 +263,61 @@ internal static partial class TopologyLayoutEngine {
         if (chart.Groups.Count == 0) ApplyMatrix(chart);
     }
 
-    private static void ApplyLayered(TopologyChart chart) {
+    private static void ApplyLayered(TopologyChart chart, TopologyRenderOptions? options) {
+        ApplyEdgeRankHints(chart);
         var nodes = chart.Nodes;
         var layers = OrderLayeredGroups(nodes.GroupBy(node => GetLayer(node)).OrderBy(group => group.Key));
         var pad = Math.Max(24, chart.Viewport.Padding);
         var top = pad + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
         if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) {
-            ApplyLayeredLeftToRight(chart, layers, pad, top);
+            ApplyLayeredLeftToRight(chart, layers, pad, top, options);
             if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
             return;
         }
 
-        ApplyLayeredTopToBottom(chart, layers, pad, top);
+        ApplyLayeredTopToBottom(chart, layers, pad, top, options);
         if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, top, chart.Viewport.Height - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
     }
 
-    private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top) {
+    private static void ApplyEdgeRankHints(TopologyChart chart) {
+        if (chart.Edges.All(edge => edge.MinimumRankSpan <= 1)) return;
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var ranks = chart.Nodes.ToDictionary(node => node.Id, GetLayer, StringComparer.Ordinal);
+        var indegree = chart.Nodes.ToDictionary(node => node.Id, _ => 0, StringComparer.Ordinal);
+        var outgoing = chart.Nodes.ToDictionary(node => node.Id, _ => new List<TopologyEdge>(), StringComparer.Ordinal);
+        foreach (var edge in chart.Edges) {
+            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
+            outgoing[edge.SourceNodeId].Add(edge);
+            indegree[edge.TargetNodeId]++;
+        }
+        var ready = new SortedSet<string>(indegree.Where(item => item.Value == 0).Select(item => item.Key), StringComparer.Ordinal);
+        while (ready.Count > 0) {
+            var nodeId = ready.Min!;
+            ready.Remove(nodeId);
+            foreach (var edge in outgoing[nodeId].OrderBy(item => item.Id, StringComparer.Ordinal)) {
+                ranks[edge.TargetNodeId] = Math.Max(ranks[edge.TargetNodeId], ranks[nodeId] + edge.MinimumRankSpan);
+                indegree[edge.TargetNodeId]--;
+                if (indegree[edge.TargetNodeId] == 0) ready.Add(edge.TargetNodeId);
+            }
+        }
+        foreach (var item in ranks) nodes[item.Key].Metadata["layer"] = item.Value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options) {
+        var nodeSpacing = options?.LayeredNodeSpacing ?? 28;
+        var rankSpacing = options?.LayeredRankSpacing ?? 42;
         var availableW = Math.Max(140, chart.Viewport.Width - pad * 2);
         var availableH = Math.Max(100, chart.Viewport.Height - top - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
         var prepared = layers.Select(group => {
             var maxWidth = group.Nodes.Select(node => node.Width).DefaultIfEmpty(120).Max();
             var maxHeight = group.Nodes.Select(node => node.Height).DefaultIfEmpty(60).Max();
-            var columns = LayerColumns(group.Nodes.Count, availableW, maxWidth, 28);
+            var columns = LayerColumns(group.Nodes.Count, availableW, maxWidth, nodeSpacing);
             var rows = (int)Math.Ceiling(group.Nodes.Count / (double)columns);
-            var height = rows * maxHeight + Math.Max(0, rows - 1) * 34;
+            var height = rows * maxHeight + Math.Max(0, rows - 1) * (nodeSpacing + 6);
             return new LayerPlacement(group.Index, group.Layer, group.Nodes, columns, rows, maxWidth, maxHeight, height);
         }).ToList();
         var totalHeight = prepared.Sum(layer => layer.BlockSize);
-        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(42, (availableH - totalHeight) / (prepared.Count - 1));
+        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(rankSpacing, (availableH - totalHeight) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var y = top;
 
@@ -288,7 +337,7 @@ internal static partial class TopologyLayoutEngine {
                 ApplyLayerMetadata(node, layer, row, col);
                 if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
                 node.X = rowLeft + col * cellW + (cellW - node.Width) / 2;
-                node.Y = y + row * (layer.MaxHeight + 34) + (layer.MaxHeight - node.Height) / 2;
+                node.Y = y + row * (layer.MaxHeight + nodeSpacing + 6) + (layer.MaxHeight - node.Height) / 2;
             }
 
             y += layer.BlockSize + layerGap;
@@ -297,19 +346,21 @@ internal static partial class TopologyLayoutEngine {
         ApplyHierarchyEdgeRoutesTopToBottom(chart);
     }
 
-    private static void ApplyLayeredLeftToRight(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top) {
+    private static void ApplyLayeredLeftToRight(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options) {
+        var nodeSpacing = options?.LayeredNodeSpacing ?? 24;
+        var rankSpacing = options?.LayeredRankSpacing ?? 42;
         var availableW = Math.Max(120, chart.Viewport.Width - pad * 2);
         var availableH = Math.Max(100, chart.Viewport.Height - top - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
         var prepared = layers.Select(group => {
             var maxWidth = group.Nodes.Select(node => node.Width).DefaultIfEmpty(120).Max();
             var maxHeight = group.Nodes.Select(node => node.Height).DefaultIfEmpty(60).Max();
-            var rows = LayerColumns(group.Nodes.Count, availableH, maxHeight, 24);
+            var rows = LayerColumns(group.Nodes.Count, availableH, maxHeight, nodeSpacing);
             var columns = (int)Math.Ceiling(group.Nodes.Count / (double)rows);
-            var width = columns * maxWidth + Math.Max(0, columns - 1) * 42;
+            var width = columns * maxWidth + Math.Max(0, columns - 1) * (nodeSpacing + 18);
             return new LayerPlacement(group.Index, group.Layer, group.Nodes, columns, rows, maxWidth, maxHeight, width);
         }).ToList();
         var totalWidth = prepared.Sum(layer => layer.BlockSize);
-        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(56, (availableW - totalWidth) / (prepared.Count - 1));
+        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(rankSpacing + 14, (availableW - totalWidth) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var x = pad;
 
@@ -328,7 +379,7 @@ internal static partial class TopologyLayoutEngine {
                 var colTop = top + (availableH - colCount * cellH) / 2;
                 ApplyLayerMetadata(node, layer, row, col);
                 if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
-                node.X = x + col * (layer.MaxWidth + 42) + (layer.MaxWidth - node.Width) / 2;
+                node.X = x + col * (layer.MaxWidth + nodeSpacing + 18) + (layer.MaxWidth - node.Width) / 2;
                 node.Y = colTop + row * cellH + (cellH - node.Height) / 2;
             }
 

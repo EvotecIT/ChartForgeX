@@ -41,7 +41,7 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     private static int EdgeRenderPriority(TopologyEdge edge, bool selected) {
-        var score = 0;
+        var score = edge.RoutingPriority;
         if (edge.Kind == TopologyEdgeKind.Dependency) score -= 10;
         if (edge.Kind is TopologyEdgeKind.Link or TopologyEdgeKind.Connectivity) score += 4;
         if (edge.IsMuted) score -= 18;

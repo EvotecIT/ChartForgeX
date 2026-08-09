@@ -42,6 +42,8 @@ public sealed partial class TopologyHtmlRenderer {
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= new TopologyRenderOptions();
+        if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
+        if (options.LayoutPreset != TopologyLayoutPreset.Automatic) options.ApplyLayoutPreset(options.LayoutPreset);
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
         var theme = chart.Theme ?? TopologyTheme.Light();

@@ -21,6 +21,14 @@ internal static class PngWriter {
         WriteUInt(ihdr, (uint)width); WriteUInt(ihdr, (uint)height);
         ihdr.Add(8); ihdr.Add(6); ihdr.Add(0); ihdr.Add(0); ihdr.Add(0);
         WriteChunk(ms, "IHDR", ihdr.ToArray());
+        if (options?.Dpi is double dpi) {
+            var pixelsPerMeter = checked((uint)Math.Round(dpi / 0.0254, MidpointRounding.AwayFromZero));
+            var physical = new List<byte>();
+            WriteUInt(physical, pixelsPerMeter);
+            WriteUInt(physical, pixelsPerMeter);
+            physical.Add(1);
+            WriteChunk(ms, "pHYs", physical.ToArray());
+        }
         var raw = new byte[height * (width * 4 + 1)];
         var src = 0; var dst = 0;
         for (var y = 0; y < height; y++) {

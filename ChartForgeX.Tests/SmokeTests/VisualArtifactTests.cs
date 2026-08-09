@@ -1,6 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using ChartForgeX.Composition;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+using ChartForgeX.Stories;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
@@ -80,6 +87,71 @@ internal static partial class SmokeTests {
         artifact.SaveHtml(Path.Combine(temp.Path, "table.html"));
         artifact.SavePng(Path.Combine(temp.Path, "table.png"));
         Assert(File.Exists(Path.Combine(temp.Path, "table.svg")) && File.Exists(Path.Combine(temp.Path, "table.html")) && File.Exists(Path.Combine(temp.Path, "table.png")), "VisualArtifact save helpers should write static output files.");
+    }
+
+    private static void VisualArtifactWatermarksStayAlignedAcrossStaticFormats() {
+        var table = TableArtifact.Create("watermarked-table")
+            .WithTitle("Quarterly Review")
+            .AddColumn("name", "Name")
+            .AddColumn("state", "State")
+            .AddRow("api", "API", "Healthy")
+            .AddRow("worker", "Worker", "Warning");
+        var artifact = table.ToVisualArtifact();
+        var watermark = VisualWatermark.FromText("CONFIDENTIAL");
+        watermark.Anchor = ChartForgeX.Composition.VisualCanvasAnchor.Center;
+        watermark.RotationDegrees = -28;
+        watermark.Opacity = 0.24;
+        watermark.Scale = 1.15;
+        var options = new VisualArtifactRenderOptions {
+            Raster = new RasterImageOptions { Dpi = 144 }
+        };
+        options.Watermarks.Add(watermark);
+
+        var svg = artifact.ToSvg(options);
+        var html = artifact.ToHtmlPage(options);
+        var png = artifact.ToPng(options);
+        var plain = RasterImageDecoder.Decode(artifact.ToPng());
+        var decorated = RasterImageDecoder.Decode(png);
+
+        Assert(svg.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact SVG should expose a host-inspectable watermark layer.");
+        Assert(svg.Contains("CONFIDENTIAL", StringComparison.Ordinal) && svg.Contains("rotate(-28", StringComparison.Ordinal), "Artifact SVG should preserve text and rotation.");
+        Assert(html.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact HTML should embed the same decorated SVG contract.");
+        Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
+        Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
+
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0 }, "Raster options should reject non-positive DPI metadata.");
+    }
+
+    private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {
+        var chart = Chart.Create().WithSize(240, 140).WithTitle("Requests");
+        chart.AddBar("API", new[] { new ChartPoint(1, 4), new ChartPoint(2, 7) });
+        var grid = ChartGrid.Create().WithTitle("Service overview").WithColumns(1).Add(chart);
+        var canvas = VisualCanvas.Create(320, 180).WithTitle("Release overview");
+        canvas.Accessibility.WithTextAlternative("Release overview", "A fixed-size release summary.");
+        var story = VisualStory.Create("Deployment story").WithDescription("A deployment reaches ready state.").WithSize(480, 320);
+        story.Scene("ready", "Ready").Panel("result", new VisualStoryTextSurface("Ready", emphasized: true));
+        story.Outcome("ready", "The deployment is ready", "result");
+        var block = MetricCard.Create().WithMetric("Ready", "Yes").WithSize(240, 140);
+
+        VisualArtifact[] artifacts = {
+            grid.ToVisualArtifact("grid"),
+            canvas.ToVisualArtifact("canvas"),
+            story.ToVisualArtifact("story"),
+            block.ToVisualArtifact("block")
+        };
+        var kinds = new[] { VisualArtifactKind.ChartGrid, VisualArtifactKind.VisualCanvas, VisualArtifactKind.Story, VisualArtifactKind.VisualBlock };
+
+        for (var index = 0; index < artifacts.Length; index++) {
+            VisualArtifact artifact = artifacts[index];
+            Assert(artifact.Kind == kinds[index], "Composite artifacts should preserve their specific CFX surface kind.");
+            Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "Every static composite CFX surface should declare the Office handoff.");
+            Assert(artifact.ToSvg().Contains("<svg", StringComparison.Ordinal), "Composite artifacts should render SVG through the shared artifact pipeline.");
+            Assert(artifact.ToHtmlPage().Contains("<!doctype html>", StringComparison.OrdinalIgnoreCase), "Composite artifacts should render standalone HTML through the shared artifact pipeline.");
+            Assert(artifact.ToPng().Length > 64, "Composite artifacts should render PNG through the shared artifact pipeline.");
+        }
+        Assert(canvas.ToVisualArtifact().Accessibility.Description == "A fixed-size release summary.", "Canvas artifacts should preserve accessibility metadata for Office placement.");
     }
 
     private static void TableArtifactRejectsInvalidContractShapes() {

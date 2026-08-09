@@ -7,6 +7,39 @@ namespace ChartForgeX.Topology;
 /// Provides reusable topology render-option presets.
 /// </summary>
 public static class TopologyRenderOptionsExtensions {
+    /// <summary>Applies a reusable topology spacing and presentation profile.</summary>
+    public static TopologyRenderOptions ApplyLayoutPreset(this TopologyRenderOptions options, TopologyLayoutPreset preset) {
+        if (options == null) throw new System.ArgumentNullException(nameof(options));
+        if (!System.Enum.IsDefined(typeof(TopologyLayoutPreset), preset)) throw new System.ArgumentOutOfRangeException(nameof(preset), preset, "Unknown topology layout preset.");
+        options.LayoutPreset = preset;
+        switch (preset) {
+            case TopologyLayoutPreset.Dense:
+                options.LayeredNodeSpacing = 14;
+                options.LayeredRankSpacing = 28;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
+                options.MaxNodeLabelLines = 1;
+                options.MaxNodeSubtitleLines = 1;
+                break;
+            case TopologyLayoutPreset.Compact:
+                options.LayeredNodeSpacing = 20;
+                options.LayeredRankSpacing = 34;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
+                break;
+            case TopologyLayoutPreset.Balanced:
+                options.LayeredNodeSpacing = 28;
+                options.LayeredRankSpacing = 42;
+                break;
+            case TopologyLayoutPreset.Presentation:
+                options.LayeredNodeSpacing = 42;
+                options.LayeredRankSpacing = 64;
+                options.WrapNodeLabels = true;
+                options.MaxNodeLabelLines = System.Math.Max(2, options.MaxNodeLabelLines);
+                options.MaxNodeSubtitleLines = System.Math.Max(2, options.MaxNodeSubtitleLines);
+                break;
+        }
+        return options;
+    }
+
     /// <summary>
     /// Applies a preset to existing render options.
     /// </summary>

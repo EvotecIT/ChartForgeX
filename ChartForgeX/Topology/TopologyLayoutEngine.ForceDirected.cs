@@ -519,7 +519,7 @@ internal static partial class TopologyLayoutEngine {
             var distance = Math.Sqrt(dx * dx + dy * dy);
             if (distance < 0.001) continue;
 
-            var desired = spring.Edge.Kind switch {
+            var desired = spring.Edge.PreferredLength ?? spring.Edge.Kind switch {
                 TopologyEdgeKind.Membership => settings.MembershipLength,
                 TopologyEdgeKind.Dependency => settings.DependencyLength,
                 _ => Math.Max(118, spacing * settings.DefaultLengthScale)
