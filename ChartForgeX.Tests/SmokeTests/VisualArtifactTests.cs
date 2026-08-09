@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -122,6 +124,24 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
         AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0 }, "Raster options should reject non-positive DPI metadata.");
+
+        var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
+        var pngBytes = PngWriter.WriteRgba(pixel);
+        Assert(VisualWatermark.FromImage(pngBytes, "image/png").ImageMimeType == "image/png", "Image watermarks should preserve a validated canonical media type.");
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/png\" onload=\"alert(1)"), "Image watermarks should reject attribute-breaking media types.");
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
+
+        var mutableChart = Chart.Create().WithSize(240, 140).WithTitle("Mutable");
+        mutableChart.AddBar("Value", new[] { new ChartPoint(1, 2) });
+        var mutableArtifact = mutableChart.ToVisualArtifact();
+        mutableChart.WithSize(480, 280);
+        var mutableOptions = new VisualArtifactRenderOptions();
+        mutableOptions.Watermarks.Add(VisualWatermark.FromText("CURRENT"));
+        var resizedSvg = XDocument.Parse(mutableArtifact.ToSvg(mutableOptions));
+        var renderedMark = resizedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "watermark", StringComparison.Ordinal));
+        var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
+        Assert(renderedX > 300, "Watermark placement should follow current rendered dimensions when natural-size preservation is disabled.");
     }
 
     private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {
@@ -213,6 +233,7 @@ internal static partial class SmokeTests {
         var png = flow.ToPng();
 
         Assert(artifact.Kind == VisualArtifactKind.Flow, "FlowArtifact should wrap into a product-neutral flow artifact envelope.");
+        Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "FlowArtifact should declare the documented Office handoff.");
         Assert(artifact.Model == flow, "FlowArtifact envelope should keep the typed flow model.");
         Assert(artifact.Metadata["render.model"] == nameof(FlowArtifact), "FlowArtifact envelope should expose the flow model.");
         Assert(artifact.Metadata["render.previewModel"] == nameof(TopologyChart), "FlowArtifact envelope should identify the static preview projection.");
@@ -244,6 +265,7 @@ internal static partial class SmokeTests {
         Assert(artifact.Model == sequence, "SequenceArtifact envelope should keep the typed sequence model.");
         Assert(artifact.Metadata["sequence.participants"] == "3", "SequenceArtifact envelope should expose participant counts.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Svg), "SequenceArtifact should declare SVG export support.");
+        Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "SequenceArtifact should declare the documented Office handoff.");
         Assert(svg.Contains("data-cfx-role=\"sequence-message\"", StringComparison.Ordinal), "SequenceArtifact SVG should expose message regions.");
         Assert(svg.Contains("data-cfx-role=\"sequence-note\"", StringComparison.Ordinal), "SequenceArtifact SVG should expose note regions.");
         Assert(artifact.ToHtmlPage().Contains("chartforgex-visual-artifact", StringComparison.Ordinal), "VisualArtifact HTML rendering should wrap sequence previews in a standalone artifact page.");

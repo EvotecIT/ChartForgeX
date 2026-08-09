@@ -282,7 +282,8 @@ internal static partial class TopologyLayoutEngine {
     private static void ApplyEdgeRankHints(TopologyChart chart) {
         if (chart.Edges.All(edge => edge.MinimumRankSpan <= 1)) return;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        var ranks = chart.Nodes.ToDictionary(node => node.Id, GetLayer, StringComparer.Ordinal);
+        var layerOrder = chart.Nodes.Select(GetLayer).Distinct().OrderBy(layer => layer).Select((layer, index) => new { layer, index }).ToDictionary(item => item.layer, item => item.index);
+        var ranks = chart.Nodes.ToDictionary(node => node.Id, node => layerOrder[GetLayer(node)], StringComparer.Ordinal);
         var indegree = chart.Nodes.ToDictionary(node => node.Id, _ => 0, StringComparer.Ordinal);
         var outgoing = chart.Nodes.ToDictionary(node => node.Id, _ => new List<TopologyEdge>(), StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
@@ -300,7 +301,10 @@ internal static partial class TopologyLayoutEngine {
                 if (indegree[edge.TargetNodeId] == 0) ready.Add(edge.TargetNodeId);
             }
         }
-        foreach (var item in ranks) nodes[item.Key].Metadata["layer"] = item.Value.ToString(CultureInfo.InvariantCulture);
+        foreach (var item in ranks) {
+            nodes[item.Key].Metadata["layer"] = item.Value.ToString(CultureInfo.InvariantCulture);
+            nodes[item.Key].Metadata["layout.rankHintsApplied"] = "true";
+        }
     }
 
     private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options) {
@@ -321,9 +325,11 @@ internal static partial class TopologyLayoutEngine {
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var y = top;
 
-        foreach (var layer in prepared) {
+        for (var layerIndex = 0; layerIndex < prepared.Count; layerIndex++) {
+            var layer = prepared[layerIndex];
+            var gapAfter = LayerGapAfter(prepared, layerIndex, layerGap, rankSpacing);
             if (TryPlaceHierarchyBucketsTopToBottom(layer, nodesById, pad, availableW, y, out var hierarchyHeight)) {
-                y += Math.Max(layer.BlockSize, hierarchyHeight) + layerGap;
+                y += Math.Max(layer.BlockSize, hierarchyHeight) + gapAfter;
                 continue;
             }
 
@@ -340,7 +346,7 @@ internal static partial class TopologyLayoutEngine {
                 node.Y = y + row * (layer.MaxHeight + nodeSpacing + 6) + (layer.MaxHeight - node.Height) / 2;
             }
 
-            y += layer.BlockSize + layerGap;
+            y += layer.BlockSize + gapAfter;
         }
 
         ApplyHierarchyEdgeRoutesTopToBottom(chart);
@@ -364,9 +370,11 @@ internal static partial class TopologyLayoutEngine {
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var x = pad;
 
-        foreach (var layer in prepared) {
+        for (var layerIndex = 0; layerIndex < prepared.Count; layerIndex++) {
+            var layer = prepared[layerIndex];
+            var gapAfter = LayerGapAfter(prepared, layerIndex, layerGap, rankSpacing);
             if (TryPlaceHierarchyBucketsLeftToRight(layer, nodesById, x, top, availableH, out var hierarchyWidth)) {
-                x += Math.Max(layer.BlockSize, hierarchyWidth) + layerGap;
+                x += Math.Max(layer.BlockSize, hierarchyWidth) + gapAfter;
                 continue;
             }
 
@@ -383,10 +391,17 @@ internal static partial class TopologyLayoutEngine {
                 node.Y = colTop + row * cellH + (cellH - node.Height) / 2;
             }
 
-            x += layer.BlockSize + layerGap;
+            x += layer.BlockSize + gapAfter;
         }
 
         ApplyHierarchyEdgeRoutesLeftToRight(chart);
+    }
+
+    private static double LayerGapAfter(IReadOnlyList<LayerPlacement> layers, int index, double baseGap, double rankSpacing) {
+        if (index >= layers.Count - 1) return 0;
+        var preserveRankDistance = layers[index].Nodes.Any(node => node.Metadata.ContainsKey("layout.rankHintsApplied"));
+        var rankDelta = preserveRankDistance ? Math.Max(1, layers[index + 1].Layer - layers[index].Layer) : 1;
+        return baseGap + Math.Max(0, rankDelta - 1) * rankSpacing;
     }
 
     private static int LayerColumns(int count, double available, double itemSize, double gap) {

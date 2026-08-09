@@ -26,9 +26,10 @@ public static class TopologyArtifactRendering {
         artifact.Accessibility.Language = topology.Accessibility.Language;
         artifact.Accessibility.IsDecorative = topology.Accessibility.IsDecorative;
 
-        foreach (var group in topology.Groups) artifact.Regions.Add(Region(group.Id, "topology-group", group.Label, group.X, group.Y, group.Width, group.Height, group.Href, group.Tooltip));
-        foreach (var node in topology.Nodes) artifact.Regions.Add(Region(node.Id, "topology-node", node.Label, node.X, node.Y, node.Width, node.Height, node.Href, node.Tooltip));
-        foreach (var edge in topology.Edges) {
+        var prepared = TopologyLayoutEngine.Prepare(topology);
+        foreach (var group in prepared.Groups) artifact.Regions.Add(Region(group.Id, "topology-group", group.Label, group.X, group.Y, group.Width, group.Height, group.Href, group.Tooltip));
+        foreach (var node in prepared.Nodes) artifact.Regions.Add(Region(node.Id, "topology-node", node.Label, node.X, node.Y, node.Width, node.Height, node.Href, node.Tooltip));
+        foreach (var edge in prepared.Edges) {
             var region = new VisualArtifactRegion {
                 Id = edge.Id,
                 Kind = "topology-edge",

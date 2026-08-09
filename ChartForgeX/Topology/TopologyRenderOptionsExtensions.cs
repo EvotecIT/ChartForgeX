@@ -13,10 +13,19 @@ public static class TopologyRenderOptionsExtensions {
         if (!System.Enum.IsDefined(typeof(TopologyLayoutPreset), preset)) throw new System.ArgumentOutOfRangeException(nameof(preset), preset, "Unknown topology layout preset.");
         options.LayoutPreset = preset;
         switch (preset) {
+            case TopologyLayoutPreset.Automatic:
+                options.LayeredNodeSpacing = null;
+                options.LayeredRankSpacing = null;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
+                break;
             case TopologyLayoutPreset.Dense:
                 options.LayeredNodeSpacing = 14;
                 options.LayeredRankSpacing = 28;
                 options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
+                options.WrapNodeLabels = false;
                 options.MaxNodeLabelLines = 1;
                 options.MaxNodeSubtitleLines = 1;
                 break;
@@ -24,17 +33,25 @@ public static class TopologyRenderOptionsExtensions {
                 options.LayeredNodeSpacing = 20;
                 options.LayeredRankSpacing = 34;
                 options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
                 break;
             case TopologyLayoutPreset.Balanced:
                 options.LayeredNodeSpacing = 28;
                 options.LayeredRankSpacing = 42;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
                 break;
             case TopologyLayoutPreset.Presentation:
                 options.LayeredNodeSpacing = 42;
                 options.LayeredRankSpacing = 64;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
                 options.WrapNodeLabels = true;
-                options.MaxNodeLabelLines = System.Math.Max(2, options.MaxNodeLabelLines);
-                options.MaxNodeSubtitleLines = System.Math.Max(2, options.MaxNodeSubtitleLines);
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
                 break;
         }
         return options;

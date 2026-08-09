@@ -13,7 +13,8 @@ public sealed partial class TopologyPngRenderer {
             if (string.IsNullOrWhiteSpace(edge.SourceLabel) && string.IsNullOrWhiteSpace(edge.TargetLabel)) continue;
             var points = EdgePoints(chart, edge, nodes);
             if (points.Count < 2) continue;
-            var alpha = highlight.IsEdgeHighlighted(edge) ? (byte)255 : HighlightAlpha(255, false, highlight);
+            var edgeAlpha = (byte)Math.Round(255 * EdgeOpacity(edge, options), MidpointRounding.AwayFromZero);
+            var alpha = highlight.IsEdgeHighlighted(edge) ? edgeAlpha : HighlightAlpha(edgeAlpha, false, highlight);
             var color = WithAlpha(Color(theme.MutedForeground), alpha);
             var halo = WithAlpha(Color(theme.Background), alpha);
             if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) DrawEndpointLabel(canvas, edge.SourceLabel!, EdgeEndpointLabelPoint(points[0], points[1]), color, halo);

@@ -13,6 +13,9 @@ internal static partial class SmokeTests {
         Assert(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "Public SVG rasterization should emit a PNG signature.");
         Assert(System.Text.Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Public SVG rasterization should preserve PNG DPI metadata.");
         AssertThrows<ArgumentOutOfRangeException>(() => SvgRasterizer.ToPng(svg, 0, 60), "Public SVG rasterization should reject invalid output dimensions.");
+        const string intrinsicOnly = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><rect x='80' y='10' width='10' height='20' fill='#ef4444'/></svg>";
+        var intrinsicImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(intrinsicOnly));
+        Assert(IsPixelNear(intrinsicImage.Pixels, intrinsicImage.Width, 85, 20, 239, 68, 68), "Public SVG rasterization should use intrinsic dimensions as the coordinate viewport when viewBox is absent.");
         const string svgWithDtd = "<!DOCTYPE svg [<!ENTITY external SYSTEM 'file:///not-allowed'>]><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>&external;</text></svg>";
         AssertThrows<FormatException>(() => SvgRasterizer.ToPng(svgWithDtd), "Public SVG rasterization should reject DTD and external-entity input.");
     }

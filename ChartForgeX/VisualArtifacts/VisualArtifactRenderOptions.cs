@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.VisualArtifacts;
@@ -144,13 +145,29 @@ public sealed class VisualWatermark {
     public static VisualWatermark FromImage(byte[] imageBytes, string imageMimeType) {
         if (imageBytes == null) throw new ArgumentNullException(nameof(imageBytes));
         if (imageBytes.Length == 0) throw new ArgumentException("Watermark image bytes cannot be empty.", nameof(imageBytes));
-        if (string.IsNullOrWhiteSpace(imageMimeType) || !imageMimeType.Trim().StartsWith("image/", StringComparison.OrdinalIgnoreCase)) {
-            throw new ArgumentException("Watermark image media type must be an image media type.", nameof(imageMimeType));
-        }
+        string normalizedMimeType = NormalizeImageMimeType(imageMimeType);
+        if (!RasterImageDecoder.TryDecode(imageBytes, out _)) throw new ArgumentException("Watermark image bytes must use a supported dependency-free raster format.", nameof(imageBytes));
+        string detectedMimeType = RasterImageDecoder.MimeTypeFor(imageBytes);
+        if (!string.Equals(normalizedMimeType, detectedMimeType, StringComparison.Ordinal)) throw new ArgumentException("Watermark image media type does not match the supplied image bytes.", nameof(imageMimeType));
         return new VisualWatermark(VisualWatermarkKind.Image) {
             _imageBytes = (byte[])imageBytes.Clone(),
-            _imageMimeType = imageMimeType.Trim().ToLowerInvariant()
+            _imageMimeType = normalizedMimeType
         };
+    }
+
+    private static string NormalizeImageMimeType(string imageMimeType) {
+        if (string.IsNullOrWhiteSpace(imageMimeType)) throw new ArgumentException("Watermark image media type cannot be empty.", nameof(imageMimeType));
+        switch (imageMimeType.Trim().ToLowerInvariant()) {
+            case "image/png": return "image/png";
+            case "image/jpeg":
+            case "image/jpg": return "image/jpeg";
+            case "image/gif": return "image/gif";
+            case "image/bmp":
+            case "image/x-ms-bmp": return "image/bmp";
+            case "image/x-portable-pixmap": return "image/x-portable-pixmap";
+            case "image/tiff": return "image/tiff";
+            default: throw new ArgumentException("Watermark image media type must identify a supported JPEG, PNG, GIF, BMP, PPM, or TIFF image.", nameof(imageMimeType));
+        }
     }
 
     private static void ValidateFinite(double value, string parameterName) {

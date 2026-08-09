@@ -186,7 +186,7 @@ internal static class VisualWatermarkRendering {
     }
 
     private static VisualArtifactSize ResolveSvgSize(string svg, VisualArtifact artifact) {
-        if (artifact.NaturalSize.HasValue) return artifact.NaturalSize.Value;
+        if (artifact.PreserveNaturalSize && artifact.NaturalSize.HasValue) return artifact.NaturalSize.Value;
         var root = SvgRootRegex.Match(svg);
         if (!root.Success) throw new InvalidOperationException("Rendered artifact did not produce an SVG root element.");
         var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -196,6 +196,7 @@ internal static class VisualWatermarkRendering {
             if (parts.Length == 4 && TryNumber(parts[2], out var viewWidth) && TryNumber(parts[3], out var viewHeight) && viewWidth > 0 && viewHeight > 0) return new VisualArtifactSize(viewWidth, viewHeight);
         }
         if (attributes.TryGetValue("width", out var width) && attributes.TryGetValue("height", out var height) && TryNumber(TrimPixelSuffix(width), out var parsedWidth) && TryNumber(TrimPixelSuffix(height), out var parsedHeight)) return new VisualArtifactSize(parsedWidth, parsedHeight);
+        if (artifact.NaturalSize.HasValue) return artifact.NaturalSize.Value;
         throw new InvalidOperationException("Rendered artifact SVG does not expose a usable viewBox or numeric width and height.");
     }
 

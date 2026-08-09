@@ -47,6 +47,19 @@ internal static partial class SmokeTests {
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "Topology artifacts should declare Office adapter handoff support.");
         Assert(artifact.Accessibility.Name == "API to database topology" && artifact.Accessibility.Language == "en", "Topology artifacts should preserve accessibility metadata for host adapters.");
         Assert(artifact.Regions.Any(region => region.Id == "api" && region.Kind == "topology-node"), "Topology artifacts should expose host-inspectable regions.");
+
+        var autoChart = TopologyChart.Create()
+            .WithId("auto-regions")
+            .WithViewport(600, 300, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Layered)
+            .AddAutoNode("left", "Left")
+            .AddAutoNode("right", "Right")
+            .AddEdge("left-right", "left", "right");
+        var autoArtifact = autoChart.ToVisualArtifact();
+        var leftBounds = autoArtifact.Regions.Single(region => region.Id == "left").Bounds!.Value;
+        var rightBounds = autoArtifact.Regions.Single(region => region.Id == "right").Bounds!.Value;
+        Assert(leftBounds.Top != rightBounds.Top || leftBounds.Left != rightBounds.Left, "Topology artifact regions should use prepared auto-layout geometry instead of overlapping at the origin.");
     }
 
     private static void TopologyLayoutHintsAndPresetsAffectPreparedGeometry() {
@@ -71,6 +84,15 @@ internal static partial class SmokeTests {
 
         Assert(denseMiddle.Top > denseSource.Bottom, "Minimum rank span should place the target in a later prepared layer.");
         Assert(presentationMiddle.Top - presentationSource.Bottom > denseMiddle.Top - denseSource.Bottom, "Presentation layout should reserve more rank spacing than dense layout.");
+
+        chart.Edges.Single(edge => edge.Id == "source-middle").MinimumRankSpan = 20;
+        var wideSpan = TopologyLayoutDiagnostics.Analyze(chart, new TopologyRenderOptions { IncludeLegend = false }.ApplyLayoutPreset(TopologyLayoutPreset.Dense));
+        var wideSource = wideSpan.Nodes.Single(item => item.Id == "source").Bounds;
+        var wideMiddle = wideSpan.Nodes.Single(item => item.Id == "middle").Bounds;
+        Assert(wideMiddle.Top - wideSource.Bottom > denseMiddle.Top - denseSource.Bottom + 100, "Larger minimum-rank hints should preserve empty physical ranks instead of compacting them.");
+
+        var reused = new TopologyRenderOptions().ApplyLayoutPreset(TopologyLayoutPreset.Dense).ApplyLayoutPreset(TopologyLayoutPreset.Balanced);
+        Assert(reused.NodeDisplayMode == TopologyNodeDisplayMode.Card && reused.WrapNodeLabels == false && reused.MaxNodeLabelLines == 2 && reused.MaxNodeSubtitleLines == 2, "Applying a layout preset to reused options should reset every preset-owned presentation field.");
     }
 
     private static void TopologyAdvancedEdgeContractsRejectInvalidValues() {

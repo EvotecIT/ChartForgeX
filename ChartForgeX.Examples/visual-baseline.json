@@ -4,7 +4,7 @@
     {
       "name": "advanced-topology",
       "width": 920,
-      "height": 520,
+      "height": 584,
       "svg": {
         "minVisualNodes": 32,
         "maxClippedTextNodes": 0,
@@ -12,9 +12,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 239200,
+        "minVisiblePixels": 268640,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1050,
+        "minDistinctColors": 1038,
         "maxEdgeInkPixels": 0
       }
     },
