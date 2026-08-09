@@ -10,6 +10,7 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualWatermarkRendering {
+    private const double MaximumRepeatedWatermarkCount = 10000;
     private static readonly Regex SvgRootRegex = new("<svg\\b(?<attributes>[^>]*)>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     private static readonly Regex AttributeRegex = new("(?<name>[A-Za-z_:][-A-Za-z0-9_:.]*)\\s*=\\s*[\"'](?<value>.*?)[\"']", RegexOptions.CultureInvariant);
 
@@ -35,6 +36,7 @@ internal static class VisualWatermarkRendering {
 
     private static void AppendSvgWatermark(StringBuilder output, VisualWatermark watermark, double width, double height, int index) {
         if (watermark.Repeat) {
+            ValidateRepeatDensity(watermark, width, height);
             var row = 0;
             for (var y = watermark.RepeatSpacingY / 2; y < height; y += watermark.RepeatSpacingY) {
                 var stagger = row++ % 2 == 0 ? 0 : watermark.RepeatSpacingX / 2;
@@ -85,6 +87,7 @@ internal static class VisualWatermarkRendering {
 
     private static void DrawRasterWatermark(RgbaCanvas canvas, VisualWatermark watermark) {
         if (watermark.Repeat) {
+            ValidateRepeatDensity(watermark, canvas.Width, canvas.Height);
             var row = 0;
             for (var y = watermark.RepeatSpacingY / 2; y < canvas.Height; y += watermark.RepeatSpacingY) {
                 var stagger = row++ % 2 == 0 ? 0 : watermark.RepeatSpacingX / 2;
@@ -95,6 +98,14 @@ internal static class VisualWatermarkRendering {
 
         var bounds = ResolveBounds(watermark, canvas.Width, canvas.Height);
         DrawRasterWatermarkAt(canvas, watermark, bounds.CenterX, bounds.CenterY, bounds.Width, bounds.Height);
+    }
+
+    private static void ValidateRepeatDensity(VisualWatermark watermark, double width, double height) {
+        var columns = Math.Ceiling(width / watermark.RepeatSpacingX) + 1;
+        var rows = Math.Ceiling(height / watermark.RepeatSpacingY) + 1;
+        if (columns * rows > MaximumRepeatedWatermarkCount) {
+            throw new InvalidOperationException("Repeated watermark spacing would create more than 10,000 marks. Increase RepeatSpacingX or RepeatSpacingY.");
+        }
     }
 
     private static void DrawRasterWatermarkAt(RgbaCanvas canvas, VisualWatermark watermark, double centerX, double centerY, double? explicitWidth = null, double? explicitHeight = null) {

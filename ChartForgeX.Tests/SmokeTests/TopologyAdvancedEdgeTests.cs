@@ -60,6 +60,48 @@ internal static partial class SmokeTests {
         var leftBounds = autoArtifact.Regions.Single(region => region.Id == "left").Bounds!.Value;
         var rightBounds = autoArtifact.Regions.Single(region => region.Id == "right").Bounds!.Value;
         Assert(leftBounds.Top != rightBounds.Top || leftBounds.Left != rightBounds.Left, "Topology artifact regions should use prepared auto-layout geometry instead of overlapping at the origin.");
+
+        autoChart.Nodes[0].Href = "javascript:alert(1)";
+        autoChart.Edges[0].Href = "data:text/html,bad";
+        var safeArtifact = autoChart.ToVisualArtifact();
+        Assert(safeArtifact.Regions.Single(region => region.Id == "left").Href == null && safeArtifact.Regions.Single(region => region.Id == "left-right").Href == null, "Topology artifact regions should apply the same safe-link policy as SVG output.");
+        autoChart.Nodes[0].Href = "java\tscript:alert(1)";
+        Assert(autoChart.ToVisualArtifact().Regions.Single(region => region.Id == "left").Href == null, "Topology artifact regions should reject control-character-obfuscated script schemes.");
+
+        var orderingChart = TopologyChart.Create()
+            .WithViewport(420, 220)
+            .WithLegend(null)
+            .AddNode("a", "A", 30, 70)
+            .AddNode("b", "B", 260, 70)
+            .AddEdge("high", "a", "b", kind: TopologyEdgeKind.Dependency)
+            .AddEdge("low", "a", "b", kind: TopologyEdgeKind.Connectivity)
+            .WithEdgeLayoutHints("high", routingPriority: 50)
+            .WithEdgeLayoutHints("low", routingPriority: -50)
+            .WithEdgeStroke("high", opacity: 0.25);
+        var orderingOptions = new TopologyRenderOptions { IncludeLegend = false };
+        orderingOptions.SelectedEdgeIds.Add("high");
+        var orderingSvg = orderingChart.ToSvg(orderingOptions);
+        Assert(orderingSvg.IndexOf("data-edge-id=\"low\"", StringComparison.Ordinal) < orderingSvg.IndexOf("data-edge-id=\"high\"", StringComparison.Ordinal), "Explicit edge routing priority should be the primary render-order key.");
+        byte[] selectedLowOpacity = orderingChart.ToPng(orderingOptions);
+        orderingChart.Edges.Single(edgeItem => edgeItem.Id == "high").Opacity = 1D;
+        byte[] selectedFullOpacity = orderingChart.ToPng(orderingOptions);
+        Assert(!selectedLowOpacity.SequenceEqual(selectedFullOpacity), "Selected PNG edges should retain their explicit opacity instead of being forced fully opaque.");
+
+        var wrapped = TopologyChart.Create()
+            .WithViewport(360, 260)
+            .WithLegend(null)
+            .AddNode("wrapped", "Primary service\nwith a wrapped title\nthird line", 40, 40, width: 184, height: 80, subtitle: "First subtitle\nsecond subtitle")
+            .AddNodeDetail("wrapped", "Status", "Ready");
+        var wrappedOptions = new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, MaxNodeLabelLines = 3, MaxNodeSubtitleLines = 3 };
+        var wrappedDiagnostics = TopologyLayoutDiagnostics.Analyze(wrapped, wrappedOptions);
+        Assert(wrappedDiagnostics.Nodes.Single().Bounds.Height > 82, "Detailed card layout should grow to reserve space for wrapped header text.");
+        var wrappedSvg = System.Xml.Linq.XDocument.Parse(wrapped.ToSvg(wrappedOptions));
+        var lastHeader = wrappedSvg.Descendants().Single(element => element.Value == "second subtitle");
+        var firstDetail = wrappedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-node-detail-label", StringComparison.Ordinal));
+        var lastHeaderY = double.Parse(lastHeader.Attribute("y")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+        var firstDetailY = double.Parse(firstDetail.Attribute("y")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert(firstDetailY - 8 > lastHeaderY + 4, "Detailed card separators should start below every rendered title and subtitle line.");
+        Assert(wrapped.ToPng(wrappedOptions).Length > 64, "Wrapped detailed cards should preserve PNG output parity.");
     }
 
     private static void TopologyLayoutHintsAndPresetsAffectPreparedGeometry() {

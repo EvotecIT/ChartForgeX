@@ -4,14 +4,16 @@ using System.Collections.Generic;
 namespace ChartForgeX.SvgRaster;
 
 internal sealed class SvgRasterDocument {
-    public SvgRasterDocument(SvgRasterViewBox viewBox, IReadOnlyList<SvgRasterElement> children) {
+    public SvgRasterDocument(SvgRasterViewBox viewBox, SvgRasterElement root) {
         ViewBox = viewBox;
-        Children = children ?? throw new ArgumentNullException(nameof(children));
+        Root = root ?? throw new ArgumentNullException(nameof(root));
     }
 
     public SvgRasterViewBox ViewBox { get; }
 
-    public IReadOnlyList<SvgRasterElement> Children { get; }
+    public SvgRasterElement Root { get; }
+
+    public IReadOnlyList<SvgRasterElement> Children => Root.Children;
 }
 
 internal sealed class SvgRasterElement {

@@ -16,6 +16,17 @@ internal static partial class SmokeTests {
         const string intrinsicOnly = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><rect x='80' y='10' width='10' height='20' fill='#ef4444'/></svg>";
         var intrinsicImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(intrinsicOnly));
         Assert(IsPixelNear(intrinsicImage.Pixels, intrinsicImage.Width, 85, 20, 239, 68, 68), "Public SVG rasterization should use intrinsic dimensions as the coordinate viewport when viewBox is absent.");
+        const string rootPresentation = "<svg xmlns='http://www.w3.org/2000/svg' width='30' height='10' fill='#ef4444' style='opacity:1'><style>.accent{fill:#2563eb}</style><rect width='10' height='10'/><g class='accent'><rect x='10' width='10' height='10'/></g><rect x='20' width='10' height='10'/></svg>";
+        var rootPresentationImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootPresentation));
+        Assert(IsPixelNear(rootPresentationImage.Pixels, 30, 5, 5, 239, 68, 68), "Public SVG rasterization should preserve inherited root presentation attributes.");
+        Assert(IsPixelNear(rootPresentationImage.Pixels, 30, 15, 5, 37, 99, 235), "Public SVG rasterization should preserve root-contained CSS class rules.");
+        const string rootSelectorSemantics = "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='10' fill='#ef4444'><style>g rect{fill:#2563eb} svg rect.accent{fill:#16a34a}</style><rect width='10' height='10'/><rect class='accent' x='10' width='10' height='10'/></svg>";
+        var rootSelectorImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootSelectorSemantics));
+        Assert(IsPixelNear(rootSelectorImage.Pixels, 20, 5, 5, 239, 68, 68), "Public SVG rasterization should not introduce a selector-visible group around root children.");
+        Assert(IsPixelNear(rootSelectorImage.Pixels, 20, 15, 5, 22, 163, 74), "Public SVG rasterization should retain the source svg root in descendant selector matching.");
+        const string offsetViewBox = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50' viewBox='10 20 200 100' preserveAspectRatio='none' fill='#16a34a'><rect x='10' y='20' width='200' height='100'/></svg>";
+        var offsetViewBoxImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(offsetViewBox));
+        Assert(IsPixelNear(offsetViewBoxImage.Pixels, 100, 50, 25, 22, 163, 74), "Public SVG rasterization should apply a non-zero source viewBox exactly once while preserving root presentation.");
         const string svgWithDtd = "<!DOCTYPE svg [<!ENTITY external SYSTEM 'file:///not-allowed'>]><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>&external;</text></svg>";
         AssertThrows<FormatException>(() => SvgRasterizer.ToPng(svgWithDtd), "Public SVG rasterization should reject DTD and external-entity input.");
     }

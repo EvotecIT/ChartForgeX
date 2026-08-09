@@ -123,7 +123,16 @@ internal static partial class SmokeTests {
 
         AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.RepeatSpacingX = 0.000001, "Repeated watermarks should reject sub-pixel spacing that can create unbounded render loops.");
         AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0 }, "Raster options should reject non-positive DPI metadata.");
+
+        var denseWatermark = VisualWatermark.FromText("DENSE");
+        denseWatermark.Repeat = true;
+        denseWatermark.RepeatSpacingX = 1;
+        denseWatermark.RepeatSpacingY = 1;
+        var denseOptions = new VisualArtifactRenderOptions();
+        denseOptions.Watermarks.Add(denseWatermark);
+        AssertThrows<InvalidOperationException>(() => artifact.ToSvg(denseOptions), "Repeated watermark rendering should reject configurations that exceed the bounded mark count.");
 
         var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
         var pngBytes = PngWriter.WriteRgba(pixel);
@@ -133,8 +142,10 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
 
         var mutableChart = Chart.Create().WithSize(240, 140).WithTitle("Mutable");
+        mutableChart.WithAccessibility(accessibility => accessibility.WithTextAlternative("Mutable chart", "A mutable size chart.", "en"));
         mutableChart.AddBar("Value", new[] { new ChartPoint(1, 2) });
         var mutableArtifact = mutableChart.ToVisualArtifact();
+        Assert(mutableArtifact.Accessibility.Name == "Mutable chart" && mutableArtifact.Accessibility.Description == "A mutable size chart." && mutableArtifact.Accessibility.Language == "en", "Chart artifacts should preserve accessibility metadata for host adapters.");
         mutableChart.WithSize(480, 280);
         var mutableOptions = new VisualArtifactRenderOptions();
         mutableOptions.Watermarks.Add(VisualWatermark.FromText("CURRENT"));

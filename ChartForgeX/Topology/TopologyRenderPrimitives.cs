@@ -517,15 +517,6 @@ internal static partial class TopologyRenderPrimitives {
         return sb.Length == 0 ? "topology" : sb.ToString();
     }
 
-    public static string? SafeHref(string? href) {
-        if (href == null) return null;
-        if (string.IsNullOrWhiteSpace(href)) return null;
-        var value = href.Trim();
-        var lower = value.ToLowerInvariant();
-        if (lower.StartsWith("javascript:", StringComparison.Ordinal) || lower.StartsWith("data:", StringComparison.Ordinal) || lower.StartsWith("vbscript:", StringComparison.Ordinal)) return null;
-        return value;
-    }
-
     public static string CustomCssClasses(string? value) {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
         var tokens = value!.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)

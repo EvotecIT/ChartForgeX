@@ -278,7 +278,7 @@ public sealed partial class TopologyPngRenderer {
             var points = EdgePoints(chart, edge, nodes);
             var isSelected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var baseColor = Color(EdgeColor(edge, theme, options));
-            var routeOpacity = isSelected ? 1 : EdgeOpacity(edge, options);
+            var routeOpacity = EdgeOpacity(edge, options);
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
             var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
             var dashArray = edge.IsMuted ? null : EdgePngDashArray(edge);
@@ -404,15 +404,15 @@ public sealed partial class TopologyPngRenderer {
                         DrawTextLines(canvas, textX, subtitleY, NodeTextLines(node.Subtitle!, textWidth, 10.5, false, options.MaxNodeSubtitleLines, options), Color(theme.MutedForeground), 10.5, false, 12);
                     }
                 }
-                if (displayMode == TopologyNodeDisplayMode.Card && node.Details.Count > 0) DrawNodeDetails(canvas, node, theme);
+                if (displayMode == TopologyNodeDisplayMode.Card && node.Details.Count > 0) DrawNodeDetails(canvas, node, theme, options);
             }
 
             DrawNodeBadge(canvas, node, theme, accent, displayMode);
         }
     }
 
-    private static void DrawNodeDetails(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme) {
-        var startY = node.Y + 63;
+    private static void DrawNodeDetails(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, TopologyRenderOptions options) {
+        var startY = node.Y + NodeDetailStartOffset(node, options);
         var left = node.X + 12;
         var right = node.X + node.Width - 12;
         for (var i = 0; i < node.Details.Count; i++) {
@@ -433,7 +433,7 @@ public sealed partial class TopologyPngRenderer {
         var width = Math.Min(Math.Max(48, canvas.MeasureTextEmphasizedWidth(subtitle, 8.5) + 18), Math.Max(48, node.Width - 50));
         var height = 17.0;
         var x = node.X + 42;
-        var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : node.Height - 22);
+        var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, options));
         canvas.FillRoundedRect(x, y, width, height, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
         canvas.StrokeRoundedRect(x, y, width, height, 8.5, WithAlpha(accent, 115), 1);
         DrawCentered(canvas, x + width / 2, y + 3.8, subtitle, accent, 8.5, true);

@@ -21,12 +21,26 @@ internal static partial class SvgRasterRenderer {
         }
     }
 
+    public static bool TryRenderDocument(string svg, string? preserveAspectRatio, int width, int height, out byte[] rgba) {
+        rgba = Array.Empty<byte>();
+        if (string.IsNullOrWhiteSpace(svg) || width <= 0 || height <= 0) return false;
+
+        try {
+            rgba = RenderDocument(SvgRasterParser.ParseDocument(svg), preserveAspectRatio, width, height);
+            return HasVisiblePixel(rgba);
+        } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
+            return false;
+        }
+    }
+
     private static byte[] RenderDocument(SvgRasterDocument document, string? preserveAspectRatio, int width, int height, int imageDepth = 0) {
         var definitions = SvgRasterDefinitions.From(document);
         var canvas = new RgbaCanvas(width, height, 1);
-        var matrix = SvgRasterMatrix.FromFit(document.ViewBox, width, height, preserveAspectRatio);
-        var ancestors = new List<SvgRasterElement>();
-        foreach (var child in document.Children) RenderElement(canvas, child, SvgRasterStyle.Default, matrix, definitions, width, height, imageDepth, ancestors);
+        var rootStyle = SvgRasterStyle.Resolve(SvgRasterStyle.Default, document.Root, definitions.StyleSheet);
+        var matrix = SvgRasterMatrix.FromFit(document.ViewBox, width, height, preserveAspectRatio)
+            .Multiply(SvgRasterMatrix.ParseTransform(document.Root.Get("transform")));
+        var ancestors = new List<SvgRasterElement> { document.Root };
+        foreach (var child in document.Children) RenderElement(canvas, child, rootStyle, matrix, definitions, width, height, imageDepth, ancestors);
         return canvas.Pixels;
     }
 

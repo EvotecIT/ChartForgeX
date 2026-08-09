@@ -41,8 +41,8 @@ public static class SvgRasterizer {
         string effectiveViewBox = string.IsNullOrWhiteSpace(viewBox)
             ? "0 0 " + viewWidth.ToString(CultureInfo.InvariantCulture) + " " + viewHeight.ToString(CultureInfo.InvariantCulture)
             : viewBox!;
-        string body = string.Concat(root.Nodes().Select(node => node.ToString(SaveOptions.DisableFormatting)));
-        if (!SvgRasterRenderer.TryRenderFragment(body, effectiveViewBox, Attribute(root, "preserveAspectRatio"), targetWidth, targetHeight, out byte[] rgba)) {
+        if (string.IsNullOrWhiteSpace(viewBox)) root.SetAttributeValue("viewBox", effectiveViewBox);
+        if (!SvgRasterRenderer.TryRenderDocument(root.ToString(SaveOptions.DisableFormatting), Attribute(root, "preserveAspectRatio"), targetWidth, targetHeight, out byte[] rgba)) {
             throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.");
         }
         return PngWriter.WriteRgba(targetWidth, targetHeight, rgba, options);

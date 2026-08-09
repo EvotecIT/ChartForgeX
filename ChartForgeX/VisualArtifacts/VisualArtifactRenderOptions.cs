@@ -126,13 +126,13 @@ public sealed class VisualWatermark {
     /// <summary>Gets or sets horizontal spacing between repeated watermark anchors.</summary>
     public double RepeatSpacingX {
         get => _repeatSpacingX;
-        set { ValidatePositive(value, nameof(value)); _repeatSpacingX = value; }
+        set { ValidateRepeatSpacing(value, nameof(value)); _repeatSpacingX = value; }
     }
 
     /// <summary>Gets or sets vertical spacing between repeated watermark anchors.</summary>
     public double RepeatSpacingY {
         get => _repeatSpacingY;
-        set { ValidatePositive(value, nameof(value)); _repeatSpacingY = value; }
+        set { ValidateRepeatSpacing(value, nameof(value)); _repeatSpacingY = value; }
     }
 
     /// <summary>Creates a text watermark.</summary>
@@ -177,6 +177,11 @@ public sealed class VisualWatermark {
     private static void ValidatePositive(double value, string parameterName) {
         ValidateFinite(value, parameterName);
         if (value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be greater than zero.");
+    }
+
+    private static void ValidateRepeatSpacing(double value, string parameterName) {
+        ValidateFinite(value, parameterName);
+        if (value < 1) throw new ArgumentOutOfRangeException(parameterName, value, "Repeat spacing must be at least one pixel.");
     }
 
     private static void ValidateNonNegative(double value, string parameterName) {

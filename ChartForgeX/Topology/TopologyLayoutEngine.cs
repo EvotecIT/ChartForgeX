@@ -12,7 +12,7 @@ internal static partial class TopologyLayoutEngine {
         var copy = Clone(chart);
         ApplyNamedPortSides(copy);
         if (options != null) {
-            ApplyNodeDisplayMode(copy, options.NodeDisplayMode, copy.LayoutMode == TopologyLayoutMode.MindMap);
+            ApplyNodeDisplayMode(copy, options, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
 
         if (view != null) ApplyView(copy, view);
@@ -69,14 +69,14 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
-    private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyNodeDisplayMode displayMode, bool preserveMindMapSizes) {
+    private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyRenderOptions options, bool preserveMindMapSizes) {
         foreach (var node in chart.Nodes) {
             if (node.PreserveDisplayModeSize) continue;
-            if (node.Details.Count > 0 && (node.DisplayMode ?? displayMode) == TopologyNodeDisplayMode.Card) {
+            if (node.Details.Count > 0 && (node.DisplayMode ?? options.NodeDisplayMode) == TopologyNodeDisplayMode.Card) {
                 node.Width = Math.Max(node.Width, 184);
-                node.Height = Math.Max(node.Height, 64 + node.Details.Count * 18);
+                node.Height = Math.Max(node.Height, NodeDetailStartOffset(node, options) + node.Details.Count * 18 + 1);
             }
-            switch (node.DisplayMode ?? displayMode) {
+            switch (node.DisplayMode ?? options.NodeDisplayMode) {
                 case TopologyNodeDisplayMode.CompactCard:
                     if (!preserveMindMapSizes) {
                         node.Width = Math.Min(node.Width, 108);

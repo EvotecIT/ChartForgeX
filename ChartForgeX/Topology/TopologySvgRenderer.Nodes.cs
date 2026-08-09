@@ -204,7 +204,7 @@ public sealed partial class TopologySvgRenderer {
         var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleCharacterLimit);
         AddNodeTextLines(body, titleLines, textX, titleY, theme.Foreground, titleSize, "700", null, displayMode == TopologyNodeDisplayMode.CompactCard ? 13 : 14);
         if (displayMode != TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle)) {
-            if (options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) body.AddElement(BuildCardSubtitleChip(node, prefix, theme, color, displayMode));
+            if (options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) body.AddElement(BuildCardSubtitleChip(node, prefix, theme, color, displayMode, options));
             else {
                 var subtitleStartY = Math.Max(subtitleY, titleY + titleLines.Count * (displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 13) + 3);
                 var subtitleLines = NodeTextLines(node.Subtitle!, textWidth, 10.5, false, options.MaxNodeSubtitleLines, options);
@@ -218,7 +218,7 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static void AddNodeDetails(SvgElement body, TopologyNode node, TopologyTheme theme, TopologyRenderOptions options) {
-        var startY = node.Y + 63;
+        var startY = node.Y + NodeDetailStartOffset(node, options);
         var left = node.X + 12;
         var right = node.X + node.Width - 12;
         for (var i = 0; i < node.Details.Count; i++) {
@@ -307,12 +307,12 @@ public sealed partial class TopologySvgRenderer {
             .Text(TrimTo(symbol, 2)));
     }
 
-    private static SvgElement BuildCardSubtitleChip(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode) {
+    private static SvgElement BuildCardSubtitleChip(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
         var subtitle = TrimTo(node.Subtitle!, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 16);
         var width = Math.Min(Math.Max(48, subtitle.Length * 6 + 18), Math.Max(48, node.Width - 50));
         var height = 17.0;
         var x = node.X + 42;
-        var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : node.Height - 22);
+        var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, options));
         var group = new SvgElement("g")
             .Class(prefix + "__node-card-subtitle")
             .Attribute("data-cfx-role", "topology-node-card-subtitle")

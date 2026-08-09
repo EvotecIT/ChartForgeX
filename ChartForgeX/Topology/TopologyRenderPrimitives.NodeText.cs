@@ -58,6 +58,36 @@ internal static partial class TopologyRenderPrimitives {
         return best.Length == 0 ? value : best;
     }
 
+    public static double NodeDetailStartOffset(TopologyNode node, TopologyRenderOptions options) {
+        var textWidth = Math.Max(24, node.Width - 52);
+        var titleLimit = NodeTitleMaxLength(node, TopologyNodeDisplayMode.Card);
+        var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? titleLimit * Math.Max(1, options.MaxNodeLabelLines) : titleLimit);
+        var titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, 12.5, true, options.MaxNodeLabelLines, options), textWidth, 12.5, 10, true);
+        var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleLimit);
+        var titleLastBaseline = 28 + Math.Max(0, titleLines.Count - 1) * 14;
+        var detailStart = Math.Max(63, titleLastBaseline + 14);
+
+        if (string.IsNullOrWhiteSpace(node.Subtitle)) return detailStart;
+        if (options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) {
+            return Math.Max(detailStart, CardSubtitleChipOffset(node, options) + 28);
+        }
+
+        var subtitleStart = Math.Max(47, 28 + titleLines.Count * 13 + 3);
+        var subtitleLines = NodeTextLines(node.Subtitle!, textWidth, 10.5, false, options.MaxNodeSubtitleLines, options);
+        var subtitleLastBaseline = subtitleStart + Math.Max(0, subtitleLines.Count - 1) * 12;
+        return Math.Max(detailStart, subtitleLastBaseline + 14);
+    }
+
+    public static double CardSubtitleChipOffset(TopologyNode node, TopologyRenderOptions options) {
+        if (node.Details.Count == 0) return node.Height - 22;
+        var textWidth = Math.Max(24, node.Width - 52);
+        var titleLimit = NodeTitleMaxLength(node, TopologyNodeDisplayMode.Card);
+        var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? titleLimit * Math.Max(1, options.MaxNodeLabelLines) : titleLimit);
+        var titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, 12.5, true, options.MaxNodeLabelLines, options), textWidth, 12.5, 10, true);
+        var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleLimit);
+        return Math.Max(36, 28 + Math.Max(0, titleLines.Count - 1) * 14 + 6);
+    }
+
     private static IEnumerable<string> SplitExplicitLines(string value, bool allowMultiline) {
         if (!allowMultiline) {
             yield return value.Replace("\r", " ").Replace("\n", " ");

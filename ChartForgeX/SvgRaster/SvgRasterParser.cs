@@ -27,7 +27,7 @@ internal static class SvgRasterParser {
             viewBox = SvgRasterViewBox.Parse(root.Attribute("viewBox")!.Value);
         }
 
-        return new SvgRasterDocument(viewBox, ReadChildren(root));
+        return new SvgRasterDocument(viewBox, ReadElement(root));
     }
 
     private static XDocument Load(string markup) {

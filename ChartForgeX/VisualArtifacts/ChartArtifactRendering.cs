@@ -27,6 +27,10 @@ public static class ChartArtifactRendering {
         artifact.Metadata["render.model"] = nameof(Chart);
         artifact.Metadata["chart.series"] = chart.Series.Count.ToString(CultureInfo.InvariantCulture);
         if (chart.Series.Count > 0) artifact.Metadata["chart.kind"] = chart.Series[0].Kind.ToString();
+        artifact.Accessibility.Name = chart.Accessibility.Name;
+        artifact.Accessibility.Description = chart.Accessibility.Description;
+        artifact.Accessibility.Language = chart.Accessibility.Language;
+        artifact.Accessibility.IsDecorative = chart.Accessibility.IsDecorative;
         return artifact;
     }
 }

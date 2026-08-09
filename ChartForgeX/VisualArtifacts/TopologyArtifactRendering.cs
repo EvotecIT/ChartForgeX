@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
+using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -34,7 +35,7 @@ public static class TopologyArtifactRendering {
                 Id = edge.Id,
                 Kind = "topology-edge",
                 Label = string.IsNullOrWhiteSpace(edge.Label) ? edge.SourceNodeId + " to " + edge.TargetNodeId : edge.Label!,
-                Href = edge.Href,
+                Href = SafeHref(edge.Href),
                 AlternativeText = edge.Tooltip
             };
             region.Metadata["source"] = edge.SourceNodeId;
@@ -50,7 +51,7 @@ public static class TopologyArtifactRendering {
             Kind = kind,
             Label = label,
             Bounds = width > 0 && height > 0 ? new ChartRect(x, y, width, height) : null,
-            Href = href,
+            Href = SafeHref(href),
             AlternativeText = alternativeText
         };
     }
