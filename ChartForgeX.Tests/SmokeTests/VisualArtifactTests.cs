@@ -55,6 +55,7 @@ internal static partial class SmokeTests {
         Assert(artifact.Model == table, "VisualArtifact should keep the typed table model for native hosts.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Png), "VisualArtifact should expose table preview export capabilities.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Html), "VisualArtifact should expose table HTML preview export support.");
+        Assert(artifact.NaturalSize.HasValue && artifact.NaturalSize.Value.Width == 760 && artifact.NaturalSize.Value.Height == 360, "VisualArtifact should expose the table preview's known natural size.");
         Assert(artifact.Metadata["table.capabilities"].Contains("Virtualization", StringComparison.Ordinal), "VisualArtifact metadata should expose declared table capabilities.");
     }
 
@@ -99,6 +100,7 @@ internal static partial class SmokeTests {
             .AddRow("api", "API", "Healthy")
             .AddRow("worker", "Worker", "Warning");
         var artifact = table.ToVisualArtifact();
+        artifact.Accessibility.Language = "pl-PL";
         var watermark = VisualWatermark.FromText("CONFIDENTIAL");
         watermark.Anchor = ChartForgeX.Composition.VisualCanvasAnchor.Center;
         watermark.RotationDegrees = -28;
@@ -118,6 +120,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact SVG should expose a host-inspectable watermark layer.");
         Assert(svg.Contains("CONFIDENTIAL", StringComparison.Ordinal) && svg.Contains("rotate(-28", StringComparison.Ordinal), "Artifact SVG should preserve text and rotation.");
         Assert(html.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact HTML should embed the same decorated SVG contract.");
+        Assert(html.Contains("<html lang=\"pl-PL\">", StringComparison.Ordinal), "Watermarked artifact HTML should preserve the envelope language.");
         Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
         Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
 

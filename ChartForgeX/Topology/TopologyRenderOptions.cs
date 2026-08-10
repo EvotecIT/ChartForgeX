@@ -8,6 +8,7 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public sealed class TopologyRenderOptions {
     private ChartLineVisualStyle? _edgeVisualStyle;
+    private TopologyLayoutPreset _layoutPreset;
     private double? _layeredNodeSpacing;
     private double? _layeredRankSpacing;
 
@@ -174,7 +175,21 @@ public sealed class TopologyRenderOptions {
     public TopologyViewPreset Preset { get; set; } = TopologyViewPreset.Default;
 
     /// <summary>Gets or sets a reusable spacing and presentation profile.</summary>
-    public TopologyLayoutPreset LayoutPreset { get; set; } = TopologyLayoutPreset.Automatic;
+    public TopologyLayoutPreset LayoutPreset {
+        get => _layoutPreset;
+        set {
+            if (!System.Enum.IsDefined(typeof(TopologyLayoutPreset), value)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Unknown topology layout preset.");
+            var previous = _layoutPreset;
+            _layoutPreset = value;
+            if (value != TopologyLayoutPreset.Automatic || previous == TopologyLayoutPreset.Automatic) return;
+            LayeredNodeSpacing = null;
+            LayeredRankSpacing = null;
+            NodeDisplayMode = TopologyNodeDisplayMode.Card;
+            WrapNodeLabels = false;
+            MaxNodeLabelLines = 2;
+            MaxNodeSubtitleLines = 2;
+        }
+    }
 
     /// <summary>Gets or sets an optional minimum gap between nodes within a layered rank.</summary>
     public double? LayeredNodeSpacing {
@@ -305,6 +320,7 @@ public sealed class TopologyRenderOptions {
         snapshot._edgeVisualStyle = _edgeVisualStyle?.Clone();
         snapshot.Motion = Motion?.Clone();
         snapshot.View = View?.Clone();
+        snapshot.IconCatalog = IconCatalog?.Clone();
         snapshot.HighlightStatuses = new List<TopologyHealthStatus>(HighlightStatuses);
         snapshot.HighlightGroupIds = new List<string>(HighlightGroupIds);
         snapshot.HighlightNodeIds = new List<string>(HighlightNodeIds);

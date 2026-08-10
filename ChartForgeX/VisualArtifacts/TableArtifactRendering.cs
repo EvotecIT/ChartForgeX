@@ -7,6 +7,9 @@ namespace ChartForgeX.VisualArtifacts;
 /// Provides static preview rendering helpers for table artifacts.
 /// </summary>
 public static class TableArtifactRendering {
+    private const int PreviewWidth = 760;
+    private const int PreviewHeight = 360;
+
     /// <summary>
     /// Converts a table artifact into the existing static ChartForgeX table visual block.
     /// </summary>
@@ -17,7 +20,7 @@ public static class TableArtifactRendering {
         var preview = ChartTable.Create()
             .WithTitle(table.Title)
             .WithSubtitle(table.Subtitle)
-            .WithSize(760, 360)
+            .WithSize(PreviewWidth, PreviewHeight)
             .WithTransparentBackground()
             .WithCard(false);
 
@@ -55,6 +58,7 @@ public static class TableArtifactRendering {
         artifact.Title = table.Title;
         artifact.Subtitle = table.Subtitle;
         artifact.ExportFormats = table.ExportFormats | VisualArtifactExportFormat.Html;
+        artifact.NaturalSize = new VisualArtifactSize(PreviewWidth, PreviewHeight);
         artifact.Metadata["table.capabilities"] = table.Capabilities.ToString();
         artifact.Metadata["table.columns"] = table.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
         artifact.Metadata["table.rows"] = table.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);

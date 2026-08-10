@@ -13,6 +13,15 @@ internal static partial class SmokeTests {
         Assert(png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "Public SVG rasterization should emit a PNG signature.");
         Assert(System.Text.Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Public SVG rasterization should preserve PNG DPI metadata.");
         AssertThrows<ArgumentOutOfRangeException>(() => SvgRasterizer.ToPng(svg, 0, 60), "Public SVG rasterization should reject invalid output dimensions.");
+        var widthOnly = RasterImageDecoder.Decode(SvgRasterizer.ToPng(svg, 240, null));
+        var heightOnly = RasterImageDecoder.Decode(SvgRasterizer.ToPng(svg, null, 120));
+        Assert(widthOnly.Width == 240 && widthOnly.Height == 120, "A width-only raster override should derive height from the SVG aspect ratio.");
+        Assert(heightOnly.Width == 240 && heightOnly.Height == 120, "A height-only raster override should derive width from the SVG aspect ratio.");
+        const string partialIntrinsic = "<svg xmlns='http://www.w3.org/2000/svg' width='100' viewBox='0\t0\r\n200 100'><rect width='200' height='100' fill='#2563eb'/></svg>";
+        var partialIntrinsicImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(partialIntrinsic));
+        var partialIntrinsicOverride = RasterImageDecoder.Decode(SvgRasterizer.ToPng(partialIntrinsic, null, 100));
+        Assert(partialIntrinsicImage.Width == 100 && partialIntrinsicImage.Height == 50, "A partial intrinsic viewport should derive its missing axis from the viewBox ratio.");
+        Assert(partialIntrinsicOverride.Width == 200 && partialIntrinsicOverride.Height == 100, "A one-axis override should preserve the derived partial intrinsic aspect ratio.");
         const string intrinsicOnly = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><rect x='80' y='10' width='10' height='20' fill='#ef4444'/></svg>";
         var intrinsicImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(intrinsicOnly));
         Assert(IsPixelNear(intrinsicImage.Pixels, intrinsicImage.Width, 85, 20, 239, 68, 68), "Public SVG rasterization should use intrinsic dimensions as the coordinate viewport when viewBox is absent.");

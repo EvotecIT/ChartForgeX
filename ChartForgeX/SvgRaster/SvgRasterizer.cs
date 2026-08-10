@@ -36,8 +36,14 @@ public static class SvgRasterizer {
         if (!string.Equals(root.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase)) throw new FormatException("SVG content must have an svg document element.");
         string? viewBox = Attribute(root, "viewBox");
         (double viewWidth, double viewHeight) = Viewport(root, viewBox);
-        int targetWidth = width ?? Math.Max(1, (int)Math.Round(viewWidth, MidpointRounding.AwayFromZero));
-        int targetHeight = height ?? Math.Max(1, (int)Math.Round(viewHeight, MidpointRounding.AwayFromZero));
+        int targetWidth = width
+            ?? (height.HasValue
+                ? Math.Max(1, (int)Math.Round(height.Value * viewWidth / viewHeight, MidpointRounding.AwayFromZero))
+                : Math.Max(1, (int)Math.Round(viewWidth, MidpointRounding.AwayFromZero)));
+        int targetHeight = height
+            ?? (width.HasValue
+                ? Math.Max(1, (int)Math.Round(width.Value * viewHeight / viewWidth, MidpointRounding.AwayFromZero))
+                : Math.Max(1, (int)Math.Round(viewHeight, MidpointRounding.AwayFromZero)));
         string effectiveViewBox = string.IsNullOrWhiteSpace(viewBox)
             ? "0 0 " + viewWidth.ToString(CultureInfo.InvariantCulture) + " " + viewHeight.ToString(CultureInfo.InvariantCulture)
             : viewBox!;
@@ -59,9 +65,11 @@ public static class SvgRasterizer {
         double? height = Length(Attribute(root, "height"));
         if (width.HasValue && height.HasValue) return (width.Value, height.Value);
         if (!string.IsNullOrWhiteSpace(viewBox)) {
-            string[] parts = viewBox!.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = viewBox!.Split(new[] { ' ', '\t', '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 4 && Parse(parts[2], out double viewWidth) && Parse(parts[3], out double viewHeight) && viewWidth > 0D && viewHeight > 0D) {
-                return (width ?? viewWidth, height ?? viewHeight);
+                if (width.HasValue) return (width.Value, width.Value * viewHeight / viewWidth);
+                if (height.HasValue) return (height.Value * viewWidth / viewHeight, height.Value);
+                return (viewWidth, viewHeight);
             }
         }
         return (width ?? 800D, height ?? 600D);

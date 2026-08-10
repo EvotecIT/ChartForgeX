@@ -154,6 +154,8 @@ internal static partial class SmokeTests {
 
         var reused = new TopologyRenderOptions().ApplyLayoutPreset(TopologyLayoutPreset.Dense).ApplyLayoutPreset(TopologyLayoutPreset.Balanced);
         Assert(reused.NodeDisplayMode == TopologyNodeDisplayMode.Card && reused.WrapNodeLabels == false && reused.MaxNodeLabelLines == 2 && reused.MaxNodeSubtitleLines == 2, "Applying a layout preset to reused options should reset every preset-owned presentation field.");
+        reused.LayoutPreset = TopologyLayoutPreset.Automatic;
+        Assert(reused.LayeredNodeSpacing == null && reused.LayeredRankSpacing == null && reused.NodeDisplayMode == TopologyNodeDisplayMode.Card && reused.WrapNodeLabels == false && reused.MaxNodeLabelLines == 2 && reused.MaxNodeSubtitleLines == 2, "Returning reused options to Automatic should restore every preset-owned default.");
     }
 
     private static void TopologyAdvancedEdgeContractsRejectInvalidValues() {

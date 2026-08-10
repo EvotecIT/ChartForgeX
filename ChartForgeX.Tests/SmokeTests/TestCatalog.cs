@@ -78,6 +78,7 @@ internal static partial class SmokeTests {
         ("Decorative visuals stay hidden from assistive technology", DecorativeVisualsStayHiddenFromAssistiveTechnology),
         ("Shared design tokens style charts canvases and topology", SharedDesignTokensStyleChartsCanvasesAndTopology),
         ("Typed topology data maps product records deterministically", TypedTopologyDataMapsProductRecordsDeterministically),
+        ("Topology render option clones keep icon catalogs independent", TopologyRenderOptionsCloneKeepsIconCatalogIndependent),
         ("Default static renderers stay deterministic", DefaultStaticRenderersStayDeterministic),
         ("Raster rendering rejects unsafe allocations early", RasterRenderingRejectsUnsafeAllocationsEarly),
         ("Representative rendering stays within release budgets", RepresentativeRenderingStaysWithinReleaseBudgets),
