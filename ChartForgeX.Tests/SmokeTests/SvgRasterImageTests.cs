@@ -109,6 +109,14 @@ internal static partial class SmokeTests {
         Assert(SvgRasterRenderer.TryRenderFragment(overlappingGroup, "0 0 100 40", "none", 100, 40, out var grouped), "SVG rasterization should composite an opaque group before applying its opacity.");
         Assert(PixelAlpha(grouped, 100, 15, 20) is >= 126 and <= 129 && PixelAlpha(grouped, 100, 50, 20) is >= 126 and <= 129, "Group opacity should be applied once to the combined layer, including overlapping children.");
 
+        const string paintedPrimitive = "<rect x='10' y='5' width='60' height='30' fill='#ff0000' stroke='#0000ff' stroke-width='10' opacity='.5'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(paintedPrimitive, "0 0 80 40", "none", 80, 40, out var paintedPrimitivePixels), "SVG rasterization should render a partially opaque primitive with fill and stroke paint.");
+        Assert(PixelAlpha(paintedPrimitivePixels, 80, 12, 20) is >= 126 and <= 129 && PixelAlpha(paintedPrimitivePixels, 80, 40, 20) is >= 126 and <= 129, "Primitive opacity should composite overlapping fill and stroke paint before applying alpha once.");
+
+        const string markedPrimitive = "<defs><marker id='arrow-opacity' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto'><path d='M0 0 L10 5 L0 10 z' fill='#ff0000'/></marker></defs><path d='M10 20 L70 20' fill='none' stroke='#111111' stroke-width='4' marker-end='url(#arrow-opacity)' opacity='.5'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(markedPrimitive, "0 0 80 40", "none", 80, 40, out var markedPrimitivePixels), "SVG rasterization should render a partially opaque stroked path and marker as one painted primitive.");
+        Assert(MaximumAlpha(markedPrimitivePixels) is >= 126 and <= 129, "Path opacity should composite marker and stroke paint before applying alpha once.");
+
         const string rootOpacity = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' opacity='.5'><rect width='70' height='40' fill='#ff0000'/><rect x='30' width='70' height='40' fill='#ff0000'/></svg>";
         var rootOpacityImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootOpacity));
         Assert(PixelAlpha(rootOpacityImage.Pixels, 100, 15, 20) is >= 126 and <= 129 && PixelAlpha(rootOpacityImage.Pixels, 100, 50, 20) is >= 126 and <= 129, "Root opacity should be applied once after compositing all root children.");

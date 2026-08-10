@@ -77,7 +77,7 @@ internal static partial class SvgRasterRenderer {
         if (IsDefinitionElement(element.Name)) return;
         var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(element, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(element, "mask"), out var maskDefinition);
-        var compositeOpacity = RequiresOpacityLayer(element) && style.Opacity < 0.999;
+        var compositeOpacity = RequiresOpacityLayer(element, style) && style.Opacity < 0.999;
         if (hasClipPath || hasMask || compositeOpacity) {
             var content = new RgbaCanvas(width, height, 1);
             var contentStyle = style;
@@ -111,8 +111,19 @@ internal static partial class SvgRasterRenderer {
         RenderElementCore(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
     }
 
-    private static bool RequiresOpacityLayer(SvgRasterElement element) =>
-        element.Children.Count > 0 || string.Equals(element.Name, "use", StringComparison.Ordinal);
+    private static bool RequiresOpacityLayer(SvgRasterElement element, SvgRasterStyle style) {
+        if (element.Children.Count > 0 || string.Equals(element.Name, "use", StringComparison.Ordinal)) return true;
+        if (HasMarkerPaint(element)) return true;
+        if (style.Fill.IsNone || style.FillOpacity <= 0 || style.Stroke.IsNone || style.StrokeOpacity <= 0 || style.StrokeWidth <= 0) return false;
+        return string.Equals(element.Name, "path", StringComparison.Ordinal) ||
+               string.Equals(element.Name, "rect", StringComparison.Ordinal) ||
+               string.Equals(element.Name, "circle", StringComparison.Ordinal) ||
+               string.Equals(element.Name, "ellipse", StringComparison.Ordinal) ||
+               string.Equals(element.Name, "polygon", StringComparison.Ordinal);
+    }
+
+    private static bool HasMarkerPaint(SvgRasterElement element) =>
+        ReferenceId(element, "marker-start") != null || ReferenceId(element, "marker-end") != null;
 
     private static void RenderElementCore(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
         switch (element.Name) {
