@@ -17,7 +17,7 @@ public static class TopologyArtifactRendering {
         artifact.Title = topology.Title ?? string.Empty;
         artifact.Subtitle = topology.Subtitle ?? string.Empty;
         artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json | VisualArtifactExportFormat.Office;
         artifact.Metadata["render.model"] = nameof(TopologyChart);
         artifact.Metadata["topology.layout"] = topology.LayoutMode.ToString();
         artifact.Metadata["topology.nodes"] = topology.Nodes.Count.ToString(CultureInfo.InvariantCulture);

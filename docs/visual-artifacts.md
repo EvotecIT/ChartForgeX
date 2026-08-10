@@ -64,9 +64,11 @@ Topology and flow are intentionally separate artifact contracts. Native topology
 
 ## OfficeIMO Handoff
 
-ChartForgeX does not reference an Office or PDF runtime. Its responsibility ends at a deterministic `VisualArtifact` with SVG/PNG renderers, natural pixel size, accessibility text, metadata, and inspectable regions. The optional `OfficeIMO.ChartForgeX` adapter converts that envelope into OfficeIMO drawing primitives, preferring editable/vector SVG and reporting any fallback or unsupported SVG feature. OfficeIMO then owns Word, Excel, PowerPoint, and PDF placement, page sizing, native document watermarks, PDF composition, and document security. This keeps CFX dependency-free while allowing every supported chart and diagram family to travel through one document pipeline.
+ChartForgeX does not reference an Office, PDF, or Visio runtime. Its responsibility ends at a deterministic `VisualArtifact`, static SVG/PNG output, and a versioned semantic interchange envelope. `ToInterchangeEnvelope()`, `ToInterchangeJson()`, and `ToInterchangeUtf8Json()` preserve product-neutral groups, nodes, ports, details, edges, notes, metadata, and accessibility for topology, flow, and sequence artifacts, plus prepared coordinates where the source model provides them. The UTF-8 JSON form is the boundary for processes and separately loaded PowerShell modules; it avoids CLR type-identity coupling without turning SVG into a data model.
 
-For an extension or specialized CFX surface that only exposes SVG, pass its deterministic SVG markup through `OfficeVisualSource`. That portable route also avoids CLR type identity coupling between separately loaded PowerShell modules or processes.
+The optional `OfficeIMO.ChartForgeX` adapter uses the two outputs for different jobs. SVG remains the flat vector or raster fallback for Word, Excel, PowerPoint, PDF, and unsupported diagram families. The semantic envelope projects supported topology, flow, and sequence artifacts into native editable OfficeIMO.Visio shapes, containers, connectors, Shape Data, hyperlinks, sequence messages, activations, notes, and fragments. The adapter reports layout normalization and unsupported semantics instead of claiming exact fidelity. OfficeIMO owns document placement, native Visio authoring, page sizing, document watermarks, PDF composition, and security.
+
+For an extension or specialized CFX surface that only exposes SVG, pass its deterministic SVG markup through `OfficeVisualSource`. That route supports flat Office placement; native editable Visio requires a supported semantic interchange envelope.
 
 ```csharp
 using ChartForgeX.Markup;

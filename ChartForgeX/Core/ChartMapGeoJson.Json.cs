@@ -46,7 +46,12 @@ internal sealed class GeoJsonValue {
     }
 
     public static GeoJsonValue Parse(string json) {
-        var reader = new GeoJsonReader(json);
+        var reader = new GeoJsonReader(json, StringComparer.OrdinalIgnoreCase);
+        return reader.Parse();
+    }
+
+    public static GeoJsonValue Parse(string json, IEqualityComparer<string> propertyComparer) {
+        var reader = new GeoJsonReader(json, propertyComparer);
         return reader.Parse();
     }
 
@@ -66,6 +71,12 @@ internal sealed class GeoJsonValue {
         if (_value is GeoJsonNumber number) return number.Value;
         throw new ArgumentException("Expected JSON number for " + context + ".");
     }
+
+    public string AsString(string context) =>
+        _value as string ?? throw new ArgumentException("Expected JSON string for " + context + ".");
+
+    public bool AsBoolean(string context) =>
+        _value is bool value ? value : throw new ArgumentException("Expected JSON boolean for " + context + ".");
 
     public string? AsOptionalString() {
         if (_value == null) return null;
@@ -113,10 +124,12 @@ internal static class GeoJsonValueExtensions {
 
 internal sealed class GeoJsonReader {
     private readonly string _json;
+    private readonly IEqualityComparer<string> _propertyComparer;
     private int _position;
 
-    public GeoJsonReader(string json) {
+    public GeoJsonReader(string json, IEqualityComparer<string> propertyComparer) {
         _json = json ?? throw new ArgumentNullException(nameof(json));
+        _propertyComparer = propertyComparer ?? throw new ArgumentNullException(nameof(propertyComparer));
     }
 
     public GeoJsonValue Parse() {
@@ -142,7 +155,7 @@ internal sealed class GeoJsonReader {
 
     private GeoJsonValue ReadObject() {
         Expect('{');
-        var values = new Dictionary<string, GeoJsonValue>(StringComparer.OrdinalIgnoreCase);
+        var values = new Dictionary<string, GeoJsonValue>(_propertyComparer);
         SkipWhiteSpace();
         if (TryRead('}')) return GeoJsonValue.Object(values);
         while (true) {

@@ -1,0 +1,270 @@
+using System;
+using System.Collections.Generic;
+
+namespace ChartForgeX.VisualArtifacts;
+
+/// <summary>
+/// Represents the versioned, renderer-independent semantic form of a visual artifact.
+/// </summary>
+/// <remarks>
+/// The interchange envelope is intended for package, process, and PowerShell assembly-load-context
+/// boundaries. It carries diagram semantics while rendered SVG remains an independent fallback.
+/// </remarks>
+public sealed class VisualArtifactInterchangeEnvelope {
+    /// <summary>The schema identifier emitted by this ChartForgeX version.</summary>
+    public const string SchemaId = "chartforgex.visual-artifact";
+
+    /// <summary>The schema version emitted by this ChartForgeX version.</summary>
+    public const int CurrentVersion = 1;
+
+    private string _id = string.Empty;
+    private string _title = string.Empty;
+    private string _subtitle = string.Empty;
+    private string _layout = string.Empty;
+    private string _direction = string.Empty;
+
+    /// <summary>Gets the schema identifier.</summary>
+    public string Schema => SchemaId;
+
+    /// <summary>Gets the schema version.</summary>
+    public int Version => CurrentVersion;
+
+    /// <summary>Gets or sets the visual artifact kind.</summary>
+    public VisualArtifactKind Kind { get; set; }
+
+    /// <summary>Gets or sets the source language used to author the artifact.</summary>
+    public VisualArtifactSourceLanguage SourceLanguage { get; set; }
+
+    /// <summary>Gets or sets the stable artifact identifier.</summary>
+    public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the artifact title.</summary>
+    public string Title { get => _title; set => _title = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the artifact subtitle.</summary>
+    public string Subtitle { get => _subtitle; set => _subtitle = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the product-neutral layout token.</summary>
+    public string Layout { get => _layout; set => _layout = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the product-neutral layout direction token.</summary>
+    public string Direction { get => _direction; set => _direction = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the natural width in pixels when known.</summary>
+    public double? Width { get; set; }
+
+    /// <summary>Gets or sets the natural height in pixels when known.</summary>
+    public double? Height { get; set; }
+
+    /// <summary>Gets or sets the accessible name.</summary>
+    public string? AccessibleName { get; set; }
+
+    /// <summary>Gets or sets the accessible description.</summary>
+    public string? AccessibleDescription { get; set; }
+
+    /// <summary>Gets or sets the BCP 47 language tag.</summary>
+    public string? Language { get; set; }
+
+    /// <summary>Gets or sets whether the artifact is decorative.</summary>
+    public bool IsDecorative { get; set; }
+
+    /// <summary>Gets artifact-level metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Gets logical groups, lanes, or containers.</summary>
+    public List<VisualArtifactInterchangeGroup> Groups { get; } = new();
+
+    /// <summary>Gets semantic nodes or participants.</summary>
+    public List<VisualArtifactInterchangeNode> Nodes { get; } = new();
+
+    /// <summary>Gets semantic edges or messages.</summary>
+    public List<VisualArtifactInterchangeEdge> Edges { get; } = new();
+
+    /// <summary>Gets notes, blocks, and other diagram annotations.</summary>
+    public List<VisualArtifactInterchangeAnnotation> Annotations { get; } = new();
+
+    /// <summary>Serializes the envelope to deterministic UTF-8 JSON text.</summary>
+    public string ToJson() => VisualArtifactInterchangeJson.Serialize(this);
+
+    /// <summary>Serializes the envelope to deterministic UTF-8 JSON bytes.</summary>
+    public byte[] ToUtf8Json() => System.Text.Encoding.UTF8.GetBytes(ToJson());
+
+    /// <summary>Parses and validates an interchange envelope from JSON text.</summary>
+    public static VisualArtifactInterchangeEnvelope FromJson(string json) => VisualArtifactInterchangeJson.Deserialize(json);
+
+    /// <summary>Parses and validates an interchange envelope from UTF-8 JSON bytes.</summary>
+    public static VisualArtifactInterchangeEnvelope FromUtf8Json(byte[] json) {
+        if (json == null) throw new ArgumentNullException(nameof(json));
+        return FromJson(new System.Text.UTF8Encoding(false, true).GetString(json));
+    }
+}
+
+/// <summary>Represents one logical group, lane, or container.</summary>
+public sealed class VisualArtifactInterchangeGroup {
+    /// <summary>Gets or sets the stable group id.</summary>
+    public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the semantic group kind token.</summary>
+    public string Kind { get; set; } = string.Empty;
+    /// <summary>Gets or sets the visible group label.</summary>
+    public string Label { get; set; } = string.Empty;
+    /// <summary>Gets or sets the optional subtitle.</summary>
+    public string? Subtitle { get; set; }
+    /// <summary>Gets or sets the semantic status token.</summary>
+    public string? Status { get; set; }
+    /// <summary>Gets or sets the optional accent color.</summary>
+    public string? Color { get; set; }
+    /// <summary>Gets or sets an optional navigation target.</summary>
+    public string? Href { get; set; }
+    /// <summary>Gets or sets optional tooltip text.</summary>
+    public string? Tooltip { get; set; }
+    /// <summary>Gets or sets the prepared x-coordinate.</summary>
+    public double? X { get; set; }
+    /// <summary>Gets or sets the prepared y-coordinate.</summary>
+    public double? Y { get; set; }
+    /// <summary>Gets or sets the prepared width.</summary>
+    public double? Width { get; set; }
+    /// <summary>Gets or sets the prepared height.</summary>
+    public double? Height { get; set; }
+    /// <summary>Gets group metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>Represents one semantic diagram node or participant.</summary>
+public sealed class VisualArtifactInterchangeNode {
+    /// <summary>Gets or sets the stable node id.</summary>
+    public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the semantic node kind token.</summary>
+    public string Kind { get; set; } = string.Empty;
+    /// <summary>Gets or sets the visible node label.</summary>
+    public string Label { get; set; } = string.Empty;
+    /// <summary>Gets or sets the optional subtitle.</summary>
+    public string? Subtitle { get; set; }
+    /// <summary>Gets or sets the parent group id.</summary>
+    public string? GroupId { get; set; }
+    /// <summary>Gets or sets the semantic status token.</summary>
+    public string? Status { get; set; }
+    /// <summary>Gets or sets the reusable icon id.</summary>
+    public string? IconId { get; set; }
+    /// <summary>Gets or sets the short visual symbol.</summary>
+    public string? Symbol { get; set; }
+    /// <summary>Gets or sets optional badge text.</summary>
+    public string? Badge { get; set; }
+    /// <summary>Gets or sets the optional accent color.</summary>
+    public string? Color { get; set; }
+    /// <summary>Gets or sets the optional background color.</summary>
+    public string? BackgroundColor { get; set; }
+    /// <summary>Gets or sets an optional navigation target.</summary>
+    public string? Href { get; set; }
+    /// <summary>Gets or sets optional tooltip text.</summary>
+    public string? Tooltip { get; set; }
+    /// <summary>Gets or sets the prepared x-coordinate.</summary>
+    public double? X { get; set; }
+    /// <summary>Gets or sets the prepared y-coordinate.</summary>
+    public double? Y { get; set; }
+    /// <summary>Gets or sets the prepared width.</summary>
+    public double? Width { get; set; }
+    /// <summary>Gets or sets the prepared height.</summary>
+    public double? Height { get; set; }
+    /// <summary>Gets node metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets named attachment ports.</summary>
+    public List<VisualArtifactInterchangePort> Ports { get; } = new();
+    /// <summary>Gets typed label/value detail rows.</summary>
+    public List<VisualArtifactInterchangeDetail> Details { get; } = new();
+}
+
+/// <summary>Represents one named node attachment port.</summary>
+public sealed class VisualArtifactInterchangePort {
+    /// <summary>Gets or sets the node-local stable port id.</summary>
+    public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the attachment side token.</summary>
+    public string Side { get; set; } = string.Empty;
+    /// <summary>Gets or sets the normalized position along the side.</summary>
+    public double Offset { get; set; } = 0.5;
+    /// <summary>Gets or sets the optional visible label.</summary>
+    public string? Label { get; set; }
+    /// <summary>Gets port metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>Represents one typed node detail row.</summary>
+public sealed class VisualArtifactInterchangeDetail {
+    /// <summary>Gets or sets the row label.</summary>
+    public string Label { get; set; } = string.Empty;
+    /// <summary>Gets or sets the row value.</summary>
+    public string Value { get; set; } = string.Empty;
+    /// <summary>Gets or sets an optional icon id.</summary>
+    public string? IconId { get; set; }
+    /// <summary>Gets or sets an optional semantic status token.</summary>
+    public string? Status { get; set; }
+    /// <summary>Gets or sets an optional accent color.</summary>
+    public string? Color { get; set; }
+    /// <summary>Gets detail metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>Represents one semantic edge, connector, or sequence message.</summary>
+public sealed class VisualArtifactInterchangeEdge {
+    /// <summary>Gets or sets the stable edge id.</summary>
+    public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the semantic edge kind token.</summary>
+    public string Kind { get; set; } = string.Empty;
+    /// <summary>Gets or sets the source node id.</summary>
+    public string SourceId { get; set; } = string.Empty;
+    /// <summary>Gets or sets the target node id.</summary>
+    public string TargetId { get; set; } = string.Empty;
+    /// <summary>Gets or sets the primary label.</summary>
+    public string? Label { get; set; }
+    /// <summary>Gets or sets the secondary label.</summary>
+    public string? SecondaryLabel { get; set; }
+    /// <summary>Gets or sets the tertiary label.</summary>
+    public string? TertiaryLabel { get; set; }
+    /// <summary>Gets or sets the source endpoint label.</summary>
+    public string? SourceLabel { get; set; }
+    /// <summary>Gets or sets the target endpoint label.</summary>
+    public string? TargetLabel { get; set; }
+    /// <summary>Gets or sets the semantic status token.</summary>
+    public string? Status { get; set; }
+    /// <summary>Gets or sets the direction token.</summary>
+    public string? Direction { get; set; }
+    /// <summary>Gets or sets the line-style token.</summary>
+    public string? LineStyle { get; set; }
+    /// <summary>Gets or sets the source attachment side.</summary>
+    public string? SourcePort { get; set; }
+    /// <summary>Gets or sets the target attachment side.</summary>
+    public string? TargetPort { get; set; }
+    /// <summary>Gets or sets the named source port id.</summary>
+    public string? SourcePortId { get; set; }
+    /// <summary>Gets or sets the named target port id.</summary>
+    public string? TargetPortId { get; set; }
+    /// <summary>Gets or sets an optional accent color.</summary>
+    public string? Color { get; set; }
+    /// <summary>Gets or sets an optional navigation target.</summary>
+    public string? Href { get; set; }
+    /// <summary>Gets or sets optional tooltip text.</summary>
+    public string? Tooltip { get; set; }
+    /// <summary>Gets or sets the semantic order of the edge.</summary>
+    public int Order { get; set; }
+    /// <summary>Gets edge metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>Represents one semantic diagram note, block, or annotation.</summary>
+public sealed class VisualArtifactInterchangeAnnotation {
+    /// <summary>Gets or sets the stable annotation id.</summary>
+    public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the semantic annotation kind token.</summary>
+    public string Kind { get; set; } = string.Empty;
+    /// <summary>Gets or sets the annotation text.</summary>
+    public string Text { get; set; } = string.Empty;
+    /// <summary>Gets or sets an optional placement token.</summary>
+    public string? Placement { get; set; }
+    /// <summary>Gets or sets the first covered semantic step index.</summary>
+    public int? StartIndex { get; set; }
+    /// <summary>Gets or sets the last covered semantic step index.</summary>
+    public int? EndIndex { get; set; }
+    /// <summary>Gets referenced node ids.</summary>
+    public List<string> TargetIds { get; } = new();
+    /// <summary>Gets annotation metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}

@@ -52,7 +52,7 @@ public enum VisualArtifactSourceLanguage {
 }
 
 /// <summary>
-/// Declares static export formats an artifact can produce without host-specific UI.
+/// Declares static export and host-projection formats supported by an artifact.
 /// </summary>
 [Flags]
 public enum VisualArtifactExportFormat {
@@ -70,7 +70,7 @@ public enum VisualArtifactExportFormat {
     Json = 16,
     /// <summary>Markdown export.</summary>
     Markdown = 32,
-    /// <summary>Document or spreadsheet handoff export.</summary>
+    /// <summary>Document, spreadsheet, presentation, PDF, or diagram host projection.</summary>
     Office = 64
 }
 
