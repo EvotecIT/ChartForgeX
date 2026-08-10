@@ -106,6 +106,24 @@ internal static partial class SmokeTests {
         byte[] mutedInferredDashPng = chart.ToPng(options);
         Assert(!mutedCustomDashPng.SequenceEqual(mutedInferredDashPng), "Muted PNG edges should preserve explicit dash patterns while suppressing only inferred status dashes.");
 
+        var explicitMarkerChart = TopologyChart.Create()
+            .WithViewport(360, 180)
+            .WithLegend(null)
+            .AddNode("left", "Left", 30, 55, width: 90, height: 54)
+            .AddNode("right", "Right", 240, 55, width: 90, height: 54)
+            .AddEdge("explicit", "left", "right", direction: VisualLinkDirection.None)
+            .WithEdgeMarkers("explicit", TopologyMarkerKind.Circle, TopologyMarkerKind.Diamond);
+        var markersHidden = new TopologyRenderOptions { IncludeLegend = false, IncludeDirectionMarkers = false };
+        var explicitMarkerSvg = explicitMarkerChart.ToSvg(markersHidden);
+        var explicitMarkerPng = explicitMarkerChart.ToPng(markersHidden);
+        Assert(explicitMarkerSvg.Contains("marker-start=", StringComparison.Ordinal) && explicitMarkerSvg.Contains("marker-end=", StringComparison.Ordinal), "Explicit endpoint markers should remain visible when inferred direction markers are disabled.");
+        explicitMarkerChart.WithEdgeMarkers("explicit", null, null);
+        explicitMarkerChart.Edges.Single().Direction = VisualLinkDirection.Forward;
+        var inferredMarkerSvg = explicitMarkerChart.ToSvg(markersHidden);
+        var inferredMarkerPng = explicitMarkerChart.ToPng(markersHidden);
+        Assert(!inferredMarkerSvg.Contains("marker-start=", StringComparison.Ordinal) && !inferredMarkerSvg.Contains("marker-end=", StringComparison.Ordinal), "Disabling direction markers should suppress only markers inferred from edge direction.");
+        Assert(!explicitMarkerPng.SequenceEqual(inferredMarkerPng), "PNG output should preserve explicit endpoint markers independently of direction-marker visibility.");
+
         var wrapped = TopologyChart.Create()
             .WithViewport(360, 260)
             .WithLegend(null)
@@ -151,6 +169,32 @@ internal static partial class SmokeTests {
         var wideSource = wideSpan.Nodes.Single(item => item.Id == "source").Bounds;
         var wideMiddle = wideSpan.Nodes.Single(item => item.Id == "middle").Bounds;
         Assert(wideMiddle.Top - wideSource.Bottom > denseMiddle.Top - denseSource.Bottom + 100, "Larger minimum-rank hints should preserve empty physical ranks instead of compacting them.");
+
+        var cyclic = TopologyChart.Create()
+            .WithViewport(640, 420, 24)
+            .WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Layered)
+            .AddAutoNode("a", "A")
+            .AddAutoNode("b", "B")
+            .AddAutoNode("c", "C")
+            .AddEdge("a-b", "a", "b")
+            .AddEdge("b-a", "b", "a")
+            .AddEdge("b-c", "b", "c")
+            .WithEdgeLayoutHints("b-c", minimumRankSpan: 3);
+        var preparedCycle = TopologyLayoutEngine.Prepare(cyclic, options: new TopologyRenderOptions { IncludeLegend = false });
+        var bRank = int.Parse(preparedCycle.Nodes.Single(node => node.Id == "b").Metadata["layer"], System.Globalization.CultureInfo.InvariantCulture);
+        var cRank = int.Parse(preparedCycle.Nodes.Single(node => node.Id == "c").Metadata["layer"], System.Globalization.CultureInfo.InvariantCulture);
+        Assert(cRank >= bRank + 3, "Rank hints should propagate from cyclic components into their acyclic descendants.");
+
+        var detailed = TopologyChart.Create()
+            .WithViewport(360, 220)
+            .WithLegend(null)
+            .AddNode("detail", "Detailed", 60, 60, width: 120, height: 60)
+            .AddNodeDetail("detail", "Region", "EU")
+            .AddNodeDetail("detail", "State", "Ready");
+        var hiddenDetails = TopologyLayoutEngine.Prepare(detailed, options: new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false }).Nodes.Single();
+        var visibleDetails = TopologyLayoutEngine.Prepare(detailed, options: new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = true }).Nodes.Single();
+        Assert(hiddenDetails.Width < visibleDetails.Width && hiddenDetails.Height < visibleDetails.Height, "Hidden node labels should not reserve card width or height for detail rows that are not rendered.");
 
         var reused = new TopologyRenderOptions().ApplyLayoutPreset(TopologyLayoutPreset.Dense).ApplyLayoutPreset(TopologyLayoutPreset.Balanced);
         Assert(reused.NodeDisplayMode == TopologyNodeDisplayMode.Card && reused.WrapNodeLabels == false && reused.MaxNodeLabelLines == 2 && reused.MaxNodeSubtitleLines == 2, "Applying a layout preset to reused options should reset every preset-owned presentation field.");

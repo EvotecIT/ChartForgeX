@@ -60,7 +60,7 @@ internal static partial class SvgRasterRenderer {
         if (hasMask) {
             var masked = new RgbaCanvas(width, height, 1);
             var mask = new RgbaCanvas(width, height, 1);
-            RenderMask(mask, maskDefinition, matrix, definitions, width, height, target.Pixels, viewport);
+            RenderMask(mask, maskDefinition, matrix, definitions, width, height, target.Pixels, viewport, document.Root, rootStyle, ancestors);
             masked.DrawImageMasked(0, 0, width, height, target.Pixels, mask.Pixels, maskDefinition.UsesAlpha);
             target = masked;
         }
@@ -106,7 +106,7 @@ internal static partial class SvgRasterRenderer {
 
             if (hasMask) {
                 var mask = new RgbaCanvas(width, height, 1);
-                RenderMask(mask, maskDefinition, matrix, definitions, width, height, content.Pixels, childViewport);
+                RenderMask(mask, maskDefinition, matrix, definitions, width, height, content.Pixels, childViewport, element, style, ancestors);
                 var maskedContent = new RgbaCanvas(width, height, 1);
                 maskedContent.DrawImageMasked(0, 0, width, height, content.Pixels, mask.Pixels, maskDefinition.UsesAlpha);
                 content = maskedContent;
@@ -467,12 +467,22 @@ internal static partial class SvgRasterRenderer {
         foreach (var child in clipPath.Element.Children) RenderClipElement(mask, child, clipStyle, clipMatrix, definitions.StyleSheet, ancestors, viewport);
     }
 
-    private static void RenderMask(RgbaCanvas mask, SvgRasterMask maskDefinition, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, byte[] targetPixels, SvgRasterViewport viewport) {
-        if (!TryVisibleBounds(targetPixels, width, height, matrix, out var bounds)) return;
+    private static void RenderMask(RgbaCanvas mask, SvgRasterMask maskDefinition, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, byte[] targetPixels, SvgRasterViewport viewport, SvgRasterElement targetElement, SvgRasterStyle targetStyle, IReadOnlyList<SvgRasterElement> targetAncestors) {
+        if (!TryVisibleBounds(targetPixels, width, height, matrix, out var paintedBounds)) return;
+        var bounds = TryObjectBounds(targetElement, targetStyle, targetAncestors, definitions, viewport, out var objectBounds) ? objectBounds : paintedBounds;
         var content = new RgbaCanvas(width, height, 1);
         var maskMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(maskDefinition.Element.Get("transform")));
+        if (!maskDefinition.ContentUserSpaceOnUse) {
+            maskMatrix = matrix
+                .Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top))
+                .Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height))
+                .Multiply(SvgRasterMatrix.ParseTransform(maskDefinition.Element.Get("transform")));
+        }
         var ancestors = new List<SvgRasterElement>(maskDefinition.Ancestors) { maskDefinition.Element };
-        foreach (var child in maskDefinition.Element.Children) RenderElement(content, child, maskDefinition.RootStyle, maskMatrix, definitions, width, height, 0, ancestors, viewport);
+        foreach (var child in maskDefinition.Element.Children) {
+            var maskChild = maskDefinition.ContentUserSpaceOnUse ? child : ResolveObjectBoundingBoxContent(child, definitions, 0);
+            RenderElement(content, maskChild, maskDefinition.RootStyle, maskMatrix, definitions, width, height, 0, ancestors, viewport);
+        }
 
         var region = MaskRegion(maskDefinition, matrix, bounds, viewport);
         if (region.Count == 0) return;

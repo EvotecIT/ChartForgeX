@@ -37,4 +37,6 @@ internal sealed class SvgRasterElement {
 
     public bool TryGet(string name, out string value) =>
         _attributes.TryGetValue(name, out value!);
+
+    public Dictionary<string, string> CopyAttributes() => new(_attributes, StringComparer.Ordinal);
 }

@@ -401,7 +401,7 @@ public sealed partial class TopologySvgRenderer {
         var cx = displayMode is TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Tile ? CenterX(node) : node.X + 22;
         var cy = displayMode == TopologyNodeDisplayMode.Tile
             ? node.Y + node.Height / 2 - 1
-            : displayMode == TopologyNodeDisplayMode.Card && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
+            : displayMode == TopologyNodeDisplayMode.Card && options.IncludeNodeLabels && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
         var size = displayMode == TopologyNodeDisplayMode.Pill ? 18 : displayMode == TopologyNodeDisplayMode.Icon ? 26 : displayMode == TopologyNodeDisplayMode.Tile ? 24 : 22;
         var icon = parent.Element("g", group => group
             .Class(prefix + "__node-icon")

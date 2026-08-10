@@ -293,10 +293,8 @@ public sealed partial class TopologyPngRenderer {
             }
             DrawPremiumEdgeRoute(canvas, routePoints, color, width, dashArray, edge, options, isSelected);
 
-            if (options.IncludeDirectionMarkers) {
-                DrawEndpointMarker(canvas, routePoints[1], routePoints[0], color, EffectiveSourceMarker(edge), options);
-                DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, EffectiveTargetMarker(edge), options);
-            }
+            DrawEndpointMarker(canvas, routePoints[1], routePoints[0], color, RenderedSourceMarker(edge, options.IncludeDirectionMarkers), options);
+            DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, RenderedTargetMarker(edge, options.IncludeDirectionMarkers), options);
         }
     }
 
@@ -505,7 +503,7 @@ public sealed partial class TopologyPngRenderer {
         var cx = displayMode is TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Tile ? CenterX(node) : node.X + 22;
         var cy = displayMode == TopologyNodeDisplayMode.Tile
             ? node.Y + node.Height / 2 - 1
-            : displayMode == TopologyNodeDisplayMode.Card && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
+            : displayMode == TopologyNodeDisplayMode.Card && options.IncludeNodeLabels && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
         var size = displayMode == TopologyNodeDisplayMode.Pill ? 18 : displayMode == TopologyNodeDisplayMode.Icon ? 26 : displayMode == TopologyNodeDisplayMode.Tile ? 24 : 22;
         if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) {
             canvas.DrawCircleOutline(cx - 5, cy, 7, ChartColor.White, 2.4);

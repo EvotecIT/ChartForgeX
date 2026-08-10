@@ -72,7 +72,7 @@ internal static partial class TopologyLayoutEngine {
     private static void ApplyNodeDisplayMode(TopologyChart chart, TopologyRenderOptions options, bool preserveMindMapSizes) {
         foreach (var node in chart.Nodes) {
             if (node.PreserveDisplayModeSize) continue;
-            if (node.Details.Count > 0 && (node.DisplayMode ?? options.NodeDisplayMode) == TopologyNodeDisplayMode.Card) {
+            if (options.IncludeNodeLabels && node.Details.Count > 0 && (node.DisplayMode ?? options.NodeDisplayMode) == TopologyNodeDisplayMode.Card) {
                 node.Width = Math.Max(node.Width, 184);
                 node.Height = Math.Max(node.Height, NodeDetailStartOffset(node, options) + node.Details.Count * 18 + 1);
             }
@@ -277,34 +277,6 @@ internal static partial class TopologyLayoutEngine {
 
         ApplyLayeredTopToBottom(chart, layers, pad, top, options);
         if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, top, chart.Viewport.Height - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
-    }
-
-    private static void ApplyEdgeRankHints(TopologyChart chart) {
-        if (chart.Edges.All(edge => edge.MinimumRankSpan <= 1)) return;
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        var layerOrder = chart.Nodes.Select(GetLayer).Distinct().OrderBy(layer => layer).Select((layer, index) => new { layer, index }).ToDictionary(item => item.layer, item => item.index);
-        var ranks = chart.Nodes.ToDictionary(node => node.Id, node => layerOrder[GetLayer(node)], StringComparer.Ordinal);
-        var indegree = chart.Nodes.ToDictionary(node => node.Id, _ => 0, StringComparer.Ordinal);
-        var outgoing = chart.Nodes.ToDictionary(node => node.Id, _ => new List<TopologyEdge>(), StringComparer.Ordinal);
-        foreach (var edge in chart.Edges) {
-            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-            outgoing[edge.SourceNodeId].Add(edge);
-            indegree[edge.TargetNodeId]++;
-        }
-        var ready = new SortedSet<string>(indegree.Where(item => item.Value == 0).Select(item => item.Key), StringComparer.Ordinal);
-        while (ready.Count > 0) {
-            var nodeId = ready.Min!;
-            ready.Remove(nodeId);
-            foreach (var edge in outgoing[nodeId].OrderBy(item => item.Id, StringComparer.Ordinal)) {
-                ranks[edge.TargetNodeId] = Math.Max(ranks[edge.TargetNodeId], ranks[nodeId] + edge.MinimumRankSpan);
-                indegree[edge.TargetNodeId]--;
-                if (indegree[edge.TargetNodeId] == 0) ready.Add(edge.TargetNodeId);
-            }
-        }
-        foreach (var item in ranks) {
-            nodes[item.Key].Metadata["layer"] = item.Value.ToString(CultureInfo.InvariantCulture);
-            nodes[item.Key].Metadata["layout.rankHintsApplied"] = "true";
-        }
     }
 
     private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options) {

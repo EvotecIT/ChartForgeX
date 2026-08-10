@@ -74,9 +74,8 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static void AddEndpointMarkerAttributes(SvgElement path, TopologyEdge edge, TopologyRenderOptions options, string svgId, string color) {
-        if (!options.IncludeDirectionMarkers) return;
-        var source = EffectiveSourceMarker(edge);
-        var target = EffectiveTargetMarker(edge);
+        var source = RenderedSourceMarker(edge, options.IncludeDirectionMarkers);
+        var target = RenderedTargetMarker(edge, options.IncludeDirectionMarkers);
         if (source != TopologyMarkerKind.None) path.Attribute("marker-start", "url(#" + MarkerId(svgId, color, source) + ")");
         if (target != TopologyMarkerKind.None) path.Attribute("marker-end", "url(#" + MarkerId(svgId, color, target) + ")");
     }

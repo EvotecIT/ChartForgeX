@@ -199,6 +199,7 @@ internal sealed class SvgRasterMask {
         RootStyle = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
         UsesAlpha = string.Equals(RootStyle.MaskType, "alpha", StringComparison.OrdinalIgnoreCase);
         UserSpaceOnUse = string.Equals(element.Get("maskUnits"), "userSpaceOnUse", StringComparison.Ordinal);
+        ContentUserSpaceOnUse = !string.Equals(element.Get("maskContentUnits"), "objectBoundingBox", StringComparison.Ordinal);
         X = element.Get("x");
         Y = element.Get("y");
         Width = element.Get("width");
@@ -210,6 +211,7 @@ internal sealed class SvgRasterMask {
     public SvgRasterStyle RootStyle { get; }
     public bool UsesAlpha { get; }
     public bool UserSpaceOnUse { get; }
+    public bool ContentUserSpaceOnUse { get; }
     public string? X { get; }
     public string? Y { get; }
     public string? Width { get; }

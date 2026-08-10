@@ -56,6 +56,14 @@ internal static partial class TopologyRenderPrimitives {
         return edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional ? TopologyMarkerKind.Arrow : TopologyMarkerKind.None;
     }
 
+    public static TopologyMarkerKind RenderedSourceMarker(TopologyEdge edge, bool includeDirectionMarkers) {
+        return edge.SourceMarker ?? (includeDirectionMarkers ? EffectiveSourceMarker(edge) : TopologyMarkerKind.None);
+    }
+
+    public static TopologyMarkerKind RenderedTargetMarker(TopologyEdge edge, bool includeDirectionMarkers) {
+        return edge.TargetMarker ?? (includeDirectionMarkers ? EffectiveTargetMarker(edge) : TopologyMarkerKind.None);
+    }
+
     private static void ApplyNamedEndpoint(TopologyNode node, string portId, TopologyEdge edge, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
         var port = node.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
         if (port == null) return;
