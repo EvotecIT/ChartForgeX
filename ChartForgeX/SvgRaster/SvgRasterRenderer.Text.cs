@@ -54,7 +54,7 @@ internal static partial class SvgRasterRenderer {
     private static void RenderTextSpan(RgbaCanvas canvas, SvgRasterElement span, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
         var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(span, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(span, "mask"), out var maskDefinition);
-        var compositeOpacity = span.Children.Count > 0 && style.Opacity < 0.999;
+        var compositeOpacity = style.Opacity < 0.999 && (span.Children.Count > 0 || HasVisibleTextFillAndStroke(style));
         if (!hasClipPath && !hasMask && !compositeOpacity) {
             RenderTextContent(canvas, span, style, matrix, definitions, width, height, ancestors, viewport, ref cursorX, ref cursorY, ref whitespace);
             return;
@@ -138,18 +138,24 @@ internal static partial class SvgRasterRenderer {
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
         var advance = width / renderScale;
         if (!style.VisibilityVisible) return advance;
-        var color = style.FillColor();
-        if (color.A == 0) return advance;
+        var fillColor = style.FillColor();
+        var strokeColor = style.StrokeWidth > 0 ? style.StrokeColor() : ChartColor.Transparent;
+        if (fillColor.A == 0 && strokeColor.A == 0) return advance;
 
         var drawX = x;
         var drawY = TextTop(y, style.FontSize, style.DominantBaseline);
-        var padding = Math.Max(2, (int)Math.Ceiling(fontSize * 0.2));
+        var strokeRadius = strokeColor.A == 0 ? 0 : Math.Max(1, (int)Math.Ceiling(style.StrokeWidth * renderScale / 2.0));
+        var padding = Math.Max(2, (int)Math.Ceiling(fontSize * 0.2) + strokeRadius);
         var textHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, null));
         var localWidth = Math.Max(1, (int)Math.Ceiling(width + padding * 2.0));
         var localHeight = Math.Max(1, (int)Math.Ceiling(textHeight + padding * 2.0));
         var buffer = new RgbaCanvas(localWidth, localHeight, 1);
-        if (emphasized) buffer.DrawTextEmphasized(padding, padding, text, color, fontSize);
-        else buffer.DrawText(padding, padding, text, color, fontSize);
+        if (fillColor.A > 0) DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized);
+        if (strokeColor.A > 0) {
+            var glyphMask = new RgbaCanvas(localWidth, localHeight, 1);
+            DrawTextGlyphs(glyphMask, padding, padding, text, ChartColor.White, fontSize, emphasized);
+            PaintDilatedTextStroke(buffer.Pixels, glyphMask.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
+        }
 
         var textMatrix = matrix
             .Multiply(SvgRasterMatrix.Translate(drawX - padding / renderScale, drawY - padding / renderScale))
@@ -159,20 +165,106 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static double ResolveTextRenderScale(RgbaCanvas canvas, string text, SvgRasterStyle style, double requestedScale) {
-        var scale = Math.Max(0.000001, requestedScale);
-        for (var attempt = 0; attempt < 2; attempt++) {
+        const double minimumScale = 0.000000000001;
+        var scale = Math.Max(minimumScale, requestedScale);
+        for (var attempt = 0; attempt < 8; attempt++) {
             var fontSize = Math.Max(1, style.FontSize * scale);
             var width = Math.Max(1, IsBold(style.FontWeight) ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null));
             var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, null));
-            var padding = Math.Max(2, Math.Ceiling(fontSize * 0.2));
+            var padding = Math.Max(2, Math.Ceiling(fontSize * 0.2 + style.StrokeWidth * scale / 2.0));
             var pixels = (width + padding * 2) * (height + padding * 2);
             var axisLimit = Math.Max(1024, Math.Min(32768, Math.Max(canvas.Width, canvas.Height) * 2));
             var reduction = Math.Min(1, Math.Min(axisLimit / (width + padding * 2), axisLimit / (height + padding * 2)));
             if (pixels > MaximumTextIntermediatePixels) reduction = Math.Min(reduction, Math.Sqrt(MaximumTextIntermediatePixels / pixels));
-            if (reduction >= 0.999) break;
-            scale = Math.Max(0.000001, scale * reduction);
+            if (reduction >= 0.999 && !double.IsNaN(pixels) && !double.IsInfinity(pixels)) return scale;
+            var reduced = scale * reduction * 0.98;
+            if (double.IsNaN(reduced) || double.IsInfinity(reduced) || reduced < minimumScale) reduced = minimumScale;
+            if (Math.Abs(reduced - scale) < minimumScale * 0.001) break;
+            scale = reduced;
         }
-        return scale;
+        throw new InvalidOperationException("SVG text paint exceeds the supported intermediate raster budget.");
+    }
+
+    private static bool HasVisibleTextFillAndStroke(SvgRasterStyle style) =>
+        !style.Fill.IsNone && style.FillOpacity > 0 && !style.Stroke.IsNone && style.StrokeOpacity > 0 && style.StrokeWidth > 0;
+
+    private static void DrawTextGlyphs(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool emphasized) {
+        if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
+        else canvas.DrawText(x, y, text, color, fontSize);
+    }
+
+    private static void PaintDilatedTextStroke(byte[] destination, byte[] glyphPixels, int width, int height, int radius, ChartColor color) {
+        var dilated = FilterTextAlpha(glyphPixels, width, height, radius, maximize: true);
+        var eroded = FilterTextAlpha(glyphPixels, width, height, radius, maximize: false);
+        for (var pixel = 0; pixel < dilated.Length; pixel++) {
+            var coverage = Math.Max(0, dilated[pixel] - eroded[pixel]);
+            if (coverage == 0) continue;
+            var index = pixel * 4;
+            BlendTextPixel(destination, index, color, (byte)Math.Round(color.A * coverage / 255.0));
+        }
+    }
+
+    private static byte[] FilterTextAlpha(byte[] glyphPixels, int width, int height, int radius, bool maximize) {
+        var pixelCount = checked(width * height);
+        var horizontal = new byte[pixelCount];
+        var filtered = new byte[pixelCount];
+        var deque = new int[Math.Max(width, height)];
+        for (var y = 0; y < height; y++) {
+            var head = 0;
+            var tail = 0;
+            for (var x = 0; x < width + radius; x++) {
+                if (x < width) {
+                    var alpha = glyphPixels[(y * width + x) * 4 + 3];
+                    while (tail > head && PreferTextAlpha(alpha, glyphPixels[(y * width + deque[tail - 1]) * 4 + 3], maximize)) tail--;
+                    deque[tail++] = x;
+                }
+                var outputX = x - radius;
+                if (outputX < 0) continue;
+                while (tail > head && deque[head] < outputX - radius) head++;
+                horizontal[y * width + outputX] = !maximize && (outputX < radius || outputX + radius >= width)
+                    ? (byte)0
+                    : glyphPixels[(y * width + deque[head]) * 4 + 3];
+            }
+        }
+
+        for (var x = 0; x < width; x++) {
+            var head = 0;
+            var tail = 0;
+            for (var y = 0; y < height + radius; y++) {
+                if (y < height) {
+                    var alpha = horizontal[y * width + x];
+                    while (tail > head && PreferTextAlpha(alpha, horizontal[deque[tail - 1] * width + x], maximize)) tail--;
+                    deque[tail++] = y;
+                }
+                var outputY = y - radius;
+                if (outputY < 0) continue;
+                while (tail > head && deque[head] < outputY - radius) head++;
+                filtered[outputY * width + x] = !maximize && (outputY < radius || outputY + radius >= height)
+                    ? (byte)0
+                    : horizontal[deque[head] * width + x];
+            }
+        }
+        return filtered;
+    }
+
+    private static bool PreferTextAlpha(byte candidate, byte existing, bool maximize) => maximize ? candidate >= existing : candidate <= existing;
+
+    private static void BlendTextPixel(byte[] destination, int index, ChartColor color, byte alpha) {
+        if (alpha == 0) return;
+        if (alpha == 255) {
+            destination[index] = color.R;
+            destination[index + 1] = color.G;
+            destination[index + 2] = color.B;
+            destination[index + 3] = 255;
+            return;
+        }
+        var sourceAlpha = alpha / 255.0;
+        var destinationAlpha = destination[index + 3] / 255.0;
+        var outputAlpha = sourceAlpha + destinationAlpha * (1 - sourceAlpha);
+        destination[index] = (byte)((color.R * sourceAlpha + destination[index] * destinationAlpha * (1 - sourceAlpha)) / outputAlpha);
+        destination[index + 1] = (byte)((color.G * sourceAlpha + destination[index + 1] * destinationAlpha * (1 - sourceAlpha)) / outputAlpha);
+        destination[index + 2] = (byte)((color.B * sourceAlpha + destination[index + 2] * destinationAlpha * (1 - sourceAlpha)) / outputAlpha);
+        destination[index + 3] = (byte)(outputAlpha * 255);
     }
 
     private static string NormalizeTextWhitespace(string value, string whiteSpace, ref TextWhitespaceState state) {

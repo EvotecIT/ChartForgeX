@@ -40,28 +40,19 @@ public static class VisualArtifactRendering {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.Model is TopologyChart) TopologyHtmlRenderer.EnsureStatic(TopologyOptions(artifact, options));
         if (options != null && options.Watermarks.Count > 0) return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language, clipSvgViewport: true);
-        switch (artifact.Model) {
-            case Chart chart:
-                return chart.ToHtmlPage();
-            case ChartGrid grid:
-                return grid.ToHtmlPage();
-            case VisualCanvas canvas:
-                return canvas.ToHtmlPage();
-            case VisualStory story:
-                return story.ToHtmlPage();
-            case TopologyChart topology:
-                return TopologyModel(artifact, topology).ToHtmlPage(TopologyOptions(artifact, options));
-            case FlowArtifact flow:
-                return flow.ToHtmlPage();
-            case TableArtifact table:
-                return table.ToHtmlPage();
-            case SequenceArtifact sequence:
-                return WrapSvgPage(sequence.Title.Length == 0 ? sequence.Id : sequence.Title, sequence.ToSvg(), artifact.Accessibility.Language);
-            case IVisualBlock block:
-                return block.ToHtmlPage();
-            default:
-                throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported HTML render model.");
-        }
+        var html = artifact.Model switch {
+            Chart chart => chart.ToHtmlPage(),
+            ChartGrid grid => grid.ToHtmlPage(),
+            VisualCanvas canvas => canvas.ToHtmlPage(),
+            VisualStory story => story.ToHtmlPage(),
+            TopologyChart topology => TopologyModel(artifact, topology).ToHtmlPage(TopologyOptions(artifact, options)),
+            FlowArtifact flow => flow.ToHtmlPage(),
+            TableArtifact table => table.ToHtmlPage(),
+            SequenceArtifact sequence => WrapSvgPage(sequence.Title.Length == 0 ? sequence.Id : sequence.Title, sequence.ToSvg(), artifact.Accessibility.Language),
+            IVisualBlock block => block.ToHtmlPage(),
+            _ => throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported HTML render model.")
+        };
+        return WithDocumentLanguage(html, artifact.Accessibility.Language);
     }
 
     /// <summary>
@@ -127,6 +118,20 @@ public static class VisualArtifactRendering {
         var safeLanguage = string.IsNullOrWhiteSpace(language) ? "en" : language!.Trim();
         var svgOverflow = clipSvgViewport ? "hidden" : "visible";
         return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-artifact{max-width:100%;height:auto}.chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:" + svgOverflow + "}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none}}</style></head><body><div class=\"chartforgex-visual-artifact\">" + svg + "</div></body></html>";
+    }
+
+    private static string WithDocumentLanguage(string html, string? language) {
+        var safeLanguage = string.IsNullOrWhiteSpace(language) ? "en" : language!.Trim();
+        var htmlStart = html.IndexOf("<html", StringComparison.OrdinalIgnoreCase);
+        if (htmlStart < 0) return html;
+        var tagEnd = html.IndexOf('>', htmlStart);
+        if (tagEnd < 0) return html;
+        var langStart = html.IndexOf(" lang=\"", htmlStart, tagEnd - htmlStart, StringComparison.OrdinalIgnoreCase);
+        if (langStart < 0) return html.Insert(tagEnd, " lang=\"" + EscapeHtml(safeLanguage) + "\"");
+        var valueStart = langStart + 7;
+        var valueEnd = html.IndexOf('\"', valueStart);
+        if (valueEnd < 0 || valueEnd > tagEnd) return html;
+        return html.Substring(0, valueStart) + EscapeHtml(safeLanguage) + html.Substring(valueEnd);
     }
 
     private static string RenderSvg(VisualArtifact artifact, VisualArtifactRenderOptions? options) {

@@ -7,6 +7,9 @@ using System.Xml.Linq;
 namespace ChartForgeX.SvgRaster;
 
 internal static class SvgRasterParser {
+    internal const int MaximumElementDepth = 256;
+    private const long MaximumDocumentCharacters = 16_000_000;
+
     public static SvgRasterDocument ParseFragment(string svgBody, string? viewBox) {
         if (svgBody == null) throw new ArgumentNullException(nameof(svgBody));
         var markup = "<svg viewBox=\"" + EscapeAttribute(viewBox ?? "0 0 24 24") + "\">" + svgBody + "</svg>";
@@ -22,6 +25,7 @@ internal static class SvgRasterParser {
     }
 
     private static SvgRasterDocument FromRoot(XElement root, SvgRasterViewBox fallbackViewBox) {
+        ValidateElementDepth(root);
         var viewBox = fallbackViewBox;
         if (string.Equals(root.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase) && root.Attribute("viewBox") != null) {
             viewBox = SvgRasterViewBox.Parse(root.Attribute("viewBox")!.Value);
@@ -33,10 +37,30 @@ internal static class SvgRasterParser {
     private static XDocument Load(string markup) {
         var settings = new XmlReaderSettings {
             DtdProcessing = DtdProcessing.Prohibit,
-            XmlResolver = null
+            XmlResolver = null,
+            MaxCharactersInDocument = MaximumDocumentCharacters
         };
         using var reader = XmlReader.Create(new StringReader(markup), settings);
         return XDocument.Load(reader, LoadOptions.PreserveWhitespace);
+    }
+
+    internal static void ValidateElementDepth(XElement root) {
+        if (root == null) throw new ArgumentNullException(nameof(root));
+        var elements = new Stack<XElement>();
+        var depths = new Stack<int>();
+        elements.Push(root);
+        depths.Push(1);
+        while (elements.Count > 0) {
+            var element = elements.Pop();
+            var depth = depths.Pop();
+            if (depth > MaximumElementDepth) {
+                throw new FormatException("SVG element nesting exceeds the supported depth of " + MaximumElementDepth + ".");
+            }
+            foreach (var child in element.Elements()) {
+                elements.Push(child);
+                depths.Push(depth + 1);
+            }
+        }
     }
 
     private static SvgRasterElement ReadElement(XElement element) {

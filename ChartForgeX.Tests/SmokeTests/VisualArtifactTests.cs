@@ -319,6 +319,22 @@ internal static partial class SmokeTests {
             Assert(artifact.ToPng().Length > 64, "Composite artifacts should render PNG through the shared artifact pipeline.");
         }
         Assert(canvas.ToVisualArtifact().Accessibility.Description == "A fixed-size release summary.", "Canvas artifacts should preserve accessibility metadata for Office placement.");
+        var localizedCanvasArtifact = canvas.ToVisualArtifact();
+        localizedCanvasArtifact.Accessibility.Language = "pl-PL";
+        Assert(localizedCanvasArtifact.ToHtmlPage().Contains("<html lang=\"pl-PL\">", StringComparison.OrdinalIgnoreCase), "Artifact HTML should preserve an updated canvas language even without watermarks.");
+
+        var directedTopology = TopologyChart.Create()
+            .WithViewport(240, 140, 16)
+            .WithLegend(null)
+            .AddNode("left", "Left", 24, 44)
+            .AddNode("right", "Right", 152, 44);
+        directedTopology.Edges.Add(new TopologyEdge { Id = "forward", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Forward });
+        directedTopology.Edges.Add(new TopologyEdge { Id = "backward", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Backward });
+        directedTopology.Edges.Add(new TopologyEdge { Id = "both", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Bidirectional });
+        directedTopology.Edges.Add(new TopologyEdge { Id = "undirected", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.None });
+        var edgeRegions = directedTopology.ToVisualArtifact().Regions.Where(region => region.Kind == "topology-edge").ToDictionary(region => region.Id, StringComparer.Ordinal);
+        Assert(edgeRegions["forward"].Label == "left to right" && edgeRegions["backward"].Label == "right to left", "Topology artifact fallback labels should follow forward and backward edge direction.");
+        Assert(edgeRegions["both"].Label == "left to right and right to left" && edgeRegions["undirected"].Label == "left and right", "Topology artifact fallback labels should distinguish bidirectional and undirected edges from one-way flow.");
     }
 
     private static void TableArtifactRejectsInvalidContractShapes() {

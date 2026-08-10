@@ -24,7 +24,8 @@ public static class SvgRasterizer {
         try {
             var settings = new XmlReaderSettings {
                 DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null
+                XmlResolver = null,
+                MaxCharactersInDocument = 16_000_000
             };
             using var textReader = new StringReader(svg);
             using XmlReader xmlReader = XmlReader.Create(textReader, settings);
@@ -34,6 +35,7 @@ public static class SvgRasterizer {
         }
         XElement root = document.Root ?? throw new FormatException("SVG content does not contain a document element.");
         if (!string.Equals(root.Name.LocalName, "svg", StringComparison.OrdinalIgnoreCase)) throw new FormatException("SVG content must have an svg document element.");
+        SvgRasterParser.ValidateElementDepth(root);
         string? viewBox = Attribute(root, "viewBox");
         (double viewWidth, double viewHeight) = Viewport(root, viewBox);
         int targetWidth = width

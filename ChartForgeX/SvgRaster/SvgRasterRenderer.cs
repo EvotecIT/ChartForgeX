@@ -137,7 +137,8 @@ internal static partial class SvgRasterRenderer {
                string.Equals(element.Name, "rect", StringComparison.Ordinal) ||
                string.Equals(element.Name, "circle", StringComparison.Ordinal) ||
                string.Equals(element.Name, "ellipse", StringComparison.Ordinal) ||
-               string.Equals(element.Name, "polygon", StringComparison.Ordinal);
+               string.Equals(element.Name, "polygon", StringComparison.Ordinal) ||
+               string.Equals(element.Name, "text", StringComparison.Ordinal);
     }
 
     private static bool HasMarkerPaint(SvgRasterElement element) =>
@@ -266,7 +267,10 @@ internal static partial class SvgRasterRenderer {
     private static void RenderUse(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) return;
         var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
+        var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
         if (IsSymbolElement(referenced)) {
+            var symbolStyle = ResolveReferencedStyle(style, referenced, definitions);
+            if (!symbolStyle.Displayed) return;
             var viewBox = referenced.Get("viewBox");
             var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
             var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
@@ -278,13 +282,22 @@ internal static partial class SvgRasterRenderer {
                 symbolViewport = new SvgRasterViewport(parsed.Width, parsed.Height);
             }
 
-            ancestors.Add(referenced);
-            foreach (var child in referenced.Children) RenderElement(canvas, child, style, useMatrix, definitions, width, height, referenceDepth + 1, ancestors, symbolViewport);
-            ancestors.RemoveAt(ancestors.Count - 1);
+            useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
+            referencedAncestors.Add(referenced);
+            foreach (var child in referenced.Children) RenderElement(canvas, child, symbolStyle, useMatrix, definitions, width, height, referenceDepth + 1, referencedAncestors, symbolViewport);
             return;
         }
 
-        RenderElement(canvas, referenced, style, useMatrix, definitions, width, height, referenceDepth + 1, ancestors, viewport);
+        RenderElement(canvas, referenced, style, useMatrix, definitions, width, height, referenceDepth + 1, referencedAncestors, viewport);
+    }
+
+    private static SvgRasterStyle ResolveReferencedStyle(SvgRasterStyle parentStyle, SvgRasterElement referenced, SvgRasterDefinitions definitions) {
+        var inherited = parentStyle.Inherit();
+        var definitionAncestors = definitions.AncestorsFor(referenced);
+        foreach (var property in SvgRasterStyle.ResolveCustomProperties(definitions.StyleSheet, definitionAncestors, referenced)) {
+            if (!inherited.CustomProperties.ContainsKey(property.Key)) inherited.CustomProperties[property.Key] = property.Value;
+        }
+        return SvgRasterStyle.Resolve(inherited, referenced, definitions.StyleSheet, definitionAncestors);
     }
 
     private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
@@ -457,7 +470,7 @@ internal static partial class SvgRasterRenderer {
         ancestors.Add(clipPath.Element);
         foreach (var child in clipPath.Element.Children) {
             var clipChild = clipPath.UserSpaceOnUse ? child : ResolveObjectBoundingBoxContent(child, definitions, 0);
-            RenderClipElement(mask, clipChild, clipStyle, clipMatrix, definitions.StyleSheet, ancestors, clipViewport);
+            RenderClipElement(mask, clipChild, clipStyle, clipMatrix, definitions, ancestors, clipViewport, 0);
         }
     }
 
@@ -485,9 +498,9 @@ internal static partial class SvgRasterRenderer {
         mask.DrawImageMasked(0, 0, width, height, content.Pixels, regionMask.Pixels, useAlphaMask: true);
     }
 
-    private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterStyleSheet styleSheet, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
+    private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterDefinitions definitions, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, int referenceDepth) {
         if (IsDefinitionElement(element.Name)) return;
-        var style = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
+        var style = SvgRasterStyle.Resolve(parentStyle, element, definitions.StyleSheet, ancestors);
         if (!style.Displayed) return;
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) {
@@ -496,12 +509,37 @@ internal static partial class SvgRasterRenderer {
             matrix = ApplyNestedSvgViewport(element, matrix, nested);
             viewport = nested.UserViewport;
         }
+        if (string.Equals(element.Name, "use", StringComparison.Ordinal)) {
+            if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) return;
+            var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
+            var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
+            if (IsSymbolElement(referenced)) {
+                var symbolStyle = ResolveReferencedStyle(style, referenced, definitions);
+                if (!symbolStyle.Displayed) return;
+                var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
+                var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
+                if (symbolWidth <= 0 || symbolHeight <= 0) return;
+                var symbolViewport = new SvgRasterViewport(symbolWidth, symbolHeight);
+                var viewBox = referenced.Get("viewBox");
+                if (!string.IsNullOrWhiteSpace(viewBox)) {
+                    var parsed = SvgRasterViewBox.Parse(viewBox);
+                    useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(parsed, (int)Math.Round(symbolWidth), (int)Math.Round(symbolHeight), referenced.Get("preserveAspectRatio")));
+                    symbolViewport = new SvgRasterViewport(parsed.Width, parsed.Height);
+                }
+                useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
+                referencedAncestors.Add(referenced);
+                foreach (var child in referenced.Children) RenderClipElement(mask, child, symbolStyle, useMatrix, definitions, referencedAncestors, symbolViewport, referenceDepth + 1);
+            } else {
+                RenderClipElement(mask, referenced, style, useMatrix, definitions, referencedAncestors, viewport, referenceDepth + 1);
+            }
+            return;
+        }
         if (style.VisibilityVisible) {
             var contours = ClipContours(element, matrix, viewport);
             if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
         }
         ancestors.Add(element);
-        foreach (var child in element.Children) RenderClipElement(mask, child, style, matrix, styleSheet, ancestors, viewport);
+        foreach (var child in element.Children) RenderClipElement(mask, child, style, matrix, definitions, ancestors, viewport, referenceDepth);
         ancestors.RemoveAt(ancestors.Count - 1);
     }
 

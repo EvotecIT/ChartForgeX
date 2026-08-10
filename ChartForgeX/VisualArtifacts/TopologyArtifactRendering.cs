@@ -35,7 +35,7 @@ public static class TopologyArtifactRendering {
             var region = new VisualArtifactRegion {
                 Id = edge.Id,
                 Kind = "topology-edge",
-                Label = string.IsNullOrWhiteSpace(edge.Label) ? edge.SourceNodeId + " to " + edge.TargetNodeId : edge.Label!,
+                Label = string.IsNullOrWhiteSpace(edge.Label) ? EdgeLabel(edge) : edge.Label!,
                 Href = SafeHref(edge.Href),
                 AlternativeText = edge.Tooltip
             };
@@ -44,6 +44,15 @@ public static class TopologyArtifactRendering {
             artifact.Regions.Add(region);
         }
         return artifact;
+    }
+
+    private static string EdgeLabel(TopologyEdge edge) {
+        return edge.Direction switch {
+            VisualLinkDirection.Forward => edge.SourceNodeId + " to " + edge.TargetNodeId,
+            VisualLinkDirection.Backward => edge.TargetNodeId + " to " + edge.SourceNodeId,
+            VisualLinkDirection.Bidirectional => edge.SourceNodeId + " to " + edge.TargetNodeId + " and " + edge.TargetNodeId + " to " + edge.SourceNodeId,
+            _ => edge.SourceNodeId + " and " + edge.TargetNodeId
+        };
     }
 
     private static VisualArtifactRegion Region(string id, string kind, string label, double x, double y, double width, double height, string? href, string? alternativeText) {

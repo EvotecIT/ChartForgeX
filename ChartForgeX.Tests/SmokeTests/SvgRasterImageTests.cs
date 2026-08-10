@@ -59,6 +59,14 @@ internal static partial class SmokeTests {
         Assert(IsPixelNear(offsetViewBoxImage.Pixels, 100, 50, 25, 22, 163, 74), "Public SVG rasterization should apply a non-zero source viewBox exactly once while preserving root presentation.");
         const string svgWithDtd = "<!DOCTYPE svg [<!ENTITY external SYSTEM 'file:///not-allowed'>]><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><text>&external;</text></svg>";
         AssertThrows<FormatException>(() => SvgRasterizer.ToPng(svgWithDtd), "Public SVG rasterization should reject DTD and external-entity input.");
+        var deeplyNestedSvg = new StringBuilder("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'>");
+        for (var depth = 0; depth < SvgRasterParser.MaximumElementDepth; depth++) deeplyNestedSvg.Append("<g>");
+        deeplyNestedSvg.Append("<rect width='10' height='10'/>");
+        for (var depth = 0; depth < SvgRasterParser.MaximumElementDepth; depth++) deeplyNestedSvg.Append("</g>");
+        deeplyNestedSvg.Append("</svg>");
+        AssertThrows<FormatException>(() => SvgRasterizer.ToPng(deeplyNestedSvg.ToString()), "Public SVG rasterization should reject excessive element depth before recursive parsing or rendering.");
+        const string excessiveTextStroke = "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><text x='2' y='16' font-size='12' fill='none' stroke='#ef4444' stroke-width='1e300'>A</text></svg>";
+        AssertThrows<NotSupportedException>(() => SvgRasterizer.ToPng(excessiveTextStroke), "Public SVG rasterization should reject text paint that cannot fit the bounded intermediate allocation.");
     }
 
     private static void SvgRasterDocumentsUseIntrinsicDimensionsAndCssImageClipping() {
@@ -222,6 +230,13 @@ internal static partial class SmokeTests {
         const string objectBoundingBoxClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><clipPath id='half' clipPathUnits='objectBoundingBox'><rect width='50%' height='100%'/></clipPath></defs><rect x='20' y='10' width='40' height='20' fill='#f97316' clip-path='url(#half)'/></svg>";
         var objectBoundingBoxClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(objectBoundingBoxClip));
         Assert(IsPixelNear(objectBoundingBoxClipImage.Pixels, 100, 30, 20, 249, 115, 22) && PixelAlpha(objectBoundingBoxClipImage.Pixels, 100, 50, 20) == 0, "Object-bounding-box clip paths should map normalized percentage geometry into the target element's geometric bounds.");
+        const string userSpaceUseClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><g id='clip-shape'><rect width='20' height='20'/></g><clipPath id='reused'><use href='#clip-shape' x='30' y='10'/></clipPath></defs><rect width='100' height='40' fill='#f97316' clip-path='url(#reused)'/></svg>";
+        var userSpaceUseClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(userSpaceUseClip));
+        Assert(IsPixelNear(userSpaceUseClipImage.Pixels, 100, 40, 20, 249, 115, 22) && PixelAlpha(userSpaceUseClipImage.Pixels, 100, 20, 20) == 0, "User-space clip paths should expand use references, including referenced container content and use translation.");
+        const string userSpaceSymbolClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><style>defs .hole{clip-rule:evenodd}</style><defs><symbol id='clip-symbol' class='hole'><path d='M10 5 H90 V35 H10 Z M35 12 H65 V28 H35 Z'/></symbol><symbol id='paint-symbol' fill='#2563eb'><rect width='20' height='20'/></symbol><clipPath id='symbol-hole'><use href='#clip-symbol' width='100' height='40'/></clipPath></defs><rect width='100' height='40' fill='#f97316' clip-path='url(#symbol-hole)'/><use href='#paint-symbol' x='0' y='10' width='20' height='20'/></svg>";
+        var userSpaceSymbolClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(userSpaceSymbolClip));
+        Assert(IsPixelNear(userSpaceSymbolClipImage.Pixels, 100, 20, 20, 249, 115, 22) && PixelAlpha(userSpaceSymbolClipImage.Pixels, 100, 50, 20) == 0, "User-space symbol clips should preserve source CSS and inherited clip-rule semantics.");
+        Assert(IsPixelNear(userSpaceSymbolClipImage.Pixels, 100, 5, 20, 37, 99, 235), "Ordinary symbol use should inherit presentation paint declared on the referenced symbol.");
         const string nestedObjectBoundingBoxClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><clipPath id='nested' clipPathUnits='objectBoundingBox'><svg width='1' height='1' viewBox='0 0 10 10' preserveAspectRatio='none'><rect width='100%' height='100%'/></svg></clipPath></defs><rect x='20' y='10' width='40' height='20' fill='#14b8a6' clip-path='url(#nested)'/></svg>";
         var nestedObjectBoundingBoxClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(nestedObjectBoundingBoxClip));
         Assert(IsPixelNear(nestedObjectBoundingBoxClipImage.Pixels, 100, 55, 20, 20, 184, 166), "Nested viewports inside object-bounding-box content should resolve descendant percentages in their own viewBox.");
@@ -250,6 +265,15 @@ internal static partial class SmokeTests {
         var transformedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedText));
         var transformedTextBounds = SvgColorBounds(transformedTextImage.Pixels, 80, 80, 239, 68, 68);
         Assert(transformedTextBounds.HasPixels && transformedTextBounds.Height > transformedTextBounds.Width, "Affine text transforms should rotate glyph pixels rather than only moving the text anchor.");
+        const string strokedText = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><text x='4' y='30' font-size='24' fill='none' stroke='#ef4444' stroke-width='2'>OUTLINE</text></svg>";
+        var strokedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(strokedText));
+        Assert(SvgColorBounds(strokedTextImage.Pixels, 100, 40, 239, 68, 68).HasPixels, "Stroke-only SVG text should remain visible in PNG output.");
+        const string paintedSpanText = "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90'><text x='8' y='68' font-size='60'><tspan fill='#ef4444' stroke='#2563eb' stroke-width='2'>OO</tspan></text></svg>";
+        var paintedSpanTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(paintedSpanText));
+        Assert(SvgColorBounds(paintedSpanTextImage.Pixels, 180, 90, 239, 68, 68).HasPixels && SvgColorBounds(paintedSpanTextImage.Pixels, 180, 90, 37, 99, 235).HasPixels, "Combined text paint should retain both fill and the default overlaid stroke.");
+        const string translucentPaintedSpanText = "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90'><text x='8' y='68' font-size='60'><tspan fill='#ef4444' stroke='#2563eb' stroke-width='2' opacity='.5'>OO</tspan></text></svg>";
+        var translucentPaintedSpanTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(translucentPaintedSpanText));
+        Assert(MaximumAlpha(translucentPaintedSpanTextImage.Pixels) is >= 126 and <= 129, "Leaf tspan opacity should composite fill and stroke exactly once.");
 
         const string centeredMixedText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='40'><text x='70' y='30' text-anchor='middle' font-size='24' fill='#ef4444'>A<tspan fill='#2563eb'>B</tspan>C</text></svg>";
         var centeredMixedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(centeredMixedText));

@@ -9,6 +9,7 @@ namespace ChartForgeX.SvgRaster;
 
 internal sealed class SvgRasterDefinitions {
     private readonly Dictionary<string, SvgRasterElement> _elements = new(StringComparer.Ordinal);
+    private readonly Dictionary<SvgRasterElement, IReadOnlyList<SvgRasterElement>> _elementAncestors = new();
     private readonly Dictionary<string, SvgRasterElement> _gradientElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterElement> _patternElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterClipPath> _clipPaths = new(StringComparer.Ordinal);
@@ -54,6 +55,9 @@ internal sealed class SvgRasterDefinitions {
         element = null!;
         return false;
     }
+
+    public IReadOnlyList<SvgRasterElement> AncestorsFor(SvgRasterElement element) =>
+        _elementAncestors.TryGetValue(element, out var ancestors) ? ancestors : Array.Empty<SvgRasterElement>();
 
     public bool TryGetClipPath(string? id, out SvgRasterClipPath clipPath) {
         if (id != null && _clipPaths.TryGetValue(id, out clipPath!)) return true;
@@ -127,6 +131,7 @@ internal sealed class SvgRasterDefinitions {
 
         if (IsReusableElement(element) && element.TryGet("id", out var reusableId) && !string.IsNullOrWhiteSpace(reusableId)) {
             _elements[reusableId] = element;
+            _elementAncestors[element] = ancestors.ToArray();
         }
 
         if ((string.Equals(element.Name, "linearGradient", StringComparison.Ordinal) || string.Equals(element.Name, "radialGradient", StringComparison.Ordinal)) && element.TryGet("id", out var id) && !string.IsNullOrWhiteSpace(id)) {
