@@ -9,6 +9,9 @@ namespace ChartForgeX.Topology;
 public sealed class TopologyRenderOptions {
     private ChartLineVisualStyle? _edgeVisualStyle;
     private TopologyLayoutPreset _layoutPreset;
+    private TopologyViewPreset _preset;
+    private bool _layoutPresetApplied = true;
+    private bool _presetApplied = true;
     private double? _layeredNodeSpacing;
     private double? _layeredRankSpacing;
 
@@ -172,7 +175,14 @@ public sealed class TopologyRenderOptions {
     public TopologyView? View { get; set; }
 
     /// <summary>Gets or sets a reusable render preset.</summary>
-    public TopologyViewPreset Preset { get; set; } = TopologyViewPreset.Default;
+    public TopologyViewPreset Preset {
+        get => _preset;
+        set {
+            if (!System.Enum.IsDefined(typeof(TopologyViewPreset), value)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Unknown topology view preset.");
+            _preset = value;
+            _presetApplied = value == TopologyViewPreset.Default;
+        }
+    }
 
     /// <summary>Gets or sets a reusable spacing and presentation profile.</summary>
     public TopologyLayoutPreset LayoutPreset {
@@ -181,6 +191,7 @@ public sealed class TopologyRenderOptions {
             if (!System.Enum.IsDefined(typeof(TopologyLayoutPreset), value)) throw new System.ArgumentOutOfRangeException(nameof(value), value, "Unknown topology layout preset.");
             var previous = _layoutPreset;
             _layoutPreset = value;
+            _layoutPresetApplied = value == TopologyLayoutPreset.Automatic;
             if (value != TopologyLayoutPreset.Automatic || previous == TopologyLayoutPreset.Automatic) return;
             LayeredNodeSpacing = null;
             LayeredRankSpacing = null;
@@ -328,6 +339,17 @@ public sealed class TopologyRenderOptions {
         snapshot.SelectedGroupIds = new List<string>(SelectedGroupIds);
         snapshot.SelectedNodeIds = new List<string>(SelectedNodeIds);
         snapshot.SelectedEdgeIds = new List<string>(SelectedEdgeIds);
+        return snapshot;
+    }
+
+    internal void MarkPresetApplied() => _presetApplied = true;
+
+    internal void MarkLayoutPresetApplied() => _layoutPresetApplied = true;
+
+    internal TopologyRenderOptions CloneForRendering() {
+        var snapshot = Clone();
+        if (!snapshot._presetApplied) snapshot.ApplyPreset(snapshot.Preset);
+        if (!snapshot._layoutPresetApplied) snapshot.ApplyLayoutPreset(snapshot.LayoutPreset);
         return snapshot;
     }
 

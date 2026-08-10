@@ -87,38 +87,32 @@ public static partial class TopologyChartExtensions {
 
     private static AnimatedRasterFrames BuildMotionFrames(TopologyChart chart, TopologyRenderOptions? options, string formatName) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options ??= new TopologyRenderOptions();
-        var originalMotion = options.Motion;
-        var motion = (originalMotion ?? TopologyMotionOptions.RoutePulse()).Clone();
+        var effective = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        var motion = (effective.Motion ?? TopologyMotionOptions.RoutePulse()).Clone();
         motion.Validate();
-        try {
-            options.Motion = motion;
-            if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
-            var validator = new TopologyChartValidator();
-            var sourceValidation = validator.ValidateScenarioReferences(chart);
-            if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
+        effective.Motion = motion;
+        var validator = new TopologyChartValidator();
+        var sourceValidation = validator.ValidateScenarioReferences(chart);
+        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
 
-            var prepared = TopologyLayoutEngine.Prepare(chart, options.View, options);
-            var validation = validator.Validate(prepared, validateScenarioReferences: false, options);
-            if (!validation.IsValid) throw new TopologyValidationException(validation);
+        var prepared = TopologyLayoutEngine.Prepare(chart, effective.View, effective);
+        var validation = validator.Validate(prepared, validateScenarioReferences: false, effective);
+        if (!validation.IsValid) throw new TopologyValidationException(validation);
 
-            var plan = TopologyMotionPlanner.Build(prepared, options);
-            if (plan == null) throw new InvalidOperationException("Topology animated " + formatName + " export requires a motion route. Add scenario edge steps or use TopologyMotionOptions.RoutePulseForEdges(...).");
-            var delay = Math.Max(1, (int)Math.Round(100.0 / motion.FramesPerSecond));
-            var frameCount = RasterFrameCount(motion, delay);
-            var frames = new List<RgbaImage>(frameCount);
-            var renderer = new TopologyPngRenderer();
-            var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
-            var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
-            for (var frame = 0; frame < frameCount; frame++) {
-                motion.Progress = RasterFrameProgress(motion, frame, frameCount);
-                frames.Add(renderer.RenderPreparedImage(prepared, options, requestedWidth, requestedHeight, plan));
-            }
-
-            return AnimatedRasterFrames.Create(frames, delay, motion.Loop, "topology motion");
-        } finally {
-            options.Motion = originalMotion;
+        var plan = TopologyMotionPlanner.Build(prepared, effective);
+        if (plan == null) throw new InvalidOperationException("Topology animated " + formatName + " export requires a motion route. Add scenario edge steps or use TopologyMotionOptions.RoutePulseForEdges(...).");
+        var delay = Math.Max(1, (int)Math.Round(100.0 / motion.FramesPerSecond));
+        var frameCount = RasterFrameCount(motion, delay);
+        var frames = new List<RgbaImage>(frameCount);
+        var renderer = new TopologyPngRenderer();
+        var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
+        var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
+        for (var frame = 0; frame < frameCount; frame++) {
+            motion.Progress = RasterFrameProgress(motion, frame, frameCount);
+            frames.Add(renderer.RenderPreparedImage(prepared, effective, requestedWidth, requestedHeight, plan));
         }
+
+        return AnimatedRasterFrames.Create(frames, delay, motion.Loop, "topology motion");
     }
 
     private static int RasterFrameCount(TopologyMotionOptions motion, int delayCentiseconds) {

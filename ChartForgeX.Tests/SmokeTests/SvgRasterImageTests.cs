@@ -34,6 +34,8 @@ internal static partial class SmokeTests {
         var subpixelIntrinsic = RasterImageDecoder.Decode(SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' width='0.4' height='0.4'><rect width='0.4' height='0.4' fill='#2563eb'/></svg>"));
         var thinViewBoxOnly = RasterImageDecoder.Decode(SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1'><rect width='1000' height='1' fill='#2563eb'/></svg>"));
         Assert(subpixelIntrinsic.Width == 1 && subpixelIntrinsic.Height == 1 && thinViewBoxOnly.Width == 300 && thinViewBoxOnly.Height == 1, "Positive subpixel intrinsic and fitted viewBox dimensions should clamp to one output pixel.");
+        AssertThrows<ArgumentOutOfRangeException>(() => SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' width='0' height='40'><rect width='100' height='40'/></svg>"), "Explicit zero root SVG viewport dimensions should not fall back to the standard intrinsic size.");
+        AssertThrows<ArgumentOutOfRangeException>(() => SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='-1px'><rect width='100' height='40'/></svg>"), "Explicit negative root SVG viewport dimensions should be rejected before raster allocation.");
         AssertThrows<ArgumentOutOfRangeException>(() => SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' width='1e100' height='1'><rect width='1' height='1'/></svg>"), "Intrinsic SVG dimensions should be range-checked before integer conversion or raster allocation.");
         const string intrinsicOnly = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><rect x='80' y='10' width='10' height='20' fill='#ef4444'/></svg>";
         var intrinsicImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(intrinsicOnly));
@@ -136,6 +138,16 @@ internal static partial class SmokeTests {
         const string gradientOpacity = "<defs><linearGradient id='solid-gradient'><stop stop-color='#ef4444'/><stop offset='1' stop-color='#ef4444'/></linearGradient></defs><rect width='40' height='20' fill='url(#solid-gradient)' opacity='.5'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(gradientOpacity, "0 0 40 20", "none", 40, 20, out var gradientOpacityPixels), "SVG rasterization should render referenced fill paint with element opacity.");
         Assert(MaximumAlpha(gradientOpacityPixels) is >= 126 and <= 129, "Gradient-only primitive opacity should affect the referenced fill exactly once.");
+
+        const string ellipticalCorners = "<rect width='100' height='40' rx='20' ry='5' fill='#ef4444'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(ellipticalCorners, "0 0 100 40", "none", 100, 40, out var ellipticalCornerPixels), "SVG rasterization should render rounded rectangles with independent radii.");
+        Assert(IsPixelNear(ellipticalCornerPixels, 100, 5, 2, 239, 68, 68), "Rounded rectangles should preserve shallow elliptical ry corners instead of collapsing both axes to rx.");
+        const string ellipticalClip = "<defs><clipPath id='elliptical'><rect width='100' height='40' rx='20' ry='5'/></clipPath></defs><rect width='100' height='40' fill='#2563eb' clip-path='url(#elliptical)'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(ellipticalClip, "0 0 100 40", "none", 100, 40, out var ellipticalClipPixels) && IsPixelNear(ellipticalClipPixels, 100, 5, 2, 37, 99, 235), "Rounded rectangle clip paths should preserve independent rx and ry geometry.");
+        const string automaticHorizontalRadius = "<rect width='100' height='40' rx='auto' ry='5' fill='#16a34a'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(automaticHorizontalRadius, "0 0 100 40", "none", 100, 40, out var automaticHorizontalRadiusPixels) && IsPixelNear(automaticHorizontalRadiusPixels, 100, 5, 2, 22, 163, 74), "An automatic rounded-rectangle rx should copy the resolved ry value.");
+        const string automaticVerticalClipRadius = "<defs><clipPath id='automatic-radius'><rect width='100' height='40' rx='20' ry='auto'/></clipPath></defs><rect width='100' height='40' fill='#8b5cf6' clip-path='url(#automatic-radius)'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(automaticVerticalClipRadius, "0 0 100 40", "none", 100, 40, out var automaticVerticalRadiusPixels) && PixelAlpha(automaticVerticalRadiusPixels, 100, 5, 5) == 0, "An automatic rounded-rectangle ry should copy rx before clip-path geometry is constructed.");
 
         const string openFilledPath = "<path d='M5 5 L35 5 L35 35' fill='#16a34a' stroke='#2563eb' stroke-width='2'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(openFilledPath, "0 0 40 40", "none", 40, 40, out var openFilledPathPixels), "SVG rasterization should fill an open path while keeping its stroke open.");

@@ -63,6 +63,15 @@ internal static partial class SmokeTests {
         var rightBounds = autoArtifact.Regions.Single(region => region.Id == "right").Bounds!.Value;
         Assert(leftBounds.Top != rightBounds.Top || leftBounds.Left != rightBounds.Left, "Topology artifact regions should use prepared auto-layout geometry instead of overlapping at the origin.");
 
+        var focusedArtifactOptions = new VisualArtifactRenderOptions {
+            Topology = new TopologyRenderOptions { IncludeLegend = false, View = new TopologyView { NodeIds = { "left" } } }
+        };
+        autoArtifact.ToSvg(focusedArtifactOptions);
+        Assert(autoArtifact.Regions.Any(region => region.Id == "left") && !autoArtifact.Regions.Any(region => region.Id == "right" || region.Id == "left-right"), "Topology artifact regions should follow the effective focused view used by the latest render.");
+        var focusedBounds = TopologyLayoutDiagnostics.Analyze(autoChart, focusedArtifactOptions.Topology).Nodes.Single().Bounds;
+        var focusedArtifactBounds = autoArtifact.Regions.Single(region => region.Id == "left").Bounds!.Value;
+        Assert(Math.Abs(focusedArtifactBounds.Left - focusedBounds.Left) < 0.001 && Math.Abs(focusedArtifactBounds.Top - focusedBounds.Top) < 0.001 && Math.Abs(focusedArtifactBounds.Width - focusedBounds.Width) < 0.001 && Math.Abs(focusedArtifactBounds.Height - focusedBounds.Height) < 0.001, "Topology artifact regions should expose the same prepared geometry as the effective render options.");
+
         autoChart.Nodes[0].Href = "javascript:alert(1)";
         autoChart.Edges[0].Href = "data:text/html,bad";
         var safeArtifact = autoChart.ToVisualArtifact();
@@ -200,6 +209,16 @@ internal static partial class SmokeTests {
         Assert(reused.NodeDisplayMode == TopologyNodeDisplayMode.Card && reused.WrapNodeLabels == false && reused.MaxNodeLabelLines == 2 && reused.MaxNodeSubtitleLines == 2, "Applying a layout preset to reused options should reset every preset-owned presentation field.");
         reused.LayoutPreset = TopologyLayoutPreset.Automatic;
         Assert(reused.LayeredNodeSpacing == null && reused.LayeredRankSpacing == null && reused.NodeDisplayMode == TopologyNodeDisplayMode.Card && reused.WrapNodeLabels == false && reused.MaxNodeLabelLines == 2 && reused.MaxNodeSubtitleLines == 2, "Returning reused options to Automatic should restore every preset-owned default.");
+
+        var overridden = new TopologyRenderOptions().ApplyLayoutPreset(TopologyLayoutPreset.Dense).ApplyPreset(TopologyViewPreset.Dependency);
+        overridden.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+        overridden.WrapNodeLabels = true;
+        overridden.LayeredRankSpacing = 77;
+        overridden.IncludeDirectionMarkers = false;
+        var overriddenSvg = chart.ToSvg(overridden);
+        TopologyLayoutDiagnostics.Analyze(chart, overridden);
+        Assert(overriddenSvg.Contains("data-node-display-mode=\"Card\"", StringComparison.Ordinal), "Topology renderers should preserve caller overrides made after selecting a layout preset.");
+        Assert(overridden.NodeDisplayMode == TopologyNodeDisplayMode.Card && overridden.WrapNodeLabels && overridden.LayeredRankSpacing == 77 && !overridden.IncludeDirectionMarkers, "Topology renderers and diagnostics should not reapply reusable presets over later caller overrides.");
     }
 
     private static void TopologyAdvancedEdgeContractsRejectInvalidValues() {

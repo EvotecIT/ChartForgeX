@@ -63,8 +63,8 @@ public static class SvgRasterizer {
     }
 
     private static (double Width, double Height) Viewport(XElement root, string? viewBox) {
-        double? width = Length(Attribute(root, "width"));
-        double? height = Length(Attribute(root, "height"));
+        double? width = IntrinsicLength(root, "width");
+        double? height = IntrinsicLength(root, "height");
         if (width.HasValue && height.HasValue) return (width.Value, height.Value);
         if (!string.IsNullOrWhiteSpace(viewBox)) {
             string[] parts = viewBox!.Split(new[] { ' ', '\t', '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -80,8 +80,13 @@ public static class SvgRasterizer {
 
     private static string? Attribute(XElement element, string name) => element.Attributes().FirstOrDefault(attribute => string.Equals(attribute.Name.LocalName, name, StringComparison.OrdinalIgnoreCase))?.Value;
 
-    private static double? Length(string? value) {
-        return SvgRasterViewBox.TryParseLength(value, out double parsed) ? parsed : (double?)null;
+    private static double? IntrinsicLength(XElement root, string name) {
+        string? value = Attribute(root, name);
+        if (SvgRasterViewBox.TryParseLength(value, out double parsed)) return parsed;
+        if (SvgRasterViewBox.TryParseAbsoluteLength(value, out parsed) && parsed <= 0) {
+            throw new ArgumentOutOfRangeException(name, parsed, "SVG intrinsic viewport dimensions must be greater than zero.");
+        }
+        return null;
     }
 
     private static int OutputDimension(double value, string parameterName) {

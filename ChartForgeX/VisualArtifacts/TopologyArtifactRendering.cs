@@ -27,8 +27,14 @@ public static class TopologyArtifactRendering {
         artifact.Accessibility.Language = topology.Accessibility.Language;
         artifact.Accessibility.IsDecorative = topology.Accessibility.IsDecorative;
 
-        var renderOptions = new TopologyRenderOptions();
+        RefreshRegions(artifact, topology, null);
+        return artifact;
+    }
+
+    internal static void RefreshRegions(VisualArtifact artifact, TopologyChart topology, TopologyRenderOptions? renderOptions) {
+        renderOptions ??= new TopologyRenderOptions();
         var prepared = TopologyLayoutEngine.Prepare(topology, renderOptions.View, renderOptions);
+        artifact.Regions.Clear();
         foreach (var group in prepared.Groups) artifact.Regions.Add(Region(group.Id, "topology-group", group.Label, group.X, group.Y, group.Width, group.Height, group.Href, group.Tooltip));
         foreach (var node in prepared.Nodes) artifact.Regions.Add(Region(node.Id, "topology-node", node.Label, node.X, node.Y, node.Width, node.Height, node.Href, node.Tooltip));
         foreach (var edge in prepared.Edges) {
@@ -43,7 +49,6 @@ public static class TopologyArtifactRendering {
             region.Metadata["target"] = edge.TargetNodeId;
             artifact.Regions.Add(region);
         }
-        return artifact;
     }
 
     private static string EdgeLabel(TopologyEdge edge) {

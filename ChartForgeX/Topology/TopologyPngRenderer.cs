@@ -23,9 +23,7 @@ public sealed partial class TopologyPngRenderer {
 
     internal RgbaImage RenderImage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options ??= new TopologyRenderOptions();
-        if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
-        if (options.LayoutPreset != TopologyLayoutPreset.Automatic) options.ApplyLayoutPreset(options.LayoutPreset);
+        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
         var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
         var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
         var validator = new TopologyChartValidator();

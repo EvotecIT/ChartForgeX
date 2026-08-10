@@ -325,9 +325,8 @@ internal static partial class SvgRasterRenderer {
         var width = HorizontalLength(element, "width", viewport);
         var height = VerticalLength(element, "height", viewport);
         if (width <= 0 || height <= 0) return;
-        var fallbackRadius = VerticalLength(element, "ry", viewport);
-        var rx = Math.Max(0, Math.Min(HorizontalLength(element, "rx", viewport, fallbackRadius), Math.Min(width, height) / 2.0));
-        var ring = rx <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx);
+        ResolveRoundedRectRadii(element, viewport, width, height, out var rx, out var ry);
+        var ring = rx <= 0 || ry <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx, ry);
         FillAndStroke(canvas, new[] { TransformRing(ring, matrix) }, style, true, matrix, definitions, viewport);
     }
 
@@ -576,8 +575,8 @@ internal static partial class SvgRasterRenderer {
                 if (width <= 0 || height <= 0) return new List<List<ChartPoint>>();
                 var x = HorizontalLength(element, "x", viewport);
                 var y = VerticalLength(element, "y", viewport);
-                var rx = Math.Max(0, Math.Min(HorizontalLength(element, "rx", viewport, VerticalLength(element, "ry", viewport)), Math.Min(width, height) / 2.0));
-                return new List<List<ChartPoint>> { TransformRing(rx <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx), matrix) };
+                ResolveRoundedRectRadii(element, viewport, width, height, out var rx, out var ry);
+                return new List<List<ChartPoint>> { TransformRing(rx <= 0 || ry <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx, ry), matrix) };
             case "circle":
                 var r = DiagonalLength(element, "r", viewport);
                 return r <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), r, r, 36), matrix) };
@@ -608,12 +607,12 @@ internal static partial class SvgRasterRenderer {
     private static List<ChartPoint> RectRing(double x, double y, double width, double height) =>
         new() { new ChartPoint(x, y), new ChartPoint(x + width, y), new ChartPoint(x + width, y + height), new ChartPoint(x, y + height) };
 
-    private static List<ChartPoint> RoundedRectRing(double x, double y, double width, double height, double radius) {
+    private static List<ChartPoint> RoundedRectRing(double x, double y, double width, double height, double rx, double ry) {
         var points = new List<ChartPoint>();
-        AddArc(points, x + width - radius, y + radius, radius, -Math.PI / 2, 0);
-        AddArc(points, x + width - radius, y + height - radius, radius, 0, Math.PI / 2);
-        AddArc(points, x + radius, y + height - radius, radius, Math.PI / 2, Math.PI);
-        AddArc(points, x + radius, y + radius, radius, Math.PI, Math.PI * 1.5);
+        AddArc(points, x + width - rx, y + ry, rx, ry, -Math.PI / 2, 0);
+        AddArc(points, x + width - rx, y + height - ry, rx, ry, 0, Math.PI / 2);
+        AddArc(points, x + rx, y + height - ry, rx, ry, Math.PI / 2, Math.PI);
+        AddArc(points, x + rx, y + ry, rx, ry, Math.PI, Math.PI * 1.5);
         return points;
     }
 
@@ -627,11 +626,11 @@ internal static partial class SvgRasterRenderer {
         return points;
     }
 
-    private static void AddArc(List<ChartPoint> points, double cx, double cy, double radius, double start, double end) {
+    private static void AddArc(List<ChartPoint> points, double cx, double cy, double rx, double ry, double start, double end) {
         const int segments = 8;
         for (var i = 0; i <= segments; i++) {
             var angle = start + (end - start) * i / segments;
-            points.Add(new ChartPoint(cx + Math.Cos(angle) * radius, cy + Math.Sin(angle) * radius));
+            points.Add(new ChartPoint(cx + Math.Cos(angle) * rx, cy + Math.Sin(angle) * ry));
         }
     }
 

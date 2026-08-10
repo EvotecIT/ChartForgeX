@@ -45,7 +45,7 @@ public static class VisualArtifactRendering {
             ChartGrid grid => grid.ToHtmlPage(),
             VisualCanvas canvas => canvas.ToHtmlPage(),
             VisualStory story => story.ToHtmlPage(),
-            TopologyChart topology => TopologyModel(artifact, topology).ToHtmlPage(TopologyOptions(artifact, options)),
+            TopologyChart topology => RenderTopologyHtml(artifact, topology, options),
             FlowArtifact flow => flow.ToHtmlPage(),
             TableArtifact table => table.ToHtmlPage(),
             SequenceArtifact sequence => WrapSvgPage(sequence.Title.Length == 0 ? sequence.Id : sequence.Title, sequence.ToSvg(), artifact.Accessibility.Language),
@@ -70,7 +70,7 @@ public static class VisualArtifactRendering {
             ChartGrid grid => grid.ToPng(),
             VisualCanvas canvas => canvas.ToPng(),
             VisualStory story => story.ToPng(),
-            TopologyChart topology => TopologyModel(artifact, topology).ToPng(TopologyOptions(artifact, options)),
+            TopologyChart topology => RenderTopologyPng(artifact, topology, options),
             FlowArtifact flow => flow.ToPng(),
             TableArtifact table => table.ToPng(),
             SequenceArtifact sequence => sequence.ToPng(),
@@ -140,7 +140,7 @@ public static class VisualArtifactRendering {
             ChartGrid grid => grid.ToSvg(),
             VisualCanvas canvas => canvas.ToSvg(),
             VisualStory story => story.ToSvg(),
-            TopologyChart topology => TopologyModel(artifact, topology).ToSvg(TopologyOptions(artifact, options)),
+            TopologyChart topology => RenderTopologySvg(artifact, topology, options),
             FlowArtifact flow => flow.ToSvg(),
             TableArtifact table => table.ToSvg(),
             SequenceArtifact sequence => sequence.ToSvg(),
@@ -150,11 +150,32 @@ public static class VisualArtifactRendering {
     }
 
     private static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions) {
-        var topologyOptions = renderOptions?.Topology?.Clone();
+        var topologyOptions = renderOptions?.Topology?.CloneForRendering();
         if (!artifact.PreserveNaturalSize) return topologyOptions;
         if (topologyOptions == null) return new TopologyRenderOptions { FitContentToViewport = true };
         topologyOptions.FitContentToViewport = true;
         return topologyOptions;
+    }
+
+    private static string RenderTopologySvg(VisualArtifact artifact, TopologyChart topology, VisualArtifactRenderOptions? renderOptions) {
+        var model = TopologyModel(artifact, topology);
+        var options = TopologyOptions(artifact, renderOptions);
+        TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        return model.ToSvg(options);
+    }
+
+    private static string RenderTopologyHtml(VisualArtifact artifact, TopologyChart topology, VisualArtifactRenderOptions? renderOptions) {
+        var model = TopologyModel(artifact, topology);
+        var options = TopologyOptions(artifact, renderOptions);
+        TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        return model.ToHtmlPage(options);
+    }
+
+    private static byte[] RenderTopologyPng(VisualArtifact artifact, TopologyChart topology, VisualArtifactRenderOptions? renderOptions) {
+        var model = TopologyModel(artifact, topology);
+        var options = TopologyOptions(artifact, renderOptions);
+        TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        return model.ToPng(options);
     }
 
     private static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {

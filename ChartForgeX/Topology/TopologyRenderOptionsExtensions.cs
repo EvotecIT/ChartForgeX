@@ -54,6 +54,7 @@ public static class TopologyRenderOptionsExtensions {
                 options.MaxNodeSubtitleLines = 2;
                 break;
         }
+        options.MarkLayoutPresetApplied();
         return options;
     }
 
@@ -65,6 +66,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <returns>The current render options.</returns>
     public static TopologyRenderOptions ApplyPreset(this TopologyRenderOptions options, TopologyViewPreset preset) {
         if (options == null) throw new ArgumentNullException(nameof(options));
+        if (!System.Enum.IsDefined(typeof(TopologyViewPreset), preset)) throw new System.ArgumentOutOfRangeException(nameof(preset), preset, "Unknown topology view preset.");
         options.Preset = preset;
         switch (preset) {
             case TopologyViewPreset.Grouped:
@@ -114,6 +116,7 @@ public static class TopologyRenderOptionsExtensions {
                 break;
         }
 
+        options.MarkPresetApplied();
         return options;
     }
 
