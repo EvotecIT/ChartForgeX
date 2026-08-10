@@ -141,6 +141,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.RepeatSpacingX = 0.000001, "Repeated watermarks should reject sub-pixel spacing that can create unbounded render loops.");
         AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0 }, "Raster options should reject non-positive DPI metadata.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0.001 }, "Raster options should reject DPI values that round to zero PNG pixels per meter.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = double.MaxValue }, "Raster options should reject DPI values above the PNG density range at assignment time.");
+        var maximumDensityOptions = new RasterImageOptions { Dpi = uint.MaxValue * 0.0254D };
 
         var denseWatermark = VisualWatermark.FromText("DENSE");
         denseWatermark.Repeat = true;
@@ -152,6 +155,11 @@ internal static partial class SmokeTests {
 
         var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
         var pngBytes = PngWriter.WriteRgba(pixel);
+        Assert(PngWriter.WriteRgba(pixel, maximumDensityOptions).Length > pngBytes.Length, "The maximum accepted DPI should encode successfully as PNG density metadata.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualWatermarkRendering.CalculateRotatedWatermarkAllocation(8192, 8192, 45), "Rotated watermark intermediates should honor the deterministic per-canvas allocation ceiling.");
+        var oversizedWatermark = VisualWatermark.FromImage(pngBytes, "image/png");
+        oversizedWatermark.Width = double.MaxValue;
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualWatermarkRendering.ApplyToImage(pixel, new[] { oversizedWatermark }), "Watermark dimensions should be range-checked before integer conversion or allocation.");
         Assert(VisualWatermark.FromImage(pngBytes, "image/png").ImageMimeType == "image/png", "Image watermarks should preserve a validated canonical media type.");
         var repeatedImage = VisualWatermark.FromImage(pngBytes, "image/png");
         repeatedImage.Repeat = true;
@@ -222,6 +230,7 @@ internal static partial class SmokeTests {
         fittedWatermark.Padding = 4;
         fittedWatermark.Width = 16;
         fittedWatermark.Height = 16;
+        fittedWatermark.RotationDegrees = 45;
         fittedWatermark.Opacity = 1;
         var fittedArtifactOptions = new VisualArtifactRenderOptions { Topology = fittedTopologyOptions };
         fittedArtifactOptions.Watermarks.Add(fittedWatermark);
@@ -236,6 +245,8 @@ internal static partial class SmokeTests {
         var fittedCenterY = (int)Math.Round(fittedBottom - (fittedWatermark.Padding + fittedWatermark.Height.Value / 2) * fittedScale);
         Assert(fittedBottom < wideDecorated.Height - 20, "The fitted topology fixture should expose a visible bottom letterbox for watermark alignment coverage.");
         Assert(IsPixelNear(wideDecorated.Pixels, wideDecorated.Width, fittedCenterX, fittedCenterY, 255, 0, 255), "PNG watermarks should anchor inside the fitted SVG content extent rather than the destination letterbox.");
+        var justBelowFittedFrame = ((int)Math.Ceiling(fittedBottom + 2) * wideDecorated.Width + fittedCenterX) * 4;
+        Assert(wideDecorated.Pixels[justBelowFittedFrame] == widePlain.Pixels[justBelowFittedFrame] && wideDecorated.Pixels[justBelowFittedFrame + 1] == widePlain.Pixels[justBelowFittedFrame + 1] && wideDecorated.Pixels[justBelowFittedFrame + 2] == widePlain.Pixels[justBelowFittedFrame + 2] && wideDecorated.Pixels[justBelowFittedFrame + 3] == widePlain.Pixels[justBelowFittedFrame + 3], "Rotated PNG watermarks should be clipped at the fitted SVG content frame.");
         var destinationBottom = ((wideDecorated.Height - 8) * wideDecorated.Width + wideDecorated.Width - 8) * 4;
         Assert(wideDecorated.Pixels[destinationBottom] == widePlain.Pixels[destinationBottom] && wideDecorated.Pixels[destinationBottom + 1] == widePlain.Pixels[destinationBottom + 1] && wideDecorated.Pixels[destinationBottom + 2] == widePlain.Pixels[destinationBottom + 2] && wideDecorated.Pixels[destinationBottom + 3] == widePlain.Pixels[destinationBottom + 3], "Bottom-right watermark anchoring should not paint into fitted-content letterboxing.");
 

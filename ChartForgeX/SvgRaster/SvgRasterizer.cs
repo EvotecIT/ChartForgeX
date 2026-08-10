@@ -38,12 +38,12 @@ public static class SvgRasterizer {
         (double viewWidth, double viewHeight) = Viewport(root, viewBox);
         int targetWidth = width
             ?? (height.HasValue
-                ? Math.Max(1, (int)Math.Round(height.Value * viewWidth / viewHeight, MidpointRounding.AwayFromZero))
-                : Math.Max(1, (int)Math.Round(viewWidth, MidpointRounding.AwayFromZero)));
+                ? OutputDimension(height.Value * viewWidth / viewHeight, nameof(width))
+                : OutputDimension(viewWidth, nameof(width)));
         int targetHeight = height
             ?? (width.HasValue
-                ? Math.Max(1, (int)Math.Round(width.Value * viewHeight / viewWidth, MidpointRounding.AwayFromZero))
-                : Math.Max(1, (int)Math.Round(viewHeight, MidpointRounding.AwayFromZero)));
+                ? OutputDimension(width.Value * viewHeight / viewWidth, nameof(height))
+                : OutputDimension(viewHeight, nameof(height)));
         string effectiveViewBox = string.IsNullOrWhiteSpace(viewBox)
             ? "0 0 " + viewWidth.ToString(CultureInfo.InvariantCulture) + " " + viewHeight.ToString(CultureInfo.InvariantCulture)
             : viewBox!;
@@ -69,16 +69,25 @@ public static class SvgRasterizer {
             if (parts.Length == 4 && Parse(parts[2], out double viewWidth) && Parse(parts[3], out double viewHeight) && viewWidth > 0D && viewHeight > 0D) {
                 if (width.HasValue) return (width.Value, width.Value * viewHeight / viewWidth);
                 if (height.HasValue) return (height.Value * viewWidth / viewHeight, height.Value);
-                return (viewWidth, viewHeight);
+                var defaultScale = Math.Min(300D / viewWidth, 150D / viewHeight);
+                return (viewWidth * defaultScale, viewHeight * defaultScale);
             }
         }
-        return (width ?? 800D, height ?? 600D);
+        return (width ?? 300D, height ?? 150D);
     }
 
     private static string? Attribute(XElement element, string name) => element.Attributes().FirstOrDefault(attribute => string.Equals(attribute.Name.LocalName, name, StringComparison.OrdinalIgnoreCase))?.Value;
 
     private static double? Length(string? value) {
         return SvgRasterViewBox.TryParseLength(value, out double parsed) ? parsed : (double?)null;
+    }
+
+    private static int OutputDimension(double value, string parameterName) {
+        var rounded = Math.Round(value, MidpointRounding.AwayFromZero);
+        if (double.IsNaN(rounded) || double.IsInfinity(rounded) || value <= 0 || rounded > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(parameterName, value, "SVG raster output dimensions exceed the supported allocation range.");
+        }
+        return Math.Max(1, (int)rounded);
     }
 
     private static bool Parse(string text, out double value) => double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) && !double.IsNaN(value) && !double.IsInfinity(value);

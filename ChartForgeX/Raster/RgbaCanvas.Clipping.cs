@@ -4,6 +4,31 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
+    private bool _hasClip;
+    private int _clipLeft;
+    private int _clipTop;
+    private int _clipRight;
+    private int _clipBottom;
+
+    /// <summary>
+    /// Restricts subsequent paint operations to pixels whose centers fall inside the supplied logical bounds.
+    /// </summary>
+    internal void SetClipBounds(double x, double y, double width, double height) {
+        if (double.IsNaN(x) || double.IsInfinity(x) || double.IsNaN(y) || double.IsInfinity(y) ||
+            double.IsNaN(width) || double.IsInfinity(width) || double.IsNaN(height) || double.IsInfinity(height) ||
+            width < 0 || height < 0) {
+            throw new ArgumentOutOfRangeException(nameof(width), "Clip bounds must be finite and non-negative.");
+        }
+
+        _clipLeft = Math.Max(0, (int)Math.Ceiling(x * _scale - 0.5));
+        _clipTop = Math.Max(0, (int)Math.Ceiling(y * _scale - 0.5));
+        _clipRight = Math.Min(_pixelWidth, (int)Math.Ceiling((x + width) * _scale - 0.5));
+        _clipBottom = Math.Min(_pixelHeight, (int)Math.Ceiling((y + height) * _scale - 0.5));
+        _hasClip = true;
+    }
+
+    private bool IsInsideClip(int x, int y) => !_hasClip || x >= _clipLeft && x < _clipRight && y >= _clipTop && y < _clipBottom;
+
     public void FillRectClippedToRoundedRect(double x, double y, double width, double height, double clipX, double clipY, double clipWidth, double clipHeight, double clipRadius, ChartColor color) {
         FillRectClippedToRoundedRectPixels(x * _scale, y * _scale, width * _scale, height * _scale, clipX * _scale, clipY * _scale, clipWidth * _scale, clipHeight * _scale, clipRadius * _scale, color);
     }

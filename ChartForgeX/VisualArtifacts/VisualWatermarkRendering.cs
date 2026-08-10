@@ -42,6 +42,7 @@ internal static class VisualWatermarkRendering {
         if (watermarks.Count == 0) return source;
         var canvas = new RgbaCanvas(source.Width, source.Height, 1, null, 1);
         canvas.DrawImage(0, 0, source.Width, source.Height, source.Pixels);
+        canvas.SetClipBounds(frame.X, frame.Y, frame.Width, frame.Height);
         for (var i = 0; i < watermarks.Count; i++) DrawRasterWatermark(canvas, watermarks[i], frame);
         return canvas.ToImage();
     }
@@ -190,12 +191,22 @@ internal static class VisualWatermarkRendering {
     }
 
     private static RgbaImage PrepareRasterWatermark(VisualWatermark watermark, RgbaImage source, double? explicitWidth = null, double? explicitHeight = null, double renderScale = 1) {
-        var targetWidth = Math.Max(1, (int)Math.Round(explicitWidth ?? (watermark.Width ?? source.Width) * watermark.Scale * renderScale));
-        var targetHeight = Math.Max(1, (int)Math.Round(explicitHeight ?? (watermark.Height ?? source.Height) * watermark.Scale * renderScale));
+        var targetWidth = ResolveRasterWatermarkDimension(explicitWidth ?? (watermark.Width ?? source.Width) * watermark.Scale * renderScale);
+        var targetHeight = ResolveRasterWatermarkDimension(explicitHeight ?? (watermark.Height ?? source.Height) * watermark.Scale * renderScale);
         return ScaleAndRotate(source, targetWidth, targetHeight, watermark.RotationDegrees, watermark.Opacity);
     }
 
+    private static int ResolveRasterWatermarkDimension(double value) {
+        var rounded = Math.Round(value);
+        if (double.IsNaN(rounded) || double.IsInfinity(rounded) || rounded > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Raster watermark dimensions exceed the supported allocation range.");
+        }
+        return Math.Max(1, (int)rounded);
+    }
+
     private static RgbaImage ScaleAndRotate(RgbaImage source, int width, int height, double degrees, double opacity) {
+        var hasRotation = Math.Abs(degrees % 360) >= 0.0001;
+        var rotatedAllocation = hasRotation ? CalculateRotatedWatermarkAllocation(width, height, degrees) : default;
         var scaledCanvas = new RgbaCanvas(width, height, 1, null, 1);
         var scale = Math.Min(width / (double)source.Width, height / (double)source.Height);
         var drawWidth = Math.Max(1, (int)Math.Round(source.Width * scale));
@@ -209,14 +220,14 @@ internal static class VisualWatermarkRendering {
             source.Height,
             source.Pixels);
         var scaled = scaledCanvas.ToImage();
-        if (Math.Abs(degrees % 360) < 0.0001) return WithOpacity(scaled, opacity);
+        if (!hasRotation) return WithOpacity(scaled, opacity);
 
         var radians = degrees * Math.PI / 180.0;
         var cos = Math.Cos(radians);
         var sin = Math.Sin(radians);
-        var rotatedWidth = Math.Max(1, (int)Math.Ceiling(Math.Abs(width * cos) + Math.Abs(height * sin)));
-        var rotatedHeight = Math.Max(1, (int)Math.Ceiling(Math.Abs(width * sin) + Math.Abs(height * cos)));
-        var pixels = new byte[rotatedWidth * rotatedHeight * 4];
+        var rotatedWidth = rotatedAllocation.PixelWidth;
+        var rotatedHeight = rotatedAllocation.PixelHeight;
+        var pixels = new byte[rotatedAllocation.ByteCount];
         var sourceCenterX = (width - 1) / 2.0;
         var sourceCenterY = (height - 1) / 2.0;
         var targetCenterX = (rotatedWidth - 1) / 2.0;
@@ -235,6 +246,19 @@ internal static class VisualWatermarkRendering {
             pixels[targetIndex + 3] = (byte)Math.Round(scaled.Pixels[sourceIndex + 3] * opacity);
         }
         return new RgbaImage(rotatedWidth, rotatedHeight, pixels);
+    }
+
+    internal static RasterAllocation CalculateRotatedWatermarkAllocation(int width, int height, double degrees) {
+        var radians = degrees * Math.PI / 180.0;
+        var cos = Math.Cos(radians);
+        var sin = Math.Sin(radians);
+        var rotatedWidthValue = Math.Ceiling(Math.Abs(width * cos) + Math.Abs(height * sin));
+        var rotatedHeightValue = Math.Ceiling(Math.Abs(width * sin) + Math.Abs(height * cos));
+        if (double.IsNaN(rotatedWidthValue) || double.IsInfinity(rotatedWidthValue) || rotatedWidthValue > int.MaxValue ||
+            double.IsNaN(rotatedHeightValue) || double.IsInfinity(rotatedHeightValue) || rotatedHeightValue > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(nameof(width), width, "Rotated watermark dimensions exceed the supported allocation range.");
+        }
+        return RasterAllocationGuard.Calculate(Math.Max(1, (int)rotatedWidthValue), Math.Max(1, (int)rotatedHeightValue), 1, 1);
     }
 
     private static RgbaImage WithOpacity(RgbaImage image, double opacity) {
