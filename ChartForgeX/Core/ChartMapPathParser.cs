@@ -7,9 +7,17 @@ namespace ChartForgeX.Core;
 
 internal static class ChartMapPathParser {
     public static List<List<ChartPoint>> ParseRings(string path) {
+        var subpaths = ParseSubpaths(path);
+        var rings = new List<List<ChartPoint>>(subpaths.Count);
+        foreach (var subpath in subpaths) rings.Add(subpath.Points);
+        return rings;
+    }
+
+    public static List<ChartMapPathSubpath> ParseSubpaths(string path) {
         if (path == null) throw new ArgumentNullException(nameof(path));
 
-        var rings = new List<List<ChartPoint>>();
+        var subpaths = new List<ChartMapPathSubpath>();
+        ChartMapPathSubpath? currentSubpath = null;
         List<ChartPoint>? currentRing = null;
         var index = 0;
         var command = '\0';
@@ -29,9 +37,11 @@ internal static class ChartMapPathParser {
                 index++;
                 if (command == 'Z' || command == 'z') {
                     if (currentRing != null && currentRing.Count > 0) {
+                        currentSubpath!.IsClosed = true;
                         current = subpathStart;
                     }
 
+                    currentSubpath = null;
                     currentRing = null;
                     lastCubicControl = null;
                     lastQuadraticControl = null;
@@ -52,8 +62,9 @@ internal static class ChartMapPathParser {
                     var x = ReadNumber(path, ref index);
                     var y = ReadNumber(path, ref index);
                     var point = command == 'm' ? new ChartPoint(current.X + x, current.Y + y) : new ChartPoint(x, y);
-                    currentRing = new List<ChartPoint>();
-                    rings.Add(currentRing);
+                    currentSubpath = new ChartMapPathSubpath();
+                    subpaths.Add(currentSubpath);
+                    currentRing = currentSubpath.Points;
                     currentRing.Add(point);
                     current = point;
                     subpathStart = point;
@@ -171,7 +182,7 @@ internal static class ChartMapPathParser {
             }
         }
 
-        return rings;
+        return subpaths;
     }
 
     private static bool IsCommand(char value) {
@@ -342,4 +353,9 @@ internal static class ChartMapPathParser {
         var angle = Math.Acos(value);
         return ux * vy - uy * vx < 0 ? -angle : angle;
     }
+}
+
+internal sealed class ChartMapPathSubpath {
+    public List<ChartPoint> Points { get; } = new();
+    public bool IsClosed { get; internal set; }
 }

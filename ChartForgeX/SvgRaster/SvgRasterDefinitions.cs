@@ -319,6 +319,11 @@ internal sealed class SvgRasterLinearGradient {
         start = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X1, Y1)), bounds);
         end = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X2, Y2)), bounds);
     }
+
+    public void ObjectEndpoints(SvgRasterGradientValues.GradientBounds bounds, SvgRasterMatrix objectMatrix, out ChartPoint start, out ChartPoint end) {
+        start = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X1, Y1)), bounds));
+        end = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X2, Y2)), bounds));
+    }
 }
 
 internal sealed class SvgRasterRadialGradient {
@@ -369,6 +374,13 @@ internal sealed class SvgRasterRadialGradient {
         center = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy)), bounds);
         radiusX = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx + radius, Cy)), bounds);
         radiusY = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy + radius)), bounds);
+    }
+
+    public void ObjectAxes(SvgRasterGradientValues.GradientBounds bounds, SvgRasterMatrix objectMatrix, out ChartPoint center, out ChartPoint radiusX, out ChartPoint radiusY) {
+        var radius = Math.Max(0.000001, Radius);
+        center = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy)), bounds));
+        radiusX = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx + radius, Cy)), bounds));
+        radiusY = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy + radius)), bounds));
     }
 }
 

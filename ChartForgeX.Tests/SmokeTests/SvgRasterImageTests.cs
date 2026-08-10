@@ -133,10 +133,28 @@ internal static partial class SmokeTests {
         const string paintedPrimitive = "<rect x='10' y='5' width='60' height='30' fill='#ff0000' stroke='#0000ff' stroke-width='10' opacity='.5'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(paintedPrimitive, "0 0 80 40", "none", 80, 40, out var paintedPrimitivePixels), "SVG rasterization should render a partially opaque primitive with fill and stroke paint.");
         Assert(PixelAlpha(paintedPrimitivePixels, 80, 12, 20) is >= 126 and <= 129 && PixelAlpha(paintedPrimitivePixels, 80, 40, 20) is >= 126 and <= 129, "Primitive opacity should composite overlapping fill and stroke paint before applying alpha once.");
+        const string gradientOpacity = "<defs><linearGradient id='solid-gradient'><stop stop-color='#ef4444'/><stop offset='1' stop-color='#ef4444'/></linearGradient></defs><rect width='40' height='20' fill='url(#solid-gradient)' opacity='.5'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(gradientOpacity, "0 0 40 20", "none", 40, 20, out var gradientOpacityPixels), "SVG rasterization should render referenced fill paint with element opacity.");
+        Assert(MaximumAlpha(gradientOpacityPixels) is >= 126 and <= 129, "Gradient-only primitive opacity should affect the referenced fill exactly once.");
+
+        const string openFilledPath = "<path d='M5 5 L35 5 L35 35' fill='#16a34a' stroke='#2563eb' stroke-width='2'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(openFilledPath, "0 0 40 40", "none", 40, 40, out var openFilledPathPixels), "SVG rasterization should fill an open path while keeping its stroke open.");
+        Assert(IsPixelNear(openFilledPathPixels, 40, 30, 10, 22, 163, 74), "Open SVG subpaths should close implicitly for fill geometry.");
+        const string mixedClosurePath = "<path d='M5 5 L25 5 L25 25 Z M50 5 L85 5 L85 35' fill='none' stroke='#2563eb' stroke-width='4'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(mixedClosurePath, "0 0 90 40", "none", 90, 40, out var mixedClosurePathPixels), "SVG rasterization should preserve closure independently for every path subpath.");
+        Assert(PixelAlpha(mixedClosurePathPixels, 90, 67, 20) == 0, "A closed subpath should not force a sibling open subpath's stroke to close.");
 
         const string markedPrimitive = "<defs><marker id='arrow-opacity' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto'><path d='M0 0 L10 5 L0 10 z' fill='#ff0000'/></marker></defs><path d='M10 20 L70 20' fill='none' stroke='#111111' stroke-width='4' marker-end='url(#arrow-opacity)' opacity='.5'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(markedPrimitive, "0 0 80 40", "none", 80, 40, out var markedPrimitivePixels), "SVG rasterization should render a partially opaque stroked path and marker as one painted primitive.");
         Assert(MaximumAlpha(markedPrimitivePixels) is >= 126 and <= 129, "Path opacity should composite marker and stroke paint before applying alpha once.");
+        const string affineMarker = "<defs><marker id='affine-arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' markerUnits='userSpaceOnUse' orient='auto'><path d='M0 0 L10 5 L0 10 z' fill='#ef4444'/></marker></defs><g transform='scale(2 1)'><path d='M10 30 L45 30' fill='none' stroke='#111111' marker-end='url(#affine-arrow)'/></g>";
+        Assert(SvgRasterRenderer.TryRenderFragment(affineMarker, "0 0 120 60", "none", 120, 60, out var affineMarkerPixels), "SVG rasterization should render markers under non-uniform host transforms.");
+        var affineMarkerBounds = SvgColorBounds(affineMarkerPixels, 120, 60, 239, 68, 68);
+        Assert(affineMarkerBounds.HasPixels && affineMarkerBounds.Width > affineMarkerBounds.Height * 1.4, $"SVG markers should preserve the host affine transform instead of collapsing it to a uniform scale (bounds {affineMarkerBounds.Width}x{affineMarkerBounds.Height}).");
+        const string transformedLineMarker = "<defs><marker id='line-arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' markerUnits='userSpaceOnUse' orient='auto'><path d='M0 0 L10 5 L0 10 z' fill='#ef4444'/></marker></defs><line x1='10' y1='30' x2='45' y2='30' stroke='#111111' marker-end='url(#line-arrow)' transform='scale(2 1)'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(transformedLineMarker, "0 0 120 60", "none", 120, 60, out var transformedLineMarkerPixels), "SVG rasterization should render line markers from source coordinates under host transforms.");
+        var transformedLineMarkerBounds = SvgColorBounds(transformedLineMarkerPixels, 120, 60, 239, 68, 68);
+        Assert(transformedLineMarkerBounds.HasPixels && transformedLineMarkerBounds.Right < 95 && transformedLineMarkerBounds.Width > transformedLineMarkerBounds.Height * 1.4, "Line markers should apply the host affine transform once.");
 
         const string rootOpacity = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' opacity='.5'><rect width='70' height='40' fill='#ff0000'/><rect x='30' width='70' height='40' fill='#ff0000'/></svg>";
         var rootOpacityImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootOpacity));
@@ -268,6 +286,22 @@ internal static partial class SmokeTests {
         const string strokedText = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><text x='4' y='30' font-size='24' fill='none' stroke='#ef4444' stroke-width='2'>OUTLINE</text></svg>";
         var strokedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(strokedText));
         Assert(SvgColorBounds(strokedTextImage.Pixels, 100, 40, 239, 68, 68).HasPixels, "Stroke-only SVG text should remain visible in PNG output.");
+        const string referencedTextFill = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='50'><defs><linearGradient id='text-gradient'><stop stop-color='#ef4444'/><stop offset='1' stop-color='#2563eb'/></linearGradient><pattern id='text-pattern' width='8' height='8' patternUnits='userSpaceOnUse'><rect width='4' height='8' fill='#16a34a'/></pattern></defs><text x='4' y='38' font-size='32' fill='url(#text-gradient)'>GRAD</text><text x='100' y='38' font-size='32' fill='url(#text-pattern)'>P</text></svg>";
+        var referencedTextFillImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(referencedTextFill));
+        Assert(HasRedAndBlueDominantPixels(referencedTextFillImage.Pixels) && SvgAlphaBounds(referencedTextFillImage.Pixels, 140, 50).Right > 100, "Referenced gradient and pattern fills should paint SVG text glyphs in PNG output.");
+        const string segmentedGradientText = "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='55'><defs><linearGradient id='shared-text'><stop offset='0' stop-color='#ef4444'/><stop offset='.49' stop-color='#ef4444'/><stop offset='.51' stop-color='#2563eb'/><stop offset='1' stop-color='#2563eb'/></linearGradient></defs><text x='4' y='44' font-size='40' fill='url(#shared-text)'>OO<tspan>OO</tspan></text></svg>";
+        var segmentedGradientTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(segmentedGradientText));
+        var segmentedRedBounds = SvgColorBounds(segmentedGradientTextImage.Pixels, 160, 55, 239, 68, 68);
+        var segmentedBlueBounds = SvgColorBounds(segmentedGradientTextImage.Pixels, 160, 55, 37, 99, 235);
+        Assert(segmentedRedBounds.HasPixels && segmentedBlueBounds.HasPixels && segmentedRedBounds.Right < segmentedBlueBounds.Left, "Object-bounding-box text paint should share one element geometry across adjacent text and tspan runs.");
+        const string affineReferencedText = "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='100'><defs><linearGradient id='affine-gradient'><stop offset='0' stop-color='#ef4444'/><stop offset='.49' stop-color='#ef4444'/><stop offset='.51' stop-color='#2563eb'/><stop offset='1' stop-color='#2563eb'/></linearGradient><pattern id='affine-pattern' width='1' height='1' patternContentUnits='objectBoundingBox'><rect width='.49' height='1' fill='#ef4444'/><rect x='.51' width='.49' height='1' fill='#2563eb'/></pattern></defs><text x='20' y='46' font-size='40' fill='url(#affine-gradient)'><tspan transform='skewX(25)'>OOOO</tspan></text><text x='20' y='94' font-size='40' fill='url(#affine-pattern)'><tspan transform='skewX(25)'>OOOO</tspan></text></svg>";
+        var affineReferencedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(affineReferencedText));
+        var affineGradientRed = SvgColorBoundsInRows(affineReferencedTextImage.Pixels, 220, 0, 49, 239, 68, 68);
+        var affineGradientBlue = SvgColorBoundsInRows(affineReferencedTextImage.Pixels, 220, 0, 49, 37, 99, 235);
+        var affinePatternRed = SvgColorBoundsInRows(affineReferencedTextImage.Pixels, 220, 50, 99, 239, 68, 68);
+        var affinePatternBlue = SvgColorBoundsInRows(affineReferencedTextImage.Pixels, 220, 50, 99, 37, 99, 235);
+        Assert(affineGradientRed.HasPixels && affineGradientBlue.HasPixels && affineGradientRed.Right - affineGradientBlue.Left <= 12, $"Object-bounding-box gradients should remain fixed to root text geometry across transformed tspans (red {affineGradientRed.Left}-{affineGradientRed.Right}, blue {affineGradientBlue.Left}-{affineGradientBlue.Right}).");
+        Assert(affinePatternRed.HasPixels && affinePatternBlue.HasPixels && affinePatternRed.Right - affinePatternBlue.Left <= 12, $"Object-bounding-box patterns should remain fixed to root text geometry across transformed tspans (red {affinePatternRed.Left}-{affinePatternRed.Right}, blue {affinePatternBlue.Left}-{affinePatternBlue.Right}).");
         const string paintedSpanText = "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90'><text x='8' y='68' font-size='60'><tspan fill='#ef4444' stroke='#2563eb' stroke-width='2'>OO</tspan></text></svg>";
         var paintedSpanTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(paintedSpanText));
         Assert(SvgColorBounds(paintedSpanTextImage.Pixels, 180, 90, 239, 68, 68).HasPixels && SvgColorBounds(paintedSpanTextImage.Pixels, 180, 90, 37, 99, 235).HasPixels, "Combined text paint should retain both fill and the default overlaid stroke.");
@@ -346,6 +380,18 @@ internal static partial class SmokeTests {
         return maximum;
     }
 
+    private static bool HasRedAndBlueDominantPixels(byte[] rgba) {
+        var red = false;
+        var blue = false;
+        for (var index = 0; index < rgba.Length; index += 4) {
+            if (rgba[index + 3] < 100) continue;
+            red |= rgba[index] > rgba[index + 2] + 32;
+            blue |= rgba[index + 2] > rgba[index] + 32;
+            if (red && blue) return true;
+        }
+        return false;
+    }
+
     private static bool IsPixelNear(byte[] rgba, int width, int x, int y, byte red, byte green, byte blue) {
         var index = (y * width + x) * 4;
         return Math.Abs(rgba[index] - red) <= 4 && Math.Abs(rgba[index + 1] - green) <= 4 && Math.Abs(rgba[index + 2] - blue) <= 4 && rgba[index + 3] >= 250;
@@ -358,11 +404,16 @@ internal static partial class SmokeTests {
     }
 
     private static SvgPixelColorBounds SvgColorBounds(byte[] rgba, int width, int height, byte red, byte green, byte blue) {
+        return SvgColorBoundsInRows(rgba, width, 0, height - 1, red, green, blue);
+    }
+
+    private static SvgPixelColorBounds SvgColorBoundsInRows(byte[] rgba, int width, int topRow, int bottomRow, byte red, byte green, byte blue) {
+        var height = rgba.Length / 4 / width;
         var left = width;
         var top = height;
         var right = -1;
         var bottom = -1;
-        for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) {
+        for (var y = Math.Max(0, topRow); y <= Math.Min(height - 1, bottomRow); y++) for (var x = 0; x < width; x++) {
             var index = (y * width + x) * 4;
             if (Math.Abs(rgba[index] - red) > 8 || Math.Abs(rgba[index + 1] - green) > 8 || Math.Abs(rgba[index + 2] - blue) > 8 || rgba[index + 3] < 200) continue;
             left = Math.Min(left, x);

@@ -303,9 +303,20 @@ internal static partial class SvgRasterRenderer {
     private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         var d = element.Get("d");
         if (string.IsNullOrWhiteSpace(d)) return;
-        var rings = TransformRings(ChartMapPathParser.ParseRings(d!), matrix);
-        FillAndStroke(canvas, rings, style, PathHasClose(d!), matrix, definitions, viewport);
-        RenderMarkers(canvas, element, style, matrix, definitions, rings, width, height, referenceDepth, ancestors);
+        var subpaths = ChartMapPathParser.ParseSubpaths(d!);
+        var sourceRings = new List<List<ChartPoint>>(subpaths.Count);
+        var fillContours = new List<List<ChartPoint>>(subpaths.Count);
+        var strokeContours = new List<List<ChartPoint>>(subpaths.Count);
+        foreach (var subpath in subpaths) {
+            sourceRings.Add(subpath.Points);
+            var transformed = TransformRing(subpath.Points, matrix);
+            var contour = ClosedRing(transformed);
+            if (contour.Count >= 3) fillContours.Add(contour);
+            strokeContours.Add(subpath.IsClosed ? contour : transformed);
+        }
+        Fill(canvas, fillContours, style, matrix, definitions, viewport);
+        foreach (var strokeContour in strokeContours) Stroke(canvas, strokeContour, style, matrix.ScaleFactor, definitions);
+        RenderMarkers(canvas, element, style, matrix, definitions, sourceRings, width, height, referenceDepth, ancestors);
     }
 
     private static void RenderRect(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
@@ -326,12 +337,13 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static void RenderLine(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
-        var points = new[] {
-            matrix.Transform(new ChartPoint(HorizontalLength(element, "x1", viewport), VerticalLength(element, "y1", viewport))),
-            matrix.Transform(new ChartPoint(HorizontalLength(element, "x2", viewport), VerticalLength(element, "y2", viewport)))
+        var sourcePoints = new[] {
+            new ChartPoint(HorizontalLength(element, "x1", viewport), VerticalLength(element, "y1", viewport)),
+            new ChartPoint(HorizontalLength(element, "x2", viewport), VerticalLength(element, "y2", viewport))
         };
+        var points = new[] { matrix.Transform(sourcePoints[0]), matrix.Transform(sourcePoints[1]) };
         Stroke(canvas, points, style, matrix.ScaleFactor, definitions);
-        RenderMarkers(canvas, element, style, matrix, definitions, new[] { new List<ChartPoint>(points) }, width, height, referenceDepth, ancestors);
+        RenderMarkers(canvas, element, style, matrix, definitions, new[] { new List<ChartPoint>(sourcePoints) }, width, height, referenceDepth, ancestors);
     }
 
     private static void RenderPointList(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, bool close) {
@@ -339,38 +351,46 @@ internal static partial class SvgRasterRenderer {
         if (points.Count == 0) return;
         var transformed = TransformRing(points, matrix);
         FillAndStroke(canvas, new[] { transformed }, style, close, matrix, definitions, viewport);
-        RenderMarkers(canvas, element, style, matrix, definitions, new[] { transformed }, width, height, referenceDepth, ancestors);
+        RenderMarkers(canvas, element, style, matrix, definitions, new[] { points }, width, height, referenceDepth, ancestors);
     }
 
-    private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool close, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
+    private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool closeStroke, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
         var contours = new List<List<ChartPoint>>();
         var strokeRings = new List<List<ChartPoint>>();
         foreach (var ring in rings) {
             if (ring.Count == 0) continue;
-            var contour = close ? ClosedRing(ring) : new List<ChartPoint>(ring);
-            if (close && contour.Count >= 3) contours.Add(contour);
-            strokeRings.Add(contour);
+            var contour = ClosedRing(ring);
+            if (contour.Count >= 3) contours.Add(contour);
+            strokeRings.Add(closeStroke ? contour : new List<ChartPoint>(ring));
         }
 
         Fill(canvas, contours, style, matrix, definitions, viewport);
         foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
     }
 
-    private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
+    private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterObjectPaint? objectPaint = null) {
         if (contours.Count == 0 || style.Fill.IsNone) return;
         var fillRule = FillRule(style.FillRule);
+        var paintOpacity = style.Opacity * style.FillOpacity;
         if (style.Fill.IsReference && definitions.TryGetLinearGradient(style.Fill.ReferenceId, out var gradient)) {
-            gradient.Endpoints(contours, matrix, out var start, out var end);
-            canvas.FillContoursLinearGradient(contours, start, end, gradient.Stops, gradient.SpreadMethod, fillRule);
+            ChartPoint start;
+            ChartPoint end;
+            if (objectPaint.HasValue && !gradient.UserSpaceOnUse) gradient.ObjectEndpoints(objectPaint.Value.Bounds, objectPaint.Value.Matrix, out start, out end);
+            else gradient.Endpoints(contours, matrix, out start, out end);
+            canvas.FillContoursLinearGradient(contours, start, end, gradient.Stops, gradient.SpreadMethod, fillRule, paintOpacity);
             return;
         }
         if (style.Fill.IsReference && definitions.TryGetRadialGradient(style.Fill.ReferenceId, out var radialGradient)) {
-            radialGradient.Axes(contours, matrix, out var center, out var radiusX, out var radiusY);
-            canvas.FillContoursRadialGradient(contours, center, radiusX, radiusY, radialGradient.Stops, radialGradient.SpreadMethod, fillRule);
+            ChartPoint center;
+            ChartPoint radiusX;
+            ChartPoint radiusY;
+            if (objectPaint.HasValue && !radialGradient.UserSpaceOnUse) radialGradient.ObjectAxes(objectPaint.Value.Bounds, objectPaint.Value.Matrix, out center, out radiusX, out radiusY);
+            else radialGradient.Axes(contours, matrix, out center, out radiusX, out radiusY);
+            canvas.FillContoursRadialGradient(contours, center, radiusX, radiusY, radialGradient.Stops, radialGradient.SpreadMethod, fillRule, paintOpacity);
             return;
         }
-        if (style.Fill.IsReference && definitions.TryGetPattern(style.Fill.ReferenceId, out var pattern) && TryRenderPatternTile(contours, matrix, pattern, definitions, viewport, out var tile)) {
-            canvas.FillContoursPattern(contours, tile.OriginX, tile.OriginY, tile.Width, tile.Height, tile.Pixels, fillRule);
+        if (style.Fill.IsReference && definitions.TryGetPattern(style.Fill.ReferenceId, out var pattern) && TryRenderPatternTile(contours, matrix, pattern, definitions, viewport, objectPaint, out var tile)) {
+            canvas.FillContoursPattern(contours, tile.Width, tile.Height, tile.Pixels, tile.CanvasToTile.A, tile.CanvasToTile.B, tile.CanvasToTile.C, tile.CanvasToTile.D, tile.CanvasToTile.E, tile.CanvasToTile.F, fillRule, paintOpacity);
             return;
         }
 
@@ -392,23 +412,38 @@ internal static partial class SvgRasterRenderer {
         return ChartColor.Transparent;
     }
 
-    private static bool TryRenderPatternTile(IReadOnlyList<List<ChartPoint>> contours, SvgRasterMatrix matrix, SvgRasterPattern pattern, SvgRasterDefinitions definitions, SvgRasterViewport viewport, out PatternTile tile) {
+    private static bool TryRenderPatternTile(IReadOnlyList<List<ChartPoint>> contours, SvgRasterMatrix matrix, SvgRasterPattern pattern, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterObjectPaint? objectPaint, out PatternTile tile) {
         tile = default;
         if (pattern.Width <= 0 || pattern.Height <= 0 || pattern.Children.Count == 0) return false;
-        var bounds = SvgRasterGradientValues.Bounds(contours);
-        var frame = CreatePatternFrame(pattern, matrix, bounds);
+        var bounds = objectPaint?.Bounds ?? SvgRasterGradientValues.Bounds(contours);
+        var objectMatrix = objectPaint?.Matrix ?? SvgRasterMatrix.Identity;
+        var objectToCanvas = objectMatrix
+            .Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top))
+            .Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height));
+        var patternToCanvas = pattern.UserSpaceOnUse
+            ? matrix.Multiply(pattern.Transform)
+            : objectToCanvas.Multiply(pattern.Transform);
+        var frame = CreatePatternFrame(pattern, patternToCanvas);
         if (frame.Width <= 0 || frame.Height <= 0) return false;
         var tileWidth = Math.Max(1, (int)Math.Ceiling(frame.Width));
         var tileHeight = Math.Max(1, (int)Math.Ceiling(frame.Height));
+        var tileToCanvas = new SvgRasterMatrix(
+            (frame.Right.X - frame.Origin.X) / tileWidth,
+            (frame.Right.Y - frame.Origin.Y) / tileWidth,
+            (frame.Bottom.X - frame.Origin.X) / tileHeight,
+            (frame.Bottom.Y - frame.Origin.Y) / tileHeight,
+            frame.Origin.X,
+            frame.Origin.Y);
+        if (!tileToCanvas.TryInvert(out var canvasToTile)) return false;
         var tileCanvas = new RgbaCanvas(tileWidth, tileHeight, 1);
-        var contentMatrix = PatternContentMatrix(pattern, matrix, bounds, frame, tileWidth, tileHeight);
+        var contentMatrix = PatternContentMatrix(pattern, matrix, objectMatrix, objectToCanvas, canvasToTile, objectPaint.HasValue, tileWidth, tileHeight);
         var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
             ? ViewportFromViewBox(pattern.ViewBox!)
             : pattern.ContentUserSpaceOnUse ? viewport : new SvgRasterViewport(1, 1);
         var ancestors = new List<SvgRasterElement>();
         foreach (var child in pattern.Children) RenderElement(tileCanvas, child, SvgRasterStyle.Default, contentMatrix, definitions, tileWidth, tileHeight, 0, ancestors, contentViewport);
         if (!HasVisiblePixel(tileCanvas.Pixels)) return false;
-        tile = new PatternTile(frame.Left, frame.Top, tileWidth, tileHeight, tileCanvas.Pixels);
+        tile = new PatternTile(tileWidth, tileHeight, tileCanvas.Pixels, canvasToTile);
         return true;
     }
 
@@ -417,34 +452,21 @@ internal static partial class SvgRasterRenderer {
         return new SvgRasterViewport(viewBox.Width, viewBox.Height);
     }
 
-    private static PatternFrame CreatePatternFrame(SvgRasterPattern pattern, SvgRasterMatrix matrix, SvgRasterGradientValues.GradientBounds bounds) {
-        if (!pattern.UserSpaceOnUse) {
-            return new PatternFrame(
-                bounds.Left + bounds.Width * pattern.X,
-                bounds.Top + bounds.Height * pattern.Y,
-                Math.Max(0, bounds.Width * pattern.Width),
-                Math.Max(0, bounds.Height * pattern.Height));
-        }
-
-        var patternMatrix = matrix.Multiply(pattern.Transform);
-        var origin = patternMatrix.Transform(new ChartPoint(pattern.X, pattern.Y));
-        var right = patternMatrix.Transform(new ChartPoint(pattern.X + pattern.Width, pattern.Y));
-        var bottom = patternMatrix.Transform(new ChartPoint(pattern.X, pattern.Y + pattern.Height));
-        return new PatternFrame(origin.X, origin.Y, Distance(origin, right), Distance(origin, bottom));
+    private static PatternFrame CreatePatternFrame(SvgRasterPattern pattern, SvgRasterMatrix patternToCanvas) {
+        var origin = patternToCanvas.Transform(new ChartPoint(pattern.X, pattern.Y));
+        var right = patternToCanvas.Transform(new ChartPoint(pattern.X + pattern.Width, pattern.Y));
+        var bottom = patternToCanvas.Transform(new ChartPoint(pattern.X, pattern.Y + pattern.Height));
+        return new PatternFrame(origin, right, bottom);
     }
 
-    private static SvgRasterMatrix PatternContentMatrix(SvgRasterPattern pattern, SvgRasterMatrix matrix, SvgRasterGradientValues.GradientBounds bounds, PatternFrame frame, int tileWidth, int tileHeight) {
-        var local = SvgRasterMatrix.Translate(-frame.Left, -frame.Top);
+    private static SvgRasterMatrix PatternContentMatrix(SvgRasterPattern pattern, SvgRasterMatrix matrix, SvgRasterMatrix objectMatrix, SvgRasterMatrix objectToCanvas, SvgRasterMatrix canvasToTile, bool hasObjectPaint, int tileWidth, int tileHeight) {
         if (!string.IsNullOrWhiteSpace(pattern.ViewBox)) {
             var viewBox = SvgRasterViewBox.Parse(pattern.ViewBox!);
             return SvgRasterMatrix.FromFit(viewBox, tileWidth, tileHeight, pattern.PreserveAspectRatio);
         }
 
-        if (!pattern.ContentUserSpaceOnUse) {
-            return local.Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top)).Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height));
-        }
-
-        return pattern.UserSpaceOnUse ? local.Multiply(matrix.Multiply(pattern.Transform)) : local.Multiply(matrix);
+        if (!pattern.ContentUserSpaceOnUse) return canvasToTile.Multiply(objectToCanvas);
+        return canvasToTile.Multiply(pattern.UserSpaceOnUse ? matrix.Multiply(pattern.Transform) : hasObjectPaint ? objectMatrix : matrix);
     }
 
     private static void RenderClipPath(RgbaCanvas mask, SvgRasterClipPath clipPath, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, byte[] targetPixels, SvgRasterViewport viewport, SvgRasterElement targetElement, SvgRasterStyle targetStyle, IReadOnlyList<SvgRasterElement> targetAncestors) {
@@ -626,9 +648,6 @@ internal static partial class SvgRasterRenderer {
         return closed;
     }
 
-    private static bool PathHasClose(string pathData) =>
-        pathData.IndexOf('z') >= 0 || pathData.IndexOf('Z') >= 0;
-
     private static bool IsDefinitionElement(string name) =>
         string.Equals(name, "defs", StringComparison.Ordinal) || string.Equals(name, "userDefs", StringComparison.Ordinal) || string.Equals(name, "pattern", StringComparison.Ordinal) || string.Equals(name, "clipPath", StringComparison.Ordinal) || string.Equals(name, "mask", StringComparison.Ordinal) || string.Equals(name, "style", StringComparison.Ordinal) || IsSymbolElement(name) || string.Equals(name, "title", StringComparison.Ordinal) || string.Equals(name, "desc", StringComparison.Ordinal);
 
@@ -706,32 +725,41 @@ internal static partial class SvgRasterRenderer {
     }
 
     private readonly struct PatternFrame {
-        public readonly double Left;
-        public readonly double Top;
-        public readonly double Width;
-        public readonly double Height;
+        public readonly ChartPoint Origin;
+        public readonly ChartPoint Right;
+        public readonly ChartPoint Bottom;
 
-        public PatternFrame(double left, double top, double width, double height) {
-            Left = left;
-            Top = top;
-            Width = width;
-            Height = height;
+        public PatternFrame(ChartPoint origin, ChartPoint right, ChartPoint bottom) {
+            Origin = origin;
+            Right = right;
+            Bottom = bottom;
         }
+
+        public double Width => Distance(Origin, Right);
+        public double Height => Distance(Origin, Bottom);
     }
 
     private readonly struct PatternTile {
-        public readonly double OriginX;
-        public readonly double OriginY;
         public readonly int Width;
         public readonly int Height;
         public readonly byte[] Pixels;
+        public readonly SvgRasterMatrix CanvasToTile;
 
-        public PatternTile(double originX, double originY, int width, int height, byte[] pixels) {
-            OriginX = originX;
-            OriginY = originY;
+        public PatternTile(int width, int height, byte[] pixels, SvgRasterMatrix canvasToTile) {
             Width = width;
             Height = height;
             Pixels = pixels;
+            CanvasToTile = canvasToTile;
         }
+    }
+
+    private readonly struct SvgRasterObjectPaint {
+        public SvgRasterObjectPaint(SvgRasterGradientValues.GradientBounds bounds, SvgRasterMatrix matrix) {
+            Bounds = bounds;
+            Matrix = matrix;
+        }
+
+        public SvgRasterGradientValues.GradientBounds Bounds { get; }
+        public SvgRasterMatrix Matrix { get; }
     }
 }

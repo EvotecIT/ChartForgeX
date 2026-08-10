@@ -17,14 +17,19 @@ internal static partial class SvgRasterRenderer {
         var measureWhitespace = whitespace;
         cursorX += TextAnchorOffset(style.TextAnchor, MeasureTextChunkFrom(element, 0, style, definitions.StyleSheet, textAncestors, viewport, ref measureWhitespace, includeFirstPositionedSpan: false));
         whitespace.LineStartX = cursorX;
-        RenderTextContent(canvas, element, style, matrix, definitions, width, height, textAncestors, viewport, ref cursorX, ref cursorY, ref whitespace);
+        var paintBounds = new SvgRasterTextPaintBounds(matrix);
+        var boundsCursorX = cursorX;
+        var boundsCursorY = cursorY;
+        var boundsWhitespace = whitespace;
+        RenderTextContent(null, element, style, matrix, definitions, width, height, textAncestors, viewport, paintBounds, measureOnly: true, ref boundsCursorX, ref boundsCursorY, ref boundsWhitespace);
+        RenderTextContent(canvas, element, style, matrix, definitions, width, height, textAncestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace);
     }
 
-    private static void RenderTextContent(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+    private static void RenderTextContent(RgbaCanvas? canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
         for (var contentIndex = 0; contentIndex < element.Content.Count; contentIndex++) {
             var content = element.Content[contentIndex];
             if (content.Text != null) {
-                RenderTextValue(canvas, content.Text, style, matrix, ref cursorX, ref cursorY, ref whitespace);
+                RenderTextValue(canvas, content.Text, style, matrix, definitions, viewport, paintBounds, measureOnly, ref cursorX, ref cursorY, ref whitespace);
                 continue;
             }
 
@@ -46,23 +51,27 @@ internal static partial class SvgRasterRenderer {
             }
             var spanMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(span.Get("transform")));
             ancestors.Add(span);
-            RenderTextSpan(canvas, span, spanStyle, spanMatrix, definitions, width, height, ancestors, viewport, ref cursorX, ref cursorY, ref whitespace);
+            RenderTextSpan(canvas, span, spanStyle, spanMatrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly, ref cursorX, ref cursorY, ref whitespace);
             ancestors.RemoveAt(ancestors.Count - 1);
         }
     }
 
-    private static void RenderTextSpan(RgbaCanvas canvas, SvgRasterElement span, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+    private static void RenderTextSpan(RgbaCanvas? canvas, SvgRasterElement span, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+        if (measureOnly) {
+            RenderTextContent(null, span, style, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: true, ref cursorX, ref cursorY, ref whitespace);
+            return;
+        }
         var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(span, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(span, "mask"), out var maskDefinition);
         var compositeOpacity = style.Opacity < 0.999 && (span.Children.Count > 0 || HasVisibleTextFillAndStroke(style));
         if (!hasClipPath && !hasMask && !compositeOpacity) {
-            RenderTextContent(canvas, span, style, matrix, definitions, width, height, ancestors, viewport, ref cursorX, ref cursorY, ref whitespace);
+            RenderTextContent(canvas, span, style, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace);
             return;
         }
 
         var content = new RgbaCanvas(width, height, 1);
         var contentStyle = compositeOpacity ? style.Inherit() : style;
-        RenderTextContent(content, span, contentStyle, matrix, definitions, width, height, ancestors, viewport, ref cursorX, ref cursorY, ref whitespace);
+        RenderTextContent(content, span, contentStyle, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace);
         if (hasClipPath) {
             var clipMask = new RgbaCanvas(width, height, 1);
             RenderClipPath(clipMask, clipPath, matrix, definitions, width, height, content.Pixels, viewport, span, style, ancestors);
@@ -77,16 +86,16 @@ internal static partial class SvgRasterRenderer {
             masked.DrawImageMasked(0, 0, width, height, content.Pixels, mask.Pixels, maskDefinition.UsesAlpha);
             content = masked;
         }
-        canvas.DrawImage(0, 0, width, height, compositeOpacity ? ApplyOpacity(content.Pixels, style.Opacity) : content.Pixels);
+        canvas!.DrawImage(0, 0, width, height, compositeOpacity ? ApplyOpacity(content.Pixels, style.Opacity) : content.Pixels);
     }
 
-    private static void RenderTextValue(RgbaCanvas canvas, string value, SvgRasterStyle style, SvgRasterMatrix matrix, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+    private static void RenderTextValue(RgbaCanvas? canvas, string value, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
         var text = NormalizeTextWhitespace(value, style.WhiteSpace, ref whitespace);
         var start = 0;
         while (start <= text.Length) {
             var newline = text.IndexOf('\n', start);
             var length = newline < 0 ? text.Length - start : newline - start;
-            if (length > 0) cursorX += DrawTextRun(canvas, text.Substring(start, length), cursorX, cursorY, style, matrix);
+            if (length > 0) cursorX += DrawTextRun(canvas, text.Substring(start, length), cursorX, cursorY, style, matrix, definitions, viewport, paintBounds, measureOnly);
             if (newline < 0) break;
             cursorX = whitespace.LineStartX;
             cursorY += style.FontSize * 1.2;
@@ -130,8 +139,14 @@ internal static partial class SvgRasterRenderer {
         return 0;
     }
 
-    private static double DrawTextRun(RgbaCanvas canvas, string text, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix) {
+    private static double DrawTextRun(RgbaCanvas? canvas, string text, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly) {
         if (text.Length == 0) return 0;
+        if (measureOnly) {
+            var measuredAdvance = MeasureTextAdvance(text, style);
+            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline), measuredAdvance, RgbaCanvas.MeasureTextHeight(style.FontSize, null), matrix);
+            return measuredAdvance;
+        }
+        if (canvas == null) throw new InvalidOperationException("SVG text rendering requires a target canvas.");
         var renderScale = ResolveTextRenderScale(canvas, text, style, matrix.ScaleFactor);
         var fontSize = Math.Max(1, style.FontSize * renderScale);
         var emphasized = IsBold(style.FontWeight);
@@ -139,8 +154,8 @@ internal static partial class SvgRasterRenderer {
         var advance = width / renderScale;
         if (!style.VisibilityVisible) return advance;
         var fillColor = style.FillColor();
-        var strokeColor = style.StrokeWidth > 0 ? style.StrokeColor() : ChartColor.Transparent;
-        if (fillColor.A == 0 && strokeColor.A == 0) return advance;
+        var strokeColor = style.StrokeWidth > 0 ? ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions) : ChartColor.Transparent;
+        if (style.Fill.IsNone && strokeColor.A == 0) return advance;
 
         var drawX = x;
         var drawY = TextTop(y, style.FontSize, style.DominantBaseline);
@@ -150,11 +165,34 @@ internal static partial class SvgRasterRenderer {
         var localWidth = Math.Max(1, (int)Math.Ceiling(width + padding * 2.0));
         var localHeight = Math.Max(1, (int)Math.Ceiling(textHeight + padding * 2.0));
         var buffer = new RgbaCanvas(localWidth, localHeight, 1);
-        if (fillColor.A > 0) DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized);
-        if (strokeColor.A > 0) {
-            var glyphMask = new RgbaCanvas(localWidth, localHeight, 1);
+        RgbaCanvas? glyphMask = null;
+        if (style.Fill.IsReference || strokeColor.A > 0) {
+            glyphMask = new RgbaCanvas(localWidth, localHeight, 1);
             DrawTextGlyphs(glyphMask, padding, padding, text, ChartColor.White, fontSize, emphasized);
-            PaintDilatedTextStroke(buffer.Pixels, glyphMask.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
+        }
+        if (style.Fill.IsReference && glyphMask != null) {
+            var localToCanvas = matrix
+                .Multiply(SvgRasterMatrix.Translate(drawX - padding / renderScale, drawY - padding / renderScale))
+                .Multiply(SvgRasterMatrix.Scale(1 / renderScale, 1 / renderScale));
+            if (localToCanvas.TryInvert(out var inverseTextMatrix)) {
+                var paintCanvas = new RgbaCanvas(localWidth, localHeight, 1);
+                SvgRasterObjectPaint? objectPaint = null;
+                var localPaintBounds = paintBounds.HasBounds
+                    ? TransformRing(RectRing(paintBounds.Left, paintBounds.Top, paintBounds.Width, paintBounds.Height), inverseTextMatrix.Multiply(paintBounds.RootMatrix))
+                    : RectRing(padding, padding, width, textHeight);
+                if (paintBounds.HasBounds) {
+                    objectPaint = new SvgRasterObjectPaint(
+                        new SvgRasterGradientValues.GradientBounds(paintBounds.Left, paintBounds.Top, paintBounds.Width, paintBounds.Height),
+                        inverseTextMatrix.Multiply(paintBounds.RootMatrix));
+                }
+                Fill(paintCanvas, new[] { localPaintBounds }, style, inverseTextMatrix.Multiply(matrix), definitions, viewport, objectPaint);
+                buffer.DrawImageMasked(0, 0, localWidth, localHeight, paintCanvas.Pixels, glyphMask.Pixels, useAlphaMask: true);
+            }
+        } else if (fillColor.A > 0) {
+            DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized);
+        }
+        if (strokeColor.A > 0) {
+            PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
         }
 
         var textMatrix = matrix
@@ -327,5 +365,42 @@ internal static partial class SvgRasterRenderer {
         public bool HasText;
         public bool EndsWithSpace;
         public double LineStartX;
+    }
+
+    private sealed class SvgRasterTextPaintBounds {
+        private readonly SvgRasterMatrix _inverseRoot;
+        private bool _hasInverse;
+        private double _left = double.PositiveInfinity;
+        private double _top = double.PositiveInfinity;
+        private double _right = double.NegativeInfinity;
+        private double _bottom = double.NegativeInfinity;
+
+        public SvgRasterTextPaintBounds(SvgRasterMatrix rootMatrix) {
+            RootMatrix = rootMatrix;
+            _hasInverse = rootMatrix.TryInvert(out _inverseRoot);
+        }
+
+        public SvgRasterMatrix RootMatrix { get; }
+        public bool HasBounds => _hasInverse && !double.IsInfinity(_left);
+        public double Left => _left;
+        public double Top => _top;
+        public double Width => Math.Max(0, _right - _left);
+        public double Height => Math.Max(0, _bottom - _top);
+
+        public void Include(double x, double y, double width, double height, SvgRasterMatrix matrix) {
+            if (!_hasInverse || width <= 0 || height <= 0) return;
+            var relative = _inverseRoot.Multiply(matrix);
+            Include(relative.Transform(new ChartPoint(x, y)));
+            Include(relative.Transform(new ChartPoint(x + width, y)));
+            Include(relative.Transform(new ChartPoint(x + width, y + height)));
+            Include(relative.Transform(new ChartPoint(x, y + height)));
+        }
+
+        private void Include(ChartPoint point) {
+            _left = Math.Min(_left, point.X);
+            _top = Math.Min(_top, point.Y);
+            _right = Math.Max(_right, point.X);
+            _bottom = Math.Max(_bottom, point.Y);
+        }
     }
 }

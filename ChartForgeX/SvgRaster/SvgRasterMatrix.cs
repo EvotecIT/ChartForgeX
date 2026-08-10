@@ -73,7 +73,10 @@ internal readonly struct SvgRasterMatrix {
         return new SvgRasterMatrix(cos, sin, -sin, cos, 0, 0);
     }
 
-    public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, int width, int height, string? preserveAspectRatio) {
+    public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, int width, int height, string? preserveAspectRatio) =>
+        FromFit(viewBox, (double)width, height, preserveAspectRatio);
+
+    public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, double width, double height, string? preserveAspectRatio) {
         var aspectRatio = SvgRasterPreserveAspectRatio.Parse(preserveAspectRatio);
         if (aspectRatio.Stretch) {
             return Scale(width / viewBox.Width, height / viewBox.Height).Multiply(Translate(-viewBox.X, -viewBox.Y));

@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
-    internal void FillContoursPattern(IReadOnlyList<List<ChartPoint>> contours, double originX, double originY, int tileWidth, int tileHeight, byte[] tilePixels, RasterFillRule fillRule = RasterFillRule.EvenOdd) {
+    internal void FillContoursPattern(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule = RasterFillRule.EvenOdd, double opacity = 1) {
         if (contours.Count == 0 || tileWidth <= 0 || tileHeight <= 0 || tilePixels.Length < tileWidth * tileHeight * 4) return;
         var scaledContours = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -16,17 +16,21 @@ internal sealed partial class RgbaCanvas {
         }
 
         if (scaledContours.Count == 0) return;
-        FillContoursPatternPixels(scaledContours, originX * _scale, originY * _scale, tileWidth, tileHeight, tilePixels, fillRule);
+        FillContoursPatternPixels(scaledContours, tileWidth, tileHeight, tilePixels, tileA, tileB, tileC, tileD, tileE, tileF, fillRule, opacity);
     }
 
-    private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, double originX, double originY, int tileWidth, int tileHeight, byte[] tilePixels, RasterFillRule fillRule) {
+    private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule, double opacity) {
         ScanFillSpans(contours, fillRule, (y, scanY, left, right) => {
             var xStart = Math.Max(0, (int)Math.Floor(left));
             var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
             for (var x = xStart; x <= xEnd; x++) {
                 var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
                 if (coverage <= 0) continue;
-                var color = SamplePattern(tilePixels, tileWidth, tileHeight, x + 0.5 - originX, scanY - originY);
+                var logicalX = (x + 0.5) / _scale;
+                var logicalY = scanY / _scale;
+                var sampleX = logicalX * tileA + logicalY * tileC + tileE;
+                var sampleY = logicalX * tileB + logicalY * tileD + tileF;
+                var color = WithOpacity(SamplePattern(tilePixels, tileWidth, tileHeight, sampleX, sampleY), opacity);
                 if (color.A == 0) continue;
                 BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
             }
