@@ -276,15 +276,22 @@ internal static partial class SvgRasterRenderer {
             var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
             if (symbolWidth <= 0 || symbolHeight <= 0) return;
             var symbolViewport = new SvgRasterViewport(symbolWidth, symbolHeight);
+            useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
+            var viewportClip = !string.Equals(symbolStyle.Overflow, "visible", StringComparison.OrdinalIgnoreCase)
+                ? TransformRing(RectRing(0, 0, symbolWidth, symbolHeight), useMatrix)
+                : null;
             if (!string.IsNullOrWhiteSpace(viewBox)) {
                 var parsed = SvgRasterViewBox.Parse(viewBox);
-                useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(parsed, (int)Math.Round(symbolWidth), (int)Math.Round(symbolHeight), referenced.Get("preserveAspectRatio")));
+                useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(parsed, symbolWidth, symbolHeight, referenced.Get("preserveAspectRatio")));
                 symbolViewport = new SvgRasterViewport(parsed.Width, parsed.Height);
             }
 
-            useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
             referencedAncestors.Add(referenced);
-            foreach (var child in referenced.Children) RenderElement(canvas, child, symbolStyle, useMatrix, definitions, width, height, referenceDepth + 1, referencedAncestors, symbolViewport);
+            if (viewportClip == null) {
+                foreach (var child in referenced.Children) RenderElement(canvas, child, symbolStyle, useMatrix, definitions, width, height, referenceDepth + 1, referencedAncestors, symbolViewport);
+            } else {
+                using (canvas.PushPolygonClip(viewportClip)) foreach (var child in referenced.Children) RenderElement(canvas, child, symbolStyle, useMatrix, definitions, width, height, referenceDepth + 1, referencedAncestors, symbolViewport);
+            }
             return;
         }
 
@@ -541,15 +548,22 @@ internal static partial class SvgRasterRenderer {
                 var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
                 if (symbolWidth <= 0 || symbolHeight <= 0) return;
                 var symbolViewport = new SvgRasterViewport(symbolWidth, symbolHeight);
+                useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
+                var viewportClip = !string.Equals(symbolStyle.Overflow, "visible", StringComparison.OrdinalIgnoreCase)
+                    ? TransformRing(RectRing(0, 0, symbolWidth, symbolHeight), useMatrix)
+                    : null;
                 var viewBox = referenced.Get("viewBox");
                 if (!string.IsNullOrWhiteSpace(viewBox)) {
                     var parsed = SvgRasterViewBox.Parse(viewBox);
-                    useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(parsed, (int)Math.Round(symbolWidth), (int)Math.Round(symbolHeight), referenced.Get("preserveAspectRatio")));
+                    useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(parsed, symbolWidth, symbolHeight, referenced.Get("preserveAspectRatio")));
                     symbolViewport = new SvgRasterViewport(parsed.Width, parsed.Height);
                 }
-                useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
                 referencedAncestors.Add(referenced);
-                foreach (var child in referenced.Children) RenderClipElement(mask, child, symbolStyle, useMatrix, definitions, referencedAncestors, symbolViewport, referenceDepth + 1);
+                if (viewportClip == null) {
+                    foreach (var child in referenced.Children) RenderClipElement(mask, child, symbolStyle, useMatrix, definitions, referencedAncestors, symbolViewport, referenceDepth + 1);
+                } else {
+                    using (mask.PushPolygonClip(viewportClip)) foreach (var child in referenced.Children) RenderClipElement(mask, child, symbolStyle, useMatrix, definitions, referencedAncestors, symbolViewport, referenceDepth + 1);
+                }
             } else {
                 RenderClipElement(mask, referenced, style, useMatrix, definitions, referencedAncestors, viewport, referenceDepth + 1);
             }

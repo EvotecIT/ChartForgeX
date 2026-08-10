@@ -57,15 +57,17 @@ internal static partial class SvgRasterRenderer {
                 var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
                 var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
                 var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
-                var referencedViewport = IsSymbolElement(referenced) ? new SvgRasterViewport(symbolWidth, symbolHeight) : viewport;
-                if (IsSymbolElement(referenced) && (symbolWidth <= 0 || symbolHeight <= 0)) return true;
-                if (IsSymbolElement(referenced) && !string.IsNullOrWhiteSpace(referenced.Get("viewBox"))) {
+                var symbol = IsSymbolElement(referenced);
+                var referencedViewport = symbol ? new SvgRasterViewport(symbolWidth, symbolHeight) : viewport;
+                if (symbol && (symbolWidth <= 0 || symbolHeight <= 0)) return true;
+                if (symbol) useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
+                if (symbol && !string.IsNullOrWhiteSpace(referenced.Get("viewBox"))) {
                     var viewBox = SvgRasterViewBox.Parse(referenced.Get("viewBox")!);
                     if (symbolWidth <= 0 || symbolHeight <= 0) return true;
-                    useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(viewBox, (int)Math.Round(symbolWidth), (int)Math.Round(symbolHeight), referenced.Get("preserveAspectRatio")));
+                    useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(viewBox, symbolWidth, symbolHeight, referenced.Get("preserveAspectRatio")));
                     referencedViewport = new SvgRasterViewport(viewBox.Width, viewBox.Height);
                 }
-                return CollectObjectPoints(referenced, style, ancestors, useMatrix, definitions, referencedViewport, referenceDepth + 1, applyElementTransform: true, resolveStyle: true, points);
+                return CollectObjectPoints(referenced, style, ancestors, useMatrix, definitions, referencedViewport, referenceDepth + 1, applyElementTransform: !symbol, resolveStyle: true, points);
             case "g":
             case "svg":
             case "symbol":

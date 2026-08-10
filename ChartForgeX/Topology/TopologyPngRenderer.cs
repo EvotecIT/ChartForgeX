@@ -280,9 +280,7 @@ public sealed partial class TopologyPngRenderer {
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
             var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
             var dashArray = EffectiveEdgePngDashArray(edge);
-            var routePoints = IsGeographicCurve(chart, edge, nodes)
-                ? GeographicCurveSamplePoints(chart, edge, nodes, points)
-                : NamedParallelCurveSamplePoints(edge, points);
+            var routePoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {

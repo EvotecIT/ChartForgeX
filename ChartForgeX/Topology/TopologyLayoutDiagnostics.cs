@@ -32,6 +32,7 @@ public static class TopologyLayoutDiagnostics {
         }
         foreach (var edge in chart.Edges) {
             var points = EdgePoints(chart, edge, nodes);
+            points = RenderedEdgeSamplePoints(chart, edge, nodes, points);
             var route = EdgeRouteDiagnostics(chart, edge, nodes);
             report.Edges.Add(new TopologyLayoutEdgeDiagnostic(edge.Id, edge.SourceNodeId, edge.TargetNodeId, points, route.Strategy, route.Corridor, route.ObstacleHits, route.LabelObstacleHits, route.RouteOverlapScore, route.FallbackReason));
         }
@@ -126,7 +127,7 @@ public sealed class TopologyLayoutEdgeDiagnostic {
     public string SourceNodeId { get; }
     /// <summary>Gets the target node id.</summary>
     public string TargetNodeId { get; }
-    /// <summary>Gets prepared route points.</summary>
+    /// <summary>Gets sampled points along the prepared route as rendered by static and motion outputs.</summary>
     public IReadOnlyList<ChartPoint> Points { get; }
     /// <summary>Gets the selected router strategy.</summary>
     public string Strategy { get; }

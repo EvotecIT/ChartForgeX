@@ -10,7 +10,7 @@ internal static partial class SvgRasterRenderer {
         var translated = matrix.Multiply(SvgRasterMatrix.Translate(viewport.X, viewport.Y));
         if (string.IsNullOrWhiteSpace(viewBox)) return translated;
         var parsed = SvgRasterViewBox.Parse(viewBox);
-        return translated.Multiply(SvgRasterMatrix.FromFit(parsed, Math.Max(1, (int)Math.Round(viewport.Width)), Math.Max(1, (int)Math.Round(viewport.Height)), element.Get("preserveAspectRatio")));
+        return translated.Multiply(SvgRasterMatrix.FromFit(parsed, viewport.Width, viewport.Height, element.Get("preserveAspectRatio")));
     }
 
     private static SvgRasterNestedViewport ResolveNestedSvgViewport(SvgRasterElement element, SvgRasterViewport parent) {

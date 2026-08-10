@@ -28,14 +28,9 @@ internal static partial class TopologyRenderPrimitives {
 
     public static List<ChartPoint> NamedParallelCurveSamplePoints(TopologyEdge edge, IReadOnlyList<ChartPoint> points, int segments = 24) {
         if (edge.Routing != TopologyEdgeRouting.Curved || edge.Waypoints.Count != 0 || points.Count != 4 || string.IsNullOrWhiteSpace(edge.SourcePortId) || string.IsNullOrWhiteSpace(edge.TargetPortId)) return points.ToList();
-        var sampled = new List<ChartPoint>(segments + 1);
-        for (var index = 0; index <= segments; index++) {
-            var t = index / (double)segments;
-            var u = 1 - t;
-            sampled.Add(new ChartPoint(
-                u * u * u * points[0].X + 3 * u * u * t * points[1].X + 3 * u * t * t * points[2].X + t * t * t * points[3].X,
-                u * u * u * points[0].Y + 3 * u * u * t * points[1].Y + 3 * u * t * t * points[2].Y + t * t * t * points[3].Y));
-        }
-        return sampled;
+        return RenderedEdgeSamplePointsForNamedCurve(points, segments);
     }
+
+    private static List<ChartPoint> RenderedEdgeSamplePointsForNamedCurve(IReadOnlyList<ChartPoint> points, int segments) =>
+        CubicCurveSamplePoints(points[0], points[1], points[2], points[3], segments);
 }

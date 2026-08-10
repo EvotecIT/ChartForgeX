@@ -725,8 +725,8 @@ public sealed partial class TopologySvgRenderer {
         var y2 = points[points.Count - 1].Y;
         if (routing == TopologyEdgeRouting.Straight && points.Count == 2) return "M " + F(x1) + " " + F(y1) + " L " + F(x2) + " " + F(y2);
         if (routing == TopologyEdgeRouting.Curved && points.Count == 2) {
-            var lift = Math.Max(40, Math.Abs(x2 - x1) * 0.12);
-            return "M " + F(x1) + " " + F(y1) + " C " + F(x1) + " " + F(y1 - lift) + " " + F(x2) + " " + F(y2 - lift) + " " + F(x2) + " " + F(y2);
+            StandardCurveControlPoints(points, out var firstControl, out var secondControl);
+            return "M " + F(x1) + " " + F(y1) + " C " + F(firstControl.X) + " " + F(firstControl.Y) + " " + F(secondControl.X) + " " + F(secondControl.Y) + " " + F(x2) + " " + F(y2);
         }
 
         var path = new SvgPathDataBuilder(points.Count * 16).MoveTo(points[0]);

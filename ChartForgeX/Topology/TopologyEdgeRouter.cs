@@ -66,7 +66,22 @@ internal static class TopologyEdgeRouter {
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) return new TopologyRouteDiagnostics(edge.Routing.ToString(), "missing-node", 0, 0, 0, 0, 0, 0, "missing-node");
         var plan = Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], EdgeRouteLane(chart, edge));
-        return plan.Diagnostics;
+        var points = EdgePoints(chart, edge, nodes);
+        var renderedPoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
+        var obstacles = RouteObstacles(chart, edge.SourceNodeId, edge.TargetNodeId, edge.Id);
+        var obstacleHits = RouteObstacleHits(renderedPoints, obstacles);
+        var routeOverlap = RouteOverlapScore(renderedPoints, RouteSegments(chart, edge));
+        var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles);
+        return new TopologyRouteDiagnostics(
+            plan.Diagnostics.Strategy,
+            plan.Diagnostics.Corridor,
+            Math.Max(0, renderedPoints.Count - 1),
+            obstacles.Count,
+            obstacleHits,
+            labelHits,
+            routeOverlap,
+            plan.Diagnostics.CandidateCount,
+            FallbackReason(plan.Diagnostics.Strategy, obstacleHits, labelHits, routeOverlap));
     }
 
     private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount) {
@@ -261,7 +276,9 @@ internal static class TopologyEdgeRouter {
             var tertiary = edge.TertiaryLabel ?? string.Empty;
             if (string.IsNullOrWhiteSpace(label) && string.IsNullOrWhiteSpace(secondary) && string.IsNullOrWhiteSpace(tertiary)) continue;
 
-            var points = BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
+            var points = edge.Routing == TopologyEdgeRouting.Curved
+                ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))
+                : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
             var center = EdgeLabelPoint(points);
             var maxText = Math.Max(label.Length, Math.Max(secondary.Length, tertiary.Length));
             var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
@@ -277,7 +294,9 @@ internal static class TopologyEdgeRouter {
         foreach (var edge in chart.Edges) {
             if (ReferenceEquals(edge, routedEdge) || string.Equals(edge.Id, routedEdge.Id, StringComparison.Ordinal)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-            var points = BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
+            var points = edge.Routing == TopologyEdgeRouting.Curved
+                ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))
+                : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
             for (var i = 0; i < points.Count - 1; i++) segments.Add(new RouteSegment(points[i], points[i + 1]));
         }
 

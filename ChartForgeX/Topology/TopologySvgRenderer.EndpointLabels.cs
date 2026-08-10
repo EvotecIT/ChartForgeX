@@ -16,9 +16,10 @@ public sealed partial class TopologySvgRenderer {
             if (string.IsNullOrWhiteSpace(edge.SourceLabel) && string.IsNullOrWhiteSpace(edge.TargetLabel)) continue;
             var points = EdgePoints(chart, edge, nodes);
             if (points.Count < 2) continue;
+            var renderedPoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
             var opacity = highlight.IsEdgeHighlighted(edge) ? EdgeOpacity(edge, options) : EdgeOpacity(edge, options) * highlight.DimmedOpacity;
-            if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) AddEndpointLabel(layer, edge, edge.SourceLabel!, EdgeEndpointLabelPoint(points[0], points[1]), "source", prefix, theme, opacity);
-            if (!string.IsNullOrWhiteSpace(edge.TargetLabel)) AddEndpointLabel(layer, edge, edge.TargetLabel!, EdgeEndpointLabelPoint(points[points.Count - 1], points[points.Count - 2]), "target", prefix, theme, opacity);
+            if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) AddEndpointLabel(layer, edge, edge.SourceLabel!, EdgeEndpointLabelPoint(renderedPoints[0], renderedPoints[1]), "source", prefix, theme, opacity);
+            if (!string.IsNullOrWhiteSpace(edge.TargetLabel)) AddEndpointLabel(layer, edge, edge.TargetLabel!, EdgeEndpointLabelPoint(renderedPoints[renderedPoints.Count - 1], renderedPoints[renderedPoints.Count - 2]), "target", prefix, theme, opacity);
         }
         root.AddElement(layer);
     }
