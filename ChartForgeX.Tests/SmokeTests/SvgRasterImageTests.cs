@@ -33,6 +33,12 @@ internal static partial class SmokeTests {
         var rootSelectorImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootSelectorSemantics));
         Assert(IsPixelNear(rootSelectorImage.Pixels, 20, 5, 5, 239, 68, 68), "Public SVG rasterization should not introduce a selector-visible group around root children.");
         Assert(IsPixelNear(rootSelectorImage.Pixels, 20, 15, 5, 22, 163, 74), "Public SVG rasterization should retain the source svg root in descendant selector matching.");
+        const string inheritedVisibility = "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='10' visibility='hidden'><rect width='10' height='10' fill='#ef4444'/><g visibility='visible'><rect x='10' width='10' height='10' fill='#2563eb'/></g><g display='none'><rect x='20' width='10' height='10' visibility='visible' fill='#ef4444'/></g><rect x='30' width='10' height='10' style='display:none;display:inline;visibility:visible' fill='#16a34a'/></svg>";
+        var inheritedVisibilityImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(inheritedVisibility));
+        Assert(PixelAlpha(inheritedVisibilityImage.Pixels, 40, 5, 5) == 0, "Inherited hidden visibility should suppress elements that do not override it.");
+        Assert(IsPixelNear(inheritedVisibilityImage.Pixels, 40, 15, 5, 37, 99, 235), "Descendants should be able to restore visible SVG visibility.");
+        Assert(PixelAlpha(inheritedVisibilityImage.Pixels, 40, 25, 5) == 0, "Visibility overrides should not escape an ancestor with display none.");
+        Assert(IsPixelNear(inheritedVisibilityImage.Pixels, 40, 35, 5, 22, 163, 74), "Later display and visibility declarations should win on the same visible element.");
         var transparentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' width='20' height='10'></svg>"));
         Assert(transparentImage.Width == 20 && transparentImage.Height == 10 && transparentImage.Pixels.All(value => value == 0), "Public SVG rasterization should accept a valid fully transparent document.");
         const string offsetViewBox = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50' viewBox='10 20 200 100' preserveAspectRatio='none' fill='#16a34a'><rect x='10' y='20' width='200' height='100'/></svg>";

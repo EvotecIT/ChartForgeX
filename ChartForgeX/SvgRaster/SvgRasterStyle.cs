@@ -25,7 +25,9 @@ internal sealed class SvgRasterStyle {
         FontWeight = "normal",
         TextAnchor = "start",
         DominantBaseline = "auto",
-        Visible = true
+        Displayed = true,
+        AncestorsDisplayed = true,
+        VisibilityVisible = true
     };
 
     public SvgRasterPaint Fill { get; set; }
@@ -46,7 +48,9 @@ internal sealed class SvgRasterStyle {
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
-    public bool Visible { get; set; }
+    public bool Displayed { get; private set; }
+    public bool VisibilityVisible { get; private set; }
+    private bool AncestorsDisplayed { get; set; }
     public Dictionary<string, string> CustomProperties { get; } = new(StringComparer.Ordinal);
 
     public SvgRasterStyle Inherit() {
@@ -70,7 +74,9 @@ internal sealed class SvgRasterStyle {
             FontWeight = FontWeight,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
-            Visible = Visible
+            Displayed = Displayed,
+            AncestorsDisplayed = Displayed,
+            VisibilityVisible = VisibilityVisible
         };
         foreach (var property in CustomProperties) style.CustomProperties[property.Key] = property.Value;
         return style;
@@ -227,10 +233,12 @@ internal sealed class SvgRasterStyle {
                 style.DominantBaseline = value.Trim();
                 break;
             case "display":
-                if (string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase)) style.Visible = false;
+                style.Displayed = style.AncestorsDisplayed && !string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase);
                 break;
             case "visibility":
-                if (string.Equals(value.Trim(), "hidden", StringComparison.OrdinalIgnoreCase) || string.Equals(value.Trim(), "collapse", StringComparison.OrdinalIgnoreCase)) style.Visible = false;
+                var visibility = value.Trim();
+                if (string.Equals(visibility, "visible", StringComparison.OrdinalIgnoreCase)) style.VisibilityVisible = true;
+                else if (string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase) || string.Equals(visibility, "collapse", StringComparison.OrdinalIgnoreCase)) style.VisibilityVisible = false;
                 break;
         }
     }

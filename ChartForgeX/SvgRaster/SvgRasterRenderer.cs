@@ -70,7 +70,7 @@ internal static partial class SvgRasterRenderer {
 
     private static void RenderElement(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
         var style = SvgRasterStyle.Resolve(parentStyle, element, definitions.StyleSheet, ancestors);
-        if (!style.Visible) return;
+        if (!style.Displayed) return;
 
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
@@ -123,31 +123,31 @@ internal static partial class SvgRasterRenderer {
                 RenderUse(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
                 break;
             case "path":
-                RenderPath(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
+                if (style.VisibilityVisible) RenderPath(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
                 break;
             case "rect":
-                RenderRect(canvas, element, style, matrix, definitions);
+                if (style.VisibilityVisible) RenderRect(canvas, element, style, matrix, definitions);
                 break;
             case "circle":
-                RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("r"), element.GetDouble("r"), style, matrix, definitions);
+                if (style.VisibilityVisible) RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("r"), element.GetDouble("r"), style, matrix, definitions);
                 break;
             case "ellipse":
-                RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("rx"), element.GetDouble("ry"), style, matrix, definitions);
+                if (style.VisibilityVisible) RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("rx"), element.GetDouble("ry"), style, matrix, definitions);
                 break;
             case "line":
-                RenderLine(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
+                if (style.VisibilityVisible) RenderLine(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
                 break;
             case "polyline":
-                RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: false);
+                if (style.VisibilityVisible) RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: false);
                 break;
             case "polygon":
-                RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: true);
+                if (style.VisibilityVisible) RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: true);
                 break;
             case "text":
                 RenderText(canvas, element, style, matrix, definitions.StyleSheet, ancestors);
                 return;
             case "image":
-                RenderImage(canvas, element, style, matrix, referenceDepth);
+                if (style.VisibilityVisible) RenderImage(canvas, element, style, matrix, referenceDepth);
                 return;
         }
 
@@ -316,12 +316,14 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static double DrawTextRun(RgbaCanvas canvas, string value, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix) {
-        var color = style.FillColor();
         var text = NormalizeText(value);
-        if (color.A == 0 || text.Length == 0) return 0;
-        var point = matrix.Transform(new ChartPoint(x, y));
+        if (text.Length == 0) return 0;
         var fontSize = Math.Max(1, style.FontSize * matrix.ScaleFactor);
         var width = RgbaCanvas.MeasureTextWidth(text, fontSize, null);
+        if (!style.VisibilityVisible) return width;
+        var color = style.FillColor();
+        if (color.A == 0) return width;
+        var point = matrix.Transform(new ChartPoint(x, y));
         var drawX = point.X;
         if (string.Equals(style.TextAnchor, "middle", StringComparison.OrdinalIgnoreCase)) drawX -= width / 2.0;
         else if (string.Equals(style.TextAnchor, "end", StringComparison.OrdinalIgnoreCase)) drawX -= width;
@@ -445,11 +447,13 @@ internal static partial class SvgRasterRenderer {
     private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterStyleSheet styleSheet, List<SvgRasterElement> ancestors) {
         if (IsDefinitionElement(element.Name)) return;
         var style = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
-        if (!style.Visible) return;
+        if (!style.Displayed) return;
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         if (string.Equals(element.Name, "svg", StringComparison.Ordinal)) matrix = ApplyNestedSvgViewport(element, matrix);
-        var contours = ClipContours(element, matrix);
-        if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
+        if (style.VisibilityVisible) {
+            var contours = ClipContours(element, matrix);
+            if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
+        }
         ancestors.Add(element);
         foreach (var child in element.Children) RenderClipElement(mask, child, style, matrix, styleSheet, ancestors);
         ancestors.RemoveAt(ancestors.Count - 1);
