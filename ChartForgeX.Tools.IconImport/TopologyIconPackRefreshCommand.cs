@@ -91,23 +91,22 @@ internal static class TopologyIconPackRefreshCommand {
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(new SKColor(248, 250, 252));
 
+        using var boldTypeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold);
+        using var regularTypeface = SKTypeface.FromFamilyName("Segoe UI");
+        using var titleFont = new SKFont(boldTypeface, 22);
+        using var packFont = new SKFont(boldTypeface, 10);
+        using var labelFont = new SKFont(regularTypeface, 11);
         using var titlePaint = new SKPaint {
             Color = new SKColor(15, 23, 42),
-            IsAntialias = true,
-            Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold),
-            TextSize = 22
+            IsAntialias = true
         };
         using var packPaint = new SKPaint {
             Color = new SKColor(71, 85, 105),
-            IsAntialias = true,
-            Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold),
-            TextSize = 10
+            IsAntialias = true
         };
         using var labelPaint = new SKPaint {
             Color = new SKColor(15, 23, 42),
-            IsAntialias = true,
-            Typeface = SKTypeface.FromFamilyName("Segoe UI"),
-            TextSize = 11
+            IsAntialias = true
         };
         using var borderPaint = new SKPaint {
             Color = new SKColor(226, 232, 240),
@@ -121,7 +120,7 @@ internal static class TopologyIconPackRefreshCommand {
             Style = SKPaintStyle.Fill
         };
 
-        canvas.DrawText(pack.Label + " - " + icons.Count.ToString(CultureInfo.InvariantCulture) + " icons", 20, 33, titlePaint);
+        canvas.DrawText(pack.Label + " - " + icons.Count.ToString(CultureInfo.InvariantCulture) + " icons", 20, 33, SKTextAlign.Left, titleFont, titlePaint);
         for (var index = 0; index < icons.Count; index++) {
             var icon = icons[index];
             var column = index % columns;
@@ -142,8 +141,8 @@ internal static class TopologyIconPackRefreshCommand {
                 }
             }
 
-            canvas.DrawText(pack.Id, x + 12, y + cellHeight - 56, packPaint);
-            canvas.DrawText(Trim(icon.Label, 24), x + 12, y + cellHeight - 35, labelPaint);
+            canvas.DrawText(pack.Id, x + 12, y + cellHeight - 56, SKTextAlign.Left, packFont, packPaint);
+            canvas.DrawText(Trim(icon.Label, 24), x + 12, y + cellHeight - 35, SKTextAlign.Left, labelFont, labelPaint);
         }
 
         var outputDirectory = Path.GetDirectoryName(outputPath);
