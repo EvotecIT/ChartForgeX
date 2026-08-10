@@ -26,6 +26,7 @@ internal sealed class SvgRasterStyle {
         TextAnchor = "start",
         DominantBaseline = "auto",
         MaskType = "luminance",
+        Overflow = null,
         Displayed = true,
         AncestorsDisplayed = true,
         VisibilityVisible = true
@@ -50,6 +51,7 @@ internal sealed class SvgRasterStyle {
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
     public string MaskType { get; set; } = "luminance";
+    public string? Overflow { get; set; }
     public bool Displayed { get; private set; }
     public bool VisibilityVisible { get; private set; }
     private bool AncestorsDisplayed { get; set; }
@@ -78,6 +80,8 @@ internal sealed class SvgRasterStyle {
             DominantBaseline = DominantBaseline,
             // mask-type applies only to mask elements and is not inherited.
             MaskType = "luminance",
+            // overflow applies to the current viewport element and is not inherited.
+            Overflow = null,
             Displayed = Displayed,
             AncestorsDisplayed = Displayed,
             VisibilityVisible = VisibilityVisible
@@ -151,6 +155,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "display");
         AddAttribute(declarations, element, "visibility");
         AddAttribute(declarations, element, "mask-type");
+        AddAttribute(declarations, element, "overflow");
     }
 
     private static void AddAttribute(List<SvgStyleDeclaration> declarations, SvgRasterElement element, string name) {
@@ -248,6 +253,9 @@ internal sealed class SvgRasterStyle {
             case "mask-type":
                 var maskType = value.Trim();
                 if (string.Equals(maskType, "alpha", StringComparison.OrdinalIgnoreCase) || string.Equals(maskType, "luminance", StringComparison.OrdinalIgnoreCase)) style.MaskType = maskType;
+                break;
+            case "overflow":
+                style.Overflow = value.Trim();
                 break;
         }
     }

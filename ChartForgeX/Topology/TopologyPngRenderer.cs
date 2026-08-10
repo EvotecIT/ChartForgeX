@@ -284,7 +284,7 @@ public sealed partial class TopologyPngRenderer {
             var dashArray = EffectiveEdgePngDashArray(edge);
             var routePoints = IsGeographicCurve(chart, edge, nodes)
                 ? GeographicCurveSamplePoints(chart, edge, nodes, points)
-                : points;
+                : NamedParallelCurveSamplePoints(edge, points);
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {

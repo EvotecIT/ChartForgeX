@@ -86,13 +86,8 @@ internal static class VisualWatermarkRendering {
     private static void AppendSvgWatermark(StringBuilder output, VisualWatermark watermark, double width, double height, int index, SvgImageWatermarkDefinition imageDefinition) {
         if (watermark.Repeat) {
             ValidateRepeatDensity(watermark, width, height);
-            var row = 0;
-            for (var y = watermark.RepeatSpacingY / 2; y < height; y += watermark.RepeatSpacingY) {
-                var stagger = row++ % 2 == 0 ? 0 : watermark.RepeatSpacingX / 2;
-                for (var x = watermark.RepeatSpacingX / 2 - stagger; x < width; x += watermark.RepeatSpacingX) {
-                    AppendSvgWatermarkAt(output, watermark, x, y, index, imageDefinition: imageDefinition);
-                }
-            }
+            ForEachRepeatedWatermarkPosition(watermark, width, height, imageDefinition.Image, 1,
+                (x, y) => AppendSvgWatermarkAt(output, watermark, x, y, index, imageDefinition: imageDefinition));
             return;
         }
 
@@ -146,17 +141,12 @@ internal static class VisualWatermarkRendering {
             ? RasterImageDecoder.Decode(watermark.ImageBytes!)
             : null;
         if (watermark.Repeat) {
-            var repeatSpacingX = watermark.RepeatSpacingX * frame.Scale;
-            var repeatSpacingY = watermark.RepeatSpacingY * frame.Scale;
             ValidateRepeatDensity(watermark, frame.Width, frame.Height, frame.Scale);
             RgbaImage? preparedImage = sourceImage.HasValue
                 ? PrepareRasterWatermark(watermark, sourceImage.Value, renderScale: frame.Scale)
                 : null;
-            var row = 0;
-            for (var y = frame.Y + repeatSpacingY / 2; y < frame.Bottom; y += repeatSpacingY) {
-                var stagger = row++ % 2 == 0 ? 0 : repeatSpacingX / 2;
-                for (var x = frame.X + repeatSpacingX / 2 - stagger; x < frame.Right; x += repeatSpacingX) DrawRasterWatermarkAt(canvas, watermark, x, y, frame.Scale, sourceImage: sourceImage, preparedImage: preparedImage);
-            }
+            ForEachRepeatedWatermarkPosition(watermark, frame.Width, frame.Height, sourceImage, frame.Scale,
+                (x, y) => DrawRasterWatermarkAt(canvas, watermark, frame.X + x, frame.Y + y, frame.Scale, sourceImage: sourceImage, preparedImage: preparedImage));
             return;
         }
 
@@ -170,6 +160,24 @@ internal static class VisualWatermarkRendering {
         if (columns * rows > MaximumRepeatedWatermarkCount) {
             throw new InvalidOperationException("Repeated watermark spacing would create more than 10,000 marks. Increase RepeatSpacingX or RepeatSpacingY.");
         }
+    }
+
+    private static void ForEachRepeatedWatermarkPosition(VisualWatermark watermark, double width, double height, RgbaImage? sourceImage, double renderScale, Action<double, double> draw) {
+        var spacingX = watermark.RepeatSpacingX * renderScale;
+        var spacingY = watermark.RepeatSpacingY * renderScale;
+        var anchor = ResolveBounds(watermark, width, height, sourceImage, renderScale);
+        var firstY = PositiveModulo(anchor.CenterY, spacingY);
+        var row = 0;
+        for (var y = firstY; y < height; y += spacingY) {
+            var stagger = row++ % 2 == 0 ? 0 : spacingX / 2;
+            var firstX = PositiveModulo(anchor.CenterX - stagger, spacingX);
+            for (var x = firstX; x < width; x += spacingX) draw(x, y);
+        }
+    }
+
+    private static double PositiveModulo(double value, double modulus) {
+        var remainder = value % modulus;
+        return remainder < 0 ? remainder + modulus : remainder;
     }
 
     private static void DrawRasterWatermarkAt(RgbaCanvas canvas, VisualWatermark watermark, double centerX, double centerY, double renderScale, double? explicitWidth = null, double? explicitHeight = null, RgbaImage? sourceImage = null, RgbaImage? preparedImage = null) {

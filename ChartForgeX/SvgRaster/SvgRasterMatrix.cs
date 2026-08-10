@@ -45,6 +45,23 @@ internal readonly struct SvgRasterMatrix {
             _a * other._e + _c * other._f + _e,
             _b * other._e + _d * other._f + _f);
 
+    public bool TryInvert(out SvgRasterMatrix inverse) {
+        var determinant = _a * _d - _b * _c;
+        if (Math.Abs(determinant) < 0.000000001) {
+            inverse = Identity;
+            return false;
+        }
+
+        inverse = new SvgRasterMatrix(
+            _d / determinant,
+            -_b / determinant,
+            -_c / determinant,
+            _a / determinant,
+            (_c * _f - _d * _e) / determinant,
+            (_b * _e - _a * _f) / determinant);
+        return true;
+    }
+
     public static SvgRasterMatrix Translate(double x, double y) => new(1, 0, 0, 1, x, y);
 
     public static SvgRasterMatrix Scale(double x, double y) => new(x, 0, 0, y, 0, 0);

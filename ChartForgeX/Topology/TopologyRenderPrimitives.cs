@@ -272,7 +272,7 @@ internal static partial class TopologyRenderPrimitives {
 
         var ox = -dy / length * offset;
         var oy = dx / length * offset;
-        return points.Select(point => new ChartPoint(point.X + ox, point.Y + oy)).ToList();
+        return OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy);
     }
 
     private static bool UsesOrthogonalRoute(TopologyEdge edge) =>

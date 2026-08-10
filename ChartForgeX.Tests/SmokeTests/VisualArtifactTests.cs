@@ -170,10 +170,18 @@ internal static partial class SmokeTests {
         repeatedImage.RepeatSpacingY = 60;
         repeatedImage.Width = 18;
         repeatedImage.Height = 18;
+        repeatedImage.Anchor = VisualCanvasAnchor.TopLeft;
+        repeatedImage.Padding = 5;
+        repeatedImage.OffsetX = 7;
+        repeatedImage.OffsetY = 9;
+        repeatedImage.Opacity = 1;
         var repeatedImageOptions = new VisualArtifactRenderOptions();
         repeatedImageOptions.Watermarks.Add(repeatedImage);
         var repeatedImageSvg = artifact.ToSvg(repeatedImageOptions);
         Assert(CountOccurrences(repeatedImageSvg, ";base64,") == 1 && CountOccurrences(repeatedImageSvg, "<use data-cfx-role=\"watermark\"") > 1, "Repeated SVG image watermarks should define their payload once and reuse it for every placement.");
+        Assert(repeatedImageSvg.Contains("x=\"12\" y=\"14\"", StringComparison.Ordinal), "Repeated SVG watermark placement should phase its tile grid from anchor, padding, and offsets.");
+        var repeatedRaster = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 80, new byte[100 * 80 * 4]), new[] { repeatedImage });
+        Assert(IsPixelNear(repeatedRaster.Pixels, repeatedRaster.Width, 21, 23, 10, 20, 30), "Repeated PNG watermark placement should use the same anchored tile-grid phase as SVG output.");
         Assert(artifact.ToPng(repeatedImageOptions).Length > 64, "Repeated image watermarks should retain PNG parity.");
 
         var widePixels = new byte[20 * 10 * 4];

@@ -198,12 +198,22 @@ internal sealed class SvgRasterMask {
         }
         RootStyle = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
         UsesAlpha = string.Equals(RootStyle.MaskType, "alpha", StringComparison.OrdinalIgnoreCase);
+        UserSpaceOnUse = string.Equals(element.Get("maskUnits"), "userSpaceOnUse", StringComparison.Ordinal);
+        X = element.Get("x");
+        Y = element.Get("y");
+        Width = element.Get("width");
+        Height = element.Get("height");
     }
 
     public SvgRasterElement Element { get; }
     public IReadOnlyList<SvgRasterElement> Ancestors { get; }
     public SvgRasterStyle RootStyle { get; }
     public bool UsesAlpha { get; }
+    public bool UserSpaceOnUse { get; }
+    public string? X { get; }
+    public string? Y { get; }
+    public string? Width { get; }
+    public string? Height { get; }
 }
 
 internal sealed class SvgRasterPattern {

@@ -709,6 +709,13 @@ public sealed partial class TopologySvgRenderer {
                 .Build();
         }
 
+        if (edge.Routing == TopologyEdgeRouting.Curved && edge.Waypoints.Count == 0 && points.Count == 4 && !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) {
+            return new SvgPathDataBuilder(96)
+                .MoveTo(points[0])
+                .CubicTo(points[1].X, points[1].Y, points[2].X, points[2].Y, points[3].X, points[3].Y)
+                .Build();
+        }
+
         if (ShouldRoundEdgeCorners(edge, points, options)) return RoundedEdgePath(points, options.EdgeCornerRadius);
         return EdgePath(points, edge.Routing);
     }
@@ -718,7 +725,7 @@ public sealed partial class TopologySvgRenderer {
         var y1 = points[0].Y;
         var x2 = points[points.Count - 1].X;
         var y2 = points[points.Count - 1].Y;
-        if (routing == TopologyEdgeRouting.Straight) return "M " + F(x1) + " " + F(y1) + " L " + F(x2) + " " + F(y2);
+        if (routing == TopologyEdgeRouting.Straight && points.Count == 2) return "M " + F(x1) + " " + F(y1) + " L " + F(x2) + " " + F(y2);
         if (routing == TopologyEdgeRouting.Curved && points.Count == 2) {
             var lift = Math.Max(40, Math.Abs(x2 - x1) * 0.12);
             return "M " + F(x1) + " " + F(y1) + " C " + F(x1) + " " + F(y1 - lift) + " " + F(x2) + " " + F(y2 - lift) + " " + F(x2) + " " + F(y2);

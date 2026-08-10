@@ -141,6 +141,21 @@ internal static partial class SmokeTests {
         const string rootMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask='url(#left-half)'><defs><mask id='left-half'><rect width='50' height='40' fill='#ffffff'/></mask></defs><rect width='100' height='40' fill='#2563eb'/></svg>";
         var rootMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootMask));
         Assert(IsPixelNear(rootMaskImage.Pixels, 100, 25, 20, 37, 99, 235) && PixelAlpha(rootMaskImage.Pixels, 100, 75, 20) == 0, "Root masks should composite all document children before masking the raster output.");
+        const string boundedMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><mask id='bounded' maskUnits='userSpaceOnUse' x='0' y='0' width='10' height='40'><rect width='100' height='40' fill='#ffffff'/></mask></defs><rect width='100' height='40' fill='#2563eb' mask='url(#bounded)'/></svg>";
+        var boundedMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(boundedMask));
+        Assert(IsPixelNear(boundedMaskImage.Pixels, 100, 5, 20, 37, 99, 235) && PixelAlpha(boundedMaskImage.Pixels, 100, 15, 20) == 0, "User-space mask regions should clip mask paint to their declared x, y, width, and height.");
+        const string scaledBoundedMask = "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='100' viewBox='0 0 100 50'><defs><mask id='scaled-bounded' maskUnits='userSpaceOnUse' x='0' y='0' width='50%' height='100%'><rect width='100' height='50' fill='#ffffff'/></mask></defs><rect width='100' height='50' fill='#2563eb' mask='url(#scaled-bounded)'/></svg>";
+        var scaledBoundedMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(scaledBoundedMask));
+        Assert(IsPixelNear(scaledBoundedMaskImage.Pixels, 200, 90, 50, 37, 99, 235) && PixelAlpha(scaledBoundedMaskImage.Pixels, 200, 110, 50) == 0, "User-space mask percentages should resolve in the logical SVG viewport before output scaling.");
+        const string pixelUnitMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><mask id='pixel-unit' maskUnits='userSpaceOnUse' x='0px' y='0px' width='10px' height='40px'><rect width='100' height='40' fill='#ffffff'/></mask></defs><rect width='100' height='40' fill='#2563eb' mask='url(#pixel-unit)'/></svg>";
+        var pixelUnitMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(pixelUnitMask));
+        Assert(IsPixelNear(pixelUnitMaskImage.Pixels, 100, 5, 20, 37, 99, 235) && PixelAlpha(pixelUnitMaskImage.Pixels, 100, 15, 20) == 0, "Mask regions should preserve explicit absolute SVG length units.");
+        const string objectBoundedMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><mask id='object-bounded' x='0' y='0' width='50%' height='100%'><rect width='100' height='40' fill='#ffffff'/></mask></defs><rect x='20' y='10' width='40' height='20' fill='#16a34a' mask='url(#object-bounded)'/></svg>";
+        var objectBoundedMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(objectBoundedMask));
+        Assert(IsPixelNear(objectBoundedMaskImage.Pixels, 100, 25, 20, 22, 163, 74) && PixelAlpha(objectBoundedMaskImage.Pixels, 100, 50, 20) == 0, "Object-bounding-box mask regions should resolve percentages against the masked element footprint.");
+        const string rotatedObjectMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='60'><defs><mask id='rotated-object' x='0' y='0' width='50%' height='100%'><rect width='100' height='60' fill='#ffffff'/></mask></defs><rect x='30' y='20' width='40' height='20' transform='rotate(90 50 30)' fill='#16a34a' mask='url(#rotated-object)'/></svg>";
+        var rotatedObjectMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rotatedObjectMask));
+        Assert(IsPixelNear(rotatedObjectMaskImage.Pixels, 100, 50, 15, 22, 163, 74) && PixelAlpha(rotatedObjectMaskImage.Pixels, 100, 50, 45) == 0, "Object-bounding-box mask regions should retain the masked element's local orientation under transforms.");
         const string rootAlphaMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask='url(#alpha-half)'><defs><mask id='alpha-half' mask-type='alpha'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#2563eb'/></svg>";
         var rootAlphaMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootAlphaMask));
         Assert(IsPixelNear(rootAlphaMaskImage.Pixels, 100, 25, 20, 37, 99, 235) && PixelAlpha(rootAlphaMaskImage.Pixels, 100, 75, 20) == 0, "Alpha-mode root masks should use mask opacity rather than RGB luminance.");
@@ -159,6 +174,22 @@ internal static partial class SmokeTests {
         const string nonInheritedMaskType = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask-type='alpha'><defs><mask id='default-luminance'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#06b6d4' mask='url(#default-luminance)'/></svg>";
         var nonInheritedMaskTypeImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(nonInheritedMaskType));
         Assert(MaximumAlpha(nonInheritedMaskTypeImage.Pixels) == 0, "mask-type should remain non-inherited so each mask defaults to luminance unless it declares alpha.");
+
+        const string nestedViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='40'><svg x='10' y='10' width='20' height='20' viewBox='0 0 20 20'><rect x='-10' y='-10' width='40' height='40' fill='#ff0000'/></svg></svg>";
+        var nestedViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(nestedViewport));
+        Assert(IsPixelNear(nestedViewportImage.Pixels, 60, 15, 15, 255, 0, 0) && PixelAlpha(nestedViewportImage.Pixels, 60, 5, 15) == 0 && PixelAlpha(nestedViewportImage.Pixels, 60, 35, 15) == 0, "Nested SVG viewports should clip overflowing descendants by default.");
+        const string visibleNestedViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='40'><svg x='10' y='10' width='20' height='20' viewBox='0 0 20 20' overflow='visible'><rect x='-10' y='-10' width='40' height='40' fill='#ff0000'/></svg></svg>";
+        var visibleNestedViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(visibleNestedViewport));
+        Assert(IsPixelNear(visibleNestedViewportImage.Pixels, 60, 5, 15, 255, 0, 0) && IsPixelNear(visibleNestedViewportImage.Pixels, 60, 35, 15, 255, 0, 0), "Nested SVG overflow visible should deliberately expose descendants outside the viewport.");
+        const string percentageNestedViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><svg x='10%' y='25%' width='50%' height='50%' viewBox='0 0 10 10' preserveAspectRatio='none'><rect width='10' height='10' fill='#ff0000'/></svg></svg>";
+        var percentageNestedViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(percentageNestedViewport));
+        Assert(IsPixelNear(percentageNestedViewportImage.Pixels, 100, 20, 20, 255, 0, 0) && PixelAlpha(percentageNestedViewportImage.Pixels, 100, 5, 20) == 0 && PixelAlpha(percentageNestedViewportImage.Pixels, 100, 65, 20) == 0, "Nested SVG percentage dimensions and positions should resolve against the parent viewport.");
+        const string pixelUnitNestedViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='40'><svg x='10px' y='10px' width='20px' height='20px' viewBox='0 0 20 20'><rect width='20' height='20' fill='#ff0000'/></svg></svg>";
+        var pixelUnitNestedViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(pixelUnitNestedViewport));
+        Assert(IsPixelNear(pixelUnitNestedViewportImage.Pixels, 60, 15, 15, 255, 0, 0) && PixelAlpha(pixelUnitNestedViewportImage.Pixels, 60, 5, 15) == 0 && PixelAlpha(pixelUnitNestedViewportImage.Pixels, 60, 35, 15) == 0, "Nested SVG viewports should preserve explicit absolute SVG length units.");
+        const string zeroNestedViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='40'><svg width='0' height='20' overflow='visible'><rect width='60' height='40' fill='#ff0000'/></svg></svg>";
+        var zeroNestedViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(zeroNestedViewport));
+        Assert(MaximumAlpha(zeroNestedViewportImage.Pixels) == 0, "A nested SVG with a zero viewport dimension should not render descendants even when overflow is visible.");
 
         const string physicalViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='2in' height='1in'><rect width='192' height='96' fill='#2563eb'/></svg>";
         var physicalViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(physicalViewport));

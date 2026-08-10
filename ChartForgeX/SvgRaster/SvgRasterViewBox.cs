@@ -48,6 +48,14 @@ internal readonly struct SvgRasterViewBox {
     }
 
     internal static bool TryParseLength(string? value, out double parsed) {
+        if (!TryParseAbsoluteLength(value, out parsed) || parsed <= 0) {
+            parsed = 0;
+            return false;
+        }
+        return true;
+    }
+
+    internal static bool TryParseAbsoluteLength(string? value, out double parsed) {
         parsed = 0;
         if (string.IsNullOrWhiteSpace(value)) return false;
         var trimmed = value!.Trim();
@@ -60,11 +68,10 @@ internal readonly struct SvgRasterViewBox {
         else if (trimmed.EndsWith("mm", StringComparison.OrdinalIgnoreCase)) { trimmed = trimmed.Substring(0, trimmed.Length - 2); multiplier = 96d / 25.4d; }
         else if (trimmed.EndsWith("q", StringComparison.OrdinalIgnoreCase)) { trimmed = trimmed.Substring(0, trimmed.Length - 1); multiplier = 96d / 101.6d; }
         if (!double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out var scalar) ||
-            scalar <= 0 ||
             double.IsNaN(scalar) ||
             double.IsInfinity(scalar)) return false;
         parsed = scalar * multiplier;
-        return !double.IsNaN(parsed) && !double.IsInfinity(parsed) && parsed > 0;
+        return !double.IsNaN(parsed) && !double.IsInfinity(parsed);
     }
 
     private static double ParseNumber(string value) =>

@@ -65,7 +65,7 @@ internal static class TopologyMotionPlanner {
             var points = EdgePoints(chart, edge, nodes);
             var routePoints = IsGeographicCurve(chart, edge, nodes)
                 ? GeographicCurveSamplePoints(chart, edge, nodes, points)
-                : points;
+                : NamedParallelCurveSamplePoints(edge, points);
             if (routePoints.Count < 2) continue;
             entries.Add(new TopologyMotionEntry(edge, routePoints, PolylineLength(routePoints)));
         }

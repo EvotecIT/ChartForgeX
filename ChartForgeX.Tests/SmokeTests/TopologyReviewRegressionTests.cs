@@ -149,6 +149,28 @@ internal static partial class SmokeTests {
         var backup = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges[1], nodes);
 
         Assert(Math.Abs(primary[1].X - backup[1].X) > 0.01, "Default duplicate orthogonal edges should infer distinct route lanes instead of collapsing.");
+
+        var named = TopologyChart.Create()
+            .WithId("named-port-parallel-routes")
+            .WithViewport(420, 220, 20)
+            .WithLegend(null)
+            .AddNode("source", "Source", 60, 80, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 60, height: 44)
+            .AddNode("target", "Target", 300, 80, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, width: 60, height: 44)
+            .AddNodePort("source", "out", TopologyEdgePort.Right, 0.35)
+            .AddNodePort("target", "in", TopologyEdgePort.Left, 0.65)
+            .AddEdge("named-primary", "source", "target", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
+            .AddEdge("named-backup", "source", "target", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
+            .WithEdgeNamedPorts("named-primary", "out", "in")
+            .WithEdgeNamedPorts("named-backup", "out", "in");
+        var namedReport = TopologyLayoutDiagnostics.Analyze(named, new TopologyRenderOptions { IncludeLegend = false });
+        var firstNamed = namedReport.Edges[0].Points;
+        var secondNamed = namedReport.Edges[1].Points;
+        Assert(Math.Abs(firstNamed[0].X - secondNamed[0].X) < 0.001 && Math.Abs(firstNamed[0].Y - secondNamed[0].Y) < 0.001 && Math.Abs(firstNamed[firstNamed.Count - 1].X - secondNamed[secondNamed.Count - 1].X) < 0.001 && Math.Abs(firstNamed[firstNamed.Count - 1].Y - secondNamed[secondNamed.Count - 1].Y) < 0.001, "Parallel route offsets should preserve the shared named-port attachment points.");
+        Assert(firstNamed.Count == 4 && secondNamed.Count == 4 && (Math.Abs(firstNamed[1].X - secondNamed[1].X) > 0.01 || Math.Abs(firstNamed[1].Y - secondNamed[1].Y) > 0.01), "Parallel named-port routes should retain distinct interior geometry after restoring their shared endpoints.");
+        foreach (var edge in named.Edges) edge.Routing = TopologyEdgeRouting.Curved;
+        var motionOptions = new TopologyRenderOptions { IncludeLegend = false, Motion = TopologyMotionOptions.RoutePulseForEdges("named-primary") };
+        var motionPlan = TopologyMotionPlanner.Build(named, motionOptions);
+        Assert(motionPlan?.Entries.Single().Points.Count > 4, "PNG motion planning should sample the same named-port cubic rendered by static SVG and PNG routes.");
     }
 
     private static void TopologyExplicitZeroRouteLaneStaysCentered() {
