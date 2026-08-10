@@ -59,6 +59,26 @@ internal static partial class SmokeTests {
         Assert(SvgRasterRenderer.TryRenderFragment(rectangularMarkup, "0 0 100 100", "none", 100, 100, out var rectangular), "SVG rasterization should allow a more specific rule to disable image clipping.");
         Assert(IsPixelNear(rectangular, 100, 2, 2, 255, 0, 0), "Rectangular graph images should retain their corners when circular clipping is disabled.");
 
+        var asymmetricPixels = new byte[] { 255, 0, 0, 255, 0, 0, 255, 255 };
+        var asymmetricSource = "data:image/png;base64," + Convert.ToBase64String(PngWriter.WriteRgba(new RgbaImage(2, 1, asymmetricPixels)));
+        var rotatedMarkup = "<image x='20' y='20' width='40' height='20' preserveAspectRatio='none' transform='rotate(90 40 30)' href='" + asymmetricSource + "'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(rotatedMarkup, "0 0 60 60", "none", 60, 60, out var rotated), "SVG rasterization should apply image rotation while sampling source pixels.");
+        Assert(IsPixelNear(rotated, 60, 40, 15, 255, 0, 0) && IsPixelNear(rotated, 60, 40, 45, 0, 0, 255), "Rotated image pixels should follow the transformed image axes instead of stretching into their axis-aligned bounds.");
+
+        var rotatedCircleSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><image x='20' y='20' width='40' height='20' preserveAspectRatio='none' transform='rotate(90 40 30)' style='clip-path:circle(50%)' href='" + asymmetricSource + "'/></svg>";
+        var rotatedCircle = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rotatedCircleSvg));
+        var rotatedCircleRed = (25 * 60 + 40) * 4;
+        var rotatedCircleBlue = (35 * 60 + 40) * 4;
+        Assert(PixelAlpha(rotatedCircle.Pixels, 60, 40, 15) == 0 && rotatedCircle.Pixels[rotatedCircleRed] > rotatedCircle.Pixels[rotatedCircleRed + 2] && rotatedCircle.Pixels[rotatedCircleBlue + 2] > rotatedCircle.Pixels[rotatedCircleBlue], "Circular image clipping should stay in local image space while the clipped pixels follow the public document transform path.");
+
+        var skewedMarkup = "<image x='10' y='10' width='20' height='20' preserveAspectRatio='none' transform='skewX(45)' href='" + solidSource + "'/>";
+        Assert(SvgRasterRenderer.TryRenderFragment(skewedMarkup, "0 0 70 40", "none", 70, 40, out var skewed), "SVG rasterization should apply image skew while sampling source pixels.");
+        Assert(PixelAlpha(skewed, 70, 22, 29) == 0 && IsPixelNear(skewed, 70, 50, 29, 255, 0, 0), "Skewed images should retain their parallelogram footprint instead of filling the transformed axis-aligned bounds.");
+
+        var thinTransformedMarkup = "<svg xmlns='http://www.w3.org/2000/svg' width='10000' height='1' viewBox='0 0 10000 1' preserveAspectRatio='none'><image width='1' height='1' transform='scale(10000)' style='clip-path:circle(50%)' href='" + solidSource + "'/></svg>";
+        var thinTransformed = RasterImageDecoder.Decode(SvgRasterizer.ToPng(thinTransformedMarkup));
+        Assert(thinTransformed.Width == 10000 && thinTransformed.Height == 1, "Transformed image intermediates should remain bounded by the visible output budget, including local circle clipping.");
+
         var wideSource = SvgData("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'><rect width='200' height='100' fill='#ff0000'/></svg>");
         Assert(SvgRasterRenderer.TryRenderFragment("<image x='0' y='0' width='200' height='100' href='" + wideSource + "'/>", "0 0 200 100", "none", 200, 100, out var wide), "SVG rasterization should render embedded artwork against its destination aspect ratio.");
         Assert(IsPixelNear(wide, 200, 100, 5, 255, 0, 0), "Rectangular embedded SVG artwork should not acquire square intermediate letterboxing before destination scaling.");

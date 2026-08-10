@@ -162,24 +162,32 @@ internal static partial class SvgRasterRenderer {
         if (width <= 0 || height <= 0 || style.Opacity <= 0) return;
         var x = element.GetDouble("x");
         var y = element.GetDouble("y");
-        var corners = new[] {
-            matrix.Transform(new ChartPoint(x, y)), matrix.Transform(new ChartPoint(x + width, y)),
-            matrix.Transform(new ChartPoint(x, y + height)), matrix.Transform(new ChartPoint(x + width, y + height))
-        };
-        var left = (int)Math.Round(Math.Min(Math.Min(corners[0].X, corners[1].X), Math.Min(corners[2].X, corners[3].X)));
-        var top = (int)Math.Round(Math.Min(Math.Min(corners[0].Y, corners[1].Y), Math.Min(corners[2].Y, corners[3].Y)));
-        var right = (int)Math.Round(Math.Max(Math.Max(corners[0].X, corners[1].X), Math.Max(corners[2].X, corners[3].X)));
-        var bottom = (int)Math.Round(Math.Max(Math.Max(corners[0].Y, corners[1].Y), Math.Max(corners[2].Y, corners[3].Y)));
-        if (right <= left || bottom <= top) return;
-        if (!TryDecodeImage(element.Get("href"), imageDepth, right - left, bottom - top, element.Get("preserveAspectRatio"), out var image)) return;
+        var origin = matrix.Transform(new ChartPoint(x, y));
+        var xAxis = matrix.Transform(new ChartPoint(x + width, y));
+        var yAxis = matrix.Transform(new ChartPoint(x, y + height));
+        (var localWidth, var localHeight) = ResolveTransformedImageDimensions(origin, xAxis, yAxis, canvas.Width, canvas.Height);
+        if (!TryDecodeImage(element.Get("href"), imageDepth, localWidth, localHeight, element.Get("preserveAspectRatio"), out var image)) return;
         var pixels = style.Opacity >= 0.999 ? image.Pixels : ApplyOpacity(image.Pixels, style.Opacity);
-        var destinationWidth = right - left;
-        var destinationHeight = bottom - top;
-        var placement = SvgRasterImagePlacement.Resolve(destinationWidth, destinationHeight, image.Width, image.Height, element.Get("preserveAspectRatio"));
-        var imageBox = new RgbaCanvas(destinationWidth, destinationHeight, 1);
+        var placement = SvgRasterImagePlacement.Resolve(localWidth, localHeight, image.Width, image.Height, element.Get("preserveAspectRatio"));
+        var imageBox = new RgbaCanvas(localWidth, localHeight, 1);
         imageBox.DrawImageScaled(placement.X, placement.Y, placement.Width, placement.Height, image.Width, image.Height, pixels, placement.SourceX, placement.SourceY, placement.SourceWidth, placement.SourceHeight);
-        if (IsCenteredCircleClipPath(style.ClipPath)) canvas.DrawImageScaledCircle(left, top, destinationWidth, destinationHeight, destinationWidth, destinationHeight, imageBox.Pixels);
-        else canvas.DrawImage(left, top, destinationWidth, destinationHeight, imageBox.Pixels);
+        if (IsCenteredCircleClipPath(style.ClipPath)) {
+            RgbaCanvas.ApplyCenteredCircleAlphaMask(localWidth, localHeight, imageBox.Pixels);
+        }
+
+        var imageMatrix = matrix
+            .Multiply(SvgRasterMatrix.Translate(x, y))
+            .Multiply(SvgRasterMatrix.Scale(width / localWidth, height / localHeight));
+        canvas.DrawImageTransformed(
+            localWidth,
+            localHeight,
+            imageBox.Pixels,
+            imageMatrix.A,
+            imageMatrix.B,
+            imageMatrix.C,
+            imageMatrix.D,
+            imageMatrix.E,
+            imageMatrix.F);
     }
 
     private static bool IsCenteredCircleClipPath(string? value) {

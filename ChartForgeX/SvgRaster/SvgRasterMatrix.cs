@@ -18,6 +18,13 @@ internal readonly struct SvgRasterMatrix {
         _f = f;
     }
 
+    public double A => _a;
+    public double B => _b;
+    public double C => _c;
+    public double D => _d;
+    public double E => _e;
+    public double F => _f;
+
     public ChartPoint Transform(ChartPoint point) =>
         new(point.X * _a + point.Y * _c + _e, point.X * _b + point.Y * _d + _f);
 
