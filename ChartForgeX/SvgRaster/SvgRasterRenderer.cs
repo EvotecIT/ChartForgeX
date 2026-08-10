@@ -42,9 +42,29 @@ internal static partial class SvgRasterRenderer {
         var ancestors = new List<SvgRasterElement> { document.Root };
         var rootOpacity = rootStyle.Opacity;
         rootStyle.Opacity = 1;
-        var target = rootOpacity < 0.999 ? new RgbaCanvas(width, height, 1) : canvas;
+        var hasClipPath = definitions.TryGetClipPath(ParseReference(rootStyle.ClipPath) ?? ReferenceId(document.Root, "clip-path"), out var clipPath);
+        var hasMask = definitions.TryGetMask(ReferenceId(document.Root, "mask"), out var maskDefinition);
+        var target = rootOpacity < 0.999 || hasClipPath || hasMask ? new RgbaCanvas(width, height, 1) : canvas;
         foreach (var child in document.Children) RenderElement(target, child, rootStyle, matrix, definitions, width, height, imageDepth, ancestors);
-        if (!ReferenceEquals(target, canvas)) canvas.DrawImage(0, 0, width, height, ApplyOpacity(target.Pixels, rootOpacity));
+        if (ReferenceEquals(target, canvas)) return canvas.Pixels;
+
+        if (hasClipPath) {
+            var clipped = new RgbaCanvas(width, height, 1);
+            var clipMask = new RgbaCanvas(width, height, 1);
+            RenderClipPath(clipMask, clipPath, matrix, definitions);
+            clipped.DrawImageMasked(0, 0, width, height, target.Pixels, clipMask.Pixels);
+            target = clipped;
+        }
+
+        if (hasMask) {
+            var masked = new RgbaCanvas(width, height, 1);
+            var mask = new RgbaCanvas(width, height, 1);
+            RenderMask(mask, maskDefinition, matrix, definitions, width, height);
+            masked.DrawImageMasked(0, 0, width, height, target.Pixels, mask.Pixels);
+            target = masked;
+        }
+
+        canvas.DrawImage(0, 0, width, height, rootOpacity < 0.999 ? ApplyOpacity(target.Pixels, rootOpacity) : target.Pixels);
         return canvas.Pixels;
     }
 

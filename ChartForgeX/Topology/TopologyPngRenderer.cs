@@ -281,7 +281,7 @@ public sealed partial class TopologyPngRenderer {
             var routeOpacity = EdgeOpacity(edge, options);
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
             var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
-            var dashArray = edge.IsMuted ? null : EdgePngDashArray(edge);
+            var dashArray = EffectiveEdgePngDashArray(edge);
             var routePoints = IsGeographicCurve(chart, edge, nodes)
                 ? GeographicCurveSamplePoints(chart, edge, nodes, points)
                 : points;
@@ -304,12 +304,13 @@ public sealed partial class TopologyPngRenderer {
             var cy = layout.CenterY;
             var baseColor = edge.IsMuted ? Color(theme.MutedForeground) : Color(EdgeColor(edge, theme, options));
             var isHighlighted = highlight.IsEdgeHighlighted(edge);
-            var color = isHighlighted ? baseColor : WithAlpha(baseColor, HighlightAlpha(255, false, highlight));
-            var secondaryColor = isHighlighted ? Color(theme.MutedForeground) : WithAlpha(Color(theme.MutedForeground), HighlightAlpha(255, false, highlight));
-            var haloColor = WithAlpha(Color(theme.Background), HighlightAlpha(255, isHighlighted, highlight));
+            var labelOpacity = EdgeOpacity(edge, options) * (highlight.IsActive && !isHighlighted ? highlight.DimmedOpacity : 1);
+            var color = WithOpacity(baseColor, labelOpacity);
+            var secondaryColor = WithOpacity(Color(theme.MutedForeground), labelOpacity);
+            var haloColor = WithOpacity(Color(theme.Background), labelOpacity);
             DrawEdgeLabelLeader(canvas, layout, color, haloColor, options);
-            DrawEdgeLabelBackplate(canvas, layout, cx, cy, theme, options);
-            DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, highlight, isHighlighted);
+            DrawEdgeLabelBackplate(canvas, layout, cx, cy, theme, options, labelOpacity);
+            DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, labelOpacity);
             DrawEdgeLabelLines(canvas, layout, cx, cy, color, secondaryColor, haloColor, IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates);
         }
     }

@@ -34,6 +34,18 @@ internal static partial class TopologyRenderPrimitives {
         return dash.Dashed ? new[] { dash.Dash, dash.Gap } : null;
     }
 
+    public static string EffectiveEdgeDash(TopologyEdge edge) {
+        return edge.IsMuted && edge.DashPattern.Count == 0 && edge.LineStyle == TopologyEdgeLineStyle.Auto
+            ? "none"
+            : EdgeDash(edge);
+    }
+
+    public static double[]? EffectiveEdgePngDashArray(TopologyEdge edge) {
+        return edge.IsMuted && edge.DashPattern.Count == 0 && edge.LineStyle == TopologyEdgeLineStyle.Auto
+            ? null
+            : EdgePngDashArray(edge);
+    }
+
     public static TopologyMarkerKind EffectiveSourceMarker(TopologyEdge edge) {
         if (edge.SourceMarker.HasValue) return edge.SourceMarker.Value;
         return edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional ? TopologyMarkerKind.Arrow : TopologyMarkerKind.None;

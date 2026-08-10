@@ -70,10 +70,7 @@ public static class SvgRasterizer {
     private static string? Attribute(XElement element, string name) => element.Attributes().FirstOrDefault(attribute => string.Equals(attribute.Name.LocalName, name, StringComparison.OrdinalIgnoreCase))?.Value;
 
     private static double? Length(string? value) {
-        if (string.IsNullOrWhiteSpace(value)) return null;
-        string text = value!.Trim();
-        if (text.EndsWith("px", StringComparison.OrdinalIgnoreCase)) text = text.Substring(0, text.Length - 2).Trim();
-        return Parse(text, out double parsed) && parsed > 0D ? parsed : (double?)null;
+        return SvgRasterViewBox.TryParseLength(value, out double parsed) ? parsed : (double?)null;
     }
 
     private static bool Parse(string text, out double value) => double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) && !double.IsNaN(value) && !double.IsInfinity(value);

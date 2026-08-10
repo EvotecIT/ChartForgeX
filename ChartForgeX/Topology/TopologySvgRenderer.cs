@@ -514,7 +514,7 @@ public sealed partial class TopologySvgRenderer {
             var points = EdgePoints(chart, edge, nodes);
             var routeOffset = EdgeRouteOffset(chart, edge);
             var color = EdgeColor(edge, theme, options);
-            var dash = edge.IsMuted ? "none" : EdgeDash(edge);
+            var dash = EffectiveEdgeDash(edge);
             var highlighted = highlight.IsEdgeHighlighted(edge);
             var selected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var diagnostics = EdgeRouteDiagnostics(chart, edge, nodes);
@@ -638,7 +638,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-leader", ShouldDrawEdgeLabelLeader(layout, options) ? "true" : "false")
                     .Attribute("data-edge-label-render-order", renderOrder)
                     .Attribute("data-cfx-selected", selected);
-                if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
+                var labelOpacity = EdgeOpacity(edge, options) * (highlight.IsActive && !highlighted ? highlight.DimmedOpacity : 1);
+                if (labelOpacity < 0.999) group.Attribute("opacity", labelOpacity);
                 AddEdgeLabelLeader(group, layout, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme, options);
                 AddEdgeLabelBackplate(group, layout, cx, cy, theme, options);
                 AddEdgeLabelClearance(group, chart, layout, cx, cy, theme, options);

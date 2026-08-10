@@ -78,6 +78,18 @@ internal static partial class SmokeTests {
         var rootOpacityImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootOpacity));
         Assert(PixelAlpha(rootOpacityImage.Pixels, 100, 15, 20) is >= 126 and <= 129 && PixelAlpha(rootOpacityImage.Pixels, 100, 50, 20) is >= 126 and <= 129, "Root opacity should be applied once after compositing all root children.");
 
+        const string rootClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' clip-path='url(#left-half)'><defs><clipPath id='left-half'><rect width='50' height='40'/></clipPath></defs><rect width='100' height='40' fill='#ff0000'/></svg>";
+        var rootClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootClip));
+        Assert(IsPixelNear(rootClipImage.Pixels, 100, 25, 20, 255, 0, 0) && PixelAlpha(rootClipImage.Pixels, 100, 75, 20) == 0, "Root clip paths should composite all document children before clipping the raster output.");
+
+        const string rootMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask='url(#left-half)'><defs><mask id='left-half'><rect width='50' height='40' fill='#ffffff'/></mask></defs><rect width='100' height='40' fill='#2563eb'/></svg>";
+        var rootMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootMask));
+        Assert(IsPixelNear(rootMaskImage.Pixels, 100, 25, 20, 37, 99, 235) && PixelAlpha(rootMaskImage.Pixels, 100, 75, 20) == 0, "Root masks should composite all document children before masking the raster output.");
+
+        const string physicalViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='2in' height='1in'><rect width='192' height='96' fill='#2563eb'/></svg>";
+        var physicalViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(physicalViewport));
+        Assert(physicalViewportImage.Width == 192 && physicalViewportImage.Height == 96, "Public SVG rasterization should resolve absolute physical viewport units at 96 CSS pixels per inch.");
+
         var nestedText = "<text x='4' y='28' font-size='28' fill='#ff0000' opacity='.5'><tspan>OO</tspan></text>";
         Assert(SvgRasterRenderer.TryRenderFragment(nestedText, "0 0 100 40", "none", 100, 40, out var nestedTextPixels), "SVG rasterization should render tspan text inside an opacity layer.");
         Assert(MaximumAlpha(nestedTextPixels) is >= 126 and <= 129, "Container text opacity should apply to tspan glyphs exactly once.");

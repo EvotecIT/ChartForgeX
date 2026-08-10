@@ -75,19 +75,33 @@ internal static partial class SmokeTests {
             .WithLegend(null)
             .AddNode("a", "A", 30, 70)
             .AddNode("b", "B", 260, 70)
-            .AddEdge("high", "a", "b", kind: TopologyEdgeKind.Dependency)
+            .AddEdge("high", "a", "b", "High priority", TopologyEdgeKind.Dependency)
             .AddEdge("low", "a", "b", kind: TopologyEdgeKind.Connectivity)
             .WithEdgeLayoutHints("high", routingPriority: 50)
             .WithEdgeLayoutHints("low", routingPriority: -50)
             .WithEdgeStroke("high", opacity: 0.25);
         var orderingOptions = new TopologyRenderOptions { IncludeLegend = false };
         orderingOptions.SelectedEdgeIds.Add("high");
+        orderingOptions.HighlightEdgeIds.Add("high");
         var orderingSvg = orderingChart.ToSvg(orderingOptions);
         Assert(orderingSvg.IndexOf("data-edge-id=\"low\"", StringComparison.Ordinal) < orderingSvg.IndexOf("data-edge-id=\"high\"", StringComparison.Ordinal), "Explicit edge routing priority should be the primary render-order key.");
+        var orderingDocument = System.Xml.Linq.XDocument.Parse(orderingSvg);
+        var lowRoute = orderingDocument.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-edge", StringComparison.Ordinal) && string.Equals((string?)element.Attribute("data-edge-id"), "low", StringComparison.Ordinal));
+        Assert(string.Equals((string?)lowRoute.Attribute("opacity"), "0.28", StringComparison.Ordinal), "SVG edge routes outside an active highlight should retain the same dimming applied by PNG output.");
+        var highLabel = orderingDocument.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-edge-label", StringComparison.Ordinal) && string.Equals((string?)element.Attribute("data-edge-id"), "high", StringComparison.Ordinal));
+        Assert(string.Equals((string?)highLabel.Attribute("opacity"), "0.25", StringComparison.Ordinal), "SVG edge-label groups should apply the edge's explicit opacity to labels, leaders, and backplates.");
         byte[] selectedLowOpacity = orderingChart.ToPng(orderingOptions);
         orderingChart.Edges.Single(edgeItem => edgeItem.Id == "high").Opacity = 1D;
         byte[] selectedFullOpacity = orderingChart.ToPng(orderingOptions);
         Assert(!selectedLowOpacity.SequenceEqual(selectedFullOpacity), "Selected PNG edges should retain their explicit opacity instead of being forced fully opaque.");
+
+        chart.Edges.Single(edgeItem => edgeItem.Id == "api-db").IsMuted = true;
+        var mutedCustomDashSvg = chart.ToSvg(options);
+        Assert(mutedCustomDashSvg.Contains("stroke-dasharray=\"11 3 2 3\"", StringComparison.Ordinal), "Muted SVG edges should preserve caller-supplied dash patterns.");
+        byte[] mutedCustomDashPng = chart.ToPng(options);
+        chart.Edges.Single(edgeItem => edgeItem.Id == "api-db").DashPattern.Clear();
+        byte[] mutedInferredDashPng = chart.ToPng(options);
+        Assert(!mutedCustomDashPng.SequenceEqual(mutedInferredDashPng), "Muted PNG edges should preserve explicit dash patterns while suppressing only inferred status dashes.");
 
         var wrapped = TopologyChart.Create()
             .WithViewport(360, 260)

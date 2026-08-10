@@ -24,18 +24,7 @@ public static class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to SVG with artifact-wide options.</summary>
     public static string ToSvg(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        var svg = artifact.Model switch {
-            Chart chart => chart.ToSvg(),
-            ChartGrid grid => grid.ToSvg(),
-            VisualCanvas canvas => canvas.ToSvg(),
-            VisualStory story => story.ToSvg(),
-            TopologyChart topology => TopologyModel(artifact, topology).ToSvg(TopologyOptions(artifact, options)),
-            FlowArtifact flow => flow.ToSvg(),
-            TableArtifact table => table.ToSvg(),
-            SequenceArtifact sequence => sequence.ToSvg(),
-            IVisualBlock block => block.ToSvg(),
-            _ => throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported SVG render model.")
-        };
+        var svg = RenderSvg(artifact, options);
         return options == null || options.Watermarks.Count == 0 ? svg : VisualWatermarkRendering.ApplyToSvg(svg, artifact, options.Watermarks);
     }
 
@@ -98,7 +87,7 @@ public static class VisualArtifactRendering {
         };
         if (options == null || options.Watermarks.Count == 0 && options.Raster == null) return png;
         var image = RasterImageDecoder.Decode(png);
-        if (options.Watermarks.Count > 0) image = VisualWatermarkRendering.ApplyToImage(image, options.Watermarks);
+        if (options.Watermarks.Count > 0) image = VisualWatermarkRendering.ApplyToImage(image, artifact, RenderSvg(artifact, options), options.Watermarks);
         return RasterImageEncoder.Encode(image, RasterImageFormat.Png, options.Raster);
     }
 
@@ -135,6 +124,21 @@ public static class VisualArtifactRendering {
     internal static string WrapSvgPage(string title, string svg) {
         var safeTitle = string.IsNullOrWhiteSpace(title) ? "ChartForgeX visual artifact" : title.Trim();
         return "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-artifact{max-width:100%;height:auto}.chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:visible}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none}}</style></head><body><div class=\"chartforgex-visual-artifact\">" + svg + "</div></body></html>";
+    }
+
+    private static string RenderSvg(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
+        return artifact.Model switch {
+            Chart chart => chart.ToSvg(),
+            ChartGrid grid => grid.ToSvg(),
+            VisualCanvas canvas => canvas.ToSvg(),
+            VisualStory story => story.ToSvg(),
+            TopologyChart topology => TopologyModel(artifact, topology).ToSvg(TopologyOptions(artifact, options)),
+            FlowArtifact flow => flow.ToSvg(),
+            TableArtifact table => table.ToSvg(),
+            SequenceArtifact sequence => sequence.ToSvg(),
+            IVisualBlock block => block.ToSvg(),
+            _ => throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported SVG render model.")
+        };
     }
 
     private static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions) {

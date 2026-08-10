@@ -14,18 +14,18 @@ public sealed partial class TopologyPngRenderer {
         canvas.DrawDashedLine(layout.AnchorX, layout.AnchorY, end.X, end.Y, WithOpacity(color, style.StrokeOpacity), style.StrokeWidth, style.Dash, style.Gap);
     }
 
-    private static void DrawEdgeLabelBackplate(RgbaCanvas canvas, TopologyEdgeLabelLayout layout, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options) {
+    private static void DrawEdgeLabelBackplate(RgbaCanvas canvas, TopologyEdgeLabelLayout layout, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options, double opacity) {
         if (!options.IncludeEdgeLabelBackplates) return;
         var radius = EdgeLabelBackplateRadius(options);
-        canvas.FillRoundedRect(EdgeLabelBackplateX(layout, cx), EdgeLabelBackplateY(layout, cy), layout.Width, layout.Height, radius, Color(EdgeLabelBackplateFill(theme, options)));
-        canvas.StrokeRoundedRect(EdgeLabelBackplateX(layout, cx), EdgeLabelBackplateY(layout, cy), layout.Width, layout.Height, radius, WithAlpha(Color(theme.Border), EdgeLabelBackplateStrokeAlpha(options)), EdgeLabelBackplateStrokeWidth);
+        canvas.FillRoundedRect(EdgeLabelBackplateX(layout, cx), EdgeLabelBackplateY(layout, cy), layout.Width, layout.Height, radius, WithOpacity(Color(EdgeLabelBackplateFill(theme, options)), opacity));
+        canvas.StrokeRoundedRect(EdgeLabelBackplateX(layout, cx), EdgeLabelBackplateY(layout, cy), layout.Width, layout.Height, radius, WithOpacity(WithAlpha(Color(theme.Border), EdgeLabelBackplateStrokeAlpha(options)), opacity), EdgeLabelBackplateStrokeWidth);
     }
 
-    private static void DrawEdgeLabelClearance(RgbaCanvas canvas, TopologyChart chart, TopologyEdgeLabelLayout layout, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight, bool isHighlighted) {
+    private static void DrawEdgeLabelClearance(RgbaCanvas canvas, TopologyChart chart, TopologyEdgeLabelLayout layout, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options, double opacity) {
         if (!ShouldDrawEdgeLabelClearance(layout, options)) return;
         var surfaceGroup = EdgeLabelClearanceGroup(chart, layout);
-        var alpha = HighlightAlpha(EdgeLabelClearanceAlpha(surfaceGroup), isHighlighted, highlight);
-        canvas.FillRoundedRect(EdgeLabelClearanceX(layout, cx), EdgeLabelClearanceY(layout, cy), EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout), EdgeLabelClearanceRadius, WithAlpha(Color(EdgeLabelClearanceFill(surfaceGroup, theme, options)), alpha));
+        var color = WithAlpha(Color(EdgeLabelClearanceFill(surfaceGroup, theme, options)), EdgeLabelClearanceAlpha(surfaceGroup));
+        canvas.FillRoundedRect(EdgeLabelClearanceX(layout, cx), EdgeLabelClearanceY(layout, cy), EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout), EdgeLabelClearanceRadius, WithOpacity(color, opacity));
     }
 
     private static ChartColor WithOpacity(ChartColor color, double opacity) =>

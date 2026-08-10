@@ -169,6 +169,29 @@ internal static partial class SmokeTests {
         Assert(contained.Pixels[(15 * contained.Width + 50) * 4 + 3] == 0, "PNG watermark rendering should preserve wide-image aspect ratio inside a square target box.");
         Assert(contained.Pixels[(50 * contained.Width + 50) * 4] >= 250 && contained.Pixels[(50 * contained.Width + 50) * 4 + 3] == 255, "PNG watermark rendering should center contained image pixels in the target box.");
 
+        var topology = TopologyChart.Create()
+            .WithViewport(240, 140, 16)
+            .WithLegend(null)
+            .AddNode("left", "Left", 24, 44)
+            .AddNode("right", "Right", 152, 44)
+            .AddEdge("left-right", "left", "right");
+        var topologyArtifact = topology.ToVisualArtifact();
+        var scaleWatermark = VisualWatermark.FromText("SCALE");
+        scaleWatermark.Anchor = VisualCanvasAnchor.Center;
+        scaleWatermark.FontSize = 20;
+        scaleWatermark.Opacity = 1;
+        var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 } };
+        var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
+        scaleOneOptions.Watermarks.Add(scaleWatermark);
+        scaleTwoOptions.Watermarks.Add(scaleWatermark);
+        var scaleOnePlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 }));
+        var scaleTwoPlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 }));
+        var scaleOneDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
+        var scaleTwoDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
+        var scaleOneChanged = CountChangedPixels(scaleOnePlain, scaleOneDecorated);
+        var scaleTwoChanged = CountChangedPixels(scaleTwoPlain, scaleTwoDecorated);
+        Assert(scaleTwoChanged > scaleOneChanged * 3, "PNG watermark geometry should scale with topology output scale instead of shrinking relative to the rendered chart.");
+
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/png\" onload=\"alert(1)"), "Image watermarks should reject attribute-breaking media types.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
@@ -185,6 +208,18 @@ internal static partial class SmokeTests {
         var renderedMark = resizedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "watermark", StringComparison.Ordinal));
         var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
         Assert(renderedX > 300, "Watermark placement should follow current rendered dimensions when natural-size preservation is disabled.");
+
+        static int CountChangedPixels(RgbaImage plainImage, RgbaImage decoratedImage) {
+            Assert(plainImage.Width == decoratedImage.Width && plainImage.Height == decoratedImage.Height, "Compared watermark images should have matching dimensions.");
+            var changed = 0;
+            for (var index = 0; index < plainImage.Pixels.Length; index += 4) {
+                if (plainImage.Pixels[index] != decoratedImage.Pixels[index] ||
+                    plainImage.Pixels[index + 1] != decoratedImage.Pixels[index + 1] ||
+                    plainImage.Pixels[index + 2] != decoratedImage.Pixels[index + 2] ||
+                    plainImage.Pixels[index + 3] != decoratedImage.Pixels[index + 3]) changed++;
+            }
+            return changed;
+        }
     }
 
     private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {

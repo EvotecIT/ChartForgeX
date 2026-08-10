@@ -31,10 +31,21 @@ internal static class VisualWatermarkRendering {
     }
 
     public static RgbaImage ApplyToImage(RgbaImage source, IReadOnlyList<VisualWatermark> watermarks) {
+        return ApplyToImage(source, watermarks, 1);
+    }
+
+    public static RgbaImage ApplyToImage(RgbaImage source, VisualArtifact artifact, string svg, IReadOnlyList<VisualWatermark> watermarks) {
+        var logicalSize = ResolveSvgSize(svg, artifact);
+        var outputScale = Math.Min(source.Width / logicalSize.Width, source.Height / logicalSize.Height);
+        if (double.IsNaN(outputScale) || double.IsInfinity(outputScale) || outputScale <= 0) outputScale = 1;
+        return ApplyToImage(source, watermarks, outputScale);
+    }
+
+    private static RgbaImage ApplyToImage(RgbaImage source, IReadOnlyList<VisualWatermark> watermarks, double outputScale) {
         if (watermarks.Count == 0) return source;
         var canvas = new RgbaCanvas(source.Width, source.Height, 1, null, 1);
         canvas.DrawImage(0, 0, source.Width, source.Height, source.Pixels);
-        for (var i = 0; i < watermarks.Count; i++) DrawRasterWatermark(canvas, watermarks[i]);
+        for (var i = 0; i < watermarks.Count; i++) DrawRasterWatermark(canvas, watermarks[i], outputScale);
         return canvas.ToImage();
     }
 
@@ -132,38 +143,40 @@ internal static class VisualWatermarkRendering {
         output.Append(" />");
     }
 
-    private static void DrawRasterWatermark(RgbaCanvas canvas, VisualWatermark watermark) {
+    private static void DrawRasterWatermark(RgbaCanvas canvas, VisualWatermark watermark, double outputScale) {
         RgbaImage? sourceImage = watermark.Kind == VisualWatermarkKind.Image
             ? RasterImageDecoder.Decode(watermark.ImageBytes!)
             : null;
         if (watermark.Repeat) {
-            ValidateRepeatDensity(watermark, canvas.Width, canvas.Height);
+            var repeatSpacingX = watermark.RepeatSpacingX * outputScale;
+            var repeatSpacingY = watermark.RepeatSpacingY * outputScale;
+            ValidateRepeatDensity(watermark, canvas.Width, canvas.Height, outputScale);
             RgbaImage? preparedImage = sourceImage.HasValue
-                ? PrepareRasterWatermark(watermark, sourceImage.Value)
+                ? PrepareRasterWatermark(watermark, sourceImage.Value, renderScale: outputScale)
                 : null;
             var row = 0;
-            for (var y = watermark.RepeatSpacingY / 2; y < canvas.Height; y += watermark.RepeatSpacingY) {
-                var stagger = row++ % 2 == 0 ? 0 : watermark.RepeatSpacingX / 2;
-                for (var x = watermark.RepeatSpacingX / 2 - stagger; x < canvas.Width; x += watermark.RepeatSpacingX) DrawRasterWatermarkAt(canvas, watermark, x, y, sourceImage: sourceImage, preparedImage: preparedImage);
+            for (var y = repeatSpacingY / 2; y < canvas.Height; y += repeatSpacingY) {
+                var stagger = row++ % 2 == 0 ? 0 : repeatSpacingX / 2;
+                for (var x = repeatSpacingX / 2 - stagger; x < canvas.Width; x += repeatSpacingX) DrawRasterWatermarkAt(canvas, watermark, x, y, outputScale, sourceImage: sourceImage, preparedImage: preparedImage);
             }
             return;
         }
 
-        var bounds = ResolveBounds(watermark, canvas.Width, canvas.Height, sourceImage);
-        DrawRasterWatermarkAt(canvas, watermark, bounds.CenterX, bounds.CenterY, bounds.Width, bounds.Height, sourceImage);
+        var bounds = ResolveBounds(watermark, canvas.Width, canvas.Height, sourceImage, outputScale);
+        DrawRasterWatermarkAt(canvas, watermark, bounds.CenterX, bounds.CenterY, outputScale, bounds.Width, bounds.Height, sourceImage);
     }
 
-    private static void ValidateRepeatDensity(VisualWatermark watermark, double width, double height) {
-        var columns = Math.Ceiling(width / watermark.RepeatSpacingX) + 1;
-        var rows = Math.Ceiling(height / watermark.RepeatSpacingY) + 1;
+    private static void ValidateRepeatDensity(VisualWatermark watermark, double width, double height, double renderScale = 1) {
+        var columns = Math.Ceiling(width / (watermark.RepeatSpacingX * renderScale)) + 1;
+        var rows = Math.Ceiling(height / (watermark.RepeatSpacingY * renderScale)) + 1;
         if (columns * rows > MaximumRepeatedWatermarkCount) {
             throw new InvalidOperationException("Repeated watermark spacing would create more than 10,000 marks. Increase RepeatSpacingX or RepeatSpacingY.");
         }
     }
 
-    private static void DrawRasterWatermarkAt(RgbaCanvas canvas, VisualWatermark watermark, double centerX, double centerY, double? explicitWidth = null, double? explicitHeight = null, RgbaImage? sourceImage = null, RgbaImage? preparedImage = null) {
+    private static void DrawRasterWatermarkAt(RgbaCanvas canvas, VisualWatermark watermark, double centerX, double centerY, double renderScale, double? explicitWidth = null, double? explicitHeight = null, RgbaImage? sourceImage = null, RgbaImage? preparedImage = null) {
         if (watermark.Kind == VisualWatermarkKind.Text) {
-            var fontSize = watermark.FontSize * watermark.Scale;
+            var fontSize = watermark.FontSize * watermark.Scale * renderScale;
             var color = watermark.Color.WithOpacity(watermark.Opacity * watermark.Color.A / 255.0);
             var textWidth = watermark.Emphasized
                 ? RgbaCanvas.MeasureTextEmphasizedWidth(watermark.Text!, fontSize, null)
@@ -175,13 +188,13 @@ internal static class VisualWatermarkRendering {
         }
 
         var source = sourceImage ?? RasterImageDecoder.Decode(watermark.ImageBytes!);
-        var prepared = preparedImage ?? PrepareRasterWatermark(watermark, source, explicitWidth, explicitHeight);
+        var prepared = preparedImage ?? PrepareRasterWatermark(watermark, source, explicitWidth, explicitHeight, renderScale);
         canvas.DrawImage((int)Math.Round(centerX - prepared.Width / 2.0), (int)Math.Round(centerY - prepared.Height / 2.0), prepared.Width, prepared.Height, prepared.Pixels);
     }
 
-    private static RgbaImage PrepareRasterWatermark(VisualWatermark watermark, RgbaImage source, double? explicitWidth = null, double? explicitHeight = null) {
-        var targetWidth = Math.Max(1, (int)Math.Round(explicitWidth ?? (watermark.Width ?? source.Width) * watermark.Scale));
-        var targetHeight = Math.Max(1, (int)Math.Round(explicitHeight ?? (watermark.Height ?? source.Height) * watermark.Scale));
+    private static RgbaImage PrepareRasterWatermark(VisualWatermark watermark, RgbaImage source, double? explicitWidth = null, double? explicitHeight = null, double renderScale = 1) {
+        var targetWidth = Math.Max(1, (int)Math.Round(explicitWidth ?? (watermark.Width ?? source.Width) * watermark.Scale * renderScale));
+        var targetHeight = Math.Max(1, (int)Math.Round(explicitHeight ?? (watermark.Height ?? source.Height) * watermark.Scale * renderScale));
         return ScaleAndRotate(source, targetWidth, targetHeight, watermark.RotationDegrees, watermark.Opacity);
     }
 
@@ -242,23 +255,23 @@ internal static class VisualWatermarkRendering {
         output.Append("data:").Append(mediaType).Append(";base64,").Append(Convert.ToBase64String(bytes));
     }
 
-    private static WatermarkBounds ResolveBounds(VisualWatermark watermark, double canvasWidth, double canvasHeight, RgbaImage? sourceImage = null) {
+    private static WatermarkBounds ResolveBounds(VisualWatermark watermark, double canvasWidth, double canvasHeight, RgbaImage? sourceImage = null, double renderScale = 1) {
         double width;
         double height;
         if (watermark.Kind == VisualWatermarkKind.Text) {
-            var fontSize = watermark.FontSize * watermark.Scale;
+            var fontSize = watermark.FontSize * watermark.Scale * renderScale;
             width = Math.Max(fontSize, watermark.Text!.Length * fontSize * (watermark.Emphasized ? 0.62 : 0.56));
             height = fontSize * 1.2;
         } else {
             var image = sourceImage ?? RasterImageDecoder.Decode(watermark.ImageBytes!);
-            width = (watermark.Width ?? image.Width) * watermark.Scale;
-            height = (watermark.Height ?? image.Height) * watermark.Scale;
+            width = (watermark.Width ?? image.Width) * watermark.Scale * renderScale;
+            height = (watermark.Height ?? image.Height) * watermark.Scale * renderScale;
         }
 
         var placement = VisualCanvasPlacement.At(
             watermark.Anchor,
-            EdgeInsetX(watermark.Anchor, watermark.Padding) + watermark.OffsetX,
-            EdgeInsetY(watermark.Anchor, watermark.Padding) + watermark.OffsetY);
+            (EdgeInsetX(watermark.Anchor, watermark.Padding) + watermark.OffsetX) * renderScale,
+            (EdgeInsetY(watermark.Anchor, watermark.Padding) + watermark.OffsetY) * renderScale);
         var rect = placement.Resolve(canvasWidth, canvasHeight, width, height);
         return new WatermarkBounds(rect.X + width / 2, rect.Y + height / 2, width, height);
     }

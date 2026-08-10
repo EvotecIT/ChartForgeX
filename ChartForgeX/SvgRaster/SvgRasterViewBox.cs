@@ -47,7 +47,7 @@ internal readonly struct SvgRasterViewBox {
         return TryParseLength(value, out var parsed) ? parsed : fallback;
     }
 
-    private static bool TryParseLength(string? value, out double parsed) {
+    internal static bool TryParseLength(string? value, out double parsed) {
         parsed = 0;
         if (string.IsNullOrWhiteSpace(value)) return false;
         var trimmed = value!.Trim();
