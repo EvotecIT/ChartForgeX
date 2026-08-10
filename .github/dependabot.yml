@@ -1,0 +1,43 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: /
+  schedule:
+    interval: daily
+  cooldown:
+    default-days: 7
+    include:
+    - '*'
+  open-pull-requests-limit: 1
+  groups:
+    all-dependencies:
+      patterns:
+      - '*'
+- package-ecosystem: npm
+  directories:
+  - /ChartForgeX.Markup.VSCode
+  - /tests/mermaid-conformance
+  schedule:
+    interval: daily
+  cooldown:
+    default-days: 7
+    include:
+    - '*'
+  open-pull-requests-limit: 1
+  groups:
+    all-dependencies:
+      patterns:
+      - '*'
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: daily
+  cooldown:
+    default-days: 7
+    include:
+    - '*'
+  open-pull-requests-limit: 1
+  groups:
+    all-dependencies:
+      patterns:
+      - '*'
