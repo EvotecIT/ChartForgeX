@@ -154,9 +154,9 @@ public static class VisualArtifactInterchangeMapping {
                 Kind = participant.Kind.ToString(),
                 Label = participant.Label
             };
+            Copy(participant.Metadata, node.Metadata);
             node.Metadata["sequence.order"] = index.ToString(CultureInfo.InvariantCulture);
             node.Metadata["sequence.implicit"] = participant.IsImplicit ? "true" : "false";
-            Copy(participant.Metadata, node.Metadata);
             envelope.Nodes.Add(node);
         }
 
@@ -172,9 +172,9 @@ public static class VisualArtifactInterchangeMapping {
                 LineStyle = message.LineStyle.ToString(),
                 Order = index
             };
+            Copy(message.Metadata, edge.Metadata);
             edge.Metadata["sequence.activatesTarget"] = message.ActivatesTarget ? "true" : "false";
             edge.Metadata["sequence.deactivates"] = message.Deactivates ? "true" : "false";
-            Copy(message.Metadata, edge.Metadata);
             envelope.Edges.Add(edge);
         }
 

@@ -67,8 +67,13 @@ internal static partial class SmokeTests {
             .AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "api" }, "Validate token")
             .AddBlock(SequenceArtifactBlockKind.Opt, "MFA", 0, 0);
         sequence.Messages[0].ActivatesTarget = true;
+        sequence.Participants[0].Metadata["sequence.order"] = "99";
+        sequence.Participants[0].Metadata["sequence.implicit"] = "true";
+        sequence.Messages[0].Metadata["sequence.activatesTarget"] = "false";
         var sequenceRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(sequence.ToVisualArtifact().ToInterchangeJson());
         Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Kind == "Actor", "Sequence interchange should preserve participant kinds.");
+        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.order"] == "0", "Typed participant order should override colliding arbitrary metadata.");
+        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.implicit"] == "false", "Typed participant state should override colliding arbitrary metadata.");
         Assert(sequenceRoundTrip.Edges.Single().Metadata["sequence.activatesTarget"] == "true", "Sequence interchange should preserve activation semantics.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceNote" && annotation.TargetIds.Single() == "api"), "Sequence interchange should preserve participant notes.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceBlock:Opt"), "Sequence interchange should preserve block spans.");
@@ -95,5 +100,24 @@ internal static partial class SmokeTests {
         invalid.Nodes.Add(new VisualArtifactInterchangeNode { Id = "a", Label = "A" });
         invalid.Edges.Add(new VisualArtifactInterchangeEdge { Id = "missing", SourceId = "a", TargetId = "b" });
         AssertThrows<ArgumentException>(() => invalid.ToJson(), "Interchange serialization should reject edges that reference missing nodes.");
+
+        var unsafeLink = new VisualArtifactInterchangeEnvelope { Id = "unsafe", Kind = VisualArtifactKind.Topology };
+        unsafeLink.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node", Label = "Node", Href = "file:///secret.txt" });
+        AssertThrows<ArgumentException>(() => unsafeLink.ToJson(), "Interchange validation should reject unsafe hyperlink schemes from external envelopes.");
+
+        var collidingIds = new VisualArtifactInterchangeEnvelope { Id = "collision", Kind = VisualArtifactKind.Topology };
+        collidingIds.Nodes.Add(new VisualArtifactInterchangeNode { Id = "item", Label = "Item" });
+        collidingIds.Edges.Add(new VisualArtifactInterchangeEdge { Id = "item", SourceId = "item", TargetId = "item" });
+        AssertThrows<ArgumentException>(() => collidingIds.ToJson(), "Interchange entity ids should share one diagram-wide namespace.");
+
+        var missingPort = new VisualArtifactInterchangeEnvelope { Id = "ports", Kind = VisualArtifactKind.Topology };
+        missingPort.Nodes.Add(new VisualArtifactInterchangeNode { Id = "source", Label = "Source" });
+        missingPort.Nodes.Add(new VisualArtifactInterchangeNode { Id = "target", Label = "Target" });
+        missingPort.Edges.Add(new VisualArtifactInterchangeEdge { Id = "edge", SourceId = "source", TargetId = "target", SourcePortId = "missing" });
+        AssertThrows<ArgumentException>(() => missingPort.ToJson(), "Interchange validation should reject named ports that do not exist on their endpoint node.");
+
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => VisualArtifactInterchangeEnvelope.FromUtf8Json(new byte[VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes + 1]),
+            "Interchange UTF-8 byte limits should be enforced before decoding the payload.");
     }
 }

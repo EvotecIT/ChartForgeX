@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualArtifactInterchangeValidation {
-    internal const int MaximumJsonCharacters = 8 * 1024 * 1024;
+    internal const int MaximumJsonCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters;
     private const int MaximumGroups = 10000;
     private const int MaximumNodes = 50000;
     private const int MaximumEdges = 100000;
@@ -33,16 +34,18 @@ internal static class VisualArtifactInterchangeValidation {
         Count(envelope.Edges.Count, MaximumEdges, "edges");
         Count(envelope.Annotations.Count, MaximumAnnotations, "annotations");
 
+        var entityIds = new HashSet<string>(StringComparer.Ordinal);
         var groupIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var group in envelope.Groups) {
             RequiredId(group.Id, "group id");
             if (!groupIds.Add(group.Id)) throw new ArgumentException("Interchange group ids must be unique: " + group.Id + ".", nameof(envelope));
+            UniqueEntityId(entityIds, group.Id, "group", envelope);
             Text(group.Kind, "group kind");
             Text(group.Label, "group label");
             OptionalText(group.Subtitle, "group subtitle");
             OptionalText(group.Status, "group status");
             OptionalText(group.Color, "group color");
-            OptionalText(group.Href, "group href");
+            SafeLink(group.Href, "group href", envelope);
             OptionalText(group.Tooltip, "group tooltip");
             FiniteOptional(group.X, "group x");
             FiniteOptional(group.Y, "group y");
@@ -52,9 +55,11 @@ internal static class VisualArtifactInterchangeValidation {
         }
 
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
+        var portsByNodeId = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         foreach (var node in envelope.Nodes) {
             RequiredId(node.Id, "node id");
             if (!nodeIds.Add(node.Id)) throw new ArgumentException("Interchange node ids must be unique: " + node.Id + ".", nameof(envelope));
+            UniqueEntityId(entityIds, node.Id, "node", envelope);
             Text(node.Kind, "node kind");
             Text(node.Label, "node label");
             OptionalText(node.Subtitle, "node subtitle");
@@ -65,7 +70,7 @@ internal static class VisualArtifactInterchangeValidation {
             OptionalText(node.Badge, "node badge");
             OptionalText(node.Color, "node color");
             OptionalText(node.BackgroundColor, "node background color");
-            OptionalText(node.Href, "node href");
+            SafeLink(node.Href, "node href", envelope);
             OptionalText(node.Tooltip, "node tooltip");
             FiniteOptional(node.X, "node x");
             FiniteOptional(node.Y, "node y");
@@ -84,6 +89,7 @@ internal static class VisualArtifactInterchangeValidation {
                 OptionalText(port.Label, "port label");
                 Metadata(port.Metadata, "port metadata");
             }
+            portsByNodeId.Add(node.Id, portIds);
             foreach (var detail in node.Details) {
                 Text(detail.Label, "detail label");
                 Text(detail.Value, "detail value");
@@ -102,6 +108,7 @@ internal static class VisualArtifactInterchangeValidation {
         foreach (var edge in envelope.Edges) {
             RequiredId(edge.Id, "edge id");
             if (!edgeIds.Add(edge.Id)) throw new ArgumentException("Interchange edge ids must be unique: " + edge.Id + ".", nameof(envelope));
+            UniqueEntityId(entityIds, edge.Id, "edge", envelope);
             RequiredId(edge.SourceId, "edge source id");
             RequiredId(edge.TargetId, "edge target id");
             if (!nodeIds.Contains(edge.SourceId)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source node '" + edge.SourceId + "'.", nameof(envelope));
@@ -119,8 +126,10 @@ internal static class VisualArtifactInterchangeValidation {
             OptionalText(edge.TargetPort, "edge target port");
             OptionalText(edge.SourcePortId, "edge source port id");
             OptionalText(edge.TargetPortId, "edge target port id");
+            if (!string.IsNullOrWhiteSpace(edge.SourcePortId) && !portsByNodeId[edge.SourceId].Contains(edge.SourcePortId!)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source port '" + edge.SourcePortId + "' on node '" + edge.SourceId + "'.", nameof(envelope));
+            if (!string.IsNullOrWhiteSpace(edge.TargetPortId) && !portsByNodeId[edge.TargetId].Contains(edge.TargetPortId!)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown target port '" + edge.TargetPortId + "' on node '" + edge.TargetId + "'.", nameof(envelope));
             OptionalText(edge.Color, "edge color");
-            OptionalText(edge.Href, "edge href");
+            SafeLink(edge.Href, "edge href", envelope);
             OptionalText(edge.Tooltip, "edge tooltip");
             if (edge.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Order, "Edge order must not be negative.");
             Metadata(edge.Metadata, "edge metadata");
@@ -130,6 +139,7 @@ internal static class VisualArtifactInterchangeValidation {
         foreach (var annotation in envelope.Annotations) {
             RequiredId(annotation.Id, "annotation id");
             if (!annotationIds.Add(annotation.Id)) throw new ArgumentException("Interchange annotation ids must be unique: " + annotation.Id + ".", nameof(envelope));
+            UniqueEntityId(entityIds, annotation.Id, "annotation", envelope);
             Text(annotation.Kind, "annotation kind");
             Text(annotation.Text, "annotation text");
             OptionalText(annotation.Placement, "annotation placement");
@@ -141,6 +151,17 @@ internal static class VisualArtifactInterchangeValidation {
                 if (!nodeIds.Contains(targetId)) throw new ArgumentException("Interchange annotation '" + annotation.Id + "' references unknown node '" + targetId + "'.", nameof(envelope));
             }
             Metadata(annotation.Metadata, "annotation metadata");
+        }
+    }
+
+    private static void UniqueEntityId(ISet<string> ids, string id, string kind, VisualArtifactInterchangeEnvelope envelope) {
+        if (!ids.Add(id)) throw new ArgumentException("Interchange " + kind + " id '" + id + "' collides with another diagram entity id.", nameof(envelope));
+    }
+
+    private static void SafeLink(string? href, string context, VisualArtifactInterchangeEnvelope envelope) {
+        OptionalText(href, context);
+        if (!string.IsNullOrWhiteSpace(href) && SafeHref(href) == null) {
+            throw new ArgumentException(context + " must be relative or use http, https, mailto, or tel.", nameof(envelope));
         }
     }
 

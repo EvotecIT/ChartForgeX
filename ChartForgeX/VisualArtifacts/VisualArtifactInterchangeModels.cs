@@ -17,6 +17,12 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>The schema version emitted by this ChartForgeX version.</summary>
     public const int CurrentVersion = 1;
 
+    /// <summary>Maximum accepted UTF-8 payload size for one interchange envelope.</summary>
+    public const int MaximumJsonUtf8Bytes = 8 * 1024 * 1024;
+
+    /// <summary>Maximum accepted JSON text length for one interchange envelope.</summary>
+    public const int MaximumJsonCharacters = 8 * 1024 * 1024;
+
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
@@ -87,7 +93,15 @@ public sealed class VisualArtifactInterchangeEnvelope {
     public string ToJson() => VisualArtifactInterchangeJson.Serialize(this);
 
     /// <summary>Serializes the envelope to deterministic UTF-8 JSON bytes.</summary>
-    public byte[] ToUtf8Json() => System.Text.Encoding.UTF8.GetBytes(ToJson());
+    public byte[] ToUtf8Json() {
+        string json = ToJson();
+        var encoding = new System.Text.UTF8Encoding(false, true);
+        int byteCount = encoding.GetByteCount(json);
+        if (byteCount > MaximumJsonUtf8Bytes) {
+            throw new ArgumentOutOfRangeException(nameof(json), byteCount, "Interchange UTF-8 JSON must not exceed " + MaximumJsonUtf8Bytes + " bytes.");
+        }
+        return encoding.GetBytes(json);
+    }
 
     /// <summary>Parses and validates an interchange envelope from JSON text.</summary>
     public static VisualArtifactInterchangeEnvelope FromJson(string json) => VisualArtifactInterchangeJson.Deserialize(json);
@@ -95,6 +109,9 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Parses and validates an interchange envelope from UTF-8 JSON bytes.</summary>
     public static VisualArtifactInterchangeEnvelope FromUtf8Json(byte[] json) {
         if (json == null) throw new ArgumentNullException(nameof(json));
+        if (json.Length > MaximumJsonUtf8Bytes) {
+            throw new ArgumentOutOfRangeException(nameof(json), json.Length, "Interchange UTF-8 JSON must not exceed " + MaximumJsonUtf8Bytes + " bytes.");
+        }
         return FromJson(new System.Text.UTF8Encoding(false, true).GetString(json));
     }
 }
