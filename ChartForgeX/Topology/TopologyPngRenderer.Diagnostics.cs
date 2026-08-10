@@ -11,12 +11,24 @@ public sealed partial class TopologyPngRenderer {
         var portColor = ChartColor.FromRgba(245, 158, 11, 235);
         var routeColor = ChartColor.FromRgba(16, 185, 129, 220);
         var collisionColor = ChartColor.FromRgba(220, 38, 38, 235);
-        foreach (var group in report.Groups) canvas.StrokeRect(group.Bounds.X, group.Bounds.Y, group.Bounds.Width, group.Bounds.Height, groupColor, 1);
+        foreach (var group in report.Groups) DrawDiagnosticBounds(canvas, group.Bounds, groupColor, 1, dashed: true);
         foreach (var node in report.Nodes) {
-            canvas.StrokeRect(node.Bounds.X, node.Bounds.Y, node.Bounds.Width, node.Bounds.Height, nodeColor, 1);
+            DrawDiagnosticBounds(canvas, node.Bounds, nodeColor, 1, dashed: true);
             foreach (var port in node.Ports) canvas.DrawCircle(port.Position.X, port.Position.Y, 4, portColor);
         }
         foreach (var edge in report.Edges) foreach (var point in edge.Points) canvas.DrawCircle(point.X, point.Y, 2.5, routeColor);
-        foreach (var collision in report.Collisions) canvas.StrokeRect(collision.Bounds.X, collision.Bounds.Y, collision.Bounds.Width, collision.Bounds.Height, collisionColor, 2);
+        foreach (var collision in report.Collisions) DrawDiagnosticBounds(canvas, collision.Bounds, collisionColor, 2, dashed: false);
+    }
+
+    private static void DrawDiagnosticBounds(RgbaCanvas canvas, ChartRect bounds, ChartColor color, double width, bool dashed) {
+        if (!dashed) {
+            canvas.StrokeRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, color, width);
+            return;
+        }
+
+        canvas.DrawDashedLine(bounds.X, bounds.Y, bounds.Right, bounds.Y, color, width, 5, 4);
+        canvas.DrawDashedLine(bounds.Right, bounds.Y, bounds.Right, bounds.Bottom, color, width, 5, 4);
+        canvas.DrawDashedLine(bounds.Right, bounds.Bottom, bounds.X, bounds.Bottom, color, width, 5, 4);
+        canvas.DrawDashedLine(bounds.X, bounds.Bottom, bounds.X, bounds.Y, color, width, 5, 4);
     }
 }

@@ -287,7 +287,10 @@ public sealed partial class TopologyPngRenderer {
                 : points;
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
-            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
+            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {
+                var haloAlpha = (byte)Math.Round(224 * Clamp(routeOpacity, 0, 1), MidpointRounding.AwayFromZero);
+                canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), haloAlpha), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
+            }
             DrawPremiumEdgeRoute(canvas, routePoints, color, width, dashArray, edge, options, isSelected);
 
             if (options.IncludeDirectionMarkers) {

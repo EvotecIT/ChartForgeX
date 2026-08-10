@@ -121,6 +121,19 @@ internal static partial class SmokeTests {
         Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
         Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
 
+        var interactiveTopologyArtifact = TopologyChart.Create()
+            .WithViewport(320, 180)
+            .WithLegend(null)
+            .AddNode("a", "A", 30, 50)
+            .AddNode("b", "B", 210, 50)
+            .AddEdge("a-b", "a", "b")
+            .ToVisualArtifact();
+        var interactiveWatermarkOptions = new VisualArtifactRenderOptions {
+            Topology = new TopologyRenderOptions { EnableHtmlInteractions = true }
+        };
+        interactiveWatermarkOptions.Watermarks.Add(VisualWatermark.FromText("STATIC"));
+        AssertThrows<InvalidOperationException>(() => interactiveTopologyArtifact.ToHtmlPage(interactiveWatermarkOptions), "Watermarked topology HTML should reject interaction requests through the same adapter ownership boundary as ordinary topology HTML.");
+
         AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.RepeatSpacingX = 0.000001, "Repeated watermarks should reject sub-pixel spacing that can create unbounded render loops.");

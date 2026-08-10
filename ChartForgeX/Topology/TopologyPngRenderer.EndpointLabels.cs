@@ -9,7 +9,7 @@ namespace ChartForgeX.Topology;
 public sealed partial class TopologyPngRenderer {
     private static void DrawEndpointLabels(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        foreach (var edge in chart.Edges) {
+        foreach (var (edge, _) in OrderedEdgesForRendering(chart, options)) {
             if (string.IsNullOrWhiteSpace(edge.SourceLabel) && string.IsNullOrWhiteSpace(edge.TargetLabel)) continue;
             var points = EdgePoints(chart, edge, nodes);
             if (points.Count < 2) continue;

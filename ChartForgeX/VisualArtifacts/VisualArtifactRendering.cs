@@ -38,6 +38,7 @@ public static class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to a standalone HTML page with artifact-wide options.</summary>
     public static string ToHtmlPage(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        if (artifact.Model is TopologyChart) TopologyHtmlRenderer.EnsureStatic(TopologyOptions(artifact, options));
         if (options != null && options.Watermarks.Count > 0) return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options));
         switch (artifact.Model) {
             case Chart chart:

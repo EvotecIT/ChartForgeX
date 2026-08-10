@@ -77,6 +77,8 @@ internal static partial class SmokeTests {
             .AddNode("b", "B", 260, 70)
             .AddEdge("high", "a", "b", "High priority", TopologyEdgeKind.Dependency)
             .AddEdge("low", "a", "b", kind: TopologyEdgeKind.Connectivity)
+            .WithEdgeEndpointLabels("high", "high-source", "high-target")
+            .WithEdgeEndpointLabels("low", "low-source", "low-target")
             .WithEdgeLayoutHints("high", routingPriority: 50)
             .WithEdgeLayoutHints("low", routingPriority: -50)
             .WithEdgeStroke("high", opacity: 0.25);
@@ -85,6 +87,7 @@ internal static partial class SmokeTests {
         orderingOptions.HighlightEdgeIds.Add("high");
         var orderingSvg = orderingChart.ToSvg(orderingOptions);
         Assert(orderingSvg.IndexOf("data-edge-id=\"low\"", StringComparison.Ordinal) < orderingSvg.IndexOf("data-edge-id=\"high\"", StringComparison.Ordinal), "Explicit edge routing priority should be the primary render-order key.");
+        Assert(orderingSvg.IndexOf(">low-source<", StringComparison.Ordinal) < orderingSvg.IndexOf(">high-source<", StringComparison.Ordinal), "Endpoint labels should follow the same routing-priority order as their routes and primary labels.");
         var orderingDocument = System.Xml.Linq.XDocument.Parse(orderingSvg);
         var lowRoute = orderingDocument.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-edge", StringComparison.Ordinal) && string.Equals((string?)element.Attribute("data-edge-id"), "low", StringComparison.Ordinal));
         Assert(string.Equals((string?)lowRoute.Attribute("opacity"), "0.28", StringComparison.Ordinal), "SVG edge routes outside an active highlight should retain the same dimming applied by PNG output.");

@@ -12,7 +12,7 @@ public sealed partial class TopologySvgRenderer {
         if (!options.IncludeEndpointLabels) return;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var layer = new SvgElement("g").Class(prefix + "__endpoint-labels").Attribute("data-cfx-role", "topology-endpoint-labels");
-        foreach (var edge in chart.Edges) {
+        foreach (var (edge, _) in OrderedEdgesForRendering(chart, options)) {
             if (string.IsNullOrWhiteSpace(edge.SourceLabel) && string.IsNullOrWhiteSpace(edge.TargetLabel)) continue;
             var points = EdgePoints(chart, edge, nodes);
             if (points.Count < 2) continue;

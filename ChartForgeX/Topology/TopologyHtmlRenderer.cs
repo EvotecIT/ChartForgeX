@@ -336,7 +336,7 @@ public sealed partial class TopologyHtmlRenderer {
 
     internal static string GetCssClassPrefix(TopologyRenderOptions options) => CssClassPrefix(options);
 
-    private static void EnsureStatic(TopologyRenderOptions? options) {
+    internal static void EnsureStatic(TopologyRenderOptions? options) {
         if (options?.EnableHtmlInteractions == true) {
             throw new InvalidOperationException("Interactive topology HTML is owned by ChartForgeX.Interactivity.Html. Use ToInteractiveHtmlPage or HtmlInteractiveTopologyRenderer from that package.");
         }

@@ -600,7 +600,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + (geographicHalo ? 4.2 : 3.4))
                     .Attribute("stroke-linecap", "round")
                     .Attribute("stroke-linejoin", "round")
-                    .Attribute("opacity", geographicHalo ? 0.86 : 0.88));
+                    .Attribute("opacity", (geographicHalo ? 0.86 : 0.88) * EdgeOpacity(edge, options)));
             }
 
             AddPremiumEdgePath(edgeGroup, chart, edge, nodes, points, prefix, options, svgId, selected, color, dash);
