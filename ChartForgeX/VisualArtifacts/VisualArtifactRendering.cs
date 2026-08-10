@@ -39,7 +39,7 @@ public static class VisualArtifactRendering {
     public static string ToHtmlPage(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.Model is TopologyChart) TopologyHtmlRenderer.EnsureStatic(TopologyOptions(artifact, options));
-        if (options != null && options.Watermarks.Count > 0) return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language);
+        if (options != null && options.Watermarks.Count > 0) return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language, clipSvgViewport: true);
         switch (artifact.Model) {
             case Chart chart:
                 return chart.ToHtmlPage();
@@ -122,10 +122,11 @@ public static class VisualArtifactRendering {
     /// <summary>Saves a supported visual artifact model to PNG with artifact-wide options.</summary>
     public static void SavePng(this VisualArtifact artifact, string path, VisualArtifactRenderOptions? options) => File.WriteAllBytes(path, artifact.ToPng(options));
 
-    internal static string WrapSvgPage(string title, string svg, string? language = null) {
+    internal static string WrapSvgPage(string title, string svg, string? language = null, bool clipSvgViewport = false) {
         var safeTitle = string.IsNullOrWhiteSpace(title) ? "ChartForgeX visual artifact" : title.Trim();
         var safeLanguage = string.IsNullOrWhiteSpace(language) ? "en" : language!.Trim();
-        return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-artifact{max-width:100%;height:auto}.chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:visible}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none}}</style></head><body><div class=\"chartforgex-visual-artifact\">" + svg + "</div></body></html>";
+        var svgOverflow = clipSvgViewport ? "hidden" : "visible";
+        return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-artifact{max-width:100%;height:auto}.chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:" + svgOverflow + "}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none}}</style></head><body><div class=\"chartforgex-visual-artifact\">" + svg + "</div></body></html>";
     }
 
     private static string RenderSvg(VisualArtifact artifact, VisualArtifactRenderOptions? options) {

@@ -120,6 +120,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact SVG should expose a host-inspectable watermark layer.");
         Assert(svg.Contains("CONFIDENTIAL", StringComparison.Ordinal) && svg.Contains("rotate(-28", StringComparison.Ordinal), "Artifact SVG should preserve text and rotation.");
         Assert(html.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact HTML should embed the same decorated SVG contract.");
+        Assert(html.Contains(".chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:hidden}", StringComparison.Ordinal), "Watermarked artifact HTML should clip rotated and repeated SVG marks to the root viewport.");
         Assert(html.Contains("<html lang=\"pl-PL\">", StringComparison.Ordinal), "Watermarked artifact HTML should preserve the envelope language.");
         Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
         Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
@@ -139,6 +140,8 @@ internal static partial class SmokeTests {
 
         AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.OffsetX = double.NaN, "Watermarks should reject non-finite horizontal offsets at assignment time.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.OffsetY = double.PositiveInfinity, "Watermarks should reject non-finite vertical offsets at assignment time.");
         AssertThrows<ArgumentOutOfRangeException>(() => watermark.RepeatSpacingX = 0.000001, "Repeated watermarks should reject sub-pixel spacing that can create unbounded render loops.");
         AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0 }, "Raster options should reject non-positive DPI metadata.");
         AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0.001 }, "Raster options should reject DPI values that round to zero PNG pixels per meter.");

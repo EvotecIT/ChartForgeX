@@ -25,6 +25,7 @@ internal sealed class SvgRasterStyle {
         FontWeight = "normal",
         TextAnchor = "start",
         DominantBaseline = "auto",
+        MaskType = "luminance",
         Displayed = true,
         AncestorsDisplayed = true,
         VisibilityVisible = true
@@ -48,6 +49,7 @@ internal sealed class SvgRasterStyle {
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
+    public string MaskType { get; set; } = "luminance";
     public bool Displayed { get; private set; }
     public bool VisibilityVisible { get; private set; }
     private bool AncestorsDisplayed { get; set; }
@@ -74,6 +76,8 @@ internal sealed class SvgRasterStyle {
             FontWeight = FontWeight,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
+            // mask-type applies only to mask elements and is not inherited.
+            MaskType = "luminance",
             Displayed = Displayed,
             AncestorsDisplayed = Displayed,
             VisibilityVisible = VisibilityVisible
@@ -146,6 +150,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "alignment-baseline");
         AddAttribute(declarations, element, "display");
         AddAttribute(declarations, element, "visibility");
+        AddAttribute(declarations, element, "mask-type");
     }
 
     private static void AddAttribute(List<SvgStyleDeclaration> declarations, SvgRasterElement element, string name) {
@@ -239,6 +244,10 @@ internal sealed class SvgRasterStyle {
                 var visibility = value.Trim();
                 if (string.Equals(visibility, "visible", StringComparison.OrdinalIgnoreCase)) style.VisibilityVisible = true;
                 else if (string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase) || string.Equals(visibility, "collapse", StringComparison.OrdinalIgnoreCase)) style.VisibilityVisible = false;
+                break;
+            case "mask-type":
+                var maskType = value.Trim();
+                if (string.Equals(maskType, "alpha", StringComparison.OrdinalIgnoreCase) || string.Equals(maskType, "luminance", StringComparison.OrdinalIgnoreCase)) style.MaskType = maskType;
                 break;
         }
     }

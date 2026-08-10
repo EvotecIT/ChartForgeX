@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
-    internal void DrawImageMasked(int x, int y, int width, int height, byte[] rgba, byte[] maskRgba) {
+    internal void DrawImageMasked(int x, int y, int width, int height, byte[] rgba, byte[] maskRgba, bool useAlphaMask = false) {
         if (rgba == null) throw new ArgumentNullException(nameof(rgba));
         if (maskRgba == null) throw new ArgumentNullException(nameof(maskRgba));
         if (width <= 0 || height <= 0) return;
@@ -17,8 +17,8 @@ internal sealed partial class RgbaCanvas {
             var dy = targetY0 + yy;
             if (dx < 0 || dy < 0 || dx >= _pixelWidth || dy >= _pixelHeight) continue;
             var source = (yy * width + xx) * 4;
-            var luminance = (maskRgba[source] * 299 + maskRgba[source + 1] * 587 + maskRgba[source + 2] * 114) / 1000;
-            var alpha = rgba[source + 3] * maskRgba[source + 3] * luminance / (255 * 255);
+            var coverage = useAlphaMask ? 255 : (maskRgba[source] * 299 + maskRgba[source + 1] * 587 + maskRgba[source + 2] * 114) / 1000;
+            var alpha = rgba[source + 3] * maskRgba[source + 3] * coverage / (255 * 255);
             if (alpha == 0) continue;
             BlendPixel(dx, dy, ChartColor.FromRgba(rgba[source], rgba[source + 1], rgba[source + 2], (byte)alpha));
         }

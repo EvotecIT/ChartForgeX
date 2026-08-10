@@ -60,7 +60,7 @@ internal static partial class SvgRasterRenderer {
             var masked = new RgbaCanvas(width, height, 1);
             var mask = new RgbaCanvas(width, height, 1);
             RenderMask(mask, maskDefinition, matrix, definitions, width, height);
-            masked.DrawImageMasked(0, 0, width, height, target.Pixels, mask.Pixels);
+            masked.DrawImageMasked(0, 0, width, height, target.Pixels, mask.Pixels, maskDefinition.UsesAlpha);
             target = masked;
         }
 
@@ -98,7 +98,7 @@ internal static partial class SvgRasterRenderer {
                 var mask = new RgbaCanvas(width, height, 1);
                 RenderMask(mask, maskDefinition, matrix, definitions, width, height);
                 var maskedContent = new RgbaCanvas(width, height, 1);
-                maskedContent.DrawImageMasked(0, 0, width, height, content.Pixels, mask.Pixels);
+                maskedContent.DrawImageMasked(0, 0, width, height, content.Pixels, mask.Pixels, maskDefinition.UsesAlpha);
                 content = maskedContent;
             }
 
@@ -451,8 +451,8 @@ internal static partial class SvgRasterRenderer {
 
     private static void RenderMask(RgbaCanvas mask, SvgRasterMask maskDefinition, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height) {
         var maskMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(maskDefinition.Element.Get("transform")));
-        var ancestors = new List<SvgRasterElement> { maskDefinition.Element };
-        foreach (var child in maskDefinition.Element.Children) RenderElement(mask, child, SvgRasterStyle.Default, maskMatrix, definitions, width, height, 0, ancestors);
+        var ancestors = new List<SvgRasterElement>(maskDefinition.Ancestors) { maskDefinition.Element };
+        foreach (var child in maskDefinition.Element.Children) RenderElement(mask, child, maskDefinition.RootStyle, maskMatrix, definitions, width, height, 0, ancestors);
     }
 
     private static void RenderClipElement(RgbaCanvas mask, SvgRasterElement element, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, SvgRasterStyleSheet styleSheet, List<SvgRasterElement> ancestors) {

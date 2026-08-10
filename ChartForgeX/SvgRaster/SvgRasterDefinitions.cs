@@ -12,6 +12,7 @@ internal sealed class SvgRasterDefinitions {
     private readonly Dictionary<string, SvgRasterElement> _gradientElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterElement> _patternElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterClipPath> _clipPaths = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SvgRasterMaskSource> _maskElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterMask> _masks = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterLinearGradient> _linearGradients = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterRadialGradient> _radialGradients = new(StringComparer.Ordinal);
@@ -22,7 +23,8 @@ internal sealed class SvgRasterDefinitions {
 
     public static SvgRasterDefinitions From(SvgRasterDocument document) {
         var definitions = new SvgRasterDefinitions();
-        foreach (var child in document.Children) definitions.Collect(child);
+        var ancestors = new List<SvgRasterElement> { document.Root };
+        foreach (var child in document.Children) definitions.Collect(child, ancestors);
         definitions._styleSheet = SvgRasterStyleSheet.Parse(definitions._styleBlocks);
         return definitions;
     }
@@ -61,6 +63,11 @@ internal sealed class SvgRasterDefinitions {
 
     public bool TryGetMask(string? id, out SvgRasterMask mask) {
         if (id != null && _masks.TryGetValue(id, out mask!)) return true;
+        if (id != null && _maskElements.TryGetValue(id, out var source)) {
+            mask = new SvgRasterMask(source.Element, source.Ancestors, StyleSheet);
+            _masks[id] = mask;
+            return true;
+        }
         mask = null!;
         return false;
     }
@@ -113,7 +120,7 @@ internal sealed class SvgRasterDefinitions {
         return true;
     }
 
-    private void Collect(SvgRasterElement element) {
+    private void Collect(SvgRasterElement element, List<SvgRasterElement> ancestors) {
         if (string.Equals(element.Name, "style", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(element.Text)) {
             _styleBlocks.Add(element.Text);
         }
@@ -135,10 +142,12 @@ internal sealed class SvgRasterDefinitions {
         }
 
         if (string.Equals(element.Name, "mask", StringComparison.Ordinal) && element.TryGet("id", out var maskId) && !string.IsNullOrWhiteSpace(maskId)) {
-            _masks[maskId] = new SvgRasterMask(element);
+            _maskElements[maskId] = new SvgRasterMaskSource(element, ancestors.ToArray());
         }
 
-        foreach (var child in element.Children) Collect(child);
+        ancestors.Add(element);
+        foreach (var child in element.Children) Collect(child, ancestors);
+        ancestors.RemoveAt(ancestors.Count - 1);
     }
 
     private static string? ReferenceId(SvgRasterElement element) {
@@ -161,6 +170,16 @@ internal sealed class SvgRasterDefinitions {
         !string.Equals(element.Name, "desc", StringComparison.Ordinal);
 }
 
+internal sealed class SvgRasterMaskSource {
+    public SvgRasterMaskSource(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors) {
+        Element = element;
+        Ancestors = ancestors;
+    }
+
+    public SvgRasterElement Element { get; }
+    public IReadOnlyList<SvgRasterElement> Ancestors { get; }
+}
+
 internal sealed class SvgRasterClipPath {
     public SvgRasterClipPath(SvgRasterElement element) {
         Element = element;
@@ -170,11 +189,21 @@ internal sealed class SvgRasterClipPath {
 }
 
 internal sealed class SvgRasterMask {
-    public SvgRasterMask(SvgRasterElement element) {
+    public SvgRasterMask(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterStyleSheet styleSheet) {
         Element = element;
+        Ancestors = ancestors;
+        var parentStyle = SvgRasterStyle.Default;
+        for (var index = 0; index < ancestors.Count; index++) {
+            parentStyle = SvgRasterStyle.Resolve(parentStyle, ancestors[index], styleSheet, ancestors.Take(index).ToArray());
+        }
+        RootStyle = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
+        UsesAlpha = string.Equals(RootStyle.MaskType, "alpha", StringComparison.OrdinalIgnoreCase);
     }
 
     public SvgRasterElement Element { get; }
+    public IReadOnlyList<SvgRasterElement> Ancestors { get; }
+    public SvgRasterStyle RootStyle { get; }
+    public bool UsesAlpha { get; }
 }
 
 internal sealed class SvgRasterPattern {

@@ -141,6 +141,24 @@ internal static partial class SmokeTests {
         const string rootMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask='url(#left-half)'><defs><mask id='left-half'><rect width='50' height='40' fill='#ffffff'/></mask></defs><rect width='100' height='40' fill='#2563eb'/></svg>";
         var rootMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootMask));
         Assert(IsPixelNear(rootMaskImage.Pixels, 100, 25, 20, 37, 99, 235) && PixelAlpha(rootMaskImage.Pixels, 100, 75, 20) == 0, "Root masks should composite all document children before masking the raster output.");
+        const string rootAlphaMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask='url(#alpha-half)'><defs><mask id='alpha-half' mask-type='alpha'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#2563eb'/></svg>";
+        var rootAlphaMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootAlphaMask));
+        Assert(IsPixelNear(rootAlphaMaskImage.Pixels, 100, 25, 20, 37, 99, 235) && PixelAlpha(rootAlphaMaskImage.Pixels, 100, 75, 20) == 0, "Alpha-mode root masks should use mask opacity rather than RGB luminance.");
+        const string styledElementAlphaMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><style>.alpha-mask{mask-type:alpha}</style><defs><mask id='alpha-element' class='alpha-mask'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#ef4444' mask='url(#alpha-element)'/></svg>";
+        var styledElementAlphaMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(styledElementAlphaMask));
+        Assert(IsPixelNear(styledElementAlphaMaskImage.Pixels, 100, 25, 20, 239, 68, 68) && PixelAlpha(styledElementAlphaMaskImage.Pixels, 100, 75, 20) == 0, "CSS mask-type alpha should apply to element-level SVG masks.");
+        const string descendantStyledAlphaMask = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><style>svg defs .alpha-mask{mask-type:alpha}</style><defs><mask id='descendant-alpha' class='alpha-mask'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#f59e0b' mask='url(#descendant-alpha)'/></svg>";
+        var descendantStyledAlphaMaskImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(descendantStyledAlphaMask));
+        Assert(IsPixelNear(descendantStyledAlphaMaskImage.Pixels, 100, 25, 20, 245, 158, 11) && PixelAlpha(descendantStyledAlphaMaskImage.Pixels, 100, 75, 20) == 0, "Descendant selectors should resolve mask-type against a mask's definition ancestry.");
+        const string inheritedMaskTypeVariable = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' style='--mask-mode:alpha'><defs><mask id='variable-alpha' style='mask-type:var(--mask-mode)'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#8b5cf6' mask='url(#variable-alpha)'/></svg>";
+        var inheritedMaskTypeVariableImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(inheritedMaskTypeVariable));
+        Assert(IsPixelNear(inheritedMaskTypeVariableImage.Pixels, 100, 25, 20, 139, 92, 246) && PixelAlpha(inheritedMaskTypeVariableImage.Pixels, 100, 75, 20) == 0, "Inherited CSS custom properties should resolve mask-type on referenced masks.");
+        const string inheritedMaskPaint = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><mask id='inherited-paint' fill='#ffffff'><rect width='50' height='40'/></mask></defs><rect width='100' height='40' fill='#22c55e' mask='url(#inherited-paint)'/></svg>";
+        var inheritedMaskPaintImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(inheritedMaskPaint));
+        Assert(IsPixelNear(inheritedMaskPaintImage.Pixels, 100, 25, 20, 34, 197, 94) && PixelAlpha(inheritedMaskPaintImage.Pixels, 100, 75, 20) == 0, "Mask children should inherit paint from the mask root before luminance is applied.");
+        const string nonInheritedMaskType = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' mask-type='alpha'><defs><mask id='default-luminance'><rect width='50' height='40' fill='#000000'/></mask></defs><rect width='100' height='40' fill='#06b6d4' mask='url(#default-luminance)'/></svg>";
+        var nonInheritedMaskTypeImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(nonInheritedMaskType));
+        Assert(MaximumAlpha(nonInheritedMaskTypeImage.Pixels) == 0, "mask-type should remain non-inherited so each mask defaults to luminance unless it declares alpha.");
 
         const string physicalViewport = "<svg xmlns='http://www.w3.org/2000/svg' width='2in' height='1in'><rect width='192' height='96' fill='#2563eb'/></svg>";
         var physicalViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(physicalViewport));

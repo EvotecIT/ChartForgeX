@@ -38,6 +38,8 @@ public sealed class VisualWatermark {
     private double _scale = 1;
     private double _padding = 24;
     private double _fontSize = 28;
+    private double _offsetX;
+    private double _offsetY;
     private double? _width;
     private double? _height;
     private double _repeatSpacingX = 180;
@@ -63,10 +65,16 @@ public sealed class VisualWatermark {
     public VisualCanvasAnchor Anchor { get; set; } = VisualCanvasAnchor.BottomRight;
 
     /// <summary>Gets or sets the horizontal offset from the anchor.</summary>
-    public double OffsetX { get; set; }
+    public double OffsetX {
+        get => _offsetX;
+        set { ValidateFinite(value, nameof(value)); _offsetX = value; }
+    }
 
     /// <summary>Gets or sets the vertical offset from the anchor.</summary>
-    public double OffsetY { get; set; }
+    public double OffsetY {
+        get => _offsetY;
+        set { ValidateFinite(value, nameof(value)); _offsetY = value; }
+    }
 
     /// <summary>Gets or sets the inset from anchored canvas edges.</summary>
     public double Padding {
