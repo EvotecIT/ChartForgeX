@@ -138,7 +138,7 @@ internal sealed class SvgRasterDefinitions {
         }
 
         if (string.Equals(element.Name, "clipPath", StringComparison.Ordinal) && element.TryGet("id", out var clipId) && !string.IsNullOrWhiteSpace(clipId)) {
-            _clipPaths[clipId] = new SvgRasterClipPath(element);
+            _clipPaths[clipId] = new SvgRasterClipPath(element, ancestors.ToArray());
         }
 
         if (string.Equals(element.Name, "mask", StringComparison.Ordinal) && element.TryGet("id", out var maskId) && !string.IsNullOrWhiteSpace(maskId)) {
@@ -181,11 +181,15 @@ internal sealed class SvgRasterMaskSource {
 }
 
 internal sealed class SvgRasterClipPath {
-    public SvgRasterClipPath(SvgRasterElement element) {
+    public SvgRasterClipPath(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors) {
         Element = element;
+        Ancestors = ancestors;
+        UserSpaceOnUse = !string.Equals(element.Get("clipPathUnits"), "objectBoundingBox", StringComparison.Ordinal);
     }
 
     public SvgRasterElement Element { get; }
+    public IReadOnlyList<SvgRasterElement> Ancestors { get; }
+    public bool UserSpaceOnUse { get; }
 }
 
 internal sealed class SvgRasterMask {

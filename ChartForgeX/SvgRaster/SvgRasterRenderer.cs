@@ -52,7 +52,7 @@ internal static partial class SvgRasterRenderer {
         if (hasClipPath) {
             var clipped = new RgbaCanvas(width, height, 1);
             var clipMask = new RgbaCanvas(width, height, 1);
-            RenderClipPath(clipMask, clipPath, matrix, definitions, viewport);
+            RenderClipPath(clipMask, clipPath, matrix, definitions, width, height, target.Pixels, viewport, document.Root, rootStyle, ancestors);
             clipped.DrawImageMasked(0, 0, width, height, target.Pixels, clipMask.Pixels);
             target = clipped;
         }
@@ -99,7 +99,7 @@ internal static partial class SvgRasterRenderer {
             if (hasClipPath) {
                 var clippedContent = new RgbaCanvas(width, height, 1);
                 var clipMask = new RgbaCanvas(width, height, 1);
-                RenderClipPath(clipMask, clipPath, matrix, definitions, childViewport);
+                RenderClipPath(clipMask, clipPath, matrix, definitions, width, height, content.Pixels, childViewport, element, style, ancestors);
                 clippedContent.DrawImageMasked(0, 0, width, height, content.Pixels, clipMask.Pixels);
                 content = clippedContent;
             }
@@ -152,31 +152,34 @@ internal static partial class SvgRasterRenderer {
                 RenderUse(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport);
                 break;
             case "path":
-                if (style.VisibilityVisible) RenderPath(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
+                if (style.VisibilityVisible) RenderPath(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport);
                 break;
             case "rect":
-                if (style.VisibilityVisible) RenderRect(canvas, element, style, matrix, definitions);
+                if (style.VisibilityVisible) RenderRect(canvas, element, style, matrix, definitions, viewport);
                 break;
             case "circle":
-                if (style.VisibilityVisible) RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("r"), element.GetDouble("r"), style, matrix, definitions);
+                if (style.VisibilityVisible) {
+                    var radius = DiagonalLength(element, "r", viewport);
+                    RenderEllipse(canvas, HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), radius, radius, style, matrix, definitions, viewport);
+                }
                 break;
             case "ellipse":
-                if (style.VisibilityVisible) RenderEllipse(canvas, element.GetDouble("cx"), element.GetDouble("cy"), element.GetDouble("rx"), element.GetDouble("ry"), style, matrix, definitions);
+                if (style.VisibilityVisible) RenderEllipse(canvas, HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), HorizontalLength(element, "rx", viewport), VerticalLength(element, "ry", viewport), style, matrix, definitions, viewport);
                 break;
             case "line":
-                if (style.VisibilityVisible) RenderLine(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors);
+                if (style.VisibilityVisible) RenderLine(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport);
                 break;
             case "polyline":
-                if (style.VisibilityVisible) RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: false);
+                if (style.VisibilityVisible) RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport, close: false);
                 break;
             case "polygon":
-                if (style.VisibilityVisible) RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, close: true);
+                if (style.VisibilityVisible) RenderPointList(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport, close: true);
                 break;
             case "text":
-                RenderText(canvas, element, style, matrix, definitions.StyleSheet, ancestors);
+                RenderText(canvas, element, style, matrix, definitions, width, height, ancestors, viewport);
                 return;
             case "image":
-                if (style.VisibilityVisible) RenderImage(canvas, element, style, matrix, referenceDepth);
+                if (style.VisibilityVisible) RenderImage(canvas, element, style, matrix, referenceDepth, viewport);
                 return;
         }
 
@@ -185,12 +188,12 @@ internal static partial class SvgRasterRenderer {
         ancestors.RemoveAt(ancestors.Count - 1);
     }
 
-    private static void RenderImage(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, int imageDepth) {
-        var width = element.GetDouble("width");
-        var height = element.GetDouble("height");
+    private static void RenderImage(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, int imageDepth, SvgRasterViewport viewport) {
+        var width = HorizontalLength(element, "width", viewport);
+        var height = VerticalLength(element, "height", viewport);
         if (width <= 0 || height <= 0 || style.Opacity <= 0) return;
-        var x = element.GetDouble("x");
-        var y = element.GetDouble("y");
+        var x = HorizontalLength(element, "x", viewport);
+        var y = VerticalLength(element, "y", viewport);
         var origin = matrix.Transform(new ChartPoint(x, y));
         var xAxis = matrix.Transform(new ChartPoint(x + width, y));
         var yAxis = matrix.Transform(new ChartPoint(x, y + height));
@@ -262,19 +265,21 @@ internal static partial class SvgRasterRenderer {
 
     private static void RenderUse(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) return;
-        var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(element.GetDouble("x"), element.GetDouble("y")));
+        var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
         if (IsSymbolElement(referenced)) {
             var viewBox = referenced.Get("viewBox");
+            var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
+            var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
+            if (symbolWidth <= 0 || symbolHeight <= 0) return;
+            var symbolViewport = new SvgRasterViewport(symbolWidth, symbolHeight);
             if (!string.IsNullOrWhiteSpace(viewBox)) {
                 var parsed = SvgRasterViewBox.Parse(viewBox);
-                var symbolWidth = element.GetDouble("width", parsed.Width);
-                var symbolHeight = element.GetDouble("height", parsed.Height);
-                if (symbolWidth <= 0 || symbolHeight <= 0) return;
                 useMatrix = useMatrix.Multiply(SvgRasterMatrix.FromFit(parsed, (int)Math.Round(symbolWidth), (int)Math.Round(symbolHeight), referenced.Get("preserveAspectRatio")));
+                symbolViewport = new SvgRasterViewport(parsed.Width, parsed.Height);
             }
 
             ancestors.Add(referenced);
-            foreach (var child in referenced.Children) RenderElement(canvas, child, style, useMatrix, definitions, width, height, referenceDepth + 1, ancestors, viewport);
+            foreach (var child in referenced.Children) RenderElement(canvas, child, style, useMatrix, definitions, width, height, referenceDepth + 1, ancestors, symbolViewport);
             ancestors.RemoveAt(ancestors.Count - 1);
             return;
         }
@@ -282,87 +287,49 @@ internal static partial class SvgRasterRenderer {
         RenderElement(canvas, referenced, style, useMatrix, definitions, width, height, referenceDepth + 1, ancestors, viewport);
     }
 
-    private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
+    private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         var d = element.Get("d");
         if (string.IsNullOrWhiteSpace(d)) return;
         var rings = TransformRings(ChartMapPathParser.ParseRings(d!), matrix);
-        FillAndStroke(canvas, rings, style, PathHasClose(d!), matrix, definitions);
+        FillAndStroke(canvas, rings, style, PathHasClose(d!), matrix, definitions, viewport);
         RenderMarkers(canvas, element, style, matrix, definitions, rings, width, height, referenceDepth, ancestors);
     }
 
-    private static void RenderRect(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
-        var x = element.GetDouble("x");
-        var y = element.GetDouble("y");
-        var width = element.GetDouble("width");
-        var height = element.GetDouble("height");
+    private static void RenderRect(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
+        var x = HorizontalLength(element, "x", viewport);
+        var y = VerticalLength(element, "y", viewport);
+        var width = HorizontalLength(element, "width", viewport);
+        var height = VerticalLength(element, "height", viewport);
         if (width <= 0 || height <= 0) return;
-        var rx = Math.Max(0, Math.Min(element.GetDouble("rx", element.GetDouble("ry")), Math.Min(width, height) / 2.0));
+        var fallbackRadius = VerticalLength(element, "ry", viewport);
+        var rx = Math.Max(0, Math.Min(HorizontalLength(element, "rx", viewport, fallbackRadius), Math.Min(width, height) / 2.0));
         var ring = rx <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx);
-        FillAndStroke(canvas, new[] { TransformRing(ring, matrix) }, style, true, matrix, definitions);
+        FillAndStroke(canvas, new[] { TransformRing(ring, matrix) }, style, true, matrix, definitions, viewport);
     }
 
-    private static void RenderEllipse(RgbaCanvas canvas, double cx, double cy, double rx, double ry, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
+    private static void RenderEllipse(RgbaCanvas canvas, double cx, double cy, double rx, double ry, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
         if (rx <= 0 || ry <= 0) return;
-        FillAndStroke(canvas, new[] { TransformRing(EllipseRing(cx, cy, rx, ry, 36), matrix) }, style, true, matrix, definitions);
+        FillAndStroke(canvas, new[] { TransformRing(EllipseRing(cx, cy, rx, ry, 36), matrix) }, style, true, matrix, definitions, viewport);
     }
 
-    private static void RenderLine(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors) {
+    private static void RenderLine(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         var points = new[] {
-            matrix.Transform(new ChartPoint(element.GetDouble("x1"), element.GetDouble("y1"))),
-            matrix.Transform(new ChartPoint(element.GetDouble("x2"), element.GetDouble("y2")))
+            matrix.Transform(new ChartPoint(HorizontalLength(element, "x1", viewport), VerticalLength(element, "y1", viewport))),
+            matrix.Transform(new ChartPoint(HorizontalLength(element, "x2", viewport), VerticalLength(element, "y2", viewport)))
         };
         Stroke(canvas, points, style, matrix.ScaleFactor, definitions);
         RenderMarkers(canvas, element, style, matrix, definitions, new[] { new List<ChartPoint>(points) }, width, height, referenceDepth, ancestors);
     }
 
-    private static void RenderPointList(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, bool close) {
+    private static void RenderPointList(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, bool close) {
         var points = ReadPointList(element.Get("points"));
         if (points.Count == 0) return;
         var transformed = TransformRing(points, matrix);
-        FillAndStroke(canvas, new[] { transformed }, style, close, matrix, definitions);
+        FillAndStroke(canvas, new[] { transformed }, style, close, matrix, definitions, viewport);
         RenderMarkers(canvas, element, style, matrix, definitions, new[] { transformed }, width, height, referenceDepth, ancestors);
     }
 
-    private static void RenderText(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
-        var spanChildren = TextSpanChildren(element);
-        if (spanChildren.Count == 0) {
-            DrawTextRun(canvas, element.Text, element.GetDouble("x") + FirstNumber(element.Get("dx")), element.GetDouble("y") + FirstNumber(element.Get("dy")), style, matrix);
-            return;
-        }
-
-        var cursorX = element.GetDouble("x") + FirstNumber(element.Get("dx"));
-        var cursorY = element.GetDouble("y") + FirstNumber(element.Get("dy"));
-        var spanAncestors = new List<SvgRasterElement>(ancestors) { element };
-        foreach (var span in spanChildren) {
-            var spanStyle = SvgRasterStyle.Resolve(style, span, styleSheet, spanAncestors);
-            if (span.TryGet("x", out _)) cursorX = span.GetDouble("x");
-            if (span.TryGet("y", out _)) cursorY = span.GetDouble("y");
-            cursorX += FirstNumber(span.Get("dx"));
-            cursorY += FirstNumber(span.Get("dy"));
-            var width = DrawTextRun(canvas, span.Text, cursorX, cursorY, spanStyle, matrix);
-            cursorX += width / matrix.ScaleFactor;
-        }
-    }
-
-    private static double DrawTextRun(RgbaCanvas canvas, string value, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix) {
-        var text = NormalizeText(value);
-        if (text.Length == 0) return 0;
-        var fontSize = Math.Max(1, style.FontSize * matrix.ScaleFactor);
-        var width = RgbaCanvas.MeasureTextWidth(text, fontSize, null);
-        if (!style.VisibilityVisible) return width;
-        var color = style.FillColor();
-        if (color.A == 0) return width;
-        var point = matrix.Transform(new ChartPoint(x, y));
-        var drawX = point.X;
-        if (string.Equals(style.TextAnchor, "middle", StringComparison.OrdinalIgnoreCase)) drawX -= width / 2.0;
-        else if (string.Equals(style.TextAnchor, "end", StringComparison.OrdinalIgnoreCase)) drawX -= width;
-        var drawY = TextTop(point.Y, fontSize, style.DominantBaseline);
-        if (IsBold(style.FontWeight)) canvas.DrawTextEmphasized(drawX, drawY, text, color, fontSize);
-        else canvas.DrawText(drawX, drawY, text, color, fontSize);
-        return width;
-    }
-
-    private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool close, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
+    private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool close, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
         var contours = new List<List<ChartPoint>>();
         var strokeRings = new List<List<ChartPoint>>();
         foreach (var ring in rings) {
@@ -372,11 +339,11 @@ internal static partial class SvgRasterRenderer {
             strokeRings.Add(contour);
         }
 
-        Fill(canvas, contours, style, matrix, definitions);
+        Fill(canvas, contours, style, matrix, definitions, viewport);
         foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
     }
 
-    private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions) {
+    private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
         if (contours.Count == 0 || style.Fill.IsNone) return;
         var fillRule = FillRule(style.FillRule);
         if (style.Fill.IsReference && definitions.TryGetLinearGradient(style.Fill.ReferenceId, out var gradient)) {
@@ -389,7 +356,7 @@ internal static partial class SvgRasterRenderer {
             canvas.FillContoursRadialGradient(contours, center, radiusX, radiusY, radialGradient.Stops, radialGradient.SpreadMethod, fillRule);
             return;
         }
-        if (style.Fill.IsReference && definitions.TryGetPattern(style.Fill.ReferenceId, out var pattern) && TryRenderPatternTile(contours, matrix, pattern, definitions, out var tile)) {
+        if (style.Fill.IsReference && definitions.TryGetPattern(style.Fill.ReferenceId, out var pattern) && TryRenderPatternTile(contours, matrix, pattern, definitions, viewport, out var tile)) {
             canvas.FillContoursPattern(contours, tile.OriginX, tile.OriginY, tile.Width, tile.Height, tile.Pixels, fillRule);
             return;
         }
@@ -412,7 +379,7 @@ internal static partial class SvgRasterRenderer {
         return ChartColor.Transparent;
     }
 
-    private static bool TryRenderPatternTile(IReadOnlyList<List<ChartPoint>> contours, SvgRasterMatrix matrix, SvgRasterPattern pattern, SvgRasterDefinitions definitions, out PatternTile tile) {
+    private static bool TryRenderPatternTile(IReadOnlyList<List<ChartPoint>> contours, SvgRasterMatrix matrix, SvgRasterPattern pattern, SvgRasterDefinitions definitions, SvgRasterViewport viewport, out PatternTile tile) {
         tile = default;
         if (pattern.Width <= 0 || pattern.Height <= 0 || pattern.Children.Count == 0) return false;
         var bounds = SvgRasterGradientValues.Bounds(contours);
@@ -422,11 +389,19 @@ internal static partial class SvgRasterRenderer {
         var tileHeight = Math.Max(1, (int)Math.Ceiling(frame.Height));
         var tileCanvas = new RgbaCanvas(tileWidth, tileHeight, 1);
         var contentMatrix = PatternContentMatrix(pattern, matrix, bounds, frame, tileWidth, tileHeight);
+        var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
+            ? ViewportFromViewBox(pattern.ViewBox!)
+            : pattern.ContentUserSpaceOnUse ? viewport : new SvgRasterViewport(1, 1);
         var ancestors = new List<SvgRasterElement>();
-        foreach (var child in pattern.Children) RenderElement(tileCanvas, child, SvgRasterStyle.Default, contentMatrix, definitions, tileWidth, tileHeight, 0, ancestors, new SvgRasterViewport(tileWidth, tileHeight));
+        foreach (var child in pattern.Children) RenderElement(tileCanvas, child, SvgRasterStyle.Default, contentMatrix, definitions, tileWidth, tileHeight, 0, ancestors, contentViewport);
         if (!HasVisiblePixel(tileCanvas.Pixels)) return false;
         tile = new PatternTile(frame.Left, frame.Top, tileWidth, tileHeight, tileCanvas.Pixels);
         return true;
+    }
+
+    private static SvgRasterViewport ViewportFromViewBox(string value) {
+        var viewBox = SvgRasterViewBox.Parse(value);
+        return new SvgRasterViewport(viewBox.Width, viewBox.Height);
     }
 
     private static PatternFrame CreatePatternFrame(SvgRasterPattern pattern, SvgRasterMatrix matrix, SvgRasterGradientValues.GradientBounds bounds) {
@@ -459,12 +434,31 @@ internal static partial class SvgRasterRenderer {
         return pattern.UserSpaceOnUse ? local.Multiply(matrix.Multiply(pattern.Transform)) : local.Multiply(matrix);
     }
 
-    private static void RenderClipPath(RgbaCanvas mask, SvgRasterClipPath clipPath, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
+    private static void RenderClipPath(RgbaCanvas mask, SvgRasterClipPath clipPath, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, byte[] targetPixels, SvgRasterViewport viewport, SvgRasterElement targetElement, SvgRasterStyle targetStyle, IReadOnlyList<SvgRasterElement> targetAncestors) {
         var clipMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(clipPath.Element.Get("transform")));
+        var clipViewport = viewport;
+        if (!clipPath.UserSpaceOnUse) {
+            if (!TryVisibleBounds(targetPixels, width, height, matrix, out var paintedBounds)) return;
+            var bounds = TryObjectBounds(targetElement, targetStyle, targetAncestors, definitions, viewport, out var objectBounds) ? objectBounds : paintedBounds;
+            if (bounds.Width <= 0 || bounds.Height <= 0) return;
+            clipMatrix = matrix
+                .Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top))
+                .Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height))
+                .Multiply(SvgRasterMatrix.ParseTransform(clipPath.Element.Get("transform")));
+            clipViewport = new SvgRasterViewport(1, 1);
+        }
         var ancestors = new List<SvgRasterElement>();
-        var clipStyle = SvgRasterStyle.Resolve(SvgRasterStyle.Default, clipPath.Element, definitions.StyleSheet, ancestors);
+        var clipStyle = SvgRasterStyle.Default;
+        foreach (var ancestor in clipPath.Ancestors) {
+            clipStyle = SvgRasterStyle.Resolve(clipStyle, ancestor, definitions.StyleSheet, ancestors);
+            ancestors.Add(ancestor);
+        }
+        clipStyle = SvgRasterStyle.Resolve(clipStyle, clipPath.Element, definitions.StyleSheet, ancestors);
         ancestors.Add(clipPath.Element);
-        foreach (var child in clipPath.Element.Children) RenderClipElement(mask, child, clipStyle, clipMatrix, definitions.StyleSheet, ancestors, viewport);
+        foreach (var child in clipPath.Element.Children) {
+            var clipChild = clipPath.UserSpaceOnUse ? child : ResolveObjectBoundingBoxContent(child, definitions, 0);
+            RenderClipElement(mask, clipChild, clipStyle, clipMatrix, definitions.StyleSheet, ancestors, clipViewport);
+        }
     }
 
     private static void RenderMask(RgbaCanvas mask, SvgRasterMask maskDefinition, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, byte[] targetPixels, SvgRasterViewport viewport, SvgRasterElement targetElement, SvgRasterStyle targetStyle, IReadOnlyList<SvgRasterElement> targetAncestors) {
@@ -503,7 +497,7 @@ internal static partial class SvgRasterRenderer {
             viewport = nested.UserViewport;
         }
         if (style.VisibilityVisible) {
-            var contours = ClipContours(element, matrix);
+            var contours = ClipContours(element, matrix, viewport);
             if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
         }
         ancestors.Add(element);
@@ -511,26 +505,26 @@ internal static partial class SvgRasterRenderer {
         ancestors.RemoveAt(ancestors.Count - 1);
     }
 
-    private static List<List<ChartPoint>> ClipContours(SvgRasterElement element, SvgRasterMatrix matrix) {
+    private static List<List<ChartPoint>> ClipContours(SvgRasterElement element, SvgRasterMatrix matrix, SvgRasterViewport viewport) {
         switch (element.Name) {
             case "path":
                 var d = element.Get("d");
                 return string.IsNullOrWhiteSpace(d) ? new List<List<ChartPoint>>() : TransformRings(ChartMapPathParser.ParseRings(d!), matrix);
             case "rect":
-                var width = element.GetDouble("width");
-                var height = element.GetDouble("height");
+                var width = HorizontalLength(element, "width", viewport);
+                var height = VerticalLength(element, "height", viewport);
                 if (width <= 0 || height <= 0) return new List<List<ChartPoint>>();
-                var x = element.GetDouble("x");
-                var y = element.GetDouble("y");
-                var rx = Math.Max(0, Math.Min(element.GetDouble("rx", element.GetDouble("ry")), Math.Min(width, height) / 2.0));
+                var x = HorizontalLength(element, "x", viewport);
+                var y = VerticalLength(element, "y", viewport);
+                var rx = Math.Max(0, Math.Min(HorizontalLength(element, "rx", viewport, VerticalLength(element, "ry", viewport)), Math.Min(width, height) / 2.0));
                 return new List<List<ChartPoint>> { TransformRing(rx <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx), matrix) };
             case "circle":
-                var r = element.GetDouble("r");
-                return r <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(element.GetDouble("cx"), element.GetDouble("cy"), r, r, 36), matrix) };
+                var r = DiagonalLength(element, "r", viewport);
+                return r <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), r, r, 36), matrix) };
             case "ellipse":
-                var rxEllipse = element.GetDouble("rx");
-                var ryEllipse = element.GetDouble("ry");
-                return rxEllipse <= 0 || ryEllipse <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(element.GetDouble("cx"), element.GetDouble("cy"), rxEllipse, ryEllipse, 36), matrix) };
+                var rxEllipse = HorizontalLength(element, "rx", viewport);
+                var ryEllipse = VerticalLength(element, "ry", viewport);
+                return rxEllipse <= 0 || ryEllipse <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), rxEllipse, ryEllipse, 36), matrix) };
             case "polygon":
                 var points = ReadPointList(element.Get("points"));
                 return points.Count == 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(points, matrix) };
@@ -586,30 +580,6 @@ internal static partial class SvgRasterRenderer {
         var points = new List<ChartPoint>(numbers.Count / 2);
         for (var i = 0; i + 1 < numbers.Count; i += 2) points.Add(new ChartPoint(numbers[i], numbers[i + 1]));
         return points;
-    }
-
-    private static IReadOnlyList<SvgRasterElement> TextSpanChildren(SvgRasterElement element) {
-        var spans = new List<SvgRasterElement>();
-        foreach (var child in element.Children) if (string.Equals(child.Name, "tspan", StringComparison.Ordinal)) spans.Add(child);
-        return spans;
-    }
-
-    private static string NormalizeText(string value) =>
-        string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
-
-    private static double FirstNumber(string? value) {
-        var numbers = SvgRasterNumbers.ParseList(value);
-        return numbers.Count == 0 ? 0 : numbers[0];
-    }
-
-    private static double TextTop(double y, double fontSize, string baseline) {
-        if (string.Equals(baseline, "middle", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(baseline, "central", StringComparison.OrdinalIgnoreCase)) return y - fontSize * 0.5;
-        if (string.Equals(baseline, "hanging", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(baseline, "text-before-edge", StringComparison.OrdinalIgnoreCase)) return y;
-        if (string.Equals(baseline, "text-after-edge", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(baseline, "ideographic", StringComparison.OrdinalIgnoreCase)) return y - fontSize;
-        return y - fontSize * 0.82;
     }
 
     private static List<ChartPoint> ClosedRing(IReadOnlyList<ChartPoint> points) {

@@ -25,6 +25,7 @@ internal sealed class SvgRasterStyle {
         FontWeight = "normal",
         TextAnchor = "start",
         DominantBaseline = "auto",
+        WhiteSpace = "normal",
         MaskType = "luminance",
         Overflow = null,
         Displayed = true,
@@ -50,6 +51,7 @@ internal sealed class SvgRasterStyle {
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
+    public string WhiteSpace { get; set; } = "normal";
     public string MaskType { get; set; } = "luminance";
     public string? Overflow { get; set; }
     public bool Displayed { get; private set; }
@@ -78,6 +80,7 @@ internal sealed class SvgRasterStyle {
             FontWeight = FontWeight,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
+            WhiteSpace = WhiteSpace,
             // mask-type applies only to mask elements and is not inherited.
             MaskType = "luminance",
             // overflow applies to the current viewport element and is not inherited.
@@ -152,6 +155,8 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "text-anchor");
         AddAttribute(declarations, element, "dominant-baseline");
         AddAttribute(declarations, element, "alignment-baseline");
+        if (element.TryGet("xml:space", out var xmlSpace)) declarations.Add(new SvgStyleDeclaration("white-space", string.Equals(xmlSpace.Trim(), "preserve", StringComparison.OrdinalIgnoreCase) ? "pre" : "normal"));
+        AddAttribute(declarations, element, "white-space");
         AddAttribute(declarations, element, "display");
         AddAttribute(declarations, element, "visibility");
         AddAttribute(declarations, element, "mask-type");
@@ -241,6 +246,9 @@ internal sealed class SvgRasterStyle {
             case "dominant-baseline":
             case "alignment-baseline":
                 style.DominantBaseline = value.Trim();
+                break;
+            case "white-space":
+                style.WhiteSpace = value.Trim();
                 break;
             case "display":
                 style.Displayed = style.AncestorsDisplayed && !string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase);

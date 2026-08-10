@@ -210,9 +210,76 @@ internal static partial class SmokeTests {
         var physicalViewportImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(physicalViewport));
         Assert(physicalViewportImage.Width == 192 && physicalViewportImage.Height == 96, "Public SVG rasterization should resolve absolute physical viewport units at 96 CSS pixels per inch.");
 
+        const string percentageGeometry = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='25%' height='25%' fill='#ef4444'/><circle cx='50%' cy='20%' r='8%' fill='#16a34a'/><ellipse cx='80%' cy='20%' rx='8%' ry='12%' fill='#2563eb'/><line x1='0%' y1='55%' x2='100%' y2='55%' stroke='#111827' stroke-width='3'/></svg>";
+        var percentageGeometryImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(percentageGeometry));
+        Assert(IsPixelNear(percentageGeometryImage.Pixels, 100, 20, 20, 239, 68, 68), "Percentage rectangle dimensions should resolve against the active SVG viewport.");
+        Assert(IsPixelNear(percentageGeometryImage.Pixels, 100, 50, 20, 22, 163, 74) && IsPixelNear(percentageGeometryImage.Pixels, 100, 80, 20, 37, 99, 235), "Percentage circle and ellipse coordinates should resolve against the appropriate viewport axes.");
+        Assert(PixelAlpha(percentageGeometryImage.Pixels, 100, 5, 55) > 0 && PixelAlpha(percentageGeometryImage.Pixels, 100, 95, 55) > 0, "Percentage line endpoints should span the active viewport.");
+        var percentageImageMarkup = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><image x='50%' y='25%' width='25%' height='50%' preserveAspectRatio='none' href='" + imageSource + "'/></svg>";
+        var percentageImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(percentageImageMarkup));
+        Assert(IsPixelNear(percentageImage.Pixels, 100, 60, 20, 255, 0, 0) && PixelAlpha(percentageImage.Pixels, 100, 40, 20) == 0, "Percentage image placement should resolve against the active viewport.");
+
+        const string objectBoundingBoxClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><clipPath id='half' clipPathUnits='objectBoundingBox'><rect width='50%' height='100%'/></clipPath></defs><rect x='20' y='10' width='40' height='20' fill='#f97316' clip-path='url(#half)'/></svg>";
+        var objectBoundingBoxClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(objectBoundingBoxClip));
+        Assert(IsPixelNear(objectBoundingBoxClipImage.Pixels, 100, 30, 20, 249, 115, 22) && PixelAlpha(objectBoundingBoxClipImage.Pixels, 100, 50, 20) == 0, "Object-bounding-box clip paths should map normalized percentage geometry into the target element's geometric bounds.");
+        const string nestedObjectBoundingBoxClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><clipPath id='nested' clipPathUnits='objectBoundingBox'><svg width='1' height='1' viewBox='0 0 10 10' preserveAspectRatio='none'><rect width='100%' height='100%'/></svg></clipPath></defs><rect x='20' y='10' width='40' height='20' fill='#14b8a6' clip-path='url(#nested)'/></svg>";
+        var nestedObjectBoundingBoxClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(nestedObjectBoundingBoxClip));
+        Assert(IsPixelNear(nestedObjectBoundingBoxClipImage.Pixels, 100, 55, 20, 20, 184, 166), "Nested viewports inside object-bounding-box content should resolve descendant percentages in their own viewBox.");
+
+        const string percentageSymbol = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><symbol id='half-symbol' viewBox='0 0 10 10' preserveAspectRatio='none'><rect width='50%' height='100%' fill='#8b5cf6'/></symbol></defs><use href='#half-symbol' x='10' y='10' width='40' height='20'/></svg>";
+        var percentageSymbolImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(percentageSymbol));
+        Assert(IsPixelNear(percentageSymbolImage.Pixels, 100, 25, 20, 139, 92, 246) && PixelAlpha(percentageSymbolImage.Pixels, 100, 35, 20) == 0, "Percentage geometry in referenced symbols should resolve against the symbol viewBox viewport.");
+        const string percentageViewBoxlessSymbol = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><symbol id='plain-symbol'><rect width='50%' height='100%' fill='#0ea5e9'/></symbol></defs><use href='#plain-symbol' x='10' y='10' width='40' height='20'/></svg>";
+        var percentageViewBoxlessSymbolImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(percentageViewBoxlessSymbol));
+        Assert(IsPixelNear(percentageViewBoxlessSymbolImage.Pixels, 100, 25, 20, 14, 165, 233) && PixelAlpha(percentageViewBoxlessSymbolImage.Pixels, 100, 35, 20) == 0, "ViewBox-less symbols should use the use element's viewport for percentage geometry.");
+        const string objectBoundingBoxSymbolClip = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><symbol id='clip-symbol'><rect width='50%' height='100%'/></symbol><clipPath id='symbol-clip' clipPathUnits='objectBoundingBox'><use href='#clip-symbol' width='1' height='1'/></clipPath></defs><rect x='20' y='10' width='40' height='20' fill='#e11d48' clip-path='url(#symbol-clip)'/></svg>";
+        var objectBoundingBoxSymbolClipImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(objectBoundingBoxSymbolClip));
+        Assert(IsPixelNear(objectBoundingBoxSymbolClipImage.Pixels, 100, 30, 20, 225, 29, 72) && PixelAlpha(objectBoundingBoxSymbolClipImage.Pixels, 100, 50, 20) == 0, "Object-bounding-box preprocessing should expand referenced viewBox-less symbols into a renderable viewport.");
+
+        const string percentagePattern = "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='20'><defs><pattern id='half-tile' patternUnits='userSpaceOnUse' x='0' y='0' width='20' height='20' viewBox='0 0 10 10' preserveAspectRatio='none'><rect width='50%' height='100%' fill='#ef4444'/></pattern></defs><rect width='40' height='20' fill='url(#half-tile)'/></svg>";
+        var percentagePatternImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(percentagePattern));
+        Assert(IsPixelNear(percentagePatternImage.Pixels, 40, 5, 10, 239, 68, 68) && PixelAlpha(percentagePatternImage.Pixels, 40, 15, 10) == 0 && IsPixelNear(percentagePatternImage.Pixels, 40, 25, 10, 239, 68, 68), "Pattern percentages should resolve against the pattern viewBox independently of tile pixel size.");
+
+        const string mixedText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='40'><text x='4' y='30' font-size='24' fill='#ef4444'>A <tspan fill='#2563eb'>B</tspan> C</text></svg>";
+        var mixedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(mixedText));
+        var redText = SvgColorBounds(mixedTextImage.Pixels, 140, 40, 239, 68, 68);
+        var blueText = SvgColorBounds(mixedTextImage.Pixels, 140, 40, 37, 99, 235);
+        Assert(redText.HasPixels && blueText.HasPixels && redText.Left < blueText.Left && redText.Right > blueText.Right, "Mixed text content should preserve direct text nodes before and after styled tspans in document order.");
+
+        const string transformedText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><text x='12' y='18' font-size='16' fill='#ef4444' transform='rotate(90 12 18)'>TEST</text></svg>";
+        var transformedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedText));
+        var transformedTextBounds = SvgColorBounds(transformedTextImage.Pixels, 80, 80, 239, 68, 68);
+        Assert(transformedTextBounds.HasPixels && transformedTextBounds.Height > transformedTextBounds.Width, "Affine text transforms should rotate glyph pixels rather than only moving the text anchor.");
+
+        const string centeredMixedText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='40'><text x='70' y='30' text-anchor='middle' font-size='24' fill='#ef4444'>A<tspan fill='#2563eb'>B</tspan>C</text></svg>";
+        var centeredMixedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(centeredMixedText));
+        var centeredBounds = SvgAlphaBounds(centeredMixedTextImage.Pixels, 140, 40);
+        Assert(centeredBounds.HasPixels && Math.Abs((centeredBounds.Left + centeredBounds.Right) / 2.0 - 70) < 5, "Text anchoring should center a mixed-style text chunk once rather than centering every run independently.");
+        const string positionedCenteredText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='40'><text y='30' text-anchor='middle' font-size='24' fill='#ef4444'><tspan x='70' fill='#2563eb'>B</tspan>C</text></svg>";
+        var positionedCenteredTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(positionedCenteredText));
+        var positionedCenteredBounds = SvgAlphaBounds(positionedCenteredTextImage.Pixels, 140, 40);
+        Assert(positionedCenteredBounds.HasPixels && Math.Abs((positionedCenteredBounds.Left + positionedCenteredBounds.Right) / 2.0 - 70) < 5, "An absolute tspan position should start an anchored chunk that includes following sibling text.");
+
+        const string transformedSpanText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><text x='12' y='18' font-size='16' fill='#16a34a'><tspan transform='rotate(90 12 18)'>TEST</tspan></text></svg>";
+        var transformedSpanTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSpanText));
+        var transformedSpanBounds = SvgColorBounds(transformedSpanTextImage.Pixels, 80, 80, 22, 163, 74);
+        Assert(transformedSpanBounds.HasPixels && transformedSpanBounds.Height > transformedSpanBounds.Width, "Nested tspan transforms should affect glyph pixels.");
+
+        const string preservedText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='40'><text x='4' y='30' font-size='20' fill='#ef4444' xml:space='preserve'>A   B</text></svg>";
+        const string collapsedText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='40'><text x='4' y='30' font-size='20' fill='#ef4444'>A   B</text></svg>";
+        var preservedTextBounds = SvgColorBounds(RasterImageDecoder.Decode(SvgRasterizer.ToPng(preservedText)).Pixels, 140, 40, 239, 68, 68);
+        var collapsedTextBounds = SvgColorBounds(RasterImageDecoder.Decode(SvgRasterizer.ToPng(collapsedText)).Pixels, 140, 40, 239, 68, 68);
+        Assert(preservedTextBounds.Width > collapsedTextBounds.Width, "Explicitly preserved SVG whitespace should retain repeated spaces instead of using normal collapsing.");
+        const string preLineText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='60'><text x='4' y='18' font-size='16' fill='#2563eb' style='white-space:pre-line'>A   A\nB</text></svg>";
+        var preLineTextBounds = SvgColorBounds(RasterImageDecoder.Decode(SvgRasterizer.ToPng(preLineText)).Pixels, 80, 60, 37, 99, 235);
+        Assert(preLineTextBounds.HasPixels && preLineTextBounds.Height > 20, "white-space pre-line should collapse repeated spaces while preserving explicit line breaks.");
+
         var nestedText = "<text x='4' y='28' font-size='28' fill='#ff0000' opacity='.5'><tspan>OO</tspan></text>";
         Assert(SvgRasterRenderer.TryRenderFragment(nestedText, "0 0 100 40", "none", 100, 40, out var nestedTextPixels), "SVG rasterization should render tspan text inside an opacity layer.");
         Assert(MaximumAlpha(nestedTextPixels) is >= 126 and <= 129, "Container text opacity should apply to tspan glyphs exactly once.");
+        var nestedSpanOpacity = "<text x='4' y='28' font-size='28' fill='#ff0000'><tspan opacity='.5'>O<tspan>O</tspan></tspan></text>";
+        Assert(SvgRasterRenderer.TryRenderFragment(nestedSpanOpacity, "0 0 100 40", "none", 100, 40, out var nestedSpanOpacityPixels), "SVG rasterization should composite nested tspan opacity as a subtree layer.");
+        Assert(MaximumAlpha(nestedSpanOpacityPixels) is >= 126 and <= 129, "Nested tspan opacity should affect direct and descendant glyphs exactly once.");
     }
 
     private static void SvgRasterStrokeJoinsHonorRoundBevelAndMiter() {
@@ -264,5 +331,53 @@ internal static partial class SmokeTests {
         var count = 0;
         for (var y = top; y <= bottom; y++) for (var x = left; x <= right; x++) if (IsPixelNear(rgba, width, x, y, red, green, blue)) count++;
         return count;
+    }
+
+    private static SvgPixelColorBounds SvgColorBounds(byte[] rgba, int width, int height, byte red, byte green, byte blue) {
+        var left = width;
+        var top = height;
+        var right = -1;
+        var bottom = -1;
+        for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) {
+            var index = (y * width + x) * 4;
+            if (Math.Abs(rgba[index] - red) > 8 || Math.Abs(rgba[index + 1] - green) > 8 || Math.Abs(rgba[index + 2] - blue) > 8 || rgba[index + 3] < 200) continue;
+            left = Math.Min(left, x);
+            top = Math.Min(top, y);
+            right = Math.Max(right, x);
+            bottom = Math.Max(bottom, y);
+        }
+        return new SvgPixelColorBounds(left, top, right, bottom);
+    }
+
+    private static SvgPixelColorBounds SvgAlphaBounds(byte[] rgba, int width, int height) {
+        var left = width;
+        var top = height;
+        var right = -1;
+        var bottom = -1;
+        for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) {
+            if (rgba[(y * width + x) * 4 + 3] < 32) continue;
+            left = Math.Min(left, x);
+            top = Math.Min(top, y);
+            right = Math.Max(right, x);
+            bottom = Math.Max(bottom, y);
+        }
+        return new SvgPixelColorBounds(left, top, right, bottom);
+    }
+
+    private readonly struct SvgPixelColorBounds {
+        public SvgPixelColorBounds(int left, int top, int right, int bottom) {
+            Left = left;
+            Top = top;
+            Right = right;
+            Bottom = bottom;
+        }
+
+        public int Left { get; }
+        public int Top { get; }
+        public int Right { get; }
+        public int Bottom { get; }
+        public bool HasPixels => Right >= Left && Bottom >= Top;
+        public int Width => HasPixels ? Right - Left + 1 : 0;
+        public int Height => HasPixels ? Bottom - Top + 1 : 0;
     }
 }
