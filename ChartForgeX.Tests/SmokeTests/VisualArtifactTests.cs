@@ -137,6 +137,17 @@ internal static partial class SmokeTests {
         var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
         var pngBytes = PngWriter.WriteRgba(pixel);
         Assert(VisualWatermark.FromImage(pngBytes, "image/png").ImageMimeType == "image/png", "Image watermarks should preserve a validated canonical media type.");
+        var repeatedImage = VisualWatermark.FromImage(pngBytes, "image/png");
+        repeatedImage.Repeat = true;
+        repeatedImage.RepeatSpacingX = 80;
+        repeatedImage.RepeatSpacingY = 60;
+        repeatedImage.Width = 18;
+        repeatedImage.Height = 18;
+        var repeatedImageOptions = new VisualArtifactRenderOptions();
+        repeatedImageOptions.Watermarks.Add(repeatedImage);
+        var repeatedImageSvg = artifact.ToSvg(repeatedImageOptions);
+        Assert(CountOccurrences(repeatedImageSvg, ";base64,") == 1 && CountOccurrences(repeatedImageSvg, "<use data-cfx-role=\"watermark\"") > 1, "Repeated SVG image watermarks should define their payload once and reuse it for every placement.");
+        Assert(artifact.ToPng(repeatedImageOptions).Length > 64, "Repeated image watermarks should retain PNG parity.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/png\" onload=\"alert(1)"), "Image watermarks should reject attribute-breaking media types.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");

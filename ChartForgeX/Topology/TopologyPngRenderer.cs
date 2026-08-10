@@ -765,7 +765,7 @@ public sealed partial class TopologyPngRenderer {
         DrawTextWithReadableHalo(canvas, x, y, text, color, haloColor, fontSize, emphasized);
     }
 
-    private static ChartColor Color(string value) => ChartColor.FromHex(value);
+    private static ChartColor Color(string value) => ChartColor.Parse(value);
 
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
 

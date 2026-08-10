@@ -24,6 +24,8 @@ internal static partial class SmokeTests {
         var rootSelectorImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootSelectorSemantics));
         Assert(IsPixelNear(rootSelectorImage.Pixels, 20, 5, 5, 239, 68, 68), "Public SVG rasterization should not introduce a selector-visible group around root children.");
         Assert(IsPixelNear(rootSelectorImage.Pixels, 20, 15, 5, 22, 163, 74), "Public SVG rasterization should retain the source svg root in descendant selector matching.");
+        var transparentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng("<svg xmlns='http://www.w3.org/2000/svg' width='20' height='10'></svg>"));
+        Assert(transparentImage.Width == 20 && transparentImage.Height == 10 && transparentImage.Pixels.All(value => value == 0), "Public SVG rasterization should accept a valid fully transparent document.");
         const string offsetViewBox = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='50' viewBox='10 20 200 100' preserveAspectRatio='none' fill='#16a34a'><rect x='10' y='20' width='200' height='100'/></svg>";
         var offsetViewBoxImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(offsetViewBox));
         Assert(IsPixelNear(offsetViewBoxImage.Pixels, 100, 50, 25, 22, 163, 74), "Public SVG rasterization should apply a non-zero source viewBox exactly once while preserving root presentation.");

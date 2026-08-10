@@ -27,7 +27,7 @@ internal static partial class SvgRasterRenderer {
 
         try {
             rgba = RenderDocument(SvgRasterParser.ParseDocument(svg), preserveAspectRatio, width, height);
-            return HasVisiblePixel(rgba);
+            return true;
         } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
             return false;
         }

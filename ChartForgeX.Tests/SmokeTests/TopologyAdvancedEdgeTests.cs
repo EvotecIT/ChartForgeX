@@ -17,7 +17,7 @@ internal static partial class SmokeTests {
             .AddNodePort("api", "grpc", TopologyEdgePort.Right, 0.3, "gRPC")
             .AddNodePort("db", "writer", TopologyEdgePort.Left, 0.72, "Writer")
             .AddNodeDetail("api", "Region", "EU", TopologyHealthStatus.Healthy)
-            .AddNodeDetail("api", "Latency", "24 ms", TopologyHealthStatus.Warning)
+            .AddNodeDetail("api", "Latency", "24 ms", TopologyHealthStatus.Warning, color: "red")
             .AddEdge("api-db", "api", "db", "Queries", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .WithEdgeNamedPorts("api-db", "grpc", "writer")
             .WithEdgeStroke("api-db", width: 4, opacity: 0.58, dashPattern: new[] { 11.0, 3.0, 2.0, 3.0 })
@@ -47,6 +47,8 @@ internal static partial class SmokeTests {
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "Topology artifacts should declare Office adapter handoff support.");
         Assert(artifact.Accessibility.Name == "API to database topology" && artifact.Accessibility.Language == "en", "Topology artifacts should preserve accessibility metadata for host adapters.");
         Assert(artifact.Regions.Any(region => region.Id == "api" && region.Kind == "topology-node"), "Topology artifacts should expose host-inspectable regions.");
+        var artifactApiBounds = artifact.Regions.Single(region => region.Id == "api").Bounds!.Value;
+        Assert(Math.Abs(artifactApiBounds.Left - source.Bounds.Left) < 0.001 && Math.Abs(artifactApiBounds.Top - source.Bounds.Top) < 0.001 && Math.Abs(artifactApiBounds.Width - source.Bounds.Width) < 0.001 && Math.Abs(artifactApiBounds.Height - source.Bounds.Height) < 0.001, "Topology artifact regions should use the same default prepared geometry as static renderers.");
 
         var autoChart = TopologyChart.Create()
             .WithId("auto-regions")
