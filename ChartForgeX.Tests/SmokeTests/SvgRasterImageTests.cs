@@ -69,6 +69,18 @@ internal static partial class SmokeTests {
         var mediaMarkup = "<style>.target{fill:#ff0000;opacity:.25}@media (prefers-contrast: more){.target{opacity:1}.ignored{fill:#00ff00}}.after{fill:#0000ff}</style><rect class='target' width='40' height='40'/><rect class='after' x='60' width='40' height='40'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(mediaMarkup, "0 0 100 40", "none", 100, 40, out var styled), "SVG rasterization should parse base rules around unsupported media queries.");
         Assert(PixelAlpha(styled, 100, 20, 20) is >= 62 and <= 66 && IsPixelNear(styled, 100, 80, 20, 0, 0, 255), "Unsupported media blocks should be skipped as a whole without leaking nested contrast rules or hiding following base rules.");
+
+        var overlappingGroup = "<g opacity='.5'><rect width='70' height='40' fill='#ff0000'/><rect x='30' width='70' height='40' fill='#ff0000'/></g>";
+        Assert(SvgRasterRenderer.TryRenderFragment(overlappingGroup, "0 0 100 40", "none", 100, 40, out var grouped), "SVG rasterization should composite an opaque group before applying its opacity.");
+        Assert(PixelAlpha(grouped, 100, 15, 20) is >= 126 and <= 129 && PixelAlpha(grouped, 100, 50, 20) is >= 126 and <= 129, "Group opacity should be applied once to the combined layer, including overlapping children.");
+
+        const string rootOpacity = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' opacity='.5'><rect width='70' height='40' fill='#ff0000'/><rect x='30' width='70' height='40' fill='#ff0000'/></svg>";
+        var rootOpacityImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(rootOpacity));
+        Assert(PixelAlpha(rootOpacityImage.Pixels, 100, 15, 20) is >= 126 and <= 129 && PixelAlpha(rootOpacityImage.Pixels, 100, 50, 20) is >= 126 and <= 129, "Root opacity should be applied once after compositing all root children.");
+
+        var nestedText = "<text x='4' y='28' font-size='28' fill='#ff0000' opacity='.5'><tspan>OO</tspan></text>";
+        Assert(SvgRasterRenderer.TryRenderFragment(nestedText, "0 0 100 40", "none", 100, 40, out var nestedTextPixels), "SVG rasterization should render tspan text inside an opacity layer.");
+        Assert(MaximumAlpha(nestedTextPixels) is >= 126 and <= 129, "Container text opacity should apply to tspan glyphs exactly once.");
     }
 
     private static void SvgRasterStrokeJoinsHonorRoundBevelAndMiter() {
@@ -104,6 +116,12 @@ internal static partial class SmokeTests {
     private static string SvgData(string markup) => "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(markup));
 
     private static byte PixelAlpha(byte[] rgba, int width, int x, int y) => rgba[(y * width + x) * 4 + 3];
+
+    private static byte MaximumAlpha(byte[] rgba) {
+        byte maximum = 0;
+        for (var index = 3; index < rgba.Length; index += 4) maximum = Math.Max(maximum, rgba[index]);
+        return maximum;
+    }
 
     private static bool IsPixelNear(byte[] rgba, int width, int x, int y, byte red, byte green, byte blue) {
         var index = (y * width + x) * 4;

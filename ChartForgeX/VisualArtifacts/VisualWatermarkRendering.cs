@@ -57,8 +57,9 @@ internal static class VisualWatermarkRendering {
                 .Append(image.Width).Append(' ').Append(image.Height)
                 .Append("\" preserveAspectRatio=\"xMidYMid meet\"><image width=\"").Append(image.Width)
                 .Append("\" height=\"").Append(image.Height)
-                .Append("\" preserveAspectRatio=\"xMidYMid meet\" href=\"data:").Append(watermark.ImageMimeType)
-                .Append(";base64,").Append(Convert.ToBase64String(watermark.ImageBytes!)).Append("\" /></symbol>");
+                .Append("\" preserveAspectRatio=\"xMidYMid meet\" href=\"");
+            AppendSvgImageDataUri(output, watermark, image);
+            output.Append("\" /></symbol>");
         }
         output.Append("</defs>");
         return definitions;
@@ -118,8 +119,13 @@ internal static class VisualWatermarkRendering {
             .Append(" width=\"").Append(F(imageWidth)).Append("\" height=\"").Append(F(imageHeight)).Append("\"")
             .Append(" opacity=\"").Append(F(watermark.Opacity)).Append("\"")
             .Append(" preserveAspectRatio=\"xMidYMid meet\"");
-        if (imageDefinition.Image == null) output.Append(" href=\"data:").Append(watermark.ImageMimeType).Append(";base64,").Append(Convert.ToBase64String(bytes)).Append("\"");
-        else output.Append(" href=\"#").Append(imageDefinition.Id).Append("\"");
+        if (imageDefinition.Image == null) {
+            output.Append(" href=\"");
+            AppendSvgImageDataUri(output, watermark, image);
+            output.Append("\"");
+        } else {
+            output.Append(" href=\"#").Append(imageDefinition.Id).Append("\"");
+        }
         if (Math.Abs(watermark.RotationDegrees) > 0.0001) {
             output.Append(" transform=\"rotate(").Append(F(watermark.RotationDegrees)).Append(' ').Append(F(centerX)).Append(' ').Append(F(centerY)).Append(")\"");
         }
@@ -181,7 +187,17 @@ internal static class VisualWatermarkRendering {
 
     private static RgbaImage ScaleAndRotate(RgbaImage source, int width, int height, double degrees, double opacity) {
         var scaledCanvas = new RgbaCanvas(width, height, 1, null, 1);
-        scaledCanvas.DrawImageScaled(0, 0, width, height, source.Width, source.Height, source.Pixels);
+        var scale = Math.Min(width / (double)source.Width, height / (double)source.Height);
+        var drawWidth = Math.Max(1, (int)Math.Round(source.Width * scale));
+        var drawHeight = Math.Max(1, (int)Math.Round(source.Height * scale));
+        scaledCanvas.DrawImageScaled(
+            (width - drawWidth) / 2,
+            (height - drawHeight) / 2,
+            drawWidth,
+            drawHeight,
+            source.Width,
+            source.Height,
+            source.Pixels);
         var scaled = scaledCanvas.ToImage();
         if (Math.Abs(degrees % 360) < 0.0001) return WithOpacity(scaled, opacity);
 
@@ -216,6 +232,14 @@ internal static class VisualWatermarkRendering {
         var pixels = (byte[])image.Pixels.Clone();
         for (var i = 3; i < pixels.Length; i += 4) pixels[i] = (byte)Math.Round(pixels[i] * opacity);
         return new RgbaImage(image.Width, image.Height, pixels);
+    }
+
+    private static void AppendSvgImageDataUri(StringBuilder output, VisualWatermark watermark, RgbaImage image) {
+        var preserveOriginal = string.Equals(watermark.ImageMimeType, "image/png", StringComparison.OrdinalIgnoreCase) ||
+                               string.Equals(watermark.ImageMimeType, "image/jpeg", StringComparison.OrdinalIgnoreCase);
+        var mediaType = preserveOriginal ? watermark.ImageMimeType! : "image/png";
+        var bytes = preserveOriginal ? watermark.ImageBytes! : PngWriter.WriteRgba(image);
+        output.Append("data:").Append(mediaType).Append(";base64,").Append(Convert.ToBase64String(bytes));
     }
 
     private static WatermarkBounds ResolveBounds(VisualWatermark watermark, double canvasWidth, double canvasHeight, RgbaImage? sourceImage = null) {

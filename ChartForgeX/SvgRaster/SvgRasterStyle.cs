@@ -54,7 +54,9 @@ internal sealed class SvgRasterStyle {
             Fill = Fill,
             Stroke = Stroke,
             Color = Color,
-            Opacity = Opacity,
+            // SVG opacity applies to the element as a composited layer; unlike fill/stroke
+            // opacity it is not inherited by descendants.
+            Opacity = 1,
             FillOpacity = FillOpacity,
             StrokeOpacity = StrokeOpacity,
             StrokeWidth = StrokeWidth,

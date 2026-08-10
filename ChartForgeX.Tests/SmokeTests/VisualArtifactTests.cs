@@ -148,6 +148,27 @@ internal static partial class SmokeTests {
         var repeatedImageSvg = artifact.ToSvg(repeatedImageOptions);
         Assert(CountOccurrences(repeatedImageSvg, ";base64,") == 1 && CountOccurrences(repeatedImageSvg, "<use data-cfx-role=\"watermark\"") > 1, "Repeated SVG image watermarks should define their payload once and reuse it for every placement.");
         Assert(artifact.ToPng(repeatedImageOptions).Length > 64, "Repeated image watermarks should retain PNG parity.");
+
+        var widePixels = new byte[20 * 10 * 4];
+        for (var index = 0; index < widePixels.Length; index += 4) {
+            widePixels[index] = 255;
+            widePixels[index + 3] = 255;
+        }
+        var wideImage = new RgbaImage(20, 10, widePixels);
+        var portableWatermark = VisualWatermark.FromImage(PpmWriter.WriteRgba(wideImage), "image/x-portable-pixmap");
+        portableWatermark.Anchor = VisualCanvasAnchor.Center;
+        portableWatermark.Width = 80;
+        portableWatermark.Height = 80;
+        portableWatermark.Opacity = 1;
+        var portableOptions = new VisualArtifactRenderOptions();
+        portableOptions.Watermarks.Add(portableWatermark);
+        var portableSvg = artifact.ToSvg(portableOptions);
+        Assert(portableSvg.Contains("data:image/png;base64,", StringComparison.Ordinal) && !portableSvg.Contains("image/x-portable-pixmap", StringComparison.Ordinal), "SVG watermarks should transcode accepted non-web raster inputs to browser-safe PNG data URIs.");
+
+        var contained = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 100, new byte[100 * 100 * 4]), new[] { portableWatermark });
+        Assert(contained.Pixels[(15 * contained.Width + 50) * 4 + 3] == 0, "PNG watermark rendering should preserve wide-image aspect ratio inside a square target box.");
+        Assert(contained.Pixels[(50 * contained.Width + 50) * 4] >= 250 && contained.Pixels[(50 * contained.Width + 50) * 4 + 3] == 255, "PNG watermark rendering should center contained image pixels in the target box.");
+
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/png\" onload=\"alert(1)"), "Image watermarks should reject attribute-breaking media types.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
