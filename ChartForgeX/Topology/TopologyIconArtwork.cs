@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Xml;
 
 namespace ChartForgeX.Topology;
 
@@ -73,14 +75,37 @@ public sealed class TopologyIconArtwork {
     /// </summary>
     public static bool IsSafeSvgFragment(string? svgBody) {
         if (string.IsNullOrWhiteSpace(svgBody)) return true;
-        var body = svgBody!;
-        return body.IndexOf("<script", StringComparison.OrdinalIgnoreCase) < 0
-            && body.IndexOf("<foreignObject", StringComparison.OrdinalIgnoreCase) < 0
-            && body.IndexOf("<iframe", StringComparison.OrdinalIgnoreCase) < 0
-            && body.IndexOf("<object", StringComparison.OrdinalIgnoreCase) < 0
-            && body.IndexOf("<embed", StringComparison.OrdinalIgnoreCase) < 0
-            && body.IndexOf("javascript:", StringComparison.OrdinalIgnoreCase) < 0
-            && !ContainsEventHandlerAttribute(body);
+        try {
+            var settings = new XmlReaderSettings {
+                ConformanceLevel = ConformanceLevel.Document,
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null
+            };
+            using var input = new StringReader("<cfx-root xmlns:xlink=\"http://www.w3.org/1999/xlink\">" + svgBody + "</cfx-root>");
+            using var reader = XmlReader.Create(input, settings);
+            var styleDepth = -1;
+            while (reader.Read()) {
+                if (reader.NodeType == XmlNodeType.Element) {
+                    if (IsUnsafeSvgElement(reader.LocalName)) return false;
+                    if (string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase) && !reader.IsEmptyElement) styleDepth = reader.Depth;
+                    if (!reader.HasAttributes) continue;
+                    while (reader.MoveToNextAttribute()) {
+                        if (IsEventHandlerAttribute(reader.LocalName) || HasUnsafeScriptScheme(reader.Value)) return false;
+                        if ((string.Equals(reader.LocalName, "href", StringComparison.OrdinalIgnoreCase) || string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) && reader.Value.IndexOf('\\') >= 0) return false;
+                    }
+                    reader.MoveToElement();
+                } else if ((reader.NodeType == XmlNodeType.Text || reader.NodeType == XmlNodeType.CDATA) && styleDepth >= 0 && reader.Depth > styleDepth) {
+                    if (reader.Value.IndexOf('\\') >= 0 || reader.Value.IndexOf("@import", StringComparison.OrdinalIgnoreCase) >= 0 || HasUnsafeScriptScheme(reader.Value)) return false;
+                } else if (reader.NodeType == XmlNodeType.EndElement && reader.Depth == styleDepth && string.Equals(reader.LocalName, "style", StringComparison.OrdinalIgnoreCase)) {
+                    styleDepth = -1;
+                } else if (reader.NodeType == XmlNodeType.ProcessingInstruction || reader.NodeType == XmlNodeType.DocumentType) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (XmlException) {
+            return false;
+        }
     }
 
     /// <summary>
@@ -88,10 +113,7 @@ public sealed class TopologyIconArtwork {
     /// </summary>
     public static bool IsSafeImageHref(string? href) {
         if (string.IsNullOrWhiteSpace(href)) return true;
-        var value = href!.Trim();
-        return value.IndexOf("javascript:", StringComparison.OrdinalIgnoreCase) < 0
-            && value.IndexOf("vbscript:", StringComparison.OrdinalIgnoreCase) < 0
-            && value.IndexOf("data:text/html", StringComparison.OrdinalIgnoreCase) < 0;
+        return !HasUnsafeScriptScheme(href!);
     }
 
     /// <summary>
@@ -115,18 +137,26 @@ public sealed class TopologyIconArtwork {
         return value!.Trim();
     }
 
-    private static bool ContainsEventHandlerAttribute(string value) {
-        for (var index = 0; index < value.Length - 3; index++) {
-            if (!char.IsWhiteSpace(value[index])) continue;
-            if (char.ToLowerInvariant(value[index + 1]) != 'o' || char.ToLowerInvariant(value[index + 2]) != 'n') continue;
-            var cursor = index + 3;
-            if (cursor >= value.Length || !char.IsLetter(value[cursor])) continue;
-            while (cursor < value.Length && (char.IsLetterOrDigit(value[cursor]) || value[cursor] == '-' || value[cursor] == '_' || value[cursor] == ':')) cursor++;
-            while (cursor < value.Length && char.IsWhiteSpace(value[cursor])) cursor++;
-            if (cursor < value.Length && value[cursor] == '=') return true;
-        }
+    private static bool IsUnsafeSvgElement(string localName) =>
+        string.Equals(localName, "script", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "foreignObject", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "iframe", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "object", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(localName, "embed", StringComparison.OrdinalIgnoreCase);
 
-        return false;
+    private static bool IsEventHandlerAttribute(string localName) =>
+        localName.Length > 2 && localName.StartsWith("on", StringComparison.OrdinalIgnoreCase) && char.IsLetter(localName[2]);
+
+    private static bool HasUnsafeScriptScheme(string value) {
+        var normalized = new char[value.Length];
+        var length = 0;
+        for (var index = 0; index < value.Length; index++) {
+            if (!char.IsWhiteSpace(value[index]) && !char.IsControl(value[index])) normalized[length++] = value[index];
+        }
+        var compact = new string(normalized, 0, length);
+        return compact.IndexOf("javascript:", StringComparison.OrdinalIgnoreCase) >= 0
+            || compact.IndexOf("vbscript:", StringComparison.OrdinalIgnoreCase) >= 0
+            || compact.IndexOf("data:text/html", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static bool PathLooksRooted(string value) {

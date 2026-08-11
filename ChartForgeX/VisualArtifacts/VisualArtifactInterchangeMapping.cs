@@ -7,7 +7,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Creates portable semantic interchange envelopes from ChartForgeX visual artifacts.</summary>
-public static class VisualArtifactInterchangeMapping {
+public static partial class VisualArtifactInterchangeMapping {
     /// <summary>
     /// Creates a versioned semantic interchange envelope for an artifact.
     /// </summary>
@@ -114,31 +114,15 @@ public static class VisualArtifactInterchangeMapping {
                 ids.OptionalPort(edge.SourceNodeId, edge.SourcePortId),
                 ids.OptionalPort(edge.TargetNodeId, edge.TargetPortId),
                 index,
-                ids));
+                ids,
+                options));
         }
         foreach (var scenario in prepared.Scenarios) {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
             if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
         }
-    }
-
-    private static void RefreshTopologyAccessibility(
-        VisualArtifactInterchangeEnvelope envelope,
-        VisualArtifact artifact,
-        TopologyChart prepared) {
-        if (!artifact.HasModelAccessibilitySnapshot) return;
-        envelope.AccessibleName = string.Equals(artifact.Accessibility.Name, artifact.ModelAccessibilitySnapshot.Name, StringComparison.Ordinal)
-            ? prepared.Accessibility.Name
-            : artifact.Accessibility.Name;
-        envelope.AccessibleDescription = string.Equals(artifact.Accessibility.Description, artifact.ModelAccessibilitySnapshot.Description, StringComparison.Ordinal)
-            ? prepared.Accessibility.Description
-            : artifact.Accessibility.Description;
-        envelope.Language = string.Equals(artifact.Accessibility.Language, artifact.ModelAccessibilitySnapshot.Language, StringComparison.Ordinal)
-            ? prepared.Accessibility.Language
-            : artifact.Accessibility.Language;
-        envelope.IsDecorative = artifact.Accessibility.IsDecorative == artifact.ModelAccessibilitySnapshot.IsDecorative
-            ? prepared.Accessibility.IsDecorative
-            : artifact.Accessibility.IsDecorative;
+        MapTheme(envelope.Metadata, prepared.Theme ?? TopologyTheme.Light());
+        MapLegend(envelope, prepared.Legend, ids);
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
@@ -237,6 +221,7 @@ public static class VisualArtifactInterchangeMapping {
         envelope.Metadata["sequence.messages"] = sequence.Messages.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["sequence.activations"] = sequence.Activations.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["sequence.notes"] = sequence.Notes.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["sequence.branches"] = sequence.Branches.Count.ToString(CultureInfo.InvariantCulture);
 
         for (var index = 0; index < sequence.Participants.Count; index++) {
             var participant = sequence.Participants[index];
@@ -308,13 +293,31 @@ public static class VisualArtifactInterchangeMapping {
             var block = sequence.Blocks[index];
             int start = Math.Max(0, block.StartStepIndex);
             int end = Math.Max(start, block.EndStepIndex);
-            envelope.Annotations.Add(new VisualArtifactInterchangeAnnotation {
+            var annotation = new VisualArtifactInterchangeAnnotation {
                 Id = ids.AddAnnotation("block-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
                 Kind = "SequenceBlock:" + block.Kind,
                 Text = block.Text,
                 StartIndex = start,
-                EndIndex = end
-            });
+                EndIndex = block.IsEmpty ? null : end
+            };
+            if (block.IsEmpty) annotation.Metadata["sequence.empty"] = bool.TrueString;
+            envelope.Annotations.Add(annotation);
+        }
+        for (var index = 0; index < sequence.Branches.Count; index++) {
+            var branch = sequence.Branches[index];
+            int start = Math.Max(0, branch.StartStepIndex);
+            int end = Math.Max(start, branch.EndStepIndex);
+            var annotation = new VisualArtifactInterchangeAnnotation {
+                Id = ids.AddAnnotation("branch-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
+                Kind = "SequenceBranch:" + branch.Kind,
+                Text = branch.Text,
+                Placement = branch.ParentKind.ToString(),
+                StartIndex = start,
+                EndIndex = branch.IsEmpty ? null : end
+            };
+            annotation.Metadata["sequence.depth"] = branch.Depth.ToString(CultureInfo.InvariantCulture);
+            if (branch.IsEmpty) annotation.Metadata["sequence.empty"] = bool.TrueString;
+            envelope.Annotations.Add(annotation);
         }
     }
 
@@ -334,8 +337,7 @@ public static class VisualArtifactInterchangeMapping {
             Height = group.Height
         };
         Copy(group.Metadata, mapped.Metadata);
-        if (!string.IsNullOrWhiteSpace(group.IconId)) mapped.Metadata["iconId"] = group.IconId!;
-        if (!string.IsNullOrWhiteSpace(group.Symbol)) mapped.Metadata["symbol"] = group.Symbol!;
+        MapGroupPresentation(group, mapped.Metadata);
         return mapped;
     }
 
@@ -390,9 +392,7 @@ public static class VisualArtifactInterchangeMapping {
         };
         var metadataKeys = Copy(node.Metadata, mapped.Metadata);
         CopyWithPrefix(node.Metrics, mapped.Metadata, "metric.", metadataKeys);
-        mapped.Metadata["topology.displayMode"] = displayMode.ToString();
-        if (!node.ShowStatusBadge) mapped.Metadata["topology.showStatusBadge"] = bool.FalseString;
-        if (node.MaximumLabelCharacters.HasValue) mapped.Metadata["topology.maximumLabelCharacters"] = node.MaximumLabelCharacters.Value.ToString(CultureInfo.InvariantCulture);
+        MapNodePresentation(node, displayMode, mapped.Metadata);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side.ToString(), Offset = port.Offset, Label = port.Label };
             Copy(port.Metadata, mappedPort.Metadata);
@@ -420,15 +420,16 @@ public static class VisualArtifactInterchangeMapping {
         string? sourcePortId,
         string? targetPortId,
         int order,
-        InterchangeIdScope ids) {
+        InterchangeIdScope ids,
+        TopologyRenderOptions options) {
         var mapped = new VisualArtifactInterchangeEdge {
             Id = id,
             Kind = edge.Kind.ToString(),
             SourceId = sourceId,
             TargetId = targetId,
-            Label = edge.Label,
-            SecondaryLabel = edge.SecondaryLabel,
-            TertiaryLabel = edge.TertiaryLabel,
+            Label = EdgeLabel(edge, options.EdgeLabelMetricKey, edge.Label),
+            SecondaryLabel = EdgeLabel(edge, options.EdgeSecondaryLabelMetricKey, edge.SecondaryLabel),
+            TertiaryLabel = EdgeLabel(edge, options.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel),
             SourceLabel = edge.SourceLabel,
             TargetLabel = edge.TargetLabel,
             Status = edge.Status.ToString(),
@@ -445,26 +446,7 @@ public static class VisualArtifactInterchangeMapping {
         };
         var metadataKeys = Copy(edge.Metadata, mapped.Metadata);
         CopyWithPrefix(edge.Metrics, mapped.Metadata, "metric.", metadataKeys);
-        mapped.Metadata["topology.routing"] = edge.Routing.ToString();
-        mapped.Metadata["topology.emphasis"] = edge.Emphasis.ToString();
-        if (edge.SourceMarker.HasValue) mapped.Metadata["topology.sourceMarker"] = edge.SourceMarker.Value.ToString();
-        if (edge.TargetMarker.HasValue) mapped.Metadata["topology.targetMarker"] = edge.TargetMarker.Value.ToString();
-        if (edge.StrokeWidth.HasValue) mapped.Metadata["topology.strokeWidth"] = InvariantNumber(edge.StrokeWidth.Value);
-        if (edge.Opacity.HasValue) mapped.Metadata["topology.opacity"] = InvariantNumber(edge.Opacity.Value);
-        if (edge.DashPattern.Count > 0) mapped.Metadata["topology.dashPattern"] = InvariantNumbers(edge.DashPattern);
-        if (edge.Waypoints.Count > 0) mapped.Metadata["topology.waypoints"] = InvariantWaypoints(edge);
-        if (edge.IsMuted) mapped.Metadata["topology.muted"] = bool.TrueString;
-        if (edge.RoutingPriority != 0) mapped.Metadata["topology.routingPriority"] = edge.RoutingPriority.ToString(CultureInfo.InvariantCulture);
-        if (edge.RouteLane != 0) mapped.Metadata["topology.routeLane"] = InvariantNumber(edge.RouteLane);
-        if (edge.LabelOffsetX != 0) mapped.Metadata["topology.labelOffsetX"] = InvariantNumber(edge.LabelOffsetX);
-        if (edge.LabelOffsetY != 0) mapped.Metadata["topology.labelOffsetY"] = InvariantNumber(edge.LabelOffsetY);
-        if (edge.HasLabelAnchorOverride) {
-            mapped.Metadata["topology.labelAnchor"] = InvariantNumber(edge.LabelAnchorX) + "," + InvariantNumber(edge.LabelAnchorY);
-        }
-        if (!string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) && ids.TryNode(edge.LabelAnchorNodeId!, out string labelAnchorNodeId)) {
-            mapped.Metadata["topology.labelAnchorNodeId"] = labelAnchorNodeId;
-        }
-        if (edge.LayoutInference != TopologyEdgeLayoutInference.None) mapped.Metadata["topology.layoutInference"] = edge.LayoutInference.ToString();
+        MapEdgePresentation(edge, ids, mapped.Metadata);
         return mapped;
     }
 

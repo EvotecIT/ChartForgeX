@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Topology;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumJsonCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters;
-    // Keep the materialized JSON tree bounded independently from the byte
-    // limit. This still accommodates the largest valid serialized envelopes
-    // while preventing compact unknown structures from allocating millions
-    // of GeoJsonValue instances before schema projection discards them.
-    internal const int MaximumJsonValues = 600000;
+    // Keep model serialization and parsed JSON materialization on the same
+    // public aggregate budget, independently from the byte/character limits.
+    // This prevents compact unknown structures from allocating millions of
+    // GeoJsonValue instances before schema projection discards them.
+    internal const int MaximumJsonValues = VisualArtifactInterchangeEnvelope.MaximumJsonValues;
     internal const int MaximumGroups = 10000;
     internal const int MaximumNodes = 50000;
     internal const int MaximumEdges = 100000;
@@ -197,6 +198,7 @@ internal static class VisualArtifactInterchangeValidation {
             }
             Metadata(annotation.Metadata, "annotation metadata");
         }
+        VisualArtifactInterchangeValueBudget.Validate(envelope);
     }
 
     private static void UniqueEntityId(ISet<string> ids, string id, string kind, VisualArtifactInterchangeEnvelope envelope) {
@@ -215,6 +217,22 @@ internal static class VisualArtifactInterchangeValidation {
         foreach (var pair in values) {
             if (string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Length > MaximumIdCharacters) throw new ArgumentException(context + " keys must be non-empty and at most " + MaximumIdCharacters + " characters.");
             Text(pair.Value, context + " value");
+        }
+        SafeArtworkMetadata(values, context);
+    }
+
+    private static void SafeArtworkMetadata(IDictionary<string, string> values, string context) {
+        if (values.TryGetValue("topology.artwork.svgBody", out var svgBody) && !TopologyIconArtwork.IsSafeSvgFragment(svgBody)) {
+            throw new ArgumentException(context + " contains unsafe topology artwork SVG content.");
+        }
+        if (values.TryGetValue("topology.artwork.imageHref", out var imageHref) && !TopologyIconArtwork.IsSafeImageHref(imageHref)) {
+            throw new ArgumentException(context + " contains an unsafe topology artwork image href.");
+        }
+        if (values.TryGetValue("topology.artwork.svgPath", out var svgPath) && !TopologyIconArtwork.IsSafeAssetPath(svgPath)) {
+            throw new ArgumentException(context + " contains an unsafe topology artwork SVG path.");
+        }
+        if (values.TryGetValue("topology.artwork.previewPath", out var previewPath) && !TopologyIconArtwork.IsSafeAssetPath(previewPath)) {
+            throw new ArgumentException(context + " contains an unsafe topology artwork preview path.");
         }
     }
 

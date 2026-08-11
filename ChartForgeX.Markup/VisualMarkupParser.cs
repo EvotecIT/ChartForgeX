@@ -117,11 +117,8 @@ public sealed class VisualMarkupParser {
         var document = topologyResult.Document;
         var chart = document.ToTopologyChart();
         var artifactId = string.IsNullOrWhiteSpace(document.Id) ? "topology-" + (result.Artifacts.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : document.Id!;
-        var artifact = VisualArtifact.Create(artifactId, VisualArtifactKind.Topology, chart);
-        artifact.SourceLanguage = VisualArtifactSourceLanguage.ChartForgeX;
-        artifact.Title = document.Title ?? string.Empty;
-        artifact.Subtitle = document.Subtitle ?? string.Empty;
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
+        chart.Id = artifactId;
+        var artifact = chart.ToVisualArtifact(VisualArtifactSourceLanguage.ChartForgeX);
         artifact.Metadata["fence"] = block.FenceName;
         artifact.Metadata["schemaVersion"] = block.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
         artifact.Metadata["sourceLine"] = block.FenceLine.ToString(System.Globalization.CultureInfo.InvariantCulture);

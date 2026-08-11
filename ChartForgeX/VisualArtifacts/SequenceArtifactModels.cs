@@ -76,6 +76,7 @@ public sealed class SequenceArtifact {
     private readonly List<SequenceArtifactActivation> _activations = new();
     private readonly List<SequenceArtifactNote> _notes = new();
     private readonly List<SequenceArtifactBlock> _blocks = new();
+    private readonly List<SequenceArtifactBranch> _branches = new();
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
@@ -125,6 +126,9 @@ public sealed class SequenceArtifact {
 
     /// <summary>Gets block spans.</summary>
     public IReadOnlyList<SequenceArtifactBlock> Blocks => _blocks;
+
+    /// <summary>Gets branch spans within alternative, parallel, and critical blocks.</summary>
+    public IReadOnlyList<SequenceArtifactBranch> Branches => _branches;
 
     /// <summary>Gets artifact metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
@@ -183,8 +187,14 @@ public sealed class SequenceArtifact {
     }
 
     /// <summary>Adds a block span.</summary>
-    public SequenceArtifact AddBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex) {
-        _blocks.Add(new SequenceArtifactBlock(kind, text ?? string.Empty, startStepIndex, endStepIndex));
+    public SequenceArtifact AddBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false) {
+        _blocks.Add(new SequenceArtifactBlock(kind, text ?? string.Empty, startStepIndex, endStepIndex, isEmpty));
+        return this;
+    }
+
+    /// <summary>Adds a branch span within a sequence block.</summary>
+    public SequenceArtifact AddBranch(SequenceArtifactBlockKind parentKind, string kind, string text, int startStepIndex, int endStepIndex, int depth = 0, bool isEmpty = false) {
+        _branches.Add(new SequenceArtifactBranch(parentKind, kind, text ?? string.Empty, startStepIndex, endStepIndex, depth, isEmpty));
         return this;
     }
 
@@ -331,11 +341,12 @@ public sealed class SequenceArtifactBlock {
     private string _text;
 
     /// <summary>Initializes a sequence block span.</summary>
-    public SequenceArtifactBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex) {
+    public SequenceArtifactBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false) {
         Kind = kind;
         _text = text ?? throw new ArgumentNullException(nameof(text));
         StartStepIndex = startStepIndex;
         EndStepIndex = endStepIndex;
+        IsEmpty = isEmpty;
     }
 
     /// <summary>Gets or sets the block kind.</summary>
@@ -349,4 +360,47 @@ public sealed class SequenceArtifactBlock {
 
     /// <summary>Gets or sets the last covered step index.</summary>
     public int EndStepIndex { get; set; }
+
+    /// <summary>Gets or sets whether the block contains no message steps.</summary>
+    public bool IsEmpty { get; set; }
+}
+
+/// <summary>
+/// Describes one branch span within an alternative, parallel, or critical sequence block.
+/// </summary>
+public sealed class SequenceArtifactBranch {
+    private string _kind;
+    private string _text;
+
+    /// <summary>Initializes a sequence branch span.</summary>
+    public SequenceArtifactBranch(SequenceArtifactBlockKind parentKind, string kind, string text, int startStepIndex, int endStepIndex, int depth = 0, bool isEmpty = false) {
+        ParentKind = parentKind;
+        _kind = string.IsNullOrWhiteSpace(kind) ? throw new ArgumentException("Branch kind is required.", nameof(kind)) : kind;
+        _text = text ?? throw new ArgumentNullException(nameof(text));
+        StartStepIndex = startStepIndex;
+        EndStepIndex = endStepIndex;
+        Depth = depth;
+        IsEmpty = isEmpty;
+    }
+
+    /// <summary>Gets or sets the enclosing block kind.</summary>
+    public SequenceArtifactBlockKind ParentKind { get; set; }
+
+    /// <summary>Gets or sets the product-neutral branch kind token.</summary>
+    public string Kind { get => _kind; set => _kind = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Branch kind is required.", nameof(value)) : value; }
+
+    /// <summary>Gets or sets the branch label.</summary>
+    public string Text { get => _text; set => _text = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the first covered step index.</summary>
+    public int StartStepIndex { get; set; }
+
+    /// <summary>Gets or sets the last covered step index.</summary>
+    public int EndStepIndex { get; set; }
+
+    /// <summary>Gets or sets whether the branch contains no message steps.</summary>
+    public bool IsEmpty { get; set; }
+
+    /// <summary>Gets or sets the source nesting depth.</summary>
+    public int Depth { get; set; }
 }

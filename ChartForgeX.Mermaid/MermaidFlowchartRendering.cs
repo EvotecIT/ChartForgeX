@@ -125,11 +125,8 @@ public static class MermaidFlowchartRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidFlowchartRenderOptions();
         var topology = document.ToTopologyChart(options);
-        var artifact = VisualArtifact.Create(topology.Id ?? "mermaid-flowchart", VisualArtifactKind.Mermaid, topology);
-        artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
-        artifact.Title = topology.Title ?? string.Empty;
-        artifact.Subtitle = topology.Subtitle ?? string.Empty;
-        artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
+        var artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
+        artifact.Kind = VisualArtifactKind.Mermaid;
         artifact.PreserveNaturalSize = options.HasExplicitViewportSize;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();

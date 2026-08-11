@@ -99,6 +99,12 @@ internal static partial class SmokeTests {
         var html = chart.ToInteractiveHtmlPage(htmlOptions);
         Assert(html.Contains("artworkSource: attr(element, 'data-node-artwork-source')", StringComparison.Ordinal), "Interactive topology payloads should include artwork source metadata.");
         Assert(html.Contains("obstacleCount: attr(element, 'data-route-obstacle-count')", StringComparison.Ordinal), "Interactive topology payloads should include route obstacle count metadata.");
+        Assert(TopologyIconArtwork.IsSafeSvgFragment("<defs><symbol id=\"safe\"><path d=\"M0 0h1v1z\"/></symbol></defs><use href=\"#safe\"/>"),
+            "Safe fragment-local SVG references should remain supported.");
+        Assert(!TopologyIconArtwork.IsSafeSvgFragment("<a href=\"java&#x73;cript:alert(1)\">Open</a>"),
+            "SVG safety validation should inspect XML-decoded URL attributes.");
+        Assert(!TopologyIconArtwork.IsSafeSvgFragment("<style>.unsafe{fill:url(j\\61vascript:alert(1))}</style><rect class=\"unsafe\"/>"),
+            "SVG safety validation should reject CSS escape sequences that can conceal script URLs.");
         AssertThrows<ArgumentException>(() => chart.WithNodeArtwork("client", TopologyIconArtwork.SvgFile("icons/client.svg")), "Node artwork helper should reject non-embeddable sidecar SVG references.");
         AssertThrows<ArgumentException>(() => chart.WithNodeArtwork("client", TopologyIconArtwork.Image("javascript:alert(1)")), "Node artwork helper should reject unsafe image hrefs.");
         AssertThrows<ArgumentException>(() => TopologyIconArtwork.InlineSvg("<path/>").WithPreserveAspectRatio(" "), "Artwork preserveAspectRatio helpers should reject empty values.");

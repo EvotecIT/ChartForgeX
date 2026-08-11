@@ -57,8 +57,8 @@ link Bob: Dashboard @ https://example.com/bob";
         Assert(sequence.Activations.Count == 2 && sequence.Activations[0].ParticipantId == "Bob" && sequence.Activations[0].Active && sequence.Activations[0].StepIndex == 1 &&
                !sequence.Activations[1].Active && sequence.Activations[1].StepIndex == 2,
             "Mermaid sequence conversion should retain standalone activation state changes at their semantic steps.");
-        Assert(sequence.Notes.Single().StepIndex == 1 && sequence.Blocks.Single().StartStepIndex == 1 && sequence.Blocks.Single().EndStepIndex == 2,
-            "Mermaid sequence conversion should order same-line notes and block boundaries by source column as well as line.");
+        Assert(sequence.Notes.Single().StepIndex == 1 && sequence.Blocks.Single().StartStepIndex == 1 && sequence.Blocks.Single().EndStepIndex == 1 && !sequence.Blocks.Single().IsEmpty,
+            "Mermaid sequence conversion should order same-line notes and inclusive block boundaries by source column as well as line.");
 
         var visual = document.ToVisualArtifact();
         Assert(visual.Metadata["mermaid.activations"] == "2" && visual.Regions.Single(region => region.Id == "Bob").Href == "https://example.com/bob",
@@ -95,6 +95,54 @@ end";
         Assert(document.Blocks.Exists(block => block.Kind == MermaidSequenceBlockKind.Break), "Mermaid sequence parser should parse break blocks.");
         var artifact = document.ToSequenceArtifact();
         Assert(artifact.Blocks.Any(block => block.Kind == SequenceArtifactBlockKind.Break), "Mermaid sequence conversion should keep break blocks in the reusable sequence artifact.");
+        Assert(artifact.Branches.Count == 2 && artifact.Branches[0].Kind == "Primary" && artifact.Branches[1].Kind == "Else" &&
+               artifact.Branches[0].EndStepIndex + 1 == artifact.Branches[1].StartStepIndex &&
+               artifact.Branches.All(branch => branch.EndStepIndex >= branch.StartStepIndex && branch.EndStepIndex < artifact.Messages.Count),
+            "Mermaid sequence conversion should preserve non-overlapping inclusive branch spans in the reusable sequence model.");
+        var branchEnvelope = document.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(branchEnvelope.Annotations.Count(annotation => annotation.Kind.StartsWith("SequenceBranch:", StringComparison.Ordinal)) == 2,
+            "Mermaid sequence branches should reach the product-neutral interchange annotation contract.");
+
+        const string siblingBranches = @"sequenceDiagram
+A->>B: Start
+par First path
+  A->>B: One
+and Second path
+  B-->>A: Two
+end
+critical Service call
+  A->>B: Call
+option Timeout
+  B-->>A: Retry
+end";
+        var siblingResult = new MermaidParser().ParseSequence(siblingBranches);
+        Assert(!siblingResult.HasErrors, "Mermaid sequence parser should parse parallel and critical branch statements: " + MermaidDiagnostics(siblingResult));
+        var siblingArtifact = siblingResult.Document!.ToSequenceArtifact();
+        Assert(siblingArtifact.Branches.Any(branch => branch.Kind == "And" && branch.ParentKind == SequenceArtifactBlockKind.Par) &&
+               siblingArtifact.Branches.Any(branch => branch.Kind == "Option" && branch.ParentKind == SequenceArtifactBlockKind.Critical),
+            "Mermaid sequence conversion should preserve parallel and critical sibling branches, not only else branches.");
+        Assert(siblingArtifact.Branches.All(branch => branch.EndStepIndex >= branch.StartStepIndex && branch.EndStepIndex < siblingArtifact.Messages.Count),
+            "Parallel and critical sequence branch spans should end at their last covered message without overlapping the next branch.");
+
+        const string emptyBranch = @"sequenceDiagram
+A->>B: Before
+alt Primary
+  A->>B: Inside
+else No action
+end
+B-->>A: After";
+        var emptyBranchResult = new MermaidParser().ParseSequence(emptyBranch);
+        Assert(!emptyBranchResult.HasErrors, "Mermaid sequence parser should retain empty branches: " + MermaidDiagnostics(emptyBranchResult));
+        var emptyBranchDocument = emptyBranchResult.Document ?? throw new InvalidOperationException("Empty-branch Mermaid sequence should produce a document.");
+        var emptyBranchArtifact = emptyBranchDocument.ToSequenceArtifact();
+        Assert(emptyBranchArtifact.Blocks.Single().StartStepIndex == 1 && emptyBranchArtifact.Blocks.Single().EndStepIndex == 1 && !emptyBranchArtifact.Blocks.Single().IsEmpty,
+            "Nonempty Mermaid blocks should end at their last covered message rather than the following message.");
+        Assert(emptyBranchArtifact.Branches.Count == 2 && emptyBranchArtifact.Branches.Single(branch => branch.Kind == "Else").IsEmpty,
+            "Mermaid sequence conversion should retain explicitly empty sibling branches and their labels.");
+        var emptyBranchEnvelope = emptyBranchDocument.ToVisualArtifact().ToInterchangeEnvelope();
+        var emptyElse = emptyBranchEnvelope.Annotations.Single(annotation => annotation.Kind == "SequenceBranch:Else");
+        Assert(emptyElse.StartIndex == 2 && emptyElse.EndIndex == null && emptyElse.Metadata["sequence.empty"] == bool.TrueString,
+            "Interchange projection should expose an empty branch boundary without claiming that it covers the following message.");
     }
 
     private static void MermaidSequenceConvertsToSequenceArtifactAndRenders() {

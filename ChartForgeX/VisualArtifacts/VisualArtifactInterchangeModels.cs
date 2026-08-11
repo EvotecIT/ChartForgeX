@@ -23,6 +23,9 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Maximum accepted JSON text length for one interchange envelope.</summary>
     public const int MaximumJsonCharacters = 8 * 1024 * 1024;
 
+    /// <summary>Maximum accepted materialized JSON values for one interchange envelope.</summary>
+    public const int MaximumJsonValues = 600000;
+
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;

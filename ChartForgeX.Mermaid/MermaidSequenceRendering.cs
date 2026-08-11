@@ -122,17 +122,28 @@ public static class MermaidSequenceRendering {
     private static void AddBlocks(MermaidSequenceDocument document, SequenceArtifact sequence) {
         var stack = new Stack<BlockStart>();
         foreach (var block in document.Blocks) {
-            if (IsBranch(block.Kind)) continue;
+            if (IsBranch(block.Kind)) {
+                if (stack.Count == 0 || !stack.Peek().IsBranching) continue;
+                var current = stack.Pop();
+                int boundary = CountMessagesBefore(document, block.Span);
+                current.CompleteBranch(sequence, boundary);
+                current = current.NextBranch(block.Kind.ToString(), block.Text ?? string.Empty, boundary);
+                stack.Push(current);
+                continue;
+            }
             if (block.Kind == MermaidSequenceBlockKind.End) {
                 if (stack.Count == 0) continue;
                 var start = stack.Pop();
-                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, CountMessagesBefore(document, block.Span));
+                int boundary = CountMessagesBefore(document, block.Span);
+                start.CompleteBranch(sequence, boundary);
+                bool isEmpty = boundary <= start.StepIndex;
+                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, isEmpty ? start.StepIndex : boundary - 1, isEmpty);
                 continue;
             }
 
             var kind = ToBlockKind(block.Kind);
             if (!kind.HasValue) continue;
-            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span)));
+            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span), block.Depth));
         }
     }
 
@@ -216,15 +227,43 @@ public static class MermaidSequenceRendering {
     }
 
     private readonly struct BlockStart {
-        public BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex) {
+        public BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth) {
             Kind = kind;
             Text = text;
             StepIndex = stepIndex;
+            Depth = depth;
+            BranchKind = "Primary";
+            BranchText = text;
+            BranchStepIndex = stepIndex;
+        }
+
+        private BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth, string branchKind, string branchText, int branchStepIndex) {
+            Kind = kind;
+            Text = text;
+            StepIndex = stepIndex;
+            Depth = depth;
+            BranchKind = branchKind;
+            BranchText = branchText;
+            BranchStepIndex = branchStepIndex;
         }
 
         public SequenceArtifactBlockKind Kind { get; }
         public string Text { get; }
         public int StepIndex { get; }
+        public int Depth { get; }
+        public string BranchKind { get; }
+        public string BranchText { get; }
+        public int BranchStepIndex { get; }
+        public bool IsBranching => Kind == SequenceArtifactBlockKind.Alt || Kind == SequenceArtifactBlockKind.Par || Kind == SequenceArtifactBlockKind.Critical;
+
+        public void CompleteBranch(SequenceArtifact sequence, int exclusiveEndStepIndex) {
+            if (!IsBranching) return;
+            bool isEmpty = exclusiveEndStepIndex <= BranchStepIndex;
+            sequence.AddBranch(Kind, BranchKind, BranchText, BranchStepIndex, isEmpty ? BranchStepIndex : exclusiveEndStepIndex - 1, Depth, isEmpty);
+        }
+
+        public BlockStart NextBranch(string branchKind, string branchText, int stepIndex) =>
+            new(Kind, Text, StepIndex, Depth, branchKind, branchText, stepIndex);
     }
 }
 

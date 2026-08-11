@@ -202,6 +202,11 @@ flowchart LR
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json) && artifact.ToInterchangeEnvelope().Nodes.Count == 3,
             "Topology-backed Mermaid artifacts should declare and produce semantic JSON interchange.");
         Assert(artifact.Metadata["mermaid.nodes"] == "3" && artifact.Metadata["mermaid.edges"] == "2", "Mermaid flowchart visual artifact should expose model counts.");
+        var artifactTopology = artifact.Model as TopologyChart ?? throw new InvalidOperationException("Expected a topology-backed Mermaid artifact.");
+        artifactTopology.Accessibility.WithTextAlternative("Current Mermaid flowchart", "Current topology-backed description", "pl-PL");
+        VisualArtifactInterchangeEnvelope accessibilityEnvelope = artifact.ToInterchangeEnvelope();
+        Assert(accessibilityEnvelope.AccessibleName == "Current Mermaid flowchart" && accessibilityEnvelope.AccessibleDescription == "Current topology-backed description" && accessibilityEnvelope.Language == "pl-PL",
+            "Topology-backed Mermaid wrappers should refresh current model accessibility through the shared topology artifact path.");
     }
 
     private static void MermaidFlowchartConversionPreservesSubgraphsAndStyles() {
