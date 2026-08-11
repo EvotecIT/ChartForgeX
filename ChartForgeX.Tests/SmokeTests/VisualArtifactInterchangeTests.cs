@@ -104,10 +104,13 @@ internal static partial class SmokeTests {
         maximumIdTopology.LayoutMode = TopologyLayoutMode.Manual;
         maximumIdTopology.Groups.Add(new TopologyGroup { Id = maximumId, Label = "Group", X = 0, Y = 0, Width = 400, Height = 200 });
         var maximumIdSource = new TopologyNode { Id = maximumId, Label = "Source", GroupId = maximumId, X = 30, Y = 70, Width = 100, Height = 50 };
+        string longPortId = new string('p', 600);
+        maximumIdSource.Ports.Add(new TopologyNodePort { Id = longPortId, Side = TopologyEdgePort.Right, Offset = 0.5 });
+        maximumIdSource.Metadata[new string('m', 600)] = "bounded";
         maximumIdSource.Metrics[maximumId] = "1";
         maximumIdTopology.Nodes.Add(maximumIdSource);
         maximumIdTopology.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", GroupId = maximumId, X = 220, Y = 70, Width = 100, Height = 50 });
-        maximumIdTopology.Edges.Add(new TopologyEdge { Id = "edge", SourceNodeId = maximumId, TargetNodeId = "target" });
+        maximumIdTopology.Edges.Add(new TopologyEdge { Id = "edge", SourceNodeId = maximumId, TargetNodeId = "target", SourcePortId = longPortId });
         var maximumIdEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope();
         Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Id.Length <= 512,
             "Generated collision ids should remain within the interchange schema limit.");
@@ -115,12 +118,29 @@ internal static partial class SmokeTests {
             "Bounded collision ids should preserve references and produce a valid interchange payload.");
         Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "1").Key.Length <= 512,
             "Generated prefixed metadata keys should remain within the interchange schema limit.");
+        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "bounded").Key.Length <= 512,
+            "Direct source metadata keys should remain within the interchange schema limit.");
+        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Ports.Single().Id.Length <= 512 &&
+               maximumIdEnvelope.Edges.Single().SourcePortId == maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Ports.Single().Id,
+            "Bounded topology port ids should preserve named edge references.");
         maximumIdTopology.Id = maximumId;
         var maximumViewEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope(new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions { View = new TopologyView { Id = maximumId } }
         });
         Assert(maximumViewEnvelope.Id.Length <= 512 && maximumViewEnvelope.ToJson().Length > 0,
             "Generated topology view ids should remain within the interchange schema limit.");
+
+        maximumIdTopology.Id = new string('t', 600);
+        var boundedTopologyEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(boundedTopologyEnvelope.Id.Length <= 512 && boundedTopologyEnvelope.ToJson().Length > 0,
+            "Topology interchange should deterministically bound over-limit top-level source ids.");
+
+        var autoGroupTopology = TopologyChart.Create();
+        autoGroupTopology.Groups.Add(new TopologyGroup { Id = "auto-group", Label = "Auto group", Width = 0, Height = 0 });
+        autoGroupTopology.Nodes.Add(new TopologyNode { Id = "auto-node", Label = "Auto node", GroupId = "auto-group" });
+        var autoGroupEnvelope = autoGroupTopology.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(autoGroupEnvelope.Groups.Single().Width > 0 && autoGroupEnvelope.Groups.Single().Height > 0,
+            "Interchange topology validation should accept auto-sized source groups after preparation assigns their dimensions.");
 
         var mergedMetadataTopology = TopologyChart.Create();
         mergedMetadataTopology.LayoutMode = TopologyLayoutMode.Manual;
@@ -211,16 +231,20 @@ internal static partial class SmokeTests {
 
         string longSourceId = new string('s', 300);
         string longTargetId = new string('t', 300);
-        var longIdFlowEnvelope = FlowArtifact.Create("long-flow")
+        var longIdFlowEnvelope = FlowArtifact.Create(new string('f', 600))
             .AddStep(longSourceId, "Long source")
             .AddStep(longTargetId, "Long target")
             .AddConnector(longSourceId, longTargetId)
             .ToVisualArtifact()
             .ToInterchangeEnvelope();
-        Assert(longIdFlowEnvelope.Nodes.All(node => node.Id.Length <= 512) && longIdFlowEnvelope.Edges.Single().Id.Length <= 512 &&
+        Assert(longIdFlowEnvelope.Id.Length <= 512 && longIdFlowEnvelope.Nodes.All(node => node.Id.Length <= 512) && longIdFlowEnvelope.Edges.Single().Id.Length <= 512 &&
                longIdFlowEnvelope.Edges.Single().SourceId == longIdFlowEnvelope.Nodes.Single(node => node.Label == "Long source").Id &&
                longIdFlowEnvelope.ToJson().Length > 0,
-            "Every allocated source or generated entity id should remain within the interchange schema limit.");
+            "Top-level and allocated source or generated flow ids should remain within the interchange schema limit.");
+
+        var invalidLaneFlow = FlowArtifact.Create("invalid-lane").AddStep("step", "Step", laneId: "missing");
+        AssertThrows<TopologyValidationException>(() => invalidLaneFlow.ToVisualArtifact().ToInterchangeEnvelope(),
+            "Flow interchange should reject missing lane references consistently with the static topology fallback.");
 
         var sequence = SequenceArtifact.Create("authentication")
             .WithTitle("Authentication")
@@ -261,6 +285,18 @@ internal static partial class SmokeTests {
         Assert(collidingSequenceEnvelope.Edges.Single().SourceId == "message-1", "Sequence message references should retain participant ids.");
         Assert(collidingSequenceEnvelope.Annotations.Single().StartIndex == 0 && collidingSequenceEnvelope.Annotations.Single().EndIndex == 0,
             "Sequence block spans should use the renderer's non-negative ordered normalization.");
+
+        var duplicateSequence = SequenceArtifact.Create(new string('q', 600))
+            .AddParticipant("first", "First")
+            .AddParticipant("second", "Second")
+            .AddMessage("first", "first", "Self call");
+        duplicateSequence.Participants[1].Id = "first";
+        var duplicateSequenceEnvelope = duplicateSequence.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(duplicateSequenceEnvelope.Id.Length <= 512 && duplicateSequenceEnvelope.Nodes.Select(node => node.Id).Distinct(StringComparer.Ordinal).Count() == 2,
+            "Sequence interchange should bound its top-level id and allocate distinct nodes for participant ids duplicated by mutation.");
+        Assert(duplicateSequenceEnvelope.Edges.Single().SourceId == duplicateSequenceEnvelope.Nodes[0].Id &&
+               duplicateSequenceEnvelope.Edges.Single().TargetId == duplicateSequenceEnvelope.Nodes[0].Id && duplicateSequenceEnvelope.ToJson().Length > 0,
+            "Sequence message references should retain the renderer's first-participant match when later participant ids collide.");
 
         var danglingSequence = SequenceArtifact.Create("dangling-sequence")
             .AddParticipant("caller", "Caller")

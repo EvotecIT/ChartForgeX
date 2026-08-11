@@ -46,7 +46,7 @@ public static class VisualArtifactInterchangeMapping {
 
     private static VisualArtifactInterchangeEnvelope Common(VisualArtifact artifact) {
         var envelope = new VisualArtifactInterchangeEnvelope {
-            Id = artifact.Id,
+            Id = BoundedGeneratedId(artifact.Id, "artifact"),
             Kind = artifact.Kind,
             SourceLanguage = artifact.SourceLanguage,
             Title = artifact.Title,
@@ -64,18 +64,17 @@ public static class VisualArtifactInterchangeMapping {
 
     private static void MapTopology(VisualArtifactInterchangeEnvelope envelope, TopologyChart topology, TopologyRenderOptions? renderOptions) {
         var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
-        var sourceValidation = new TopologyChartValidator().Validate(topology);
-        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
-        var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
+        var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
         var ids = new InterchangeIdScope();
         foreach (var group in prepared.Groups) ids.AddGroup(group.Id);
-        foreach (var node in prepared.Nodes) ids.AddNode(node.Id);
+        foreach (var node in prepared.Nodes) {
+            ids.AddNode(node.Id);
+            foreach (var port in node.Ports) ids.AddPort(node.Id, port.Id);
+        }
         foreach (var edge in prepared.Edges) ids.AddEdge(edge.Id);
         if (!string.IsNullOrWhiteSpace(prepared.Id)) {
             string preparedId = prepared.Id!;
-            envelope.Id = !string.IsNullOrWhiteSpace(options.View?.Id)
-                ? BoundedGeneratedId(preparedId, "topology-view")
-                : preparedId;
+            envelope.Id = BoundedGeneratedId(preparedId, !string.IsNullOrWhiteSpace(options.View?.Id) ? "topology-view" : "topology");
         }
         envelope.Title = prepared.Title ?? string.Empty;
         envelope.Subtitle = prepared.Subtitle ?? string.Empty;
@@ -88,15 +87,22 @@ public static class VisualArtifactInterchangeMapping {
         envelope.Metadata["topology.edges"] = prepared.Edges.Count.ToString(CultureInfo.InvariantCulture);
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
-        foreach (var node in prepared.Nodes) envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId)));
+        foreach (var node in prepared.Nodes) envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids));
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
-            envelope.Edges.Add(MapEdge(edge, ids.Edge(edge.Id), ids.Node(edge.SourceNodeId), ids.Node(edge.TargetNodeId), index));
+            envelope.Edges.Add(MapEdge(
+                edge,
+                ids.Edge(edge.Id),
+                ids.Node(edge.SourceNodeId),
+                ids.Node(edge.TargetNodeId),
+                ids.OptionalPort(edge.SourceNodeId, edge.SourcePortId),
+                ids.OptionalPort(edge.TargetNodeId, edge.TargetPortId),
+                index));
         }
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow) {
-        envelope.Id = flow.Id;
+        envelope.Id = BoundedGeneratedId(flow.Id, "flow");
         envelope.Title = flow.Title;
         envelope.Subtitle = flow.Subtitle;
         envelope.Layout = flow.LayoutMode.ToString();
@@ -106,7 +112,8 @@ public static class VisualArtifactInterchangeMapping {
         envelope.Metadata["flow.steps"] = flow.Steps.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["flow.connectors"] = flow.Connectors.Count.ToString(CultureInfo.InvariantCulture);
 
-        var prepared = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
+        var flowTopology = flow.ToTopologyChart();
+        var prepared = PrepareValidatedTopology(flowTopology, new TopologyRenderOptions { IncludeLegend = false }, detachOmittedSourceGroups: false);
         envelope.Width = prepared.Viewport.Width;
         envelope.Height = prepared.Viewport.Height;
         var preparedGroups = GroupsById(prepared.Groups);
@@ -175,8 +182,9 @@ public static class VisualArtifactInterchangeMapping {
 
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence) {
         var ids = new InterchangeIdScope();
-        foreach (var participant in sequence.Participants) ids.AddNode(participant.Id);
-        envelope.Id = sequence.Id;
+        var participantIds = new List<string>();
+        foreach (var participant in sequence.Participants) participantIds.Add(ids.AddNodeOccurrence(participant.Id));
+        envelope.Id = BoundedGeneratedId(sequence.Id, "sequence");
         envelope.Title = sequence.Title;
         envelope.Subtitle = sequence.Subtitle;
         envelope.Layout = "Sequence";
@@ -192,7 +200,7 @@ public static class VisualArtifactInterchangeMapping {
         for (var index = 0; index < sequence.Participants.Count; index++) {
             var participant = sequence.Participants[index];
             var node = new VisualArtifactInterchangeNode {
-                Id = ids.Node(participant.Id),
+                Id = participantIds[index],
                 Kind = participant.Kind.ToString(),
                 Label = participant.Label
             };
@@ -273,7 +281,31 @@ public static class VisualArtifactInterchangeMapping {
         return mapped;
     }
 
-    private static VisualArtifactInterchangeNode MapNode(TopologyNode node, string id, string? groupId) {
+    private static TopologyChart PrepareValidatedTopology(TopologyChart topology, TopologyRenderOptions options, bool detachOmittedSourceGroups) {
+        var validator = new TopologyChartValidator();
+        var sourceValidation = validator.ValidateScenarioReferences(topology);
+        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
+
+        var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
+        if (detachOmittedSourceGroups) DetachOmittedSourceGroups(topology, prepared);
+        var preparedValidation = validator.Validate(prepared, validateScenarioReferences: false, options);
+        if (!preparedValidation.IsValid) throw new TopologyValidationException(preparedValidation);
+        return prepared;
+    }
+
+    private static void DetachOmittedSourceGroups(TopologyChart source, TopologyChart prepared) {
+        var sourceGroupIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var group in source.Groups) sourceGroupIds.Add(group.Id);
+        var preparedGroupIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var group in prepared.Groups) preparedGroupIds.Add(group.Id);
+        foreach (var node in prepared.Nodes) {
+            if (!string.IsNullOrWhiteSpace(node.GroupId) && sourceGroupIds.Contains(node.GroupId!) && !preparedGroupIds.Contains(node.GroupId!)) {
+                node.GroupId = null;
+            }
+        }
+    }
+
+    private static VisualArtifactInterchangeNode MapNode(TopologyNode node, string id, string? groupId, InterchangeIdScope ids) {
         var mapped = new VisualArtifactInterchangeNode {
             Id = id,
             Kind = node.Kind.ToString(),
@@ -296,7 +328,7 @@ public static class VisualArtifactInterchangeMapping {
         Copy(node.Metadata, mapped.Metadata);
         CopyWithPrefix(node.Metrics, mapped.Metadata, "metric.");
         foreach (var port in node.Ports) {
-            var mappedPort = new VisualArtifactInterchangePort { Id = port.Id, Side = port.Side.ToString(), Offset = port.Offset, Label = port.Label };
+            var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side.ToString(), Offset = port.Offset, Label = port.Label };
             Copy(port.Metadata, mappedPort.Metadata);
             mapped.Ports.Add(mappedPort);
         }
@@ -314,7 +346,14 @@ public static class VisualArtifactInterchangeMapping {
         return mapped;
     }
 
-    private static VisualArtifactInterchangeEdge MapEdge(TopologyEdge edge, string id, string sourceId, string targetId, int order) {
+    private static VisualArtifactInterchangeEdge MapEdge(
+        TopologyEdge edge,
+        string id,
+        string sourceId,
+        string targetId,
+        string? sourcePortId,
+        string? targetPortId,
+        int order) {
         var mapped = new VisualArtifactInterchangeEdge {
             Id = id,
             Kind = edge.Kind.ToString(),
@@ -330,8 +369,8 @@ public static class VisualArtifactInterchangeMapping {
             LineStyle = edge.LineStyle.ToString(),
             SourcePort = edge.SourcePort.ToString(),
             TargetPort = edge.TargetPort.ToString(),
-            SourcePortId = edge.SourcePortId,
-            TargetPortId = edge.TargetPortId,
+            SourcePortId = sourcePortId,
+            TargetPortId = targetPortId,
             Color = edge.Color,
             Href = SafeHref(edge.Href),
             Tooltip = edge.Tooltip,
@@ -355,11 +394,14 @@ public static class VisualArtifactInterchangeMapping {
     }
 
     private static void Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
-        foreach (var pair in source) target[pair.Key] = pair.Value;
+        foreach (var pair in source) target[BoundedGeneratedId(pair.Key, "metadata-key")] = pair.Value;
     }
 
     private static void CopyMissing(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
-        foreach (var pair in source) if (!target.ContainsKey(pair.Key)) target[pair.Key] = pair.Value;
+        foreach (var pair in source) {
+            string key = BoundedGeneratedId(pair.Key, "metadata-key");
+            if (!target.ContainsKey(key)) target[key] = pair.Value;
+        }
     }
 
     private static void CopyWithPrefix(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, string prefix) {
@@ -402,15 +444,37 @@ public static class VisualArtifactInterchangeMapping {
         private readonly Dictionary<string, string> _groups = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _nodes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _edges = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Dictionary<string, string>> _ports = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, HashSet<string>> _usedPorts = new(StringComparer.Ordinal);
 
         public string AddGroup(string sourceId) => Add(_groups, sourceId, "group");
         public string AddNode(string sourceId) => Add(_nodes, sourceId, "node");
+        public string AddNodeOccurrence(string sourceId) {
+            string allocated = Allocate(sourceId, "node");
+            if (!_nodes.ContainsKey(sourceId)) _nodes.Add(sourceId, allocated);
+            return allocated;
+        }
         public string AddEdge(string sourceId) => Add(_edges, sourceId, "edge");
         public string AddAnnotation(string sourceId) => Allocate(sourceId, "annotation");
+        public string AddPort(string nodeSourceId, string sourceId) {
+            if (!_ports.TryGetValue(nodeSourceId, out var ports)) {
+                ports = new Dictionary<string, string>(StringComparer.Ordinal);
+                _ports.Add(nodeSourceId, ports);
+                _usedPorts.Add(nodeSourceId, new HashSet<string>(StringComparer.Ordinal));
+            }
+            string allocated = AllocateLocal(_usedPorts[nodeSourceId], sourceId, "port");
+            ports.Add(sourceId, allocated);
+            return allocated;
+        }
         public string Group(string sourceId) => _groups[sourceId];
         public string Node(string sourceId) => _nodes[sourceId];
         public string Edge(string sourceId) => _edges[sourceId];
+        public string Port(string nodeSourceId, string sourceId) => _ports[nodeSourceId][sourceId];
         public bool TryNode(string sourceId, out string mappedId) => _nodes.TryGetValue(sourceId, out mappedId!);
+        public string? OptionalPort(string nodeSourceId, string? sourceId) =>
+            !string.IsNullOrWhiteSpace(sourceId) && _ports.TryGetValue(nodeSourceId, out var ports) && ports.TryGetValue(sourceId!, out string? mappedId)
+                ? mappedId
+                : null;
         public string? OptionalGroup(string? sourceId) =>
             !string.IsNullOrWhiteSpace(sourceId) && _groups.TryGetValue(sourceId!, out string? mappedId)
                 ? mappedId
@@ -429,6 +493,19 @@ public static class VisualArtifactInterchangeMapping {
             string candidate = BoundedGeneratedId(preferred, category);
             int ordinal = 2;
             while (!_used.Add(candidate)) {
+                candidate = BoundedGeneratedId(preferred, category, ordinal);
+                ordinal++;
+            }
+            return candidate;
+        }
+
+        private static string AllocateLocal(ISet<string> used, string sourceId, string category) {
+            string sourceCandidate = BoundedGeneratedId(sourceId, category);
+            if (used.Add(sourceCandidate)) return sourceCandidate;
+            string preferred = category + "-" + sourceId;
+            string candidate = BoundedGeneratedId(preferred, category);
+            int ordinal = 2;
+            while (!used.Add(candidate)) {
                 candidate = BoundedGeneratedId(preferred, category, ordinal);
                 ordinal++;
             }
