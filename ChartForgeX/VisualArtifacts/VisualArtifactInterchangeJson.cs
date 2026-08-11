@@ -4,12 +4,12 @@ using ChartForgeX.Core;
 
 namespace ChartForgeX.VisualArtifacts;
 
-internal static class VisualArtifactInterchangeJson {
+internal static partial class VisualArtifactInterchangeJson {
     private const int MaximumJsonDepth = 32;
     private static readonly GeoJsonReadLimits JsonReadLimits = new GeoJsonReadLimits(
             VisualArtifactInterchangeValidation.MaximumJsonValues,
             VisualArtifactInterchangeValidation.MaximumEdges,
-            VisualArtifactInterchangeValidation.MaximumMetadataEntries)
+            VisualArtifactInterchangeValidation.MaximumExtensionEntries)
         .LimitArray("groups", VisualArtifactInterchangeValidation.MaximumGroups)
         .LimitArray("nodes", VisualArtifactInterchangeValidation.MaximumNodes)
         .LimitArray("edges", VisualArtifactInterchangeValidation.MaximumEdges)
@@ -19,7 +19,10 @@ internal static class VisualArtifactInterchangeJson {
         .LimitArray("ports", VisualArtifactInterchangeValidation.MaximumPortsPerNode)
         .LimitArray("details", VisualArtifactInterchangeValidation.MaximumDetailsPerNode)
         .LimitArray("targetIds", VisualArtifactInterchangeValidation.MaximumTargetIdsPerAnnotation)
-        .LimitObject("metadata", VisualArtifactInterchangeValidation.MaximumMetadataEntries)
+        .LimitArray("items", VisualArtifactInterchangeValidation.MaximumLegendItems)
+        .LimitArray("dashPattern", VisualArtifactInterchangeValidation.MaximumDashPatternValues)
+        .LimitArray("waypoints", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
+        .LimitObject("extensions", VisualArtifactInterchangeValidation.MaximumExtensionEntries)
         .RejectDuplicates();
 
     public static string Serialize(VisualArtifactInterchangeEnvelope envelope) {
@@ -29,19 +32,20 @@ internal static class VisualArtifactInterchangeJson {
         String(writer, "schema", envelope.Schema);
         Number(writer, "version", envelope.Version);
         String(writer, "kind", envelope.Kind.ToString());
+        String(writer, "family", envelope.Family.ToString());
         String(writer, "sourceLanguage", envelope.SourceLanguage.ToString());
         String(writer, "id", envelope.Id);
         String(writer, "title", envelope.Title);
         String(writer, "subtitle", envelope.Subtitle);
-        String(writer, "layout", envelope.Layout);
-        String(writer, "direction", envelope.Direction);
         OptionalNumber(writer, "width", envelope.Width);
         OptionalNumber(writer, "height", envelope.Height);
         OptionalString(writer, "accessibleName", envelope.AccessibleName);
         OptionalString(writer, "accessibleDescription", envelope.AccessibleDescription);
         OptionalString(writer, "language", envelope.Language);
         Boolean(writer, "decorative", envelope.IsDecorative);
-        Metadata(writer, "metadata", envelope.Metadata);
+        ArtifactSemantics(writer, envelope);
+        Presentation(writer, envelope.Presentation);
+        Extensions(writer, envelope.Extensions);
         Groups(writer, envelope.Groups);
         Nodes(writer, envelope.Nodes);
         Edges(writer, envelope.Edges);
@@ -63,12 +67,11 @@ internal static class VisualArtifactInterchangeJson {
 
         var envelope = new VisualArtifactInterchangeEnvelope {
             Kind = RequiredEnum<VisualArtifactKind>(root, "kind"),
+            Family = RequiredEnum<VisualArtifactInterchangeFamily>(root, "family"),
             SourceLanguage = RequiredEnum<VisualArtifactSourceLanguage>(root, "sourceLanguage"),
             Id = RequiredString(root, "id"),
             Title = OptionalString(root, "title") ?? string.Empty,
             Subtitle = OptionalString(root, "subtitle") ?? string.Empty,
-            Layout = OptionalString(root, "layout") ?? string.Empty,
-            Direction = OptionalString(root, "direction") ?? string.Empty,
             Width = OptionalNumber(root, "width"),
             Height = OptionalNumber(root, "height"),
             AccessibleName = OptionalString(root, "accessibleName"),
@@ -76,7 +79,11 @@ internal static class VisualArtifactInterchangeJson {
             Language = OptionalString(root, "language"),
             IsDecorative = OptionalBool(root, "decorative") ?? false
         };
-        ReadMetadata(root, "metadata", envelope.Metadata);
+        envelope.Topology = ReadTopologyArtifact(root);
+        envelope.Flow = ReadFlowArtifact(root);
+        envelope.Sequence = ReadSequenceArtifact(root);
+        envelope.Presentation = ReadPresentation(root);
+        ReadExtensions(root, envelope.Extensions);
         ReadGroups(root, envelope.Groups);
         ReadNodes(root, envelope.Nodes);
         ReadEdges(root, envelope.Edges);
@@ -92,6 +99,7 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var group in groups) {
             writer.StartObject();
             String(writer, "id", group.Id);
+            String(writer, "role", group.Role.ToString());
             String(writer, "kind", group.Kind);
             String(writer, "label", group.Label);
             OptionalString(writer, "subtitle", group.Subtitle);
@@ -103,7 +111,8 @@ internal static class VisualArtifactInterchangeJson {
             OptionalNumber(writer, "y", group.Y);
             OptionalNumber(writer, "width", group.Width);
             OptionalNumber(writer, "height", group.Height);
-            Metadata(writer, "metadata", group.Metadata);
+            TopologyGroup(writer, group.Topology);
+            Extensions(writer, group.Extensions);
             writer.EndObject();
         }
         writer.EndArray();
@@ -115,6 +124,7 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var node in nodes) {
             writer.StartObject();
             String(writer, "id", node.Id);
+            String(writer, "role", node.Role.ToString());
             String(writer, "kind", node.Kind);
             String(writer, "label", node.Label);
             OptionalString(writer, "subtitle", node.Subtitle);
@@ -131,9 +141,25 @@ internal static class VisualArtifactInterchangeJson {
             OptionalNumber(writer, "y", node.Y);
             OptionalNumber(writer, "width", node.Width);
             OptionalNumber(writer, "height", node.Height);
-            Metadata(writer, "metadata", node.Metadata);
+            TopologyNode(writer, node.Topology);
+            FlowNode(writer, node.Flow);
+            SequenceNode(writer, node.Sequence);
+            Extensions(writer, node.Extensions);
+            Metrics(writer, node.Metrics);
             Ports(writer, node.Ports);
             Details(writer, node.Details);
+            writer.EndObject();
+        }
+        writer.EndArray();
+    }
+
+    private static void Metrics(VisualArtifactInterchangeJsonWriter writer, IEnumerable<VisualArtifactInterchangeMetric> metrics) {
+        writer.Property("metrics");
+        writer.StartArray();
+        foreach (var metric in metrics) {
+            writer.StartObject();
+            String(writer, "name", metric.Name);
+            String(writer, "value", metric.Value);
             writer.EndObject();
         }
         writer.EndArray();
@@ -145,10 +171,10 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var port in ports) {
             writer.StartObject();
             String(writer, "id", port.Id);
-            String(writer, "side", port.Side);
+            String(writer, "side", port.Side.ToString());
             Number(writer, "offset", port.Offset);
             OptionalString(writer, "label", port.Label);
-            Metadata(writer, "metadata", port.Metadata);
+            Extensions(writer, port.Extensions);
             writer.EndObject();
         }
         writer.EndArray();
@@ -164,7 +190,7 @@ internal static class VisualArtifactInterchangeJson {
             OptionalString(writer, "iconId", detail.IconId);
             OptionalString(writer, "status", detail.Status);
             OptionalString(writer, "color", detail.Color);
-            Metadata(writer, "metadata", detail.Metadata);
+            Extensions(writer, detail.Extensions);
             writer.EndObject();
         }
         writer.EndArray();
@@ -176,6 +202,7 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var edge in edges) {
             writer.StartObject();
             String(writer, "id", edge.Id);
+            String(writer, "role", edge.Role.ToString());
             String(writer, "kind", edge.Kind);
             String(writer, "sourceId", edge.SourceId);
             String(writer, "targetId", edge.TargetId);
@@ -185,17 +212,17 @@ internal static class VisualArtifactInterchangeJson {
             OptionalString(writer, "sourceLabel", edge.SourceLabel);
             OptionalString(writer, "targetLabel", edge.TargetLabel);
             OptionalString(writer, "status", edge.Status);
-            OptionalString(writer, "direction", edge.Direction);
-            OptionalString(writer, "lineStyle", edge.LineStyle);
-            OptionalString(writer, "sourcePort", edge.SourcePort);
-            OptionalString(writer, "targetPort", edge.TargetPort);
             OptionalString(writer, "sourcePortId", edge.SourcePortId);
             OptionalString(writer, "targetPortId", edge.TargetPortId);
             OptionalString(writer, "color", edge.Color);
             OptionalString(writer, "href", edge.Href);
             OptionalString(writer, "tooltip", edge.Tooltip);
             Number(writer, "order", edge.Order);
-            Metadata(writer, "metadata", edge.Metadata);
+            TopologyEdge(writer, edge.Topology);
+            FlowEdge(writer, edge.Flow);
+            SequenceEdge(writer, edge.Sequence);
+            Extensions(writer, edge.Extensions);
+            Metrics(writer, edge.Metrics);
             writer.EndObject();
         }
         writer.EndArray();
@@ -207,6 +234,7 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var annotation in annotations) {
             writer.StartObject();
             String(writer, "id", annotation.Id);
+            String(writer, "role", annotation.Role.ToString());
             String(writer, "kind", annotation.Kind);
             String(writer, "text", annotation.Text);
             OptionalString(writer, "placement", annotation.Placement);
@@ -216,7 +244,8 @@ internal static class VisualArtifactInterchangeJson {
             writer.StartArray();
             foreach (var targetId in annotation.TargetIds) writer.String(targetId);
             writer.EndArray();
-            Metadata(writer, "metadata", annotation.Metadata);
+            SequenceAnnotation(writer, annotation.Sequence);
+            Extensions(writer, annotation.Extensions);
             writer.EndObject();
         }
         writer.EndArray();
@@ -240,22 +269,22 @@ internal static class VisualArtifactInterchangeJson {
             foreach (var step in scenario.Steps) {
                 writer.StartObject();
                 String(writer, "targetId", step.TargetId);
-                String(writer, "kind", step.Kind);
+                String(writer, "kind", step.Kind.ToString());
                 OptionalString(writer, "label", step.Label);
                 OptionalString(writer, "description", step.Description);
                 OptionalNumber(writer, "durationMilliseconds", step.DurationMilliseconds);
-                Metadata(writer, "metadata", step.Metadata);
+                Extensions(writer, step.Extensions);
                 writer.EndObject();
             }
             writer.EndArray();
-            Metadata(writer, "metadata", scenario.Metadata);
+            Extensions(writer, scenario.Extensions);
             writer.EndObject();
         }
         writer.EndArray();
     }
 
-    private static void Metadata(VisualArtifactInterchangeJsonWriter writer, string name, IDictionary<string, string> values) {
-        writer.Property(name);
+    private static void Extensions(VisualArtifactInterchangeJsonWriter writer, IDictionary<string, string> values) {
+        writer.Property("extensions");
         writer.StartObject();
         var keys = new List<string>(values.Keys);
         keys.Sort(StringComparer.Ordinal);
@@ -267,11 +296,12 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var value in OptionalArray(root, "groups")) {
             var item = value.AsObject("group");
             var group = new VisualArtifactInterchangeGroup {
-                Id = RequiredString(item, "id"), Kind = OptionalString(item, "kind") ?? string.Empty, Label = OptionalString(item, "label") ?? string.Empty,
+                Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeGroupRole>(item, "role") ?? VisualArtifactInterchangeGroupRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, Label = OptionalString(item, "label") ?? string.Empty,
                 Subtitle = OptionalString(item, "subtitle"), Status = OptionalString(item, "status"), Color = OptionalString(item, "color"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"),
                 X = OptionalNumber(item, "x"), Y = OptionalNumber(item, "y"), Width = OptionalNumber(item, "width"), Height = OptionalNumber(item, "height")
             };
-            ReadMetadata(item, "metadata", group.Metadata);
+            group.Topology = ReadTopologyGroup(item);
+            ReadExtensions(item, group.Extensions);
             target.Add(group);
         }
     }
@@ -280,22 +310,31 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var value in OptionalArray(root, "nodes")) {
             var item = value.AsObject("node");
             var node = new VisualArtifactInterchangeNode {
-                Id = RequiredString(item, "id"), Kind = OptionalString(item, "kind") ?? string.Empty, Label = OptionalString(item, "label") ?? string.Empty,
+                Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeNodeRole>(item, "role") ?? VisualArtifactInterchangeNodeRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, Label = OptionalString(item, "label") ?? string.Empty,
                 Subtitle = OptionalString(item, "subtitle"), GroupId = OptionalString(item, "groupId"), Status = OptionalString(item, "status"), IconId = OptionalString(item, "iconId"), Symbol = OptionalString(item, "symbol"), Badge = OptionalString(item, "badge"),
                 Color = OptionalString(item, "color"), BackgroundColor = OptionalString(item, "backgroundColor"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"),
                 X = OptionalNumber(item, "x"), Y = OptionalNumber(item, "y"), Width = OptionalNumber(item, "width"), Height = OptionalNumber(item, "height")
             };
-            ReadMetadata(item, "metadata", node.Metadata);
+            node.Topology = ReadTopologyNode(item);
+            node.Flow = ReadFlowNode(item);
+            node.Sequence = ReadSequenceNode(item);
+            ReadExtensions(item, node.Extensions);
+            ReadMetrics(item, node.Metrics);
             foreach (var portValue in OptionalArray(item, "ports")) {
                 var portItem = portValue.AsObject("port");
-                var port = new VisualArtifactInterchangePort { Id = RequiredString(portItem, "id"), Side = OptionalString(portItem, "side") ?? string.Empty, Offset = OptionalNumber(portItem, "offset") ?? 0.5, Label = OptionalString(portItem, "label") };
-                ReadMetadata(portItem, "metadata", port.Metadata);
+                var port = new VisualArtifactInterchangePort {
+                    Id = RequiredString(portItem, "id"),
+                    Side = RequiredEnum<ChartForgeX.Topology.TopologyEdgePort>(portItem, "side"),
+                    Offset = OptionalNumber(portItem, "offset") ?? 0.5,
+                    Label = OptionalString(portItem, "label")
+                };
+                ReadExtensions(portItem, port.Extensions);
                 node.Ports.Add(port);
             }
             foreach (var detailValue in OptionalArray(item, "details")) {
                 var detailItem = detailValue.AsObject("detail");
                 var detail = new VisualArtifactInterchangeDetail { Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color") };
-                ReadMetadata(detailItem, "metadata", detail.Metadata);
+                ReadExtensions(detailItem, detail.Extensions);
                 node.Details.Add(detail);
             }
             target.Add(node);
@@ -306,13 +345,27 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var value in OptionalArray(root, "edges")) {
             var item = value.AsObject("edge");
             var edge = new VisualArtifactInterchangeEdge {
-                Id = RequiredString(item, "id"), Kind = OptionalString(item, "kind") ?? string.Empty, SourceId = RequiredString(item, "sourceId"), TargetId = RequiredString(item, "targetId"),
+                Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeEdgeRole>(item, "role") ?? VisualArtifactInterchangeEdgeRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, SourceId = RequiredString(item, "sourceId"), TargetId = RequiredString(item, "targetId"),
                 Label = OptionalString(item, "label"), SecondaryLabel = OptionalString(item, "secondaryLabel"), TertiaryLabel = OptionalString(item, "tertiaryLabel"), SourceLabel = OptionalString(item, "sourceLabel"), TargetLabel = OptionalString(item, "targetLabel"),
-                Status = OptionalString(item, "status"), Direction = OptionalString(item, "direction"), LineStyle = OptionalString(item, "lineStyle"), SourcePort = OptionalString(item, "sourcePort"), TargetPort = OptionalString(item, "targetPort"),
-                SourcePortId = OptionalString(item, "sourcePortId"), TargetPortId = OptionalString(item, "targetPortId"), Color = OptionalString(item, "color"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"), Order = OptionalInt(item, "order") ?? 0
+                Status = OptionalString(item, "status"), SourcePortId = OptionalString(item, "sourcePortId"), TargetPortId = OptionalString(item, "targetPortId"),
+                Color = OptionalString(item, "color"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"), Order = OptionalInt(item, "order") ?? 0
             };
-            ReadMetadata(item, "metadata", edge.Metadata);
+            edge.Topology = ReadTopologyEdge(item);
+            edge.Flow = ReadFlowEdge(item);
+            edge.Sequence = ReadSequenceEdge(item);
+            ReadExtensions(item, edge.Extensions);
+            ReadMetrics(item, edge.Metrics);
             target.Add(edge);
+        }
+    }
+
+    private static void ReadMetrics(Dictionary<string, GeoJsonValue> root, ICollection<VisualArtifactInterchangeMetric> target) {
+        foreach (var value in OptionalArray(root, "metrics")) {
+            Dictionary<string, GeoJsonValue> item = value.AsObject("metric");
+            target.Add(new VisualArtifactInterchangeMetric {
+                Name = RequiredString(item, "name"),
+                Value = RequiredString(item, "value")
+            });
         }
     }
 
@@ -320,11 +373,12 @@ internal static class VisualArtifactInterchangeJson {
         foreach (var value in OptionalArray(root, "annotations")) {
             var item = value.AsObject("annotation");
             var annotation = new VisualArtifactInterchangeAnnotation {
-                Id = RequiredString(item, "id"), Kind = OptionalString(item, "kind") ?? string.Empty, Text = OptionalString(item, "text") ?? string.Empty,
+                Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeAnnotationRole>(item, "role") ?? VisualArtifactInterchangeAnnotationRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, Text = OptionalString(item, "text") ?? string.Empty,
                 Placement = OptionalString(item, "placement"), StartIndex = OptionalInt(item, "startIndex"), EndIndex = OptionalInt(item, "endIndex")
             };
             foreach (var targetValue in OptionalArray(item, "targetIds")) annotation.TargetIds.Add(targetValue.AsString("annotation target id"));
-            ReadMetadata(item, "metadata", annotation.Metadata);
+            annotation.Sequence = ReadSequenceAnnotation(item);
+            ReadExtensions(item, annotation.Extensions);
             target.Add(annotation);
         }
     }
@@ -346,22 +400,22 @@ internal static class VisualArtifactInterchangeJson {
                 var stepItem = stepValue.AsObject("scenario step");
                 var step = new VisualArtifactInterchangeScenarioStep {
                     TargetId = RequiredString(stepItem, "targetId"),
-                    Kind = RequiredString(stepItem, "kind"),
+                    Kind = RequiredEnum<ChartForgeX.Topology.TopologyScenarioStepKind>(stepItem, "kind"),
                     Label = OptionalString(stepItem, "label"),
                     Description = OptionalString(stepItem, "description"),
                     DurationMilliseconds = OptionalInt(stepItem, "durationMilliseconds")
                 };
-                ReadMetadata(stepItem, "metadata", step.Metadata);
+                ReadExtensions(stepItem, step.Extensions);
                 scenario.Steps.Add(step);
             }
-            ReadMetadata(item, "metadata", scenario.Metadata);
+            ReadExtensions(item, scenario.Extensions);
             target.Add(scenario);
         }
     }
 
-    private static void ReadMetadata(Dictionary<string, GeoJsonValue> values, string name, IDictionary<string, string> target) {
-        if (!values.TryGetValue(name, out var raw) || raw.IsNull) return;
-        foreach (var pair in raw.AsObject(name)) target[pair.Key] = pair.Value.AsString(name + " value");
+    private static void ReadExtensions(Dictionary<string, GeoJsonValue> values, IDictionary<string, string> target) {
+        if (!values.TryGetValue("extensions", out var raw) || raw.IsNull) return;
+        foreach (var pair in raw.AsObject("extensions")) target[pair.Key] = pair.Value.AsString("extension value");
     }
 
     private static List<GeoJsonValue> OptionalArray(Dictionary<string, GeoJsonValue> values, string name) =>
@@ -395,6 +449,15 @@ internal static class VisualArtifactInterchangeJson {
 
     private static TEnum RequiredEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
         string value = RequiredString(values, name);
+        foreach (string declaredName in Enum.GetNames(typeof(TEnum))) {
+            if (string.Equals(declaredName, value, StringComparison.OrdinalIgnoreCase)) return (TEnum)Enum.Parse(typeof(TEnum), declaredName, ignoreCase: false);
+        }
+        throw new ArgumentException("Unknown " + typeof(TEnum).Name + " value: " + value + ".");
+    }
+
+    private static TEnum? OptionalEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
+        string? value = OptionalString(values, name);
+        if (value == null) return null;
         foreach (string declaredName in Enum.GetNames(typeof(TEnum))) {
             if (string.Equals(declaredName, value, StringComparison.OrdinalIgnoreCase)) return (TEnum)Enum.Parse(typeof(TEnum), declaredName, ignoreCase: false);
         }

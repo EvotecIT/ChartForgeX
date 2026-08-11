@@ -59,7 +59,7 @@ public static class MermaidSequenceRendering {
         }
 
         foreach (var message in document.Messages) {
-            sequence.AddMessage(message.SourceId, message.TargetId, message.Text, ToLineStyle(message.Operator));
+            sequence.AddMessage(message.SourceId, message.TargetId, message.Text, ToLineStyle(message.Operator), ToMessageKind(message.Operator));
             var target = sequence.Messages[sequence.Messages.Count - 1];
             target.ActivatesTarget = message.ActivatesTarget;
             target.Deactivates = message.Deactivates;
@@ -191,6 +191,15 @@ public static class MermaidSequenceRendering {
 
     private static SequenceArtifactMessageLineStyle ToLineStyle(string messageOperator) =>
         messageOperator.StartsWith("--", StringComparison.Ordinal) ? SequenceArtifactMessageLineStyle.Dashed : SequenceArtifactMessageLineStyle.Solid;
+
+    private static SequenceArtifactMessageKind ToMessageKind(string messageOperator) {
+        if (messageOperator.IndexOf(')') >= 0) return SequenceArtifactMessageKind.Async;
+        // Mermaid dashes and terminal glyphs describe how a message is drawn,
+        // not whether its domain purpose is a return or an event. Preserve the
+        // exact operator in metadata and use the neutral call semantic unless
+        // Mermaid explicitly supplies its asynchronous open-arrow form.
+        return SequenceArtifactMessageKind.Call;
+    }
 
     private static SequenceArtifactNotePlacement ToNotePlacement(string placement) {
         switch (placement.Trim().ToLowerInvariant()) {

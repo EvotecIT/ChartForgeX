@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -29,7 +28,8 @@ internal static partial class SmokeTests {
         topology.WithNodeDisplay("dc1", TopologyNodeDisplayMode.Pill);
         topology.Edges.Add(new TopologyEdge {
             Id = "replication", SourceNodeId = "dc1", TargetNodeId = "dc2", Kind = TopologyEdgeKind.Replication,
-            Direction = VisualLinkDirection.Bidirectional, SourcePortId = "ldap", Label = "AD replication", Href = "https://example.test/link",
+            Direction = VisualLinkDirection.Bidirectional, SourcePort = TopologyEdgePort.Right, TargetPort = TopologyEdgePort.Left,
+            SourcePortId = "ldap", Label = "AD replication", Href = "https://example.test/link",
             SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Diamond, Routing = TopologyEdgeRouting.Curved,
             Emphasis = TopologyEdgeEmphasis.Strong, IsMuted = true
         });
@@ -69,55 +69,60 @@ internal static partial class SmokeTests {
         string json = envelope.ToJson();
         var roundTrip = VisualArtifactInterchangeEnvelope.FromUtf8Json(envelope.ToUtf8Json());
         TopologyChart preparedTopology = TopologyLayoutEngine.Prepare(topology, options: new TopologyRenderOptions());
-        TopologyEdge preparedEdge = preparedTopology.Edges.Single();
         TopologyGroup preparedGroup = preparedTopology.Groups.Single();
-        string expectedWaypoints = string.Join(";", preparedEdge.Waypoints.Select(point =>
-            point.X.ToString("R", CultureInfo.InvariantCulture) + "," + point.Y.ToString("R", CultureInfo.InvariantCulture)));
 
-        Assert(roundTrip.Kind == VisualArtifactKind.Topology, "Topology interchange should preserve artifact kind.");
-        Assert(roundTrip.Metadata["owner"] == "directory-team", "Topology interchange should preserve artifact metadata.");
-        Assert(roundTrip.Metadata["Owner"] == "Platform", "Topology interchange should preserve case-distinct metadata keys without data loss.");
+        Assert(roundTrip.Kind == VisualArtifactKind.Topology && roundTrip.Family == VisualArtifactInterchangeFamily.Topology,
+            "Topology interchange should preserve artifact identity and its reusable semantic family.");
+        Assert(roundTrip.Extensions["owner"] == "directory-team", "Topology interchange should preserve artifact extensions.");
+        Assert(roundTrip.Extensions["Owner"] == "Platform", "Topology interchange should preserve case-distinct extension keys without data loss.");
         Assert(roundTrip.AccessibleDescription == "Two domain controllers replicate in Site A.", "Topology interchange should preserve accessibility metadata.");
         Assert(roundTrip.Groups.Single().Href == "https://example.test/site", "Topology interchange should preserve safe group hyperlinks.");
-        Assert(roundTrip.Groups.Single().Metadata["iconId"] == "microsoft-ad:site", "Typed group icon ids should override colliding arbitrary metadata.");
-        Assert(!roundTrip.Groups.Single().Metadata.ContainsKey("symbol") &&
-               roundTrip.Groups.Single().Metadata["topology.layoutPolicy"] == preparedGroup.LayoutPolicy.ToString() &&
-               roundTrip.Groups.Single().Metadata["topology.appliedLayoutPolicy"] == preparedGroup.AppliedLayoutPolicy.ToString(),
-            "Topology interchange should clear absent group artwork descriptors and preserve configured plus prepared group layout policies.");
-        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Ports.Single().Id == "ldap", "Topology interchange should preserve named node ports.");
+        Assert(roundTrip.Groups.Single().Role == VisualArtifactInterchangeGroupRole.TopologyGroup &&
+               roundTrip.Groups.Single().Topology!.IconId == "microsoft-ad:site" &&
+               roundTrip.Groups.Single().Topology!.Symbol == null &&
+               roundTrip.Groups.Single().Topology!.LayoutPolicy == preparedGroup.LayoutPolicy &&
+               roundTrip.Groups.Single().Topology!.AppliedLayoutPolicy == preparedGroup.AppliedLayoutPolicy,
+            "Topology interchange should preserve typed group identity and configured plus prepared layout policies independently from opaque extensions.");
+        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Ports.Single().Id == "ldap" &&
+               roundTrip.Nodes.Single(node => node.Id == "dc1").Ports.Single().Side == TopologyEdgePort.Right,
+            "Topology interchange should preserve typed named node ports.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Details.Single().Value == "A", "Topology interchange should preserve typed node details.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc2").Href == null, "Topology interchange should reject unsafe node hyperlinks.");
-        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Metadata["topology.displayMode"] == "Pill",
+        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Topology!.DisplayMode == TopologyNodeDisplayMode.Pill,
             "Topology interchange should preserve the prepared node display mode selected by the model or render options.");
-        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Metadata["topology.artwork.svgBody"].Contains("<path", StringComparison.Ordinal) &&
-               roundTrip.Nodes.Single(node => node.Id == "dc1").Metadata["topology.artwork.svgViewBox"] == "0 0 24 24",
-            "Topology interchange should preserve safe node-local artwork through a product-neutral descriptor.");
-        Assert(!roundTrip.Nodes.Single(node => node.Id == "dc1").Metadata["topology.artwork.svgBody"].Contains("script", StringComparison.OrdinalIgnoreCase) &&
-               !roundTrip.Nodes.Single(node => node.Id == "dc2").Metadata.ContainsKey("topology.artwork.imageHref") &&
-               !roundTrip.Nodes.Single(node => node.Id == "dc2").Metadata.ContainsKey("topology.longitude"),
-            "Topology interchange should clear caller-controlled reserved presentation keys before projecting safe, absent, or typed values.");
-        Assert(roundTrip.Edges.Single().SourcePortId == "ldap", "Topology interchange should preserve named edge endpoints.");
-        Assert(roundTrip.Edges.Single().Metadata["topology.sourceMarker"] == "Circle" && roundTrip.Edges.Single().Metadata["topology.targetMarker"] == "Diamond",
-            "Topology interchange should preserve explicit endpoint marker semantics in reserved edge metadata.");
-        Assert(roundTrip.Edges.Single().Metadata["topology.routing"] == "Curved" && roundTrip.Edges.Single().Metadata["topology.waypoints"] == expectedWaypoints,
+        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Topology!.Artwork!.SvgBody!.Contains("<path", StringComparison.Ordinal) &&
+               roundTrip.Nodes.Single(node => node.Id == "dc1").Topology!.Artwork!.SvgViewBox == "0 0 24 24",
+            "Topology interchange should preserve safe node-local artwork through a typed product-neutral descriptor.");
+        Assert(!roundTrip.Nodes.Single(node => node.Id == "dc1").Topology!.Artwork!.SvgBody!.Contains("script", StringComparison.OrdinalIgnoreCase) &&
+               roundTrip.Nodes.Single(node => node.Id == "dc2").Topology!.Artwork == null &&
+               roundTrip.Nodes.Single(node => node.Id == "dc2").Topology!.Longitude == null,
+            "Opaque extensions must not spoof absent or typed topology presentation semantics.");
+        Assert(roundTrip.Edges.Single().SourcePortId == "ldap" &&
+               roundTrip.Edges.Single().Topology!.SourcePort == TopologyEdgePort.Right &&
+               roundTrip.Edges.Single().Topology!.TargetPort == TopologyEdgePort.Left,
+            "Topology interchange should preserve typed named and side-based edge endpoints.");
+        Assert(roundTrip.Edges.Single().Topology!.SourceMarker == TopologyMarkerKind.Circle && roundTrip.Edges.Single().Topology!.TargetMarker == TopologyMarkerKind.Diamond,
+            "Topology interchange should preserve typed endpoint marker semantics.");
+        Assert(roundTrip.Edges.Single().Topology!.Routing == TopologyEdgeRouting.Curved && roundTrip.Edges.Single().Topology!.Waypoints.Count == 2,
             "Topology interchange should preserve explicit route mode and deterministic waypoint coordinates.");
-        Assert(roundTrip.Edges.Single().Metadata["topology.strokeWidth"] == "2.5" && roundTrip.Edges.Single().Metadata["topology.opacity"] == "0.40000000000000002" &&
-               roundTrip.Edges.Single().Metadata["topology.dashPattern"] == "6,2" && roundTrip.Edges.Single().Metadata["topology.emphasis"] == "Strong" &&
-               roundTrip.Edges.Single().Metadata["topology.muted"] == bool.TrueString,
+        Assert(roundTrip.Edges.Single().Topology!.StrokeWidth == 2.5 && roundTrip.Edges.Single().Topology!.Opacity == 0.4 &&
+               roundTrip.Edges.Single().Topology!.DashPattern.SequenceEqual(new[] { 6D, 2D }) && roundTrip.Edges.Single().Topology!.Emphasis == TopologyEdgeEmphasis.Strong &&
+               roundTrip.Edges.Single().Topology!.IsMuted,
             "Topology interchange should preserve explicit stroke and presentation semantics.");
-        Assert(roundTrip.Edges.Single().Metadata["topology.preferredLength"] == "260" && roundTrip.Edges.Single().Metadata["topology.minimumRankSpan"] == "2",
+        Assert(roundTrip.Edges.Single().Topology!.PreferredLength == 260 && roundTrip.Edges.Single().Topology!.MinimumRankSpan == 2,
             "Topology interchange should preserve explicit force-directed and layered edge layout hints.");
-        Assert(roundTrip.Edges.Single().Metadata["topology.routeLane"] == "0",
+        Assert(roundTrip.Edges.Single().Topology!.RouteLane == 0,
             "Topology interchange should preserve explicit zero route-lane overrides that suppress automatic parallel offsets.");
         Assert(roundTrip.Scenarios.Single().Label == "Replication review" && roundTrip.Scenarios.Single().Steps.Select(step => step.TargetId).SequenceEqual(new[] { "dc1", "replication" }) &&
-               roundTrip.Scenarios.Single().Steps[1].Metadata["phase"] == "transport" && roundTrip.Scenarios.Single().Spotlight,
-            "Topology interchange should preserve scenario identity, playback policy, ordered remapped targets, and step metadata.");
-        Assert(roundTrip.Annotations.Single(annotation => annotation.Kind == "TopologyLegend").Text == "Directory key" &&
-               roundTrip.Annotations.Count(annotation => annotation.Kind.StartsWith("TopologyLegendItem:", StringComparison.Ordinal)) == 2 &&
-               roundTrip.Annotations.Single(annotation => annotation.Kind == "TopologyLegendItem:Edge").Metadata["topology.legend.lineStyle"] == "Dashed",
+               roundTrip.Scenarios.Single().Steps.Select(step => step.Kind).SequenceEqual(new[] { TopologyScenarioStepKind.Node, TopologyScenarioStepKind.Edge }) &&
+               roundTrip.Scenarios.Single().Steps[1].Extensions["phase"] == "transport" && roundTrip.Scenarios.Single().Spotlight,
+            "Topology interchange should preserve scenario identity, playback policy, ordered remapped targets, and step extensions.");
+        Assert(roundTrip.Presentation!.Legend!.Title == "Directory key" &&
+               roundTrip.Presentation.Legend.Items.Count == 2 &&
+               roundTrip.Presentation.Legend.Items.Single(item => item.Kind == TopologyLegendItemKind.Edge).LineStyle == TopologyEdgeLineStyle.Dashed,
             "Topology interchange should preserve the prepared legend title, item kinds, labels, colors, symbols, and line styles.");
-        Assert(roundTrip.Metadata["topology.theme.background"] == "#0B1120" && roundTrip.Metadata["topology.theme.card"] == "#111827" &&
-               roundTrip.Metadata["topology.theme.accent"] == "#60A5FA" && roundTrip.Metadata["topology.theme.fontFamily"] == topology.Theme.FontFamily,
+        Assert(roundTrip.Presentation.Theme!.Background == "#0B1120" && roundTrip.Presentation.Theme.Card == "#111827" &&
+               roundTrip.Presentation.Theme.Accent == "#60A5FA" && roundTrip.Presentation.Theme.FontFamily == topology.Theme.FontFamily,
             "Topology interchange should preserve prepared theme tokens used by static rendering.");
         Assert(roundTrip.ToJson() == json, "Topology interchange JSON should be deterministic after round trip.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
@@ -141,11 +146,11 @@ internal static partial class SmokeTests {
         geographicTopology.MapViewport = ChartMapViewport.Europe();
         geographicTopology.Nodes.Add(new TopologyNode { Id = "warsaw", Label = "Warsaw", Longitude = 21.0122, Latitude = 52.2297 });
         VisualArtifactInterchangeEnvelope geographicEnvelope = geographicTopology.ToVisualArtifact().ToInterchangeEnvelope();
-        Assert(geographicEnvelope.Metadata["topology.mapViewport.name"] == "Europe" && geographicEnvelope.Metadata["topology.mapViewport.projection"] == "Equirectangular" &&
-               geographicEnvelope.Metadata["topology.mapViewport.minimumLongitude"] == "-11" && geographicEnvelope.Metadata["topology.mapViewport.maximumLatitude"] == "72",
+        Assert(geographicEnvelope.Presentation!.MapViewport!.Name == "Europe" && geographicEnvelope.Presentation.MapViewport.Projection == "Equirectangular" &&
+               geographicEnvelope.Presentation.MapViewport.MinimumLongitude == -11 && geographicEnvelope.Presentation.MapViewport.MaximumLatitude == 72,
             "Geographic topology interchange should preserve the prepared map viewport identity, projection, and bounds.");
-        Assert(double.Parse(geographicEnvelope.Nodes.Single().Metadata["topology.longitude"], CultureInfo.InvariantCulture) == 21.0122 &&
-               double.Parse(geographicEnvelope.Nodes.Single().Metadata["topology.latitude"], CultureInfo.InvariantCulture) == 52.2297,
+        Assert(geographicEnvelope.Nodes.Single().Topology!.Longitude == 21.0122 &&
+               geographicEnvelope.Nodes.Single().Topology!.Latitude == 52.2297,
             "Geographic topology interchange should preserve product-neutral node coordinates independently from prepared pixels.");
 
         var metricLabelTopology = TopologyChart.Create();
@@ -191,8 +196,8 @@ internal static partial class SmokeTests {
             "Interchange topology views should retain eligible nodes when their groups are omitted.");
         Assert(groupFilteredEnvelope.Nodes.All(node => node.GroupId == null),
             "Interchange topology views should detach references to groups omitted during preparation.");
-        Assert(groupFilteredEnvelope.Metadata["topology.nodes"] == "2" && groupFilteredEnvelope.Metadata["topology.edges"] == "1",
-            "Interchange topology view metadata should describe the prepared model instead of stale wrapper counts.");
+        Assert(groupFilteredEnvelope.Nodes.Count == 2 && groupFilteredEnvelope.Edges.Count == 1,
+            "Interchange topology views should expose prepared entity collections directly instead of redundant count metadata.");
 
         artifact.NaturalSize = new VisualArtifactSize(1777, 1333);
         artifact.PreserveNaturalSize = true;
@@ -231,35 +236,35 @@ internal static partial class SmokeTests {
             "Generated collision ids should remain within the interchange schema limit.");
         Assert(maximumIdEnvelope.Edges.Single().SourceId == maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Id && maximumIdEnvelope.ToJson().Length > 0,
             "Bounded collision ids should preserve references and produce a valid interchange payload.");
-        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "1").Key.Length <= 512,
-            "Generated prefixed metadata keys should remain within the interchange schema limit.");
-        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "bounded").Key.Length <= 512,
+        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Metrics.Single(metric => metric.Value == "1").Name.Length <= 512,
+            "Generated metric names should remain within the interchange schema limit.");
+        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Extensions.Single(pair => pair.Value == "bounded").Key.Length <= 512,
             "Direct source metadata keys should remain within the interchange schema limit.");
         Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Ports.Single().Id.Length <= 512 &&
                maximumIdEnvelope.Edges.Single().SourcePortId == maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Ports.Single().Id,
             "Bounded topology port ids should preserve named edge references.");
         var mappedMaximumSource = maximumIdEnvelope.Nodes.Single(node => node.Label == "Source");
-        string boundedDirectMetadataKey = mappedMaximumSource.Metadata.Single(pair => pair.Value == "bounded").Key;
-        string boundedMetricMetadataKey = mappedMaximumSource.Metadata.Single(pair => pair.Value == "1").Key;
+        string boundedDirectMetadataKey = mappedMaximumSource.Extensions.Single(pair => pair.Value == "bounded").Key;
+        string boundedMetricName = mappedMaximumSource.Metrics.Single(metric => metric.Value == "1").Name;
         maximumIdSource.Metadata[boundedDirectMetadataKey] = "direct-collision";
-        maximumIdSource.Metadata[boundedMetricMetadataKey] = "metric-collision";
-        var collidingMetadata = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single(node => node.Label == "Source").Metadata;
-        Assert(collidingMetadata[boundedDirectMetadataKey] == "direct-collision" && collidingMetadata.Values.Contains("bounded"),
+        maximumIdSource.Metadata[boundedMetricName] = "metric-collision";
+        VisualArtifactInterchangeNode collidingNode = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single(node => node.Label == "Source");
+        Assert(collidingNode.Extensions[boundedDirectMetadataKey] == "direct-collision" && collidingNode.Extensions.Values.Contains("bounded"),
             "Bounding should preserve a valid direct metadata key that collides with an over-limit key and retain both values.");
-        Assert(collidingMetadata[boundedMetricMetadataKey] == "metric-collision" && collidingMetadata.Values.Contains("1"),
-            "Bounding should preserve a valid metadata key that collides with a prefixed metric key and retain both values.");
+        Assert(collidingNode.Extensions[boundedMetricName] == "metric-collision" && collidingNode.Metrics.Any(metric => metric.Value == "1"),
+            "Typed metrics and caller extensions should retain both values even when their names collide.");
         string prefixedCollisionSourceKey = "metric." + new string('c', 600);
         maximumIdSource.Metadata[prefixedCollisionSourceKey] = "metadata-over-limit";
         string prefixedCollisionBoundedKey = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes
-            .Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "metadata-over-limit").Key;
-        maximumIdSource.Metrics[prefixedCollisionBoundedKey.Substring("metric.".Length)] = "metric-valid";
+            .Single(node => node.Label == "Source").Extensions.Single(pair => pair.Value == "metadata-over-limit").Key;
+        maximumIdSource.Metrics[prefixedCollisionBoundedKey] = "metric-valid";
         maximumIdSource.Metadata["metric.exact"] = "metadata-exact";
         maximumIdSource.Metrics["exact"] = "metric-exact";
-        var prefixedCollisionMetadata = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single(node => node.Label == "Source").Metadata;
-        Assert(prefixedCollisionMetadata[prefixedCollisionBoundedKey] == "metadata-over-limit" && prefixedCollisionMetadata.Values.Contains("metric-valid"),
-            "Prefixed metrics should not overwrite a different over-limit metadata key that projects to the same bounded key.");
-        Assert(prefixedCollisionMetadata["metric.exact"] == "metric-exact" && !prefixedCollisionMetadata.Values.Contains("metadata-exact"),
-            "Typed metrics should retain precedence when their logical prefixed key exactly matches direct metadata.");
+        VisualArtifactInterchangeNode separatedMetricsNode = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single(node => node.Label == "Source");
+        Assert(separatedMetricsNode.Extensions[prefixedCollisionBoundedKey] == "metadata-over-limit" && separatedMetricsNode.Metrics.Any(metric => metric.Value == "metric-valid"),
+            "Typed metrics should not overwrite a caller extension with the same projected name.");
+        Assert(separatedMetricsNode.Extensions["metric.exact"] == "metadata-exact" && separatedMetricsNode.Metrics.Any(metric => metric.Name == "exact" && metric.Value == "metric-exact"),
+            "Typed metrics and caller extensions should remain separate instead of relying on a reserved metric prefix.");
         maximumIdTopology.Id = maximumId;
         var maximumViewEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope(new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions { View = new TopologyView { Id = maximumId } }
@@ -294,9 +299,9 @@ internal static partial class SmokeTests {
         mergedMetadataTopology.Nodes.Add(mergedMetadataTarget);
         mergedMetadataTopology.Edges.Add(mergedMetadataEdge);
         var mergedMetadataEnvelope = mergedMetadataTopology.ToVisualArtifact().ToInterchangeEnvelope();
-        Assert(mergedMetadataEnvelope.Nodes.Single(node => node.Id == "metadata-source").Metadata["metric.latency"] == "42ms" &&
-               mergedMetadataEnvelope.Edges.Single().Metadata["metric.throughput"] == "8Gbps" && mergedMetadataEnvelope.ToJson().Length > 0,
-            "Interchange projection should retain independently valid topology metadata and metric collections in the merged metadata bag.");
+        Assert(mergedMetadataEnvelope.Nodes.Single(node => node.Id == "metadata-source").Metrics.Single(metric => metric.Name == "latency").Value == "42ms" &&
+               mergedMetadataEnvelope.Edges.Single().Metrics.Single(metric => metric.Name == "throughput").Value == "8Gbps" && mergedMetadataEnvelope.ToJson().Length > 0,
+            "Interchange projection should retain caller extensions and typed metric collections independently.");
 
         var invalidGroupTopology = TopologyChart.Create();
         invalidGroupTopology.Nodes.Add(new TopologyNode { Id = "orphan", Label = "Orphan", GroupId = "missing" });
@@ -307,15 +312,11 @@ internal static partial class SmokeTests {
             }),
             "Interchange projection should reject source topology references that a prepared view could otherwise erase.");
 
-        var highCardinality = new VisualArtifactInterchangeEnvelope { Id = "high-cardinality", Kind = VisualArtifactKind.Topology };
-        highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "source", Label = "Source" });
-        highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "target", Label = "Target" });
-        for (var index = 0; index < 72000; index++) {
-            highCardinality.Edges.Add(new VisualArtifactInterchangeEdge {
-                Id = "e" + index,
-                SourceId = "source",
-                TargetId = "target"
-            });
+        VisualArtifactInterchangeEnvelope highCardinality = InterchangeTopology("high-cardinality");
+        highCardinality.Nodes.Add(InterchangeTopologyNode("source", "Source"));
+        highCardinality.Nodes.Add(InterchangeTopologyNode("target", "Target"));
+        for (var index = 0; index < 12000; index++) {
+            highCardinality.Edges.Add(InterchangeTopologyEdge("e" + index, "source", "target"));
         }
         string highCardinalityJson = highCardinality.ToJson();
         var highCardinalityRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(highCardinalityJson);
@@ -342,25 +343,25 @@ internal static partial class SmokeTests {
         var flowRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(flowArtifact.ToInterchangeJson());
         Assert(flowRoundTrip.Id == "approval-current" && flowRoundTrip.Title == "Current approval",
             "Flow interchange should project current model identity after wrapper creation.");
-        Assert(flowRoundTrip.Metadata["flow.steps"] == "3" && flowRoundTrip.Metadata["flow.connectors"] == "2",
-            "Flow interchange should recompute typed model counts after wrapper creation.");
+        Assert(flowRoundTrip.Nodes.Count == 3 && flowRoundTrip.Edges.Count == 2,
+            "Flow interchange should expose current entity counts directly through typed collections.");
         TopologyChart preparedFlow = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
-        Assert(flowRoundTrip.Groups.Single().Kind == "FlowLane", "Flow interchange should preserve lane semantics.");
-        Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Kind == "Decision", "Flow interchange should preserve step kinds.");
-        Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Metadata["owner"] == "requester", "Flow interchange should preserve step metadata.");
+        Assert(flowRoundTrip.Groups.Single().Role == VisualArtifactInterchangeGroupRole.FlowLane, "Flow interchange should preserve typed lane semantics.");
+        Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Flow!.Kind == FlowArtifactStepKind.Decision, "Flow interchange should preserve typed step kinds.");
+        Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Extensions["owner"] == "requester", "Flow interchange should preserve step extensions.");
         Assert(flowRoundTrip.Edges.Single(edge => edge.Label == "Review").SourceId == "submit", "Flow interchange should preserve connector labels.");
-        Assert(flowRoundTrip.Metadata["scope"] == "artifact" && flowRoundTrip.Metadata["model-only"] == "preserved",
-            "Explicit artifact metadata should override same-key flow metadata while retaining model-only values.");
+        Assert(flowRoundTrip.Extensions["scope"] == "artifact" && flowRoundTrip.Extensions["model-only"] == "preserved",
+            "Explicit artifact extensions should override same-key flow metadata while retaining model-only values.");
         Assert(flowRoundTrip.Width == preparedFlow.Viewport.Width && flowRoundTrip.Height == preparedFlow.Viewport.Height,
             "Flow interchange should publish the prepared topology viewport instead of its unprepared configured canvas.");
 
         string longFlowMetadataKey = new string('z', 600);
         flow.Metadata[longFlowMetadataKey] = "model-long";
         var modelMetadataEnvelope = flowArtifact.ToInterchangeEnvelope();
-        string boundedFlowMetadataKey = modelMetadataEnvelope.Metadata.Single(pair => pair.Value == "model-long").Key;
+        string boundedFlowMetadataKey = modelMetadataEnvelope.Extensions.Single(pair => pair.Value == "model-long").Key;
         flowArtifact.Metadata[boundedFlowMetadataKey] = "artifact-short";
         flowArtifact.Metadata[longFlowMetadataKey] = "artifact-long";
-        var collidingFlowMetadata = flowArtifact.ToInterchangeEnvelope().Metadata;
+        var collidingFlowMetadata = flowArtifact.ToInterchangeEnvelope().Extensions;
         Assert(collidingFlowMetadata[boundedFlowMetadataKey] == "artifact-short" && collidingFlowMetadata.Values.Contains("artifact-long") &&
                !collidingFlowMetadata.Values.Contains("model-long"),
             "Artifact metadata should keep same-key precedence while collision-aware bounding retains distinct valid and over-limit keys.");
@@ -369,9 +370,9 @@ internal static partial class SmokeTests {
         var crossLayerArtifact = crossLayerFlow.ToVisualArtifact();
         string crossLayerLongKey = new string('v', 600);
         crossLayerArtifact.Metadata[crossLayerLongKey] = "artifact-over-limit";
-        string crossLayerBoundedKey = crossLayerArtifact.ToInterchangeEnvelope().Metadata.Single(pair => pair.Value == "artifact-over-limit").Key;
+        string crossLayerBoundedKey = crossLayerArtifact.ToInterchangeEnvelope().Extensions.Single(pair => pair.Value == "artifact-over-limit").Key;
         crossLayerFlow.Metadata[crossLayerBoundedKey] = "model-valid";
-        var crossLayerMetadata = crossLayerArtifact.ToInterchangeEnvelope().Metadata;
+        var crossLayerMetadata = crossLayerArtifact.ToInterchangeEnvelope().Extensions;
         Assert(crossLayerMetadata[crossLayerBoundedKey] == "artifact-over-limit" && crossLayerMetadata.Values.Contains("model-valid"),
             "Collision-aware merging should retain a valid model key that matches a different bounded artifact key.");
 
@@ -408,7 +409,7 @@ internal static partial class SmokeTests {
             .WithTitle("Authentication")
             .AddParticipant("user", "User", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("api", "API", SequenceArtifactParticipantKind.Control)
-            .AddMessage("user", "api", "Sign in")
+            .AddMessage("user", "api", "Sign in", kind: SequenceArtifactMessageKind.Async)
             .AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "api" }, "Validate token")
             .AddBlock(SequenceArtifactBlockKind.Opt, "MFA", 0, 0);
         sequence.Messages[0].ActivatesTarget = true;
@@ -425,12 +426,14 @@ internal static partial class SmokeTests {
         var sequenceArtifact = sequence.ToVisualArtifact();
         sequenceArtifact.Metadata["scope"] = "artifact";
         var sequenceRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(sequenceArtifact.ToInterchangeJson());
-        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Kind == "Actor", "Sequence interchange should preserve participant kinds.");
-        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.order"] == "0", "Typed participant order should override colliding arbitrary metadata.");
-        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.implicit"] == "false", "Typed participant state should override colliding arbitrary metadata.");
-        Assert(sequenceRoundTrip.Edges.Single().Metadata["sequence.activatesTarget"] == "true", "Sequence interchange should preserve activation semantics.");
-        Assert(sequenceRoundTrip.Metadata["scope"] == "artifact" && sequenceRoundTrip.Metadata["model-only"] == "preserved",
-            "Explicit artifact metadata should override same-key sequence metadata while retaining model-only values.");
+        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Sequence!.Kind == SequenceArtifactParticipantKind.Actor, "Sequence interchange should preserve typed participant kinds.");
+        Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Sequence!.Order == 0, "Typed participant order should be independent from colliding arbitrary extensions.");
+        Assert(!sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Sequence!.IsImplicit, "Typed participant state should be independent from colliding arbitrary extensions.");
+        Assert(sequenceRoundTrip.Edges.Single().Sequence!.Kind == SequenceArtifactMessageKind.Async &&
+               sequenceRoundTrip.Edges.Single().Sequence!.ActivatesTarget,
+            "Sequence interchange should preserve message purpose independently from typed activation semantics.");
+        Assert(sequenceRoundTrip.Extensions["scope"] == "artifact" && sequenceRoundTrip.Extensions["model-only"] == "preserved",
+            "Explicit artifact extensions should override same-key sequence metadata while retaining model-only values.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceNote" && annotation.TargetIds.Single() == "api"), "Sequence interchange should preserve participant notes.");
         Assert(sequenceRoundTrip.Annotations.Single(annotation => annotation.Kind == "SequenceNote").StartIndex == 0,
             "Sequence note rows should use the renderer's non-negative normalization.");
@@ -468,8 +471,8 @@ internal static partial class SmokeTests {
         danglingSequence.Participants[0].Id = "renamed-caller";
         danglingSequence.Notes[0].ParticipantIds[0] = "removed-service";
         var danglingSequenceEnvelope = danglingSequence.ToVisualArtifact().ToInterchangeEnvelope();
-        Assert(danglingSequenceEnvelope.Edges.Count == 0 && danglingSequenceEnvelope.Metadata["sequence.messages"] == "1",
-            "Sequence interchange should omit messages whose mutated endpoints no longer resolve, matching static layout behavior.");
+        Assert(danglingSequenceEnvelope.Edges.Count == 0,
+            "Sequence interchange should omit messages whose mutated endpoints no longer resolve without contradictory redundant counts.");
         Assert(danglingSequenceEnvelope.Annotations.Single().TargetIds.Count == 0 && danglingSequenceEnvelope.ToJson().Length > 0,
             "Sequence interchange should retain notes while omitting participant targets that no longer resolve, matching static note placement behavior.");
 
@@ -489,8 +492,8 @@ internal static partial class SmokeTests {
             "Sequence interchange should project current model identity after wrapper creation.");
         Assert(wideEnvelope.Width == currentNaturalSize.Width && wideEnvelope.Height == currentNaturalSize.Height,
             "Sequence interchange should recalculate natural dimensions from the current model.");
-        Assert(wideEnvelope.Metadata["sequence.participants"] == "10" && wideEnvelope.Metadata["sequence.notes"] == "1",
-            "Sequence interchange should recompute typed model counts after wrapper creation.");
+        Assert(wideEnvelope.Nodes.Count == 10 && wideEnvelope.Annotations.Count(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceNote) == 1,
+            "Sequence interchange should expose current typed entities after wrapper creation.");
 
         var annotationSizedSequence = SequenceArtifact.Create("annotation-sized").WithSize(320, 240).AddParticipant("worker", "Worker");
         annotationSizedSequence.AddActivation("worker", true, 100);
@@ -505,6 +508,9 @@ internal static partial class SmokeTests {
         AssertThrows<NotSupportedException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":2,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
             "Interchange parsing should reject unsupported schema versions.");
+        VisualArtifactInterchangeEnvelope additive = VisualArtifactInterchangeEnvelope.FromJson(
+            "{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"family\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"topology\":{\"layoutMode\":\"Layered\",\"layoutDirection\":\"LeftToRight\"},\"future\":{\"nested\":[1,true,\"value\"]}}");
+        Assert(additive.Id == "x", "Interchange version 1 readers should ignore bounded additive JSON members they do not use.");
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":7}"),
             "Interchange parsing should reject non-string contract properties instead of coercing them.");
@@ -540,49 +546,92 @@ internal static partial class SmokeTests {
         string deeplyNested = new string('[', 33) + new string(']', 33);
         AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(deeplyNested), "Interchange parsing should reject excessive JSON nesting before recursive parsing.");
 
-        var invalid = new VisualArtifactInterchangeEnvelope { Id = "invalid", Kind = VisualArtifactKind.Topology };
-        invalid.Nodes.Add(new VisualArtifactInterchangeNode { Id = "a", Label = "A" });
-        invalid.Edges.Add(new VisualArtifactInterchangeEdge { Id = "missing", SourceId = "a", TargetId = "b" });
+        VisualArtifactInterchangeEnvelope invalid = InterchangeTopology("invalid");
+        invalid.Nodes.Add(InterchangeTopologyNode("a", "A"));
+        invalid.Edges.Add(InterchangeTopologyEdge("missing", "a", "b"));
         AssertThrows<ArgumentException>(() => invalid.ToJson(), "Interchange serialization should reject edges that reference missing nodes.");
 
-        var unsafeLink = new VisualArtifactInterchangeEnvelope { Id = "unsafe", Kind = VisualArtifactKind.Topology };
-        unsafeLink.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node", Label = "Node", Href = "file:///secret.txt" });
+        VisualArtifactInterchangeEnvelope unsafeLink = InterchangeTopology("unsafe");
+        VisualArtifactInterchangeNode unsafeLinkNode = InterchangeTopologyNode("node", "Node");
+        unsafeLinkNode.Href = "file:///secret.txt";
+        unsafeLink.Nodes.Add(unsafeLinkNode);
         AssertThrows<ArgumentException>(() => unsafeLink.ToJson(), "Interchange validation should reject unsafe hyperlink schemes from external envelopes.");
 
+        VisualArtifactInterchangeEnvelope untypedTopology = InterchangeTopology("untyped-topology");
+        untypedTopology.Nodes.Add(new VisualArtifactInterchangeNode { Id = "generic", Kind = "Generic", Label = "Generic" });
+        AssertThrows<ArgumentException>(() => untypedTopology.ToJson(),
+            "A structured family should reject untyped entities before a consumer can dereference a missing semantic record.");
+
+        VisualArtifactInterchangeEnvelope wrongGroupFamily = InterchangeTopology("wrong-group-family");
+        wrongGroupFamily.Groups.Add(new VisualArtifactInterchangeGroup {
+            Id = "lane", Role = VisualArtifactInterchangeGroupRole.FlowLane, Kind = "Lane", Label = "Lane"
+        });
+        AssertThrows<ArgumentException>(() => wrongGroupFamily.ToJson(),
+            "A typed group role should belong to the envelope's selected semantic family.");
+
+        VisualArtifactInterchangeEnvelope contradictoryActivation = SequenceArtifact.Create("contradictory-activation")
+            .AddParticipant("worker", "Worker")
+            .AddActivation("worker", true, 0)
+            .ToVisualArtifact()
+            .ToInterchangeEnvelope();
+        contradictoryActivation.Annotations.Single().Sequence!.NotePlacement = SequenceArtifactNotePlacement.RightOf;
+        AssertThrows<ArgumentException>(() => contradictoryActivation.ToJson(),
+            "A sequence annotation role should reject semantic fields belonging to another union arm.");
+
+        VisualArtifactInterchangeEnvelope incompleteActivation = SequenceArtifact.Create("incomplete-activation")
+            .AddParticipant("worker", "Worker")
+            .AddActivation("worker", true, 0)
+            .ToVisualArtifact()
+            .ToInterchangeEnvelope();
+        incompleteActivation.Annotations.Single().TargetIds.Clear();
+        AssertThrows<ArgumentException>(() => incompleteActivation.ToJson(),
+            "Sequence activation annotations should require exactly one participant target before consumers dereference it.");
+
+        VisualArtifactInterchangeEnvelope invalidEmptyBlock = SequenceArtifact.Create("invalid-empty-block")
+            .AddParticipant("worker", "Worker")
+            .AddBlock(SequenceArtifactBlockKind.Opt, "Nothing", 0, 0, isEmpty: true)
+            .ToVisualArtifact()
+            .ToInterchangeEnvelope();
+        invalidEmptyBlock.Annotations.Single().EndIndex = 0;
+        AssertThrows<ArgumentException>(() => invalidEmptyBlock.ToJson(),
+            "Empty sequence spans should not claim a covered message index.");
+
         AssertThrows<ArgumentException>(
-            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"unsafe-svg\",\"nodes\":[{\"id\":\"node\",\"label\":\"Node\",\"metadata\":{\"topology.artwork.svgBody\":\"<script>alert(1)</script>\"}}]}"),
-            "Interchange parsing should reject unsafe reserved inline SVG descriptors from untrusted payloads.");
+            () => VisualArtifactInterchangeEnvelope.FromJson(ArtworkEnvelopeJson("unsafe-svg", "\"svgBody\":\"<script>alert(1)</script>\"")),
+            "Interchange parsing should reject unsafe typed inline SVG descriptors from untrusted payloads.");
         AssertThrows<ArgumentException>(
-            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"encoded-script\",\"nodes\":[{\"id\":\"node\",\"label\":\"Node\",\"metadata\":{\"topology.artwork.svgBody\":\"<a href=\\\"java&#x73;cript:alert(1)\\\">Open</a>\"}}]}"),
+            () => VisualArtifactInterchangeEnvelope.FromJson(ArtworkEnvelopeJson("encoded-script", "\"svgBody\":\"<a href=\\\"java&#x73;cript:alert(1)\\\">Open</a>\"")),
             "Interchange parsing should reject script URLs hidden behind SVG character references.");
         AssertThrows<ArgumentException>(
-            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"unsafe-href\",\"nodes\":[{\"id\":\"node\",\"label\":\"Node\",\"metadata\":{\"topology.artwork.imageHref\":\"javascript:alert(1)\"}}]}"),
-            "Interchange parsing should reject unsafe reserved artwork href descriptors from untrusted payloads.");
+            () => VisualArtifactInterchangeEnvelope.FromJson(ArtworkEnvelopeJson("unsafe-href", "\"imageHref\":\"javascript:alert(1)\"")),
+            "Interchange parsing should reject unsafe typed artwork href descriptors from untrusted payloads.");
         AssertThrows<ArgumentException>(
-            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"unsafe-path\",\"nodes\":[{\"id\":\"node\",\"label\":\"Node\",\"metadata\":{\"topology.artwork.svgPath\":\"../secret.svg\",\"topology.artwork.previewPath\":\"C:\\\\secret.png\"}}]}"),
-            "Interchange parsing should reject traversal or rooted reserved artwork paths from untrusted payloads.");
+            () => VisualArtifactInterchangeEnvelope.FromJson(ArtworkEnvelopeJson("unsafe-path", "\"svgPath\":\"../secret.svg\",\"previewPath\":\"C:\\\\secret.png\"")),
+            "Interchange parsing should reject traversal or rooted typed artwork paths from untrusted payloads.");
 
-        var collidingIds = new VisualArtifactInterchangeEnvelope { Id = "collision", Kind = VisualArtifactKind.Topology };
-        collidingIds.Nodes.Add(new VisualArtifactInterchangeNode { Id = "item", Label = "Item" });
-        collidingIds.Edges.Add(new VisualArtifactInterchangeEdge { Id = "item", SourceId = "item", TargetId = "item" });
+        VisualArtifactInterchangeEnvelope collidingIds = InterchangeTopology("collision");
+        collidingIds.Nodes.Add(InterchangeTopologyNode("item", "Item"));
+        collidingIds.Edges.Add(InterchangeTopologyEdge("item", "item", "item"));
         AssertThrows<ArgumentException>(() => collidingIds.ToJson(), "Interchange entity ids should share one diagram-wide namespace.");
 
-        var missingPort = new VisualArtifactInterchangeEnvelope { Id = "ports", Kind = VisualArtifactKind.Topology };
-        missingPort.Nodes.Add(new VisualArtifactInterchangeNode { Id = "source", Label = "Source" });
-        missingPort.Nodes.Add(new VisualArtifactInterchangeNode { Id = "target", Label = "Target" });
-        missingPort.Edges.Add(new VisualArtifactInterchangeEdge { Id = "edge", SourceId = "source", TargetId = "target", SourcePortId = "missing" });
+        VisualArtifactInterchangeEnvelope missingPort = InterchangeTopology("ports");
+        missingPort.Nodes.Add(InterchangeTopologyNode("source", "Source"));
+        missingPort.Nodes.Add(InterchangeTopologyNode("target", "Target"));
+        VisualArtifactInterchangeEdge missingPortEdge = InterchangeTopologyEdge("edge", "source", "target");
+        missingPortEdge.SourcePortId = "missing";
+        missingPort.Edges.Add(missingPortEdge);
         AssertThrows<ArgumentException>(() => missingPort.ToJson(), "Interchange validation should reject named ports that do not exist on their endpoint node.");
 
-        var excessiveAnnotationTargets = new VisualArtifactInterchangeEnvelope { Id = "annotation-targets", Kind = VisualArtifactKind.Topology };
-        excessiveAnnotationTargets.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node", Label = "Node" });
+        VisualArtifactInterchangeEnvelope excessiveAnnotationTargets = InterchangeTopology("annotation-targets");
+        excessiveAnnotationTargets.Nodes.Add(InterchangeTopologyNode("node", "Node"));
         var excessiveTargets = new VisualArtifactInterchangeAnnotation { Id = "annotation", Text = "Targets" };
         for (var index = 0; index < 50001; index++) excessiveTargets.TargetIds.Add("node");
         excessiveAnnotationTargets.Annotations.Add(excessiveTargets);
         AssertThrows<ArgumentOutOfRangeException>(() => excessiveAnnotationTargets.ToJson(),
             "In-memory annotation target limits should match parser limits so serialized envelopes remain parseable.");
 
-        var excessiveJsonValues = new VisualArtifactInterchangeEnvelope { Id = "json-values", Kind = VisualArtifactKind.Topology };
-        excessiveJsonValues.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node", Label = "Node" });
+        VisualArtifactInterchangeEnvelope excessiveJsonValues = InterchangeTopology("json-values");
+        excessiveJsonValues.Nodes.Add(InterchangeTopologyNode("node", "Node"));
         for (var annotationIndex = 0; annotationIndex < 12; annotationIndex++) {
             var annotation = new VisualArtifactInterchangeAnnotation { Id = "annotation-" + annotationIndex, Text = "Targets" };
             for (var targetIndex = 0; targetIndex < 50000; targetIndex++) annotation.TargetIds.Add("node");
@@ -598,7 +647,8 @@ internal static partial class SmokeTests {
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"line\nbreak\"}"),
             "Interchange parsing should reject unescaped control characters inside JSON strings.");
 
-        var unpairedSurrogate = new VisualArtifactInterchangeEnvelope { Id = "surrogate", Kind = VisualArtifactKind.Topology, Title = "bad\uD800value" };
+        VisualArtifactInterchangeEnvelope unpairedSurrogate = InterchangeTopology("surrogate");
+        unpairedSurrogate.Title = "bad\uD800value";
         AssertThrows<ArgumentException>(() => unpairedSurrogate.ToUtf8Json(),
             "Interchange UTF-8 export should reject unpaired UTF-16 surrogate characters instead of replacing them.");
         AssertThrows<ArgumentException>(
@@ -607,25 +657,69 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"bad\\uD800value\"}"),
             "Interchange parsing should reject escaped unpaired UTF-16 surrogate characters.");
-        var stableNumber = new VisualArtifactInterchangeEnvelope { Id = "stable-number", Kind = VisualArtifactKind.Topology, Width = 0.84551240822557006 };
+        VisualArtifactInterchangeEnvelope stableNumber = InterchangeTopology("stable-number");
+        stableNumber.Width = 0.84551240822557006;
         Assert(stableNumber.ToJson().Contains("\"width\":0.84551240822557006", StringComparison.Ordinal),
             "Interchange JSON should use cross-target-stable 17-digit floating-point formatting.");
-        var rawPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"raw-pair\",\"title\":\"\uD83D\uDE00\"}");
-        var escapedPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"escaped-pair\",\"title\":\"\\uD83D\\uDE00\"}");
+        var rawPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"family\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"raw-pair\",\"title\":\"\uD83D\uDE00\",\"topology\":{\"layoutMode\":\"Layered\",\"layoutDirection\":\"LeftToRight\"}}");
+        var escapedPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"family\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"escaped-pair\",\"title\":\"\\uD83D\\uDE00\",\"topology\":{\"layoutMode\":\"Layered\",\"layoutDirection\":\"LeftToRight\"}}");
         Assert(rawPair.Title == escapedPair.Title && rawPair.ToUtf8Json().Length > 0,
             "Interchange parsing should preserve valid raw and escaped UTF-16 surrogate pairs.");
 
-        var oversized = new VisualArtifactInterchangeEnvelope { Id = "oversized", Kind = VisualArtifactKind.Topology };
+        VisualArtifactInterchangeEnvelope oversized = InterchangeTopology("oversized");
         string largeLabel = new string('x', 65536);
         for (var index = 0; index < 130; index++) {
-            oversized.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node-" + index, Label = largeLabel });
+            oversized.Nodes.Add(InterchangeTopologyNode("node-" + index, largeLabel));
         }
         AssertThrows<InvalidOperationException>(() => oversized.ToJson(),
             "Interchange serialization should enforce the JSON character limit while the output buffer is being written.");
 
-        var unknownKind = new VisualArtifactInterchangeEnvelope { Id = "unknown-kind", Kind = (VisualArtifactKind)999 };
+        VisualArtifactInterchangeEnvelope unknownKind = InterchangeTopology("unknown-kind");
+        unknownKind.Kind = (VisualArtifactKind)999;
         AssertThrows<ArgumentOutOfRangeException>(() => unknownKind.ToJson(), "Interchange serialization should reject undefined artifact kinds.");
-        var unknownLanguage = new VisualArtifactInterchangeEnvelope { Id = "unknown-language", Kind = VisualArtifactKind.Topology, SourceLanguage = (VisualArtifactSourceLanguage)999 };
+        VisualArtifactInterchangeEnvelope unknownLanguage = InterchangeTopology("unknown-language");
+        unknownLanguage.SourceLanguage = (VisualArtifactSourceLanguage)999;
         AssertThrows<ArgumentOutOfRangeException>(() => unknownLanguage.ToJson(), "Interchange serialization should reject undefined source languages.");
     }
+
+    private static VisualArtifactInterchangeEnvelope InterchangeTopology(string id) => new() {
+        Id = id,
+        Kind = VisualArtifactKind.Topology,
+        Family = VisualArtifactInterchangeFamily.Topology,
+        Topology = new VisualArtifactInterchangeTopologyArtifact {
+            LayoutMode = TopologyLayoutMode.Layered,
+            LayoutDirection = TopologyLayoutDirection.LeftToRight
+        }
+    };
+
+    private static VisualArtifactInterchangeNode InterchangeTopologyNode(string id, string label) => new() {
+        Id = id,
+        Role = VisualArtifactInterchangeNodeRole.TopologyNode,
+        Kind = TopologyNodeKind.Generic.ToString(),
+        Label = label,
+        Topology = new VisualArtifactInterchangeTopologyNode {
+            Kind = TopologyNodeKind.Generic,
+            Status = TopologyHealthStatus.Unknown,
+            DisplayMode = TopologyNodeDisplayMode.Card
+        }
+    };
+
+    private static VisualArtifactInterchangeEdge InterchangeTopologyEdge(string id, string sourceId, string targetId) => new() {
+        Id = id,
+        Role = VisualArtifactInterchangeEdgeRole.TopologyEdge,
+        Kind = TopologyEdgeKind.Generic.ToString(),
+        SourceId = sourceId,
+        TargetId = targetId,
+        Topology = new VisualArtifactInterchangeTopologyEdge {
+            Kind = TopologyEdgeKind.Generic,
+            Status = TopologyHealthStatus.Unknown,
+            Direction = ChartForgeX.Primitives.VisualLinkDirection.None,
+            LineStyle = TopologyEdgeLineStyle.Solid,
+            Routing = TopologyEdgeRouting.Orthogonal
+        }
+    };
+
+    private static string ArtworkEnvelopeJson(string id, string artworkMembers) =>
+        "{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"family\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"" + id +
+        "\",\"topology\":{\"layoutMode\":\"Layered\",\"layoutDirection\":\"LeftToRight\"},\"nodes\":[{\"id\":\"node\",\"role\":\"TopologyNode\",\"kind\":\"Generic\",\"label\":\"Node\",\"topology\":{\"kind\":\"Generic\",\"status\":\"Unknown\",\"displayMode\":\"Card\",\"artwork\":{\"status\":\"Available\"," + artworkMembers + "}}}]}";
 }

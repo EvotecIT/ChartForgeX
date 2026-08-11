@@ -36,6 +36,20 @@ public enum SequenceArtifactMessageLineStyle {
 }
 
 /// <summary>
+/// Defines the semantic purpose of a sequence message independently from its line style.
+/// </summary>
+public enum SequenceArtifactMessageKind {
+    /// <summary>A synchronous request or call.</summary>
+    Call,
+    /// <summary>A return or response.</summary>
+    Return,
+    /// <summary>An asynchronous request or signal.</summary>
+    Async,
+    /// <summary>A notification or event.</summary>
+    Event
+}
+
+/// <summary>
 /// Defines note placement for sequence artifacts.
 /// </summary>
 public enum SequenceArtifactNotePlacement {
@@ -159,10 +173,15 @@ public sealed class SequenceArtifact {
     }
 
     /// <summary>Adds a message.</summary>
-    public SequenceArtifact AddMessage(string sourceId, string targetId, string? text = null, SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid) {
+    public SequenceArtifact AddMessage(
+        string sourceId,
+        string targetId,
+        string? text = null,
+        SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid,
+        SequenceArtifactMessageKind kind = SequenceArtifactMessageKind.Call) {
         EnsureParticipant(sourceId);
         EnsureParticipant(targetId);
-        _messages.Add(new SequenceArtifactMessage(sourceId, targetId, text ?? string.Empty, lineStyle));
+        _messages.Add(new SequenceArtifactMessage(sourceId, targetId, text ?? string.Empty, lineStyle, kind));
         return this;
     }
 
@@ -280,11 +299,17 @@ public sealed class SequenceArtifactMessage {
     private string _text;
 
     /// <summary>Initializes a sequence message.</summary>
-    public SequenceArtifactMessage(string sourceId, string targetId, string text, SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid) {
+    public SequenceArtifactMessage(
+        string sourceId,
+        string targetId,
+        string text,
+        SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid,
+        SequenceArtifactMessageKind kind = SequenceArtifactMessageKind.Call) {
         _sourceId = string.IsNullOrWhiteSpace(sourceId) ? throw new ArgumentException("Source participant id is required.", nameof(sourceId)) : sourceId;
         _targetId = string.IsNullOrWhiteSpace(targetId) ? throw new ArgumentException("Target participant id is required.", nameof(targetId)) : targetId;
         _text = text ?? throw new ArgumentNullException(nameof(text));
         LineStyle = lineStyle;
+        Kind = kind;
     }
 
     /// <summary>Gets or sets the source participant id.</summary>
@@ -298,6 +323,9 @@ public sealed class SequenceArtifactMessage {
 
     /// <summary>Gets or sets the message line style.</summary>
     public SequenceArtifactMessageLineStyle LineStyle { get; set; }
+
+    /// <summary>Gets or sets the semantic message kind.</summary>
+    public SequenceArtifactMessageKind Kind { get; set; }
 
     /// <summary>Gets or sets whether the message activates the target.</summary>
     public bool ActivatesTarget { get; set; }

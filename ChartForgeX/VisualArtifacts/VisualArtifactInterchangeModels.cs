@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Topology;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -29,8 +30,6 @@ public sealed class VisualArtifactInterchangeEnvelope {
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
-    private string _layout = string.Empty;
-    private string _direction = string.Empty;
 
     /// <summary>Gets the schema identifier.</summary>
     public string Schema => SchemaId;
@@ -40,6 +39,9 @@ public sealed class VisualArtifactInterchangeEnvelope {
 
     /// <summary>Gets or sets the visual artifact kind.</summary>
     public VisualArtifactKind Kind { get; set; }
+
+    /// <summary>Gets or sets the structured semantic family, independently from the authoring kind.</summary>
+    public VisualArtifactInterchangeFamily Family { get; set; }
 
     /// <summary>Gets or sets the source language used to author the artifact.</summary>
     public VisualArtifactSourceLanguage SourceLanguage { get; set; }
@@ -53,11 +55,14 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Gets or sets the artifact subtitle.</summary>
     public string Subtitle { get => _subtitle; set => _subtitle = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets the product-neutral layout token.</summary>
-    public string Layout { get => _layout; set => _layout = value ?? throw new ArgumentNullException(nameof(value)); }
+    /// <summary>Gets or sets topology-wide semantics for a topology envelope.</summary>
+    public VisualArtifactInterchangeTopologyArtifact? Topology { get; set; }
 
-    /// <summary>Gets or sets the product-neutral layout direction token.</summary>
-    public string Direction { get => _direction; set => _direction = value ?? throw new ArgumentNullException(nameof(value)); }
+    /// <summary>Gets or sets flow-wide semantics for a flow envelope.</summary>
+    public VisualArtifactInterchangeFlowArtifact? Flow { get; set; }
+
+    /// <summary>Gets or sets sequence-wide semantics for a sequence envelope.</summary>
+    public VisualArtifactInterchangeSequenceArtifact? Sequence { get; set; }
 
     /// <summary>Gets or sets the natural width in pixels when known.</summary>
     public double? Width { get; set; }
@@ -77,8 +82,12 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Gets or sets whether the artifact is decorative.</summary>
     public bool IsDecorative { get; set; }
 
-    /// <summary>Gets artifact-level metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets or sets typed artifact presentation semantics.</summary>
+    public VisualArtifactInterchangePresentation? Presentation { get; set; }
+
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    /// <remarks>Stable ChartForgeX semantics are represented by typed properties, never reserved extension keys.</remarks>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 
     /// <summary>Gets logical groups, lanes, or containers.</summary>
     public List<VisualArtifactInterchangeGroup> Groups { get; } = new();
@@ -112,6 +121,9 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Parses and validates an interchange envelope from JSON text.</summary>
     public static VisualArtifactInterchangeEnvelope FromJson(string json) => VisualArtifactInterchangeJson.Deserialize(json);
 
+    /// <summary>Validates this typed snapshot without serializing it.</summary>
+    public void Validate() => VisualArtifactInterchangeValidation.Validate(this);
+
     /// <summary>Parses and validates an interchange envelope from UTF-8 JSON bytes.</summary>
     public static VisualArtifactInterchangeEnvelope FromUtf8Json(byte[] json) {
         if (json == null) throw new ArgumentNullException(nameof(json));
@@ -126,6 +138,8 @@ public sealed class VisualArtifactInterchangeEnvelope {
 public sealed class VisualArtifactInterchangeGroup {
     /// <summary>Gets or sets the stable group id.</summary>
     public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the well-known group role.</summary>
+    public VisualArtifactInterchangeGroupRole Role { get; set; }
     /// <summary>Gets or sets the semantic group kind token.</summary>
     public string Kind { get; set; } = string.Empty;
     /// <summary>Gets or sets the visible group label.</summary>
@@ -148,14 +162,18 @@ public sealed class VisualArtifactInterchangeGroup {
     public double? Width { get; set; }
     /// <summary>Gets or sets the prepared height.</summary>
     public double? Height { get; set; }
-    /// <summary>Gets group metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets or sets topology-specific group semantics.</summary>
+    public VisualArtifactInterchangeTopologyGroup? Topology { get; set; }
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>Represents one semantic diagram node or participant.</summary>
 public sealed class VisualArtifactInterchangeNode {
     /// <summary>Gets or sets the stable node id.</summary>
     public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the well-known node role.</summary>
+    public VisualArtifactInterchangeNodeRole Role { get; set; }
     /// <summary>Gets or sets the semantic node kind token.</summary>
     public string Kind { get; set; } = string.Empty;
     /// <summary>Gets or sets the visible node label.</summary>
@@ -188,26 +206,34 @@ public sealed class VisualArtifactInterchangeNode {
     public double? Width { get; set; }
     /// <summary>Gets or sets the prepared height.</summary>
     public double? Height { get; set; }
-    /// <summary>Gets node metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets or sets topology-specific node semantics.</summary>
+    public VisualArtifactInterchangeTopologyNode? Topology { get; set; }
+    /// <summary>Gets or sets flow-specific node semantics.</summary>
+    public VisualArtifactInterchangeFlowNode? Flow { get; set; }
+    /// <summary>Gets or sets sequence-specific node semantics.</summary>
+    public VisualArtifactInterchangeSequenceNode? Sequence { get; set; }
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
     /// <summary>Gets named attachment ports.</summary>
     public List<VisualArtifactInterchangePort> Ports { get; } = new();
     /// <summary>Gets typed label/value detail rows.</summary>
     public List<VisualArtifactInterchangeDetail> Details { get; } = new();
+    /// <summary>Gets typed node metrics without encoding them as reserved extension keys.</summary>
+    public List<VisualArtifactInterchangeMetric> Metrics { get; } = new();
 }
 
 /// <summary>Represents one named node attachment port.</summary>
 public sealed class VisualArtifactInterchangePort {
     /// <summary>Gets or sets the node-local stable port id.</summary>
     public string Id { get; set; } = string.Empty;
-    /// <summary>Gets or sets the attachment side token.</summary>
-    public string Side { get; set; } = string.Empty;
+    /// <summary>Gets or sets the exact attachment side.</summary>
+    public TopologyEdgePort Side { get; set; }
     /// <summary>Gets or sets the normalized position along the side.</summary>
     public double Offset { get; set; } = 0.5;
     /// <summary>Gets or sets the optional visible label.</summary>
     public string? Label { get; set; }
-    /// <summary>Gets port metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>Represents one typed node detail row.</summary>
@@ -222,14 +248,16 @@ public sealed class VisualArtifactInterchangeDetail {
     public string? Status { get; set; }
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
-    /// <summary>Gets detail metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>Represents one semantic edge, connector, or sequence message.</summary>
 public sealed class VisualArtifactInterchangeEdge {
     /// <summary>Gets or sets the stable edge id.</summary>
     public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the well-known edge role.</summary>
+    public VisualArtifactInterchangeEdgeRole Role { get; set; }
     /// <summary>Gets or sets the semantic edge kind token.</summary>
     public string Kind { get; set; } = string.Empty;
     /// <summary>Gets or sets the source node id.</summary>
@@ -248,14 +276,6 @@ public sealed class VisualArtifactInterchangeEdge {
     public string? TargetLabel { get; set; }
     /// <summary>Gets or sets the semantic status token.</summary>
     public string? Status { get; set; }
-    /// <summary>Gets or sets the direction token.</summary>
-    public string? Direction { get; set; }
-    /// <summary>Gets or sets the line-style token.</summary>
-    public string? LineStyle { get; set; }
-    /// <summary>Gets or sets the source attachment side.</summary>
-    public string? SourcePort { get; set; }
-    /// <summary>Gets or sets the target attachment side.</summary>
-    public string? TargetPort { get; set; }
     /// <summary>Gets or sets the named source port id.</summary>
     public string? SourcePortId { get; set; }
     /// <summary>Gets or sets the named target port id.</summary>
@@ -268,8 +288,27 @@ public sealed class VisualArtifactInterchangeEdge {
     public string? Tooltip { get; set; }
     /// <summary>Gets or sets the semantic order of the edge.</summary>
     public int Order { get; set; }
-    /// <summary>Gets edge metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets or sets topology-specific edge semantics.</summary>
+    public VisualArtifactInterchangeTopologyEdge? Topology { get; set; }
+    /// <summary>Gets or sets flow-specific edge semantics.</summary>
+    public VisualArtifactInterchangeFlowEdge? Flow { get; set; }
+    /// <summary>Gets or sets sequence-specific edge semantics.</summary>
+    public VisualArtifactInterchangeSequenceEdge? Sequence { get; set; }
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets typed edge metrics without encoding them as reserved extension keys.</summary>
+    public List<VisualArtifactInterchangeMetric> Metrics { get; } = new();
+}
+
+/// <summary>Represents one named semantic metric.</summary>
+public sealed class VisualArtifactInterchangeMetric {
+    private string _name = string.Empty;
+    private string _value = string.Empty;
+
+    /// <summary>Gets or sets the metric name.</summary>
+    public string Name { get => _name; set => _name = value ?? throw new ArgumentNullException(nameof(value)); }
+    /// <summary>Gets or sets the formatted metric value.</summary>
+    public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
 }
 
 /// <summary>Represents one reusable ordered scenario or guided path.</summary>
@@ -292,30 +331,32 @@ public sealed class VisualArtifactInterchangeScenario {
     public bool Spotlight { get; set; }
     /// <summary>Gets ordered scenario steps.</summary>
     public List<VisualArtifactInterchangeScenarioStep> Steps { get; } = new();
-    /// <summary>Gets scenario metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>Represents one ordered node or edge reference in a scenario.</summary>
 public sealed class VisualArtifactInterchangeScenarioStep {
     /// <summary>Gets or sets the referenced node or edge id.</summary>
     public string TargetId { get; set; } = string.Empty;
-    /// <summary>Gets or sets the target kind token, such as Node or Edge.</summary>
-    public string Kind { get; set; } = string.Empty;
+    /// <summary>Gets or sets the exact target kind.</summary>
+    public TopologyScenarioStepKind Kind { get; set; }
     /// <summary>Gets or sets an optional step label.</summary>
     public string? Label { get; set; }
     /// <summary>Gets or sets an optional step description.</summary>
     public string? Description { get; set; }
     /// <summary>Gets or sets an optional duration override in milliseconds.</summary>
     public int? DurationMilliseconds { get; set; }
-    /// <summary>Gets step metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>Represents one semantic diagram note, block, or annotation.</summary>
 public sealed class VisualArtifactInterchangeAnnotation {
     /// <summary>Gets or sets the stable annotation id.</summary>
     public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the well-known annotation role.</summary>
+    public VisualArtifactInterchangeAnnotationRole Role { get; set; }
     /// <summary>Gets or sets the semantic annotation kind token.</summary>
     public string Kind { get; set; } = string.Empty;
     /// <summary>Gets or sets the annotation text.</summary>
@@ -328,6 +369,8 @@ public sealed class VisualArtifactInterchangeAnnotation {
     public int? EndIndex { get; set; }
     /// <summary>Gets referenced node ids.</summary>
     public List<string> TargetIds { get; } = new();
-    /// <summary>Gets annotation metadata.</summary>
-    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets or sets sequence-specific annotation semantics.</summary>
+    public VisualArtifactInterchangeSequenceAnnotation? Sequence { get; set; }
+    /// <summary>Gets opaque caller-defined extension data.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
 }

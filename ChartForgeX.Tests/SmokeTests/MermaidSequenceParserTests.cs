@@ -13,7 +13,9 @@ actor API as Native API
 participant DB {""type"": ""database"", ""alias"": ""Data Store""}
 U->>API: Request
 API-->>U: Response
-API->>DB: Store";
+API->>DB: Store
+API--)DB: Queue asynchronously
+DB--xAPI: Reject";
 
         var result = new MermaidParser().ParseSequence(source);
 
@@ -24,10 +26,20 @@ API->>DB: Store";
         Assert(document.Participants[0].Id == "U" && document.Participants[0].Alias == "User", "Mermaid sequence parser should parse external participant aliases.");
         Assert(document.Participants[1].Kind == MermaidSequenceParticipantKind.Actor && document.Participants[1].Alias == "Native API", "Mermaid sequence parser should parse actors and aliases.");
         Assert(document.Participants[2].Kind == MermaidSequenceParticipantKind.Database && document.Participants[2].Alias == "Data Store", "Mermaid sequence parser should parse participant configuration aliases and types.");
-        Assert(document.Messages.Count == 3, "Mermaid sequence parser should parse sequence messages.");
+        Assert(document.Messages.Count == 5, "Mermaid sequence parser should parse sequence messages.");
         Assert(document.Messages[0].SourceId == "U" && document.Messages[0].TargetId == "API", "Mermaid sequence parser should parse message endpoints.");
         Assert(document.Messages[0].Operator == "->>" && document.Messages[0].Text == "Request", "Mermaid sequence parser should preserve message operators and text.");
         Assert(document.Messages[1].Operator == "-->>" && document.Messages[1].Text == "Response", "Mermaid sequence parser should preserve dotted response operators.");
+        SequenceArtifact sequence = document.ToSequenceArtifact();
+        Assert(sequence.Messages[0].Kind == SequenceArtifactMessageKind.Call &&
+               sequence.Messages[1].Kind == SequenceArtifactMessageKind.Call &&
+               sequence.Messages[1].LineStyle == SequenceArtifactMessageLineStyle.Dashed &&
+               sequence.Messages[1].Metadata["mermaid.operator"] == "-->>" &&
+               sequence.Messages[3].Kind == SequenceArtifactMessageKind.Async &&
+               sequence.Messages[3].LineStyle == SequenceArtifactMessageLineStyle.Dashed &&
+               sequence.Messages[4].Kind == SequenceArtifactMessageKind.Call &&
+               sequence.Messages[4].Metadata["mermaid.operator"] == "--x",
+            "Mermaid sequence conversion should not infer message purpose from dashed presentation while retaining the exact source operator.");
     }
 
     private static void MermaidParserParsesSequenceNotesActivationsBlocksAutonumberAndLinks() {
@@ -68,7 +80,10 @@ link Bob: Dashboard @ https://example.com/bob";
         var activation = envelope.Annotations.Single(annotation => annotation.Kind == "SequenceActivation");
         var deactivation = envelope.Annotations.Single(annotation => annotation.Kind == "SequenceDeactivation");
         Assert(bobNode.Href == "https://example.com/bob", "Mermaid participant links should reach the product-neutral interchange node href.");
-        Assert(envelope.Metadata["sequence.activations"] == "2" && activation.TargetIds.SequenceEqual(new[] { bobNode.Id }) && activation.StartIndex == 1 && activation.EndIndex == 1 &&
+        Assert(envelope.Kind == VisualArtifactKind.Mermaid && envelope.Family == VisualArtifactInterchangeFamily.Sequence && envelope.Sequence != null,
+            "Mermaid authoring identity should remain separate from the reusable sequence semantic family.");
+        Assert(envelope.Annotations.Count(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceActivation) == 2 &&
+               activation.TargetIds.SequenceEqual(new[] { bobNode.Id }) && activation.StartIndex == 1 && activation.EndIndex == 1 &&
                deactivation.TargetIds.SequenceEqual(new[] { bobNode.Id }) && deactivation.StartIndex == 2 && deactivation.EndIndex == 2,
             "Standalone Mermaid activation changes should reach the product-neutral interchange annotation contract.");
     }
@@ -141,7 +156,7 @@ B-->>A: After";
             "Mermaid sequence conversion should retain explicitly empty sibling branches and their labels.");
         var emptyBranchEnvelope = emptyBranchDocument.ToVisualArtifact().ToInterchangeEnvelope();
         var emptyElse = emptyBranchEnvelope.Annotations.Single(annotation => annotation.Kind == "SequenceBranch:Else");
-        Assert(emptyElse.StartIndex == 2 && emptyElse.EndIndex == null && emptyElse.Metadata["sequence.empty"] == bool.TrueString,
+        Assert(emptyElse.StartIndex == 2 && emptyElse.EndIndex == null && emptyElse.Sequence!.IsEmpty,
             "Interchange projection should expose an empty branch boundary without claiming that it covers the following message.");
     }
 

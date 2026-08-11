@@ -59,7 +59,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Width = artifact.NaturalSize?.Width,
             Height = artifact.NaturalSize?.Height
         };
-        artifactMetadataKeys = Copy(artifact.Metadata, envelope.Metadata);
+        artifactMetadataKeys = Copy(artifact.Metadata, envelope.Extensions);
         return envelope;
     }
 
@@ -84,20 +84,26 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         envelope.Title = prepared.Title ?? string.Empty;
         envelope.Subtitle = prepared.Subtitle ?? string.Empty;
-        envelope.Layout = prepared.LayoutMode.ToString();
-        envelope.Direction = prepared.LayoutDirection.ToString();
+        envelope.Topology = new VisualArtifactInterchangeTopologyArtifact {
+            LayoutMode = prepared.LayoutMode,
+            LayoutDirection = prepared.LayoutDirection
+        };
+        envelope.Family = VisualArtifactInterchangeFamily.Topology;
         envelope.Width = prepared.Viewport.Width;
         envelope.Height = prepared.Viewport.Height;
-        envelope.Metadata["topology.layout"] = prepared.LayoutMode.ToString();
-        envelope.Metadata["topology.nodes"] = prepared.Nodes.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["topology.edges"] = prepared.Edges.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Presentation = new VisualArtifactInterchangePresentation {
+            Theme = MapTheme(prepared.Theme ?? TopologyTheme.Light()),
+            Legend = MapLegend(prepared.Legend)
+        };
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) {
-            envelope.Metadata["topology.mapViewport.name"] = prepared.MapViewport.Name;
-            envelope.Metadata["topology.mapViewport.projection"] = "Equirectangular";
-            envelope.Metadata["topology.mapViewport.minimumLongitude"] = InvariantNumber(prepared.MapViewport.MinimumLongitude);
-            envelope.Metadata["topology.mapViewport.maximumLongitude"] = InvariantNumber(prepared.MapViewport.MaximumLongitude);
-            envelope.Metadata["topology.mapViewport.minimumLatitude"] = InvariantNumber(prepared.MapViewport.MinimumLatitude);
-            envelope.Metadata["topology.mapViewport.maximumLatitude"] = InvariantNumber(prepared.MapViewport.MaximumLatitude);
+            envelope.Presentation.MapViewport = new VisualArtifactInterchangeMapViewport {
+                Name = prepared.MapViewport.Name,
+                Projection = "Equirectangular",
+                MinimumLongitude = prepared.MapViewport.MinimumLongitude,
+                MaximumLongitude = prepared.MapViewport.MaximumLongitude,
+                MinimumLatitude = prepared.MapViewport.MinimumLatitude,
+                MaximumLatitude = prepared.MapViewport.MaximumLatitude
+            };
         }
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
@@ -121,20 +127,18 @@ public static partial class VisualArtifactInterchangeMapping {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
             if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
         }
-        MapTheme(envelope.Metadata, prepared.Theme ?? TopologyTheme.Light());
-        MapLegend(envelope, prepared.Legend, ids);
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
         envelope.Id = BoundedGeneratedId(flow.Id, "flow");
         envelope.Title = flow.Title;
         envelope.Subtitle = flow.Subtitle;
-        envelope.Layout = flow.LayoutMode.ToString();
-        envelope.Direction = flow.Direction.ToString();
-        CopyMissing(flow.Metadata, envelope.Metadata, artifactMetadataKeys);
-        envelope.Metadata["flow.lanes"] = flow.Lanes.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["flow.steps"] = flow.Steps.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["flow.connectors"] = flow.Connectors.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Flow = new VisualArtifactInterchangeFlowArtifact {
+            LayoutMode = flow.LayoutMode,
+            LayoutDirection = flow.Direction
+        };
+        envelope.Family = VisualArtifactInterchangeFamily.Flow;
+        CopyMissing(flow.Metadata, envelope.Extensions, artifactMetadataKeys);
 
         var flowTopology = flow.ToTopologyChart();
         var prepared = PrepareValidatedTopology(flowTopology, new TopologyRenderOptions { IncludeLegend = false }, detachOmittedSourceGroups: false);
@@ -151,6 +155,7 @@ public static partial class VisualArtifactInterchangeMapping {
             preparedGroups.TryGetValue(lane.Id, out var preparedGroup);
             var group = new VisualArtifactInterchangeGroup {
                 Id = ids.Group(lane.Id),
+                Role = VisualArtifactInterchangeGroupRole.FlowLane,
                 Kind = "FlowLane",
                 Label = lane.Label,
                 Status = lane.Status.ToString(),
@@ -160,7 +165,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 Width = preparedGroup?.Width,
                 Height = preparedGroup?.Height
             };
-            Copy(lane.Metadata, group.Metadata);
+            Copy(lane.Metadata, group.Extensions);
             envelope.Groups.Add(group);
         }
 
@@ -168,6 +173,7 @@ public static partial class VisualArtifactInterchangeMapping {
             preparedNodes.TryGetValue(step.Id, out var preparedNode);
             var node = new VisualArtifactInterchangeNode {
                 Id = ids.Node(step.Id),
+                Role = VisualArtifactInterchangeNodeRole.FlowStep,
                 Kind = step.Kind.ToString(),
                 Label = step.Label,
                 Subtitle = step.Subtitle,
@@ -180,9 +186,10 @@ public static partial class VisualArtifactInterchangeMapping {
                 X = preparedNode?.X,
                 Y = preparedNode?.Y,
                 Width = preparedNode?.Width ?? step.Width,
-                Height = preparedNode?.Height ?? step.Height
+                Height = preparedNode?.Height ?? step.Height,
+                Flow = new VisualArtifactInterchangeFlowNode { Kind = step.Kind }
             };
-            Copy(step.Metadata, node.Metadata);
+            Copy(step.Metadata, node.Extensions);
             envelope.Nodes.Add(node);
         }
 
@@ -190,50 +197,50 @@ public static partial class VisualArtifactInterchangeMapping {
             var connector = flow.Connectors[index];
             var edge = new VisualArtifactInterchangeEdge {
                 Id = ids.Edge(connector.Id),
+                Role = VisualArtifactInterchangeEdgeRole.FlowConnector,
                 Kind = connector.Kind.ToString(),
                 SourceId = ids.Node(connector.SourceId),
                 TargetId = ids.Node(connector.TargetId),
                 Label = connector.Label,
                 Status = connector.Status.ToString(),
-                Direction = connector.Direction.ToString(),
                 Color = connector.Color,
-                Order = index
+                Order = index,
+                Flow = new VisualArtifactInterchangeFlowEdge { Kind = connector.Kind, Direction = connector.Direction }
             };
-            Copy(connector.Metadata, edge.Metadata);
+            Copy(connector.Metadata, edge.Extensions);
             envelope.Edges.Add(edge);
         }
     }
 
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
+        envelope.Family = VisualArtifactInterchangeFamily.Sequence;
+        envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact();
         var ids = new InterchangeIdScope();
         var participantIds = new List<string>();
         foreach (var participant in sequence.Participants) participantIds.Add(ids.AddNodeOccurrence(participant.Id));
         envelope.Id = BoundedGeneratedId(sequence.Id, "sequence");
         envelope.Title = sequence.Title;
         envelope.Subtitle = sequence.Subtitle;
-        envelope.Layout = "Sequence";
-        envelope.Direction = "TopToBottom";
         VisualArtifactSize naturalSize = SequenceArtifactRendering.CalculateNaturalSize(sequence);
         envelope.Width = naturalSize.Width;
         envelope.Height = naturalSize.Height;
-        CopyMissing(sequence.Metadata, envelope.Metadata, artifactMetadataKeys);
-        envelope.Metadata["sequence.participants"] = sequence.Participants.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["sequence.messages"] = sequence.Messages.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["sequence.activations"] = sequence.Activations.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["sequence.notes"] = sequence.Notes.Count.ToString(CultureInfo.InvariantCulture);
-        envelope.Metadata["sequence.branches"] = sequence.Branches.Count.ToString(CultureInfo.InvariantCulture);
+        CopyMissing(sequence.Metadata, envelope.Extensions, artifactMetadataKeys);
 
         for (var index = 0; index < sequence.Participants.Count; index++) {
             var participant = sequence.Participants[index];
             var node = new VisualArtifactInterchangeNode {
                 Id = participantIds[index],
+                Role = VisualArtifactInterchangeNodeRole.SequenceParticipant,
                 Kind = participant.Kind.ToString(),
                 Label = participant.Label,
-                Href = SafeHref(participant.Href)
+                Href = SafeHref(participant.Href),
+                Sequence = new VisualArtifactInterchangeSequenceNode {
+                    Kind = participant.Kind,
+                    Order = index,
+                    IsImplicit = participant.IsImplicit
+                }
             };
-            Copy(participant.Metadata, node.Metadata);
-            node.Metadata["sequence.order"] = index.ToString(CultureInfo.InvariantCulture);
-            node.Metadata["sequence.implicit"] = participant.IsImplicit ? "true" : "false";
+            Copy(participant.Metadata, node.Extensions);
             envelope.Nodes.Add(node);
         }
 
@@ -243,17 +250,20 @@ public static partial class VisualArtifactInterchangeMapping {
             string edgeId = ids.AddEdge("message-" + (index + 1).ToString(CultureInfo.InvariantCulture));
             var edge = new VisualArtifactInterchangeEdge {
                 Id = edgeId,
+                Role = VisualArtifactInterchangeEdgeRole.SequenceMessage,
                 Kind = "SequenceMessage",
                 SourceId = sourceId,
                 TargetId = targetId,
                 Label = message.Text,
-                Direction = "Forward",
-                LineStyle = message.LineStyle.ToString(),
-                Order = index
+                Order = index,
+                Sequence = new VisualArtifactInterchangeSequenceEdge {
+                    Kind = message.Kind,
+                    LineStyle = message.LineStyle,
+                    ActivatesTarget = message.ActivatesTarget,
+                    Deactivates = message.Deactivates
+                }
             };
-            Copy(message.Metadata, edge.Metadata);
-            edge.Metadata["sequence.activatesTarget"] = message.ActivatesTarget ? "true" : "false";
-            edge.Metadata["sequence.deactivates"] = message.Deactivates ? "true" : "false";
+            Copy(message.Metadata, edge.Extensions);
             envelope.Edges.Add(edge);
         }
         for (var index = 0; index < sequence.Notes.Count; index++) {
@@ -261,11 +271,13 @@ public static partial class VisualArtifactInterchangeMapping {
             int stepIndex = Math.Max(0, note.StepIndex);
             var annotation = new VisualArtifactInterchangeAnnotation {
                 Id = ids.AddAnnotation("note-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
+                Role = VisualArtifactInterchangeAnnotationRole.SequenceNote,
                 Kind = "SequenceNote",
                 Text = note.Text,
                 Placement = note.Placement.ToString(),
                 StartIndex = stepIndex,
-                EndIndex = stepIndex
+                EndIndex = stepIndex,
+                Sequence = new VisualArtifactInterchangeSequenceAnnotation { NotePlacement = note.Placement }
             };
             foreach (string participantId in note.ParticipantIds) {
                 if (ids.TryNode(participantId, out string targetId)) annotation.TargetIds.Add(targetId);
@@ -279,13 +291,15 @@ public static partial class VisualArtifactInterchangeMapping {
             int stepIndex = Math.Max(0, activation.StepIndex);
             var annotation = new VisualArtifactInterchangeAnnotation {
                 Id = ids.AddAnnotation("activation-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
+                Role = VisualArtifactInterchangeAnnotationRole.SequenceActivation,
                 Kind = activation.Active ? "SequenceActivation" : "SequenceDeactivation",
                 Text = string.Empty,
                 StartIndex = stepIndex,
-                EndIndex = stepIndex
+                EndIndex = stepIndex,
+                Sequence = new VisualArtifactInterchangeSequenceAnnotation { ActivationState = activation.Active }
             };
             annotation.TargetIds.Add(targetId);
-            Copy(activation.Metadata, annotation.Metadata);
+            Copy(activation.Metadata, annotation.Extensions);
             envelope.Annotations.Add(annotation);
         }
 
@@ -295,12 +309,16 @@ public static partial class VisualArtifactInterchangeMapping {
             int end = Math.Max(start, block.EndStepIndex);
             var annotation = new VisualArtifactInterchangeAnnotation {
                 Id = ids.AddAnnotation("block-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
+                Role = VisualArtifactInterchangeAnnotationRole.SequenceBlock,
                 Kind = "SequenceBlock:" + block.Kind,
                 Text = block.Text,
                 StartIndex = start,
-                EndIndex = block.IsEmpty ? null : end
+                EndIndex = block.IsEmpty ? null : end,
+                Sequence = new VisualArtifactInterchangeSequenceAnnotation {
+                    BlockKind = block.Kind,
+                    IsEmpty = block.IsEmpty
+                }
             };
-            if (block.IsEmpty) annotation.Metadata["sequence.empty"] = bool.TrueString;
             envelope.Annotations.Add(annotation);
         }
         for (var index = 0; index < sequence.Branches.Count; index++) {
@@ -309,14 +327,19 @@ public static partial class VisualArtifactInterchangeMapping {
             int end = Math.Max(start, branch.EndStepIndex);
             var annotation = new VisualArtifactInterchangeAnnotation {
                 Id = ids.AddAnnotation("branch-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
+                Role = VisualArtifactInterchangeAnnotationRole.SequenceBranch,
                 Kind = "SequenceBranch:" + branch.Kind,
                 Text = branch.Text,
                 Placement = branch.ParentKind.ToString(),
                 StartIndex = start,
-                EndIndex = branch.IsEmpty ? null : end
+                EndIndex = branch.IsEmpty ? null : end,
+                Sequence = new VisualArtifactInterchangeSequenceAnnotation {
+                    ParentBlockKind = branch.ParentKind,
+                    BranchKind = branch.Kind,
+                    Depth = branch.Depth,
+                    IsEmpty = branch.IsEmpty
+                }
             };
-            annotation.Metadata["sequence.depth"] = branch.Depth.ToString(CultureInfo.InvariantCulture);
-            if (branch.IsEmpty) annotation.Metadata["sequence.empty"] = bool.TrueString;
             envelope.Annotations.Add(annotation);
         }
     }
@@ -324,6 +347,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeGroup MapGroup(TopologyGroup group, string id, string kind) {
         var mapped = new VisualArtifactInterchangeGroup {
             Id = id,
+            Role = VisualArtifactInterchangeGroupRole.TopologyGroup,
             Kind = kind,
             Label = group.Label,
             Subtitle = group.Subtitle,
@@ -334,10 +358,10 @@ public static partial class VisualArtifactInterchangeMapping {
             X = group.X,
             Y = group.Y,
             Width = group.Width,
-            Height = group.Height
+            Height = group.Height,
+            Topology = MapGroupPresentation(group)
         };
-        Copy(group.Metadata, mapped.Metadata);
-        MapGroupPresentation(group, mapped.Metadata);
+        Copy(group.Metadata, mapped.Extensions);
         return mapped;
     }
 
@@ -373,6 +397,7 @@ public static partial class VisualArtifactInterchangeMapping {
         TopologyNodeDisplayMode displayMode) {
         var mapped = new VisualArtifactInterchangeNode {
             Id = id,
+            Role = VisualArtifactInterchangeNodeRole.TopologyNode,
             Kind = node.Kind.ToString(),
             Label = node.Label,
             Subtitle = node.Subtitle,
@@ -388,14 +413,14 @@ public static partial class VisualArtifactInterchangeMapping {
             X = node.X,
             Y = node.Y,
             Width = node.Width,
-            Height = node.Height
+            Height = node.Height,
+            Topology = MapNodePresentation(node, displayMode)
         };
-        var metadataKeys = Copy(node.Metadata, mapped.Metadata);
-        CopyWithPrefix(node.Metrics, mapped.Metadata, "metric.", metadataKeys);
-        MapNodePresentation(node, displayMode, mapped.Metadata);
+        Copy(node.Metadata, mapped.Extensions);
+        CopyMetrics(node.Metrics, mapped.Metrics);
         foreach (var port in node.Ports) {
-            var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side.ToString(), Offset = port.Offset, Label = port.Label };
-            Copy(port.Metadata, mappedPort.Metadata);
+            var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side, Offset = port.Offset, Label = port.Label };
+            Copy(port.Metadata, mappedPort.Extensions);
             mapped.Ports.Add(mappedPort);
         }
         foreach (var detail in node.Details) {
@@ -406,7 +431,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 Status = detail.Status?.ToString(),
                 Color = detail.Color
             };
-            Copy(detail.Metadata, mappedDetail.Metadata);
+            Copy(detail.Metadata, mappedDetail.Extensions);
             mapped.Details.Add(mappedDetail);
         }
         return mapped;
@@ -424,6 +449,7 @@ public static partial class VisualArtifactInterchangeMapping {
         TopologyRenderOptions options) {
         var mapped = new VisualArtifactInterchangeEdge {
             Id = id,
+            Role = VisualArtifactInterchangeEdgeRole.TopologyEdge,
             Kind = edge.Kind.ToString(),
             SourceId = sourceId,
             TargetId = targetId,
@@ -433,20 +459,16 @@ public static partial class VisualArtifactInterchangeMapping {
             SourceLabel = edge.SourceLabel,
             TargetLabel = edge.TargetLabel,
             Status = edge.Status.ToString(),
-            Direction = edge.Direction.ToString(),
-            LineStyle = edge.LineStyle.ToString(),
-            SourcePort = edge.SourcePort.ToString(),
-            TargetPort = edge.TargetPort.ToString(),
             SourcePortId = sourcePortId,
             TargetPortId = targetPortId,
             Color = edge.Color,
             Href = SafeHref(edge.Href),
             Tooltip = edge.Tooltip,
-            Order = order
+            Order = order,
+            Topology = MapEdgePresentation(edge, ids)
         };
-        var metadataKeys = Copy(edge.Metadata, mapped.Metadata);
-        CopyWithPrefix(edge.Metrics, mapped.Metadata, "metric.", metadataKeys);
-        MapEdgePresentation(edge, ids, mapped.Metadata);
+        Copy(edge.Metadata, mapped.Extensions);
+        CopyMetrics(edge.Metrics, mapped.Metrics);
         return mapped;
     }
 
@@ -461,7 +483,7 @@ public static partial class VisualArtifactInterchangeMapping {
             AutoPlay = scenario.AutoPlay,
             Spotlight = scenario.Spotlight
         };
-        Copy(scenario.Metadata, mapped.Metadata);
+        Copy(scenario.Metadata, mapped.Extensions);
         foreach (var step in scenario.Steps) {
             string targetId;
             if (step.Kind == TopologyScenarioStepKind.Node) {
@@ -471,12 +493,12 @@ public static partial class VisualArtifactInterchangeMapping {
             }
             var mappedStep = new VisualArtifactInterchangeScenarioStep {
                 TargetId = targetId,
-                Kind = step.Kind.ToString(),
+                Kind = step.Kind,
                 Label = step.Label,
                 Description = step.Description,
                 DurationMilliseconds = step.DurationMilliseconds
             };
-            Copy(step.Metadata, mappedStep.Metadata);
+            Copy(step.Metadata, mappedStep.Extensions);
             mapped.Steps.Add(mappedStep);
         }
         return mapped.Steps.Count == 0 ? null : mapped;
@@ -538,15 +560,17 @@ public static partial class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void CopyWithPrefix(
-        IEnumerable<KeyValuePair<string, string>> source,
-        IDictionary<string, string> target,
-        string prefix,
-        IReadOnlyDictionary<string, string> directMetadataKeys) {
+    private static void CopyMetrics(IEnumerable<KeyValuePair<string, string>> source, ICollection<VisualArtifactInterchangeMetric> target) {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (VisualArtifactInterchangeMetric metric in target) names.Add(metric.Name);
         foreach (var pair in source) {
-            string sourceKey = prefix + pair.Key;
-            if (directMetadataKeys.TryGetValue(sourceKey, out string? projectedKey)) target[projectedKey] = pair.Value;
-            else target[AllocateMetadataKey(target, sourceKey)] = pair.Value;
+            var ordinal = 1;
+            string name = BoundedGeneratedId(pair.Key, "metric-name", ordinal);
+            while (!names.Add(name)) {
+                ordinal++;
+                name = BoundedGeneratedId(pair.Key, "metric-name", ordinal);
+            }
+            target.Add(new VisualArtifactInterchangeMetric { Name = name, Value = pair.Value });
         }
     }
 

@@ -1,56 +1,67 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Maps topology presentation semantics into the reusable visual artifact interchange contract.</summary>
 public static partial class VisualArtifactInterchangeMapping {
-    private static void MapGroupPresentation(TopologyGroup group, IDictionary<string, string> metadata) {
-        RemoveMetadataKeys(metadata, "iconId", "symbol", "topology.layoutPolicy", "topology.appliedLayoutPolicy", "topology.longitude", "topology.latitude");
-        if (!string.IsNullOrWhiteSpace(group.IconId)) metadata["iconId"] = group.IconId!;
-        if (!string.IsNullOrWhiteSpace(group.Symbol)) metadata["symbol"] = group.Symbol!;
-        metadata["topology.layoutPolicy"] = group.LayoutPolicy.ToString();
-        metadata["topology.appliedLayoutPolicy"] = group.AppliedLayoutPolicy.ToString();
-        if (group.Longitude.HasValue) metadata["topology.longitude"] = InvariantNumber(group.Longitude.Value);
-        if (group.Latitude.HasValue) metadata["topology.latitude"] = InvariantNumber(group.Latitude.Value);
+    private static VisualArtifactInterchangeTopologyGroup MapGroupPresentation(TopologyGroup group) {
+        return new VisualArtifactInterchangeTopologyGroup {
+            Status = group.Status,
+            IconId = group.IconId,
+            Symbol = group.Symbol,
+            LayoutPolicy = group.LayoutPolicy,
+            AppliedLayoutPolicy = group.AppliedLayoutPolicy,
+            Longitude = group.Longitude,
+            Latitude = group.Latitude
+        };
     }
 
-    private static void MapNodePresentation(TopologyNode node, TopologyNodeDisplayMode displayMode, IDictionary<string, string> metadata) {
-        RemoveMetadataKeys(metadata, "topology.displayMode", "topology.longitude", "topology.latitude", "topology.showStatusBadge", "topology.maximumLabelCharacters");
-        metadata["topology.displayMode"] = displayMode.ToString();
-        MapArtwork(node.Artwork, metadata);
-        if (node.Longitude.HasValue) metadata["topology.longitude"] = InvariantNumber(node.Longitude.Value);
-        if (node.Latitude.HasValue) metadata["topology.latitude"] = InvariantNumber(node.Latitude.Value);
-        if (!node.ShowStatusBadge) metadata["topology.showStatusBadge"] = bool.FalseString;
-        if (node.MaximumLabelCharacters.HasValue) metadata["topology.maximumLabelCharacters"] = node.MaximumLabelCharacters.Value.ToString(CultureInfo.InvariantCulture);
+    private static VisualArtifactInterchangeTopologyNode MapNodePresentation(TopologyNode node, TopologyNodeDisplayMode displayMode) {
+        return new VisualArtifactInterchangeTopologyNode {
+            Kind = node.Kind,
+            Status = node.Status,
+            DisplayMode = displayMode,
+            Artwork = MapArtwork(node.Artwork),
+            Longitude = node.Longitude,
+            Latitude = node.Latitude,
+            ShowStatusBadge = node.ShowStatusBadge,
+            MaximumLabelCharacters = node.MaximumLabelCharacters
+        };
     }
 
-    private static void MapEdgePresentation(TopologyEdge edge, InterchangeIdScope ids, IDictionary<string, string> metadata) {
-        RemoveMetadataKeys(metadata,
-            "topology.routing", "topology.emphasis", "topology.sourceMarker", "topology.targetMarker", "topology.strokeWidth", "topology.opacity",
-            "topology.dashPattern", "topology.waypoints", "topology.muted", "topology.routingPriority", "topology.routeLane", "topology.labelOffsetX",
-            "topology.labelOffsetY", "topology.labelAnchor", "topology.labelAnchorNodeId", "topology.layoutInference", "topology.preferredLength",
-            "topology.minimumRankSpan");
-        metadata["topology.routing"] = edge.Routing.ToString();
-        metadata["topology.emphasis"] = edge.Emphasis.ToString();
-        if (edge.SourceMarker.HasValue) metadata["topology.sourceMarker"] = edge.SourceMarker.Value.ToString();
-        if (edge.TargetMarker.HasValue) metadata["topology.targetMarker"] = edge.TargetMarker.Value.ToString();
-        if (edge.StrokeWidth.HasValue) metadata["topology.strokeWidth"] = InvariantNumber(edge.StrokeWidth.Value);
-        if (edge.Opacity.HasValue) metadata["topology.opacity"] = InvariantNumber(edge.Opacity.Value);
-        if (edge.DashPattern.Count > 0) metadata["topology.dashPattern"] = InvariantNumbers(edge.DashPattern);
-        if (edge.Waypoints.Count > 0) metadata["topology.waypoints"] = InvariantWaypoints(edge);
-        if (edge.IsMuted) metadata["topology.muted"] = bool.TrueString;
-        if (edge.RoutingPriority != 0) metadata["topology.routingPriority"] = edge.RoutingPriority.ToString(CultureInfo.InvariantCulture);
-        if (edge.HasRouteLaneOverride) metadata["topology.routeLane"] = InvariantNumber(edge.RouteLane);
-        if (edge.LabelOffsetX != 0) metadata["topology.labelOffsetX"] = InvariantNumber(edge.LabelOffsetX);
-        if (edge.LabelOffsetY != 0) metadata["topology.labelOffsetY"] = InvariantNumber(edge.LabelOffsetY);
-        if (edge.HasLabelAnchorOverride) metadata["topology.labelAnchor"] = InvariantNumber(edge.LabelAnchorX) + "," + InvariantNumber(edge.LabelAnchorY);
-        if (!string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) && ids.TryNode(edge.LabelAnchorNodeId!, out string labelAnchorNodeId)) metadata["topology.labelAnchorNodeId"] = labelAnchorNodeId;
-        if (edge.LayoutInference != TopologyEdgeLayoutInference.None) metadata["topology.layoutInference"] = edge.LayoutInference.ToString();
-        if (edge.PreferredLength.HasValue) metadata["topology.preferredLength"] = InvariantNumber(edge.PreferredLength.Value);
-        metadata["topology.minimumRankSpan"] = edge.MinimumRankSpan.ToString(CultureInfo.InvariantCulture);
+    private static VisualArtifactInterchangeTopologyEdge MapEdgePresentation(TopologyEdge edge, InterchangeIdScope ids) {
+        var mapped = new VisualArtifactInterchangeTopologyEdge {
+            Kind = edge.Kind,
+            Status = edge.Status,
+            Direction = edge.Direction,
+            SourcePort = edge.SourcePort,
+            TargetPort = edge.TargetPort,
+            LineStyle = edge.LineStyle,
+            Routing = edge.Routing,
+            Emphasis = edge.Emphasis,
+            SourceMarker = edge.SourceMarker,
+            TargetMarker = edge.TargetMarker,
+            StrokeWidth = edge.StrokeWidth,
+            Opacity = edge.Opacity,
+            IsMuted = edge.IsMuted,
+            RoutingPriority = edge.RoutingPriority,
+            RouteLane = edge.HasRouteLaneOverride ? edge.RouteLane : null,
+            LabelOffsetX = edge.LabelOffsetX,
+            LabelOffsetY = edge.LabelOffsetY,
+            LabelAnchor = edge.HasLabelAnchorOverride
+                ? new VisualArtifactInterchangePoint { X = edge.LabelAnchorX, Y = edge.LabelAnchorY }
+                : null,
+            LayoutInference = edge.LayoutInference,
+            PreferredLength = edge.PreferredLength,
+            MinimumRankSpan = edge.MinimumRankSpan
+        };
+        if (!string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) && ids.TryNode(edge.LabelAnchorNodeId!, out string labelAnchorNodeId)) {
+            mapped.LabelAnchorNodeId = labelAnchorNodeId;
+        }
+        foreach (double value in edge.DashPattern) mapped.DashPattern.Add(value);
+        foreach (var point in edge.Waypoints) mapped.Waypoints.Add(new VisualArtifactInterchangePoint { X = point.X, Y = point.Y });
+        return mapped;
     }
 
     private static void RefreshTopologyAccessibility(
@@ -72,68 +83,57 @@ public static partial class VisualArtifactInterchangeMapping {
             : artifact.Accessibility.IsDecorative;
     }
 
-    private static void MapLegend(VisualArtifactInterchangeEnvelope envelope, TopologyLegend? legend, InterchangeIdScope ids) {
-        if (legend == null) return;
-        envelope.Annotations.Add(new VisualArtifactInterchangeAnnotation {
-            Id = ids.AddAnnotation("topology-legend"),
-            Kind = "TopologyLegend",
-            Text = legend.Title ?? string.Empty
-        });
-        for (var index = 0; index < legend.Items.Count; index++) {
-            TopologyLegendItem item = legend.Items[index];
-            var annotation = new VisualArtifactInterchangeAnnotation {
-                Id = ids.AddAnnotation("topology-legend-item-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
-                Kind = "TopologyLegendItem:" + item.Kind,
-                Text = item.Label
-            };
-            if (item.Status.HasValue) annotation.Metadata["topology.legend.status"] = item.Status.Value.ToString();
-            if (item.NodeKind.HasValue) annotation.Metadata["topology.legend.nodeKind"] = item.NodeKind.Value.ToString();
-            if (item.EdgeKind.HasValue) annotation.Metadata["topology.legend.edgeKind"] = item.EdgeKind.Value.ToString();
-            if (!string.IsNullOrWhiteSpace(item.Symbol)) annotation.Metadata["topology.legend.symbol"] = item.Symbol!;
-            if (!string.IsNullOrWhiteSpace(item.IconId)) annotation.Metadata["topology.legend.iconId"] = item.IconId!;
-            if (!string.IsNullOrWhiteSpace(item.Color)) annotation.Metadata["topology.legend.color"] = item.Color!;
-            if (!string.IsNullOrWhiteSpace(item.BackgroundColor)) annotation.Metadata["topology.legend.backgroundColor"] = item.BackgroundColor!;
-            annotation.Metadata["topology.legend.lineStyle"] = item.LineStyle.ToString();
-            envelope.Annotations.Add(annotation);
+    private static VisualArtifactInterchangeLegend? MapLegend(TopologyLegend? legend) {
+        if (legend == null) return null;
+        var mapped = new VisualArtifactInterchangeLegend { Title = legend.Title };
+        foreach (TopologyLegendItem item in legend.Items) {
+            mapped.Items.Add(new VisualArtifactInterchangeLegendItem {
+                Label = item.Label,
+                Kind = item.Kind,
+                Status = item.Status,
+                NodeKind = item.NodeKind,
+                EdgeKind = item.EdgeKind,
+                Symbol = item.Symbol,
+                IconId = item.IconId,
+                Color = item.Color,
+                BackgroundColor = item.BackgroundColor,
+                LineStyle = item.LineStyle
+            });
         }
+        return mapped;
     }
 
-    private static void MapArtwork(TopologyIconArtwork? artwork, IDictionary<string, string> metadata) {
-        var reservedKeys = new List<string>();
-        foreach (string key in metadata.Keys) {
-            if (key.StartsWith("topology.artwork.", StringComparison.Ordinal)) reservedKeys.Add(key);
-        }
-        foreach (string key in reservedKeys) metadata.Remove(key);
-        if (artwork == null) return;
+    private static VisualArtifactInterchangeArtwork? MapArtwork(TopologyIconArtwork? artwork) {
+        if (artwork == null) return null;
         if (!artwork.IsSafe) {
-            metadata["topology.artwork.unsupported"] = "unsafe";
-            return;
+            return new VisualArtifactInterchangeArtwork { Status = VisualArtifactInterchangeArtworkStatus.UnsafeOmitted };
         }
-        metadata["topology.artwork.svgViewBox"] = artwork.SvgViewBox;
-        metadata["topology.artwork.preserveAspectRatio"] = artwork.PreserveAspectRatio;
-        if (!string.IsNullOrWhiteSpace(artwork.SvgBody)) metadata["topology.artwork.svgBody"] = artwork.SvgBody!;
-        if (!string.IsNullOrWhiteSpace(artwork.SvgPath)) metadata["topology.artwork.svgPath"] = artwork.SvgPath!;
-        if (!string.IsNullOrWhiteSpace(artwork.PreviewPath)) metadata["topology.artwork.previewPath"] = artwork.PreviewPath!;
-        if (!string.IsNullOrWhiteSpace(artwork.ImageHref)) metadata["topology.artwork.imageHref"] = artwork.ImageHref!;
+        return new VisualArtifactInterchangeArtwork {
+            Status = VisualArtifactInterchangeArtworkStatus.Available,
+            SvgViewBox = artwork.SvgViewBox,
+            PreserveAspectRatio = artwork.PreserveAspectRatio,
+            SvgBody = artwork.SvgBody,
+            SvgPath = artwork.SvgPath,
+            PreviewPath = artwork.PreviewPath,
+            ImageHref = artwork.ImageHref
+        };
     }
 
-    private static void RemoveMetadataKeys(IDictionary<string, string> metadata, params string[] keys) {
-        foreach (string key in keys) metadata.Remove(key);
-    }
-
-    private static void MapTheme(IDictionary<string, string> metadata, TopologyTheme theme) {
-        metadata["topology.theme.background"] = theme.Background;
-        metadata["topology.theme.foreground"] = theme.Foreground;
-        metadata["topology.theme.mutedForeground"] = theme.MutedForeground;
-        metadata["topology.theme.card"] = theme.Card;
-        metadata["topology.theme.surface"] = theme.Surface;
-        metadata["topology.theme.border"] = theme.Border;
-        metadata["topology.theme.accent"] = theme.Accent;
-        metadata["topology.theme.healthy"] = theme.Healthy;
-        metadata["topology.theme.warning"] = theme.Warning;
-        metadata["topology.theme.critical"] = theme.Critical;
-        metadata["topology.theme.unknown"] = theme.Unknown;
-        metadata["topology.theme.disabled"] = theme.Disabled;
-        metadata["topology.theme.fontFamily"] = theme.FontFamily;
+    private static VisualArtifactInterchangeTheme MapTheme(TopologyTheme theme) {
+        return new VisualArtifactInterchangeTheme {
+            Background = theme.Background,
+            Foreground = theme.Foreground,
+            MutedForeground = theme.MutedForeground,
+            Card = theme.Card,
+            Surface = theme.Surface,
+            Border = theme.Border,
+            Accent = theme.Accent,
+            Healthy = theme.Healthy,
+            Warning = theme.Warning,
+            Critical = theme.Critical,
+            Unknown = theme.Unknown,
+            Disabled = theme.Disabled,
+            FontFamily = theme.FontFamily
+        };
     }
 }
