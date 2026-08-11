@@ -70,7 +70,7 @@ public static class MermaidSequenceRendering {
         }
 
         foreach (var activation in document.Activations) {
-            sequence.AddActivation(activation.ParticipantId, activation.Active, CountMessagesBefore(document, activation.Span.Line));
+            sequence.AddActivation(activation.ParticipantId, activation.Active, CountMessagesBefore(document, activation.Span));
             var target = sequence.Activations[sequence.Activations.Count - 1];
             target.Metadata["mermaid.source.line"] = activation.Span.Line.ToString(CultureInfo.InvariantCulture);
             target.Metadata["mermaid.source.column"] = activation.Span.Column.ToString(CultureInfo.InvariantCulture);
@@ -78,7 +78,7 @@ public static class MermaidSequenceRendering {
 
         foreach (var note in document.Notes) {
             sequence.AddNote(ToNotePlacement(note.Placement), note.ParticipantIds, note.Text ?? string.Empty);
-            sequence.Notes[sequence.Notes.Count - 1].StepIndex = CountMessagesBefore(document, note.Span.Line);
+            sequence.Notes[sequence.Notes.Count - 1].StepIndex = CountMessagesBefore(document, note.Span);
         }
 
         AddBlocks(document, sequence);
@@ -126,20 +126,20 @@ public static class MermaidSequenceRendering {
             if (block.Kind == MermaidSequenceBlockKind.End) {
                 if (stack.Count == 0) continue;
                 var start = stack.Pop();
-                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, CountMessagesBefore(document, block.Span.Line));
+                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, CountMessagesBefore(document, block.Span));
                 continue;
             }
 
             var kind = ToBlockKind(block.Kind);
             if (!kind.HasValue) continue;
-            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span.Line)));
+            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span)));
         }
     }
 
-    private static int CountMessagesBefore(MermaidSequenceDocument document, int line) {
+    private static int CountMessagesBefore(MermaidSequenceDocument document, MermaidSourceSpan span) {
         var count = 0;
         foreach (var message in document.Messages) {
-            if (message.Span.Line < line) count++;
+            if (message.Span.Line < span.Line || message.Span.Line == span.Line && message.Span.Column < span.Column) count++;
         }
 
         return count;

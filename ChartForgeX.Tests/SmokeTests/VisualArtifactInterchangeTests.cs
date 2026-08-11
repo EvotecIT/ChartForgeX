@@ -134,6 +134,18 @@ internal static partial class SmokeTests {
             "Bounding should preserve a valid direct metadata key that collides with an over-limit key and retain both values.");
         Assert(collidingMetadata[boundedMetricMetadataKey] == "metric-collision" && collidingMetadata.Values.Contains("1"),
             "Bounding should preserve a valid metadata key that collides with a prefixed metric key and retain both values.");
+        string prefixedCollisionSourceKey = "metric." + new string('c', 600);
+        maximumIdSource.Metadata[prefixedCollisionSourceKey] = "metadata-over-limit";
+        string prefixedCollisionBoundedKey = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes
+            .Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "metadata-over-limit").Key;
+        maximumIdSource.Metrics[prefixedCollisionBoundedKey.Substring("metric.".Length)] = "metric-valid";
+        maximumIdSource.Metadata["metric.exact"] = "metadata-exact";
+        maximumIdSource.Metrics["exact"] = "metric-exact";
+        var prefixedCollisionMetadata = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single(node => node.Label == "Source").Metadata;
+        Assert(prefixedCollisionMetadata[prefixedCollisionBoundedKey] == "metadata-over-limit" && prefixedCollisionMetadata.Values.Contains("metric-valid"),
+            "Prefixed metrics should not overwrite a different over-limit metadata key that projects to the same bounded key.");
+        Assert(prefixedCollisionMetadata["metric.exact"] == "metric-exact" && !prefixedCollisionMetadata.Values.Contains("metadata-exact"),
+            "Typed metrics should retain precedence when their logical prefixed key exactly matches direct metadata.");
         maximumIdTopology.Id = maximumId;
         var maximumViewEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope(new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions { View = new TopologyView { Id = maximumId } }
@@ -238,6 +250,16 @@ internal static partial class SmokeTests {
         Assert(collidingFlowMetadata[boundedFlowMetadataKey] == "artifact-short" && collidingFlowMetadata.Values.Contains("artifact-long") &&
                !collidingFlowMetadata.Values.Contains("model-long"),
             "Artifact metadata should keep same-key precedence while collision-aware bounding retains distinct valid and over-limit keys.");
+
+        var crossLayerFlow = FlowArtifact.Create("cross-layer-metadata").AddStep("step", "Step");
+        var crossLayerArtifact = crossLayerFlow.ToVisualArtifact();
+        string crossLayerLongKey = new string('v', 600);
+        crossLayerArtifact.Metadata[crossLayerLongKey] = "artifact-over-limit";
+        string crossLayerBoundedKey = crossLayerArtifact.ToInterchangeEnvelope().Metadata.Single(pair => pair.Value == "artifact-over-limit").Key;
+        crossLayerFlow.Metadata[crossLayerBoundedKey] = "model-valid";
+        var crossLayerMetadata = crossLayerArtifact.ToInterchangeEnvelope().Metadata;
+        Assert(crossLayerMetadata[crossLayerBoundedKey] == "artifact-over-limit" && crossLayerMetadata.Values.Contains("model-valid"),
+            "Collision-aware merging should retain a valid model key that matches a different bounded artifact key.");
 
         var collidingFlow = FlowArtifact.Create("colliding-flow")
             .AddLane("shared", "Lane")

@@ -33,13 +33,8 @@ API->>DB: Store";
     private static void MermaidParserParsesSequenceNotesActivationsBlocksAutonumberAndLinks() {
         const string source = @"sequenceDiagram
 autonumber 10 0.5
-Alice->>+Bob: Hello
-activate Bob
-Note right of Bob: Processing
-loop Every minute
-  Bob-->>-Alice: Done
-  deactivate Bob
-end
+Alice->>+Bob: Hello; activate Bob; Note right of Bob: Processing; loop Every minute
+  Bob-->>-Alice: Done; deactivate Bob; end
 link Bob: Dashboard @ https://example.com/bob";
 
         var result = new MermaidParser().ParseSequence(source);
@@ -62,6 +57,8 @@ link Bob: Dashboard @ https://example.com/bob";
         Assert(sequence.Activations.Count == 2 && sequence.Activations[0].ParticipantId == "Bob" && sequence.Activations[0].Active && sequence.Activations[0].StepIndex == 1 &&
                !sequence.Activations[1].Active && sequence.Activations[1].StepIndex == 2,
             "Mermaid sequence conversion should retain standalone activation state changes at their semantic steps.");
+        Assert(sequence.Notes.Single().StepIndex == 1 && sequence.Blocks.Single().StartStepIndex == 1 && sequence.Blocks.Single().EndStepIndex == 2,
+            "Mermaid sequence conversion should order same-line notes and block boundaries by source column as well as line.");
 
         var visual = document.ToVisualArtifact();
         Assert(visual.Metadata["mermaid.activations"] == "2" && visual.Regions.Single(region => region.Id == "Bob").Href == "https://example.com/bob",

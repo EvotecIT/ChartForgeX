@@ -16,7 +16,7 @@ public static class VisualArtifactInterchangeMapping {
     /// <returns>A portable semantic envelope. Unsupported visual kinds retain common metadata and use their separately rendered SVG fallback.</returns>
     public static VisualArtifactInterchangeEnvelope ToInterchangeEnvelope(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        var envelope = Common(artifact);
+        var envelope = Common(artifact, out var artifactMetadataKeys);
         switch (artifact.Model) {
             case TopologyChart topology:
                 MapTopology(
@@ -25,10 +25,10 @@ public static class VisualArtifactInterchangeMapping {
                     VisualArtifactRendering.TopologyOptions(artifact, renderOptions));
                 break;
             case FlowArtifact flow:
-                MapFlow(envelope, flow, artifact.Metadata.Keys);
+                MapFlow(envelope, flow, artifactMetadataKeys);
                 break;
             case SequenceArtifact sequence:
-                MapSequence(envelope, sequence, artifact.Metadata.Keys);
+                MapSequence(envelope, sequence, artifactMetadataKeys);
                 break;
         }
 
@@ -44,7 +44,7 @@ public static class VisualArtifactInterchangeMapping {
     public static byte[] ToInterchangeUtf8Json(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions = null) =>
         artifact.ToInterchangeEnvelope(renderOptions).ToUtf8Json();
 
-    private static VisualArtifactInterchangeEnvelope Common(VisualArtifact artifact) {
+    private static VisualArtifactInterchangeEnvelope Common(VisualArtifact artifact, out Dictionary<string, string> artifactMetadataKeys) {
         var envelope = new VisualArtifactInterchangeEnvelope {
             Id = BoundedGeneratedId(artifact.Id, "artifact"),
             Kind = artifact.Kind,
@@ -58,7 +58,7 @@ public static class VisualArtifactInterchangeMapping {
             Width = artifact.NaturalSize?.Width,
             Height = artifact.NaturalSize?.Height
         };
-        Copy(artifact.Metadata, envelope.Metadata);
+        artifactMetadataKeys = Copy(artifact.Metadata, envelope.Metadata);
         return envelope;
     }
 
@@ -101,7 +101,7 @@ public static class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IEnumerable<string> artifactMetadataKeys) {
+    private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
         envelope.Id = BoundedGeneratedId(flow.Id, "flow");
         envelope.Title = flow.Title;
         envelope.Subtitle = flow.Subtitle;
@@ -180,7 +180,7 @@ public static class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IEnumerable<string> artifactMetadataKeys) {
+    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
         var ids = new InterchangeIdScope();
         var participantIds = new List<string>();
         foreach (var participant in sequence.Participants) participantIds.Add(ids.AddNodeOccurrence(participant.Id));
@@ -343,8 +343,8 @@ public static class VisualArtifactInterchangeMapping {
             Width = node.Width,
             Height = node.Height
         };
-        Copy(node.Metadata, mapped.Metadata);
-        CopyWithPrefix(node.Metrics, mapped.Metadata, "metric.");
+        var metadataKeys = Copy(node.Metadata, mapped.Metadata);
+        CopyWithPrefix(node.Metrics, mapped.Metadata, "metric.", metadataKeys);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side.ToString(), Offset = port.Offset, Label = port.Label };
             Copy(port.Metadata, mappedPort.Metadata);
@@ -394,8 +394,8 @@ public static class VisualArtifactInterchangeMapping {
             Tooltip = edge.Tooltip,
             Order = order
         };
-        Copy(edge.Metadata, mapped.Metadata);
-        CopyWithPrefix(edge.Metrics, mapped.Metadata, "metric.");
+        var metadataKeys = Copy(edge.Metadata, mapped.Metadata);
+        CopyWithPrefix(edge.Metrics, mapped.Metadata, "metric.", metadataKeys);
         return mapped;
     }
 
@@ -411,33 +411,44 @@ public static class VisualArtifactInterchangeMapping {
         return result;
     }
 
-    private static void Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
+    private static Dictionary<string, string> Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
+        var projectedKeys = new Dictionary<string, string>(StringComparer.Ordinal);
         var pairs = new List<KeyValuePair<string, string>>(source);
         foreach (var pair in pairs) {
-            if (pair.Key.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters) target[pair.Key] = pair.Value;
+            if (pair.Key.Length > VisualArtifactInterchangeValidation.MaximumIdCharacters) continue;
+            target[pair.Key] = pair.Value;
+            projectedKeys[pair.Key] = pair.Key;
         }
         foreach (var pair in pairs) {
-            if (pair.Key.Length > VisualArtifactInterchangeValidation.MaximumIdCharacters) target[AllocateMetadataKey(target, pair.Key)] = pair.Value;
+            if (pair.Key.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters) continue;
+            string key = AllocateMetadataKey(target, pair.Key);
+            target[key] = pair.Value;
+            projectedKeys[pair.Key] = key;
         }
+        return projectedKeys;
     }
 
-    private static void CopyMissing(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, IEnumerable<string> reservedSourceKeys) {
-        var reserved = new HashSet<string>(reservedSourceKeys, StringComparer.Ordinal);
+    private static void CopyMissing(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, IReadOnlyDictionary<string, string> reservedSourceKeys) {
         var pairs = new List<KeyValuePair<string, string>>(source);
         foreach (var pair in pairs) {
-            if (pair.Key.Length > VisualArtifactInterchangeValidation.MaximumIdCharacters || reserved.Contains(pair.Key)) continue;
-            if (!target.ContainsKey(pair.Key)) target[pair.Key] = pair.Value;
+            if (pair.Key.Length > VisualArtifactInterchangeValidation.MaximumIdCharacters || reservedSourceKeys.ContainsKey(pair.Key)) continue;
+            if (target.ContainsKey(pair.Key)) target[AllocateMetadataKey(target, pair.Key)] = pair.Value;
+            else target[pair.Key] = pair.Value;
         }
         foreach (var pair in pairs) {
-            if (pair.Key.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters || reserved.Contains(pair.Key)) continue;
+            if (pair.Key.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters || reservedSourceKeys.ContainsKey(pair.Key)) continue;
             target[AllocateMetadataKey(target, pair.Key)] = pair.Value;
         }
     }
 
-    private static void CopyWithPrefix(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, string prefix) {
+    private static void CopyWithPrefix(
+        IEnumerable<KeyValuePair<string, string>> source,
+        IDictionary<string, string> target,
+        string prefix,
+        IReadOnlyDictionary<string, string> directMetadataKeys) {
         foreach (var pair in source) {
             string sourceKey = prefix + pair.Key;
-            if (target.ContainsKey(sourceKey)) target[sourceKey] = pair.Value;
+            if (directMetadataKeys.TryGetValue(sourceKey, out string? projectedKey)) target[projectedKey] = pair.Value;
             else target[AllocateMetadataKey(target, sourceKey)] = pair.Value;
         }
     }
