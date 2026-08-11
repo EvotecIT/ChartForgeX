@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using System.Linq;
+using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
@@ -19,12 +21,17 @@ internal static partial class SmokeTests {
         source.Details.Add(new TopologyNodeDetail { Label = "Site", Value = "A", Status = TopologyHealthStatus.Healthy });
         topology.Nodes.Add(source);
         topology.Nodes.Add(new TopologyNode { Id = "dc2", Label = "DC 2", Kind = TopologyNodeKind.Server, GroupId = "site", X = 280, Y = 100, Width = 120, Height = 64, Href = "javascript:alert(1)" });
+        topology.WithNodeDisplay("dc1", TopologyNodeDisplayMode.Pill);
         topology.Edges.Add(new TopologyEdge {
             Id = "replication", SourceNodeId = "dc1", TargetNodeId = "dc2", Kind = TopologyEdgeKind.Replication,
             Direction = VisualLinkDirection.Bidirectional, SourcePortId = "ldap", Label = "AD replication", Href = "https://example.test/link",
-            SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Diamond
+            SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Diamond, Routing = TopologyEdgeRouting.Curved,
+            Emphasis = TopologyEdgeEmphasis.Strong, IsMuted = true
         });
         topology.Edges[0].Metadata["topology.sourceMarker"] = "untrusted-override";
+        topology.Edges[0].Metadata["topology.routing"] = "untrusted-override";
+        topology.WithEdgeStroke("replication", 2.5, 0.4, 6, 2);
+        topology.WithEdgeWaypoints("replication", new ChartPoint(180, 120), new ChartPoint(220, 120));
         topology.Groups[0].IconId = "microsoft-ad:site";
         topology.Groups[0].Metadata["iconId"] = "untrusted-override";
 
@@ -35,6 +42,9 @@ internal static partial class SmokeTests {
         var envelope = artifact.ToInterchangeEnvelope();
         string json = envelope.ToJson();
         var roundTrip = VisualArtifactInterchangeEnvelope.FromUtf8Json(envelope.ToUtf8Json());
+        TopologyEdge preparedEdge = TopologyLayoutEngine.Prepare(topology, options: new TopologyRenderOptions()).Edges.Single();
+        string expectedWaypoints = string.Join(";", preparedEdge.Waypoints.Select(point =>
+            point.X.ToString("R", CultureInfo.InvariantCulture) + "," + point.Y.ToString("R", CultureInfo.InvariantCulture)));
 
         Assert(roundTrip.Kind == VisualArtifactKind.Topology, "Topology interchange should preserve artifact kind.");
         Assert(roundTrip.Metadata["owner"] == "directory-team", "Topology interchange should preserve artifact metadata.");
@@ -45,9 +55,17 @@ internal static partial class SmokeTests {
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Ports.Single().Id == "ldap", "Topology interchange should preserve named node ports.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Details.Single().Value == "A", "Topology interchange should preserve typed node details.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc2").Href == null, "Topology interchange should reject unsafe node hyperlinks.");
+        Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Metadata["topology.displayMode"] == "Pill",
+            "Topology interchange should preserve the prepared node display mode selected by the model or render options.");
         Assert(roundTrip.Edges.Single().SourcePortId == "ldap", "Topology interchange should preserve named edge endpoints.");
         Assert(roundTrip.Edges.Single().Metadata["topology.sourceMarker"] == "Circle" && roundTrip.Edges.Single().Metadata["topology.targetMarker"] == "Diamond",
             "Topology interchange should preserve explicit endpoint marker semantics in reserved edge metadata.");
+        Assert(roundTrip.Edges.Single().Metadata["topology.routing"] == "Curved" && roundTrip.Edges.Single().Metadata["topology.waypoints"] == expectedWaypoints,
+            "Topology interchange should preserve explicit route mode and deterministic waypoint coordinates.");
+        Assert(roundTrip.Edges.Single().Metadata["topology.strokeWidth"] == "2.5" && roundTrip.Edges.Single().Metadata["topology.opacity"] == "0.4" &&
+               roundTrip.Edges.Single().Metadata["topology.dashPattern"] == "6,2" && roundTrip.Edges.Single().Metadata["topology.emphasis"] == "Strong" &&
+               roundTrip.Edges.Single().Metadata["topology.muted"] == bool.TrueString,
+            "Topology interchange should preserve explicit stroke and presentation semantics.");
         Assert(roundTrip.ToJson() == json, "Topology interchange JSON should be deterministic after round trip.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
 

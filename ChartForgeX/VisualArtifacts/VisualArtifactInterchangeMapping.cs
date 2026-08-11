@@ -87,7 +87,9 @@ public static class VisualArtifactInterchangeMapping {
         envelope.Metadata["topology.edges"] = prepared.Edges.Count.ToString(CultureInfo.InvariantCulture);
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
-        foreach (var node in prepared.Nodes) envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids));
+        foreach (var node in prepared.Nodes) {
+            envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids, EffectiveNodeDisplayMode(node, options)));
+        }
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
             envelope.Edges.Add(MapEdge(
@@ -97,7 +99,8 @@ public static class VisualArtifactInterchangeMapping {
                 ids.Node(edge.TargetNodeId),
                 ids.OptionalPort(edge.SourceNodeId, edge.SourcePortId),
                 ids.OptionalPort(edge.TargetNodeId, edge.TargetPortId),
-                index));
+                index,
+                ids));
         }
     }
 
@@ -323,7 +326,12 @@ public static class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static VisualArtifactInterchangeNode MapNode(TopologyNode node, string id, string? groupId, InterchangeIdScope ids) {
+    private static VisualArtifactInterchangeNode MapNode(
+        TopologyNode node,
+        string id,
+        string? groupId,
+        InterchangeIdScope ids,
+        TopologyNodeDisplayMode displayMode) {
         var mapped = new VisualArtifactInterchangeNode {
             Id = id,
             Kind = node.Kind.ToString(),
@@ -345,6 +353,9 @@ public static class VisualArtifactInterchangeMapping {
         };
         var metadataKeys = Copy(node.Metadata, mapped.Metadata);
         CopyWithPrefix(node.Metrics, mapped.Metadata, "metric.", metadataKeys);
+        mapped.Metadata["topology.displayMode"] = displayMode.ToString();
+        if (!node.ShowStatusBadge) mapped.Metadata["topology.showStatusBadge"] = bool.FalseString;
+        if (node.MaximumLabelCharacters.HasValue) mapped.Metadata["topology.maximumLabelCharacters"] = node.MaximumLabelCharacters.Value.ToString(CultureInfo.InvariantCulture);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side.ToString(), Offset = port.Offset, Label = port.Label };
             Copy(port.Metadata, mappedPort.Metadata);
@@ -371,7 +382,8 @@ public static class VisualArtifactInterchangeMapping {
         string targetId,
         string? sourcePortId,
         string? targetPortId,
-        int order) {
+        int order,
+        InterchangeIdScope ids) {
         var mapped = new VisualArtifactInterchangeEdge {
             Id = id,
             Kind = edge.Kind.ToString(),
@@ -396,9 +408,41 @@ public static class VisualArtifactInterchangeMapping {
         };
         var metadataKeys = Copy(edge.Metadata, mapped.Metadata);
         CopyWithPrefix(edge.Metrics, mapped.Metadata, "metric.", metadataKeys);
+        mapped.Metadata["topology.routing"] = edge.Routing.ToString();
+        mapped.Metadata["topology.emphasis"] = edge.Emphasis.ToString();
         if (edge.SourceMarker.HasValue) mapped.Metadata["topology.sourceMarker"] = edge.SourceMarker.Value.ToString();
         if (edge.TargetMarker.HasValue) mapped.Metadata["topology.targetMarker"] = edge.TargetMarker.Value.ToString();
+        if (edge.StrokeWidth.HasValue) mapped.Metadata["topology.strokeWidth"] = InvariantNumber(edge.StrokeWidth.Value);
+        if (edge.Opacity.HasValue) mapped.Metadata["topology.opacity"] = InvariantNumber(edge.Opacity.Value);
+        if (edge.DashPattern.Count > 0) mapped.Metadata["topology.dashPattern"] = InvariantNumbers(edge.DashPattern);
+        if (edge.Waypoints.Count > 0) mapped.Metadata["topology.waypoints"] = InvariantWaypoints(edge);
+        if (edge.IsMuted) mapped.Metadata["topology.muted"] = bool.TrueString;
+        if (edge.RoutingPriority != 0) mapped.Metadata["topology.routingPriority"] = edge.RoutingPriority.ToString(CultureInfo.InvariantCulture);
+        if (edge.RouteLane != 0) mapped.Metadata["topology.routeLane"] = InvariantNumber(edge.RouteLane);
+        if (edge.LabelOffsetX != 0) mapped.Metadata["topology.labelOffsetX"] = InvariantNumber(edge.LabelOffsetX);
+        if (edge.LabelOffsetY != 0) mapped.Metadata["topology.labelOffsetY"] = InvariantNumber(edge.LabelOffsetY);
+        if (edge.HasLabelAnchorOverride) {
+            mapped.Metadata["topology.labelAnchor"] = InvariantNumber(edge.LabelAnchorX) + "," + InvariantNumber(edge.LabelAnchorY);
+        }
+        if (!string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) && ids.TryNode(edge.LabelAnchorNodeId!, out string labelAnchorNodeId)) {
+            mapped.Metadata["topology.labelAnchorNodeId"] = labelAnchorNodeId;
+        }
+        if (edge.LayoutInference != TopologyEdgeLayoutInference.None) mapped.Metadata["topology.layoutInference"] = edge.LayoutInference.ToString();
         return mapped;
+    }
+
+    private static string InvariantNumber(double value) => value.ToString("R", CultureInfo.InvariantCulture);
+
+    private static string InvariantNumbers(IEnumerable<double> values) {
+        var parts = new List<string>();
+        foreach (double value in values) parts.Add(InvariantNumber(value));
+        return string.Join(",", parts);
+    }
+
+    private static string InvariantWaypoints(TopologyEdge edge) {
+        var parts = new List<string>();
+        foreach (var point in edge.Waypoints) parts.Add(InvariantNumber(point.X) + "," + InvariantNumber(point.Y));
+        return string.Join(";", parts);
     }
 
     private static Dictionary<string, TopologyGroup> GroupsById(IEnumerable<TopologyGroup> groups) {
