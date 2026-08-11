@@ -60,16 +60,23 @@ public static class VisualArtifactInterchangeMapping {
     }
 
     private static void MapTopology(VisualArtifactInterchangeEnvelope envelope, TopologyChart topology, TopologyRenderOptions? renderOptions) {
-        var options = renderOptions?.Clone() ?? new TopologyRenderOptions();
+        var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
         var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
+        var ids = new InterchangeIdScope();
+        foreach (var group in prepared.Groups) ids.AddGroup(group.Id);
+        foreach (var node in prepared.Nodes) ids.AddNode(node.Id);
+        foreach (var edge in prepared.Edges) ids.AddEdge(edge.Id);
         envelope.Layout = topology.LayoutMode.ToString();
         envelope.Direction = topology.LayoutDirection.ToString();
         envelope.Width = prepared.Viewport.Width;
         envelope.Height = prepared.Viewport.Height;
 
-        foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, "TopologyGroup"));
-        foreach (var node in prepared.Nodes) envelope.Nodes.Add(MapNode(node));
-        for (var index = 0; index < prepared.Edges.Count; index++) envelope.Edges.Add(MapEdge(prepared.Edges[index], index));
+        foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
+        foreach (var node in prepared.Nodes) envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId)));
+        for (var index = 0; index < prepared.Edges.Count; index++) {
+            TopologyEdge edge = prepared.Edges[index];
+            envelope.Edges.Add(MapEdge(edge, ids.Edge(edge.Id), ids.Node(edge.SourceNodeId), ids.Node(edge.TargetNodeId), index));
+        }
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow) {
@@ -82,11 +89,15 @@ public static class VisualArtifactInterchangeMapping {
         var prepared = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
         var preparedGroups = GroupsById(prepared.Groups);
         var preparedNodes = NodesById(prepared.Nodes);
+        var ids = new InterchangeIdScope();
+        foreach (var lane in flow.Lanes) ids.AddGroup(lane.Id);
+        foreach (var step in flow.Steps) ids.AddNode(step.Id);
+        foreach (var connector in flow.Connectors) ids.AddEdge(connector.Id);
 
         foreach (var lane in flow.Lanes) {
             preparedGroups.TryGetValue(lane.Id, out var preparedGroup);
             var group = new VisualArtifactInterchangeGroup {
-                Id = lane.Id,
+                Id = ids.Group(lane.Id),
                 Kind = "FlowLane",
                 Label = lane.Label,
                 Status = lane.Status.ToString(),
@@ -103,11 +114,11 @@ public static class VisualArtifactInterchangeMapping {
         foreach (var step in flow.Steps) {
             preparedNodes.TryGetValue(step.Id, out var preparedNode);
             var node = new VisualArtifactInterchangeNode {
-                Id = step.Id,
+                Id = ids.Node(step.Id),
                 Kind = step.Kind.ToString(),
                 Label = step.Label,
                 Subtitle = step.Subtitle,
-                GroupId = step.LaneId,
+                GroupId = ids.OptionalGroup(step.LaneId),
                 Status = step.Status.ToString(),
                 IconId = step.Icon,
                 Symbol = step.Symbol,
@@ -125,10 +136,10 @@ public static class VisualArtifactInterchangeMapping {
         for (var index = 0; index < flow.Connectors.Count; index++) {
             var connector = flow.Connectors[index];
             var edge = new VisualArtifactInterchangeEdge {
-                Id = connector.Id,
+                Id = ids.Edge(connector.Id),
                 Kind = connector.Kind.ToString(),
-                SourceId = connector.SourceId,
-                TargetId = connector.TargetId,
+                SourceId = ids.Node(connector.SourceId),
+                TargetId = ids.Node(connector.TargetId),
                 Label = connector.Label,
                 Status = connector.Status.ToString(),
                 Direction = connector.Direction.ToString(),
@@ -141,16 +152,18 @@ public static class VisualArtifactInterchangeMapping {
     }
 
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence) {
+        var ids = new InterchangeIdScope();
+        foreach (var participant in sequence.Participants) ids.AddNode(participant.Id);
         envelope.Layout = "Sequence";
         envelope.Direction = "TopToBottom";
-        envelope.Width = sequence.Width;
-        envelope.Height = sequence.Height;
+        envelope.Width ??= sequence.Width;
+        envelope.Height ??= sequence.Height;
         Copy(sequence.Metadata, envelope.Metadata);
 
         for (var index = 0; index < sequence.Participants.Count; index++) {
             var participant = sequence.Participants[index];
             var node = new VisualArtifactInterchangeNode {
-                Id = participant.Id,
+                Id = ids.Node(participant.Id),
                 Kind = participant.Kind.ToString(),
                 Label = participant.Label
             };
@@ -162,11 +175,12 @@ public static class VisualArtifactInterchangeMapping {
 
         for (var index = 0; index < sequence.Messages.Count; index++) {
             var message = sequence.Messages[index];
+            string edgeId = ids.AddEdge("message-" + (index + 1).ToString(CultureInfo.InvariantCulture));
             var edge = new VisualArtifactInterchangeEdge {
-                Id = "message-" + (index + 1).ToString(CultureInfo.InvariantCulture),
+                Id = edgeId,
                 Kind = "SequenceMessage",
-                SourceId = message.SourceId,
-                TargetId = message.TargetId,
+                SourceId = ids.Node(message.SourceId),
+                TargetId = ids.Node(message.TargetId),
                 Label = message.Text,
                 Direction = "Forward",
                 LineStyle = message.LineStyle.ToString(),
@@ -181,32 +195,34 @@ public static class VisualArtifactInterchangeMapping {
         for (var index = 0; index < sequence.Notes.Count; index++) {
             var note = sequence.Notes[index];
             var annotation = new VisualArtifactInterchangeAnnotation {
-                Id = "note-" + (index + 1).ToString(CultureInfo.InvariantCulture),
+                Id = ids.AddAnnotation("note-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
                 Kind = "SequenceNote",
                 Text = note.Text,
                 Placement = note.Placement.ToString(),
                 StartIndex = note.StepIndex,
                 EndIndex = note.StepIndex
             };
-            annotation.TargetIds.AddRange(note.ParticipantIds);
+            foreach (string participantId in note.ParticipantIds) annotation.TargetIds.Add(ids.Node(participantId));
             envelope.Annotations.Add(annotation);
         }
 
         for (var index = 0; index < sequence.Blocks.Count; index++) {
             var block = sequence.Blocks[index];
+            int start = Math.Max(0, block.StartStepIndex);
+            int end = Math.Max(start, block.EndStepIndex);
             envelope.Annotations.Add(new VisualArtifactInterchangeAnnotation {
-                Id = "block-" + (index + 1).ToString(CultureInfo.InvariantCulture),
+                Id = ids.AddAnnotation("block-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
                 Kind = "SequenceBlock:" + block.Kind,
                 Text = block.Text,
-                StartIndex = block.StartStepIndex,
-                EndIndex = block.EndStepIndex
+                StartIndex = start,
+                EndIndex = end
             });
         }
     }
 
-    private static VisualArtifactInterchangeGroup MapGroup(TopologyGroup group, string kind) {
+    private static VisualArtifactInterchangeGroup MapGroup(TopologyGroup group, string id, string kind) {
         var mapped = new VisualArtifactInterchangeGroup {
-            Id = group.Id,
+            Id = id,
             Kind = kind,
             Label = group.Label,
             Subtitle = group.Subtitle,
@@ -219,19 +235,19 @@ public static class VisualArtifactInterchangeMapping {
             Width = group.Width,
             Height = group.Height
         };
+        Copy(group.Metadata, mapped.Metadata);
         if (!string.IsNullOrWhiteSpace(group.IconId)) mapped.Metadata["iconId"] = group.IconId!;
         if (!string.IsNullOrWhiteSpace(group.Symbol)) mapped.Metadata["symbol"] = group.Symbol!;
-        Copy(group.Metadata, mapped.Metadata);
         return mapped;
     }
 
-    private static VisualArtifactInterchangeNode MapNode(TopologyNode node) {
+    private static VisualArtifactInterchangeNode MapNode(TopologyNode node, string id, string? groupId) {
         var mapped = new VisualArtifactInterchangeNode {
-            Id = node.Id,
+            Id = id,
             Kind = node.Kind.ToString(),
             Label = node.Label,
             Subtitle = node.Subtitle,
-            GroupId = node.GroupId,
+            GroupId = groupId,
             Status = node.Status.ToString(),
             IconId = node.IconId,
             Symbol = node.Symbol,
@@ -266,12 +282,12 @@ public static class VisualArtifactInterchangeMapping {
         return mapped;
     }
 
-    private static VisualArtifactInterchangeEdge MapEdge(TopologyEdge edge, int order) {
+    private static VisualArtifactInterchangeEdge MapEdge(TopologyEdge edge, string id, string sourceId, string targetId, int order) {
         var mapped = new VisualArtifactInterchangeEdge {
-            Id = edge.Id,
+            Id = id,
             Kind = edge.Kind.ToString(),
-            SourceId = edge.SourceNodeId,
-            TargetId = edge.TargetNodeId,
+            SourceId = sourceId,
+            TargetId = targetId,
             Label = edge.Label,
             SecondaryLabel = edge.SecondaryLabel,
             TertiaryLabel = edge.TertiaryLabel,
@@ -312,5 +328,39 @@ public static class VisualArtifactInterchangeMapping {
 
     private static void CopyWithPrefix(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, string prefix) {
         foreach (var pair in source) target[prefix + pair.Key] = pair.Value;
+    }
+
+    private sealed class InterchangeIdScope {
+        private readonly HashSet<string> _used = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _groups = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _nodes = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _edges = new(StringComparer.Ordinal);
+
+        public string AddGroup(string sourceId) => Add(_groups, sourceId, "group");
+        public string AddNode(string sourceId) => Add(_nodes, sourceId, "node");
+        public string AddEdge(string sourceId) => Add(_edges, sourceId, "edge");
+        public string AddAnnotation(string sourceId) => Allocate(sourceId, "annotation");
+        public string Group(string sourceId) => _groups[sourceId];
+        public string Node(string sourceId) => _nodes[sourceId];
+        public string Edge(string sourceId) => _edges[sourceId];
+        public string? OptionalGroup(string? sourceId) => string.IsNullOrWhiteSpace(sourceId) ? null : Group(sourceId!);
+
+        private string Add(IDictionary<string, string> map, string sourceId, string category) {
+            string allocated = Allocate(sourceId, category);
+            map.Add(sourceId, allocated);
+            return allocated;
+        }
+
+        private string Allocate(string sourceId, string category) {
+            if (_used.Add(sourceId)) return sourceId;
+            string prefix = category + "-" + sourceId;
+            string candidate = prefix;
+            int suffix = 2;
+            while (!_used.Add(candidate)) {
+                candidate = prefix + "-" + suffix.ToString(CultureInfo.InvariantCulture);
+                suffix++;
+            }
+            return candidate;
+        }
     }
 }

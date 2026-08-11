@@ -23,6 +23,8 @@ internal static partial class SmokeTests {
             Id = "replication", SourceNodeId = "dc1", TargetNodeId = "dc2", Kind = TopologyEdgeKind.Replication,
             Direction = VisualLinkDirection.Bidirectional, SourcePortId = "ldap", Label = "AD replication", Href = "https://example.test/link"
         });
+        topology.Groups[0].IconId = "microsoft-ad:site";
+        topology.Groups[0].Metadata["iconId"] = "untrusted-override";
 
         var artifact = topology.ToVisualArtifact();
         artifact.Metadata["owner"] = "directory-team";
@@ -37,12 +39,38 @@ internal static partial class SmokeTests {
         Assert(roundTrip.Metadata["Owner"] == "Platform", "Topology interchange should preserve case-distinct metadata keys without data loss.");
         Assert(roundTrip.AccessibleDescription == "Two domain controllers replicate in Site A.", "Topology interchange should preserve accessibility metadata.");
         Assert(roundTrip.Groups.Single().Href == "https://example.test/site", "Topology interchange should preserve safe group hyperlinks.");
+        Assert(roundTrip.Groups.Single().Metadata["iconId"] == "microsoft-ad:site", "Typed group icon ids should override colliding arbitrary metadata.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Ports.Single().Id == "ldap", "Topology interchange should preserve named node ports.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Details.Single().Value == "A", "Topology interchange should preserve typed node details.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc2").Href == null, "Topology interchange should reject unsafe node hyperlinks.");
         Assert(roundTrip.Edges.Single().SourcePortId == "ldap", "Topology interchange should preserve named edge endpoints.");
         Assert(roundTrip.ToJson() == json, "Topology interchange JSON should be deterministic after round trip.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
+
+        var lazyOptions = new TopologyRenderOptions {
+            Preset = TopologyViewPreset.Ungrouped,
+            LayoutPreset = TopologyLayoutPreset.Presentation
+        };
+        var explicitOptions = new TopologyRenderOptions();
+        explicitOptions.ApplyPreset(TopologyViewPreset.Ungrouped);
+        explicitOptions.ApplyLayoutPreset(TopologyLayoutPreset.Presentation);
+        var lazyEnvelope = artifact.ToInterchangeEnvelope(new VisualArtifactRenderOptions { Topology = lazyOptions });
+        var explicitEnvelope = artifact.ToInterchangeEnvelope(new VisualArtifactRenderOptions { Topology = explicitOptions });
+        Assert(lazyEnvelope.Width == explicitEnvelope.Width && lazyEnvelope.Height == explicitEnvelope.Height && lazyEnvelope.Groups.Count == explicitEnvelope.Groups.Count,
+            "Interchange topology preparation should apply pending view and layout presets exactly like rendering.");
+
+        var collidingTopology = TopologyChart.Create();
+        collidingTopology.LayoutMode = TopologyLayoutMode.Manual;
+        collidingTopology.Groups.Add(new TopologyGroup { Id = "shared", Label = "Group", X = 0, Y = 0, Width = 400, Height = 200 });
+        collidingTopology.Nodes.Add(new TopologyNode { Id = "shared", Label = "Source", GroupId = "shared", X = 30, Y = 70, Width = 100, Height = 50 });
+        collidingTopology.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", GroupId = "shared", X = 220, Y = 70, Width = 100, Height = 50 });
+        collidingTopology.Edges.Add(new TopologyEdge { Id = "shared", SourceNodeId = "shared", TargetNodeId = "target" });
+        var collidingTopologyEnvelope = collidingTopology.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(collidingTopologyEnvelope.Groups.Single().Id == "shared", "The first topology entity should keep its stable source id.");
+        Assert(collidingTopologyEnvelope.Nodes.Single(node => node.Label == "Source").Id != "shared" && collidingTopologyEnvelope.Edges.Single().Id != "shared",
+            "Topology cross-category ids should be deterministically namespaced into the interchange envelope.");
+        Assert(collidingTopologyEnvelope.Edges.Single().SourceId == collidingTopologyEnvelope.Nodes.Single(node => node.Label == "Source").Id,
+            "Topology remapping should update edge references to the namespaced node id.");
     }
 
     private static void VisualArtifactInterchangePreservesFlowAndSequenceSemantics() {
@@ -58,6 +86,18 @@ internal static partial class SmokeTests {
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Kind == "Decision", "Flow interchange should preserve step kinds.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Metadata["owner"] == "requester", "Flow interchange should preserve step metadata.");
         Assert(flowRoundTrip.Edges.Single().Label == "Review", "Flow interchange should preserve connector labels.");
+
+        var collidingFlow = FlowArtifact.Create("colliding-flow")
+            .AddLane("shared", "Lane")
+            .AddStep("shared", "Step", laneId: "shared")
+            .AddStep("target", "Target", laneId: "shared")
+            .AddConnector("shared", "target");
+        var collidingFlowEnvelope = collidingFlow.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(collidingFlowEnvelope.Groups.Single().Id == "shared", "The first source entity should keep its stable id.");
+        Assert(collidingFlowEnvelope.Nodes.Single(node => node.Label == "Step").Id != "shared", "Cross-category source id collisions should be deterministically namespaced.");
+        Assert(collidingFlowEnvelope.Nodes.Single(node => node.Label == "Step").GroupId == "shared", "Remapped nodes should retain their group reference.");
+        Assert(collidingFlowEnvelope.Edges.Single().SourceId == collidingFlowEnvelope.Nodes.Single(node => node.Label == "Step").Id,
+            "Remapped edges should retain their node references.");
 
         var sequence = SequenceArtifact.Create("authentication")
             .WithTitle("Authentication")
@@ -78,6 +118,27 @@ internal static partial class SmokeTests {
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceNote" && annotation.TargetIds.Single() == "api"), "Sequence interchange should preserve participant notes.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceBlock:Opt"), "Sequence interchange should preserve block spans.");
         Assert(sequence.ToVisualArtifact().SupportsExport(VisualArtifactExportFormat.Json), "Sequence artifacts should declare their implemented semantic JSON export.");
+
+        var collidingSequence = SequenceArtifact.Create("colliding-sequence")
+            .AddParticipant("message-1", "Caller")
+            .AddParticipant("target", "Target")
+            .AddMessage("message-1", "target", "Call")
+            .AddBlock(SequenceArtifactBlockKind.Opt, "normalized", -2, -5);
+        var collidingSequenceEnvelope = collidingSequence.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(collidingSequenceEnvelope.Edges.Single().Id != "message-1", "Generated sequence ids should not collide with participant ids.");
+        Assert(collidingSequenceEnvelope.Edges.Single().SourceId == "message-1", "Sequence message references should retain participant ids.");
+        Assert(collidingSequenceEnvelope.Annotations.Single().StartIndex == 0 && collidingSequenceEnvelope.Annotations.Single().EndIndex == 0,
+            "Sequence block spans should use the renderer's non-negative ordered normalization.");
+
+        var wideSequence = SequenceArtifact.Create("wide").WithSize(320, 240);
+        for (var index = 0; index < 10; index++) wideSequence.AddParticipant("participant-" + index, "Participant " + index);
+        var wideArtifact = wideSequence.ToVisualArtifact();
+        var wideEnvelope = wideArtifact.ToInterchangeEnvelope();
+        VisualArtifactSize naturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
+        Assert(wideArtifact.NaturalSize.HasValue && naturalSize.Width > wideSequence.Width,
+            "The sequence fixture should calculate a wider natural layout than its configured minimum.");
+        Assert(wideEnvelope.Width == naturalSize.Width && wideEnvelope.Height == naturalSize.Height,
+            "Sequence interchange should preserve calculated natural dimensions instead of overwriting them with configured minimums.");
     }
 
     private static void VisualArtifactInterchangeRejectsInvalidContracts() {
@@ -119,5 +180,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(
             () => VisualArtifactInterchangeEnvelope.FromUtf8Json(new byte[VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes + 1]),
             "Interchange UTF-8 byte limits should be enforced before decoding the payload.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"line\nbreak\"}"),
+            "Interchange parsing should reject unescaped control characters inside JSON strings.");
+
+        var unknownKind = new VisualArtifactInterchangeEnvelope { Id = "unknown-kind", Kind = (VisualArtifactKind)999 };
+        AssertThrows<ArgumentOutOfRangeException>(() => unknownKind.ToJson(), "Interchange serialization should reject undefined artifact kinds.");
+        var unknownLanguage = new VisualArtifactInterchangeEnvelope { Id = "unknown-language", Kind = VisualArtifactKind.Topology, SourceLanguage = (VisualArtifactSourceLanguage)999 };
+        AssertThrows<ArgumentOutOfRangeException>(() => unknownLanguage.ToJson(), "Interchange serialization should reject undefined source languages.");
     }
 }

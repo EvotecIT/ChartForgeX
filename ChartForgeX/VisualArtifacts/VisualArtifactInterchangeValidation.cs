@@ -18,6 +18,8 @@ internal static class VisualArtifactInterchangeValidation {
 
     public static void Validate(VisualArtifactInterchangeEnvelope envelope) {
         if (envelope == null) throw new ArgumentNullException(nameof(envelope));
+        if (!Enum.IsDefined(typeof(VisualArtifactKind), envelope.Kind)) throw new ArgumentOutOfRangeException(nameof(envelope), envelope.Kind, "Interchange artifact kind must be defined.");
+        if (!Enum.IsDefined(typeof(VisualArtifactSourceLanguage), envelope.SourceLanguage)) throw new ArgumentOutOfRangeException(nameof(envelope), envelope.SourceLanguage, "Interchange source language must be defined.");
         RequiredId(envelope.Id, "artifact id");
         Text(envelope.Title, "artifact title");
         Text(envelope.Subtitle, "artifact subtitle");

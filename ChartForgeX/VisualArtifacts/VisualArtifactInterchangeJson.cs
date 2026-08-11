@@ -338,6 +338,7 @@ internal static class VisualArtifactInterchangeJson {
         for (var index = 0; index < json.Length; index++) {
             char c = json[index];
             if (inString) {
+                if (c < ' ') throw new ArgumentException("Interchange JSON strings cannot contain unescaped control characters.", nameof(json));
                 if (escaped) escaped = false;
                 else if (c == '\\') escaped = true;
                 else if (c == '"') inString = false;
