@@ -85,7 +85,7 @@ public static class VisualArtifactInterchangeMapping {
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow) {
         envelope.Layout = flow.LayoutMode.ToString();
         envelope.Direction = flow.Direction.ToString();
-        Copy(flow.Metadata, envelope.Metadata);
+        CopyMissing(flow.Metadata, envelope.Metadata);
 
         var prepared = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
         envelope.Width = prepared.Viewport.Width;
@@ -161,7 +161,7 @@ public static class VisualArtifactInterchangeMapping {
         envelope.Direction = "TopToBottom";
         envelope.Width ??= sequence.Width;
         envelope.Height ??= sequence.Height;
-        Copy(sequence.Metadata, envelope.Metadata);
+        CopyMissing(sequence.Metadata, envelope.Metadata);
 
         for (var index = 0; index < sequence.Participants.Count; index++) {
             var participant = sequence.Participants[index];
@@ -328,6 +328,10 @@ public static class VisualArtifactInterchangeMapping {
 
     private static void Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
         foreach (var pair in source) target[pair.Key] = pair.Value;
+    }
+
+    private static void CopyMissing(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
+        foreach (var pair in source) if (!target.ContainsKey(pair.Key)) target[pair.Key] = pair.Value;
     }
 
     private static void CopyWithPrefix(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, string prefix) {

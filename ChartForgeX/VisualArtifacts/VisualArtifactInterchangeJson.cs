@@ -6,6 +6,19 @@ namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualArtifactInterchangeJson {
     private const int MaximumJsonDepth = 32;
+    private static readonly GeoJsonReadLimits JsonReadLimits = new GeoJsonReadLimits(
+            VisualArtifactInterchangeValidation.MaximumJsonValues,
+            VisualArtifactInterchangeValidation.MaximumEdges,
+            VisualArtifactInterchangeValidation.MaximumMetadataEntries)
+        .LimitArray("groups", VisualArtifactInterchangeValidation.MaximumGroups)
+        .LimitArray("nodes", VisualArtifactInterchangeValidation.MaximumNodes)
+        .LimitArray("edges", VisualArtifactInterchangeValidation.MaximumEdges)
+        .LimitArray("annotations", VisualArtifactInterchangeValidation.MaximumAnnotations)
+        .LimitArray("ports", VisualArtifactInterchangeValidation.MaximumPortsPerNode)
+        .LimitArray("details", VisualArtifactInterchangeValidation.MaximumDetailsPerNode)
+        .LimitArray("targetIds", VisualArtifactInterchangeValidation.MaximumTargetIdsPerAnnotation)
+        .LimitObject("metadata", VisualArtifactInterchangeValidation.MaximumMetadataEntries)
+        .RejectDuplicates();
 
     public static string Serialize(VisualArtifactInterchangeEnvelope envelope) {
         VisualArtifactInterchangeValidation.Validate(envelope);
@@ -39,7 +52,7 @@ internal static class VisualArtifactInterchangeJson {
 
     public static VisualArtifactInterchangeEnvelope Deserialize(string json) {
         ValidateJsonInput(json);
-        Dictionary<string, GeoJsonValue> root = GeoJsonValue.Parse(json, StringComparer.Ordinal).AsObject("visual artifact interchange envelope");
+        Dictionary<string, GeoJsonValue> root = GeoJsonValue.Parse(json, StringComparer.Ordinal, JsonReadLimits).AsObject("visual artifact interchange envelope");
         string schema = RequiredString(root, "schema");
         if (!string.Equals(schema, VisualArtifactInterchangeEnvelope.SchemaId, StringComparison.Ordinal)) throw new NotSupportedException("Unsupported visual artifact interchange schema: " + schema + ".");
         int version = RequiredInt(root, "version");
@@ -316,8 +329,10 @@ internal static class VisualArtifactInterchangeJson {
 
     private static TEnum RequiredEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
         string value = RequiredString(values, name);
-        if (!Enum.TryParse(value, true, out TEnum parsed) || !Enum.IsDefined(typeof(TEnum), parsed)) throw new ArgumentException("Unknown " + typeof(TEnum).Name + " value: " + value + ".");
-        return parsed;
+        foreach (string declaredName in Enum.GetNames(typeof(TEnum))) {
+            if (string.Equals(declaredName, value, StringComparison.OrdinalIgnoreCase)) return (TEnum)Enum.Parse(typeof(TEnum), declaredName, ignoreCase: false);
+        }
+        throw new ArgumentException("Unknown " + typeof(TEnum).Name + " value: " + value + ".");
     }
 
     private static void String(VisualArtifactInterchangeJsonWriter writer, string name, string value) { writer.Property(name); writer.String(value); }
@@ -343,6 +358,9 @@ internal static class VisualArtifactInterchangeJson {
                 else if (c == '\\') escaped = true;
                 else if (c == '"') inString = false;
                 continue;
+            }
+            if (char.IsWhiteSpace(c) && c != ' ' && c != '\t' && c != '\r' && c != '\n') {
+                throw new ArgumentException("Interchange JSON contains whitespace that is not permitted by the JSON grammar.", nameof(json));
             }
             if (c == '"') {
                 ValidateJsonStringSurrogates(json, index + 1);

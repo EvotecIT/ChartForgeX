@@ -55,6 +55,11 @@ internal sealed class GeoJsonValue {
         return reader.Parse();
     }
 
+    public static GeoJsonValue Parse(string json, IEqualityComparer<string> propertyComparer, GeoJsonReadLimits limits) {
+        var reader = new GeoJsonReader(json, propertyComparer, limits);
+        return reader.Parse();
+    }
+
     public Dictionary<string, GeoJsonValue> AsObject(string context) =>
         _value as Dictionary<string, GeoJsonValue> ?? throw new ArgumentException("Expected JSON object for " + context + ".");
 
@@ -97,6 +102,50 @@ internal sealed class GeoJsonValue {
     public static GeoJsonValue Null() => new(null);
 }
 
+internal sealed class GeoJsonReadLimits {
+    private readonly Dictionary<string, int> _arrayItemsByProperty = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, int> _objectPropertiesByProperty = new(StringComparer.Ordinal);
+
+    public GeoJsonReadLimits(int maximumValues, int maximumArrayItems, int maximumObjectProperties) {
+        if (maximumValues <= 0) throw new ArgumentOutOfRangeException(nameof(maximumValues));
+        if (maximumArrayItems <= 0) throw new ArgumentOutOfRangeException(nameof(maximumArrayItems));
+        if (maximumObjectProperties <= 0) throw new ArgumentOutOfRangeException(nameof(maximumObjectProperties));
+        MaximumValues = maximumValues;
+        MaximumArrayItems = maximumArrayItems;
+        MaximumObjectProperties = maximumObjectProperties;
+    }
+
+    public int MaximumValues { get; }
+    public int MaximumArrayItems { get; }
+    public int MaximumObjectProperties { get; }
+    public bool RejectDuplicateProperties { get; private set; }
+
+    public GeoJsonReadLimits RejectDuplicates() {
+        RejectDuplicateProperties = true;
+        return this;
+    }
+
+    public GeoJsonReadLimits LimitArray(string propertyName, int maximumItems) {
+        if (string.IsNullOrEmpty(propertyName)) throw new ArgumentException("A property name is required.", nameof(propertyName));
+        if (maximumItems <= 0) throw new ArgumentOutOfRangeException(nameof(maximumItems));
+        _arrayItemsByProperty[propertyName] = maximumItems;
+        return this;
+    }
+
+    public GeoJsonReadLimits LimitObject(string propertyName, int maximumProperties) {
+        if (string.IsNullOrEmpty(propertyName)) throw new ArgumentException("A property name is required.", nameof(propertyName));
+        if (maximumProperties <= 0) throw new ArgumentOutOfRangeException(nameof(maximumProperties));
+        _objectPropertiesByProperty[propertyName] = maximumProperties;
+        return this;
+    }
+
+    internal int ArrayItems(string? propertyName) =>
+        propertyName != null && _arrayItemsByProperty.TryGetValue(propertyName, out int maximum) ? maximum : MaximumArrayItems;
+
+    internal int ObjectProperties(string? propertyName) =>
+        propertyName != null && _objectPropertiesByProperty.TryGetValue(propertyName, out int maximum) ? maximum : MaximumObjectProperties;
+}
+
 internal sealed class GeoJsonNumber {
     public GeoJsonNumber(double value, string losslessIntegerText) {
         Value = value;
@@ -125,26 +174,36 @@ internal static class GeoJsonValueExtensions {
 internal sealed class GeoJsonReader {
     private readonly string _json;
     private readonly IEqualityComparer<string> _propertyComparer;
+    private readonly GeoJsonReadLimits? _limits;
     private int _position;
+    private int _valuesRead;
 
     public GeoJsonReader(string json, IEqualityComparer<string> propertyComparer) {
         _json = json ?? throw new ArgumentNullException(nameof(json));
         _propertyComparer = propertyComparer ?? throw new ArgumentNullException(nameof(propertyComparer));
     }
 
+    public GeoJsonReader(string json, IEqualityComparer<string> propertyComparer, GeoJsonReadLimits limits) {
+        _json = json ?? throw new ArgumentNullException(nameof(json));
+        _propertyComparer = propertyComparer ?? throw new ArgumentNullException(nameof(propertyComparer));
+        _limits = limits ?? throw new ArgumentNullException(nameof(limits));
+    }
+
     public GeoJsonValue Parse() {
-        var value = ReadValue(preserveNumberText: false);
+        var value = ReadValue(preserveNumberText: false, propertyName: null);
         SkipWhiteSpace();
         if (_position != _json.Length) throw Error("Unexpected trailing JSON content.");
         return value;
     }
 
-    private GeoJsonValue ReadValue(bool preserveNumberText) {
+    private GeoJsonValue ReadValue(bool preserveNumberText, string? propertyName) {
+        _valuesRead++;
+        if (_limits != null && _valuesRead > _limits.MaximumValues) throw Error("JSON contains too many values.");
         SkipWhiteSpace();
         if (_position >= _json.Length) throw Error("Unexpected end of JSON.");
         var c = _json[_position];
-        if (c == '{') return ReadObject();
-        if (c == '[') return ReadArray(preserveNumberText);
+        if (c == '{') return ReadObject(propertyName);
+        if (c == '[') return ReadArray(preserveNumberText, propertyName);
         if (c == '"') return GeoJsonValue.String(ReadString());
         if (c == '-' || char.IsDigit(c)) return ReadNumber(preserveNumberText);
         if (Match("true")) return GeoJsonValue.Bool(true);
@@ -153,17 +212,23 @@ internal sealed class GeoJsonReader {
         throw Error("Unexpected JSON token.");
     }
 
-    private GeoJsonValue ReadObject() {
+    private GeoJsonValue ReadObject(string? propertyName) {
         Expect('{');
         var values = new Dictionary<string, GeoJsonValue>(_propertyComparer);
+        int propertyCount = 0;
+        int maximumProperties = _limits?.ObjectProperties(propertyName) ?? int.MaxValue;
         SkipWhiteSpace();
         if (TryRead('}')) return GeoJsonValue.Object(values);
         while (true) {
+            propertyCount++;
+            if (propertyCount > maximumProperties) throw Error("JSON object contains too many properties.");
             SkipWhiteSpace();
             var key = ReadString();
+            if (_limits?.RejectDuplicateProperties == true && values.ContainsKey(key)) throw Error("JSON object contains a duplicate property named '" + key + "'.");
             SkipWhiteSpace();
             Expect(':');
-            values[key] = ReadValue(!string.Equals(key, "coordinates", StringComparison.OrdinalIgnoreCase));
+            GeoJsonValue value = ReadValue(!string.Equals(key, "coordinates", StringComparison.OrdinalIgnoreCase), key);
+            values[key] = value;
             SkipWhiteSpace();
             if (TryRead('}')) break;
             Expect(',');
@@ -172,13 +237,15 @@ internal sealed class GeoJsonReader {
         return GeoJsonValue.Object(values);
     }
 
-    private GeoJsonValue ReadArray(bool preserveNumberText) {
+    private GeoJsonValue ReadArray(bool preserveNumberText, string? propertyName) {
         Expect('[');
         var values = new List<GeoJsonValue>();
+        int maximumItems = _limits?.ArrayItems(propertyName) ?? int.MaxValue;
         SkipWhiteSpace();
         if (TryRead(']')) return GeoJsonValue.Array(values);
         while (true) {
-            values.Add(ReadValue(preserveNumberText));
+            if (values.Count >= maximumItems) throw Error("JSON array contains too many items.");
+            values.Add(ReadValue(preserveNumberText, propertyName: null));
             SkipWhiteSpace();
             if (TryRead(']')) break;
             Expect(',');

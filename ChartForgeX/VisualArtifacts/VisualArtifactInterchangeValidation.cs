@@ -6,13 +6,15 @@ namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumJsonCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters;
-    private const int MaximumGroups = 10000;
-    private const int MaximumNodes = 50000;
-    private const int MaximumEdges = 100000;
-    private const int MaximumAnnotations = 50000;
-    private const int MaximumPortsPerNode = 256;
-    private const int MaximumDetailsPerNode = 1024;
-    private const int MaximumMetadataEntries = 256;
+    internal const int MaximumJsonValues = 500000;
+    internal const int MaximumGroups = 10000;
+    internal const int MaximumNodes = 50000;
+    internal const int MaximumEdges = 100000;
+    internal const int MaximumAnnotations = 50000;
+    internal const int MaximumPortsPerNode = 256;
+    internal const int MaximumDetailsPerNode = 1024;
+    internal const int MaximumTargetIdsPerAnnotation = MaximumNodes;
+    internal const int MaximumMetadataEntries = 256;
     private const int MaximumIdCharacters = 512;
     private const int MaximumTextCharacters = 65536;
 
@@ -145,6 +147,7 @@ internal static class VisualArtifactInterchangeValidation {
             Text(annotation.Kind, "annotation kind");
             Text(annotation.Text, "annotation text");
             OptionalText(annotation.Placement, "annotation placement");
+            Count(annotation.TargetIds.Count, MaximumTargetIdsPerAnnotation, "annotation target ids");
             if (annotation.StartIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), annotation.StartIndex, "Annotation start index must not be negative.");
             if (annotation.EndIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), annotation.EndIndex, "Annotation end index must not be negative.");
             if (annotation.StartIndex.HasValue && annotation.EndIndex.HasValue && annotation.EndIndex.Value < annotation.StartIndex.Value) throw new ArgumentException("Annotation end index must not precede its start index.", nameof(envelope));

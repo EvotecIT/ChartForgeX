@@ -87,12 +87,18 @@ internal static partial class SmokeTests {
             .AddStep("approve", "Approve?", FlowArtifactStepKind.Decision, "requester")
             .AddConnector("submit", "approve", "Review", FlowArtifactConnectorKind.Flow);
         flow.WithStep("submit", step => step.Metadata["owner"] = "requester");
-        var flowRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(flow.ToVisualArtifact().ToInterchangeJson());
+        flow.Metadata["scope"] = "model";
+        flow.Metadata["model-only"] = "preserved";
+        var flowArtifact = flow.ToVisualArtifact();
+        flowArtifact.Metadata["scope"] = "artifact";
+        var flowRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(flowArtifact.ToInterchangeJson());
         TopologyChart preparedFlow = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
         Assert(flowRoundTrip.Groups.Single().Kind == "FlowLane", "Flow interchange should preserve lane semantics.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Kind == "Decision", "Flow interchange should preserve step kinds.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Metadata["owner"] == "requester", "Flow interchange should preserve step metadata.");
         Assert(flowRoundTrip.Edges.Single().Label == "Review", "Flow interchange should preserve connector labels.");
+        Assert(flowRoundTrip.Metadata["scope"] == "artifact" && flowRoundTrip.Metadata["model-only"] == "preserved",
+            "Explicit artifact metadata should override same-key flow metadata while retaining model-only values.");
         Assert(flowRoundTrip.Width == preparedFlow.Viewport.Width && flowRoundTrip.Height == preparedFlow.Viewport.Height,
             "Flow interchange should publish the prepared topology viewport instead of its unprepared configured canvas.");
 
@@ -120,11 +126,17 @@ internal static partial class SmokeTests {
         sequence.Participants[0].Metadata["sequence.order"] = "99";
         sequence.Participants[0].Metadata["sequence.implicit"] = "true";
         sequence.Messages[0].Metadata["sequence.activatesTarget"] = "false";
-        var sequenceRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(sequence.ToVisualArtifact().ToInterchangeJson());
+        sequence.Metadata["scope"] = "model";
+        sequence.Metadata["model-only"] = "preserved";
+        var sequenceArtifact = sequence.ToVisualArtifact();
+        sequenceArtifact.Metadata["scope"] = "artifact";
+        var sequenceRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(sequenceArtifact.ToInterchangeJson());
         Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Kind == "Actor", "Sequence interchange should preserve participant kinds.");
         Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.order"] == "0", "Typed participant order should override colliding arbitrary metadata.");
         Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.implicit"] == "false", "Typed participant state should override colliding arbitrary metadata.");
         Assert(sequenceRoundTrip.Edges.Single().Metadata["sequence.activatesTarget"] == "true", "Sequence interchange should preserve activation semantics.");
+        Assert(sequenceRoundTrip.Metadata["scope"] == "artifact" && sequenceRoundTrip.Metadata["model-only"] == "preserved",
+            "Explicit artifact metadata should override same-key sequence metadata while retaining model-only values.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceNote" && annotation.TargetIds.Single() == "api"), "Sequence interchange should preserve participant notes.");
         Assert(sequenceRoundTrip.Annotations.Single(annotation => annotation.Kind == "SequenceNote").StartIndex == 0,
             "Sequence note rows should use the renderer's non-negative normalization.");
@@ -169,6 +181,19 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":01,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
             "Interchange parsing should reject JSON numbers with leading zeros.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\u00A0\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
+            "Interchange parsing should reject non-JSON whitespace outside strings.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"0\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
+            "Interchange parsing should accept only declared enum names, not numeric enum tokens.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"id\":\"y\"}"),
+            "Interchange parsing should reject exact duplicate properties instead of applying last-wins semantics.");
+        string excessivePorts = string.Join(",", Enumerable.Repeat("{\"id\":\"p\",\"side\":\"Left\",\"offset\":0}", 257));
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"nodes\":[{\"id\":\"n\",\"ports\":[" + excessivePorts + "]}]}"),
+            "Interchange parsing should enforce schema collection limits while constructing the JSON value tree.");
         string deeplyNested = new string('[', 33) + new string(']', 33);
         AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(deeplyNested), "Interchange parsing should reject excessive JSON nesting before recursive parsing.");
 
@@ -191,6 +216,14 @@ internal static partial class SmokeTests {
         missingPort.Nodes.Add(new VisualArtifactInterchangeNode { Id = "target", Label = "Target" });
         missingPort.Edges.Add(new VisualArtifactInterchangeEdge { Id = "edge", SourceId = "source", TargetId = "target", SourcePortId = "missing" });
         AssertThrows<ArgumentException>(() => missingPort.ToJson(), "Interchange validation should reject named ports that do not exist on their endpoint node.");
+
+        var excessiveAnnotationTargets = new VisualArtifactInterchangeEnvelope { Id = "annotation-targets", Kind = VisualArtifactKind.Topology };
+        excessiveAnnotationTargets.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node", Label = "Node" });
+        var excessiveTargets = new VisualArtifactInterchangeAnnotation { Id = "annotation", Text = "Targets" };
+        for (var index = 0; index < 50001; index++) excessiveTargets.TargetIds.Add("node");
+        excessiveAnnotationTargets.Annotations.Add(excessiveTargets);
+        AssertThrows<ArgumentOutOfRangeException>(() => excessiveAnnotationTargets.ToJson(),
+            "In-memory annotation target limits should match parser limits so serialized envelopes remain parseable.");
 
         AssertThrows<ArgumentOutOfRangeException>(
             () => VisualArtifactInterchangeEnvelope.FromUtf8Json(new byte[VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes + 1]),
