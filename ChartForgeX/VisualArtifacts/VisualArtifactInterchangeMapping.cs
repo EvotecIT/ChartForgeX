@@ -351,7 +351,10 @@ public static class VisualArtifactInterchangeMapping {
         public string Group(string sourceId) => _groups[sourceId];
         public string Node(string sourceId) => _nodes[sourceId];
         public string Edge(string sourceId) => _edges[sourceId];
-        public string? OptionalGroup(string? sourceId) => string.IsNullOrWhiteSpace(sourceId) ? null : Group(sourceId!);
+        public string? OptionalGroup(string? sourceId) =>
+            !string.IsNullOrWhiteSpace(sourceId) && _groups.TryGetValue(sourceId!, out string? mappedId)
+                ? mappedId
+                : null;
 
         private string Add(IDictionary<string, string> map, string sourceId, string category) {
             string allocated = Allocate(sourceId, category);

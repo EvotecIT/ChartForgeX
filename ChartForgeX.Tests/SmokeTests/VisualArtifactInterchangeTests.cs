@@ -59,6 +59,17 @@ internal static partial class SmokeTests {
         Assert(lazyEnvelope.Width == explicitEnvelope.Width && lazyEnvelope.Height == explicitEnvelope.Height && lazyEnvelope.Groups.Count == explicitEnvelope.Groups.Count,
             "Interchange topology preparation should apply pending view and layout presets exactly like rendering.");
 
+        topology.Groups[0].Status = TopologyHealthStatus.Warning;
+        var groupFilteredEnvelope = artifact.ToInterchangeEnvelope(new VisualArtifactRenderOptions {
+            Topology = new TopologyRenderOptions {
+                View = new TopologyView { IncludeNodeGroups = false, HealthStatuses = { TopologyHealthStatus.Unknown } }
+            }
+        });
+        Assert(groupFilteredEnvelope.Groups.Count == 0 && groupFilteredEnvelope.Nodes.Count == 2,
+            "Interchange topology views should retain eligible nodes when their groups are omitted.");
+        Assert(groupFilteredEnvelope.Nodes.All(node => node.GroupId == null),
+            "Interchange topology views should detach references to groups omitted during preparation.");
+
         artifact.NaturalSize = new VisualArtifactSize(1777, 1333);
         artifact.PreserveNaturalSize = true;
         var naturalEnvelope = artifact.ToInterchangeEnvelope();
