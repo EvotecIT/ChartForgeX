@@ -18,6 +18,7 @@ internal static partial class VisualArtifactInterchangeJson {
         .LimitArray("annotations", VisualArtifactInterchangeValidation.MaximumAnnotations)
         .LimitArray("ports", VisualArtifactInterchangeValidation.MaximumPortsPerNode)
         .LimitArray("details", VisualArtifactInterchangeValidation.MaximumDetailsPerNode)
+        .LimitArray("metrics", VisualArtifactInterchangeValidation.MaximumMetricsPerEntity)
         .LimitArray("targetIds", VisualArtifactInterchangeValidation.MaximumTargetIdsPerAnnotation)
         .LimitArray("items", VisualArtifactInterchangeValidation.MaximumLegendItems)
         .LimitArray("dashPattern", VisualArtifactInterchangeValidation.MaximumDashPatternValues)
@@ -28,6 +29,19 @@ internal static partial class VisualArtifactInterchangeJson {
     public static string Serialize(VisualArtifactInterchangeEnvelope envelope) {
         VisualArtifactInterchangeValidation.Validate(envelope);
         var writer = new VisualArtifactInterchangeJsonWriter();
+        WriteEnvelope(writer, envelope);
+        string json = writer.ToString();
+        if (json.Length > VisualArtifactInterchangeValidation.MaximumJsonCharacters) throw new InvalidOperationException("The interchange JSON exceeds the maximum supported size.");
+        return json;
+    }
+
+    internal static long CountValues(VisualArtifactInterchangeEnvelope envelope) {
+        var writer = new VisualArtifactInterchangeJsonWriter(writeText: false, enforceValueLimit: false);
+        WriteEnvelope(writer, envelope);
+        return writer.ValuesWritten;
+    }
+
+    private static void WriteEnvelope(VisualArtifactInterchangeJsonWriter writer, VisualArtifactInterchangeEnvelope envelope) {
         writer.StartObject();
         String(writer, "schema", envelope.Schema);
         Number(writer, "version", envelope.Version);
@@ -52,9 +66,6 @@ internal static partial class VisualArtifactInterchangeJson {
         Scenarios(writer, envelope.Scenarios);
         Annotations(writer, envelope.Annotations);
         writer.EndObject();
-        string json = writer.ToString();
-        if (json.Length > VisualArtifactInterchangeValidation.MaximumJsonCharacters) throw new InvalidOperationException("The interchange JSON exceeds the maximum supported size.");
-        return json;
     }
 
     public static VisualArtifactInterchangeEnvelope Deserialize(string json) {
@@ -364,7 +375,7 @@ internal static partial class VisualArtifactInterchangeJson {
             Dictionary<string, GeoJsonValue> item = value.AsObject("metric");
             target.Add(new VisualArtifactInterchangeMetric {
                 Name = RequiredString(item, "name"),
-                Value = RequiredString(item, "value")
+                Value = RequiredStringAllowEmpty(item, "value")
             });
         }
     }
@@ -425,6 +436,11 @@ internal static partial class VisualArtifactInterchangeJson {
         string? value = OptionalString(values, name);
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Missing required interchange string: " + name + ".");
         return value!;
+    }
+
+    private static string RequiredStringAllowEmpty(Dictionary<string, GeoJsonValue> values, string name) {
+        if (!values.TryGetValue(name, out var value) || value.IsNull) throw new ArgumentException("Missing required interchange string: " + name + ".");
+        return value.AsString(name);
     }
 
     private static string? OptionalString(Dictionary<string, GeoJsonValue> values, string name) =>

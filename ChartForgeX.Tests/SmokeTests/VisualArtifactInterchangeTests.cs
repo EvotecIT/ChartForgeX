@@ -536,6 +536,10 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"nodes\":[{\"id\":\"n\",\"ports\":[" + excessivePorts + "]}]}"),
             "Interchange parsing should enforce schema collection limits while constructing the JSON value tree.");
+        string excessiveMetrics = string.Join(",", Enumerable.Range(0, 1025).Select(index => "{\"name\":\"metric-" + index + "\",\"value\":\"\"}"));
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"family\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"topology\":{\"layoutMode\":\"Layered\",\"layoutDirection\":\"LeftToRight\"},\"nodes\":[{\"id\":\"n\",\"metrics\":[" + excessiveMetrics + "]}]}"),
+            "Interchange parsing should enforce the per-entity metric limit before materializing an oversized metric collection.");
         string compactUnknownValues = string.Join(",", Enumerable.Repeat("null", 100000));
         string compactUnknownArrays = string.Join(",", Enumerable.Repeat("[" + compactUnknownValues + "]", 6));
         string compactUnknownPayload = "{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"unknown\":[" + compactUnknownArrays + "]}";
@@ -639,6 +643,24 @@ internal static partial class SmokeTests {
         }
         AssertThrows<ArgumentOutOfRangeException>(() => excessiveJsonValues.ToJson(),
             "Interchange validation should enforce the same public total JSON value budget as parsing before writer construction.");
+
+        VisualArtifactInterchangeEnvelope largeValidEnvelope = InterchangeTopology("large-valid");
+        for (var index = 0; index < 28000; index++) {
+            largeValidEnvelope.Nodes.Add(InterchangeTopologyNode("node-" + index, "Node " + index));
+        }
+        string largeValidJson = largeValidEnvelope.ToJson();
+        Assert(largeValidJson.Length < VisualArtifactInterchangeEnvelope.MaximumJsonCharacters &&
+               VisualArtifactInterchangeEnvelope.FromJson(largeValidJson).Nodes.Count == 28000,
+            "The aggregate value budget should count the exact emitted shape and allow large envelopes that remain within every public limit.");
+
+        VisualArtifactInterchangeEnvelope emptyMetricEnvelope = InterchangeTopology("empty-metrics");
+        VisualArtifactInterchangeNode emptyMetricNode = InterchangeTopologyNode("node", "Node");
+        emptyMetricNode.Metrics.Add(new VisualArtifactInterchangeMetric { Name = "empty", Value = string.Empty });
+        emptyMetricNode.Metrics.Add(new VisualArtifactInterchangeMetric { Name = "whitespace", Value = "   " });
+        emptyMetricEnvelope.Nodes.Add(emptyMetricNode);
+        VisualArtifactInterchangeEnvelope emptyMetricRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(emptyMetricEnvelope.ToJson());
+        Assert(emptyMetricRoundTrip.Nodes.Single().Metrics[0].Value == string.Empty && emptyMetricRoundTrip.Nodes.Single().Metrics[1].Value == "   ",
+            "Metric values should preserve valid empty and whitespace-only strings across deterministic JSON round trips.");
 
         AssertThrows<ArgumentOutOfRangeException>(
             () => VisualArtifactInterchangeEnvelope.FromUtf8Json(new byte[VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes + 1]),
