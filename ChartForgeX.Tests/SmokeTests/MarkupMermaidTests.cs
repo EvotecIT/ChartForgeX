@@ -211,6 +211,26 @@ API-->>U: Response
         Assert(result.Artifacts[0].Metadata["render.model"] == nameof(SequenceArtifact), "Mermaid sequence fence artifacts should expose the sequence render model.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid sequence artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid sequence fence size attributes should map to artifact natural size.");
+
+        const string wideSource = @"sequenceDiagram
+participant P1
+participant P2
+participant P3
+participant P4
+participant P5
+participant P6
+participant P7
+participant P8
+participant P9
+participant P10";
+        MermaidSequenceDocument wideDocument = new MermaidParser().ParseSequence(wideSource).Document
+            ?? throw new InvalidOperationException("Wide Mermaid sequence should parse.");
+        VisualArtifact wideArtifact = wideDocument.ToVisualArtifact(new MermaidSequenceRenderOptions { Width = 320, Height = 240 });
+        VisualArtifactSize wideNaturalSize = wideArtifact.NaturalSize
+            ?? throw new InvalidOperationException("Wide Mermaid sequence should expose calculated natural size.");
+        VisualArtifactInterchangeEnvelope wideEnvelope = wideArtifact.ToInterchangeEnvelope();
+        Assert(wideNaturalSize.Width > 320 && wideEnvelope.Width == wideNaturalSize.Width && wideEnvelope.Height == wideNaturalSize.Height,
+            "Mermaid sequence JSON should preserve the calculated sequence layout dimensions used by SVG and PNG rendering.");
     }
 
     private static void MermaidVisualMarkupParserMapsPieFencesToArtifacts() {

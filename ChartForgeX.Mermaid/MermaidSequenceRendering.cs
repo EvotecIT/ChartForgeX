@@ -83,11 +83,8 @@ public static class MermaidSequenceRendering {
     public static VisualArtifact ToVisualArtifact(this MermaidSequenceDocument document, MermaidSequenceRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         var sequence = document.ToSequenceArtifact(options);
-        var artifact = VisualArtifact.Create(sequence.Id, VisualArtifactKind.Mermaid, sequence);
-        artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
-        artifact.Title = sequence.Title;
-        artifact.Subtitle = sequence.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(sequence.Width, sequence.Height);
+        var artifact = sequence.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
+        artifact.Kind = VisualArtifactKind.Mermaid;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;

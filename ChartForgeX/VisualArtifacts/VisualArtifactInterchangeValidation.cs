@@ -6,7 +6,7 @@ namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumJsonCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters;
-    internal const int MaximumJsonValues = 500000;
+    internal const int MaximumJsonValues = MaximumJsonCharacters;
     internal const int MaximumGroups = 10000;
     internal const int MaximumNodes = 50000;
     internal const int MaximumEdges = 100000;

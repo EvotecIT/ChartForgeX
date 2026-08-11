@@ -77,6 +77,21 @@ internal static partial class SmokeTests {
             "Topology cross-category ids should be deterministically namespaced into the interchange envelope.");
         Assert(collidingTopologyEnvelope.Edges.Single().SourceId == collidingTopologyEnvelope.Nodes.Single(node => node.Label == "Source").Id,
             "Topology remapping should update edge references to the namespaced node id.");
+
+        var highCardinality = new VisualArtifactInterchangeEnvelope { Id = "high-cardinality", Kind = VisualArtifactKind.Topology };
+        highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "source", Label = "Source" });
+        highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "target", Label = "Target" });
+        for (var index = 0; index < 72000; index++) {
+            highCardinality.Edges.Add(new VisualArtifactInterchangeEdge {
+                Id = "e" + index,
+                SourceId = "source",
+                TargetId = "target"
+            });
+        }
+        string highCardinalityJson = highCardinality.ToJson();
+        var highCardinalityRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(highCardinalityJson);
+        Assert(highCardinalityRoundTrip.Edges.Count == highCardinality.Edges.Count,
+            "Every envelope accepted by serialization limits should remain parseable at the same edge cardinality.");
     }
 
     private static void VisualArtifactInterchangePreservesFlowAndSequenceSemantics() {
