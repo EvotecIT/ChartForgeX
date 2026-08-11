@@ -7,7 +7,7 @@ namespace ChartForgeX.Topology;
 /// <summary>
 /// Defines reusable topology icon packs for product-neutral and vendor-specific diagrams.
 /// </summary>
-public sealed class TopologyIconCatalog {
+public sealed partial class TopologyIconCatalog {
     private readonly List<TopologyIconPack> _packs = new();
 
     /// <summary>
@@ -230,6 +230,8 @@ public sealed class TopologyIconPack {
         _icons.Add(icon);
         return this;
     }
+
+    internal void AddIconUnchecked(TopologyIconDefinition icon) => _icons.Add(icon);
 
     /// <summary>
     /// Adds or replaces pack metadata and returns the current pack.

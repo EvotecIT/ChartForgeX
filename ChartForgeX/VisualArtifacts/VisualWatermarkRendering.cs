@@ -1,0 +1,407 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+using ChartForgeX.Composition;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+
+namespace ChartForgeX.VisualArtifacts;
+
+internal static class VisualWatermarkRendering {
+    private const double MaximumRepeatedWatermarkCount = 10000;
+    private static readonly Regex SvgRootRegex = new("<svg\\b(?<attributes>[^>]*)>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex AttributeRegex = new("(?<name>[A-Za-z_:][-A-Za-z0-9_:.]*)\\s*=\\s*[\"'](?<value>.*?)[\"']", RegexOptions.CultureInvariant);
+
+    public static string ApplyToSvg(string svg, VisualArtifact artifact, IReadOnlyList<VisualWatermark> watermarks) {
+        if (watermarks.Count == 0) return svg;
+        var size = ResolveSvgSize(svg, artifact);
+        var layer = new StringBuilder();
+        layer.Append("<g data-cfx-role=\"watermarks\" pointer-events=\"none\">");
+        var imageDefinitions = AppendRepeatedSvgImageDefinitions(layer, svg, watermarks);
+        for (var i = 0; i < watermarks.Count; i++) {
+            imageDefinitions.TryGetValue(i, out var imageDefinition);
+            AppendSvgWatermark(layer, watermarks[i], size.Width, size.Height, i, imageDefinition);
+        }
+        layer.Append("</g>");
+        var closing = svg.LastIndexOf("</svg>", StringComparison.OrdinalIgnoreCase);
+        if (closing < 0) throw new InvalidOperationException("Rendered artifact did not produce a complete SVG document.");
+        return svg.Insert(closing, layer.ToString());
+    }
+
+    public static RgbaImage ApplyToImage(RgbaImage source, IReadOnlyList<VisualWatermark> watermarks) {
+        return ApplyToImage(source, watermarks, new RasterWatermarkFrame(0, 0, source.Width, source.Height, 1));
+    }
+
+    public static RgbaImage ApplyToImage(RgbaImage source, VisualArtifact artifact, string svg, IReadOnlyList<VisualWatermark> watermarks) {
+        return ApplyToImage(source, watermarks, ResolveRasterWatermarkFrame(source, svg, artifact));
+    }
+
+    private static RgbaImage ApplyToImage(RgbaImage source, IReadOnlyList<VisualWatermark> watermarks, RasterWatermarkFrame frame) {
+        if (watermarks.Count == 0) return source;
+        var canvas = new RgbaCanvas(source.Width, source.Height, 1, null, 1);
+        canvas.DrawImage(0, 0, source.Width, source.Height, source.Pixels);
+        canvas.SetClipBounds(frame.X, frame.Y, frame.Width, frame.Height);
+        for (var i = 0; i < watermarks.Count; i++) DrawRasterWatermark(canvas, watermarks[i], frame);
+        return canvas.ToImage();
+    }
+
+    private static Dictionary<int, SvgImageWatermarkDefinition> AppendRepeatedSvgImageDefinitions(StringBuilder output, string svg, IReadOnlyList<VisualWatermark> watermarks) {
+        var definitions = new Dictionary<int, SvgImageWatermarkDefinition>();
+        for (var index = 0; index < watermarks.Count; index++) {
+            var watermark = watermarks[index];
+            if (!watermark.Repeat || watermark.Kind != VisualWatermarkKind.Image) continue;
+            var image = RasterImageDecoder.Decode(watermark.ImageBytes!);
+            definitions[index] = new SvgImageWatermarkDefinition(UniqueSvgImageDefinitionId(svg, index), image);
+        }
+        if (definitions.Count == 0) return definitions;
+
+        output.Append("<defs>");
+        foreach (var pair in definitions) {
+            var watermark = watermarks[pair.Key];
+            var definition = pair.Value;
+            var image = definition.Image.GetValueOrDefault();
+            output.Append("<symbol id=\"").Append(definition.Id).Append("\" viewBox=\"0 0 ")
+                .Append(image.Width).Append(' ').Append(image.Height)
+                .Append("\" preserveAspectRatio=\"xMidYMid meet\"><image width=\"").Append(image.Width)
+                .Append("\" height=\"").Append(image.Height)
+                .Append("\" preserveAspectRatio=\"xMidYMid meet\" href=\"");
+            AppendSvgImageDataUri(output, watermark, image);
+            output.Append("\" /></symbol>");
+        }
+        output.Append("</defs>");
+        return definitions;
+    }
+
+    private static string UniqueSvgImageDefinitionId(string svg, int index) {
+        var suffix = 0;
+        while (true) {
+            var id = "cfx-watermark-image-" + index.ToString(CultureInfo.InvariantCulture) + (suffix == 0 ? string.Empty : "-" + suffix.ToString(CultureInfo.InvariantCulture));
+            if (!Regex.IsMatch(svg, "\\bid\\s*=\\s*[\\\"']" + Regex.Escape(id) + "[\\\"']", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)) return id;
+            suffix++;
+        }
+    }
+
+    private static void AppendSvgWatermark(StringBuilder output, VisualWatermark watermark, double width, double height, int index, SvgImageWatermarkDefinition imageDefinition) {
+        if (watermark.Repeat) {
+            ValidateRepeatDensity(watermark, width, height);
+            ForEachRepeatedWatermarkPosition(watermark, width, height, imageDefinition.Image, 1,
+                (x, y) => AppendSvgWatermarkAt(output, watermark, x, y, index, imageDefinition: imageDefinition));
+            return;
+        }
+
+        var bounds = ResolveBounds(watermark, width, height);
+        AppendSvgWatermarkAt(output, watermark, bounds.CenterX, bounds.CenterY, index, bounds.Width, bounds.Height, imageDefinition);
+    }
+
+    private static void AppendSvgWatermarkAt(StringBuilder output, VisualWatermark watermark, double centerX, double centerY, int index, double? explicitWidth = null, double? explicitHeight = null, SvgImageWatermarkDefinition imageDefinition = default) {
+        var opacity = watermark.Opacity * watermark.Color.A / 255.0;
+        if (watermark.Kind == VisualWatermarkKind.Text) {
+            output.Append("<text data-cfx-role=\"watermark\" data-cfx-watermark-index=\"").Append(index).Append("\"")
+                .Append(" x=\"").Append(F(centerX)).Append("\" y=\"").Append(F(centerY)).Append("\"")
+                .Append(" text-anchor=\"middle\" dominant-baseline=\"middle\"")
+                .Append(" fill=\"").Append(watermark.Color.ToHex()).Append("\"")
+                .Append(" fill-opacity=\"").Append(F(opacity)).Append("\"")
+                .Append(" font-family=\"Segoe UI,Arial,sans-serif\"")
+                .Append(" font-size=\"").Append(F(watermark.FontSize * watermark.Scale)).Append("\"")
+                .Append(" font-weight=\"").Append(watermark.Emphasized ? "700" : "400").Append("\"");
+            if (Math.Abs(watermark.RotationDegrees) > 0.0001) {
+                output.Append(" transform=\"rotate(").Append(F(watermark.RotationDegrees)).Append(' ').Append(F(centerX)).Append(' ').Append(F(centerY)).Append(")\"");
+            }
+            output.Append('>').Append(EscapeXml(watermark.Text!)).Append("</text>");
+            return;
+        }
+
+        var bytes = watermark.ImageBytes!;
+        var image = imageDefinition.Image ?? RasterImageDecoder.Decode(bytes);
+        var imageWidth = explicitWidth ?? (watermark.Width ?? image.Width) * watermark.Scale;
+        var imageHeight = explicitHeight ?? (watermark.Height ?? image.Height) * watermark.Scale;
+        output.Append(imageDefinition.Image == null ? "<image" : "<use")
+            .Append(" data-cfx-role=\"watermark\" data-cfx-watermark-index=\"").Append(index).Append("\"")
+            .Append(" x=\"").Append(F(centerX - imageWidth / 2)).Append("\" y=\"").Append(F(centerY - imageHeight / 2)).Append("\"")
+            .Append(" width=\"").Append(F(imageWidth)).Append("\" height=\"").Append(F(imageHeight)).Append("\"")
+            .Append(" opacity=\"").Append(F(watermark.Opacity)).Append("\"")
+            .Append(" preserveAspectRatio=\"xMidYMid meet\"");
+        if (imageDefinition.Image == null) {
+            output.Append(" href=\"");
+            AppendSvgImageDataUri(output, watermark, image);
+            output.Append("\"");
+        } else {
+            output.Append(" href=\"#").Append(imageDefinition.Id).Append("\"");
+        }
+        if (Math.Abs(watermark.RotationDegrees) > 0.0001) {
+            output.Append(" transform=\"rotate(").Append(F(watermark.RotationDegrees)).Append(' ').Append(F(centerX)).Append(' ').Append(F(centerY)).Append(")\"");
+        }
+        output.Append(" />");
+    }
+
+    private static void DrawRasterWatermark(RgbaCanvas canvas, VisualWatermark watermark, RasterWatermarkFrame frame) {
+        RgbaImage? sourceImage = watermark.Kind == VisualWatermarkKind.Image
+            ? RasterImageDecoder.Decode(watermark.ImageBytes!)
+            : null;
+        if (watermark.Repeat) {
+            ValidateRepeatDensity(watermark, frame.Width, frame.Height, frame.Scale);
+            RgbaImage? preparedImage = sourceImage.HasValue
+                ? PrepareRasterWatermark(watermark, sourceImage.Value, renderScale: frame.Scale)
+                : null;
+            ForEachRepeatedWatermarkPosition(watermark, frame.Width, frame.Height, sourceImage, frame.Scale,
+                (x, y) => DrawRasterWatermarkAt(canvas, watermark, frame.X + x, frame.Y + y, frame.Scale, sourceImage: sourceImage, preparedImage: preparedImage));
+            return;
+        }
+
+        var bounds = ResolveBounds(watermark, frame.Width, frame.Height, sourceImage, frame.Scale);
+        DrawRasterWatermarkAt(canvas, watermark, frame.X + bounds.CenterX, frame.Y + bounds.CenterY, frame.Scale, bounds.Width, bounds.Height, sourceImage);
+    }
+
+    private static void ValidateRepeatDensity(VisualWatermark watermark, double width, double height, double renderScale = 1) {
+        var columns = Math.Ceiling(width / (watermark.RepeatSpacingX * renderScale)) + 1;
+        var rows = Math.Ceiling(height / (watermark.RepeatSpacingY * renderScale)) + 1;
+        if (columns * rows > MaximumRepeatedWatermarkCount) {
+            throw new InvalidOperationException("Repeated watermark spacing would create more than 10,000 marks. Increase RepeatSpacingX or RepeatSpacingY.");
+        }
+    }
+
+    private static void ForEachRepeatedWatermarkPosition(VisualWatermark watermark, double width, double height, RgbaImage? sourceImage, double renderScale, Action<double, double> draw) {
+        var spacingX = watermark.RepeatSpacingX * renderScale;
+        var spacingY = watermark.RepeatSpacingY * renderScale;
+        var anchor = ResolveBounds(watermark, width, height, sourceImage, renderScale);
+        var firstY = PositiveModulo(anchor.CenterY, spacingY);
+        var row = 0;
+        for (var y = firstY; y < height; y += spacingY) {
+            var stagger = row++ % 2 == 0 ? 0 : spacingX / 2;
+            var firstX = PositiveModulo(anchor.CenterX - stagger, spacingX);
+            for (var x = firstX; x < width; x += spacingX) draw(x, y);
+        }
+    }
+
+    private static double PositiveModulo(double value, double modulus) {
+        var remainder = value % modulus;
+        return remainder < 0 ? remainder + modulus : remainder;
+    }
+
+    private static void DrawRasterWatermarkAt(RgbaCanvas canvas, VisualWatermark watermark, double centerX, double centerY, double renderScale, double? explicitWidth = null, double? explicitHeight = null, RgbaImage? sourceImage = null, RgbaImage? preparedImage = null) {
+        if (watermark.Kind == VisualWatermarkKind.Text) {
+            var fontSize = watermark.FontSize * watermark.Scale * renderScale;
+            var color = watermark.Color.WithOpacity(watermark.Opacity * watermark.Color.A / 255.0);
+            var textWidth = watermark.Emphasized
+                ? RgbaCanvas.MeasureTextEmphasizedWidth(watermark.Text!, fontSize, null)
+                : RgbaCanvas.MeasureTextWidth(watermark.Text!, fontSize, null);
+            var textHeight = RgbaCanvas.MeasureTextHeight(fontSize, null);
+            if (watermark.Emphasized) canvas.DrawTextRotatedEmphasized(centerX, centerY, watermark.Text!, color, fontSize, watermark.RotationDegrees, textWidth / 2, textHeight / 2);
+            else canvas.DrawTextRotated(centerX, centerY, watermark.Text!, color, fontSize, watermark.RotationDegrees, textWidth / 2, textHeight / 2);
+            return;
+        }
+
+        var source = sourceImage ?? RasterImageDecoder.Decode(watermark.ImageBytes!);
+        var prepared = preparedImage ?? PrepareRasterWatermark(watermark, source, explicitWidth, explicitHeight, renderScale);
+        canvas.DrawImage((int)Math.Round(centerX - prepared.Width / 2.0), (int)Math.Round(centerY - prepared.Height / 2.0), prepared.Width, prepared.Height, prepared.Pixels);
+    }
+
+    private static RgbaImage PrepareRasterWatermark(VisualWatermark watermark, RgbaImage source, double? explicitWidth = null, double? explicitHeight = null, double renderScale = 1) {
+        var targetWidth = ResolveRasterWatermarkDimension(explicitWidth ?? (watermark.Width ?? source.Width) * watermark.Scale * renderScale);
+        var targetHeight = ResolveRasterWatermarkDimension(explicitHeight ?? (watermark.Height ?? source.Height) * watermark.Scale * renderScale);
+        return ScaleAndRotate(source, targetWidth, targetHeight, watermark.RotationDegrees, watermark.Opacity);
+    }
+
+    private static int ResolveRasterWatermarkDimension(double value) {
+        var rounded = Math.Round(value);
+        if (double.IsNaN(rounded) || double.IsInfinity(rounded) || rounded > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Raster watermark dimensions exceed the supported allocation range.");
+        }
+        return Math.Max(1, (int)rounded);
+    }
+
+    private static RgbaImage ScaleAndRotate(RgbaImage source, int width, int height, double degrees, double opacity) {
+        var hasRotation = Math.Abs(degrees % 360) >= 0.0001;
+        var rotatedAllocation = hasRotation ? CalculateRotatedWatermarkAllocation(width, height, degrees) : default;
+        var scaledCanvas = new RgbaCanvas(width, height, 1, null, 1);
+        var scale = Math.Min(width / (double)source.Width, height / (double)source.Height);
+        var drawWidth = Math.Max(1, (int)Math.Round(source.Width * scale));
+        var drawHeight = Math.Max(1, (int)Math.Round(source.Height * scale));
+        scaledCanvas.DrawImageScaled(
+            (width - drawWidth) / 2,
+            (height - drawHeight) / 2,
+            drawWidth,
+            drawHeight,
+            source.Width,
+            source.Height,
+            source.Pixels);
+        var scaled = scaledCanvas.ToImage();
+        if (!hasRotation) return WithOpacity(scaled, opacity);
+
+        var radians = degrees * Math.PI / 180.0;
+        var cos = Math.Cos(radians);
+        var sin = Math.Sin(radians);
+        var rotatedWidth = rotatedAllocation.PixelWidth;
+        var rotatedHeight = rotatedAllocation.PixelHeight;
+        var pixels = new byte[rotatedAllocation.ByteCount];
+        var sourceCenterX = (width - 1) / 2.0;
+        var sourceCenterY = (height - 1) / 2.0;
+        var targetCenterX = (rotatedWidth - 1) / 2.0;
+        var targetCenterY = (rotatedHeight - 1) / 2.0;
+        for (var y = 0; y < rotatedHeight; y++) for (var x = 0; x < rotatedWidth; x++) {
+            var dx = x - targetCenterX;
+            var dy = y - targetCenterY;
+            var sourceX = (int)Math.Round(sourceCenterX + dx * cos + dy * sin);
+            var sourceY = (int)Math.Round(sourceCenterY - dx * sin + dy * cos);
+            if (sourceX < 0 || sourceY < 0 || sourceX >= width || sourceY >= height) continue;
+            var sourceIndex = (sourceY * width + sourceX) * 4;
+            var targetIndex = (y * rotatedWidth + x) * 4;
+            pixels[targetIndex] = scaled.Pixels[sourceIndex];
+            pixels[targetIndex + 1] = scaled.Pixels[sourceIndex + 1];
+            pixels[targetIndex + 2] = scaled.Pixels[sourceIndex + 2];
+            pixels[targetIndex + 3] = (byte)Math.Round(scaled.Pixels[sourceIndex + 3] * opacity);
+        }
+        return new RgbaImage(rotatedWidth, rotatedHeight, pixels);
+    }
+
+    internal static RasterAllocation CalculateRotatedWatermarkAllocation(int width, int height, double degrees) {
+        var radians = degrees * Math.PI / 180.0;
+        var cos = Math.Cos(radians);
+        var sin = Math.Sin(radians);
+        var rotatedWidthValue = Math.Ceiling(Math.Abs(width * cos) + Math.Abs(height * sin));
+        var rotatedHeightValue = Math.Ceiling(Math.Abs(width * sin) + Math.Abs(height * cos));
+        if (double.IsNaN(rotatedWidthValue) || double.IsInfinity(rotatedWidthValue) || rotatedWidthValue > int.MaxValue ||
+            double.IsNaN(rotatedHeightValue) || double.IsInfinity(rotatedHeightValue) || rotatedHeightValue > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(nameof(width), width, "Rotated watermark dimensions exceed the supported allocation range.");
+        }
+        return RasterAllocationGuard.Calculate(Math.Max(1, (int)rotatedWidthValue), Math.Max(1, (int)rotatedHeightValue), 1, 1);
+    }
+
+    private static RgbaImage WithOpacity(RgbaImage image, double opacity) {
+        if (opacity >= 0.9999) return image;
+        var pixels = (byte[])image.Pixels.Clone();
+        for (var i = 3; i < pixels.Length; i += 4) pixels[i] = (byte)Math.Round(pixels[i] * opacity);
+        return new RgbaImage(image.Width, image.Height, pixels);
+    }
+
+    private static void AppendSvgImageDataUri(StringBuilder output, VisualWatermark watermark, RgbaImage image) {
+        var preserveOriginal = string.Equals(watermark.ImageMimeType, "image/png", StringComparison.OrdinalIgnoreCase) ||
+                               string.Equals(watermark.ImageMimeType, "image/jpeg", StringComparison.OrdinalIgnoreCase);
+        var mediaType = preserveOriginal ? watermark.ImageMimeType! : "image/png";
+        var bytes = preserveOriginal ? watermark.ImageBytes! : PngWriter.WriteRgba(image);
+        output.Append("data:").Append(mediaType).Append(";base64,").Append(Convert.ToBase64String(bytes));
+    }
+
+    private static WatermarkBounds ResolveBounds(VisualWatermark watermark, double canvasWidth, double canvasHeight, RgbaImage? sourceImage = null, double renderScale = 1) {
+        double width;
+        double height;
+        if (watermark.Kind == VisualWatermarkKind.Text) {
+            var fontSize = watermark.FontSize * watermark.Scale * renderScale;
+            width = Math.Max(fontSize, watermark.Text!.Length * fontSize * (watermark.Emphasized ? 0.62 : 0.56));
+            height = fontSize * 1.2;
+        } else {
+            var image = sourceImage ?? RasterImageDecoder.Decode(watermark.ImageBytes!);
+            width = (watermark.Width ?? image.Width) * watermark.Scale * renderScale;
+            height = (watermark.Height ?? image.Height) * watermark.Scale * renderScale;
+        }
+
+        var placement = VisualCanvasPlacement.At(
+            watermark.Anchor,
+            (EdgeInsetX(watermark.Anchor, watermark.Padding) + watermark.OffsetX) * renderScale,
+            (EdgeInsetY(watermark.Anchor, watermark.Padding) + watermark.OffsetY) * renderScale);
+        var rect = placement.Resolve(canvasWidth, canvasHeight, width, height);
+        return new WatermarkBounds(rect.X + width / 2, rect.Y + height / 2, width, height);
+    }
+
+    private static double EdgeInsetX(VisualCanvasAnchor anchor, double padding) {
+        return anchor == VisualCanvasAnchor.TopCenter || anchor == VisualCanvasAnchor.Center || anchor == VisualCanvasAnchor.BottomCenter ? 0 : padding;
+    }
+
+    private static double EdgeInsetY(VisualCanvasAnchor anchor, double padding) {
+        return anchor == VisualCanvasAnchor.MiddleLeft || anchor == VisualCanvasAnchor.Center || anchor == VisualCanvasAnchor.MiddleRight ? 0 : padding;
+    }
+
+    private static RasterWatermarkFrame ResolveRasterWatermarkFrame(RgbaImage source, string svg, VisualArtifact artifact) {
+        var logicalSize = ResolveSvgSize(svg, artifact);
+        var scaleX = source.Width / logicalSize.Width;
+        var scaleY = source.Height / logicalSize.Height;
+        if (!IsPositiveFinite(scaleX) || !IsPositiveFinite(scaleY)) return new RasterWatermarkFrame(0, 0, source.Width, source.Height, 1);
+
+        var attributes = ReadSvgRootAttributes(svg);
+        attributes.TryGetValue("preserveAspectRatio", out var preserveAspectRatio);
+        var fit = string.IsNullOrWhiteSpace(preserveAspectRatio) ? "xMidYMid meet" : preserveAspectRatio!.Trim();
+        if (fit.IndexOf("none", StringComparison.OrdinalIgnoreCase) >= 0) {
+            return new RasterWatermarkFrame(0, 0, source.Width, source.Height, Math.Min(scaleX, scaleY));
+        }
+
+        var scale = fit.IndexOf("slice", StringComparison.OrdinalIgnoreCase) >= 0
+            ? Math.Max(scaleX, scaleY)
+            : Math.Min(scaleX, scaleY);
+        var fittedWidth = logicalSize.Width * scale;
+        var fittedHeight = logicalSize.Height * scale;
+        var remainingX = source.Width - fittedWidth;
+        var remainingY = source.Height - fittedHeight;
+        var x = AlignmentOffset(fit, remainingX, "xMid", "xMax");
+        var y = AlignmentOffset(fit, remainingY, "YMid", "YMax");
+        return new RasterWatermarkFrame(x, y, fittedWidth, fittedHeight, scale);
+    }
+
+    private static double AlignmentOffset(string preserveAspectRatio, double remaining, string middleToken, string maximumToken) {
+        if (preserveAspectRatio.IndexOf(maximumToken, StringComparison.OrdinalIgnoreCase) >= 0) return remaining;
+        return preserveAspectRatio.IndexOf(middleToken, StringComparison.OrdinalIgnoreCase) >= 0 ? remaining / 2 : 0;
+    }
+
+    private static bool IsPositiveFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value) && value > 0;
+
+    private static VisualArtifactSize ResolveSvgSize(string svg, VisualArtifact artifact) {
+        var attributes = ReadSvgRootAttributes(svg);
+        if (attributes.TryGetValue("viewBox", out var viewBox)) {
+            var parts = viewBox.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 4 && TryNumber(parts[2], out var viewWidth) && TryNumber(parts[3], out var viewHeight) && viewWidth > 0 && viewHeight > 0) return new VisualArtifactSize(viewWidth, viewHeight);
+        }
+        if (attributes.TryGetValue("width", out var width) && attributes.TryGetValue("height", out var height) && TryNumber(TrimPixelSuffix(width), out var parsedWidth) && TryNumber(TrimPixelSuffix(height), out var parsedHeight)) return new VisualArtifactSize(parsedWidth, parsedHeight);
+        if (artifact.NaturalSize.HasValue) return artifact.NaturalSize.Value;
+        throw new InvalidOperationException("Rendered artifact SVG does not expose a usable viewBox or numeric width and height.");
+    }
+
+    private static Dictionary<string, string> ReadSvgRootAttributes(string svg) {
+        var root = SvgRootRegex.Match(svg);
+        if (!root.Success) throw new InvalidOperationException("Rendered artifact did not produce an SVG root element.");
+        var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in AttributeRegex.Matches(root.Groups["attributes"].Value)) attributes[match.Groups["name"].Value] = match.Groups["value"].Value;
+        return attributes;
+    }
+
+    private static string TrimPixelSuffix(string value) => value.EndsWith("px", StringComparison.OrdinalIgnoreCase) ? value.Substring(0, value.Length - 2) : value;
+    private static bool TryNumber(string value, out double result) => double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+    private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+    private static string EscapeXml(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&apos;");
+
+    private readonly struct SvgImageWatermarkDefinition {
+        public SvgImageWatermarkDefinition(string id, RgbaImage image) { Id = id; Image = image; }
+        public string? Id { get; }
+        public RgbaImage? Image { get; }
+    }
+
+    private readonly struct WatermarkBounds {
+        public WatermarkBounds(double centerX, double centerY, double width, double height) {
+            CenterX = centerX;
+            CenterY = centerY;
+            Width = width;
+            Height = height;
+        }
+        public double CenterX { get; }
+        public double CenterY { get; }
+        public double Width { get; }
+        public double Height { get; }
+    }
+
+    private readonly struct RasterWatermarkFrame {
+        public RasterWatermarkFrame(double x, double y, double width, double height, double scale) {
+            X = x;
+            Y = y;
+            Width = width;
+            Height = height;
+            Scale = scale;
+        }
+        public double X { get; }
+        public double Y { get; }
+        public double Width { get; }
+        public double Height { get; }
+        public double Scale { get; }
+        public double Right => X + Width;
+        public double Bottom => Y + Height;
+    }
+}

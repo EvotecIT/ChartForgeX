@@ -6,8 +6,10 @@ namespace ChartForgeX.Core;
 /// Defines common options for raster image exports.
 /// </summary>
 public class RasterImageOptions {
+    private const double InchesPerMeter = 1D / 0.0254D;
     private int _jpegQuality = 90;
     private int _pngCompressionLevel = 6;
+    private double? _dpi;
 
     /// <summary>
     /// Gets or sets the background used when flattening transparent pixels for formats that do not preserve alpha.
@@ -40,5 +42,25 @@ public class RasterImageOptions {
             if (value < 0 || value > 9) throw new System.ArgumentOutOfRangeException(nameof(value), value, "PNG compression level must be between 0 and 9.");
             _pngCompressionLevel = value;
         }
+    }
+
+    /// <summary>
+    /// Gets or sets optional output resolution metadata in dots per inch.
+    /// PNG exports encode this value as a physical pixel density without changing pixel dimensions.
+    /// </summary>
+    public double? Dpi {
+        get => _dpi;
+        set {
+            if (value.HasValue && !IsRepresentablePngDensity(value.Value)) {
+                throw new System.ArgumentOutOfRangeException(nameof(value), value, "DPI must be finite, positive, and representable as PNG pixels-per-meter metadata.");
+            }
+            _dpi = value;
+        }
+    }
+
+    private static bool IsRepresentablePngDensity(double dpi) {
+        if (double.IsNaN(dpi) || double.IsInfinity(dpi) || dpi <= 0) return false;
+        var pixelsPerMeter = System.Math.Round(dpi * InchesPerMeter, System.MidpointRounding.AwayFromZero);
+        return pixelsPerMeter >= 1 && pixelsPerMeter <= uint.MaxValue;
     }
 }

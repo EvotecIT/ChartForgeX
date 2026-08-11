@@ -6,9 +6,11 @@ The core model lives in `ChartForgeX.VisualArtifacts` and keeps three ideas sepa
 
 | Concept | Purpose |
 | --- | --- |
-| `VisualArtifact` | Common envelope for id, title, subtitle, source language, export formats, natural size, regions, legend, metadata, and the strongly typed model. |
+| `VisualArtifact` | Common envelope for id, title, subtitle, source language, export formats, natural size, accessibility, linked regions, legend, metadata, and the strongly typed model. |
 | `VisualArtifactKind` | Broad family such as chart, topology, flow, sequence, table, timeline, visual block, or Mermaid-authored diagram. |
 | `VisualArtifactSourceLanguage` | Where the artifact came from, such as native code, ChartForgeX markup, Mermaid, or Markdown. |
+
+First-class artifact wrappers cover `Chart`, `ChartGrid`, `VisualCanvas`, `VisualStory`, `TopologyChart`, `FlowArtifact`, `SequenceArtifact`, `TableArtifact`, and every `IVisualBlock`. Each wrapper retains the typed model, natural logical size, static export capabilities, and the metadata that a document or authoring host can use without scraping SVG.
 
 The envelope is not a renderer. It is the host-facing contract that lets native apps, static generators, and adapters inspect a visual without guessing from HTML or SVG.
 
@@ -34,11 +36,37 @@ var svg = chart.ToSvg();
 var png = chart.ToPng();
 ```
 
-The artifact envelope declares SVG, PNG, and HTML export support and keeps the strongly typed `Chart` in `VisualArtifact.Model`. Hosts should inspect the `Chart` model when they need data-aware behavior rather than scraping rendered markup.
+The artifact envelope declares SVG, PNG, HTML, and Office-adapter handoff support and keeps the strongly typed `Chart` in `VisualArtifact.Model`. Hosts should inspect the `Chart` model when they need data-aware behavior rather than scraping rendered markup.
+
+## Static Decorations And Raster Metadata
+
+`VisualArtifactRenderOptions` applies export-wide decoration without changing the underlying chart, topology, table, flow, sequence, or visual-block model. Text and raster-image watermarks share anchors, offsets, edge padding, opacity, rotation, scale, and optional repetition across SVG, static HTML, and PNG output. PNG output can also carry physical DPI metadata:
+
+```csharp
+var options = new VisualArtifactRenderOptions {
+    Raster = new RasterImageOptions { Dpi = 144 }
+};
+var watermark = VisualWatermark.FromText("CONFIDENTIAL");
+watermark.Anchor = VisualCanvasAnchor.Center;
+watermark.RotationDegrees = -28;
+watermark.Opacity = 0.16;
+options.Watermarks.Add(watermark);
+
+artifact.SaveSvg("review.svg", options);
+artifact.SavePng("review.png", options);
+```
+
+These are visual export decorations. Word section watermarks, PDF page watermarks, document permissions, and security policy remain document-host concerns in OfficeIMO.
 
 ## Flow And Topology Artifacts
 
-Topology and flow are intentionally separate artifact contracts. `chartforgex topology v1` emits `VisualArtifactKind.Topology` with a typed `TopologyChart` model. `chartforgex flow v1` emits `VisualArtifactKind.Flow` with a typed `FlowArtifact` model containing lanes, steps, and connectors. Static flow previews currently project into `TopologyChart` for SVG/PNG rendering, but host APIs should inspect `FlowArtifact` rather than treating process flows as infrastructure topology.
+Topology and flow are intentionally separate artifact contracts. Native topology models use `TopologyChart.ToVisualArtifact()`; `chartforgex topology v1` emits the same `VisualArtifactKind.Topology` envelope with a typed `TopologyChart` model. The topology envelope carries its natural size, accessibility text, Office handoff capability, and inspectable group/node/edge regions including links when present. `chartforgex flow v1` emits `VisualArtifactKind.Flow` with a typed `FlowArtifact` model containing lanes, steps, and connectors. Static flow previews currently project into `TopologyChart` for SVG/PNG rendering, but host APIs should inspect `FlowArtifact` rather than treating process flows as infrastructure topology.
+
+## OfficeIMO Handoff
+
+ChartForgeX does not reference an Office or PDF runtime. Its responsibility ends at a deterministic `VisualArtifact` with SVG/PNG renderers, natural pixel size, accessibility text, metadata, and inspectable regions. The optional `OfficeIMO.ChartForgeX` adapter converts that envelope into OfficeIMO drawing primitives, preferring editable/vector SVG and reporting any fallback or unsupported SVG feature. OfficeIMO then owns Word, Excel, PowerPoint, and PDF placement, page sizing, native document watermarks, PDF composition, and document security. This keeps CFX dependency-free while allowing every supported chart and diagram family to travel through one document pipeline.
+
+For an extension or specialized CFX surface that only exposes SVG, pass its deterministic SVG markup through `OfficeVisualSource`. That portable route also avoids CLR type identity coupling between separately loaded PowerShell modules or processes.
 
 ```csharp
 using ChartForgeX.Markup;

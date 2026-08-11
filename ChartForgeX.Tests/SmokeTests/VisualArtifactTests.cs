@@ -1,6 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Xml.Linq;
+using ChartForgeX.Composition;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+using ChartForgeX.Stories;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
@@ -46,6 +55,7 @@ internal static partial class SmokeTests {
         Assert(artifact.Model == table, "VisualArtifact should keep the typed table model for native hosts.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Png), "VisualArtifact should expose table preview export capabilities.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Html), "VisualArtifact should expose table HTML preview export support.");
+        Assert(artifact.NaturalSize.HasValue && artifact.NaturalSize.Value.Width == 760 && artifact.NaturalSize.Value.Height == 360, "VisualArtifact should expose the table preview's known natural size.");
         Assert(artifact.Metadata["table.capabilities"].Contains("Virtualization", StringComparison.Ordinal), "VisualArtifact metadata should expose declared table capabilities.");
     }
 
@@ -80,6 +90,251 @@ internal static partial class SmokeTests {
         artifact.SaveHtml(Path.Combine(temp.Path, "table.html"));
         artifact.SavePng(Path.Combine(temp.Path, "table.png"));
         Assert(File.Exists(Path.Combine(temp.Path, "table.svg")) && File.Exists(Path.Combine(temp.Path, "table.html")) && File.Exists(Path.Combine(temp.Path, "table.png")), "VisualArtifact save helpers should write static output files.");
+    }
+
+    private static void VisualArtifactWatermarksStayAlignedAcrossStaticFormats() {
+        var table = TableArtifact.Create("watermarked-table")
+            .WithTitle("Quarterly Review")
+            .AddColumn("name", "Name")
+            .AddColumn("state", "State")
+            .AddRow("api", "API", "Healthy")
+            .AddRow("worker", "Worker", "Warning");
+        var artifact = table.ToVisualArtifact();
+        artifact.Accessibility.Language = "pl-PL";
+        var watermark = VisualWatermark.FromText("CONFIDENTIAL");
+        watermark.Anchor = ChartForgeX.Composition.VisualCanvasAnchor.Center;
+        watermark.RotationDegrees = -28;
+        watermark.Opacity = 0.24;
+        watermark.Scale = 1.15;
+        var options = new VisualArtifactRenderOptions {
+            Raster = new RasterImageOptions { Dpi = 144 }
+        };
+        options.Watermarks.Add(watermark);
+
+        var svg = artifact.ToSvg(options);
+        var html = artifact.ToHtmlPage(options);
+        var png = artifact.ToPng(options);
+        var plain = RasterImageDecoder.Decode(artifact.ToPng());
+        var decorated = RasterImageDecoder.Decode(png);
+
+        Assert(svg.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact SVG should expose a host-inspectable watermark layer.");
+        Assert(svg.Contains("CONFIDENTIAL", StringComparison.Ordinal) && svg.Contains("rotate(-28", StringComparison.Ordinal), "Artifact SVG should preserve text and rotation.");
+        Assert(html.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact HTML should embed the same decorated SVG contract.");
+        Assert(html.Contains(".chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:hidden}", StringComparison.Ordinal), "Watermarked artifact HTML should clip rotated and repeated SVG marks to the root viewport.");
+        Assert(html.Contains("<html lang=\"pl-PL\">", StringComparison.Ordinal), "Watermarked artifact HTML should preserve the envelope language.");
+        Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
+        Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
+
+        var interactiveTopologyArtifact = TopologyChart.Create()
+            .WithViewport(320, 180)
+            .WithLegend(null)
+            .AddNode("a", "A", 30, 50)
+            .AddNode("b", "B", 210, 50)
+            .AddEdge("a-b", "a", "b")
+            .ToVisualArtifact();
+        var interactiveWatermarkOptions = new VisualArtifactRenderOptions {
+            Topology = new TopologyRenderOptions { EnableHtmlInteractions = true }
+        };
+        interactiveWatermarkOptions.Watermarks.Add(VisualWatermark.FromText("STATIC"));
+        AssertThrows<InvalidOperationException>(() => interactiveTopologyArtifact.ToHtmlPage(interactiveWatermarkOptions), "Watermarked topology HTML should reject interaction requests through the same adapter ownership boundary as ordinary topology HTML.");
+
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.Opacity = 1.1, "Watermarks should reject opacity outside the unit interval.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.OffsetX = double.NaN, "Watermarks should reject non-finite horizontal offsets at assignment time.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.OffsetY = double.PositiveInfinity, "Watermarks should reject non-finite vertical offsets at assignment time.");
+        AssertThrows<ArgumentOutOfRangeException>(() => watermark.RepeatSpacingX = 0.000001, "Repeated watermarks should reject sub-pixel spacing that can create unbounded render loops.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0 }, "Raster options should reject non-positive DPI metadata.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = 0.001 }, "Raster options should reject DPI values that round to zero PNG pixels per meter.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new RasterImageOptions { Dpi = double.MaxValue }, "Raster options should reject DPI values above the PNG density range at assignment time.");
+        var maximumDensityOptions = new RasterImageOptions { Dpi = uint.MaxValue * 0.0254D };
+
+        var denseWatermark = VisualWatermark.FromText("DENSE");
+        denseWatermark.Repeat = true;
+        denseWatermark.RepeatSpacingX = 1;
+        denseWatermark.RepeatSpacingY = 1;
+        var denseOptions = new VisualArtifactRenderOptions();
+        denseOptions.Watermarks.Add(denseWatermark);
+        AssertThrows<InvalidOperationException>(() => artifact.ToSvg(denseOptions), "Repeated watermark rendering should reject configurations that exceed the bounded mark count.");
+
+        var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
+        var pngBytes = PngWriter.WriteRgba(pixel);
+        Assert(PngWriter.WriteRgba(pixel, maximumDensityOptions).Length > pngBytes.Length, "The maximum accepted DPI should encode successfully as PNG density metadata.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualWatermarkRendering.CalculateRotatedWatermarkAllocation(8192, 8192, 45), "Rotated watermark intermediates should honor the deterministic per-canvas allocation ceiling.");
+        var oversizedWatermark = VisualWatermark.FromImage(pngBytes, "image/png");
+        oversizedWatermark.Width = double.MaxValue;
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualWatermarkRendering.ApplyToImage(pixel, new[] { oversizedWatermark }), "Watermark dimensions should be range-checked before integer conversion or allocation.");
+        Assert(VisualWatermark.FromImage(pngBytes, "image/png").ImageMimeType == "image/png", "Image watermarks should preserve a validated canonical media type.");
+        var repeatedImage = VisualWatermark.FromImage(pngBytes, "image/png");
+        repeatedImage.Repeat = true;
+        repeatedImage.RepeatSpacingX = 80;
+        repeatedImage.RepeatSpacingY = 60;
+        repeatedImage.Width = 18;
+        repeatedImage.Height = 18;
+        repeatedImage.Anchor = VisualCanvasAnchor.TopLeft;
+        repeatedImage.Padding = 5;
+        repeatedImage.OffsetX = 7;
+        repeatedImage.OffsetY = 9;
+        repeatedImage.Opacity = 1;
+        var repeatedImageOptions = new VisualArtifactRenderOptions();
+        repeatedImageOptions.Watermarks.Add(repeatedImage);
+        var repeatedImageSvg = artifact.ToSvg(repeatedImageOptions);
+        Assert(CountOccurrences(repeatedImageSvg, ";base64,") == 1 && CountOccurrences(repeatedImageSvg, "<use data-cfx-role=\"watermark\"") > 1, "Repeated SVG image watermarks should define their payload once and reuse it for every placement.");
+        Assert(repeatedImageSvg.Contains("x=\"12\" y=\"14\"", StringComparison.Ordinal), "Repeated SVG watermark placement should phase its tile grid from anchor, padding, and offsets.");
+        var repeatedRaster = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 80, new byte[100 * 80 * 4]), new[] { repeatedImage });
+        Assert(IsPixelNear(repeatedRaster.Pixels, repeatedRaster.Width, 21, 23, 10, 20, 30), "Repeated PNG watermark placement should use the same anchored tile-grid phase as SVG output.");
+        Assert(artifact.ToPng(repeatedImageOptions).Length > 64, "Repeated image watermarks should retain PNG parity.");
+
+        var widePixels = new byte[20 * 10 * 4];
+        for (var index = 0; index < widePixels.Length; index += 4) {
+            widePixels[index] = 255;
+            widePixels[index + 3] = 255;
+        }
+        var wideImage = new RgbaImage(20, 10, widePixels);
+        var portableWatermark = VisualWatermark.FromImage(PpmWriter.WriteRgba(wideImage), "image/x-portable-pixmap");
+        portableWatermark.Anchor = VisualCanvasAnchor.Center;
+        portableWatermark.Width = 80;
+        portableWatermark.Height = 80;
+        portableWatermark.Opacity = 1;
+        var portableOptions = new VisualArtifactRenderOptions();
+        portableOptions.Watermarks.Add(portableWatermark);
+        var portableSvg = artifact.ToSvg(portableOptions);
+        Assert(portableSvg.Contains("data:image/png;base64,", StringComparison.Ordinal) && !portableSvg.Contains("image/x-portable-pixmap", StringComparison.Ordinal), "SVG watermarks should transcode accepted non-web raster inputs to browser-safe PNG data URIs.");
+
+        var contained = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 100, new byte[100 * 100 * 4]), new[] { portableWatermark });
+        Assert(contained.Pixels[(15 * contained.Width + 50) * 4 + 3] == 0, "PNG watermark rendering should preserve wide-image aspect ratio inside a square target box.");
+        Assert(contained.Pixels[(50 * contained.Width + 50) * 4] >= 250 && contained.Pixels[(50 * contained.Width + 50) * 4 + 3] == 255, "PNG watermark rendering should center contained image pixels in the target box.");
+
+        var topology = TopologyChart.Create()
+            .WithViewport(240, 140, 16)
+            .WithLegend(null)
+            .AddNode("left", "Left", 24, 44)
+            .AddNode("right", "Right", 152, 44)
+            .AddEdge("left-right", "left", "right");
+        var topologyArtifact = topology.ToVisualArtifact();
+        var scaleWatermark = VisualWatermark.FromText("SCALE");
+        scaleWatermark.Anchor = VisualCanvasAnchor.Center;
+        scaleWatermark.FontSize = 20;
+        scaleWatermark.Opacity = 1;
+        var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 } };
+        var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
+        scaleOneOptions.Watermarks.Add(scaleWatermark);
+        scaleTwoOptions.Watermarks.Add(scaleWatermark);
+        var scaleOnePlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 }));
+        var scaleTwoPlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 }));
+        var scaleOneDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
+        var scaleTwoDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
+        var scaleOneChanged = CountChangedPixels(scaleOnePlain, scaleOneDecorated);
+        var scaleTwoChanged = CountChangedPixels(scaleTwoPlain, scaleTwoDecorated);
+        Assert(scaleTwoChanged > scaleOneChanged * 3, "PNG watermark geometry should scale with topology output scale instead of shrinking relative to the rendered chart.");
+
+        var wideTopology = TopologyChart.Create()
+            .WithViewport(320, 180, 16)
+            .WithLegend(null)
+            .AddGroup("wide", "Wide", 20, 40, 620, 80)
+            .AddNode("wide-left", "Left", 40, 58, groupId: "wide")
+            .AddNode("wide-right", "Right", 540, 58, groupId: "wide")
+            .AddEdge("wide-edge", "wide-left", "wide-right");
+        var fittedTopologyOptions = new TopologyRenderOptions { IncludeLegend = false }.WithFitContentToViewport();
+        var preparedWideTopology = TopologyLayoutEngine.Prepare(wideTopology, fittedTopologyOptions.View, fittedTopologyOptions);
+        var fittedWatermark = VisualWatermark.FromImage(PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 255, 0, 255, 255 })), "image/png");
+        fittedWatermark.Anchor = VisualCanvasAnchor.BottomRight;
+        fittedWatermark.Padding = 4;
+        fittedWatermark.Width = 16;
+        fittedWatermark.Height = 16;
+        fittedWatermark.RotationDegrees = 45;
+        fittedWatermark.Opacity = 1;
+        var fittedArtifactOptions = new VisualArtifactRenderOptions { Topology = fittedTopologyOptions };
+        fittedArtifactOptions.Watermarks.Add(fittedWatermark);
+        var widePlain = RasterImageDecoder.Decode(wideTopology.ToPng(fittedTopologyOptions));
+        var wideArtifact = wideTopology.ToVisualArtifact();
+        wideArtifact.PreserveNaturalSize = true;
+        var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));
+        var fittedScale = Math.Min(wideDecorated.Width / preparedWideTopology.Viewport.Width, wideDecorated.Height / preparedWideTopology.Viewport.Height);
+        var fittedRight = preparedWideTopology.Viewport.Width * fittedScale;
+        var fittedBottom = preparedWideTopology.Viewport.Height * fittedScale;
+        var fittedCenterX = (int)Math.Round(fittedRight - (fittedWatermark.Padding + fittedWatermark.Width.Value / 2) * fittedScale);
+        var fittedCenterY = (int)Math.Round(fittedBottom - (fittedWatermark.Padding + fittedWatermark.Height.Value / 2) * fittedScale);
+        Assert(fittedBottom < wideDecorated.Height - 20, "The fitted topology fixture should expose a visible bottom letterbox for watermark alignment coverage.");
+        Assert(IsPixelNear(wideDecorated.Pixels, wideDecorated.Width, fittedCenterX, fittedCenterY, 255, 0, 255), "PNG watermarks should anchor inside the fitted SVG content extent rather than the destination letterbox.");
+        var justBelowFittedFrame = ((int)Math.Ceiling(fittedBottom + 2) * wideDecorated.Width + fittedCenterX) * 4;
+        Assert(wideDecorated.Pixels[justBelowFittedFrame] == widePlain.Pixels[justBelowFittedFrame] && wideDecorated.Pixels[justBelowFittedFrame + 1] == widePlain.Pixels[justBelowFittedFrame + 1] && wideDecorated.Pixels[justBelowFittedFrame + 2] == widePlain.Pixels[justBelowFittedFrame + 2] && wideDecorated.Pixels[justBelowFittedFrame + 3] == widePlain.Pixels[justBelowFittedFrame + 3], "Rotated PNG watermarks should be clipped at the fitted SVG content frame.");
+        var destinationBottom = ((wideDecorated.Height - 8) * wideDecorated.Width + wideDecorated.Width - 8) * 4;
+        Assert(wideDecorated.Pixels[destinationBottom] == widePlain.Pixels[destinationBottom] && wideDecorated.Pixels[destinationBottom + 1] == widePlain.Pixels[destinationBottom + 1] && wideDecorated.Pixels[destinationBottom + 2] == widePlain.Pixels[destinationBottom + 2] && wideDecorated.Pixels[destinationBottom + 3] == widePlain.Pixels[destinationBottom + 3], "Bottom-right watermark anchoring should not paint into fitted-content letterboxing.");
+
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/png\" onload=\"alert(1)"), "Image watermarks should reject attribute-breaking media types.");
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
+        AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
+
+        var mutableChart = Chart.Create().WithSize(240, 140).WithTitle("Mutable");
+        mutableChart.WithAccessibility(accessibility => accessibility.WithTextAlternative("Mutable chart", "A mutable size chart.", "en"));
+        mutableChart.AddBar("Value", new[] { new ChartPoint(1, 2) });
+        var mutableArtifact = mutableChart.ToVisualArtifact();
+        Assert(mutableArtifact.Accessibility.Name == "Mutable chart" && mutableArtifact.Accessibility.Description == "A mutable size chart." && mutableArtifact.Accessibility.Language == "en", "Chart artifacts should preserve accessibility metadata for host adapters.");
+        mutableChart.WithSize(480, 280);
+        var mutableOptions = new VisualArtifactRenderOptions();
+        mutableOptions.Watermarks.Add(VisualWatermark.FromText("CURRENT"));
+        var resizedSvg = XDocument.Parse(mutableArtifact.ToSvg(mutableOptions));
+        var renderedMark = resizedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "watermark", StringComparison.Ordinal));
+        var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
+        Assert(renderedX > 300, "Watermark placement should follow current rendered dimensions when natural-size preservation is disabled.");
+
+        static int CountChangedPixels(RgbaImage plainImage, RgbaImage decoratedImage) {
+            Assert(plainImage.Width == decoratedImage.Width && plainImage.Height == decoratedImage.Height, "Compared watermark images should have matching dimensions.");
+            var changed = 0;
+            for (var index = 0; index < plainImage.Pixels.Length; index += 4) {
+                if (plainImage.Pixels[index] != decoratedImage.Pixels[index] ||
+                    plainImage.Pixels[index + 1] != decoratedImage.Pixels[index + 1] ||
+                    plainImage.Pixels[index + 2] != decoratedImage.Pixels[index + 2] ||
+                    plainImage.Pixels[index + 3] != decoratedImage.Pixels[index + 3]) changed++;
+            }
+            return changed;
+        }
+    }
+
+    private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {
+        var chart = Chart.Create().WithSize(240, 140).WithTitle("Requests");
+        chart.AddBar("API", new[] { new ChartPoint(1, 4), new ChartPoint(2, 7) });
+        var grid = ChartGrid.Create().WithTitle("Service overview").WithColumns(1).Add(chart);
+        var canvas = VisualCanvas.Create(320, 180).WithTitle("Release overview");
+        canvas.Accessibility.WithTextAlternative("Release overview", "A fixed-size release summary.");
+        var story = VisualStory.Create("Deployment story").WithDescription("A deployment reaches ready state.").WithSize(480, 320);
+        story.Scene("ready", "Ready").Panel("result", new VisualStoryTextSurface("Ready", emphasized: true));
+        story.Outcome("ready", "The deployment is ready", "result");
+        var block = MetricCard.Create().WithMetric("Ready", "Yes").WithSize(240, 140);
+
+        VisualArtifact[] artifacts = {
+            grid.ToVisualArtifact("grid"),
+            canvas.ToVisualArtifact("canvas"),
+            story.ToVisualArtifact("story"),
+            block.ToVisualArtifact("block")
+        };
+        var kinds = new[] { VisualArtifactKind.ChartGrid, VisualArtifactKind.VisualCanvas, VisualArtifactKind.Story, VisualArtifactKind.VisualBlock };
+
+        for (var index = 0; index < artifacts.Length; index++) {
+            VisualArtifact artifact = artifacts[index];
+            Assert(artifact.Kind == kinds[index], "Composite artifacts should preserve their specific CFX surface kind.");
+            Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "Every static composite CFX surface should declare the Office handoff.");
+            Assert(artifact.ToSvg().Contains("<svg", StringComparison.Ordinal), "Composite artifacts should render SVG through the shared artifact pipeline.");
+            Assert(artifact.ToHtmlPage().Contains("<!doctype html>", StringComparison.OrdinalIgnoreCase), "Composite artifacts should render standalone HTML through the shared artifact pipeline.");
+            Assert(artifact.ToPng().Length > 64, "Composite artifacts should render PNG through the shared artifact pipeline.");
+        }
+        Assert(canvas.ToVisualArtifact().Accessibility.Description == "A fixed-size release summary.", "Canvas artifacts should preserve accessibility metadata for Office placement.");
+        var localizedCanvasArtifact = canvas.ToVisualArtifact();
+        localizedCanvasArtifact.Accessibility.Language = "pl-PL";
+        Assert(localizedCanvasArtifact.ToHtmlPage().Contains("<html lang=\"pl-PL\">", StringComparison.OrdinalIgnoreCase), "Artifact HTML should preserve an updated canvas language even without watermarks.");
+
+        var directedTopology = TopologyChart.Create()
+            .WithViewport(240, 140, 16)
+            .WithLegend(null)
+            .AddNode("left", "Left", 24, 44)
+            .AddNode("right", "Right", 152, 44);
+        directedTopology.Edges.Add(new TopologyEdge { Id = "forward", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Forward });
+        directedTopology.Edges.Add(new TopologyEdge { Id = "backward", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Backward });
+        directedTopology.Edges.Add(new TopologyEdge { Id = "both", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Bidirectional });
+        directedTopology.Edges.Add(new TopologyEdge { Id = "undirected", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.None });
+        var edgeRegions = directedTopology.ToVisualArtifact().Regions.Where(region => region.Kind == "topology-edge").ToDictionary(region => region.Id, StringComparer.Ordinal);
+        Assert(edgeRegions["forward"].Label == "left to right" && edgeRegions["backward"].Label == "right to left", "Topology artifact fallback labels should follow forward and backward edge direction.");
+        Assert(edgeRegions["both"].Label == "left to right and right to left" && edgeRegions["undirected"].Label == "left and right", "Topology artifact fallback labels should distinguish bidirectional and undirected edges from one-way flow.");
     }
 
     private static void TableArtifactRejectsInvalidContractShapes() {
@@ -141,6 +396,7 @@ internal static partial class SmokeTests {
         var png = flow.ToPng();
 
         Assert(artifact.Kind == VisualArtifactKind.Flow, "FlowArtifact should wrap into a product-neutral flow artifact envelope.");
+        Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "FlowArtifact should declare the documented Office handoff.");
         Assert(artifact.Model == flow, "FlowArtifact envelope should keep the typed flow model.");
         Assert(artifact.Metadata["render.model"] == nameof(FlowArtifact), "FlowArtifact envelope should expose the flow model.");
         Assert(artifact.Metadata["render.previewModel"] == nameof(TopologyChart), "FlowArtifact envelope should identify the static preview projection.");
@@ -172,6 +428,7 @@ internal static partial class SmokeTests {
         Assert(artifact.Model == sequence, "SequenceArtifact envelope should keep the typed sequence model.");
         Assert(artifact.Metadata["sequence.participants"] == "3", "SequenceArtifact envelope should expose participant counts.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Svg), "SequenceArtifact should declare SVG export support.");
+        Assert(artifact.SupportsExport(VisualArtifactExportFormat.Office), "SequenceArtifact should declare the documented Office handoff.");
         Assert(svg.Contains("data-cfx-role=\"sequence-message\"", StringComparison.Ordinal), "SequenceArtifact SVG should expose message regions.");
         Assert(svg.Contains("data-cfx-role=\"sequence-note\"", StringComparison.Ordinal), "SequenceArtifact SVG should expose note regions.");
         Assert(artifact.ToHtmlPage().Contains("chartforgex-visual-artifact", StringComparison.Ordinal), "VisualArtifact HTML rendering should wrap sequence previews in a standalone artifact page.");

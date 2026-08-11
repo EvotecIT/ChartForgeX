@@ -84,7 +84,30 @@ public sealed partial class TopologySvgRenderer {
         });
     }
 
+    private static void AddEndpointMarker(SvgElement defs, string id, string color, TopologyMarkerKind kind, TopologyRenderOptions options) {
+        if (kind == TopologyMarkerKind.Arrow) {
+            AddArrowMarker(defs, id, color, options);
+            return;
+        }
+        defs.Element("marker", marker => {
+            marker
+                .Attribute("id", id)
+                .Attribute("viewBox", "0 0 10 10")
+                .Attribute("refX", 5)
+                .Attribute("refY", 5)
+                .Attribute("markerWidth", 8)
+                .Attribute("markerHeight", 8)
+                .Attribute("markerUnits", "userSpaceOnUse")
+                .Attribute("orient", "auto-start-reverse")
+                .Attribute("overflow", "visible");
+            if (kind == TopologyMarkerKind.Circle) marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 5).Attribute("r", 3.4).Attribute("fill", color));
+            else if (kind == TopologyMarkerKind.Diamond) marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Attribute("fill", color));
+        });
+    }
+
     private static string ArrowMarkerId(string svgId, string color) => svgId + "-arrow-" + ArrowMarkerToken(color);
+
+    private static string EndpointMarkerId(string svgId, string color, TopologyMarkerKind kind) => svgId + "-" + kind.ToString().ToLowerInvariant() + "-" + ArrowMarkerToken(color);
 
     private static string ArrowMarkerToken(string color) {
         var value = string.IsNullOrWhiteSpace(color) ? "current" : color.Trim().ToLowerInvariant();

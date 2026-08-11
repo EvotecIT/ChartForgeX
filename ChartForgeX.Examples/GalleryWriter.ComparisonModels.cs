@@ -190,14 +190,14 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct HtmlHealth {
-        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasVisibleOverflow, bool hasPrintCss) {
+        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasExpectedOverflow, bool hasPrintCss) {
             Bytes = bytes;
             HasDocumentShell = hasDocumentShell;
             HasViewport = hasViewport;
             HasInlineSvg = hasInlineSvg;
             HasSurfaceGradient = hasSurfaceGradient;
             HasTextPolish = hasTextPolish;
-            HasVisibleOverflow = hasVisibleOverflow;
+            HasExpectedOverflow = hasExpectedOverflow;
             HasPrintCss = hasPrintCss;
         }
 
@@ -213,11 +213,11 @@ public static partial class GalleryWriter {
 
         public bool HasTextPolish { get; }
 
-        public bool HasVisibleOverflow { get; }
+        public bool HasExpectedOverflow { get; }
 
         public bool HasPrintCss { get; }
 
-        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && HasSurfaceGradient && HasTextPolish && HasVisibleOverflow && HasPrintCss;
+        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && HasSurfaceGradient && HasTextPolish && HasExpectedOverflow && HasPrintCss;
     }
 
     private readonly struct PngContentBounds {

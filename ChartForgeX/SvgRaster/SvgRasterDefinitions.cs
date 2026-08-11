@@ -9,9 +9,11 @@ namespace ChartForgeX.SvgRaster;
 
 internal sealed class SvgRasterDefinitions {
     private readonly Dictionary<string, SvgRasterElement> _elements = new(StringComparer.Ordinal);
+    private readonly Dictionary<SvgRasterElement, IReadOnlyList<SvgRasterElement>> _elementAncestors = new();
     private readonly Dictionary<string, SvgRasterElement> _gradientElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterElement> _patternElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterClipPath> _clipPaths = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SvgRasterMaskSource> _maskElements = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterMask> _masks = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterLinearGradient> _linearGradients = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SvgRasterRadialGradient> _radialGradients = new(StringComparer.Ordinal);
@@ -22,7 +24,8 @@ internal sealed class SvgRasterDefinitions {
 
     public static SvgRasterDefinitions From(SvgRasterDocument document) {
         var definitions = new SvgRasterDefinitions();
-        foreach (var child in document.Children) definitions.Collect(child);
+        var ancestors = new List<SvgRasterElement> { document.Root };
+        foreach (var child in document.Children) definitions.Collect(child, ancestors);
         definitions._styleSheet = SvgRasterStyleSheet.Parse(definitions._styleBlocks);
         return definitions;
     }
@@ -53,6 +56,9 @@ internal sealed class SvgRasterDefinitions {
         return false;
     }
 
+    public IReadOnlyList<SvgRasterElement> AncestorsFor(SvgRasterElement element) =>
+        _elementAncestors.TryGetValue(element, out var ancestors) ? ancestors : Array.Empty<SvgRasterElement>();
+
     public bool TryGetClipPath(string? id, out SvgRasterClipPath clipPath) {
         if (id != null && _clipPaths.TryGetValue(id, out clipPath!)) return true;
         clipPath = null!;
@@ -61,6 +67,11 @@ internal sealed class SvgRasterDefinitions {
 
     public bool TryGetMask(string? id, out SvgRasterMask mask) {
         if (id != null && _masks.TryGetValue(id, out mask!)) return true;
+        if (id != null && _maskElements.TryGetValue(id, out var source)) {
+            mask = new SvgRasterMask(source.Element, source.Ancestors, StyleSheet);
+            _masks[id] = mask;
+            return true;
+        }
         mask = null!;
         return false;
     }
@@ -113,13 +124,14 @@ internal sealed class SvgRasterDefinitions {
         return true;
     }
 
-    private void Collect(SvgRasterElement element) {
+    private void Collect(SvgRasterElement element, List<SvgRasterElement> ancestors) {
         if (string.Equals(element.Name, "style", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(element.Text)) {
             _styleBlocks.Add(element.Text);
         }
 
         if (IsReusableElement(element) && element.TryGet("id", out var reusableId) && !string.IsNullOrWhiteSpace(reusableId)) {
             _elements[reusableId] = element;
+            _elementAncestors[element] = ancestors.ToArray();
         }
 
         if ((string.Equals(element.Name, "linearGradient", StringComparison.Ordinal) || string.Equals(element.Name, "radialGradient", StringComparison.Ordinal)) && element.TryGet("id", out var id) && !string.IsNullOrWhiteSpace(id)) {
@@ -131,14 +143,16 @@ internal sealed class SvgRasterDefinitions {
         }
 
         if (string.Equals(element.Name, "clipPath", StringComparison.Ordinal) && element.TryGet("id", out var clipId) && !string.IsNullOrWhiteSpace(clipId)) {
-            _clipPaths[clipId] = new SvgRasterClipPath(element);
+            _clipPaths[clipId] = new SvgRasterClipPath(element, ancestors.ToArray());
         }
 
         if (string.Equals(element.Name, "mask", StringComparison.Ordinal) && element.TryGet("id", out var maskId) && !string.IsNullOrWhiteSpace(maskId)) {
-            _masks[maskId] = new SvgRasterMask(element);
+            _maskElements[maskId] = new SvgRasterMaskSource(element, ancestors.ToArray());
         }
 
-        foreach (var child in element.Children) Collect(child);
+        ancestors.Add(element);
+        foreach (var child in element.Children) Collect(child, ancestors);
+        ancestors.RemoveAt(ancestors.Count - 1);
     }
 
     private static string? ReferenceId(SvgRasterElement element) {
@@ -161,20 +175,56 @@ internal sealed class SvgRasterDefinitions {
         !string.Equals(element.Name, "desc", StringComparison.Ordinal);
 }
 
-internal sealed class SvgRasterClipPath {
-    public SvgRasterClipPath(SvgRasterElement element) {
+internal sealed class SvgRasterMaskSource {
+    public SvgRasterMaskSource(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors) {
         Element = element;
+        Ancestors = ancestors;
     }
 
     public SvgRasterElement Element { get; }
+    public IReadOnlyList<SvgRasterElement> Ancestors { get; }
+}
+
+internal sealed class SvgRasterClipPath {
+    public SvgRasterClipPath(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors) {
+        Element = element;
+        Ancestors = ancestors;
+        UserSpaceOnUse = !string.Equals(element.Get("clipPathUnits"), "objectBoundingBox", StringComparison.Ordinal);
+    }
+
+    public SvgRasterElement Element { get; }
+    public IReadOnlyList<SvgRasterElement> Ancestors { get; }
+    public bool UserSpaceOnUse { get; }
 }
 
 internal sealed class SvgRasterMask {
-    public SvgRasterMask(SvgRasterElement element) {
+    public SvgRasterMask(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterStyleSheet styleSheet) {
         Element = element;
+        Ancestors = ancestors;
+        var parentStyle = SvgRasterStyle.Default;
+        for (var index = 0; index < ancestors.Count; index++) {
+            parentStyle = SvgRasterStyle.Resolve(parentStyle, ancestors[index], styleSheet, ancestors.Take(index).ToArray());
+        }
+        RootStyle = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
+        UsesAlpha = string.Equals(RootStyle.MaskType, "alpha", StringComparison.OrdinalIgnoreCase);
+        UserSpaceOnUse = string.Equals(element.Get("maskUnits"), "userSpaceOnUse", StringComparison.Ordinal);
+        ContentUserSpaceOnUse = !string.Equals(element.Get("maskContentUnits"), "objectBoundingBox", StringComparison.Ordinal);
+        X = element.Get("x");
+        Y = element.Get("y");
+        Width = element.Get("width");
+        Height = element.Get("height");
     }
 
     public SvgRasterElement Element { get; }
+    public IReadOnlyList<SvgRasterElement> Ancestors { get; }
+    public SvgRasterStyle RootStyle { get; }
+    public bool UsesAlpha { get; }
+    public bool UserSpaceOnUse { get; }
+    public bool ContentUserSpaceOnUse { get; }
+    public string? X { get; }
+    public string? Y { get; }
+    public string? Width { get; }
+    public string? Height { get; }
 }
 
 internal sealed class SvgRasterPattern {
@@ -269,6 +319,11 @@ internal sealed class SvgRasterLinearGradient {
         start = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X1, Y1)), bounds);
         end = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X2, Y2)), bounds);
     }
+
+    public void ObjectEndpoints(SvgRasterGradientValues.GradientBounds bounds, SvgRasterMatrix objectMatrix, out ChartPoint start, out ChartPoint end) {
+        start = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X1, Y1)), bounds));
+        end = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X2, Y2)), bounds));
+    }
 }
 
 internal sealed class SvgRasterRadialGradient {
@@ -319,6 +374,13 @@ internal sealed class SvgRasterRadialGradient {
         center = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy)), bounds);
         radiusX = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx + radius, Cy)), bounds);
         radiusY = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy + radius)), bounds);
+    }
+
+    public void ObjectAxes(SvgRasterGradientValues.GradientBounds bounds, SvgRasterMatrix objectMatrix, out ChartPoint center, out ChartPoint radiusX, out ChartPoint radiusY) {
+        var radius = Math.Max(0.000001, Radius);
+        center = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy)), bounds));
+        radiusX = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx + radius, Cy)), bounds));
+        radiusY = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(Cx, Cy + radius)), bounds));
     }
 }
 

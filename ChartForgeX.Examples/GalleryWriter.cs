@@ -231,7 +231,7 @@ public static partial class GalleryWriter {
                 htmlRequiresInlineSvg = true,
                 htmlRequiresSurfaceGradient = true,
                 htmlRequiresTextPolish = true,
-                htmlRequiresVisibleOverflow = true,
+                htmlRequiresExpectedOverflow = true,
                 htmlRequiresPrintCss = true,
                 htmlMayBeExplicitlyOmitted = true
             },
@@ -288,7 +288,7 @@ public static partial class GalleryWriter {
                     hasInlineSvg = pair.HtmlHealth.HasInlineSvg,
                     hasSurfaceGradient = pair.HtmlHealth.HasSurfaceGradient,
                     hasTextPolish = pair.HtmlHealth.HasTextPolish,
-                    hasVisibleOverflow = pair.HtmlHealth.HasVisibleOverflow,
+                    hasExpectedOverflow = pair.HtmlHealth.HasExpectedOverflow,
                     hasPrintCss = pair.HtmlHealth.HasPrintCss,
                     healthy = pair.HtmlPasses
                 }

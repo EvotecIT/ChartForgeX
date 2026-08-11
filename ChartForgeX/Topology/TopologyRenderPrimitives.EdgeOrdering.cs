@@ -6,8 +6,9 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyRenderPrimitives {
     public static List<(TopologyEdge Edge, int RenderOrder)> OrderedEdgesForRendering(TopologyChart chart, TopologyRenderOptions options) {
         return chart.Edges
-            .Select((edge, index) => new { Edge = edge, Index = index, Priority = EdgeRenderPriority(edge, options.SelectedEdgeIds.Contains(edge.Id)) })
-            .OrderBy(item => item.Priority)
+            .Select((edge, index) => new { Edge = edge, Index = index, Priority = EdgePresentationPriority(edge, options.SelectedEdgeIds.Contains(edge.Id)) })
+            .OrderBy(item => item.Edge.RoutingPriority)
+            .ThenBy(item => item.Priority)
             .ThenBy(item => item.Index)
             .Select((item, renderOrder) => (item.Edge, renderOrder))
             .ToList();
@@ -24,8 +25,9 @@ internal static partial class TopologyRenderPrimitives {
 
     public static List<TopologyEdge> OrderedEdgesForLabelPlacement(TopologyChart chart, TopologyRenderOptions options) {
         return chart.Edges
-            .Select((edge, index) => new { Edge = edge, Index = index, Priority = EdgeRenderPriority(edge, options.SelectedEdgeIds.Contains(edge.Id)) })
-            .OrderByDescending(item => item.Priority)
+            .Select((edge, index) => new { Edge = edge, Index = index, Priority = EdgePresentationPriority(edge, options.SelectedEdgeIds.Contains(edge.Id)) })
+            .OrderByDescending(item => item.Edge.RoutingPriority)
+            .ThenByDescending(item => item.Priority)
             .ThenBy(item => item.Index)
             .Select(item => item.Edge)
             .ToList();
@@ -40,7 +42,7 @@ internal static partial class TopologyRenderPrimitives {
         return orders;
     }
 
-    private static int EdgeRenderPriority(TopologyEdge edge, bool selected) {
+    private static int EdgePresentationPriority(TopologyEdge edge, bool selected) {
         var score = 0;
         if (edge.Kind == TopologyEdgeKind.Dependency) score -= 10;
         if (edge.Kind is TopologyEdgeKind.Link or TopologyEdgeKind.Connectivity) score += 4;

@@ -2,6 +2,23 @@
   "version": 1,
   "charts": [
     {
+      "name": "advanced-topology",
+      "width": 920,
+      "height": 584,
+      "svg": {
+        "minVisualNodes": 32,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268640,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1038,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "animated-engineering-portfolio-story",
       "width": 838,
       "height": 946,
@@ -116,7 +133,7 @@
         "outputScale": 1,
         "minVisiblePixels": 405000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1854,
+        "minDistinctColors": 1860,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1349,7 +1366,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 4,
+        "minVisualNodes": 5,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1366,7 +1383,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 43,
+        "minVisualNodes": 48,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1383,7 +1400,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 146,
+        "minVisualNodes": 152,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1400,7 +1417,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 447,
+        "minVisualNodes": 453,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1417,7 +1434,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 3043,
+        "minVisualNodes": 3048,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1986,7 +2003,7 @@
         "outputScale": 2,
         "minVisiblePixels": 666272,
         "minTransparentPixels": 0,
-        "minDistinctColors": 978,
+        "minDistinctColors": 971,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2615,7 +2632,7 @@
         "outputScale": 1,
         "minVisiblePixels": 414770,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1582,
+        "minDistinctColors": 1282,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3040,7 +3057,7 @@
         "outputScale": 1,
         "minVisiblePixels": 561090,
         "minTransparentPixels": 0,
-        "minDistinctColors": 927,
+        "minDistinctColors": 941,
         "maxEdgeInkPixels": 0
       }
     },

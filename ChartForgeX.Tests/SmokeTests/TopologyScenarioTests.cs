@@ -140,6 +140,23 @@ internal static partial class SmokeTests {
         var gif = chart.ToGif(options);
         Assert(gif.Length > 128, "Topology motion GIF should render encoded frames.");
         Assert(Math.Abs(options.Motion!.Progress - 0.375) < 0.0001, "Topology GIF export should not leak sampled frame progress back into caller-owned motion options.");
+        var animatedPresetOptions = new TopologyRenderOptions { IncludeLegend = false }
+            .ApplyPreset(TopologyViewPreset.Dependency)
+            .ApplyLayoutPreset(TopologyLayoutPreset.Dense)
+            .WithMotion(new TopologyMotionOptions { ScenarioId = "route", DurationSeconds = 1, FramesPerSecond = 1 });
+        animatedPresetOptions.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+        animatedPresetOptions.LayeredRankSpacing = 77;
+        chart.ToGif(animatedPresetOptions);
+        Assert(animatedPresetOptions.NodeDisplayMode == TopologyNodeDisplayMode.Card && animatedPresetOptions.LayeredRankSpacing == 77, "Animated topology exports should preserve caller overrides made after applying reusable presets.");
+        var deferredAnimatedOptions = new TopologyRenderOptions {
+            IncludeLegend = false,
+            Preset = TopologyViewPreset.Offenders,
+            LayoutPreset = TopologyLayoutPreset.Dense,
+            Motion = new TopologyMotionOptions { ScenarioId = "route", DurationSeconds = 1, FramesPerSecond = 1 }
+        };
+        deferredAnimatedOptions.HighlightStatuses.Add(TopologyHealthStatus.Healthy);
+        chart.ToApng(deferredAnimatedOptions);
+        Assert(deferredAnimatedOptions.HighlightStatuses.Count == 1 && deferredAnimatedOptions.HighlightStatuses[0] == TopologyHealthStatus.Healthy, "Animated topology exports should apply deferred presets to an effective clone without mutating caller collections.");
         Assert(gif[0] == (byte)'G' && gif[1] == (byte)'I' && gif[2] == (byte)'F', "Topology motion GIF should use the GIF header.");
         Assert(System.Text.Encoding.ASCII.GetString(gif).Contains("NETSCAPE2.0", StringComparison.Ordinal), "Looping topology GIFs should include the Netscape loop extension.");
         var staleActiveScenarioOptions = new TopologyRenderOptions {

@@ -30,8 +30,7 @@ public sealed partial class TopologySvgRenderer {
     /// <returns>Complete SVG markup.</returns>
     public string Render(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options ??= new TopologyRenderOptions();
-        if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
+        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
         var requestedWidth = chart.Viewport.Width;
         var requestedHeight = chart.Viewport.Height;
         var validator = new TopologyChartValidator();
@@ -112,6 +111,7 @@ public sealed partial class TopologySvgRenderer {
         if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
         AddEdges(root, chart, prefix, theme, options, id, highlight);
         AddEdgeLabels(root, chart, prefix, theme, options, highlight);
+        AddEndpointLabels(root, chart, prefix, theme, options, highlight);
         var motionPlan = TopologyMotionPlanner.Build(chart, options);
         AddMotionRouteLayer(root, chart, prefix, theme, options, motionPlan);
         AddNodes(root, chart, prefix, theme, options, highlight);
@@ -119,6 +119,7 @@ public sealed partial class TopologySvgRenderer {
         AddMotionMarkerLayer(root, chart, prefix, theme, options, motionPlan);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicCallouts(root, chart, prefix, theme, options, highlight);
         if (options.IncludeLegend && chart.Legend != null) AddLegend(root, chart, prefix, theme, options);
+        if (options.IncludeLayoutDiagnosticOverlay) AddLayoutDiagnosticOverlay(root, chart, prefix, options);
     }
 
     private static void AddGeographicFrame(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options) {
@@ -298,6 +299,11 @@ public sealed partial class TopologySvgRenderer {
         foreach (var edge in chart.Edges) {
             var color = EdgeColor(edge, theme, options);
             if (markerTokens.Add(ArrowMarkerToken(color))) AddArrowMarker(defs, ArrowMarkerId(id, color), color, options);
+            foreach (var kind in new[] { EffectiveSourceMarker(edge), EffectiveTargetMarker(edge) }) {
+                if (kind is TopologyMarkerKind.None or TopologyMarkerKind.Arrow) continue;
+                var token = kind + ":" + ArrowMarkerToken(color);
+                if (markerTokens.Add(token)) AddEndpointMarker(defs, EndpointMarkerId(id, color, kind), color, kind, options);
+            }
         }
 
         return defs;
@@ -506,7 +512,7 @@ public sealed partial class TopologySvgRenderer {
             var points = EdgePoints(chart, edge, nodes);
             var routeOffset = EdgeRouteOffset(chart, edge);
             var color = EdgeColor(edge, theme, options);
-            var dash = edge.IsMuted ? "none" : EdgeDash(edge);
+            var dash = EffectiveEdgeDash(edge);
             var highlighted = highlight.IsEdgeHighlighted(edge);
             var selected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var diagnostics = EdgeRouteDiagnostics(chart, edge, nodes);
@@ -533,6 +539,16 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-edge-color", string.IsNullOrWhiteSpace(edge.Color) ? null : color)
                     .Attribute("data-edge-line-style", edge.LineStyle.ToString())
                     .Attribute("data-edge-emphasis", edge.Emphasis.ToString())
+                    .Attribute("data-edge-stroke-width", edge.StrokeWidth.HasValue ? F(edge.StrokeWidth.Value) : null)
+                    .Attribute("data-edge-opacity", edge.Opacity.HasValue ? F(edge.Opacity.Value) : null)
+                    .Attribute("data-edge-dash-pattern", edge.DashPattern.Count == 0 ? null : EdgeDash(edge))
+                    .Attribute("data-source-marker", EffectiveSourceMarker(edge).ToString())
+                    .Attribute("data-target-marker", EffectiveTargetMarker(edge).ToString())
+                    .Attribute("data-edge-preferred-length", edge.PreferredLength.HasValue ? F(edge.PreferredLength.Value) : null)
+                    .Attribute("data-edge-minimum-rank-span", edge.MinimumRankSpan)
+                    .Attribute("data-edge-routing-priority", edge.RoutingPriority)
+                    .Attribute("data-source-label", edge.SourceLabel)
+                    .Attribute("data-target-label", edge.TargetLabel)
                     .Attribute("data-edge-render-order", renderOrder)
                     .Attribute("data-edge-layout-inference", EdgeLayoutInferenceToken(edge.LayoutInference))
                     .Attribute("data-route-strategy", diagnostics.Strategy)
@@ -552,6 +568,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-route-curve", isGeographicCurve ? "geographic" : edge.Routing.ToString())
                     .Attribute("data-source-port", edge.SourcePort.ToString())
                     .Attribute("data-target-port", edge.TargetPort.ToString())
+                    .Attribute("data-source-port-id", edge.SourcePortId)
+                    .Attribute("data-target-port-id", edge.TargetPortId)
                     .Attribute("data-route-lane", edge.RouteLane)
                     .Attribute("data-label-offset-x", edge.LabelOffsetX)
                     .Attribute("data-label-offset-y", edge.LabelOffsetY)
@@ -580,7 +598,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + (geographicHalo ? 4.2 : 3.4))
                     .Attribute("stroke-linecap", "round")
                     .Attribute("stroke-linejoin", "round")
-                    .Attribute("opacity", geographicHalo ? 0.86 : 0.88));
+                    .Attribute("opacity", (geographicHalo ? 0.86 : 0.88) * EdgeOpacity(edge, options)));
             }
 
             AddPremiumEdgePath(edgeGroup, chart, edge, nodes, points, prefix, options, svgId, selected, color, dash);
@@ -618,7 +636,8 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-leader", ShouldDrawEdgeLabelLeader(layout, options) ? "true" : "false")
                     .Attribute("data-edge-label-render-order", renderOrder)
                     .Attribute("data-cfx-selected", selected);
-                if (highlight.IsActive && !highlighted) group.Attribute("opacity", highlight.DimmedOpacity);
+                var labelOpacity = EdgeOpacity(edge, options) * (highlight.IsActive && !highlighted ? highlight.DimmedOpacity : 1);
+                if (labelOpacity < 0.999) group.Attribute("opacity", labelOpacity);
                 AddEdgeLabelLeader(group, layout, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme, options);
                 AddEdgeLabelBackplate(group, layout, cx, cy, theme, options);
                 AddEdgeLabelClearance(group, chart, layout, cx, cy, theme, options);
@@ -688,6 +707,13 @@ public sealed partial class TopologySvgRenderer {
                 .Build();
         }
 
+        if (edge.Routing == TopologyEdgeRouting.Curved && edge.Waypoints.Count == 0 && points.Count == 4 && !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) {
+            return new SvgPathDataBuilder(96)
+                .MoveTo(points[0])
+                .CubicTo(points[1].X, points[1].Y, points[2].X, points[2].Y, points[3].X, points[3].Y)
+                .Build();
+        }
+
         if (ShouldRoundEdgeCorners(edge, points, options)) return RoundedEdgePath(points, options.EdgeCornerRadius);
         return EdgePath(points, edge.Routing);
     }
@@ -697,10 +723,10 @@ public sealed partial class TopologySvgRenderer {
         var y1 = points[0].Y;
         var x2 = points[points.Count - 1].X;
         var y2 = points[points.Count - 1].Y;
-        if (routing == TopologyEdgeRouting.Straight) return "M " + F(x1) + " " + F(y1) + " L " + F(x2) + " " + F(y2);
+        if (routing == TopologyEdgeRouting.Straight && points.Count == 2) return "M " + F(x1) + " " + F(y1) + " L " + F(x2) + " " + F(y2);
         if (routing == TopologyEdgeRouting.Curved && points.Count == 2) {
-            var lift = Math.Max(40, Math.Abs(x2 - x1) * 0.12);
-            return "M " + F(x1) + " " + F(y1) + " C " + F(x1) + " " + F(y1 - lift) + " " + F(x2) + " " + F(y2 - lift) + " " + F(x2) + " " + F(y2);
+            StandardCurveControlPoints(points, out var firstControl, out var secondControl);
+            return "M " + F(x1) + " " + F(y1) + " C " + F(firstControl.X) + " " + F(firstControl.Y) + " " + F(secondControl.X) + " " + F(secondControl.Y) + " " + F(x2) + " " + F(y2);
         }
 
         var path = new SvgPathDataBuilder(points.Count * 16).MoveTo(points[0]);

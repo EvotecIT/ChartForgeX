@@ -81,6 +81,16 @@ internal static partial class TopologyLayoutEngine {
         };
         foreach (var item in node.Metrics) copy.Metrics[item.Key] = item.Value;
         foreach (var item in node.Metadata) copy.Metadata[item.Key] = item.Value;
+        foreach (var port in node.Ports) {
+            var portCopy = new TopologyNodePort { Id = port.Id, Side = port.Side, Offset = port.Offset, Label = port.Label };
+            foreach (var item in port.Metadata) portCopy.Metadata[item.Key] = item.Value;
+            copy.Ports.Add(portCopy);
+        }
+        foreach (var detail in node.Details) {
+            var detailCopy = new TopologyNodeDetail { Label = detail.Label, Value = detail.Value, IconId = detail.IconId, Status = detail.Status, Color = detail.Color };
+            foreach (var item in detail.Metadata) detailCopy.Metadata[item.Key] = item.Value;
+            copy.Details.Add(detailCopy);
+        }
         return copy;
     }
 
@@ -97,6 +107,15 @@ internal static partial class TopologyLayoutEngine {
             Emphasis = edge.Emphasis,
             SourcePort = edge.SourcePort,
             TargetPort = edge.TargetPort,
+            SourcePortId = edge.SourcePortId,
+            TargetPortId = edge.TargetPortId,
+            SourceMarker = edge.SourceMarker,
+            TargetMarker = edge.TargetMarker,
+            StrokeWidth = edge.StrokeWidth,
+            Opacity = edge.Opacity,
+            PreferredLength = edge.PreferredLength,
+            MinimumRankSpan = edge.MinimumRankSpan,
+            RoutingPriority = edge.RoutingPriority,
             RouteLane = edge.RouteLane,
             HasRouteLaneOverride = edge.HasRouteLaneOverride,
             LabelOffsetX = edge.LabelOffsetX,
@@ -109,6 +128,8 @@ internal static partial class TopologyLayoutEngine {
             Label = edge.Label,
             SecondaryLabel = edge.SecondaryLabel,
             TertiaryLabel = edge.TertiaryLabel,
+            SourceLabel = edge.SourceLabel,
+            TargetLabel = edge.TargetLabel,
             Href = edge.Href,
             Tooltip = edge.Tooltip,
             CssClass = edge.CssClass,
@@ -118,6 +139,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var item in edge.Metrics) copy.Metrics[item.Key] = item.Value;
         foreach (var item in edge.Metadata) copy.Metadata[item.Key] = item.Value;
         copy.Waypoints.AddRange(edge.Waypoints);
+        copy.DashPattern.AddRange(edge.DashPattern);
         return copy;
     }
 }

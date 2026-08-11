@@ -121,6 +121,18 @@ public sealed class TopologyChartValidator {
             if (!string.IsNullOrWhiteSpace(node.GroupId) && !groupIds.Contains(node.GroupId!)) {
                 Add(result, "missing-node-group", "Node '" + node.Id + "' references missing group '" + node.GroupId + "'.", node.Id);
             }
+            foreach (var port in node.Ports) {
+                if (string.IsNullOrWhiteSpace(port.Id)) Add(result, "node-port-id-empty", "Node '" + node.Id + "' contains a port without an id.", node.Id);
+                if (port.Side == TopologyEdgePort.Auto) Add(result, "node-port-side-auto", "Named port '" + port.Id + "' on node '" + node.Id + "' requires an explicit side.", node.Id);
+            }
+            foreach (var duplicate in node.Ports.Where(port => !string.IsNullOrWhiteSpace(port.Id)).GroupBy(port => port.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
+                Add(result, "duplicate-node-port-id", "Node '" + node.Id + "' contains duplicate port id '" + duplicate.Key + "'.", node.Id);
+            }
+            foreach (var detail in node.Details) {
+                if (string.IsNullOrWhiteSpace(detail.Label)) Add(result, "node-detail-label-empty", "Node '" + node.Id + "' contains a detail row without a label.", node.Id);
+                if (string.IsNullOrWhiteSpace(detail.Value)) Add(result, "node-detail-value-empty", "Node '" + node.Id + "' contains a detail row without a value.", node.Id);
+                if (detail.Status.HasValue && !Enum.IsDefined(typeof(TopologyHealthStatus), detail.Status.Value)) Add(result, "node-detail-status", "Node '" + node.Id + "' contains a detail row with an undefined status.", node.Id);
+            }
         }
 
         foreach (var duplicate in chart.Nodes.Where(node => !string.IsNullOrWhiteSpace(node.Id)).GroupBy(node => node.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
@@ -141,6 +153,22 @@ public sealed class TopologyChartValidator {
             if (!string.IsNullOrWhiteSpace(edge.TargetNodeId) && !nodeIds.Contains(edge.TargetNodeId)) {
                 Add(result, "missing-edge-target", "Edge '" + edge.Id + "' references missing target node '" + edge.TargetNodeId + "'.", edge.Id);
             }
+            if (edge.DashPattern.Count > 0) {
+                if (edge.DashPattern.Count % 2 != 0) Add(result, "edge-dash-pattern-pairs", "Edge '" + edge.Id + "' dash pattern must contain alternating dash and gap pairs.", edge.Id);
+                if (edge.DashPattern.Any(value => !IsPositive(value))) Add(result, "edge-dash-pattern-value", "Edge '" + edge.Id + "' dash pattern values must be positive finite numbers.", edge.Id);
+            }
+            if (edge.SourceMarker.HasValue && !Enum.IsDefined(typeof(TopologyMarkerKind), edge.SourceMarker.Value)) Add(result, "edge-source-marker", "Edge '" + edge.Id + "' source marker is undefined.", edge.Id);
+            if (edge.TargetMarker.HasValue && !Enum.IsDefined(typeof(TopologyMarkerKind), edge.TargetMarker.Value)) Add(result, "edge-target-marker", "Edge '" + edge.Id + "' target marker is undefined.", edge.Id);
+            ValidateNamedPort(chart, result, edge, edge.SourceNodeId, edge.SourcePortId, "source");
+            ValidateNamedPort(chart, result, edge, edge.TargetNodeId, edge.TargetPortId, "target");
+        }
+    }
+
+    private static void ValidateNamedPort(TopologyChart chart, TopologyValidationResult result, TopologyEdge edge, string nodeId, string? portId, string endpoint) {
+        if (string.IsNullOrWhiteSpace(portId)) return;
+        var node = chart.Nodes.FirstOrDefault(candidate => string.Equals(candidate.Id, nodeId, StringComparison.Ordinal));
+        if (node == null || node.Ports.All(port => !string.Equals(port.Id, portId, StringComparison.Ordinal))) {
+            Add(result, "missing-edge-" + endpoint + "-port", "Edge '" + edge.Id + "' references missing " + endpoint + " port '" + portId + "' on node '" + nodeId + "'.", edge.Id);
         }
     }
 

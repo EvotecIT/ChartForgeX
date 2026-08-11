@@ -21,7 +21,7 @@ internal enum RasterGradientSpreadMethod {
 }
 
 internal sealed partial class RgbaCanvas {
-    internal void FillContoursLinearGradient(IReadOnlyList<List<ChartPoint>> contours, ChartPoint start, ChartPoint end, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule = RasterFillRule.EvenOdd) {
+    internal void FillContoursLinearGradient(IReadOnlyList<List<ChartPoint>> contours, ChartPoint start, ChartPoint end, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule = RasterFillRule.EvenOdd, double opacity = 1) {
         if (contours.Count == 0 || stops.Count == 0) return;
         var scaledContours = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -32,10 +32,10 @@ internal sealed partial class RgbaCanvas {
         }
 
         if (scaledContours.Count == 0) return;
-        FillContoursLinearGradientPixels(scaledContours, new ChartPoint(start.X * _scale, start.Y * _scale), new ChartPoint(end.X * _scale, end.Y * _scale), stops, spreadMethod, fillRule);
+        FillContoursLinearGradientPixels(scaledContours, new ChartPoint(start.X * _scale, start.Y * _scale), new ChartPoint(end.X * _scale, end.Y * _scale), stops, spreadMethod, fillRule, opacity);
     }
 
-    internal void FillContoursRadialGradient(IReadOnlyList<List<ChartPoint>> contours, ChartPoint center, ChartPoint radiusX, ChartPoint radiusY, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule = RasterFillRule.EvenOdd) {
+    internal void FillContoursRadialGradient(IReadOnlyList<List<ChartPoint>> contours, ChartPoint center, ChartPoint radiusX, ChartPoint radiusY, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule = RasterFillRule.EvenOdd, double opacity = 1) {
         if (contours.Count == 0 || stops.Count == 0) return;
         var scaledContours = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -53,10 +53,11 @@ internal sealed partial class RgbaCanvas {
             new ChartPoint(radiusY.X * _scale, radiusY.Y * _scale),
             stops,
             spreadMethod,
-            fillRule);
+            fillRule,
+            opacity);
     }
 
-    private void FillContoursLinearGradientPixels(IReadOnlyList<List<ChartPoint>> contours, ChartPoint start, ChartPoint end, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule) {
+    private void FillContoursLinearGradientPixels(IReadOnlyList<List<ChartPoint>> contours, ChartPoint start, ChartPoint end, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule, double opacity) {
         var gradientX = end.X - start.X;
         var gradientY = end.Y - start.Y;
         var gradientLengthSquared = gradientX * gradientX + gradientY * gradientY;
@@ -68,13 +69,13 @@ internal sealed partial class RgbaCanvas {
                 var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
                 if (coverage <= 0) continue;
                 var amount = gradientLengthSquared <= 0.000001 ? 0 : ((x + 0.5 - start.X) * gradientX + (scanY - start.Y) * gradientY) / gradientLengthSquared;
-                var color = SampleGradient(stops, amount, spreadMethod);
+                var color = WithOpacity(SampleGradient(stops, amount, spreadMethod), opacity);
                 BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
             }
         });
     }
 
-    private void FillContoursRadialGradientPixels(IReadOnlyList<List<ChartPoint>> contours, ChartPoint center, ChartPoint radiusX, ChartPoint radiusY, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule) {
+    private void FillContoursRadialGradientPixels(IReadOnlyList<List<ChartPoint>> contours, ChartPoint center, ChartPoint radiusX, ChartPoint radiusY, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, RasterFillRule fillRule, double opacity) {
         var axisXX = radiusX.X - center.X;
         var axisXY = radiusX.Y - center.Y;
         var axisYX = radiusY.X - center.X;
@@ -92,7 +93,7 @@ internal sealed partial class RgbaCanvas {
                 var dy = scanY - center.Y;
                 var localX = (dx * axisYY - axisYX * dy) / determinant;
                 var localY = (axisXX * dy - dx * axisXY) / determinant;
-                var color = SampleGradient(stops, Math.Sqrt(localX * localX + localY * localY), spreadMethod);
+                var color = WithOpacity(SampleGradient(stops, Math.Sqrt(localX * localX + localY * localY), spreadMethod), opacity);
                 BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
             }
         });

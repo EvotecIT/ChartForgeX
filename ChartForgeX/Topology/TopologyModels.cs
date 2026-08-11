@@ -399,6 +399,12 @@ public sealed class TopologyNode {
     /// <summary>Gets node metrics for host adapters.</summary>
     public Dictionary<string, string> Metrics { get; } = new();
 
+    /// <summary>Gets named attachment ports available to topology edges.</summary>
+    public List<TopologyNodePort> Ports { get; } = new();
+
+    /// <summary>Gets typed label/value detail rows rendered by card-like node surfaces.</summary>
+    public List<TopologyNodeDetail> Details { get; } = new();
+
     /// <summary>Gets arbitrary node metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 
@@ -427,6 +433,10 @@ public sealed class TopologyEdge {
     private double _labelAnchorY;
     private string? _labelAnchorNodeId;
     private TopologyEdgeLayoutInference _layoutInference = TopologyEdgeLayoutInference.None;
+    private double? _strokeWidth;
+    private double? _opacity;
+    private double? _preferredLength;
+    private int _minimumRankSpan = 1;
 
     /// <summary>Gets or sets the stable edge identifier.</summary>
     public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -509,6 +519,63 @@ public sealed class TopologyEdge {
         }
     }
 
+    /// <summary>Gets or sets an optional named port id on the source node.</summary>
+    public string? SourcePortId { get; set; }
+
+    /// <summary>Gets or sets an optional named port id on the target node.</summary>
+    public string? TargetPortId { get; set; }
+
+    /// <summary>Gets or sets an optional source endpoint marker. Null derives the marker from <see cref="Direction"/>.</summary>
+    public TopologyMarkerKind? SourceMarker { get; set; }
+
+    /// <summary>Gets or sets an optional target endpoint marker. Null derives the marker from <see cref="Direction"/>.</summary>
+    public TopologyMarkerKind? TargetMarker { get; set; }
+
+    /// <summary>Gets or sets an optional edge-specific stroke width in pixels.</summary>
+    public double? StrokeWidth {
+        get => _strokeWidth;
+        set {
+            if (value.HasValue) TopologyModelGuards.PositiveFinite(value.Value, nameof(value));
+            _strokeWidth = value;
+        }
+    }
+
+    /// <summary>Gets or sets an optional edge-specific opacity from zero to one.</summary>
+    public double? Opacity {
+        get => _opacity;
+        set {
+            if (value.HasValue) {
+                TopologyModelGuards.Finite(value.Value, nameof(value));
+                if (value.Value < 0 || value.Value > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Opacity must be between zero and one.");
+            }
+            _opacity = value;
+        }
+    }
+
+    /// <summary>Gets a custom alternating dash and gap pattern in pixels. An empty list uses <see cref="LineStyle"/>.</summary>
+    public List<double> DashPattern { get; } = new();
+
+    /// <summary>Gets or sets the preferred spring length for force-directed layout. This is a layout hint, not an exact rendered length.</summary>
+    public double? PreferredLength {
+        get => _preferredLength;
+        set {
+            if (value.HasValue) TopologyModelGuards.PositiveFinite(value.Value, nameof(value));
+            _preferredLength = value;
+        }
+    }
+
+    /// <summary>Gets or sets the preferred minimum layer separation for layered layout adapters.</summary>
+    public int MinimumRankSpan {
+        get => _minimumRankSpan;
+        set {
+            if (value < 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Minimum rank span must be at least one.");
+            _minimumRankSpan = value;
+        }
+    }
+
+    /// <summary>Gets or sets a caller-defined routing/rendering priority. Higher values render above lower values.</summary>
+    public int RoutingPriority { get; set; }
+
     /// <summary>Gets or sets the deterministic orthogonal route lane offset in pixels.</summary>
     public double RouteLane {
         get => _routeLane;
@@ -583,6 +650,12 @@ public sealed class TopologyEdge {
     /// <summary>Gets or sets the tertiary edge label.</summary>
     public string? TertiaryLabel { get; set; }
 
+    /// <summary>Gets or sets an optional label rendered near the source endpoint.</summary>
+    public string? SourceLabel { get; set; }
+
+    /// <summary>Gets or sets an optional label rendered near the target endpoint.</summary>
+    public string? TargetLabel { get; set; }
+
     /// <summary>Gets or sets an optional drill-down link.</summary>
     public string? Href { get; set; }
 
@@ -602,6 +675,66 @@ public sealed class TopologyEdge {
     public Dictionary<string, string> Metrics { get; } = new();
 
     /// <summary>Gets arbitrary edge metadata for host adapters.</summary>
+    public Dictionary<string, string> Metadata { get; } = new();
+}
+
+/// <summary>Defines one named attachment point on a topology node boundary.</summary>
+public sealed class TopologyNodePort {
+    private string _id = string.Empty;
+    private TopologyEdgePort _side = TopologyEdgePort.Right;
+    private double _offset = 0.5;
+
+    /// <summary>Gets or sets the node-local stable port identifier.</summary>
+    public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the node boundary side. Auto is not valid for a named port.</summary>
+    public TopologyEdgePort Side {
+        get => _side;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            if (value == TopologyEdgePort.Auto) throw new ArgumentOutOfRangeException(nameof(value), value, "Named ports require an explicit node side.");
+            _side = value;
+        }
+    }
+
+    /// <summary>Gets or sets the normalized position along the selected side from zero to one.</summary>
+    public double Offset {
+        get => _offset;
+        set {
+            TopologyModelGuards.Finite(value, nameof(value));
+            if (value < 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Port offset must be between zero and one.");
+            _offset = value;
+        }
+    }
+
+    /// <summary>Gets or sets an optional visible or host-facing label.</summary>
+    public string? Label { get; set; }
+
+    /// <summary>Gets arbitrary metadata for host adapters.</summary>
+    public Dictionary<string, string> Metadata { get; } = new();
+}
+
+/// <summary>Defines a compact typed detail row shown inside a card-like topology node.</summary>
+public sealed class TopologyNodeDetail {
+    private string _label = string.Empty;
+    private string _value = string.Empty;
+
+    /// <summary>Gets or sets the row label.</summary>
+    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the row value.</summary>
+    public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets an optional icon id retained for capable hosts and future icon-aware renderers.</summary>
+    public string? IconId { get; set; }
+
+    /// <summary>Gets or sets an optional semantic status.</summary>
+    public TopologyHealthStatus? Status { get; set; }
+
+    /// <summary>Gets or sets an optional row accent color.</summary>
+    public string? Color { get; set; }
+
+    /// <summary>Gets arbitrary metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 }
 

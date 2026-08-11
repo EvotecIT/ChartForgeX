@@ -41,7 +41,7 @@ public sealed partial class TopologyHtmlRenderer {
 
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options ??= new TopologyRenderOptions();
+        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
         var theme = chart.Theme ?? TopologyTheme.Light();
@@ -334,7 +334,7 @@ public sealed partial class TopologyHtmlRenderer {
 
     internal static string GetCssClassPrefix(TopologyRenderOptions options) => CssClassPrefix(options);
 
-    private static void EnsureStatic(TopologyRenderOptions? options) {
+    internal static void EnsureStatic(TopologyRenderOptions? options) {
         if (options?.EnableHtmlInteractions == true) {
             throw new InvalidOperationException("Interactive topology HTML is owned by ChartForgeX.Interactivity.Html. Use ToInteractiveHtmlPage or HtmlInteractiveTopologyRenderer from that package.");
         }

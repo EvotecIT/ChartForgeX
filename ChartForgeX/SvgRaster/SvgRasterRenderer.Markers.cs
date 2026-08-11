@@ -27,24 +27,23 @@ internal static partial class SvgRasterRenderer {
         if (markerWidth <= 0 || markerHeight <= 0) return;
 
         var markerUnits = string.Equals(marker.Get("markerUnits"), "userSpaceOnUse", StringComparison.Ordinal) ? 1 : Math.Max(0.000001, pathStyle.StrokeWidth);
-        var scale = pathMatrix.ScaleFactor * markerUnits;
-        var pixelWidth = Math.Max(1, (int)Math.Round(markerWidth * scale));
-        var pixelHeight = Math.Max(1, (int)Math.Round(markerHeight * scale));
         var viewBox = string.IsNullOrWhiteSpace(marker.Get("viewBox"))
             ? new SvgRasterViewBox(0, 0, markerWidth, markerHeight)
             : SvgRasterViewBox.Parse(marker.Get("viewBox")!);
-        var fit = SvgRasterMatrix.FromFit(viewBox, pixelWidth, pixelHeight, marker.Get("preserveAspectRatio"));
+        var fit = SvgRasterMatrix.FromFit(viewBox, markerWidth, markerHeight, marker.Get("preserveAspectRatio"));
         var reference = fit.Transform(new ChartPoint(marker.GetDouble("refX"), marker.GetDouble("refY")));
         var rotation = MarkerRotation(marker.Get("orient"), point, adjacent, start);
-        var markerMatrix = SvgRasterMatrix.Translate(point.X, point.Y)
+        var markerMatrix = pathMatrix
+            .Multiply(SvgRasterMatrix.Translate(point.X, point.Y))
             .Multiply(SvgRasterMatrix.Rotate(rotation))
+            .Multiply(SvgRasterMatrix.Scale(markerUnits, markerUnits))
             .Multiply(SvgRasterMatrix.Translate(-reference.X, -reference.Y))
             .Multiply(fit);
 
         var markerAncestors = new List<SvgRasterElement>(ancestors);
         var markerStyle = SvgRasterStyle.Resolve(SvgRasterStyle.Default, marker, definitions.StyleSheet, markerAncestors);
         markerAncestors.Add(marker);
-        foreach (var child in marker.Children) RenderElement(canvas, child, markerStyle, markerMatrix, definitions, width, height, referenceDepth + 1, markerAncestors);
+        foreach (var child in marker.Children) RenderElement(canvas, child, markerStyle, markerMatrix, definitions, width, height, referenceDepth + 1, markerAncestors, new SvgRasterViewport(viewBox.Width, viewBox.Height));
     }
 
     private static double MarkerRotation(string? orient, ChartPoint point, ChartPoint adjacent, bool start) {

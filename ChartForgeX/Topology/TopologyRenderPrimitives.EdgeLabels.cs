@@ -115,7 +115,7 @@ internal static partial class TopologyRenderPrimitives {
         foreach (var edge in chart.Edges) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var points = EdgePoints(chart, edge, nodes);
-            if (IsGeographicCurve(chart, edge, nodes)) points = GeographicCurveSamplePoints(chart, edge, nodes, points, 12);
+            points = RenderedEdgeSamplePoints(chart, edge, nodes, points, 12);
             for (var i = 0; i < points.Count - 1; i++) segments.Add(new EdgeSegment(edge, points[i], points[i + 1]));
         }
 

@@ -23,8 +23,7 @@ public sealed partial class TopologyPngRenderer {
 
     internal RgbaImage RenderImage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options ??= new TopologyRenderOptions();
-        if (options.Preset != TopologyViewPreset.Default) options.ApplyPreset(options.Preset);
+        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
         var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
         var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
         var validator = new TopologyChartValidator();
@@ -52,11 +51,13 @@ public sealed partial class TopologyPngRenderer {
         if (options.IncludeGroups) DrawGroups(canvas, prepared, theme, options, highlight);
         DrawEdges(canvas, prepared, theme, options, highlight);
         if (options.IncludeEdgeLabels) DrawEdgeLabels(canvas, prepared, theme, options, highlight);
+        if (options.IncludeEndpointLabels) DrawEndpointLabels(canvas, prepared, theme, options, highlight);
         DrawNodes(canvas, prepared, theme, options, highlight);
         if (options.IncludeStatusBadges) DrawStatusBadges(canvas, prepared, theme, options, highlight);
         DrawMotionOverlay(canvas, prepared, theme, options, motionPlan);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
         if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme, options);
+        if (options.IncludeLayoutDiagnosticOverlay) DrawLayoutDiagnosticOverlay(canvas, prepared, options);
         var pixels = canvas.ToOutputPixels();
         if (!options.FitContentToViewport) return new RgbaImage(canvas.OutputWidth, canvas.OutputHeight, pixels);
         var targetWidth = Math.Max(1, requestedWidth * Math.Max(1, options.PngOutputScale));
@@ -275,20 +276,21 @@ public sealed partial class TopologyPngRenderer {
             var points = EdgePoints(chart, edge, nodes);
             var isSelected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var baseColor = Color(EdgeColor(edge, theme, options));
-            var routeOpacity = isSelected ? 1 : EdgeOpacity(edge, options);
+            var routeOpacity = EdgeOpacity(edge, options);
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
             var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
-            var dash = EdgePngDash(edge);
-            var routePoints = IsGeographicCurve(chart, edge, nodes)
-                ? GeographicCurveSamplePoints(chart, edge, nodes, points)
-                : points;
+            var dashArray = EffectiveEdgePngDashArray(edge);
+            var routePoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
-            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), HighlightAlpha(224, highlight.IsEdgeHighlighted(edge), highlight)), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
-            DrawPremiumEdgeRoute(canvas, routePoints, color, width, !edge.IsMuted && dash.Dashed, dash.Dash, dash.Gap, edge, options, isSelected);
+            if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {
+                var haloAlpha = (byte)Math.Round(224 * Clamp(routeOpacity, 0, 1), MidpointRounding.AwayFromZero);
+                canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), haloAlpha), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
+            }
+            DrawPremiumEdgeRoute(canvas, routePoints, color, width, dashArray, edge, options, isSelected);
 
-            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Forward or VisualLinkDirection.Bidirectional) DrawArrow(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, options);
-            if (options.IncludeDirectionMarkers && edge.Direction is VisualLinkDirection.Backward or VisualLinkDirection.Bidirectional) DrawArrow(canvas, routePoints[1], routePoints[0], color, options);
+            DrawEndpointMarker(canvas, routePoints[1], routePoints[0], color, RenderedSourceMarker(edge, options.IncludeDirectionMarkers), options);
+            DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, RenderedTargetMarker(edge, options.IncludeDirectionMarkers), options);
         }
     }
 
@@ -299,12 +301,13 @@ public sealed partial class TopologyPngRenderer {
             var cy = layout.CenterY;
             var baseColor = edge.IsMuted ? Color(theme.MutedForeground) : Color(EdgeColor(edge, theme, options));
             var isHighlighted = highlight.IsEdgeHighlighted(edge);
-            var color = isHighlighted ? baseColor : WithAlpha(baseColor, HighlightAlpha(255, false, highlight));
-            var secondaryColor = isHighlighted ? Color(theme.MutedForeground) : WithAlpha(Color(theme.MutedForeground), HighlightAlpha(255, false, highlight));
-            var haloColor = WithAlpha(Color(theme.Background), HighlightAlpha(255, isHighlighted, highlight));
+            var labelOpacity = EdgeOpacity(edge, options) * (highlight.IsActive && !isHighlighted ? highlight.DimmedOpacity : 1);
+            var color = WithOpacity(baseColor, labelOpacity);
+            var secondaryColor = WithOpacity(Color(theme.MutedForeground), labelOpacity);
+            var haloColor = WithOpacity(Color(theme.Background), labelOpacity);
             DrawEdgeLabelLeader(canvas, layout, color, haloColor, options);
-            DrawEdgeLabelBackplate(canvas, layout, cx, cy, theme, options);
-            DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, highlight, isHighlighted);
+            DrawEdgeLabelBackplate(canvas, layout, cx, cy, theme, options, labelOpacity);
+            DrawEdgeLabelClearance(canvas, chart, layout, cx, cy, theme, options, labelOpacity);
             DrawEdgeLabelLines(canvas, layout, cx, cy, color, secondaryColor, haloColor, IsMonitoringDashboardStyle(options) && !options.IncludeEdgeLabelBackplates);
         }
     }
@@ -399,9 +402,27 @@ public sealed partial class TopologyPngRenderer {
                         DrawTextLines(canvas, textX, subtitleY, NodeTextLines(node.Subtitle!, textWidth, 10.5, false, options.MaxNodeSubtitleLines, options), Color(theme.MutedForeground), 10.5, false, 12);
                     }
                 }
+                if (displayMode == TopologyNodeDisplayMode.Card && node.Details.Count > 0) DrawNodeDetails(canvas, node, theme, options);
             }
 
             DrawNodeBadge(canvas, node, theme, accent, displayMode);
+        }
+    }
+
+    private static void DrawNodeDetails(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, TopologyRenderOptions options) {
+        var startY = node.Y + NodeDetailStartOffset(node, options);
+        var left = node.X + 12;
+        var right = node.X + node.Width - 12;
+        for (var i = 0; i < node.Details.Count; i++) {
+            var detail = node.Details[i];
+            var y = startY + i * 18;
+            var color = !string.IsNullOrWhiteSpace(detail.Color) ? Color(detail.Color!) : detail.Status.HasValue ? Color(theme.StatusColor(detail.Status.Value)) : Color(theme.MutedForeground);
+            canvas.DrawLine(left, y - 8, right, y - 8, WithAlpha(Color(theme.Border), 112), 1);
+            canvas.DrawCircle(left + 3, y - 1, 2.5, color);
+            canvas.DrawText(left + 10, y - 6, TrimTo(detail.Label, 14), Color(theme.MutedForeground), 8.5);
+            var value = TrimTo(detail.Value, 16);
+            var valueWidth = canvas.MeasureTextEmphasizedWidth(value, 8.5);
+            canvas.DrawTextEmphasized(right - valueWidth, y - 6, value, Color(theme.Foreground), 8.5);
         }
     }
 
@@ -410,7 +431,7 @@ public sealed partial class TopologyPngRenderer {
         var width = Math.Min(Math.Max(48, canvas.MeasureTextEmphasizedWidth(subtitle, 8.5) + 18), Math.Max(48, node.Width - 50));
         var height = 17.0;
         var x = node.X + 42;
-        var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : node.Height - 22);
+        var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, options));
         canvas.FillRoundedRect(x, y, width, height, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
         canvas.StrokeRoundedRect(x, y, width, height, 8.5, WithAlpha(accent, 115), 1);
         DrawCentered(canvas, x + width / 2, y + 3.8, subtitle, accent, 8.5, true);
@@ -476,7 +497,9 @@ public sealed partial class TopologyPngRenderer {
 
     private static void DrawNodeIcon(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor status, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
         var cx = displayMode is TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Tile ? CenterX(node) : node.X + 22;
-        var cy = displayMode == TopologyNodeDisplayMode.Tile ? node.Y + node.Height / 2 - 1 : node.Y + node.Height / 2;
+        var cy = displayMode == TopologyNodeDisplayMode.Tile
+            ? node.Y + node.Height / 2 - 1
+            : displayMode == TopologyNodeDisplayMode.Card && options.IncludeNodeLabels && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
         var size = displayMode == TopologyNodeDisplayMode.Pill ? 18 : displayMode == TopologyNodeDisplayMode.Icon ? 26 : displayMode == TopologyNodeDisplayMode.Tile ? 24 : 22;
         if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) {
             canvas.DrawCircleOutline(cx - 5, cy, 7, ChartColor.White, 2.4);
@@ -740,7 +763,7 @@ public sealed partial class TopologyPngRenderer {
         DrawTextWithReadableHalo(canvas, x, y, text, color, haloColor, fontSize, emphasized);
     }
 
-    private static ChartColor Color(string value) => ChartColor.FromHex(value);
+    private static ChartColor Color(string value) => ChartColor.Parse(value);
 
     private static ChartColor WithAlpha(ChartColor color, byte alpha) => ChartColor.FromRgba(color.R, color.G, color.B, alpha);
 

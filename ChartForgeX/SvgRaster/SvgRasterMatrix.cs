@@ -18,6 +18,13 @@ internal readonly struct SvgRasterMatrix {
         _f = f;
     }
 
+    public double A => _a;
+    public double B => _b;
+    public double C => _c;
+    public double D => _d;
+    public double E => _e;
+    public double F => _f;
+
     public ChartPoint Transform(ChartPoint point) =>
         new(point.X * _a + point.Y * _c + _e, point.X * _b + point.Y * _d + _f);
 
@@ -38,6 +45,23 @@ internal readonly struct SvgRasterMatrix {
             _a * other._e + _c * other._f + _e,
             _b * other._e + _d * other._f + _f);
 
+    public bool TryInvert(out SvgRasterMatrix inverse) {
+        var determinant = _a * _d - _b * _c;
+        if (Math.Abs(determinant) < 0.000000001) {
+            inverse = Identity;
+            return false;
+        }
+
+        inverse = new SvgRasterMatrix(
+            _d / determinant,
+            -_b / determinant,
+            -_c / determinant,
+            _a / determinant,
+            (_c * _f - _d * _e) / determinant,
+            (_b * _e - _a * _f) / determinant);
+        return true;
+    }
+
     public static SvgRasterMatrix Translate(double x, double y) => new(1, 0, 0, 1, x, y);
 
     public static SvgRasterMatrix Scale(double x, double y) => new(x, 0, 0, y, 0, 0);
@@ -49,7 +73,10 @@ internal readonly struct SvgRasterMatrix {
         return new SvgRasterMatrix(cos, sin, -sin, cos, 0, 0);
     }
 
-    public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, int width, int height, string? preserveAspectRatio) {
+    public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, int width, int height, string? preserveAspectRatio) =>
+        FromFit(viewBox, (double)width, height, preserveAspectRatio);
+
+    public static SvgRasterMatrix FromFit(SvgRasterViewBox viewBox, double width, double height, string? preserveAspectRatio) {
         var aspectRatio = SvgRasterPreserveAspectRatio.Parse(preserveAspectRatio);
         if (aspectRatio.Stretch) {
             return Scale(width / viewBox.Width, height / viewBox.Height).Multiply(Translate(-viewBox.X, -viewBox.Y));

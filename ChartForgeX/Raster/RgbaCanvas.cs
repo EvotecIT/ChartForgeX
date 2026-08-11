@@ -773,7 +773,7 @@ internal sealed partial class RgbaCanvas {
     }
 
     private void BlendPixel(int x, int y, ChartColor src) {
-        if (x < 0 || y < 0 || x >= _pixelWidth || y >= _pixelHeight || src.A == 0) return;
+        if (x < 0 || y < 0 || x >= _pixelWidth || y >= _pixelHeight || !IsInsideClip(x, y) || src.A == 0) return;
         var i = (y * _pixelWidth + x) * 4;
         if (src.A == 255) { Pixels[i] = src.R; Pixels[i + 1] = src.G; Pixels[i + 2] = src.B; Pixels[i + 3] = 255; return; }
         var sa = src.A / 255.0;

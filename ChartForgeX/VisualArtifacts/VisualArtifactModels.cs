@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Accessibility;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualArtifacts;
@@ -25,7 +26,13 @@ public enum VisualArtifactKind {
     /// <summary>A visual block artifact.</summary>
     VisualBlock,
     /// <summary>A Mermaid-authored diagram artifact.</summary>
-    Mermaid
+    Mermaid,
+    /// <summary>A multi-chart grid artifact.</summary>
+    ChartGrid,
+    /// <summary>A fixed-size layered visual canvas artifact.</summary>
+    VisualCanvas,
+    /// <summary>A deterministic visual-story artifact.</summary>
+    Story
 }
 
 /// <summary>
@@ -115,6 +122,9 @@ public sealed class VisualArtifact {
     /// <summary>Gets artifact metadata for host adapters and exporters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>Gets renderer-independent accessibility metadata for host adapters and capable exporters.</summary>
+    public VisualAccessibility Accessibility { get; } = new();
+
     /// <summary>Gets host-inspectable visual regions.</summary>
     public List<VisualArtifactRegion> Regions { get; } = new();
 
@@ -173,6 +183,12 @@ public sealed class VisualArtifactRegion {
 
     /// <summary>Gets or sets the region bounds when known.</summary>
     public ChartRect? Bounds { get; set; }
+
+    /// <summary>Gets or sets an optional navigation target associated with the region.</summary>
+    public string? Href { get; set; }
+
+    /// <summary>Gets or sets an optional text alternative for the region.</summary>
+    public string? AlternativeText { get; set; }
 
     /// <summary>Gets region metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);

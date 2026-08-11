@@ -51,6 +51,8 @@ internal static class TopologyExamples {
             demo.Item2.SavePng(Path.Combine(target, demo.Item1 + ".png"), options);
         }
 
+        AdvancedTopologyExample.Write(target);
+
         WriteView(demos[0].Item2, Path.Combine(target, "site-topology-emea-view"), new TopologyView { Id = "emea-view", Title = "Site Topology - EMEA View", Subtitle = "Focused view rendered from the same reusable topology model.", GroupIds = { "EMEA" } });
         WriteView(demos[1].Item2, Path.Combine(target, "replication-mesh-critical-view"), new TopologyView { Id = "critical-view", Title = "Replication Mesh - Critical Paths", Subtitle = "Focused view using explicit node ids and connected critical paths.", NodeIds = { "fra-dc1", "fra-dc2", "sin-dc1", "sin-dc2", "sfo-dc2" } });
         WriteRenderedView(demos[1].Item2, Path.Combine(target, "replication-mesh-dc-view"), new TopologyRenderOptions { IncludeGroups = false, IncludeGroupLabels = false, EdgeLabelMetricKey = "lag", EdgeSecondaryLabelMetricKey = "queue" });

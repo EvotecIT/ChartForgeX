@@ -10,6 +10,15 @@ internal sealed partial class RgbaCanvas {
 
         var clipped = new byte[sourceWidth * sourceHeight * 4];
         Buffer.BlockCopy(rgba, 0, clipped, 0, clipped.Length);
+        ApplyCenteredCircleAlphaMask(sourceWidth, sourceHeight, clipped, destinationWidth, destinationHeight);
+
+        DrawImageScaled(x, y, destinationWidth, destinationHeight, sourceWidth, sourceHeight, clipped);
+    }
+
+    internal static void ApplyCenteredCircleAlphaMask(int width, int height, byte[] rgba) =>
+        ApplyCenteredCircleAlphaMask(width, height, rgba, width, height);
+
+    private static void ApplyCenteredCircleAlphaMask(int sourceWidth, int sourceHeight, byte[] rgba, int destinationWidth, int destinationHeight) {
         var radius = Math.Min(destinationWidth, destinationHeight) / 2d;
         var centerX = destinationWidth / 2d;
         var centerY = destinationHeight / 2d;
@@ -18,9 +27,7 @@ internal sealed partial class RgbaCanvas {
             var destinationY = (sourceY + 0.5) * destinationHeight / sourceHeight;
             var deltaX = destinationX - centerX;
             var deltaY = destinationY - centerY;
-            if (deltaX * deltaX + deltaY * deltaY > radius * radius) clipped[(sourceY * sourceWidth + sourceX) * 4 + 3] = 0;
+            if (deltaX * deltaX + deltaY * deltaY > radius * radius) rgba[(sourceY * sourceWidth + sourceX) * 4 + 3] = 0;
         }
-
-        DrawImageScaled(x, y, destinationWidth, destinationHeight, sourceWidth, sourceHeight, clipped);
     }
 }

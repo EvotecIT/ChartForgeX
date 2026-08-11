@@ -153,6 +153,8 @@ public static partial class GalleryWriter {
             "geographic-topology",
             "subnets-site-links",
             "service-dependency",
+            "advanced-topology",
+            "advanced-topology-diagnostics",
             "icon-palette",
             "icon-stencil-browser"),
         new(

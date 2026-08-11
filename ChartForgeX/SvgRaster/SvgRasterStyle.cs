@@ -25,7 +25,12 @@ internal sealed class SvgRasterStyle {
         FontWeight = "normal",
         TextAnchor = "start",
         DominantBaseline = "auto",
-        Visible = true
+        WhiteSpace = "normal",
+        MaskType = "luminance",
+        Overflow = null,
+        Displayed = true,
+        AncestorsDisplayed = true,
+        VisibilityVisible = true
     };
 
     public SvgRasterPaint Fill { get; set; }
@@ -46,7 +51,12 @@ internal sealed class SvgRasterStyle {
     public string FontWeight { get; set; } = "normal";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
-    public bool Visible { get; set; }
+    public string WhiteSpace { get; set; } = "normal";
+    public string MaskType { get; set; } = "luminance";
+    public string? Overflow { get; set; }
+    public bool Displayed { get; private set; }
+    public bool VisibilityVisible { get; private set; }
+    private bool AncestorsDisplayed { get; set; }
     public Dictionary<string, string> CustomProperties { get; } = new(StringComparer.Ordinal);
 
     public SvgRasterStyle Inherit() {
@@ -54,7 +64,9 @@ internal sealed class SvgRasterStyle {
             Fill = Fill,
             Stroke = Stroke,
             Color = Color,
-            Opacity = Opacity,
+            // SVG opacity applies to the element as a composited layer; unlike fill/stroke
+            // opacity it is not inherited by descendants.
+            Opacity = 1,
             FillOpacity = FillOpacity,
             StrokeOpacity = StrokeOpacity,
             StrokeWidth = StrokeWidth,
@@ -68,7 +80,14 @@ internal sealed class SvgRasterStyle {
             FontWeight = FontWeight,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
-            Visible = Visible
+            WhiteSpace = WhiteSpace,
+            // mask-type applies only to mask elements and is not inherited.
+            MaskType = "luminance",
+            // overflow applies to the current viewport element and is not inherited.
+            Overflow = null,
+            Displayed = Displayed,
+            AncestorsDisplayed = Displayed,
+            VisibilityVisible = VisibilityVisible
         };
         foreach (var property in CustomProperties) style.CustomProperties[property.Key] = property.Value;
         return style;
@@ -136,8 +155,12 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "text-anchor");
         AddAttribute(declarations, element, "dominant-baseline");
         AddAttribute(declarations, element, "alignment-baseline");
+        if (element.TryGet("xml:space", out var xmlSpace)) declarations.Add(new SvgStyleDeclaration("white-space", string.Equals(xmlSpace.Trim(), "preserve", StringComparison.OrdinalIgnoreCase) ? "pre" : "normal"));
+        AddAttribute(declarations, element, "white-space");
         AddAttribute(declarations, element, "display");
         AddAttribute(declarations, element, "visibility");
+        AddAttribute(declarations, element, "mask-type");
+        AddAttribute(declarations, element, "overflow");
     }
 
     private static void AddAttribute(List<SvgStyleDeclaration> declarations, SvgRasterElement element, string name) {
@@ -224,11 +247,23 @@ internal sealed class SvgRasterStyle {
             case "alignment-baseline":
                 style.DominantBaseline = value.Trim();
                 break;
+            case "white-space":
+                style.WhiteSpace = value.Trim();
+                break;
             case "display":
-                if (string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase)) style.Visible = false;
+                style.Displayed = style.AncestorsDisplayed && !string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase);
                 break;
             case "visibility":
-                if (string.Equals(value.Trim(), "hidden", StringComparison.OrdinalIgnoreCase) || string.Equals(value.Trim(), "collapse", StringComparison.OrdinalIgnoreCase)) style.Visible = false;
+                var visibility = value.Trim();
+                if (string.Equals(visibility, "visible", StringComparison.OrdinalIgnoreCase)) style.VisibilityVisible = true;
+                else if (string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase) || string.Equals(visibility, "collapse", StringComparison.OrdinalIgnoreCase)) style.VisibilityVisible = false;
+                break;
+            case "mask-type":
+                var maskType = value.Trim();
+                if (string.Equals(maskType, "alpha", StringComparison.OrdinalIgnoreCase) || string.Equals(maskType, "luminance", StringComparison.OrdinalIgnoreCase)) style.MaskType = maskType;
+                break;
+            case "overflow":
+                style.Overflow = value.Trim();
                 break;
         }
     }

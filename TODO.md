@@ -71,7 +71,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Keep animated raster export format-neutral internally so future chart families and formats can reuse sampled RGBA frames instead of topology-specific code.
 - Evaluate animated WebP only if a dependency-free encoder can share the same frame pipeline and meet the GIF/APNG validation bar.
 - Treat MP4 as a likely adapter concern unless a dependency-free encoder is practical; core ChartForgeX can expose deterministic frames while host packages own platform codecs or external tooling.
-- Evaluate future PDF or Office-friendly emitters only when they can share the same chart model, layout rules, and quality standards.
+- Keep PDF and Office document generation in OfficeIMO adapters over `VisualArtifact`; expand the handoff metadata only when a real Word, Excel, PowerPoint, or PDF placement contract needs it.
 
 ## Release Readiness
 

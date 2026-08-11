@@ -7,6 +7,57 @@ namespace ChartForgeX.Topology;
 /// Provides reusable topology render-option presets.
 /// </summary>
 public static class TopologyRenderOptionsExtensions {
+    /// <summary>Applies a reusable topology spacing and presentation profile.</summary>
+    public static TopologyRenderOptions ApplyLayoutPreset(this TopologyRenderOptions options, TopologyLayoutPreset preset) {
+        if (options == null) throw new System.ArgumentNullException(nameof(options));
+        if (!System.Enum.IsDefined(typeof(TopologyLayoutPreset), preset)) throw new System.ArgumentOutOfRangeException(nameof(preset), preset, "Unknown topology layout preset.");
+        options.LayoutPreset = preset;
+        switch (preset) {
+            case TopologyLayoutPreset.Automatic:
+                options.LayeredNodeSpacing = null;
+                options.LayeredRankSpacing = null;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
+                break;
+            case TopologyLayoutPreset.Dense:
+                options.LayeredNodeSpacing = 14;
+                options.LayeredRankSpacing = 28;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 1;
+                options.MaxNodeSubtitleLines = 1;
+                break;
+            case TopologyLayoutPreset.Compact:
+                options.LayeredNodeSpacing = 20;
+                options.LayeredRankSpacing = 34;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
+                break;
+            case TopologyLayoutPreset.Balanced:
+                options.LayeredNodeSpacing = 28;
+                options.LayeredRankSpacing = 42;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+                options.WrapNodeLabels = false;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
+                break;
+            case TopologyLayoutPreset.Presentation:
+                options.LayeredNodeSpacing = 42;
+                options.LayeredRankSpacing = 64;
+                options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
+                options.WrapNodeLabels = true;
+                options.MaxNodeLabelLines = 2;
+                options.MaxNodeSubtitleLines = 2;
+                break;
+        }
+        options.MarkLayoutPresetApplied();
+        return options;
+    }
+
     /// <summary>
     /// Applies a preset to existing render options.
     /// </summary>
@@ -15,6 +66,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <returns>The current render options.</returns>
     public static TopologyRenderOptions ApplyPreset(this TopologyRenderOptions options, TopologyViewPreset preset) {
         if (options == null) throw new ArgumentNullException(nameof(options));
+        if (!System.Enum.IsDefined(typeof(TopologyViewPreset), preset)) throw new System.ArgumentOutOfRangeException(nameof(preset), preset, "Unknown topology view preset.");
         options.Preset = preset;
         switch (preset) {
             case TopologyViewPreset.Grouped:
@@ -64,6 +116,7 @@ public static class TopologyRenderOptionsExtensions {
                 break;
         }
 
+        options.MarkPresetApplied();
         return options;
     }
 
