@@ -318,6 +318,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 EndIndex = block.IsEmpty ? null : end,
                 Sequence = new VisualArtifactInterchangeSequenceAnnotation {
                     BlockKind = block.Kind,
+                    Depth = block.Depth,
                     IsEmpty = block.IsEmpty
                 }
             };
@@ -566,7 +567,9 @@ public static partial class VisualArtifactInterchangeMapping {
     private static void CopyMetrics(IEnumerable<KeyValuePair<string, string>> source, ICollection<VisualArtifactInterchangeMetric> target) {
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (VisualArtifactInterchangeMetric metric in target) names.Add(metric.Name);
-        foreach (var pair in source) {
+        var pairs = new List<KeyValuePair<string, string>>(source);
+        pairs.Sort((left, right) => StringComparer.Ordinal.Compare(left.Key, right.Key));
+        foreach (var pair in pairs) {
             var ordinal = 1;
             string name = BoundedGeneratedId(pair.Key, "metric-name", ordinal);
             while (!names.Add(name)) {

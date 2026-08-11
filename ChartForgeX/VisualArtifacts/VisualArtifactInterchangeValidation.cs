@@ -106,6 +106,7 @@ internal static class VisualArtifactInterchangeValidation {
                 RequiredId(port.Id, "port id");
                 if (!portIds.Add(port.Id)) throw new ArgumentException("Interchange port ids must be unique within a node: " + port.Id + ".", nameof(envelope));
                 Defined(port.Side, "port side", envelope);
+                if (port.Side == TopologyEdgePort.Auto) throw new ArgumentException("Named interchange ports require an explicit side.", nameof(envelope));
                 Finite(port.Offset, "port offset");
                 if (port.Offset < 0 || port.Offset > 1) throw new ArgumentOutOfRangeException(nameof(envelope), port.Offset, "Port offsets must be between zero and one.");
                 OptionalText(port.Label, "port label");
@@ -350,8 +351,7 @@ internal static class VisualArtifactInterchangeValidation {
         Defined(group.Topology.Status, "topology group status", envelope);
         Defined(group.Topology.LayoutPolicy, "topology group layout policy", envelope);
         Defined(group.Topology.AppliedLayoutPolicy, "topology group applied layout policy", envelope);
-        FiniteOptional(group.Topology.Longitude, "topology group longitude");
-        FiniteOptional(group.Topology.Latitude, "topology group latitude");
+        GeographicCoordinates(group.Topology.Longitude, group.Topology.Latitude, "topology group", envelope);
         OptionalText(group.Topology.IconId, "topology group icon id");
         OptionalText(group.Topology.Symbol, "topology group symbol");
     }
@@ -370,8 +370,7 @@ internal static class VisualArtifactInterchangeValidation {
             Defined(node.Topology.Kind, "topology node kind", envelope);
             Defined(node.Topology.Status, "topology node status", envelope);
             Defined(node.Topology.DisplayMode, "topology node display mode", envelope);
-            FiniteOptional(node.Topology.Longitude, "topology node longitude");
-            FiniteOptional(node.Topology.Latitude, "topology node latitude");
+            GeographicCoordinates(node.Topology.Longitude, node.Topology.Latitude, "topology node", envelope);
             if (node.Topology.MaximumLabelCharacters is < 1) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.MaximumLabelCharacters, "Maximum label characters must be positive.");
             ValidateArtwork(node.Topology.Artwork, envelope);
         }
@@ -428,7 +427,8 @@ internal static class VisualArtifactInterchangeValidation {
             FiniteOptional(edge.Topology.Opacity, "topology edge opacity");
             if (edge.Topology.Opacity is < 0 or > 1) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Topology.Opacity, "Topology edge opacity must be between zero and one.");
             Count(edge.Topology.DashPattern.Count, MaximumDashPatternValues, "topology edge dash pattern");
-            foreach (double value in edge.Topology.DashPattern) NonNegative(value, "topology edge dash value");
+            if (edge.Topology.DashPattern.Count % 2 != 0) throw new ArgumentException("Topology edge dash patterns must contain alternating dash and gap pairs.", nameof(envelope));
+            foreach (double value in edge.Topology.DashPattern) Positive(value, "topology edge dash value");
             Count(edge.Topology.Waypoints.Count, MaximumWaypointsPerEdge, "topology edge waypoints");
             foreach (var point in edge.Topology.Waypoints) ValidatePoint(point, "topology edge waypoint");
             FiniteOptional(edge.Topology.RouteLane, "topology edge route lane");
@@ -491,7 +491,7 @@ internal static class VisualArtifactInterchangeValidation {
                 // targetless semantic note. Adapters must diagnose that it cannot be placed.
                 break;
             case VisualArtifactInterchangeAnnotationRole.SequenceBlock:
-                if (activation || note || !block || branch || annotation.Sequence.Depth != 0) {
+                if (activation || note || !block || branch) {
                     throw new ArgumentException("Sequence block annotations may carry only typed block semantics.", nameof(envelope));
                 }
                 ValidateSequenceSpan(annotation, "block", envelope);
@@ -523,6 +523,15 @@ internal static class VisualArtifactInterchangeValidation {
         Finite(point.Y, context + " y");
     }
 
+    private static void GeographicCoordinates(double? longitude, double? latitude, string context, VisualArtifactInterchangeEnvelope envelope) {
+        if (longitude.HasValue != latitude.HasValue) throw new ArgumentException(context + " longitude and latitude must be supplied together.", nameof(envelope));
+        if (!longitude.HasValue) return;
+        Finite(longitude.Value, context + " longitude");
+        Finite(latitude!.Value, context + " latitude");
+        if (longitude.Value < -180 || longitude.Value > 180) throw new ArgumentOutOfRangeException(nameof(envelope), longitude.Value, context + " longitude must be between -180 and 180 degrees.");
+        if (latitude.Value < -90 || latitude.Value > 90) throw new ArgumentOutOfRangeException(nameof(envelope), latitude.Value, context + " latitude must be between -90 and 90 degrees.");
+    }
+
     private static void Defined<TEnum>(TEnum value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(nameof(envelope), value, context + " must be defined.");
     }
@@ -540,6 +549,11 @@ internal static class VisualArtifactInterchangeValidation {
     private static void NonNegative(double value, string context) {
         Finite(value, context);
         if (value < 0) throw new ArgumentOutOfRangeException(context, value, context + " must not be negative.");
+    }
+
+    private static void Positive(double value, string context) {
+        Finite(value, context);
+        if (value <= 0) throw new ArgumentOutOfRangeException(context, value, context + " must be greater than zero.");
     }
 
     private static void Count(int count, int maximum, string context) {

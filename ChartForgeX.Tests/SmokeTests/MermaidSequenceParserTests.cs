@@ -138,6 +138,11 @@ end";
             "Mermaid sequence conversion should preserve parallel and critical sibling branches, not only else branches.");
         Assert(siblingArtifact.Branches.All(branch => branch.EndStepIndex >= branch.StartStepIndex && branch.EndStepIndex < siblingArtifact.Messages.Count),
             "Parallel and critical sequence branch spans should end at their last covered message without overlapping the next branch.");
+        Assert(siblingArtifact.Blocks.Single(block => block.Kind == SequenceArtifactBlockKind.Par).StartStepIndex == 1 &&
+               siblingArtifact.Blocks.Single(block => block.Kind == SequenceArtifactBlockKind.Par).EndStepIndex == 2 &&
+               siblingArtifact.Blocks.Single(block => block.Kind == SequenceArtifactBlockKind.Critical).StartStepIndex == 3 &&
+               siblingArtifact.Blocks.Single(block => block.Kind == SequenceArtifactBlockKind.Critical).EndStepIndex == 4,
+            "Switching Mermaid branches should retain each enclosing block's original start and complete it at the last covered message.");
 
         const string emptyBranch = @"sequenceDiagram
 A->>B: Before

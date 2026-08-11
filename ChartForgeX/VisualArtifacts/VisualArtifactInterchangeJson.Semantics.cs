@@ -374,8 +374,8 @@ internal static partial class VisualArtifactInterchangeJson {
     }
 
     private static VisualArtifactInterchangePoint ReadPoint(Dictionary<string, GeoJsonValue> item) => new() {
-        X = OptionalNumber(item, "x") ?? 0,
-        Y = OptionalNumber(item, "y") ?? 0
+        X = RequiredNumber(item, "x"),
+        Y = RequiredNumber(item, "y")
     };
 
     private static VisualArtifactInterchangeFlowNode? ReadFlowNode(Dictionary<string, GeoJsonValue> root) {

@@ -260,6 +260,7 @@ internal static partial class SmokeTests {
         ("Visual artifact interchange round trips topology semantics", VisualArtifactInterchangeRoundTripsTopologySemantics),
         ("Visual artifact interchange preserves flow and sequence semantics", VisualArtifactInterchangePreservesFlowAndSequenceSemantics),
         ("Visual artifact interchange rejects invalid contracts", VisualArtifactInterchangeRejectsInvalidContracts),
+        ("Visual artifact interchange enforces deterministic exact topology contracts", VisualArtifactInterchangeEnforcesDeterministicExactTopologyContracts),
         ("Topology advanced edges preserve SVG PNG and diagnostic parity", TopologyAdvancedEdgesPreserveSvgPngAndDiagnosticParity),
         ("Topology curved endpoint labels follow rendered route tangents", TopologyCurvedEndpointLabelsFollowRenderedRouteTangents),
         ("Topology layout hints and presets affect prepared geometry", TopologyLayoutHintsAndPresetsAffectPreparedGeometry),

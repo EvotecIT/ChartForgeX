@@ -137,7 +137,7 @@ public static class MermaidSequenceRendering {
                 int boundary = CountMessagesBefore(document, block.Span);
                 start.CompleteBranch(sequence, boundary);
                 bool isEmpty = boundary <= start.StepIndex;
-                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, isEmpty ? start.StepIndex : boundary - 1, isEmpty);
+                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, isEmpty ? start.StepIndex : boundary - 1, isEmpty, start.Depth);
                 continue;
             }
 
@@ -271,8 +271,8 @@ public static class MermaidSequenceRendering {
             sequence.AddBranch(Kind, BranchKind, BranchText, BranchStepIndex, isEmpty ? BranchStepIndex : exclusiveEndStepIndex - 1, Depth, isEmpty);
         }
 
-        public BlockStart NextBranch(string branchKind, string branchText, int stepIndex) =>
-            new(Kind, Text, StepIndex, Depth, branchKind, branchText, stepIndex);
+        public BlockStart NextBranch(string branchKind, string branchText, int branchStepIndex) =>
+            new(Kind, Text, StepIndex, Depth, branchKind, branchText, branchStepIndex);
     }
 }
 

@@ -206,8 +206,8 @@ public sealed class SequenceArtifact {
     }
 
     /// <summary>Adds a block span.</summary>
-    public SequenceArtifact AddBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false) {
-        _blocks.Add(new SequenceArtifactBlock(kind, text ?? string.Empty, startStepIndex, endStepIndex, isEmpty));
+    public SequenceArtifact AddBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false, int depth = 0) {
+        _blocks.Add(new SequenceArtifactBlock(kind, text ?? string.Empty, startStepIndex, endStepIndex, isEmpty, depth));
         return this;
     }
 
@@ -369,12 +369,13 @@ public sealed class SequenceArtifactBlock {
     private string _text;
 
     /// <summary>Initializes a sequence block span.</summary>
-    public SequenceArtifactBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false) {
+    public SequenceArtifactBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false, int depth = 0) {
         Kind = kind;
         _text = text ?? throw new ArgumentNullException(nameof(text));
         StartStepIndex = startStepIndex;
         EndStepIndex = endStepIndex;
         IsEmpty = isEmpty;
+        Depth = depth;
     }
 
     /// <summary>Gets or sets the block kind.</summary>
@@ -391,6 +392,9 @@ public sealed class SequenceArtifactBlock {
 
     /// <summary>Gets or sets whether the block contains no message steps.</summary>
     public bool IsEmpty { get; set; }
+
+    /// <summary>Gets or sets the source nesting depth.</summary>
+    public int Depth { get; set; }
 }
 
 /// <summary>
