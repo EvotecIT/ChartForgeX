@@ -15,6 +15,8 @@ internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumNodes = 50000;
     internal const int MaximumEdges = 100000;
     internal const int MaximumAnnotations = 50000;
+    internal const int MaximumScenarios = 10000;
+    internal const int MaximumScenarioSteps = MaximumEdges;
     internal const int MaximumPortsPerNode = 256;
     internal const int MaximumDetailsPerNode = 1024;
     internal const int MaximumTargetIdsPerAnnotation = MaximumNodes;
@@ -42,6 +44,7 @@ internal static class VisualArtifactInterchangeValidation {
         Count(envelope.Groups.Count, MaximumGroups, "groups");
         Count(envelope.Nodes.Count, MaximumNodes, "nodes");
         Count(envelope.Edges.Count, MaximumEdges, "edges");
+        Count(envelope.Scenarios.Count, MaximumScenarios, "scenarios");
         Count(envelope.Annotations.Count, MaximumAnnotations, "annotations");
 
         var entityIds = new HashSet<string>(StringComparer.Ordinal);
@@ -143,6 +146,37 @@ internal static class VisualArtifactInterchangeValidation {
             OptionalText(edge.Tooltip, "edge tooltip");
             if (edge.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Order, "Edge order must not be negative.");
             Metadata(edge.Metadata, "edge metadata");
+        }
+
+        var scenarioIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var scenario in envelope.Scenarios) {
+            RequiredId(scenario.Id, "scenario id");
+            if (!scenarioIds.Add(scenario.Id)) throw new ArgumentException("Interchange scenario ids must be unique: " + scenario.Id + ".", nameof(envelope));
+            if (string.IsNullOrWhiteSpace(scenario.Label)) throw new ArgumentException("Interchange scenario labels are required.", nameof(envelope));
+            Text(scenario.Label, "scenario label");
+            OptionalText(scenario.Description, "scenario description");
+            OptionalText(scenario.Color, "scenario color");
+            if (scenario.PlaybackDelayMilliseconds < 200 || scenario.PlaybackDelayMilliseconds > 60000) {
+                throw new ArgumentOutOfRangeException(nameof(envelope), scenario.PlaybackDelayMilliseconds, "Scenario playback delays must be between 200 and 60000 milliseconds.");
+            }
+            Count(scenario.Steps.Count, MaximumScenarioSteps, "scenario steps");
+            if (scenario.Steps.Count == 0) throw new ArgumentException("Interchange scenarios must contain at least one step.", nameof(envelope));
+            Metadata(scenario.Metadata, "scenario metadata");
+            foreach (var step in scenario.Steps) {
+                RequiredId(step.TargetId, "scenario step target id");
+                Text(step.Kind, "scenario step kind");
+                bool nodeStep = string.Equals(step.Kind, "Node", StringComparison.OrdinalIgnoreCase);
+                bool edgeStep = string.Equals(step.Kind, "Edge", StringComparison.OrdinalIgnoreCase);
+                if (!nodeStep && !edgeStep) throw new ArgumentException("Scenario step kinds must be Node or Edge.", nameof(envelope));
+                if (nodeStep && !nodeIds.Contains(step.TargetId)) throw new ArgumentException("Interchange scenario references unknown node '" + step.TargetId + "'.", nameof(envelope));
+                if (edgeStep && !edgeIds.Contains(step.TargetId)) throw new ArgumentException("Interchange scenario references unknown edge '" + step.TargetId + "'.", nameof(envelope));
+                OptionalText(step.Label, "scenario step label");
+                OptionalText(step.Description, "scenario step description");
+                if (step.DurationMilliseconds.HasValue && (step.DurationMilliseconds.Value < 200 || step.DurationMilliseconds.Value > 60000)) {
+                    throw new ArgumentOutOfRangeException(nameof(envelope), step.DurationMilliseconds.Value, "Scenario step durations must be between 200 and 60000 milliseconds.");
+                }
+                Metadata(step.Metadata, "scenario step metadata");
+            }
         }
 
         var annotationIds = new HashSet<string>(StringComparer.Ordinal);

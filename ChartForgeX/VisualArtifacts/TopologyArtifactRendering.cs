@@ -26,6 +26,11 @@ public static class TopologyArtifactRendering {
         artifact.Accessibility.Description = topology.Accessibility.Description;
         artifact.Accessibility.Language = topology.Accessibility.Language;
         artifact.Accessibility.IsDecorative = topology.Accessibility.IsDecorative;
+        artifact.ModelAccessibilitySnapshot.Name = topology.Accessibility.Name;
+        artifact.ModelAccessibilitySnapshot.Description = topology.Accessibility.Description;
+        artifact.ModelAccessibilitySnapshot.Language = topology.Accessibility.Language;
+        artifact.ModelAccessibilitySnapshot.IsDecorative = topology.Accessibility.IsDecorative;
+        artifact.HasModelAccessibilitySnapshot = true;
 
         RefreshRegions(artifact, topology, null);
         return artifact;

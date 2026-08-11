@@ -68,7 +68,7 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
     public void Number(double value) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(value), value, "JSON numbers must be finite.");
         BeforeValue();
-        _buffer.Append(value.ToString("R", CultureInfo.InvariantCulture));
+        _buffer.Append(value.ToString("G17", CultureInfo.InvariantCulture));
         EnsureWithinLimit();
     }
 

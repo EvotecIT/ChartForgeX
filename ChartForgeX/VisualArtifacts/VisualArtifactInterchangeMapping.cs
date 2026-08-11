@@ -21,6 +21,7 @@ public static class VisualArtifactInterchangeMapping {
             case TopologyChart topology:
                 MapTopology(
                     envelope,
+                    artifact,
                     VisualArtifactRendering.TopologyModel(artifact, topology),
                     VisualArtifactRendering.TopologyOptions(artifact, renderOptions));
                 break;
@@ -62,9 +63,14 @@ public static class VisualArtifactInterchangeMapping {
         return envelope;
     }
 
-    private static void MapTopology(VisualArtifactInterchangeEnvelope envelope, TopologyChart topology, TopologyRenderOptions? renderOptions) {
+    private static void MapTopology(
+        VisualArtifactInterchangeEnvelope envelope,
+        VisualArtifact artifact,
+        TopologyChart topology,
+        TopologyRenderOptions? renderOptions) {
         var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
         var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
+        RefreshTopologyAccessibility(envelope, artifact, prepared);
         var ids = new InterchangeIdScope();
         foreach (var group in prepared.Groups) ids.AddGroup(group.Id);
         foreach (var node in prepared.Nodes) {
@@ -85,6 +91,14 @@ public static class VisualArtifactInterchangeMapping {
         envelope.Metadata["topology.layout"] = prepared.LayoutMode.ToString();
         envelope.Metadata["topology.nodes"] = prepared.Nodes.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["topology.edges"] = prepared.Edges.Count.ToString(CultureInfo.InvariantCulture);
+        if (prepared.LayoutMode == TopologyLayoutMode.Geographic) {
+            envelope.Metadata["topology.mapViewport.name"] = prepared.MapViewport.Name;
+            envelope.Metadata["topology.mapViewport.projection"] = "Equirectangular";
+            envelope.Metadata["topology.mapViewport.minimumLongitude"] = InvariantNumber(prepared.MapViewport.MinimumLongitude);
+            envelope.Metadata["topology.mapViewport.maximumLongitude"] = InvariantNumber(prepared.MapViewport.MaximumLongitude);
+            envelope.Metadata["topology.mapViewport.minimumLatitude"] = InvariantNumber(prepared.MapViewport.MinimumLatitude);
+            envelope.Metadata["topology.mapViewport.maximumLatitude"] = InvariantNumber(prepared.MapViewport.MaximumLatitude);
+        }
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
         foreach (var node in prepared.Nodes) {
@@ -102,6 +116,29 @@ public static class VisualArtifactInterchangeMapping {
                 index,
                 ids));
         }
+        foreach (var scenario in prepared.Scenarios) {
+            VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
+            if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
+        }
+    }
+
+    private static void RefreshTopologyAccessibility(
+        VisualArtifactInterchangeEnvelope envelope,
+        VisualArtifact artifact,
+        TopologyChart prepared) {
+        if (!artifact.HasModelAccessibilitySnapshot) return;
+        envelope.AccessibleName = string.Equals(artifact.Accessibility.Name, artifact.ModelAccessibilitySnapshot.Name, StringComparison.Ordinal)
+            ? prepared.Accessibility.Name
+            : artifact.Accessibility.Name;
+        envelope.AccessibleDescription = string.Equals(artifact.Accessibility.Description, artifact.ModelAccessibilitySnapshot.Description, StringComparison.Ordinal)
+            ? prepared.Accessibility.Description
+            : artifact.Accessibility.Description;
+        envelope.Language = string.Equals(artifact.Accessibility.Language, artifact.ModelAccessibilitySnapshot.Language, StringComparison.Ordinal)
+            ? prepared.Accessibility.Language
+            : artifact.Accessibility.Language;
+        envelope.IsDecorative = artifact.Accessibility.IsDecorative == artifact.ModelAccessibilitySnapshot.IsDecorative
+            ? prepared.Accessibility.IsDecorative
+            : artifact.Accessibility.IsDecorative;
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
@@ -431,7 +468,39 @@ public static class VisualArtifactInterchangeMapping {
         return mapped;
     }
 
-    private static string InvariantNumber(double value) => value.ToString("R", CultureInfo.InvariantCulture);
+    private static VisualArtifactInterchangeScenario? MapScenario(TopologyScenario scenario, InterchangeIdScope ids) {
+        var mapped = new VisualArtifactInterchangeScenario {
+            Id = ids.AddScenario(scenario.Id),
+            Label = scenario.Label,
+            Description = scenario.Description,
+            Color = scenario.Color,
+            PlaybackDelayMilliseconds = scenario.PlaybackDelayMilliseconds,
+            LoopPlayback = scenario.LoopPlayback,
+            AutoPlay = scenario.AutoPlay,
+            Spotlight = scenario.Spotlight
+        };
+        Copy(scenario.Metadata, mapped.Metadata);
+        foreach (var step in scenario.Steps) {
+            string targetId;
+            if (step.Kind == TopologyScenarioStepKind.Node) {
+                if (!ids.TryNode(step.Id, out targetId)) continue;
+            } else {
+                if (!ids.TryEdge(step.Id, out targetId)) continue;
+            }
+            var mappedStep = new VisualArtifactInterchangeScenarioStep {
+                TargetId = targetId,
+                Kind = step.Kind.ToString(),
+                Label = step.Label,
+                Description = step.Description,
+                DurationMilliseconds = step.DurationMilliseconds
+            };
+            Copy(step.Metadata, mappedStep.Metadata);
+            mapped.Steps.Add(mappedStep);
+        }
+        return mapped.Steps.Count == 0 ? null : mapped;
+    }
+
+    private static string InvariantNumber(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 
     private static string InvariantNumbers(IEnumerable<double> values) {
         var parts = new List<string>();
@@ -542,6 +611,8 @@ public static class VisualArtifactInterchangeMapping {
         private readonly Dictionary<string, string> _groups = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _nodes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _edges = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _scenarios = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _usedScenarios = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Dictionary<string, string>> _ports = new(StringComparer.Ordinal);
         private readonly Dictionary<string, HashSet<string>> _usedPorts = new(StringComparer.Ordinal);
 
@@ -553,6 +624,11 @@ public static class VisualArtifactInterchangeMapping {
             return allocated;
         }
         public string AddEdge(string sourceId) => Add(_edges, sourceId, "edge");
+        public string AddScenario(string sourceId) {
+            string allocated = AllocateLocal(_usedScenarios, sourceId, "scenario");
+            _scenarios.Add(sourceId, allocated);
+            return allocated;
+        }
         public string AddAnnotation(string sourceId) => Allocate(sourceId, "annotation");
         public string AddPort(string nodeSourceId, string sourceId) {
             if (!_ports.TryGetValue(nodeSourceId, out var ports)) {
@@ -569,6 +645,7 @@ public static class VisualArtifactInterchangeMapping {
         public string Edge(string sourceId) => _edges[sourceId];
         public string Port(string nodeSourceId, string sourceId) => _ports[nodeSourceId][sourceId];
         public bool TryNode(string sourceId, out string mappedId) => _nodes.TryGetValue(sourceId, out mappedId!);
+        public bool TryEdge(string sourceId, out string mappedId) => _edges.TryGetValue(sourceId, out mappedId!);
         public string? OptionalPort(string nodeSourceId, string? sourceId) =>
             !string.IsNullOrWhiteSpace(sourceId) && _ports.TryGetValue(nodeSourceId, out var ports) && ports.TryGetValue(sourceId!, out string? mappedId)
                 ? mappedId

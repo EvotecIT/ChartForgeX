@@ -13,6 +13,8 @@ internal static class VisualArtifactInterchangeJson {
         .LimitArray("groups", VisualArtifactInterchangeValidation.MaximumGroups)
         .LimitArray("nodes", VisualArtifactInterchangeValidation.MaximumNodes)
         .LimitArray("edges", VisualArtifactInterchangeValidation.MaximumEdges)
+        .LimitArray("scenarios", VisualArtifactInterchangeValidation.MaximumScenarios)
+        .LimitArray("steps", VisualArtifactInterchangeValidation.MaximumScenarioSteps)
         .LimitArray("annotations", VisualArtifactInterchangeValidation.MaximumAnnotations)
         .LimitArray("ports", VisualArtifactInterchangeValidation.MaximumPortsPerNode)
         .LimitArray("details", VisualArtifactInterchangeValidation.MaximumDetailsPerNode)
@@ -43,6 +45,7 @@ internal static class VisualArtifactInterchangeJson {
         Groups(writer, envelope.Groups);
         Nodes(writer, envelope.Nodes);
         Edges(writer, envelope.Edges);
+        Scenarios(writer, envelope.Scenarios);
         Annotations(writer, envelope.Annotations);
         writer.EndObject();
         string json = writer.ToString();
@@ -77,6 +80,7 @@ internal static class VisualArtifactInterchangeJson {
         ReadGroups(root, envelope.Groups);
         ReadNodes(root, envelope.Nodes);
         ReadEdges(root, envelope.Edges);
+        ReadScenarios(root, envelope.Scenarios);
         ReadAnnotations(root, envelope.Annotations);
         VisualArtifactInterchangeValidation.Validate(envelope);
         return envelope;
@@ -218,6 +222,38 @@ internal static class VisualArtifactInterchangeJson {
         writer.EndArray();
     }
 
+    private static void Scenarios(VisualArtifactInterchangeJsonWriter writer, IEnumerable<VisualArtifactInterchangeScenario> scenarios) {
+        writer.Property("scenarios");
+        writer.StartArray();
+        foreach (var scenario in scenarios) {
+            writer.StartObject();
+            String(writer, "id", scenario.Id);
+            String(writer, "label", scenario.Label);
+            OptionalString(writer, "description", scenario.Description);
+            OptionalString(writer, "color", scenario.Color);
+            Number(writer, "playbackDelayMilliseconds", scenario.PlaybackDelayMilliseconds);
+            Boolean(writer, "loopPlayback", scenario.LoopPlayback);
+            Boolean(writer, "autoPlay", scenario.AutoPlay);
+            Boolean(writer, "spotlight", scenario.Spotlight);
+            writer.Property("steps");
+            writer.StartArray();
+            foreach (var step in scenario.Steps) {
+                writer.StartObject();
+                String(writer, "targetId", step.TargetId);
+                String(writer, "kind", step.Kind);
+                OptionalString(writer, "label", step.Label);
+                OptionalString(writer, "description", step.Description);
+                OptionalNumber(writer, "durationMilliseconds", step.DurationMilliseconds);
+                Metadata(writer, "metadata", step.Metadata);
+                writer.EndObject();
+            }
+            writer.EndArray();
+            Metadata(writer, "metadata", scenario.Metadata);
+            writer.EndObject();
+        }
+        writer.EndArray();
+    }
+
     private static void Metadata(VisualArtifactInterchangeJsonWriter writer, string name, IDictionary<string, string> values) {
         writer.Property(name);
         writer.StartObject();
@@ -290,6 +326,36 @@ internal static class VisualArtifactInterchangeJson {
             foreach (var targetValue in OptionalArray(item, "targetIds")) annotation.TargetIds.Add(targetValue.AsString("annotation target id"));
             ReadMetadata(item, "metadata", annotation.Metadata);
             target.Add(annotation);
+        }
+    }
+
+    private static void ReadScenarios(Dictionary<string, GeoJsonValue> root, ICollection<VisualArtifactInterchangeScenario> target) {
+        foreach (var value in OptionalArray(root, "scenarios")) {
+            var item = value.AsObject("scenario");
+            var scenario = new VisualArtifactInterchangeScenario {
+                Id = RequiredString(item, "id"),
+                Label = RequiredString(item, "label"),
+                Description = OptionalString(item, "description"),
+                Color = OptionalString(item, "color"),
+                PlaybackDelayMilliseconds = OptionalInt(item, "playbackDelayMilliseconds") ?? 900,
+                LoopPlayback = OptionalBool(item, "loopPlayback") ?? false,
+                AutoPlay = OptionalBool(item, "autoPlay") ?? false,
+                Spotlight = OptionalBool(item, "spotlight") ?? false
+            };
+            foreach (var stepValue in OptionalArray(item, "steps")) {
+                var stepItem = stepValue.AsObject("scenario step");
+                var step = new VisualArtifactInterchangeScenarioStep {
+                    TargetId = RequiredString(stepItem, "targetId"),
+                    Kind = RequiredString(stepItem, "kind"),
+                    Label = OptionalString(stepItem, "label"),
+                    Description = OptionalString(stepItem, "description"),
+                    DurationMilliseconds = OptionalInt(stepItem, "durationMilliseconds")
+                };
+                ReadMetadata(stepItem, "metadata", step.Metadata);
+                scenario.Steps.Add(step);
+            }
+            ReadMetadata(item, "metadata", scenario.Metadata);
+            target.Add(scenario);
         }
     }
 

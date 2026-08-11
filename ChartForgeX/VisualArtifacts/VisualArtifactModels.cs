@@ -125,6 +125,9 @@ public sealed class VisualArtifact {
     /// <summary>Gets renderer-independent accessibility metadata for host adapters and capable exporters.</summary>
     public VisualAccessibility Accessibility { get; } = new();
 
+    internal VisualAccessibility ModelAccessibilitySnapshot { get; } = new();
+    internal bool HasModelAccessibilitySnapshot { get; set; }
+
     /// <summary>Gets host-inspectable visual regions.</summary>
     public List<VisualArtifactRegion> Regions { get; } = new();
 

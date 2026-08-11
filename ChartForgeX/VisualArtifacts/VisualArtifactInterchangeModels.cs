@@ -86,6 +86,9 @@ public sealed class VisualArtifactInterchangeEnvelope {
     /// <summary>Gets semantic edges or messages.</summary>
     public List<VisualArtifactInterchangeEdge> Edges { get; } = new();
 
+    /// <summary>Gets reusable ordered scenarios or guided paths.</summary>
+    public List<VisualArtifactInterchangeScenario> Scenarios { get; } = new();
+
     /// <summary>Gets notes, blocks, and other diagram annotations.</summary>
     public List<VisualArtifactInterchangeAnnotation> Annotations { get; } = new();
 
@@ -263,6 +266,46 @@ public sealed class VisualArtifactInterchangeEdge {
     /// <summary>Gets or sets the semantic order of the edge.</summary>
     public int Order { get; set; }
     /// <summary>Gets edge metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>Represents one reusable ordered scenario or guided path.</summary>
+public sealed class VisualArtifactInterchangeScenario {
+    /// <summary>Gets or sets the stable scenario id.</summary>
+    public string Id { get; set; } = string.Empty;
+    /// <summary>Gets or sets the visible scenario label.</summary>
+    public string Label { get; set; } = string.Empty;
+    /// <summary>Gets or sets an optional scenario description.</summary>
+    public string? Description { get; set; }
+    /// <summary>Gets or sets an optional accent color.</summary>
+    public string? Color { get; set; }
+    /// <summary>Gets or sets the default step duration in milliseconds.</summary>
+    public int PlaybackDelayMilliseconds { get; set; } = 900;
+    /// <summary>Gets or sets whether playback loops.</summary>
+    public bool LoopPlayback { get; set; }
+    /// <summary>Gets or sets whether a capable host may start playback automatically.</summary>
+    public bool AutoPlay { get; set; }
+    /// <summary>Gets or sets whether non-path members should be visually de-emphasized.</summary>
+    public bool Spotlight { get; set; }
+    /// <summary>Gets ordered scenario steps.</summary>
+    public List<VisualArtifactInterchangeScenarioStep> Steps { get; } = new();
+    /// <summary>Gets scenario metadata.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>Represents one ordered node or edge reference in a scenario.</summary>
+public sealed class VisualArtifactInterchangeScenarioStep {
+    /// <summary>Gets or sets the referenced node or edge id.</summary>
+    public string TargetId { get; set; } = string.Empty;
+    /// <summary>Gets or sets the target kind token, such as Node or Edge.</summary>
+    public string Kind { get; set; } = string.Empty;
+    /// <summary>Gets or sets an optional step label.</summary>
+    public string? Label { get; set; }
+    /// <summary>Gets or sets an optional step description.</summary>
+    public string? Description { get; set; }
+    /// <summary>Gets or sets an optional duration override in milliseconds.</summary>
+    public int? DurationMilliseconds { get; set; }
+    /// <summary>Gets step metadata.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 }
 

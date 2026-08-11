@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -32,6 +33,16 @@ internal static partial class SmokeTests {
         topology.Edges[0].Metadata["topology.routing"] = "untrusted-override";
         topology.WithEdgeStroke("replication", 2.5, 0.4, 6, 2);
         topology.WithEdgeWaypoints("replication", new ChartPoint(180, 120), new ChartPoint(220, 120));
+        var scenario = new TopologyScenario {
+            Id = "replication-review", Label = "Replication review", Description = "Inspect the primary route", Color = "#336699",
+            PlaybackDelayMilliseconds = 1200, LoopPlayback = true, Spotlight = true
+        };
+        scenario.Metadata["owner"] = "directory-team";
+        scenario.Steps.Add(new TopologyScenarioStep { Id = "dc1", Kind = TopologyScenarioStepKind.Node, Label = "Start", DurationMilliseconds = 800 });
+        var edgeStep = new TopologyScenarioStep { Id = "replication", Kind = TopologyScenarioStepKind.Edge, Description = "Follow replication" };
+        edgeStep.Metadata["phase"] = "transport";
+        scenario.Steps.Add(edgeStep);
+        topology.Scenarios.Add(scenario);
         topology.Groups[0].IconId = "microsoft-ad:site";
         topology.Groups[0].Metadata["iconId"] = "untrusted-override";
 
@@ -62,12 +73,38 @@ internal static partial class SmokeTests {
             "Topology interchange should preserve explicit endpoint marker semantics in reserved edge metadata.");
         Assert(roundTrip.Edges.Single().Metadata["topology.routing"] == "Curved" && roundTrip.Edges.Single().Metadata["topology.waypoints"] == expectedWaypoints,
             "Topology interchange should preserve explicit route mode and deterministic waypoint coordinates.");
-        Assert(roundTrip.Edges.Single().Metadata["topology.strokeWidth"] == "2.5" && roundTrip.Edges.Single().Metadata["topology.opacity"] == "0.4" &&
+        Assert(roundTrip.Edges.Single().Metadata["topology.strokeWidth"] == "2.5" && roundTrip.Edges.Single().Metadata["topology.opacity"] == "0.40000000000000002" &&
                roundTrip.Edges.Single().Metadata["topology.dashPattern"] == "6,2" && roundTrip.Edges.Single().Metadata["topology.emphasis"] == "Strong" &&
                roundTrip.Edges.Single().Metadata["topology.muted"] == bool.TrueString,
             "Topology interchange should preserve explicit stroke and presentation semantics.");
+        Assert(roundTrip.Scenarios.Single().Label == "Replication review" && roundTrip.Scenarios.Single().Steps.Select(step => step.TargetId).SequenceEqual(new[] { "dc1", "replication" }) &&
+               roundTrip.Scenarios.Single().Steps[1].Metadata["phase"] == "transport" && roundTrip.Scenarios.Single().Spotlight,
+            "Topology interchange should preserve scenario identity, playback policy, ordered remapped targets, and step metadata.");
         Assert(roundTrip.ToJson() == json, "Topology interchange JSON should be deterministic after round trip.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
+
+        var mutableAccessibilityTopology = TopologyChart.Create()
+            .WithAccessibility(accessibility => accessibility.WithTextAlternative("Initial name", "Initial description", "en"));
+        mutableAccessibilityTopology.Nodes.Add(new TopologyNode { Id = "current", Label = "Current" });
+        VisualArtifact mutableAccessibilityArtifact = mutableAccessibilityTopology.ToVisualArtifact();
+        mutableAccessibilityTopology.Accessibility.WithTextAlternative("Current name", "Current description", "pl-PL");
+        mutableAccessibilityTopology.Accessibility.IsDecorative = true;
+        VisualArtifactInterchangeEnvelope currentAccessibility = mutableAccessibilityArtifact.ToInterchangeEnvelope();
+        Assert(currentAccessibility.AccessibleName == "Current name" && currentAccessibility.AccessibleDescription == "Current description" &&
+               currentAccessibility.Language == "pl-PL" && currentAccessibility.IsDecorative,
+            "Topology interchange should refresh accessibility from the current model after wrapper creation.");
+        mutableAccessibilityArtifact.Accessibility.Name = "Artifact override";
+        Assert(mutableAccessibilityArtifact.ToInterchangeEnvelope().AccessibleName == "Artifact override",
+            "Topology interchange should retain an intentional artifact-level accessibility override.");
+
+        var geographicTopology = TopologyChart.Create();
+        geographicTopology.LayoutMode = TopologyLayoutMode.Geographic;
+        geographicTopology.MapViewport = ChartMapViewport.Europe();
+        geographicTopology.Nodes.Add(new TopologyNode { Id = "warsaw", Label = "Warsaw", Longitude = 21.0122, Latitude = 52.2297 });
+        VisualArtifactInterchangeEnvelope geographicEnvelope = geographicTopology.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(geographicEnvelope.Metadata["topology.mapViewport.name"] == "Europe" && geographicEnvelope.Metadata["topology.mapViewport.projection"] == "Equirectangular" &&
+               geographicEnvelope.Metadata["topology.mapViewport.minimumLongitude"] == "-11" && geographicEnvelope.Metadata["topology.mapViewport.maximumLatitude"] == "72",
+            "Geographic topology interchange should preserve the prepared map viewport identity, projection, and bounds.");
 
         var lazyOptions = new TopologyRenderOptions {
             Preset = TopologyViewPreset.Ungrouped,
@@ -490,6 +527,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"bad\\uD800value\"}"),
             "Interchange parsing should reject escaped unpaired UTF-16 surrogate characters.");
+        var stableNumber = new VisualArtifactInterchangeEnvelope { Id = "stable-number", Kind = VisualArtifactKind.Topology, Width = 0.84551240822557006 };
+        Assert(stableNumber.ToJson().Contains("\"width\":0.84551240822557006", StringComparison.Ordinal),
+            "Interchange JSON should use cross-target-stable 17-digit floating-point formatting.");
         var rawPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"raw-pair\",\"title\":\"\uD83D\uDE00\"}");
         var escapedPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"escaped-pair\",\"title\":\"\\uD83D\\uDE00\"}");
         Assert(rawPair.Title == escapedPair.Title && rawPair.ToUtf8Json().Length > 0,
