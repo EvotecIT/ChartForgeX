@@ -108,7 +108,9 @@ public static partial class VisualArtifactInterchangeMapping {
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
         foreach (var node in prepared.Nodes) {
-            envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids, EffectiveNodeDisplayMode(node, options)));
+            TopologyNodeDisplayMode displayMode = EffectiveNodeDisplayMode(node, options);
+            envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids, displayMode,
+                options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options)));
         }
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
@@ -394,7 +396,8 @@ public static partial class VisualArtifactInterchangeMapping {
         string id,
         string? groupId,
         InterchangeIdScope ids,
-        TopologyNodeDisplayMode displayMode) {
+        TopologyNodeDisplayMode displayMode,
+        bool showStatusBadge) {
         var mapped = new VisualArtifactInterchangeNode {
             Id = id,
             Role = VisualArtifactInterchangeNodeRole.TopologyNode,
@@ -414,7 +417,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Y = node.Y,
             Width = node.Width,
             Height = node.Height,
-            Topology = MapNodePresentation(node, displayMode)
+            Topology = MapNodePresentation(node, displayMode, showStatusBadge)
         };
         Copy(node.Metadata, mapped.Extensions);
         CopyMetrics(node.Metrics, mapped.Metrics);

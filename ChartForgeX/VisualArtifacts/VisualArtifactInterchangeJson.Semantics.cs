@@ -282,10 +282,10 @@ internal static partial class VisualArtifactInterchangeJson {
         if (item == null) return null;
         return new VisualArtifactInterchangeMapViewport {
             Name = OptionalString(item, "name"), Projection = RequiredString(item, "projection"),
-            MinimumLongitude = OptionalNumber(item, "minimumLongitude") ?? 0,
-            MaximumLongitude = OptionalNumber(item, "maximumLongitude") ?? 0,
-            MinimumLatitude = OptionalNumber(item, "minimumLatitude") ?? 0,
-            MaximumLatitude = OptionalNumber(item, "maximumLatitude") ?? 0
+            MinimumLongitude = RequiredNumber(item, "minimumLongitude"),
+            MaximumLongitude = RequiredNumber(item, "maximumLongitude"),
+            MinimumLatitude = RequiredNumber(item, "minimumLatitude"),
+            MaximumLatitude = RequiredNumber(item, "maximumLatitude")
         };
     }
 
@@ -363,7 +363,7 @@ internal static partial class VisualArtifactInterchangeJson {
             IsMuted = OptionalBool(item, "muted") ?? false, RoutingPriority = OptionalInt(item, "routingPriority") ?? 0,
             RouteLane = OptionalNumber(item, "routeLane"), LabelOffsetX = OptionalNumber(item, "labelOffsetX") ?? 0,
             LabelOffsetY = OptionalNumber(item, "labelOffsetY") ?? 0, LabelAnchorNodeId = OptionalString(item, "labelAnchorNodeId"),
-            LayoutInference = RequiredEnum<ChartForgeX.Topology.TopologyEdgeLayoutInference>(item, "layoutInference"),
+            LayoutInference = RequiredFlagsEnum<ChartForgeX.Topology.TopologyEdgeLayoutInference>(item, "layoutInference"),
             PreferredLength = OptionalNumber(item, "preferredLength"), MinimumRankSpan = OptionalInt(item, "minimumRankSpan") ?? 0
         };
         foreach (GeoJsonValue value in OptionalArray(item, "dashPattern")) result.DashPattern.Add(value.AsNumber("dash pattern value"));

@@ -316,8 +316,12 @@ internal static class VisualArtifactInterchangeValidation {
             Finite(presentation.MapViewport.MaximumLongitude, "map viewport maximum longitude");
             Finite(presentation.MapViewport.MinimumLatitude, "map viewport minimum latitude");
             Finite(presentation.MapViewport.MaximumLatitude, "map viewport maximum latitude");
-            if (presentation.MapViewport.MinimumLongitude > presentation.MapViewport.MaximumLongitude || presentation.MapViewport.MinimumLatitude > presentation.MapViewport.MaximumLatitude) {
-                throw new ArgumentException("Interchange map viewport minimum bounds must not exceed maximum bounds.", nameof(envelope));
+            if (presentation.MapViewport.MinimumLongitude < -180 || presentation.MapViewport.MaximumLongitude > 180 ||
+                presentation.MapViewport.MinimumLatitude < -90 || presentation.MapViewport.MaximumLatitude > 90) {
+                throw new ArgumentOutOfRangeException(nameof(envelope), "Interchange map viewport bounds must remain within longitude [-180, 180] and latitude [-90, 90].");
+            }
+            if (presentation.MapViewport.MinimumLongitude >= presentation.MapViewport.MaximumLongitude || presentation.MapViewport.MinimumLatitude >= presentation.MapViewport.MaximumLatitude) {
+                throw new ArgumentException("Interchange map viewport minimum bounds must be strictly less than maximum bounds.", nameof(envelope));
             }
         }
         if (presentation.Legend != null) {
@@ -433,7 +437,11 @@ internal static class VisualArtifactInterchangeValidation {
             if (edge.Topology.LabelAnchor != null) ValidatePoint(edge.Topology.LabelAnchor, "topology edge label anchor");
             OptionalText(edge.Topology.LabelAnchorNodeId, "topology edge label anchor node id");
             if (edge.Topology.LabelAnchorNodeId != null && !nodeIds.Contains(edge.Topology.LabelAnchorNodeId)) throw new ArgumentException("Topology edge label anchor references an unknown node.", nameof(envelope));
-            Defined(edge.Topology.LayoutInference, "topology edge layout inference", envelope);
+            DefinedFlags(
+                edge.Topology.LayoutInference,
+                TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort | TopologyEdgeLayoutInference.RouteLane,
+                "topology edge layout inference",
+                envelope);
             PositiveOptional(edge.Topology.PreferredLength, "topology edge preferred length");
             if (edge.Topology.MinimumRankSpan < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Topology.MinimumRankSpan, "Topology edge minimum rank span must not be negative.");
         }
@@ -517,6 +525,12 @@ internal static class VisualArtifactInterchangeValidation {
 
     private static void Defined<TEnum>(TEnum value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(nameof(envelope), value, context + " must be defined.");
+    }
+
+    private static void DefinedFlags<TEnum>(TEnum value, TEnum allowedFlags, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {
+        ulong allowed = Convert.ToUInt64(allowedFlags);
+        ulong actual = Convert.ToUInt64(value);
+        if ((actual & ~allowed) != 0) throw new ArgumentOutOfRangeException(nameof(envelope), value, context + " contains undefined flag bits.");
     }
 
     private static void OptionalDefined<TEnum>(TEnum? value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {

@@ -152,6 +152,28 @@ internal static partial class SmokeTests {
         Assert(geographicEnvelope.Nodes.Single().Topology!.Longitude == 21.0122 &&
                geographicEnvelope.Nodes.Single().Topology!.Latitude == 52.2297,
             "Geographic topology interchange should preserve product-neutral node coordinates independently from prepared pixels.");
+        string geographicJson = geographicEnvelope.ToJson();
+        Assert(VisualArtifactInterchangeEnvelope.FromJson(geographicJson).Presentation!.MapViewport!.MaximumLongitude == 35,
+            "A complete geographic viewport should round-trip through the interchange contract.");
+        AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(geographicJson.Replace(",\"maximumLongitude\":35", string.Empty, StringComparison.Ordinal)),
+            "Interchange parsing should require all four geographic viewport bounds.");
+        AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(geographicJson.Replace("\"maximumLongitude\":35", "\"maximumLongitude\":-11", StringComparison.Ordinal)),
+            "Interchange validation should reject empty geographic longitude ranges.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualArtifactInterchangeEnvelope.FromJson(geographicJson.Replace("\"maximumLongitude\":35", "\"maximumLongitude\":181", StringComparison.Ordinal)),
+            "Interchange validation should reject geographic bounds outside the longitude domain.");
+
+        var badgeOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeStatusBadges = false } };
+        Assert(!artifact.ToInterchangeEnvelope(badgeOptions).Nodes.Single(node => node.Id == "dc1").Topology!.ShowStatusBadge,
+            "Topology interchange should expose the effective status-badge state after render options are applied.");
+        topology.Nodes[1].DisplayMode = TopologyNodeDisplayMode.Dot;
+        Assert(!artifact.ToInterchangeEnvelope().Nodes.Single(node => node.Id == "dc2").Topology!.ShowStatusBadge,
+            "Topology interchange should suppress status badges for display modes that do not render them.");
+        topology.Nodes[1].DisplayMode = TopologyNodeDisplayMode.Card;
+
+        topology.Edges[0].LayoutInference = TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort | TopologyEdgeLayoutInference.RouteLane;
+        VisualArtifactInterchangeEnvelope inferredRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
+        Assert(inferredRoundTrip.Edges.Single().Topology!.LayoutInference == topology.Edges[0].LayoutInference,
+            "Topology interchange should round-trip every valid combination of edge layout-inference flags.");
 
         var metricLabelTopology = TopologyChart.Create();
         metricLabelTopology.Nodes.Add(new TopologyNode { Id = "metric-a", Label = "A" });

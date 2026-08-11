@@ -449,6 +449,8 @@ internal static partial class VisualArtifactInterchangeJson {
     private static double? OptionalNumber(Dictionary<string, GeoJsonValue> values, string name) =>
         values.TryGetValue(name, out var value) && !value.IsNull ? value.AsNumber(name) : null;
 
+    private static double RequiredNumber(Dictionary<string, GeoJsonValue> values, string name) => OptionalNumber(values, name) ?? throw new ArgumentException("Missing required interchange number: " + name + ".");
+
     private static int RequiredInt(Dictionary<string, GeoJsonValue> values, string name) => OptionalInt(values, name) ?? throw new ArgumentException("Missing required interchange integer: " + name + ".");
 
     private static int? OptionalInt(Dictionary<string, GeoJsonValue> values, string name) {
@@ -469,6 +471,24 @@ internal static partial class VisualArtifactInterchangeJson {
             if (string.Equals(declaredName, value, StringComparison.OrdinalIgnoreCase)) return (TEnum)Enum.Parse(typeof(TEnum), declaredName, ignoreCase: false);
         }
         throw new ArgumentException("Unknown " + typeof(TEnum).Name + " value: " + value + ".");
+    }
+
+    private static TEnum RequiredFlagsEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
+        string value = RequiredString(values, name);
+        ulong combined = 0;
+        foreach (string token in value.Split(',')) {
+            string candidate = token.Trim();
+            string? declaredName = null;
+            foreach (string nameToken in Enum.GetNames(typeof(TEnum))) {
+                if (string.Equals(nameToken, candidate, StringComparison.OrdinalIgnoreCase)) {
+                    declaredName = nameToken;
+                    break;
+                }
+            }
+            if (declaredName == null) throw new ArgumentException("Unknown " + typeof(TEnum).Name + " flag value: " + candidate + ".");
+            combined |= Convert.ToUInt64(Enum.Parse(typeof(TEnum), declaredName, ignoreCase: false));
+        }
+        return (TEnum)Enum.ToObject(typeof(TEnum), combined);
     }
 
     private static TEnum? OptionalEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {

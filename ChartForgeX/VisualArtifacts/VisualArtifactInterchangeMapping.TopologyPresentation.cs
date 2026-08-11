@@ -17,7 +17,7 @@ public static partial class VisualArtifactInterchangeMapping {
         };
     }
 
-    private static VisualArtifactInterchangeTopologyNode MapNodePresentation(TopologyNode node, TopologyNodeDisplayMode displayMode) {
+    private static VisualArtifactInterchangeTopologyNode MapNodePresentation(TopologyNode node, TopologyNodeDisplayMode displayMode, bool showStatusBadge) {
         return new VisualArtifactInterchangeTopologyNode {
             Kind = node.Kind,
             Status = node.Status,
@@ -25,7 +25,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Artwork = MapArtwork(node.Artwork),
             Longitude = node.Longitude,
             Latitude = node.Latitude,
-            ShowStatusBadge = node.ShowStatusBadge,
+            ShowStatusBadge = showStatusBadge,
             MaximumLabelCharacters = node.MaximumLabelCharacters
         };
     }
