@@ -211,7 +211,7 @@ public static class MermaidTopologyRendering {
         artifact.Title = topology.Title ?? string.Empty;
         artifact.Subtitle = topology.Subtitle ?? string.Empty;
         artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid." + firstMetric] = firstValue.ToString(CultureInfo.InvariantCulture);

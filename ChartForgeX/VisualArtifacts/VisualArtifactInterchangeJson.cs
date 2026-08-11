@@ -344,7 +344,11 @@ internal static class VisualArtifactInterchangeJson {
                 else if (c == '"') inString = false;
                 continue;
             }
-            if (c == '"') inString = true;
+            if (c == '"') {
+                ValidateJsonStringSurrogates(json, index + 1);
+                inString = true;
+            }
+            else if (IsJsonNumberStart(json, index)) ValidateJsonNumber(json, index);
             else if (c == '{' || c == '[') {
                 depth++;
                 if (depth > MaximumJsonDepth) throw new ArgumentException("Interchange JSON exceeds the maximum supported nesting depth.", nameof(json));
@@ -352,5 +356,79 @@ internal static class VisualArtifactInterchangeJson {
             if (depth < 0) throw new ArgumentException("Interchange JSON contains unbalanced containers.", nameof(json));
         }
         if (inString || depth != 0) throw new ArgumentException("Interchange JSON is incomplete.", nameof(json));
+    }
+
+    private static bool IsJsonNumberStart(string json, int index) {
+        char c = json[index];
+        if (c != '-' && (c < '0' || c > '9')) return false;
+        for (var previous = index - 1; previous >= 0; previous--) {
+            char prior = json[previous];
+            if (char.IsWhiteSpace(prior)) continue;
+            return prior == ':' || prior == ',' || prior == '[';
+        }
+        return true;
+    }
+
+    private static void ValidateJsonNumber(string json, int startIndex) {
+        int firstDigit = json[startIndex] == '-' ? startIndex + 1 : startIndex;
+        if (firstDigit + 1 >= json.Length || json[firstDigit] != '0') return;
+        char next = json[firstDigit + 1];
+        if (next >= '0' && next <= '9') {
+            throw new ArgumentException("Interchange JSON numbers cannot contain leading zeros.", nameof(json));
+        }
+    }
+
+    private static void ValidateJsonStringSurrogates(string json, int startIndex) {
+        for (var index = startIndex; index < json.Length; index++) {
+            char c = json[index];
+            if (c == '"') return;
+            if (c == '\\') {
+                if (index + 1 >= json.Length) return;
+                if (json[index + 1] != 'u') {
+                    index++;
+                    continue;
+                }
+                if (!TryReadUnicodeEscape(json, index, out int codeUnit)) return;
+                if (codeUnit >= 0xD800 && codeUnit <= 0xDBFF) {
+                    int lowEscape = index + 6;
+                    if (!TryReadUnicodeEscape(json, lowEscape, out int lowCodeUnit) || lowCodeUnit < 0xDC00 || lowCodeUnit > 0xDFFF) {
+                        throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(json));
+                    }
+                    index = lowEscape + 5;
+                    continue;
+                }
+                if (codeUnit >= 0xDC00 && codeUnit <= 0xDFFF) {
+                    throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(json));
+                }
+                index += 5;
+                continue;
+            }
+            if (char.IsHighSurrogate(c)) {
+                if (index + 1 >= json.Length || !char.IsLowSurrogate(json[index + 1])) {
+                    throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(json));
+                }
+                index++;
+            } else if (char.IsLowSurrogate(c)) {
+                throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(json));
+            }
+        }
+    }
+
+    private static bool TryReadUnicodeEscape(string json, int slashIndex, out int codeUnit) {
+        codeUnit = 0;
+        if (slashIndex < 0 || slashIndex + 5 >= json.Length || json[slashIndex] != '\\' || json[slashIndex + 1] != 'u') return false;
+        for (var index = slashIndex + 2; index <= slashIndex + 5; index++) {
+            int digit = HexDigit(json[index]);
+            if (digit < 0) return false;
+            codeUnit = codeUnit * 16 + digit;
+        }
+        return true;
+    }
+
+    private static int HexDigit(char value) {
+        if (value >= '0' && value <= '9') return value - '0';
+        if (value >= 'a' && value <= 'f') return value - 'a' + 10;
+        if (value >= 'A' && value <= 'F') return value - 'A' + 10;
+        return -1;
     }
 }

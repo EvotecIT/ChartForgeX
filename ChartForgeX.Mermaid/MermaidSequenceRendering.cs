@@ -88,7 +88,7 @@ public static class MermaidSequenceRendering {
         artifact.Title = sequence.Title;
         artifact.Subtitle = sequence.Subtitle;
         artifact.NaturalSize = new VisualArtifactSize(sequence.Width, sequence.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.participants"] = document.Participants.Count.ToString(CultureInfo.InvariantCulture);

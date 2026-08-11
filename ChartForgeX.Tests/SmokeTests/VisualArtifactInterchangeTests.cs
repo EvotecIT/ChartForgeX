@@ -59,6 +59,12 @@ internal static partial class SmokeTests {
         Assert(lazyEnvelope.Width == explicitEnvelope.Width && lazyEnvelope.Height == explicitEnvelope.Height && lazyEnvelope.Groups.Count == explicitEnvelope.Groups.Count,
             "Interchange topology preparation should apply pending view and layout presets exactly like rendering.");
 
+        artifact.NaturalSize = new VisualArtifactSize(1777, 1333);
+        artifact.PreserveNaturalSize = true;
+        var naturalEnvelope = artifact.ToInterchangeEnvelope();
+        Assert(naturalEnvelope.Width == 1777 && naturalEnvelope.Height == 1333,
+            $"Topology interchange should preserve an artifact's explicit natural viewport exactly like static rendering (actual {naturalEnvelope.Width}x{naturalEnvelope.Height}).");
+
         var collidingTopology = TopologyChart.Create();
         collidingTopology.LayoutMode = TopologyLayoutMode.Manual;
         collidingTopology.Groups.Add(new TopologyGroup { Id = "shared", Label = "Group", X = 0, Y = 0, Width = 400, Height = 200 });
@@ -82,10 +88,13 @@ internal static partial class SmokeTests {
             .AddConnector("submit", "approve", "Review", FlowArtifactConnectorKind.Flow);
         flow.WithStep("submit", step => step.Metadata["owner"] = "requester");
         var flowRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(flow.ToVisualArtifact().ToInterchangeJson());
+        TopologyChart preparedFlow = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
         Assert(flowRoundTrip.Groups.Single().Kind == "FlowLane", "Flow interchange should preserve lane semantics.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Kind == "Decision", "Flow interchange should preserve step kinds.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Metadata["owner"] == "requester", "Flow interchange should preserve step metadata.");
         Assert(flowRoundTrip.Edges.Single().Label == "Review", "Flow interchange should preserve connector labels.");
+        Assert(flowRoundTrip.Width == preparedFlow.Viewport.Width && flowRoundTrip.Height == preparedFlow.Viewport.Height,
+            "Flow interchange should publish the prepared topology viewport instead of its unprepared configured canvas.");
 
         var collidingFlow = FlowArtifact.Create("colliding-flow")
             .AddLane("shared", "Lane")
@@ -107,6 +116,7 @@ internal static partial class SmokeTests {
             .AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "api" }, "Validate token")
             .AddBlock(SequenceArtifactBlockKind.Opt, "MFA", 0, 0);
         sequence.Messages[0].ActivatesTarget = true;
+        sequence.Notes[0].StepIndex = -2;
         sequence.Participants[0].Metadata["sequence.order"] = "99";
         sequence.Participants[0].Metadata["sequence.implicit"] = "true";
         sequence.Messages[0].Metadata["sequence.activatesTarget"] = "false";
@@ -116,6 +126,8 @@ internal static partial class SmokeTests {
         Assert(sequenceRoundTrip.Nodes.Single(node => node.Id == "user").Metadata["sequence.implicit"] == "false", "Typed participant state should override colliding arbitrary metadata.");
         Assert(sequenceRoundTrip.Edges.Single().Metadata["sequence.activatesTarget"] == "true", "Sequence interchange should preserve activation semantics.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceNote" && annotation.TargetIds.Single() == "api"), "Sequence interchange should preserve participant notes.");
+        Assert(sequenceRoundTrip.Annotations.Single(annotation => annotation.Kind == "SequenceNote").StartIndex == 0,
+            "Sequence note rows should use the renderer's non-negative normalization.");
         Assert(sequenceRoundTrip.Annotations.Any(annotation => annotation.Kind == "SequenceBlock:Opt"), "Sequence interchange should preserve block spans.");
         Assert(sequence.ToVisualArtifact().SupportsExport(VisualArtifactExportFormat.Json), "Sequence artifacts should declare their implemented semantic JSON export.");
 
@@ -154,6 +166,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"decorative\":\"false\"}"),
             "Interchange parsing should reject string values where the schema requires booleans.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":01,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\"}"),
+            "Interchange parsing should reject JSON numbers with leading zeros.");
         string deeplyNested = new string('[', 33) + new string(']', 33);
         AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(deeplyNested), "Interchange parsing should reject excessive JSON nesting before recursive parsing.");
 
@@ -183,6 +198,28 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"line\nbreak\"}"),
             "Interchange parsing should reject unescaped control characters inside JSON strings.");
+
+        var unpairedSurrogate = new VisualArtifactInterchangeEnvelope { Id = "surrogate", Kind = VisualArtifactKind.Topology, Title = "bad\uD800value" };
+        AssertThrows<ArgumentException>(() => unpairedSurrogate.ToUtf8Json(),
+            "Interchange UTF-8 export should reject unpaired UTF-16 surrogate characters instead of replacing them.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"bad\uD800value\"}"),
+            "Interchange parsing should reject raw unpaired UTF-16 surrogate characters.");
+        AssertThrows<ArgumentException>(
+            () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"title\":\"bad\\uD800value\"}"),
+            "Interchange parsing should reject escaped unpaired UTF-16 surrogate characters.");
+        var rawPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"raw-pair\",\"title\":\"\uD83D\uDE00\"}");
+        var escapedPair = VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"escaped-pair\",\"title\":\"\\uD83D\\uDE00\"}");
+        Assert(rawPair.Title == escapedPair.Title && rawPair.ToUtf8Json().Length > 0,
+            "Interchange parsing should preserve valid raw and escaped UTF-16 surrogate pairs.");
+
+        var oversized = new VisualArtifactInterchangeEnvelope { Id = "oversized", Kind = VisualArtifactKind.Topology };
+        string largeLabel = new string('x', 65536);
+        for (var index = 0; index < 130; index++) {
+            oversized.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node-" + index, Label = largeLabel });
+        }
+        AssertThrows<InvalidOperationException>(() => oversized.ToJson(),
+            "Interchange serialization should enforce the JSON character limit while the output buffer is being written.");
 
         var unknownKind = new VisualArtifactInterchangeEnvelope { Id = "unknown-kind", Kind = (VisualArtifactKind)999 };
         AssertThrows<ArgumentOutOfRangeException>(() => unknownKind.ToJson(), "Interchange serialization should reject undefined artifact kinds.");

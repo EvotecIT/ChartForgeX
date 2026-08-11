@@ -20,6 +20,7 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
     public void StartObject() {
         BeforeValue();
         _buffer.Append('{');
+        EnsureWithinLimit();
         _contexts.Push(new Context(isObject: true));
     }
 
@@ -28,11 +29,13 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         if (context.AwaitingValue) throw new InvalidOperationException("A JSON property is missing its value.");
         _contexts.Pop();
         _buffer.Append('}');
+        EnsureWithinLimit();
     }
 
     public void StartArray() {
         BeforeValue();
         _buffer.Append('[');
+        EnsureWithinLimit();
         _contexts.Push(new Context(isObject: false));
     }
 
@@ -40,6 +43,7 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         RequireContext(isObject: false);
         _contexts.Pop();
         _buffer.Append(']');
+        EnsureWithinLimit();
     }
 
     public void Property(string name) {
@@ -49,6 +53,7 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         Separator(context);
         WriteEscapedString(name);
         _buffer.Append(':');
+        EnsureWithinLimit();
         context.AwaitingValue = true;
     }
 
@@ -56,22 +61,26 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         BeforeValue();
         if (value == null) _buffer.Append("null");
         else WriteEscapedString(value);
+        EnsureWithinLimit();
     }
 
     public void Number(double value) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(value), value, "JSON numbers must be finite.");
         BeforeValue();
         _buffer.Append(value.ToString("R", CultureInfo.InvariantCulture));
+        EnsureWithinLimit();
     }
 
     public void Number(int value) {
         BeforeValue();
         _buffer.Append(value.ToString(CultureInfo.InvariantCulture));
+        EnsureWithinLimit();
     }
 
     public void Boolean(bool value) {
         BeforeValue();
         _buffer.Append(value ? "true" : "false");
+        EnsureWithinLimit();
     }
 
     public override string ToString() {
@@ -109,6 +118,16 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
         _buffer.Append('"');
         for (var index = 0; index < value.Length; index++) {
             char c = value[index];
+            if (char.IsHighSurrogate(c)) {
+                if (index + 1 >= value.Length || !char.IsLowSurrogate(value[index + 1])) {
+                    throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(value));
+                }
+                _buffer.Append(c).Append(value[++index]);
+                continue;
+            }
+            if (char.IsLowSurrogate(c)) {
+                throw new ArgumentException("Interchange JSON strings cannot contain unpaired UTF-16 surrogate characters.", nameof(value));
+            }
             switch (c) {
                 case '"': _buffer.Append("\\\""); break;
                 case '\\': _buffer.Append("\\\\"); break;
@@ -124,5 +143,12 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
             }
         }
         _buffer.Append('"');
+        EnsureWithinLimit();
+    }
+
+    private void EnsureWithinLimit() {
+        if (_buffer.Length > VisualArtifactInterchangeValidation.MaximumJsonCharacters) {
+            throw new InvalidOperationException("The interchange JSON exceeds the maximum supported size.");
+        }
     }
 }

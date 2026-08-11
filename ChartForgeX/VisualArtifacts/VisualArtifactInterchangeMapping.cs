@@ -19,7 +19,10 @@ public static class VisualArtifactInterchangeMapping {
         var envelope = Common(artifact);
         switch (artifact.Model) {
             case TopologyChart topology:
-                MapTopology(envelope, topology, renderOptions?.Topology);
+                MapTopology(
+                    envelope,
+                    VisualArtifactRendering.TopologyModel(artifact, topology),
+                    VisualArtifactRendering.TopologyOptions(artifact, renderOptions));
                 break;
             case FlowArtifact flow:
                 MapFlow(envelope, flow);
@@ -82,11 +85,11 @@ public static class VisualArtifactInterchangeMapping {
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow) {
         envelope.Layout = flow.LayoutMode.ToString();
         envelope.Direction = flow.Direction.ToString();
-        envelope.Width = flow.Width;
-        envelope.Height = flow.Height;
         Copy(flow.Metadata, envelope.Metadata);
 
         var prepared = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
+        envelope.Width = prepared.Viewport.Width;
+        envelope.Height = prepared.Viewport.Height;
         var preparedGroups = GroupsById(prepared.Groups);
         var preparedNodes = NodesById(prepared.Nodes);
         var ids = new InterchangeIdScope();
@@ -194,13 +197,14 @@ public static class VisualArtifactInterchangeMapping {
 
         for (var index = 0; index < sequence.Notes.Count; index++) {
             var note = sequence.Notes[index];
+            int stepIndex = Math.Max(0, note.StepIndex);
             var annotation = new VisualArtifactInterchangeAnnotation {
                 Id = ids.AddAnnotation("note-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
                 Kind = "SequenceNote",
                 Text = note.Text,
                 Placement = note.Placement.ToString(),
-                StartIndex = note.StepIndex,
-                EndIndex = note.StepIndex
+                StartIndex = stepIndex,
+                EndIndex = stepIndex
             };
             foreach (string participantId in note.ParticipantIds) annotation.TargetIds.Add(ids.Node(participantId));
             envelope.Annotations.Add(annotation);

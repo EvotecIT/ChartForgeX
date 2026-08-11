@@ -199,6 +199,8 @@ flowchart LR
         Assert(artifact.SourceLanguage == VisualArtifactSourceLanguage.Mermaid, "Mermaid flowchart visual artifact should preserve source language.");
         Assert(artifact.Model is TopologyChart, "Mermaid flowchart visual artifact should carry the renderable topology model.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Svg) && artifact.SupportsExport(VisualArtifactExportFormat.Png), "Mermaid flowchart visual artifact should declare static SVG and PNG exports.");
+        Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json) && artifact.ToInterchangeEnvelope().Nodes.Count == 3,
+            "Topology-backed Mermaid artifacts should declare and produce semantic JSON interchange.");
         Assert(artifact.Metadata["mermaid.nodes"] == "3" && artifact.Metadata["mermaid.edges"] == "2", "Mermaid flowchart visual artifact should expose model counts.");
     }
 
