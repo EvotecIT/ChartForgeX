@@ -6,7 +6,11 @@ namespace ChartForgeX.VisualArtifacts;
 
 internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumJsonCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters;
-    internal const int MaximumJsonValues = MaximumJsonCharacters;
+    // Keep the materialized JSON tree bounded independently from the byte
+    // limit. This still accommodates the largest valid serialized envelopes
+    // while preventing compact unknown structures from allocating millions
+    // of GeoJsonValue instances before schema projection discards them.
+    internal const int MaximumJsonValues = 600000;
     internal const int MaximumGroups = 10000;
     internal const int MaximumNodes = 50000;
     internal const int MaximumEdges = 100000;

@@ -16,6 +16,7 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
     private readonly StringBuilder _buffer = new(4096);
     private readonly Stack<Context> _contexts = new();
     private bool _hasRoot;
+    private int _valuesWritten;
 
     public void StartObject() {
         BeforeValue();
@@ -89,6 +90,10 @@ internal sealed class VisualArtifactInterchangeJsonWriter {
     }
 
     private void BeforeValue() {
+        _valuesWritten++;
+        if (_valuesWritten > VisualArtifactInterchangeValidation.MaximumJsonValues) {
+            throw new InvalidOperationException("The interchange JSON contains too many values.");
+        }
         if (_contexts.Count == 0) {
             if (_hasRoot) throw new InvalidOperationException("The JSON document already has a root value.");
             _hasRoot = true;

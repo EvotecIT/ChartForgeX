@@ -396,6 +396,8 @@ public static class VisualArtifactInterchangeMapping {
         };
         var metadataKeys = Copy(edge.Metadata, mapped.Metadata);
         CopyWithPrefix(edge.Metrics, mapped.Metadata, "metric.", metadataKeys);
+        if (edge.SourceMarker.HasValue) mapped.Metadata["topology.sourceMarker"] = edge.SourceMarker.Value.ToString();
+        if (edge.TargetMarker.HasValue) mapped.Metadata["topology.targetMarker"] = edge.TargetMarker.Value.ToString();
         return mapped;
     }
 

@@ -21,8 +21,10 @@ internal static partial class SmokeTests {
         topology.Nodes.Add(new TopologyNode { Id = "dc2", Label = "DC 2", Kind = TopologyNodeKind.Server, GroupId = "site", X = 280, Y = 100, Width = 120, Height = 64, Href = "javascript:alert(1)" });
         topology.Edges.Add(new TopologyEdge {
             Id = "replication", SourceNodeId = "dc1", TargetNodeId = "dc2", Kind = TopologyEdgeKind.Replication,
-            Direction = VisualLinkDirection.Bidirectional, SourcePortId = "ldap", Label = "AD replication", Href = "https://example.test/link"
+            Direction = VisualLinkDirection.Bidirectional, SourcePortId = "ldap", Label = "AD replication", Href = "https://example.test/link",
+            SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Diamond
         });
+        topology.Edges[0].Metadata["topology.sourceMarker"] = "untrusted-override";
         topology.Groups[0].IconId = "microsoft-ad:site";
         topology.Groups[0].Metadata["iconId"] = "untrusted-override";
 
@@ -44,6 +46,8 @@ internal static partial class SmokeTests {
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc1").Details.Single().Value == "A", "Topology interchange should preserve typed node details.");
         Assert(roundTrip.Nodes.Single(node => node.Id == "dc2").Href == null, "Topology interchange should reject unsafe node hyperlinks.");
         Assert(roundTrip.Edges.Single().SourcePortId == "ldap", "Topology interchange should preserve named edge endpoints.");
+        Assert(roundTrip.Edges.Single().Metadata["topology.sourceMarker"] == "Circle" && roundTrip.Edges.Single().Metadata["topology.targetMarker"] == "Diamond",
+            "Topology interchange should preserve explicit endpoint marker semantics in reserved edge metadata.");
         Assert(roundTrip.ToJson() == json, "Topology interchange JSON should be deterministic after round trip.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
 
@@ -404,6 +408,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => VisualArtifactInterchangeEnvelope.FromJson("{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"nodes\":[{\"id\":\"n\",\"ports\":[" + excessivePorts + "]}]}"),
             "Interchange parsing should enforce schema collection limits while constructing the JSON value tree.");
+        string compactUnknownValues = string.Join(",", Enumerable.Repeat("null", 100000));
+        string compactUnknownArrays = string.Join(",", Enumerable.Repeat("[" + compactUnknownValues + "]", 6));
+        string compactUnknownPayload = "{\"schema\":\"chartforgex.visual-artifact\",\"version\":1,\"kind\":\"Topology\",\"sourceLanguage\":\"Native\",\"id\":\"x\",\"unknown\":[" + compactUnknownArrays + "]}";
+        Assert(compactUnknownPayload.Length < VisualArtifactInterchangeEnvelope.MaximumJsonCharacters,
+            "The unknown-structure fixture should remain below the interchange character limit.");
+        AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(compactUnknownPayload),
+            "Interchange parsing should cap total materialized JSON values before discarding unknown schema properties.");
         string deeplyNested = new string('[', 33) + new string(']', 33);
         AssertThrows<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(deeplyNested), "Interchange parsing should reject excessive JSON nesting before recursive parsing.");
 
@@ -434,6 +445,16 @@ internal static partial class SmokeTests {
         excessiveAnnotationTargets.Annotations.Add(excessiveTargets);
         AssertThrows<ArgumentOutOfRangeException>(() => excessiveAnnotationTargets.ToJson(),
             "In-memory annotation target limits should match parser limits so serialized envelopes remain parseable.");
+
+        var excessiveJsonValues = new VisualArtifactInterchangeEnvelope { Id = "json-values", Kind = VisualArtifactKind.Topology };
+        excessiveJsonValues.Nodes.Add(new VisualArtifactInterchangeNode { Id = "node", Label = "Node" });
+        for (var annotationIndex = 0; annotationIndex < 12; annotationIndex++) {
+            var annotation = new VisualArtifactInterchangeAnnotation { Id = "annotation-" + annotationIndex, Text = "Targets" };
+            for (var targetIndex = 0; targetIndex < 50000; targetIndex++) annotation.TargetIds.Add("node");
+            excessiveJsonValues.Annotations.Add(annotation);
+        }
+        AssertThrows<InvalidOperationException>(() => excessiveJsonValues.ToJson(),
+            "Interchange serialization should enforce the same total JSON value budget as parsing.");
 
         AssertThrows<ArgumentOutOfRangeException>(
             () => VisualArtifactInterchangeEnvelope.FromUtf8Json(new byte[VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes + 1]),
