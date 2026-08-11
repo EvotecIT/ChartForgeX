@@ -4,6 +4,7 @@ using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Svg;
+using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -28,6 +29,7 @@ public static class SequenceArtifactRendering {
         artifact.ExportFormats = sequence.ExportFormats;
         artifact.Metadata["sequence.participants"] = sequence.Participants.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["sequence.messages"] = sequence.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["sequence.activations"] = sequence.Activations.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["sequence.notes"] = sequence.Notes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(SequenceArtifact);
         for (var index = 0; index < layout.Participants.Count; index++) {
@@ -36,6 +38,7 @@ public static class SequenceArtifactRendering {
                 Id = participant.Participant.Id,
                 Kind = "sequence-participant",
                 Label = participant.Participant.Label,
+                Href = SafeHref(participant.Participant.Href),
                 Bounds = new ChartRect(participant.BoxX, layout.ParticipantBoxY, participant.BoxWidth, SequenceLayout.ParticipantBoxHeight)
             });
         }

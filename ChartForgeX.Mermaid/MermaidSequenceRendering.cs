@@ -28,6 +28,7 @@ public static class MermaidSequenceRendering {
         sequence.Metadata["mermaid.header"] = document.Header;
         sequence.Metadata["mermaid.participants"] = document.Participants.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.messages"] = document.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        sequence.Metadata["mermaid.activations"] = document.Activations.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.notes"] = document.Notes.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.blocks"] = document.Blocks.Count.ToString(CultureInfo.InvariantCulture);
         if (document.Autonumber != null) {
@@ -50,7 +51,10 @@ public static class MermaidSequenceRendering {
             var participant = FindParticipant(sequence, link.ParticipantId);
             if (participant == null) continue;
             if (link.Label != null) participant.Metadata["mermaid.link.label"] = link.Label;
-            if (link.Url != null) participant.Metadata["mermaid.link.url"] = link.Url;
+            if (link.Url != null) {
+                participant.Href = link.Url;
+                participant.Metadata["mermaid.link.url"] = link.Url;
+            }
             if (link.RawJson != null) participant.Metadata["mermaid.links.json"] = link.RawJson;
         }
 
@@ -63,6 +67,13 @@ public static class MermaidSequenceRendering {
             target.Metadata["mermaid.source.line"] = message.Span.Line.ToString(CultureInfo.InvariantCulture);
             target.Metadata["mermaid.source.column"] = message.Span.Column.ToString(CultureInfo.InvariantCulture);
             if (message.IsCentralConnection) target.Metadata["mermaid.centralConnection"] = "true";
+        }
+
+        foreach (var activation in document.Activations) {
+            sequence.AddActivation(activation.ParticipantId, activation.Active, CountMessagesBefore(document, activation.Span.Line));
+            var target = sequence.Activations[sequence.Activations.Count - 1];
+            target.Metadata["mermaid.source.line"] = activation.Span.Line.ToString(CultureInfo.InvariantCulture);
+            target.Metadata["mermaid.source.column"] = activation.Span.Column.ToString(CultureInfo.InvariantCulture);
         }
 
         foreach (var note in document.Notes) {
@@ -90,6 +101,7 @@ public static class MermaidSequenceRendering {
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.participants"] = document.Participants.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.messages"] = document.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["mermaid.activations"] = document.Activations.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.notes"] = document.Notes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(SequenceArtifact);
         return artifact;

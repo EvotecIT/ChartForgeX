@@ -105,8 +105,9 @@ internal static partial class SmokeTests {
         maximumIdTopology.Groups.Add(new TopologyGroup { Id = maximumId, Label = "Group", X = 0, Y = 0, Width = 400, Height = 200 });
         var maximumIdSource = new TopologyNode { Id = maximumId, Label = "Source", GroupId = maximumId, X = 30, Y = 70, Width = 100, Height = 50 };
         string longPortId = new string('p', 600);
+        string longMetadataKey = new string('m', 600);
         maximumIdSource.Ports.Add(new TopologyNodePort { Id = longPortId, Side = TopologyEdgePort.Right, Offset = 0.5 });
-        maximumIdSource.Metadata[new string('m', 600)] = "bounded";
+        maximumIdSource.Metadata[longMetadataKey] = "bounded";
         maximumIdSource.Metrics[maximumId] = "1";
         maximumIdTopology.Nodes.Add(maximumIdSource);
         maximumIdTopology.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", GroupId = maximumId, X = 220, Y = 70, Width = 100, Height = 50 });
@@ -123,6 +124,16 @@ internal static partial class SmokeTests {
         Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Ports.Single().Id.Length <= 512 &&
                maximumIdEnvelope.Edges.Single().SourcePortId == maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Ports.Single().Id,
             "Bounded topology port ids should preserve named edge references.");
+        var mappedMaximumSource = maximumIdEnvelope.Nodes.Single(node => node.Label == "Source");
+        string boundedDirectMetadataKey = mappedMaximumSource.Metadata.Single(pair => pair.Value == "bounded").Key;
+        string boundedMetricMetadataKey = mappedMaximumSource.Metadata.Single(pair => pair.Value == "1").Key;
+        maximumIdSource.Metadata[boundedDirectMetadataKey] = "direct-collision";
+        maximumIdSource.Metadata[boundedMetricMetadataKey] = "metric-collision";
+        var collidingMetadata = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single(node => node.Label == "Source").Metadata;
+        Assert(collidingMetadata[boundedDirectMetadataKey] == "direct-collision" && collidingMetadata.Values.Contains("bounded"),
+            "Bounding should preserve a valid direct metadata key that collides with an over-limit key and retain both values.");
+        Assert(collidingMetadata[boundedMetricMetadataKey] == "metric-collision" && collidingMetadata.Values.Contains("1"),
+            "Bounding should preserve a valid metadata key that collides with a prefixed metric key and retain both values.");
         maximumIdTopology.Id = maximumId;
         var maximumViewEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope(new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions { View = new TopologyView { Id = maximumId } }
@@ -216,6 +227,17 @@ internal static partial class SmokeTests {
             "Explicit artifact metadata should override same-key flow metadata while retaining model-only values.");
         Assert(flowRoundTrip.Width == preparedFlow.Viewport.Width && flowRoundTrip.Height == preparedFlow.Viewport.Height,
             "Flow interchange should publish the prepared topology viewport instead of its unprepared configured canvas.");
+
+        string longFlowMetadataKey = new string('z', 600);
+        flow.Metadata[longFlowMetadataKey] = "model-long";
+        var modelMetadataEnvelope = flowArtifact.ToInterchangeEnvelope();
+        string boundedFlowMetadataKey = modelMetadataEnvelope.Metadata.Single(pair => pair.Value == "model-long").Key;
+        flowArtifact.Metadata[boundedFlowMetadataKey] = "artifact-short";
+        flowArtifact.Metadata[longFlowMetadataKey] = "artifact-long";
+        var collidingFlowMetadata = flowArtifact.ToInterchangeEnvelope().Metadata;
+        Assert(collidingFlowMetadata[boundedFlowMetadataKey] == "artifact-short" && collidingFlowMetadata.Values.Contains("artifact-long") &&
+               !collidingFlowMetadata.Values.Contains("model-long"),
+            "Artifact metadata should keep same-key precedence while collision-aware bounding retains distinct valid and over-limit keys.");
 
         var collidingFlow = FlowArtifact.Create("colliding-flow")
             .AddLane("shared", "Lane")

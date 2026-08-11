@@ -38,6 +38,7 @@ activate Bob
 Note right of Bob: Processing
 loop Every minute
   Bob-->>-Alice: Done
+  deactivate Bob
 end
 link Bob: Dashboard @ https://example.com/bob";
 
@@ -49,10 +50,30 @@ link Bob: Dashboard @ https://example.com/bob";
         Assert(document.Messages.Count == 2, "Mermaid sequence parser should parse messages around blocks.");
         Assert(document.Messages[0].ActivatesTarget, "Mermaid sequence parser should preserve activation shortcut metadata.");
         Assert(document.Messages[1].Deactivates, "Mermaid sequence parser should preserve deactivation shortcut metadata.");
-        Assert(document.Activations.Count == 1 && document.Activations[0].ParticipantId == "Bob" && document.Activations[0].Active, "Mermaid sequence parser should parse activation declarations.");
+        Assert(document.Activations.Count == 2 && document.Activations[0].ParticipantId == "Bob" && document.Activations[0].Active && !document.Activations[1].Active,
+            "Mermaid sequence parser should parse standalone activation and deactivation declarations.");
         Assert(document.Notes.Count == 1 && document.Notes[0].Placement == "right of" && document.Notes[0].ParticipantIds[0] == "Bob", "Mermaid sequence parser should parse notes and note targets.");
         Assert(document.Blocks.Count == 2 && document.Blocks[0].Kind == MermaidSequenceBlockKind.Loop && document.Blocks[1].Kind == MermaidSequenceBlockKind.End, "Mermaid sequence parser should parse block start and end statements.");
         Assert(document.Links.Count == 1 && document.Links[0].ParticipantId == "Bob" && document.Links[0].Url == "https://example.com/bob", "Mermaid sequence parser should parse actor menu links.");
+
+        var sequence = document.ToSequenceArtifact();
+        var bob = sequence.Participants.Single(participant => participant.Id == "Bob");
+        Assert(bob.Href == "https://example.com/bob", "Mermaid sequence conversion should expose simple participant links through the reusable navigation contract.");
+        Assert(sequence.Activations.Count == 2 && sequence.Activations[0].ParticipantId == "Bob" && sequence.Activations[0].Active && sequence.Activations[0].StepIndex == 1 &&
+               !sequence.Activations[1].Active && sequence.Activations[1].StepIndex == 2,
+            "Mermaid sequence conversion should retain standalone activation state changes at their semantic steps.");
+
+        var visual = document.ToVisualArtifact();
+        Assert(visual.Metadata["mermaid.activations"] == "2" && visual.Regions.Single(region => region.Id == "Bob").Href == "https://example.com/bob",
+            "Mermaid participant links should reach the host-inspectable visual region contract.");
+        var envelope = visual.ToInterchangeEnvelope();
+        var bobNode = envelope.Nodes.Single(node => node.Label == "Bob");
+        var activation = envelope.Annotations.Single(annotation => annotation.Kind == "SequenceActivation");
+        var deactivation = envelope.Annotations.Single(annotation => annotation.Kind == "SequenceDeactivation");
+        Assert(bobNode.Href == "https://example.com/bob", "Mermaid participant links should reach the product-neutral interchange node href.");
+        Assert(envelope.Metadata["sequence.activations"] == "2" && activation.TargetIds.SequenceEqual(new[] { bobNode.Id }) && activation.StartIndex == 1 && activation.EndIndex == 1 &&
+               deactivation.TargetIds.SequenceEqual(new[] { bobNode.Id }) && deactivation.StartIndex == 2 && deactivation.EndIndex == 2,
+            "Standalone Mermaid activation changes should reach the product-neutral interchange annotation contract.");
     }
 
     private static void MermaidParserParsesSequenceAltBreakAndAdvancedLinks() {

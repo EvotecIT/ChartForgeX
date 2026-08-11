@@ -25,10 +25,10 @@ public static class VisualArtifactInterchangeMapping {
                     VisualArtifactRendering.TopologyOptions(artifact, renderOptions));
                 break;
             case FlowArtifact flow:
-                MapFlow(envelope, flow);
+                MapFlow(envelope, flow, artifact.Metadata.Keys);
                 break;
             case SequenceArtifact sequence:
-                MapSequence(envelope, sequence);
+                MapSequence(envelope, sequence, artifact.Metadata.Keys);
                 break;
         }
 
@@ -101,13 +101,13 @@ public static class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow) {
+    private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IEnumerable<string> artifactMetadataKeys) {
         envelope.Id = BoundedGeneratedId(flow.Id, "flow");
         envelope.Title = flow.Title;
         envelope.Subtitle = flow.Subtitle;
         envelope.Layout = flow.LayoutMode.ToString();
         envelope.Direction = flow.Direction.ToString();
-        CopyMissing(flow.Metadata, envelope.Metadata);
+        CopyMissing(flow.Metadata, envelope.Metadata, artifactMetadataKeys);
         envelope.Metadata["flow.lanes"] = flow.Lanes.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["flow.steps"] = flow.Steps.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["flow.connectors"] = flow.Connectors.Count.ToString(CultureInfo.InvariantCulture);
@@ -180,7 +180,7 @@ public static class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence) {
+    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IEnumerable<string> artifactMetadataKeys) {
         var ids = new InterchangeIdScope();
         var participantIds = new List<string>();
         foreach (var participant in sequence.Participants) participantIds.Add(ids.AddNodeOccurrence(participant.Id));
@@ -192,9 +192,10 @@ public static class VisualArtifactInterchangeMapping {
         VisualArtifactSize naturalSize = SequenceArtifactRendering.CalculateNaturalSize(sequence);
         envelope.Width = naturalSize.Width;
         envelope.Height = naturalSize.Height;
-        CopyMissing(sequence.Metadata, envelope.Metadata);
+        CopyMissing(sequence.Metadata, envelope.Metadata, artifactMetadataKeys);
         envelope.Metadata["sequence.participants"] = sequence.Participants.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["sequence.messages"] = sequence.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["sequence.activations"] = sequence.Activations.Count.ToString(CultureInfo.InvariantCulture);
         envelope.Metadata["sequence.notes"] = sequence.Notes.Count.ToString(CultureInfo.InvariantCulture);
 
         for (var index = 0; index < sequence.Participants.Count; index++) {
@@ -202,7 +203,8 @@ public static class VisualArtifactInterchangeMapping {
             var node = new VisualArtifactInterchangeNode {
                 Id = participantIds[index],
                 Kind = participant.Kind.ToString(),
-                Label = participant.Label
+                Label = participant.Label,
+                Href = SafeHref(participant.Href)
             };
             Copy(participant.Metadata, node.Metadata);
             node.Metadata["sequence.order"] = index.ToString(CultureInfo.InvariantCulture);
@@ -243,6 +245,22 @@ public static class VisualArtifactInterchangeMapping {
             foreach (string participantId in note.ParticipantIds) {
                 if (ids.TryNode(participantId, out string targetId)) annotation.TargetIds.Add(targetId);
             }
+            envelope.Annotations.Add(annotation);
+        }
+
+        for (var index = 0; index < sequence.Activations.Count; index++) {
+            var activation = sequence.Activations[index];
+            if (!ids.TryNode(activation.ParticipantId, out string targetId)) continue;
+            int stepIndex = Math.Max(0, activation.StepIndex);
+            var annotation = new VisualArtifactInterchangeAnnotation {
+                Id = ids.AddAnnotation("activation-" + (index + 1).ToString(CultureInfo.InvariantCulture)),
+                Kind = activation.Active ? "SequenceActivation" : "SequenceDeactivation",
+                Text = string.Empty,
+                StartIndex = stepIndex,
+                EndIndex = stepIndex
+            };
+            annotation.TargetIds.Add(targetId);
+            Copy(activation.Metadata, annotation.Metadata);
             envelope.Annotations.Add(annotation);
         }
 
@@ -394,21 +412,44 @@ public static class VisualArtifactInterchangeMapping {
     }
 
     private static void Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
-        foreach (var pair in source) target[BoundedGeneratedId(pair.Key, "metadata-key")] = pair.Value;
+        var pairs = new List<KeyValuePair<string, string>>(source);
+        foreach (var pair in pairs) {
+            if (pair.Key.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters) target[pair.Key] = pair.Value;
+        }
+        foreach (var pair in pairs) {
+            if (pair.Key.Length > VisualArtifactInterchangeValidation.MaximumIdCharacters) target[AllocateMetadataKey(target, pair.Key)] = pair.Value;
+        }
     }
 
-    private static void CopyMissing(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
-        foreach (var pair in source) {
-            string key = BoundedGeneratedId(pair.Key, "metadata-key");
-            if (!target.ContainsKey(key)) target[key] = pair.Value;
+    private static void CopyMissing(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, IEnumerable<string> reservedSourceKeys) {
+        var reserved = new HashSet<string>(reservedSourceKeys, StringComparer.Ordinal);
+        var pairs = new List<KeyValuePair<string, string>>(source);
+        foreach (var pair in pairs) {
+            if (pair.Key.Length > VisualArtifactInterchangeValidation.MaximumIdCharacters || reserved.Contains(pair.Key)) continue;
+            if (!target.ContainsKey(pair.Key)) target[pair.Key] = pair.Value;
+        }
+        foreach (var pair in pairs) {
+            if (pair.Key.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters || reserved.Contains(pair.Key)) continue;
+            target[AllocateMetadataKey(target, pair.Key)] = pair.Value;
         }
     }
 
     private static void CopyWithPrefix(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, string prefix) {
         foreach (var pair in source) {
-            string key = BoundedGeneratedId(prefix + pair.Key, "metadata-key");
-            target[key] = pair.Value;
+            string sourceKey = prefix + pair.Key;
+            if (target.ContainsKey(sourceKey)) target[sourceKey] = pair.Value;
+            else target[AllocateMetadataKey(target, sourceKey)] = pair.Value;
         }
+    }
+
+    private static string AllocateMetadataKey(IDictionary<string, string> target, string sourceKey) {
+        var ordinal = 1;
+        string candidate = BoundedGeneratedId(sourceKey, "metadata-key", ordinal);
+        while (target.ContainsKey(candidate)) {
+            ordinal++;
+            candidate = BoundedGeneratedId(sourceKey, "metadata-key", ordinal);
+        }
+        return candidate;
     }
 
     private static string BoundedGeneratedId(string value, string discriminator, int ordinal = 1) {

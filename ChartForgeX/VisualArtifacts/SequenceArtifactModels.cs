@@ -73,6 +73,7 @@ public enum SequenceArtifactBlockKind {
 public sealed class SequenceArtifact {
     private readonly List<SequenceArtifactParticipant> _participants = new();
     private readonly List<SequenceArtifactMessage> _messages = new();
+    private readonly List<SequenceArtifactActivation> _activations = new();
     private readonly List<SequenceArtifactNote> _notes = new();
     private readonly List<SequenceArtifactBlock> _blocks = new();
     private string _id = string.Empty;
@@ -116,6 +117,9 @@ public sealed class SequenceArtifact {
     /// <summary>Gets messages in chronological order.</summary>
     public IReadOnlyList<SequenceArtifactMessage> Messages => _messages;
 
+    /// <summary>Gets standalone activation changes in source order.</summary>
+    public IReadOnlyList<SequenceArtifactActivation> Activations => _activations;
+
     /// <summary>Gets notes in chronological order.</summary>
     public IReadOnlyList<SequenceArtifactNote> Notes => _notes;
 
@@ -155,6 +159,13 @@ public sealed class SequenceArtifact {
         EnsureParticipant(sourceId);
         EnsureParticipant(targetId);
         _messages.Add(new SequenceArtifactMessage(sourceId, targetId, text ?? string.Empty, lineStyle));
+        return this;
+    }
+
+    /// <summary>Adds a standalone participant activation or deactivation.</summary>
+    public SequenceArtifact AddActivation(string participantId, bool active, int stepIndex) {
+        EnsureParticipant(participantId);
+        _activations.Add(new SequenceArtifactActivation(participantId, active, stepIndex));
         return this;
     }
 
@@ -217,7 +228,36 @@ public sealed class SequenceArtifactParticipant {
     /// <summary>Gets or sets whether the participant was inferred from sequence content.</summary>
     public bool IsImplicit { get; set; }
 
+    /// <summary>Gets or sets an optional navigation target associated with the participant.</summary>
+    public string? Href { get; set; }
+
     /// <summary>Gets participant metadata for host adapters.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>
+/// Describes a standalone participant activation state change.
+/// </summary>
+public sealed class SequenceArtifactActivation {
+    private string _participantId;
+
+    /// <summary>Initializes a participant activation state change.</summary>
+    public SequenceArtifactActivation(string participantId, bool active, int stepIndex) {
+        _participantId = string.IsNullOrWhiteSpace(participantId) ? throw new ArgumentException("Participant id is required.", nameof(participantId)) : participantId;
+        Active = active;
+        StepIndex = stepIndex;
+    }
+
+    /// <summary>Gets or sets the referenced participant id.</summary>
+    public string ParticipantId { get => _participantId; set => _participantId = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Participant id is required.", nameof(value)) : value; }
+
+    /// <summary>Gets or sets whether the participant becomes active.</summary>
+    public bool Active { get; set; }
+
+    /// <summary>Gets or sets the semantic sequence step index.</summary>
+    public int StepIndex { get; set; }
+
+    /// <summary>Gets activation metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 }
 
