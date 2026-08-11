@@ -15,7 +15,7 @@ internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumDetailsPerNode = 1024;
     internal const int MaximumTargetIdsPerAnnotation = MaximumNodes;
     internal const int MaximumMetadataEntries = 256;
-    private const int MaximumIdCharacters = 512;
+    internal const int MaximumIdCharacters = 512;
     private const int MaximumTextCharacters = 65536;
 
     public static void Validate(VisualArtifactInterchangeEnvelope envelope) {

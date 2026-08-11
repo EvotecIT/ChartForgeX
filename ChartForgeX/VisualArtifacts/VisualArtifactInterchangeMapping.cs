@@ -69,10 +69,21 @@ public static class VisualArtifactInterchangeMapping {
         foreach (var group in prepared.Groups) ids.AddGroup(group.Id);
         foreach (var node in prepared.Nodes) ids.AddNode(node.Id);
         foreach (var edge in prepared.Edges) ids.AddEdge(edge.Id);
-        envelope.Layout = topology.LayoutMode.ToString();
-        envelope.Direction = topology.LayoutDirection.ToString();
+        if (!string.IsNullOrWhiteSpace(prepared.Id)) {
+            string preparedId = prepared.Id!;
+            envelope.Id = !string.IsNullOrWhiteSpace(options.View?.Id)
+                ? BoundedGeneratedId(preparedId, "topology-view")
+                : preparedId;
+        }
+        envelope.Title = prepared.Title ?? string.Empty;
+        envelope.Subtitle = prepared.Subtitle ?? string.Empty;
+        envelope.Layout = prepared.LayoutMode.ToString();
+        envelope.Direction = prepared.LayoutDirection.ToString();
         envelope.Width = prepared.Viewport.Width;
         envelope.Height = prepared.Viewport.Height;
+        envelope.Metadata["topology.layout"] = prepared.LayoutMode.ToString();
+        envelope.Metadata["topology.nodes"] = prepared.Nodes.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["topology.edges"] = prepared.Edges.Count.ToString(CultureInfo.InvariantCulture);
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
         foreach (var node in prepared.Nodes) envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId)));
@@ -83,9 +94,15 @@ public static class VisualArtifactInterchangeMapping {
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow) {
+        envelope.Id = flow.Id;
+        envelope.Title = flow.Title;
+        envelope.Subtitle = flow.Subtitle;
         envelope.Layout = flow.LayoutMode.ToString();
         envelope.Direction = flow.Direction.ToString();
         CopyMissing(flow.Metadata, envelope.Metadata);
+        envelope.Metadata["flow.lanes"] = flow.Lanes.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["flow.steps"] = flow.Steps.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["flow.connectors"] = flow.Connectors.Count.ToString(CultureInfo.InvariantCulture);
 
         var prepared = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
         envelope.Width = prepared.Viewport.Width;
@@ -157,11 +174,18 @@ public static class VisualArtifactInterchangeMapping {
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence) {
         var ids = new InterchangeIdScope();
         foreach (var participant in sequence.Participants) ids.AddNode(participant.Id);
+        envelope.Id = sequence.Id;
+        envelope.Title = sequence.Title;
+        envelope.Subtitle = sequence.Subtitle;
         envelope.Layout = "Sequence";
         envelope.Direction = "TopToBottom";
-        envelope.Width ??= sequence.Width;
-        envelope.Height ??= sequence.Height;
+        VisualArtifactSize naturalSize = SequenceArtifactRendering.CalculateNaturalSize(sequence);
+        envelope.Width = naturalSize.Width;
+        envelope.Height = naturalSize.Height;
         CopyMissing(sequence.Metadata, envelope.Metadata);
+        envelope.Metadata["sequence.participants"] = sequence.Participants.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["sequence.messages"] = sequence.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        envelope.Metadata["sequence.notes"] = sequence.Notes.Count.ToString(CultureInfo.InvariantCulture);
 
         for (var index = 0; index < sequence.Participants.Count; index++) {
             var participant = sequence.Participants[index];
@@ -335,7 +359,38 @@ public static class VisualArtifactInterchangeMapping {
     }
 
     private static void CopyWithPrefix(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target, string prefix) {
-        foreach (var pair in source) target[prefix + pair.Key] = pair.Value;
+        foreach (var pair in source) {
+            string key = BoundedGeneratedId(prefix + pair.Key, "metadata-key");
+            target[key] = pair.Value;
+        }
+    }
+
+    private static string BoundedGeneratedId(string value, string discriminator, int ordinal = 1) {
+        string suffix = ordinal <= 1 ? string.Empty : "-" + ordinal.ToString(CultureInfo.InvariantCulture);
+        if (value.Length + suffix.Length <= VisualArtifactInterchangeValidation.MaximumIdCharacters) return value + suffix;
+
+        string tail = "-" + StableHash(discriminator, value) + suffix;
+        int prefixLength = VisualArtifactInterchangeValidation.MaximumIdCharacters - tail.Length;
+        if (prefixLength > 0 && prefixLength < value.Length && char.IsHighSurrogate(value[prefixLength - 1]) && char.IsLowSurrogate(value[prefixLength])) {
+            prefixLength--;
+        }
+        return value.Substring(0, Math.Max(0, prefixLength)) + tail;
+    }
+
+    private static string StableHash(string discriminator, string value) {
+        unchecked {
+            uint hash = 2166136261;
+            AddHash(ref hash, discriminator);
+            AddHash(ref hash, value);
+            return hash.ToString("x8", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static void AddHash(ref uint hash, string value) {
+        foreach (char character in value) {
+            hash ^= character;
+            hash *= 16777619;
+        }
     }
 
     private sealed class InterchangeIdScope {
@@ -364,12 +419,12 @@ public static class VisualArtifactInterchangeMapping {
 
         private string Allocate(string sourceId, string category) {
             if (_used.Add(sourceId)) return sourceId;
-            string prefix = category + "-" + sourceId;
-            string candidate = prefix;
-            int suffix = 2;
+            string preferred = category + "-" + sourceId;
+            string candidate = BoundedGeneratedId(preferred, category);
+            int ordinal = 2;
             while (!_used.Add(candidate)) {
-                candidate = prefix + "-" + suffix.ToString(CultureInfo.InvariantCulture);
-                suffix++;
+                candidate = BoundedGeneratedId(preferred, category, ordinal);
+                ordinal++;
             }
             return candidate;
         }

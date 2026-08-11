@@ -43,6 +43,12 @@ public static class SequenceArtifactRendering {
         return artifact;
     }
 
+    internal static VisualArtifactSize CalculateNaturalSize(SequenceArtifact sequence) {
+        if (sequence == null) throw new ArgumentNullException(nameof(sequence));
+        var layout = SequenceLayout.Calculate(sequence);
+        return new VisualArtifactSize(layout.Width, layout.Height);
+    }
+
     /// <summary>
     /// Renders a sequence artifact static preview to SVG.
     /// </summary>

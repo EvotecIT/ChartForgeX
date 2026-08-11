@@ -62,13 +62,23 @@ internal static partial class SmokeTests {
         topology.Groups[0].Status = TopologyHealthStatus.Warning;
         var groupFilteredEnvelope = artifact.ToInterchangeEnvelope(new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions {
-                View = new TopologyView { IncludeNodeGroups = false, HealthStatuses = { TopologyHealthStatus.Unknown } }
+                View = new TopologyView {
+                    Id = "focused",
+                    Title = "Focused directory",
+                    Subtitle = "Healthy nodes",
+                    IncludeNodeGroups = false,
+                    HealthStatuses = { TopologyHealthStatus.Unknown }
+                }
             }
         });
+        Assert(groupFilteredEnvelope.Id == "directory-focused" && groupFilteredEnvelope.Title == "Focused directory" && groupFilteredEnvelope.Subtitle == "Healthy nodes",
+            "Interchange topology views should expose the prepared view identity used by static rendering.");
         Assert(groupFilteredEnvelope.Groups.Count == 0 && groupFilteredEnvelope.Nodes.Count == 2,
             "Interchange topology views should retain eligible nodes when their groups are omitted.");
         Assert(groupFilteredEnvelope.Nodes.All(node => node.GroupId == null),
             "Interchange topology views should detach references to groups omitted during preparation.");
+        Assert(groupFilteredEnvelope.Metadata["topology.nodes"] == "2" && groupFilteredEnvelope.Metadata["topology.edges"] == "1",
+            "Interchange topology view metadata should describe the prepared model instead of stale wrapper counts.");
 
         artifact.NaturalSize = new VisualArtifactSize(1777, 1333);
         artifact.PreserveNaturalSize = true;
@@ -88,6 +98,29 @@ internal static partial class SmokeTests {
             "Topology cross-category ids should be deterministically namespaced into the interchange envelope.");
         Assert(collidingTopologyEnvelope.Edges.Single().SourceId == collidingTopologyEnvelope.Nodes.Single(node => node.Label == "Source").Id,
             "Topology remapping should update edge references to the namespaced node id.");
+
+        string maximumId = new string('x', 512);
+        var maximumIdTopology = TopologyChart.Create();
+        maximumIdTopology.LayoutMode = TopologyLayoutMode.Manual;
+        maximumIdTopology.Groups.Add(new TopologyGroup { Id = maximumId, Label = "Group", X = 0, Y = 0, Width = 400, Height = 200 });
+        var maximumIdSource = new TopologyNode { Id = maximumId, Label = "Source", GroupId = maximumId, X = 30, Y = 70, Width = 100, Height = 50 };
+        maximumIdSource.Metrics[maximumId] = "1";
+        maximumIdTopology.Nodes.Add(maximumIdSource);
+        maximumIdTopology.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", GroupId = maximumId, X = 220, Y = 70, Width = 100, Height = 50 });
+        maximumIdTopology.Edges.Add(new TopologyEdge { Id = "edge", SourceNodeId = maximumId, TargetNodeId = "target" });
+        var maximumIdEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Id.Length <= 512,
+            "Generated collision ids should remain within the interchange schema limit.");
+        Assert(maximumIdEnvelope.Edges.Single().SourceId == maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Id && maximumIdEnvelope.ToJson().Length > 0,
+            "Bounded collision ids should preserve references and produce a valid interchange payload.");
+        Assert(maximumIdEnvelope.Nodes.Single(node => node.Label == "Source").Metadata.Single(pair => pair.Value == "1").Key.Length <= 512,
+            "Generated prefixed metadata keys should remain within the interchange schema limit.");
+        maximumIdTopology.Id = maximumId;
+        var maximumViewEnvelope = maximumIdTopology.ToVisualArtifact().ToInterchangeEnvelope(new VisualArtifactRenderOptions {
+            Topology = new TopologyRenderOptions { View = new TopologyView { Id = maximumId } }
+        });
+        Assert(maximumViewEnvelope.Id.Length <= 512 && maximumViewEnvelope.ToJson().Length > 0,
+            "Generated topology view ids should remain within the interchange schema limit.");
 
         var highCardinality = new VisualArtifactInterchangeEnvelope { Id = "high-cardinality", Kind = VisualArtifactKind.Topology };
         highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "source", Label = "Source" });
@@ -117,12 +150,20 @@ internal static partial class SmokeTests {
         flow.Metadata["model-only"] = "preserved";
         var flowArtifact = flow.ToVisualArtifact();
         flowArtifact.Metadata["scope"] = "artifact";
+        flow.Id = "approval-current";
+        flow.Title = "Current approval";
+        flow.AddStep("archive", "Archive", FlowArtifactStepKind.Process, "requester");
+        flow.AddConnector("approve", "archive", "Store", FlowArtifactConnectorKind.Flow);
         var flowRoundTrip = VisualArtifactInterchangeEnvelope.FromJson(flowArtifact.ToInterchangeJson());
+        Assert(flowRoundTrip.Id == "approval-current" && flowRoundTrip.Title == "Current approval",
+            "Flow interchange should project current model identity after wrapper creation.");
+        Assert(flowRoundTrip.Metadata["flow.steps"] == "3" && flowRoundTrip.Metadata["flow.connectors"] == "2",
+            "Flow interchange should recompute typed model counts after wrapper creation.");
         TopologyChart preparedFlow = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
         Assert(flowRoundTrip.Groups.Single().Kind == "FlowLane", "Flow interchange should preserve lane semantics.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Kind == "Decision", "Flow interchange should preserve step kinds.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Metadata["owner"] == "requester", "Flow interchange should preserve step metadata.");
-        Assert(flowRoundTrip.Edges.Single().Label == "Review", "Flow interchange should preserve connector labels.");
+        Assert(flowRoundTrip.Edges.Single(edge => edge.Label == "Review").SourceId == "submit", "Flow interchange should preserve connector labels.");
         Assert(flowRoundTrip.Metadata["scope"] == "artifact" && flowRoundTrip.Metadata["model-only"] == "preserved",
             "Explicit artifact metadata should override same-key flow metadata while retaining model-only values.");
         Assert(flowRoundTrip.Width == preparedFlow.Viewport.Width && flowRoundTrip.Height == preparedFlow.Viewport.Height,
@@ -180,15 +221,24 @@ internal static partial class SmokeTests {
         Assert(collidingSequenceEnvelope.Annotations.Single().StartIndex == 0 && collidingSequenceEnvelope.Annotations.Single().EndIndex == 0,
             "Sequence block spans should use the renderer's non-negative ordered normalization.");
 
-        var wideSequence = SequenceArtifact.Create("wide").WithSize(320, 240);
-        for (var index = 0; index < 10; index++) wideSequence.AddParticipant("participant-" + index, "Participant " + index);
+        var wideSequence = SequenceArtifact.Create("wide").WithTitle("Initial").WithSize(320, 240).AddParticipant("participant-0", "Participant 0");
         var wideArtifact = wideSequence.ToVisualArtifact();
+        VisualArtifactSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
+        wideSequence.Id = "wide-current";
+        wideSequence.Title = "Current";
+        for (var index = 1; index < 10; index++) wideSequence.AddParticipant("participant-" + index, "Participant " + index);
+        wideSequence.AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "participant-0" }, "Late note");
+        wideSequence.Notes[0].StepIndex = 20;
         var wideEnvelope = wideArtifact.ToInterchangeEnvelope();
-        VisualArtifactSize naturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
-        Assert(wideArtifact.NaturalSize.HasValue && naturalSize.Width > wideSequence.Width,
-            "The sequence fixture should calculate a wider natural layout than its configured minimum.");
-        Assert(wideEnvelope.Width == naturalSize.Width && wideEnvelope.Height == naturalSize.Height,
-            "Sequence interchange should preserve calculated natural dimensions instead of overwriting them with configured minimums.");
+        VisualArtifactSize currentNaturalSize = wideSequence.ToVisualArtifact().NaturalSize.GetValueOrDefault();
+        Assert(currentNaturalSize.Width > initialNaturalSize.Width && currentNaturalSize.Height > initialNaturalSize.Height,
+            "The sequence fixture should grow in both dimensions after wrapper creation.");
+        Assert(wideEnvelope.Id == "wide-current" && wideEnvelope.Title == "Current",
+            "Sequence interchange should project current model identity after wrapper creation.");
+        Assert(wideEnvelope.Width == currentNaturalSize.Width && wideEnvelope.Height == currentNaturalSize.Height,
+            "Sequence interchange should recalculate natural dimensions from the current model.");
+        Assert(wideEnvelope.Metadata["sequence.participants"] == "10" && wideEnvelope.Metadata["sequence.notes"] == "1",
+            "Sequence interchange should recompute typed model counts after wrapper creation.");
     }
 
     private static void VisualArtifactInterchangeRejectsInvalidContracts() {
