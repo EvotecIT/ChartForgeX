@@ -122,6 +122,34 @@ internal static partial class SmokeTests {
         Assert(maximumViewEnvelope.Id.Length <= 512 && maximumViewEnvelope.ToJson().Length > 0,
             "Generated topology view ids should remain within the interchange schema limit.");
 
+        var mergedMetadataTopology = TopologyChart.Create();
+        mergedMetadataTopology.LayoutMode = TopologyLayoutMode.Manual;
+        var mergedMetadataSource = new TopologyNode { Id = "metadata-source", Label = "Source", X = 20, Y = 20, Width = 100, Height = 50 };
+        var mergedMetadataTarget = new TopologyNode { Id = "metadata-target", Label = "Target", X = 180, Y = 20, Width = 100, Height = 50 };
+        var mergedMetadataEdge = new TopologyEdge { Id = "metadata-edge", SourceNodeId = "metadata-source", TargetNodeId = "metadata-target" };
+        for (var index = 0; index < 256; index++) {
+            mergedMetadataSource.Metadata["node-" + index] = index.ToString();
+            mergedMetadataEdge.Metadata["edge-" + index] = index.ToString();
+        }
+        mergedMetadataSource.Metrics["latency"] = "42ms";
+        mergedMetadataEdge.Metrics["throughput"] = "8Gbps";
+        mergedMetadataTopology.Nodes.Add(mergedMetadataSource);
+        mergedMetadataTopology.Nodes.Add(mergedMetadataTarget);
+        mergedMetadataTopology.Edges.Add(mergedMetadataEdge);
+        var mergedMetadataEnvelope = mergedMetadataTopology.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(mergedMetadataEnvelope.Nodes.Single(node => node.Id == "metadata-source").Metadata["metric.latency"] == "42ms" &&
+               mergedMetadataEnvelope.Edges.Single().Metadata["metric.throughput"] == "8Gbps" && mergedMetadataEnvelope.ToJson().Length > 0,
+            "Interchange projection should retain independently valid topology metadata and metric collections in the merged metadata bag.");
+
+        var invalidGroupTopology = TopologyChart.Create();
+        invalidGroupTopology.Nodes.Add(new TopologyNode { Id = "orphan", Label = "Orphan", GroupId = "missing" });
+        AssertThrows<TopologyValidationException>(() => invalidGroupTopology.ToVisualArtifact().ToInterchangeEnvelope(new VisualArtifactRenderOptions {
+                Topology = new TopologyRenderOptions {
+                    View = new TopologyView { IncludeNodeGroups = false, HealthStatuses = { TopologyHealthStatus.Unknown } }
+                }
+            }),
+            "Interchange projection should reject source topology references that a prepared view could otherwise erase.");
+
         var highCardinality = new VisualArtifactInterchangeEnvelope { Id = "high-cardinality", Kind = VisualArtifactKind.Topology };
         highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "source", Label = "Source" });
         highCardinality.Nodes.Add(new VisualArtifactInterchangeNode { Id = "target", Label = "Target" });
@@ -181,6 +209,19 @@ internal static partial class SmokeTests {
         Assert(collidingFlowEnvelope.Edges.Single().SourceId == collidingFlowEnvelope.Nodes.Single(node => node.Label == "Step").Id,
             "Remapped edges should retain their node references.");
 
+        string longSourceId = new string('s', 300);
+        string longTargetId = new string('t', 300);
+        var longIdFlowEnvelope = FlowArtifact.Create("long-flow")
+            .AddStep(longSourceId, "Long source")
+            .AddStep(longTargetId, "Long target")
+            .AddConnector(longSourceId, longTargetId)
+            .ToVisualArtifact()
+            .ToInterchangeEnvelope();
+        Assert(longIdFlowEnvelope.Nodes.All(node => node.Id.Length <= 512) && longIdFlowEnvelope.Edges.Single().Id.Length <= 512 &&
+               longIdFlowEnvelope.Edges.Single().SourceId == longIdFlowEnvelope.Nodes.Single(node => node.Label == "Long source").Id &&
+               longIdFlowEnvelope.ToJson().Length > 0,
+            "Every allocated source or generated entity id should remain within the interchange schema limit.");
+
         var sequence = SequenceArtifact.Create("authentication")
             .WithTitle("Authentication")
             .AddParticipant("user", "User", SequenceArtifactParticipantKind.Actor)
@@ -220,6 +261,19 @@ internal static partial class SmokeTests {
         Assert(collidingSequenceEnvelope.Edges.Single().SourceId == "message-1", "Sequence message references should retain participant ids.");
         Assert(collidingSequenceEnvelope.Annotations.Single().StartIndex == 0 && collidingSequenceEnvelope.Annotations.Single().EndIndex == 0,
             "Sequence block spans should use the renderer's non-negative ordered normalization.");
+
+        var danglingSequence = SequenceArtifact.Create("dangling-sequence")
+            .AddParticipant("caller", "Caller")
+            .AddParticipant("service", "Service")
+            .AddMessage("caller", "service", "Call")
+            .AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "service" }, "Observe");
+        danglingSequence.Participants[0].Id = "renamed-caller";
+        danglingSequence.Notes[0].ParticipantIds[0] = "removed-service";
+        var danglingSequenceEnvelope = danglingSequence.ToVisualArtifact().ToInterchangeEnvelope();
+        Assert(danglingSequenceEnvelope.Edges.Count == 0 && danglingSequenceEnvelope.Metadata["sequence.messages"] == "1",
+            "Sequence interchange should omit messages whose mutated endpoints no longer resolve, matching static layout behavior.");
+        Assert(danglingSequenceEnvelope.Annotations.Single().TargetIds.Count == 0 && danglingSequenceEnvelope.ToJson().Length > 0,
+            "Sequence interchange should retain notes while omitting participant targets that no longer resolve, matching static note placement behavior.");
 
         var wideSequence = SequenceArtifact.Create("wide").WithTitle("Initial").WithSize(320, 240).AddParticipant("participant-0", "Participant 0");
         var wideArtifact = wideSequence.ToVisualArtifact();

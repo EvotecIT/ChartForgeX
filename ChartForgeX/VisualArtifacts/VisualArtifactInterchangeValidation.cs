@@ -14,7 +14,9 @@ internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumPortsPerNode = 256;
     internal const int MaximumDetailsPerNode = 1024;
     internal const int MaximumTargetIdsPerAnnotation = MaximumNodes;
-    internal const int MaximumMetadataEntries = 256;
+    // Two independently bounded source metadata collections can share the
+    // projected bag, with a small reserve for typed interchange fields.
+    internal const int MaximumMetadataEntries = 520;
     internal const int MaximumIdCharacters = 512;
     private const int MaximumTextCharacters = 65536;
 

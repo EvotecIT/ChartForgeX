@@ -64,6 +64,8 @@ public static class VisualArtifactInterchangeMapping {
 
     private static void MapTopology(VisualArtifactInterchangeEnvelope envelope, TopologyChart topology, TopologyRenderOptions? renderOptions) {
         var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
+        var sourceValidation = new TopologyChartValidator().Validate(topology);
+        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
         var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
         var ids = new InterchangeIdScope();
         foreach (var group in prepared.Groups) ids.AddGroup(group.Id);
@@ -202,12 +204,13 @@ public static class VisualArtifactInterchangeMapping {
 
         for (var index = 0; index < sequence.Messages.Count; index++) {
             var message = sequence.Messages[index];
+            if (!ids.TryNode(message.SourceId, out string sourceId) || !ids.TryNode(message.TargetId, out string targetId)) continue;
             string edgeId = ids.AddEdge("message-" + (index + 1).ToString(CultureInfo.InvariantCulture));
             var edge = new VisualArtifactInterchangeEdge {
                 Id = edgeId,
                 Kind = "SequenceMessage",
-                SourceId = ids.Node(message.SourceId),
-                TargetId = ids.Node(message.TargetId),
+                SourceId = sourceId,
+                TargetId = targetId,
                 Label = message.Text,
                 Direction = "Forward",
                 LineStyle = message.LineStyle.ToString(),
@@ -218,7 +221,6 @@ public static class VisualArtifactInterchangeMapping {
             edge.Metadata["sequence.deactivates"] = message.Deactivates ? "true" : "false";
             envelope.Edges.Add(edge);
         }
-
         for (var index = 0; index < sequence.Notes.Count; index++) {
             var note = sequence.Notes[index];
             int stepIndex = Math.Max(0, note.StepIndex);
@@ -230,7 +232,9 @@ public static class VisualArtifactInterchangeMapping {
                 StartIndex = stepIndex,
                 EndIndex = stepIndex
             };
-            foreach (string participantId in note.ParticipantIds) annotation.TargetIds.Add(ids.Node(participantId));
+            foreach (string participantId in note.ParticipantIds) {
+                if (ids.TryNode(participantId, out string targetId)) annotation.TargetIds.Add(targetId);
+            }
             envelope.Annotations.Add(annotation);
         }
 
@@ -406,6 +410,7 @@ public static class VisualArtifactInterchangeMapping {
         public string Group(string sourceId) => _groups[sourceId];
         public string Node(string sourceId) => _nodes[sourceId];
         public string Edge(string sourceId) => _edges[sourceId];
+        public bool TryNode(string sourceId, out string mappedId) => _nodes.TryGetValue(sourceId, out mappedId!);
         public string? OptionalGroup(string? sourceId) =>
             !string.IsNullOrWhiteSpace(sourceId) && _groups.TryGetValue(sourceId!, out string? mappedId)
                 ? mappedId
@@ -418,7 +423,8 @@ public static class VisualArtifactInterchangeMapping {
         }
 
         private string Allocate(string sourceId, string category) {
-            if (_used.Add(sourceId)) return sourceId;
+            string sourceCandidate = BoundedGeneratedId(sourceId, category);
+            if (_used.Add(sourceCandidate)) return sourceCandidate;
             string preferred = category + "-" + sourceId;
             string candidate = BoundedGeneratedId(preferred, category);
             int ordinal = 2;
