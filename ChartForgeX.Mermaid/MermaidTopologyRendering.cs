@@ -206,12 +206,9 @@ public static class MermaidTopologyRendering {
     }
 
     private static VisualArtifact ToArtifact(MermaidDocument document, TopologyChart topology, string firstMetric, int firstValue, string secondMetric, int secondValue) {
-        var artifact = VisualArtifact.Create(topology.Id ?? "mermaid-topology", VisualArtifactKind.Mermaid, topology);
-        artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
-        artifact.Title = topology.Title ?? string.Empty;
-        artifact.Subtitle = topology.Subtitle ?? string.Empty;
-        artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
+        var artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
+        artifact.Kind = VisualArtifactKind.Mermaid;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid." + firstMetric] = firstValue.ToString(CultureInfo.InvariantCulture);

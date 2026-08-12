@@ -52,7 +52,7 @@ public enum VisualArtifactSourceLanguage {
 }
 
 /// <summary>
-/// Declares static export formats an artifact can produce without host-specific UI.
+/// Declares static export and host-projection formats supported by an artifact.
 /// </summary>
 [Flags]
 public enum VisualArtifactExportFormat {
@@ -70,7 +70,7 @@ public enum VisualArtifactExportFormat {
     Json = 16,
     /// <summary>Markdown export.</summary>
     Markdown = 32,
-    /// <summary>Document or spreadsheet handoff export.</summary>
+    /// <summary>Document, spreadsheet, presentation, PDF, or diagram host projection.</summary>
     Office = 64
 }
 
@@ -124,6 +124,9 @@ public sealed class VisualArtifact {
 
     /// <summary>Gets renderer-independent accessibility metadata for host adapters and capable exporters.</summary>
     public VisualAccessibility Accessibility { get; } = new();
+
+    internal VisualAccessibility ModelAccessibilitySnapshot { get; } = new();
+    internal bool HasModelAccessibilitySnapshot { get; set; }
 
     /// <summary>Gets host-inspectable visual regions.</summary>
     public List<VisualArtifactRegion> Regions { get; } = new();

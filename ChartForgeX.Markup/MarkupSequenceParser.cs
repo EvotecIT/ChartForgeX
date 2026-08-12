@@ -262,7 +262,8 @@ public sealed class MarkupSequenceParser {
 
     private static void AddMessage(SequenceArtifact sequence, string source, string target, string text, Dictionary<string, string> attributes) {
         var lineStyle = attributes.TryGetValue("style", out var style) || attributes.TryGetValue("line", out style) ? ParseLineStyle(style) : SequenceArtifactMessageLineStyle.Solid;
-        sequence.AddMessage(source, target, text, lineStyle);
+        var kind = attributes.TryGetValue("kind", out var kindToken) ? ParseMessageKind(kindToken) : SequenceArtifactMessageKind.Call;
+        sequence.AddMessage(source, target, text, lineStyle, kind);
         var message = sequence.Messages[sequence.Messages.Count - 1];
         if (attributes.TryGetValue("activate", out var activate)) message.ActivatesTarget = VisualMarkupFenceOptions.ParseBoolean(activate, "activate");
         if (attributes.TryGetValue("deactivate", out var deactivate)) message.Deactivates = VisualMarkupFenceOptions.ParseBoolean(deactivate, "deactivate");
@@ -325,6 +326,20 @@ public sealed class MarkupSequenceParser {
             case "dashed": return SequenceArtifactMessageLineStyle.Dashed;
             default:
                 throw new ArgumentException("Unknown sequence message line style '" + value + "'.");
+        }
+    }
+
+    private static SequenceArtifactMessageKind ParseMessageKind(string value) {
+        switch (NormalizeKey(value)) {
+            case "call": return SequenceArtifactMessageKind.Call;
+            case "return":
+            case "response": return SequenceArtifactMessageKind.Return;
+            case "async":
+            case "asynchronous": return SequenceArtifactMessageKind.Async;
+            case "event":
+            case "notification": return SequenceArtifactMessageKind.Event;
+            default:
+                throw new ArgumentException("Unknown sequence message kind '" + value + "'.");
         }
     }
 

@@ -64,9 +64,28 @@ Topology and flow are intentionally separate artifact contracts. Native topology
 
 ## OfficeIMO Handoff
 
-ChartForgeX does not reference an Office or PDF runtime. Its responsibility ends at a deterministic `VisualArtifact` with SVG/PNG renderers, natural pixel size, accessibility text, metadata, and inspectable regions. The optional `OfficeIMO.ChartForgeX` adapter converts that envelope into OfficeIMO drawing primitives, preferring editable/vector SVG and reporting any fallback or unsupported SVG feature. OfficeIMO then owns Word, Excel, PowerPoint, and PDF placement, page sizing, native document watermarks, PDF composition, and document security. This keeps CFX dependency-free while allowing every supported chart and diagram family to travel through one document pipeline.
+ChartForgeX does not reference an Office, PDF, or Visio runtime. Its responsibility ends at a deterministic `VisualArtifact`, static SVG/PNG output, and a versioned semantic interchange envelope. `ToInterchangeEnvelope()`, `ToInterchangeJson()`, and `ToInterchangeUtf8Json()` preserve product-neutral groups, nodes, ports, details, edges, notes, presentation, accessibility, and prepared coordinates for topology, flow, and sequence artifacts. The UTF-8 JSON form is the boundary for processes and separately loaded PowerShell modules; it avoids CLR type-identity coupling without turning SVG into a data model.
 
-For an extension or specialized CFX surface that only exposes SVG, pass its deterministic SVG markup through `OfficeVisualSource`. That portable route also avoids CLR type identity coupling between separately loaded PowerShell modules or processes.
+The envelope is a typed semantic snapshot, not a property-bag protocol. `Kind` retains the broad artifact or authoring identity, while `Family` selects the reusable `Topology`, `Flow`, or `Sequence` semantic root. A Mermaid-authored sequence therefore remains `Kind = Mermaid` and `Family = Sequence`, so adapters can reuse sequence behavior without parsing source metadata. Entity `Role` values select stable group, node, edge, and annotation roles, and their typed family records carry the exact enums and values needed by adapters. Ports and scenario targets use typed topology enums; sequence message purpose (`Call`, `Return`, `Async`, or `Event`) is independent from solid or dashed presentation. Source adapters do not infer `Return` or `Event` merely from a dashed or cross-ended Mermaid operator; the exact operator remains in caller-owned source metadata when the grammar does not prove domain intent. Metrics use typed name/value records instead of a reserved key prefix. Free-form entity `Kind` remains available for labels and future custom kinds. `Extensions` contains caller-owned data only; ChartForgeX does not reserve extension keys for built-in behavior.
+
+Use the in-memory envelope when ChartForgeX and the consumer share a compatible assembly identity. Use JSON at process, package, plugin, or PowerShell assembly-load-context boundaries:
+
+```csharp
+VisualArtifact artifact = topology.ToVisualArtifact();
+
+VisualArtifactInterchangeEnvelope snapshot = artifact.ToInterchangeEnvelope();
+snapshot.Validate();
+
+byte[] portableSnapshot = snapshot.ToUtf8Json();
+VisualArtifactInterchangeEnvelope restored =
+    VisualArtifactInterchangeEnvelope.FromUtf8Json(portableSnapshot);
+```
+
+Schema version 1 permits additive JSON members. Readers ignore members they do not use, but reject unknown schema versions, undefined typed enum values, duplicate properties, invalid references, unsafe links or artwork, and payloads outside the public limits. A breaking semantic change requires a new schema version. Consumers should retain the original envelope or JSON beside a lossy native projection so a future adapter can use semantics the current target cannot represent.
+
+The optional `OfficeIMO.ChartForgeX` adapter uses the two outputs for different jobs. SVG remains the flat vector or raster fallback for Word, Excel, PowerPoint, PDF, and unsupported diagram families. The semantic envelope projects supported topology, flow, and sequence artifacts into native editable OfficeIMO.Visio shapes, containers, connectors, Shape Data, hyperlinks, sequence messages, activations, notes, and fragments. Its conversion report exposes stable diagnostic codes for every normalization or semantic loss instead of requiring callers to parse warning text. OfficeIMO owns document placement, native Visio authoring, page sizing, document watermarks, PDF composition, and security.
+
+For an extension or specialized CFX surface that only exposes SVG, pass its deterministic SVG markup through `OfficeVisualSource`. That route supports flat Office placement; native editable Visio requires a supported semantic interchange envelope.
 
 ```csharp
 using ChartForgeX.Markup;

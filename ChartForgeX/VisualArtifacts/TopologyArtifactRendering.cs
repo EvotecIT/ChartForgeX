@@ -17,7 +17,7 @@ public static class TopologyArtifactRendering {
         artifact.Title = topology.Title ?? string.Empty;
         artifact.Subtitle = topology.Subtitle ?? string.Empty;
         artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json | VisualArtifactExportFormat.Office;
         artifact.Metadata["render.model"] = nameof(TopologyChart);
         artifact.Metadata["topology.layout"] = topology.LayoutMode.ToString();
         artifact.Metadata["topology.nodes"] = topology.Nodes.Count.ToString(CultureInfo.InvariantCulture);
@@ -26,6 +26,11 @@ public static class TopologyArtifactRendering {
         artifact.Accessibility.Description = topology.Accessibility.Description;
         artifact.Accessibility.Language = topology.Accessibility.Language;
         artifact.Accessibility.IsDecorative = topology.Accessibility.IsDecorative;
+        artifact.ModelAccessibilitySnapshot.Name = topology.Accessibility.Name;
+        artifact.ModelAccessibilitySnapshot.Description = topology.Accessibility.Description;
+        artifact.ModelAccessibilitySnapshot.Language = topology.Accessibility.Language;
+        artifact.ModelAccessibilitySnapshot.IsDecorative = topology.Accessibility.IsDecorative;
+        artifact.HasModelAccessibilitySnapshot = true;
 
         RefreshRegions(artifact, topology, null);
         return artifact;

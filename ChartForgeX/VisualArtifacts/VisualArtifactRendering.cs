@@ -149,7 +149,7 @@ public static class VisualArtifactRendering {
         };
     }
 
-    private static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions) {
+    internal static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions) {
         var topologyOptions = renderOptions?.Topology?.CloneForRendering();
         if (!artifact.PreserveNaturalSize) return topologyOptions;
         if (topologyOptions == null) return new TopologyRenderOptions { FitContentToViewport = true };
@@ -178,7 +178,7 @@ public static class VisualArtifactRendering {
         return model.ToPng(options);
     }
 
-    private static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {
+    internal static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {
         if (!artifact.PreserveNaturalSize) return topology;
         if (!artifact.NaturalSize.HasValue) {
             throw new InvalidOperationException("Artifact '" + artifact.Id + "' cannot preserve its natural size because no natural size is defined.");

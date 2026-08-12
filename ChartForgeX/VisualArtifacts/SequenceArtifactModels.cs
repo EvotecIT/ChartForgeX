@@ -36,6 +36,20 @@ public enum SequenceArtifactMessageLineStyle {
 }
 
 /// <summary>
+/// Defines the semantic purpose of a sequence message independently from its line style.
+/// </summary>
+public enum SequenceArtifactMessageKind {
+    /// <summary>A synchronous request or call.</summary>
+    Call,
+    /// <summary>A return or response.</summary>
+    Return,
+    /// <summary>An asynchronous request or signal.</summary>
+    Async,
+    /// <summary>A notification or event.</summary>
+    Event
+}
+
+/// <summary>
 /// Defines note placement for sequence artifacts.
 /// </summary>
 public enum SequenceArtifactNotePlacement {
@@ -73,15 +87,17 @@ public enum SequenceArtifactBlockKind {
 public sealed class SequenceArtifact {
     private readonly List<SequenceArtifactParticipant> _participants = new();
     private readonly List<SequenceArtifactMessage> _messages = new();
+    private readonly List<SequenceArtifactActivation> _activations = new();
     private readonly List<SequenceArtifactNote> _notes = new();
     private readonly List<SequenceArtifactBlock> _blocks = new();
+    private readonly List<SequenceArtifactBranch> _branches = new();
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
     private double _width = 960;
     private double _height = 560;
     private double _padding = 32;
-    private VisualArtifactExportFormat _exportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
+    private VisualArtifactExportFormat _exportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json | VisualArtifactExportFormat.Office;
 
     /// <summary>Gets or sets a stable sequence artifact id.</summary>
     public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -116,11 +132,17 @@ public sealed class SequenceArtifact {
     /// <summary>Gets messages in chronological order.</summary>
     public IReadOnlyList<SequenceArtifactMessage> Messages => _messages;
 
+    /// <summary>Gets standalone activation changes in source order.</summary>
+    public IReadOnlyList<SequenceArtifactActivation> Activations => _activations;
+
     /// <summary>Gets notes in chronological order.</summary>
     public IReadOnlyList<SequenceArtifactNote> Notes => _notes;
 
     /// <summary>Gets block spans.</summary>
     public IReadOnlyList<SequenceArtifactBlock> Blocks => _blocks;
+
+    /// <summary>Gets branch spans within alternative, parallel, and critical blocks.</summary>
+    public IReadOnlyList<SequenceArtifactBranch> Branches => _branches;
 
     /// <summary>Gets artifact metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
@@ -151,10 +173,22 @@ public sealed class SequenceArtifact {
     }
 
     /// <summary>Adds a message.</summary>
-    public SequenceArtifact AddMessage(string sourceId, string targetId, string? text = null, SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid) {
+    public SequenceArtifact AddMessage(
+        string sourceId,
+        string targetId,
+        string? text = null,
+        SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid,
+        SequenceArtifactMessageKind kind = SequenceArtifactMessageKind.Call) {
         EnsureParticipant(sourceId);
         EnsureParticipant(targetId);
-        _messages.Add(new SequenceArtifactMessage(sourceId, targetId, text ?? string.Empty, lineStyle));
+        _messages.Add(new SequenceArtifactMessage(sourceId, targetId, text ?? string.Empty, lineStyle, kind));
+        return this;
+    }
+
+    /// <summary>Adds a standalone participant activation or deactivation.</summary>
+    public SequenceArtifact AddActivation(string participantId, bool active, int stepIndex) {
+        EnsureParticipant(participantId);
+        _activations.Add(new SequenceArtifactActivation(participantId, active, stepIndex));
         return this;
     }
 
@@ -172,8 +206,14 @@ public sealed class SequenceArtifact {
     }
 
     /// <summary>Adds a block span.</summary>
-    public SequenceArtifact AddBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex) {
-        _blocks.Add(new SequenceArtifactBlock(kind, text ?? string.Empty, startStepIndex, endStepIndex));
+    public SequenceArtifact AddBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false, int depth = 0) {
+        _blocks.Add(new SequenceArtifactBlock(kind, text ?? string.Empty, startStepIndex, endStepIndex, isEmpty, depth));
+        return this;
+    }
+
+    /// <summary>Adds a branch span within a sequence block.</summary>
+    public SequenceArtifact AddBranch(SequenceArtifactBlockKind parentKind, string kind, string text, int startStepIndex, int endStepIndex, int depth = 0, bool isEmpty = false) {
+        _branches.Add(new SequenceArtifactBranch(parentKind, kind, text ?? string.Empty, startStepIndex, endStepIndex, depth, isEmpty));
         return this;
     }
 
@@ -217,7 +257,36 @@ public sealed class SequenceArtifactParticipant {
     /// <summary>Gets or sets whether the participant was inferred from sequence content.</summary>
     public bool IsImplicit { get; set; }
 
+    /// <summary>Gets or sets an optional navigation target associated with the participant.</summary>
+    public string? Href { get; set; }
+
     /// <summary>Gets participant metadata for host adapters.</summary>
+    public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>
+/// Describes a standalone participant activation state change.
+/// </summary>
+public sealed class SequenceArtifactActivation {
+    private string _participantId;
+
+    /// <summary>Initializes a participant activation state change.</summary>
+    public SequenceArtifactActivation(string participantId, bool active, int stepIndex) {
+        _participantId = string.IsNullOrWhiteSpace(participantId) ? throw new ArgumentException("Participant id is required.", nameof(participantId)) : participantId;
+        Active = active;
+        StepIndex = stepIndex;
+    }
+
+    /// <summary>Gets or sets the referenced participant id.</summary>
+    public string ParticipantId { get => _participantId; set => _participantId = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Participant id is required.", nameof(value)) : value; }
+
+    /// <summary>Gets or sets whether the participant becomes active.</summary>
+    public bool Active { get; set; }
+
+    /// <summary>Gets or sets the semantic sequence step index.</summary>
+    public int StepIndex { get; set; }
+
+    /// <summary>Gets activation metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 }
 
@@ -230,11 +299,17 @@ public sealed class SequenceArtifactMessage {
     private string _text;
 
     /// <summary>Initializes a sequence message.</summary>
-    public SequenceArtifactMessage(string sourceId, string targetId, string text, SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid) {
+    public SequenceArtifactMessage(
+        string sourceId,
+        string targetId,
+        string text,
+        SequenceArtifactMessageLineStyle lineStyle = SequenceArtifactMessageLineStyle.Solid,
+        SequenceArtifactMessageKind kind = SequenceArtifactMessageKind.Call) {
         _sourceId = string.IsNullOrWhiteSpace(sourceId) ? throw new ArgumentException("Source participant id is required.", nameof(sourceId)) : sourceId;
         _targetId = string.IsNullOrWhiteSpace(targetId) ? throw new ArgumentException("Target participant id is required.", nameof(targetId)) : targetId;
         _text = text ?? throw new ArgumentNullException(nameof(text));
         LineStyle = lineStyle;
+        Kind = kind;
     }
 
     /// <summary>Gets or sets the source participant id.</summary>
@@ -248,6 +323,9 @@ public sealed class SequenceArtifactMessage {
 
     /// <summary>Gets or sets the message line style.</summary>
     public SequenceArtifactMessageLineStyle LineStyle { get; set; }
+
+    /// <summary>Gets or sets the semantic message kind.</summary>
+    public SequenceArtifactMessageKind Kind { get; set; }
 
     /// <summary>Gets or sets whether the message activates the target.</summary>
     public bool ActivatesTarget { get; set; }
@@ -291,11 +369,13 @@ public sealed class SequenceArtifactBlock {
     private string _text;
 
     /// <summary>Initializes a sequence block span.</summary>
-    public SequenceArtifactBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex) {
+    public SequenceArtifactBlock(SequenceArtifactBlockKind kind, string text, int startStepIndex, int endStepIndex, bool isEmpty = false, int depth = 0) {
         Kind = kind;
         _text = text ?? throw new ArgumentNullException(nameof(text));
         StartStepIndex = startStepIndex;
         EndStepIndex = endStepIndex;
+        IsEmpty = isEmpty;
+        Depth = depth;
     }
 
     /// <summary>Gets or sets the block kind.</summary>
@@ -309,4 +389,50 @@ public sealed class SequenceArtifactBlock {
 
     /// <summary>Gets or sets the last covered step index.</summary>
     public int EndStepIndex { get; set; }
+
+    /// <summary>Gets or sets whether the block contains no message steps.</summary>
+    public bool IsEmpty { get; set; }
+
+    /// <summary>Gets or sets the source nesting depth.</summary>
+    public int Depth { get; set; }
+}
+
+/// <summary>
+/// Describes one branch span within an alternative, parallel, or critical sequence block.
+/// </summary>
+public sealed class SequenceArtifactBranch {
+    private string _kind;
+    private string _text;
+
+    /// <summary>Initializes a sequence branch span.</summary>
+    public SequenceArtifactBranch(SequenceArtifactBlockKind parentKind, string kind, string text, int startStepIndex, int endStepIndex, int depth = 0, bool isEmpty = false) {
+        ParentKind = parentKind;
+        _kind = string.IsNullOrWhiteSpace(kind) ? throw new ArgumentException("Branch kind is required.", nameof(kind)) : kind;
+        _text = text ?? throw new ArgumentNullException(nameof(text));
+        StartStepIndex = startStepIndex;
+        EndStepIndex = endStepIndex;
+        Depth = depth;
+        IsEmpty = isEmpty;
+    }
+
+    /// <summary>Gets or sets the enclosing block kind.</summary>
+    public SequenceArtifactBlockKind ParentKind { get; set; }
+
+    /// <summary>Gets or sets the product-neutral branch kind token.</summary>
+    public string Kind { get => _kind; set => _kind = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Branch kind is required.", nameof(value)) : value; }
+
+    /// <summary>Gets or sets the branch label.</summary>
+    public string Text { get => _text; set => _text = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the first covered step index.</summary>
+    public int StartStepIndex { get; set; }
+
+    /// <summary>Gets or sets the last covered step index.</summary>
+    public int EndStepIndex { get; set; }
+
+    /// <summary>Gets or sets whether the branch contains no message steps.</summary>
+    public bool IsEmpty { get; set; }
+
+    /// <summary>Gets or sets the source nesting depth.</summary>
+    public int Depth { get; set; }
 }

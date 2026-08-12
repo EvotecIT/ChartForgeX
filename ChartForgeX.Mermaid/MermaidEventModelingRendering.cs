@@ -60,12 +60,9 @@ public static class MermaidEventModelingRendering {
     public static VisualArtifact ToVisualArtifact(this MermaidEventModelingDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         var topology = document.ToTopologyChart(options);
-        var artifact = VisualArtifact.Create(topology.Id ?? "mermaid-event-modeling", VisualArtifactKind.Mermaid, topology);
-        artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
-        artifact.Title = topology.Title ?? string.Empty;
-        artifact.Subtitle = topology.Subtitle ?? string.Empty;
-        artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
+        var artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
+        artifact.Kind = VisualArtifactKind.Mermaid;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.frames"] = document.Frames.Count.ToString(CultureInfo.InvariantCulture);

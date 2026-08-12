@@ -356,6 +356,7 @@ node api ""API"" kind:service status:healthy
         Assert(result.Artifacts[0].Id == "service-map", "Topology visual artifact ids should come from topology markup when declared.");
         Assert(result.Artifacts[0].Title == "Service Map", "Topology visual artifact titles should come from topology markup.");
         Assert(result.Artifacts[0].SupportsExport(VisualArtifactExportFormat.Svg), "Topology visual artifacts should declare SVG export support.");
+        Assert(result.Artifacts[0].SupportsExport(VisualArtifactExportFormat.Json), "Topology visual artifacts parsed from markup fences should declare semantic JSON export support.");
         Assert(result.Artifacts[0].Model is TopologyChart, "Topology visual artifacts should keep a typed TopologyChart model.");
         Assert(result.Artifacts[0].Metadata["sourceLine"] == "3", "Topology visual artifacts should preserve source fence metadata.");
     }

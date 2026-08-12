@@ -4,6 +4,7 @@ using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Svg;
+using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -28,6 +29,7 @@ public static class SequenceArtifactRendering {
         artifact.ExportFormats = sequence.ExportFormats;
         artifact.Metadata["sequence.participants"] = sequence.Participants.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["sequence.messages"] = sequence.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["sequence.activations"] = sequence.Activations.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["sequence.notes"] = sequence.Notes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(SequenceArtifact);
         for (var index = 0; index < layout.Participants.Count; index++) {
@@ -36,11 +38,18 @@ public static class SequenceArtifactRendering {
                 Id = participant.Participant.Id,
                 Kind = "sequence-participant",
                 Label = participant.Participant.Label,
+                Href = SafeHref(participant.Participant.Href),
                 Bounds = new ChartRect(participant.BoxX, layout.ParticipantBoxY, participant.BoxWidth, SequenceLayout.ParticipantBoxHeight)
             });
         }
 
         return artifact;
+    }
+
+    internal static VisualArtifactSize CalculateNaturalSize(SequenceArtifact sequence) {
+        if (sequence == null) throw new ArgumentNullException(nameof(sequence));
+        var layout = SequenceLayout.Calculate(sequence);
+        return new VisualArtifactSize(layout.Width, layout.Height);
     }
 
     /// <summary>
@@ -203,7 +212,10 @@ public static class SequenceArtifactRendering {
             var laneTop = layout.ParticipantBoxY + ParticipantBoxHeight;
             var stepGap = 58.0;
             var totalSteps = Math.Max(sequence.Messages.Count, sequence.Notes.Count);
-            for (var index = 0; index < sequence.Notes.Count; index++) totalSteps = Math.Max(totalSteps, sequence.Notes[index].StepIndex + 1);
+            for (var index = 0; index < sequence.Notes.Count; index++) totalSteps = Math.Max(totalSteps, Math.Max(0, sequence.Notes[index].StepIndex) + 1);
+            for (var index = 0; index < sequence.Activations.Count; index++) totalSteps = Math.Max(totalSteps, Math.Max(0, sequence.Activations[index].StepIndex) + 1);
+            for (var index = 0; index < sequence.Blocks.Count; index++) totalSteps = Math.Max(totalSteps, Math.Max(0, Math.Max(sequence.Blocks[index].StartStepIndex, sequence.Blocks[index].EndStepIndex)) + 1);
+            for (var index = 0; index < sequence.Branches.Count; index++) totalSteps = Math.Max(totalSteps, Math.Max(0, Math.Max(sequence.Branches[index].StartStepIndex, sequence.Branches[index].EndStepIndex)) + 1);
             layout.Height = Math.Max(sequence.Height, laneTop + 52 + Math.Max(1, totalSteps) * stepGap + sequence.Padding);
             var laneAreaLeft = sequence.Padding + 24;
             var laneAreaRight = layout.Width - sequence.Padding - 24;
@@ -222,7 +234,7 @@ public static class SequenceArtifactRendering {
                 layout.Messages.Add(new MessageLayout(message, source.CenterX, target.CenterX, laneTop + 44 + index * stepGap));
             }
 
-            for (var index = 0; index < sequence.Notes.Count; index++) layout.Notes.Add(layout.PlaceNote(sequence.Notes[index], laneTop + 24 + sequence.Notes[index].StepIndex * stepGap));
+            for (var index = 0; index < sequence.Notes.Count; index++) layout.Notes.Add(layout.PlaceNote(sequence.Notes[index], laneTop + 24 + Math.Max(0, sequence.Notes[index].StepIndex) * stepGap));
             for (var index = 0; index < sequence.Blocks.Count; index++) {
                 var block = sequence.Blocks[index];
                 var start = laneTop + 18 + Math.Max(0, block.StartStepIndex) * stepGap;

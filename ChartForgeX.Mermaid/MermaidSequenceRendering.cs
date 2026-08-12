@@ -28,6 +28,7 @@ public static class MermaidSequenceRendering {
         sequence.Metadata["mermaid.header"] = document.Header;
         sequence.Metadata["mermaid.participants"] = document.Participants.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.messages"] = document.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        sequence.Metadata["mermaid.activations"] = document.Activations.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.notes"] = document.Notes.Count.ToString(CultureInfo.InvariantCulture);
         sequence.Metadata["mermaid.blocks"] = document.Blocks.Count.ToString(CultureInfo.InvariantCulture);
         if (document.Autonumber != null) {
@@ -50,12 +51,15 @@ public static class MermaidSequenceRendering {
             var participant = FindParticipant(sequence, link.ParticipantId);
             if (participant == null) continue;
             if (link.Label != null) participant.Metadata["mermaid.link.label"] = link.Label;
-            if (link.Url != null) participant.Metadata["mermaid.link.url"] = link.Url;
+            if (link.Url != null) {
+                participant.Href = link.Url;
+                participant.Metadata["mermaid.link.url"] = link.Url;
+            }
             if (link.RawJson != null) participant.Metadata["mermaid.links.json"] = link.RawJson;
         }
 
         foreach (var message in document.Messages) {
-            sequence.AddMessage(message.SourceId, message.TargetId, message.Text, ToLineStyle(message.Operator));
+            sequence.AddMessage(message.SourceId, message.TargetId, message.Text, ToLineStyle(message.Operator), ToMessageKind(message.Operator));
             var target = sequence.Messages[sequence.Messages.Count - 1];
             target.ActivatesTarget = message.ActivatesTarget;
             target.Deactivates = message.Deactivates;
@@ -65,9 +69,16 @@ public static class MermaidSequenceRendering {
             if (message.IsCentralConnection) target.Metadata["mermaid.centralConnection"] = "true";
         }
 
+        foreach (var activation in document.Activations) {
+            sequence.AddActivation(activation.ParticipantId, activation.Active, CountMessagesBefore(document, activation.Span));
+            var target = sequence.Activations[sequence.Activations.Count - 1];
+            target.Metadata["mermaid.source.line"] = activation.Span.Line.ToString(CultureInfo.InvariantCulture);
+            target.Metadata["mermaid.source.column"] = activation.Span.Column.ToString(CultureInfo.InvariantCulture);
+        }
+
         foreach (var note in document.Notes) {
             sequence.AddNote(ToNotePlacement(note.Placement), note.ParticipantIds, note.Text ?? string.Empty);
-            sequence.Notes[sequence.Notes.Count - 1].StepIndex = CountMessagesBefore(document, note.Span.Line);
+            sequence.Notes[sequence.Notes.Count - 1].StepIndex = CountMessagesBefore(document, note.Span);
         }
 
         AddBlocks(document, sequence);
@@ -83,16 +94,14 @@ public static class MermaidSequenceRendering {
     public static VisualArtifact ToVisualArtifact(this MermaidSequenceDocument document, MermaidSequenceRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         var sequence = document.ToSequenceArtifact(options);
-        var artifact = VisualArtifact.Create(sequence.Id, VisualArtifactKind.Mermaid, sequence);
-        artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
-        artifact.Title = sequence.Title;
-        artifact.Subtitle = sequence.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(sequence.Width, sequence.Height);
-        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html;
+        var artifact = sequence.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
+        artifact.Kind = VisualArtifactKind.Mermaid;
+        artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.participants"] = document.Participants.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.messages"] = document.Messages.Count.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["mermaid.activations"] = document.Activations.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.notes"] = document.Notes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(SequenceArtifact);
         return artifact;
@@ -113,24 +122,35 @@ public static class MermaidSequenceRendering {
     private static void AddBlocks(MermaidSequenceDocument document, SequenceArtifact sequence) {
         var stack = new Stack<BlockStart>();
         foreach (var block in document.Blocks) {
-            if (IsBranch(block.Kind)) continue;
+            if (IsBranch(block.Kind)) {
+                if (stack.Count == 0 || !stack.Peek().IsBranching) continue;
+                var current = stack.Pop();
+                int boundary = CountMessagesBefore(document, block.Span);
+                current.CompleteBranch(sequence, boundary);
+                current = current.NextBranch(block.Kind.ToString(), block.Text ?? string.Empty, boundary);
+                stack.Push(current);
+                continue;
+            }
             if (block.Kind == MermaidSequenceBlockKind.End) {
                 if (stack.Count == 0) continue;
                 var start = stack.Pop();
-                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, CountMessagesBefore(document, block.Span.Line));
+                int boundary = CountMessagesBefore(document, block.Span);
+                start.CompleteBranch(sequence, boundary);
+                bool isEmpty = boundary <= start.StepIndex;
+                sequence.AddBlock(start.Kind, start.Text, start.StepIndex, isEmpty ? start.StepIndex : boundary - 1, isEmpty, start.Depth);
                 continue;
             }
 
             var kind = ToBlockKind(block.Kind);
             if (!kind.HasValue) continue;
-            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span.Line)));
+            stack.Push(new BlockStart(kind.Value, block.Text ?? string.Empty, CountMessagesBefore(document, block.Span), block.Depth));
         }
     }
 
-    private static int CountMessagesBefore(MermaidSequenceDocument document, int line) {
+    private static int CountMessagesBefore(MermaidSequenceDocument document, MermaidSourceSpan span) {
         var count = 0;
         foreach (var message in document.Messages) {
-            if (message.Span.Line < line) count++;
+            if (message.Span.Line < span.Line || message.Span.Line == span.Line && message.Span.Column < span.Column) count++;
         }
 
         return count;
@@ -172,6 +192,15 @@ public static class MermaidSequenceRendering {
     private static SequenceArtifactMessageLineStyle ToLineStyle(string messageOperator) =>
         messageOperator.StartsWith("--", StringComparison.Ordinal) ? SequenceArtifactMessageLineStyle.Dashed : SequenceArtifactMessageLineStyle.Solid;
 
+    private static SequenceArtifactMessageKind ToMessageKind(string messageOperator) {
+        if (messageOperator.IndexOf(')') >= 0) return SequenceArtifactMessageKind.Async;
+        // Mermaid dashes and terminal glyphs describe how a message is drawn,
+        // not whether its domain purpose is a return or an event. Preserve the
+        // exact operator in metadata and use the neutral call semantic unless
+        // Mermaid explicitly supplies its asynchronous open-arrow form.
+        return SequenceArtifactMessageKind.Call;
+    }
+
     private static SequenceArtifactNotePlacement ToNotePlacement(string placement) {
         switch (placement.Trim().ToLowerInvariant()) {
             case "left of":
@@ -207,15 +236,43 @@ public static class MermaidSequenceRendering {
     }
 
     private readonly struct BlockStart {
-        public BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex) {
+        public BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth) {
             Kind = kind;
             Text = text;
             StepIndex = stepIndex;
+            Depth = depth;
+            BranchKind = "Primary";
+            BranchText = text;
+            BranchStepIndex = stepIndex;
+        }
+
+        private BlockStart(SequenceArtifactBlockKind kind, string text, int stepIndex, int depth, string branchKind, string branchText, int branchStepIndex) {
+            Kind = kind;
+            Text = text;
+            StepIndex = stepIndex;
+            Depth = depth;
+            BranchKind = branchKind;
+            BranchText = branchText;
+            BranchStepIndex = branchStepIndex;
         }
 
         public SequenceArtifactBlockKind Kind { get; }
         public string Text { get; }
         public int StepIndex { get; }
+        public int Depth { get; }
+        public string BranchKind { get; }
+        public string BranchText { get; }
+        public int BranchStepIndex { get; }
+        public bool IsBranching => Kind == SequenceArtifactBlockKind.Alt || Kind == SequenceArtifactBlockKind.Par || Kind == SequenceArtifactBlockKind.Critical;
+
+        public void CompleteBranch(SequenceArtifact sequence, int exclusiveEndStepIndex) {
+            if (!IsBranching) return;
+            bool isEmpty = exclusiveEndStepIndex <= BranchStepIndex;
+            sequence.AddBranch(Kind, BranchKind, BranchText, BranchStepIndex, isEmpty ? BranchStepIndex : exclusiveEndStepIndex - 1, Depth, isEmpty);
+        }
+
+        public BlockStart NextBranch(string branchKind, string branchText, int branchStepIndex) =>
+            new(Kind, Text, StepIndex, Depth, branchKind, branchText, branchStepIndex);
     }
 }
 
