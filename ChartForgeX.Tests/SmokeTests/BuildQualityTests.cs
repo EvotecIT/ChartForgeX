@@ -91,6 +91,19 @@ internal static partial class SmokeTests {
         Assert(script.Contains("visual-geographic-topology-map", StringComparison.Ordinal), "Build script should verify topology-native geographic visual coverage.");
         Assert(script.Contains("data-route-curve=\"geographic\"", StringComparison.Ordinal), "Build script should verify geographic topology route-arc metadata.");
 
+        var directoryBuildPropsPath = Path.Combine(FindRepositoryRoot(), "Directory.Build.props");
+        var directoryBuildProps = File.ReadAllText(directoryBuildPropsPath);
+        var productVersionText = XDocument.Load(directoryBuildPropsPath)
+            .Descendants("ChartForgeXProductVersion")
+            .Select(static element => element.Value.Trim())
+            .FirstOrDefault();
+        Assert(
+            Version.TryParse(productVersionText, out var productVersion)
+            && productVersion.Build >= 0
+            && productVersion.Revision < 0,
+            "Directory.Build.props should own a three-part ChartForgeX product version.");
+        var expectedReleaseLane = productVersion!.Major + "." + productVersion.Minor + ".X";
+
         using var projectBuild = JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Build", "project.build.json")));
         var projectBuildRoot = projectBuild.RootElement;
         Assert(projectBuildRoot.GetProperty("ExpectedVersionMapAsInclude").GetBoolean(), "Build-Project manifest should treat ExpectedVersionMap as the tracked package include list.");
@@ -103,22 +116,11 @@ internal static partial class SmokeTests {
             "ChartForgeX.Mermaid",
             "ChartForgeX.Markup.Mermaid"
         }) {
-            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), "1.4.X", StringComparison.Ordinal), "Build-Project manifest should track the 1.4 package project: " + packageProject + ".");
+            Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), expectedReleaseLane, StringComparison.Ordinal), "Build-Project manifest should track the current product release lane for package project: " + packageProject + ".");
             var projectFile = File.ReadAllText(Path.Combine(FindRepositoryRoot(), packageProject, packageProject + ".csproj"));
             Assert(projectFile.Contains("<Version>$(ChartForgeXProductVersion)</Version>", StringComparison.Ordinal), "Package project should consume the shared ChartForgeX product version: " + packageProject + ".");
         }
 
-        var directoryBuildPropsPath = Path.Combine(FindRepositoryRoot(), "Directory.Build.props");
-        var directoryBuildProps = File.ReadAllText(directoryBuildPropsPath);
-        var productVersionText = XDocument.Load(directoryBuildPropsPath)
-            .Descendants("ChartForgeXProductVersion")
-            .Select(static element => element.Value.Trim())
-            .FirstOrDefault();
-        Assert(
-            Version.TryParse(productVersionText, out var productVersion)
-            && productVersion.Build >= 0
-            && productVersion.Revision < 0,
-            "Directory.Build.props should own a three-part ChartForgeX product version.");
         Assert(directoryBuildProps.Contains("<AssemblyVersion>$(ChartForgeXProductVersion).0</AssemblyVersion>", StringComparison.Ordinal), "ChartForgeX assembly identity should be isolated from host build version properties.");
 
         var qualityWorkflow = File.ReadAllText(Path.Combine(FindRepositoryRoot(), ".github", "workflows", "quality.yml"));
