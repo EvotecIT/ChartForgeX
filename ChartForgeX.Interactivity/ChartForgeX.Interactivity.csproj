@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Host-neutral interaction contracts for ChartForgeX chart renderers and adapters.</Description>
-    <PackageReleaseNotes>Aligns host-neutral interaction contracts and package compatibility with the ChartForgeX 1.4.0 hierarchy layout runtime.</PackageReleaseNotes>
+    <PackageReleaseNotes>Aligns host-neutral interaction contracts and package compatibility with the ChartForgeX 1.6.0 typed semantic interchange runtime.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
