@@ -465,17 +465,19 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "IncludeSymbols", "true"), "Package should include symbol package generation.");
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
         var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
-        Assert(ContainsMetadataConcepts(releaseNotes, "hierarchy", "per-subtree", "compact"), "Package release notes should summarize the current hierarchy-layout contract.");
-        Assert(ContainsMetadataConcepts(releaseNotes, "SVG", "HTML", "PNG"), "Package release notes should name the renderer surfaces covered by the current release.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "typed", "versioned", "interchange"), "Package release notes should summarize the typed semantic interchange contract.");
+        Assert(ContainsMetadataConcepts(releaseNotes, "topology", "flow", "sequence"), "Package release notes should name the semantic families covered by the current release.");
         foreach (var dependentProject in new[] {
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Markup", "ChartForgeX.Markup.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Mermaid", "ChartForgeX.Mermaid.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Markup.Mermaid", "ChartForgeX.Markup.Mermaid.csproj")
         }) {
             var dependentReleaseNotes = GetXmlValue(dependentProject, "PackageReleaseNotes");
-            Assert(dependentReleaseNotes.Contains("1.4.0", StringComparison.Ordinal) &&
-                   !dependentReleaseNotes.Contains("1.3.0", StringComparison.Ordinal),
-                "Dependent package release notes should describe the synchronized 1.4.0 release lane: " + Path.GetRelativePath(FindRepositoryRoot(), dependentProject));
+            Assert(dependentReleaseNotes.Contains("1.6.0", StringComparison.Ordinal) &&
+                   !dependentReleaseNotes.Contains("1.5.0", StringComparison.Ordinal),
+                "Dependent package release notes should describe the synchronized 1.6.0 release lane: " + Path.GetRelativePath(FindRepositoryRoot(), dependentProject));
         }
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md")), "Repository should include contribution guidance.");
         Assert(File.Exists(Path.Combine(FindRepositoryRoot(), "TODO.md")), "Repository should include centralized follow-up guidance.");
