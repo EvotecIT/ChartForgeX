@@ -137,7 +137,7 @@ internal static class TopologyIconPackRefreshCommand {
                 if (preview != null) {
                     var size = Math.Min(options.PreviewSize, Math.Min(cellWidth - 52, cellHeight - 86));
                     var imageRect = new SKRect(x + (cellWidth - size) / 2f - 10, y + 12, x + (cellWidth + size) / 2f - 10, y + 12 + size);
-                    canvas.DrawBitmap(preview, imageRect);
+                    canvas.DrawBitmap(preview, imageRect, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
                 }
             }
 
