@@ -1,4 +1,4 @@
-$assemblyPath = input AssemblyPath -Required
+$assemblyPath = Get-BenchmarkInput AssemblyPath -Required
 Add-Type -Path $assemblyPath
 
 function New-ChartForgeXBenchmarkChart {
@@ -58,20 +58,20 @@ function New-ChartForgeXBenchmarkTopology {
 
 $assemblyHash = (Get-FileHash -LiteralPath $assemblyPath -Algorithm SHA256).Hash
 
-benchmark 'chartforgex-rendering' {
-    policy -Warmup 1 -Iterations 5 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
-    profile Current -Cleanup KeepOnFailure
+New-BenchmarkSuite 'chartforgex-rendering' {
+    Set-BenchmarkPolicy -Warmup 1 -Iterations 5 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
+    Set-BenchmarkProfile Current -Cleanup KeepOnFailure
 
-    cases {
-        case ChartSvg @{ Fixture = 'Chart'; Format = 'Svg' }
-        case ChartRgba @{ Fixture = 'Chart'; Format = 'Rgba' }
-        case ChartPng @{ Fixture = 'Chart'; Format = 'Png' }
-        case TopologySvg @{ Fixture = 'Topology'; Format = 'Svg' }
-        case TopologyRgba @{ Fixture = 'Topology'; Format = 'Rgba' }
-        case TopologyPng @{ Fixture = 'Topology'; Format = 'Png' }
+    Add-BenchmarkCases {
+        Add-BenchmarkCase ChartSvg @{ Fixture = 'Chart'; Format = 'Svg' }
+        Add-BenchmarkCase ChartRgba @{ Fixture = 'Chart'; Format = 'Rgba' }
+        Add-BenchmarkCase ChartPng @{ Fixture = 'Chart'; Format = 'Png' }
+        Add-BenchmarkCase TopologySvg @{ Fixture = 'Topology'; Format = 'Svg' }
+        Add-BenchmarkCase TopologyRgba @{ Fixture = 'Topology'; Format = 'Rgba' }
+        Add-BenchmarkCase TopologyPng @{ Fixture = 'Topology'; Format = 'Png' }
     }
 
-    setup {
+    Set-BenchmarkSetup {
         param($case, $run)
 
         if ($case.Fixture -eq 'Chart') {
@@ -87,8 +87,8 @@ benchmark 'chartforgex-rendering' {
         }
     }
 
-    engine ChartForgeX {
-        operation Render {
+    Add-BenchmarkEngine ChartForgeX {
+        Add-BenchmarkOperation Render {
             param($case, $run)
 
             if ($case.Fixture -eq 'Chart' -and $case.Format -eq 'Svg') {
@@ -107,7 +107,7 @@ benchmark 'chartforgex-rendering' {
         }
     }
 
-    validate {
+    Add-BenchmarkValidation {
         param($case, $run)
 
         if ($run.OutputLength -lt 1000) {
@@ -115,12 +115,12 @@ benchmark 'chartforgex-rendering' {
         }
     }
 
-    metric OutputBytes {
+    Add-BenchmarkMetric OutputBytes {
         param($case, $run)
         $run.OutputLength
     }
 
-    metadata AssemblySha256 $assemblyHash
-    metadata ComparisonMode 'ChartForgeX release rendering only; no browser-library comparison'
-    artifacts Json, Csv, Markdown
+    Add-BenchmarkMetadata AssemblySha256 $assemblyHash
+    Add-BenchmarkMetadata ComparisonMode 'ChartForgeX release rendering only; no browser-library comparison'
+    Set-BenchmarkArtifacts Json, Csv, Markdown
 }
