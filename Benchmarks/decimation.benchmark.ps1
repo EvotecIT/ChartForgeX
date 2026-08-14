@@ -1,4 +1,4 @@
-$assemblyPath = input AssemblyPath -Required
+$assemblyPath = Get-BenchmarkInput AssemblyPath -Required
 Add-Type -Path $assemblyPath
 
 function New-ChartForgeXDenseSeries {
@@ -14,30 +14,30 @@ function New-ChartForgeXDenseSeries {
 
 $assemblyHash = (Get-FileHash -LiteralPath $assemblyPath -Algorithm SHA256).Hash
 
-benchmark 'chartforgex-decimation' {
-    policy -Warmup 1 -Iterations 7 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
-    profile Current -Cleanup KeepOnFailure
+New-BenchmarkSuite 'chartforgex-decimation' {
+    Set-BenchmarkPolicy -Warmup 1 -Iterations 7 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
+    Set-BenchmarkProfile Current -Cleanup KeepOnFailure
 
-    cases {
-        case LargestTriangleThreeBuckets @{ Mode = 'LargestTriangleThreeBuckets'; MaximumPoints = 1200 }
-        case MinMax @{ Mode = 'MinMax'; MaximumPoints = 1200 }
+    Add-BenchmarkCases {
+        Add-BenchmarkCase LargestTriangleThreeBuckets @{ Mode = 'LargestTriangleThreeBuckets'; MaximumPoints = 1200 }
+        Add-BenchmarkCase MinMax @{ Mode = 'MinMax'; MaximumPoints = 1200 }
     }
 
-    setup {
+    Set-BenchmarkSetup {
         param($case, $run)
         $run.Points = [ChartForgeX.Primitives.ChartPoint[]](New-ChartForgeXDenseSeries)
         $run.Mode = [ChartForgeX.Core.ChartDecimationMode]::$($case.Mode)
     }
 
-    engine ChartForgeX {
-        operation Decimate {
+    Add-BenchmarkEngine ChartForgeX {
+        Add-BenchmarkOperation Decimate {
             param($case, $run)
             $run.Result = [ChartForgeX.Core.ChartDecimator]::Decimate($run.Points, $case.MaximumPoints, $run.Mode)
             $run.IndexChecksum = ($run.Result.SourceIndices | Measure-Object -Sum).Sum
         }
     }
 
-    validate {
+    Add-BenchmarkValidation {
         param($case, $run)
         if ($run.Result.SourcePointCount -ne $run.Points.Length) { throw 'The decimator did not report the complete source count.' }
         if ($run.Result.Points.Count -gt $case.MaximumPoints) { throw 'The decimator exceeded the requested point budget.' }
@@ -45,11 +45,11 @@ benchmark 'chartforgex-decimation' {
         if ($run.IndexChecksum -le 0) { throw 'The decimator source-index result was not consumed.' }
     }
 
-    metric SourcePoints { param($case, $run) $run.Result.SourcePointCount }
-    metric RetainedPoints { param($case, $run) $run.Result.Points.Count }
-    metric RetentionPercent { param($case, $run) [Math]::Round($run.Result.Points.Count * 100.0 / $run.Result.SourcePointCount, 4) }
+    Add-BenchmarkMetric SourcePoints { param($case, $run) $run.Result.SourcePointCount }
+    Add-BenchmarkMetric RetainedPoints { param($case, $run) $run.Result.Points.Count }
+    Add-BenchmarkMetric RetentionPercent { param($case, $run) [Math]::Round($run.Result.Points.Count * 100.0 / $run.Result.SourcePointCount, 4) }
 
-    metadata AssemblySha256 $assemblyHash
-    metadata ComparisonMode 'Explicit ChartForgeX point reduction only; rendering is measured by the separate rendering suite'
-    artifacts Json, Csv, Markdown
+    Add-BenchmarkMetadata AssemblySha256 $assemblyHash
+    Add-BenchmarkMetadata ComparisonMode 'Explicit ChartForgeX point reduction only; rendering is measured by the separate rendering suite'
+    Set-BenchmarkArtifacts Json, Csv, Markdown
 }
