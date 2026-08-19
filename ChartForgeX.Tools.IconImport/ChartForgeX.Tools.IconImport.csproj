@@ -10,6 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
-    <PackageReference Include="Svg.Skia" Version="5.2.0" PrivateAssets="all" />
+    <PackageReference Include="Svg.Skia" Version="5.2.1" PrivateAssets="all" />
   </ItemGroup>
 </Project>
