@@ -266,7 +266,7 @@ public sealed partial class SvgChartRenderer {
                 .Line();
         }
 
-        if (item.ShowDataLabels && width >= 74) DrawSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2);
+        if (item.ShowDataLabels && width >= 74) DrawSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2, style: DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0));
     }
 
     private static void DrawGanttMilestone(SvgMarkupWriter writer, Chart chart, GanttItem item, string id, double x, double centerY, double rowHeight) {

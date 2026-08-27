@@ -54,27 +54,29 @@ public sealed partial class PngChartRenderer {
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
                     var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
                     var dataTextHeight = EstimatePngStyledTextHeight(dataFontSize, dataStyle);
-                    if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) && height < dataTextHeight + 8) continue;
-                    var labelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, true);
-                    var labelX = placement == ChartDataLabelPlacement.Left
-                        ? centerX - barWidth / 2 - labelWidth - 8
-                        : placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside
-                            ? centerX + barWidth / 2 + 8
-                            : centerX - labelWidth / 2.0;
-                    var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
-                        ? top + height / 2 - dataTextHeight / 2.0
-                        : placement == ChartDataLabelPlacement.Above
-                            ? top - 11 - dataTextHeight
-                            : placement == ChartDataLabelPlacement.Below
-                                ? top + height + 13 - dataTextHeight
-                                : step.Delta >= 0 || step.IsTotal ? top - 11 - dataTextHeight : top + height + 13 - dataTextHeight;
-                    if (!ReservePngLabel(label, labelX, labelY, chart, plot, dataFontSize, reservedLabels, dataStyle)) continue;
-                    DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
+                    var labelFits = (placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) || height >= dataTextHeight + 8;
+                    if (labelFits) {
+                        var labelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, true);
+                        var labelX = placement == ChartDataLabelPlacement.Left
+                            ? centerX - barWidth / 2 - labelWidth - 8
+                            : placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside
+                                ? centerX + barWidth / 2 + 8
+                                : centerX - labelWidth / 2.0;
+                        var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
+                            ? top + height / 2 - dataTextHeight / 2.0
+                            : placement == ChartDataLabelPlacement.Above
+                                ? top - 11 - dataTextHeight
+                                : placement == ChartDataLabelPlacement.Below
+                                    ? top + height + 13 - dataTextHeight
+                                    : step.Delta >= 0 || step.IsTotal ? top - 11 - dataTextHeight : top + height + 13 - dataTextHeight;
+                        if (ReservePngLabel(label, labelX, labelY, chart, plot, dataFontSize, reservedLabels, dataStyle)) DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
+                    }
             }
 
             if (ShowXAxis(chart)) {
                 var categoryLabel = step.IsTotal ? "Total" : FormatX(chart, step.XValue);
-                c.DrawText(EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, chart.Options.Theme.MutedText, tickFontSize);
+                var tickStyle = chart.Options.TickLabelStyle;
+                DrawPngTextStyled(c, EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize, tickStyle), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, tickStyle, chart.Options.Theme.MutedText, tickFontSize, emphasized: false);
             }
         }
 
@@ -88,7 +90,8 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
             if (ShowYAxis(chart)) {
                 var label = FormatYAxisValue(chart, tick);
-                c.DrawText(Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize / 2.0, label, chart.Options.Theme.MutedText, fontSize);
+                var tickStyle = chart.Options.TickLabelStyle;
+                DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: false) - 8), y - fontSize / 2.0, label, tickStyle, chart.Options.Theme.MutedText, fontSize, emphasized: false);
             }
         }
 

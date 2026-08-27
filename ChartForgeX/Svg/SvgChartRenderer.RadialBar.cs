@@ -99,8 +99,9 @@ public sealed partial class SvgChartRenderer {
             .EndEmptyElement()
             .Line();
         if (showLabels && chart.Options.ShowRadialBarCenterLabel) {
-            DrawSvgTextCenteredX(writer, chart, "radial-bar-total", centerLabel, cx, cy - t.TitleFontSize * 0.42, t.Text, Math.Max(26, t.TitleFontSize * 1.32), labelWidth, "850", t.CardBackground, 3.2);
-            DrawSvgTextCenteredX(writer, chart, "radial-bar-title", series.Name, cx, cy + t.LegendFontSize + 14, t.MutedText, Math.Max(9, t.LegendFontSize - 1), labelWidth, "700", t.CardBackground, 2.4, middleBaseline: false);
+            var dataStyle = DataLabelStyle(chart, series);
+            DrawSvgTextCenteredX(writer, chart, "radial-bar-total", centerLabel, cx, cy - t.TitleFontSize * 0.42, t.Text, Math.Max(26, t.TitleFontSize * 1.32), labelWidth, "850", t.CardBackground, 3.2, style: dataStyle);
+            DrawSvgTextCenteredX(writer, chart, "radial-bar-title", series.Name, cx, cy + t.LegendFontSize + 14, t.MutedText, Math.Max(9, t.LegendFontSize - 1), labelWidth, "700", t.CardBackground, 2.4, middleBaseline: false, style: dataStyle);
         }
         if (chart.Options.ShowLegend) DrawRadialBarLegend(writer, chart, plot, series);
         writer.EndElement().Line();

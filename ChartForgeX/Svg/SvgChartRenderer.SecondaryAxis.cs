@@ -70,6 +70,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
             .Attribute("font-size", fontSize)
+            .Attribute("font-weight", StyleWeight(tickStyle, "400"))
             .Raw(SvgTextStyleAttributes(tickStyle))
             .Text(label)
             .EndElement()

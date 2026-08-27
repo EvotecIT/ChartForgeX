@@ -26,7 +26,7 @@ public sealed partial class PngChartRenderer {
             c.FillRoundedRectVerticalGradient(rect.X, rect.Y, rect.Width, rect.Height, radius, TreemapTileGradientTop(color), TreemapTileGradientBottom(color));
             c.StrokeRoundedRect(rect.X, rect.Y, rect.Width, rect.Height, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.TreemapTileBorderOpacity), ChartVisualPrimitives.TreemapTileBorderStrokeWidth);
             DrawTreemapTileHighlight(c, rect, radius);
-            if (showLabels) DrawTreemapTileLabels(c, chart, rect, FormatX(chart, tile.Point.X), FormatValue(chart, tile.Point.Y), color);
+            if (showLabels) DrawTreemapTileLabels(c, chart, series, tile.PointIndex, rect, FormatX(chart, tile.Point.X), FormatValue(chart, tile.Point.Y), color);
         }
     }
 
@@ -41,25 +41,26 @@ public sealed partial class PngChartRenderer {
         return new ChartRect(basePlot.X + 10, basePlot.Y + 12, Math.Max(1, basePlot.Width - 20), Math.Max(1, basePlot.Height - 24));
     }
 
-    private static void DrawTreemapTileLabels(RgbaCanvas c, Chart chart, ChartRect rect, string label, string value, ChartColor color) {
+    private static void DrawTreemapTileLabels(RgbaCanvas c, Chart chart, ChartSeries series, int pointIndex, ChartRect rect, string label, string value, ChartColor color) {
         if (rect.Width < 48 || rect.Height < 30) return;
+        var dataStyle = DataLabelStyle(chart, series, pointIndex);
         var textColor = ChartColorMath.TextOnBackground(color);
         var insetX = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetX, Math.Max(6, rect.Width * 0.12));
         var insetY = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetY, Math.Max(7, rect.Height * 0.14));
         var maxWidth = Math.Max(8, rect.Width - insetX * 2);
-        var labelFontSize = TextFontSizeForEmphasizedWidth(label, maxWidth, Math.Min(PngLegendFontSize(chart), Math.Max(8, rect.Height * 0.20)));
-        var fittedLabel = TrimReadablePngLabelToWidth(label, labelFontSize, maxWidth);
+        var labelFontSize = TextFontSizeForEmphasizedWidth(label, maxWidth, Math.Min(PngStyleFontSize(dataStyle, chart.Options.Theme.LegendFontSize), Math.Max(8, rect.Height * 0.20)), dataStyle);
+        var fittedLabel = TrimReadablePngLabelToWidth(label, labelFontSize, maxWidth, dataStyle);
         if (fittedLabel.Length > 0) {
-            DrawReadablePngLabel(c, rect.X + insetX, rect.Y + insetY, fittedLabel, textColor, color, labelFontSize);
+            DrawReadablePngLabel(c, rect.X + insetX, rect.Y + insetY, fittedLabel, textColor, color, labelFontSize, dataStyle);
         }
 
         if (rect.Height < 52) return;
-        var valueFontSize = TextFontSizeForEmphasizedWidth(value, maxWidth, Math.Min(chart.Options.Theme.DataLabelFontSize, Math.Max(8, rect.Height * 0.18)));
-        var fittedValue = TrimReadablePngLabelToWidth(value, valueFontSize, maxWidth);
+        var valueFontSize = TextFontSizeForEmphasizedWidth(value, maxWidth, Math.Min(PngStyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), Math.Max(8, rect.Height * 0.18)), dataStyle);
+        var fittedValue = TrimReadablePngLabelToWidth(value, valueFontSize, maxWidth, dataStyle);
         if (fittedValue.Length > 0) {
             var valueY = rect.Y + insetY + labelFontSize + ChartVisualPrimitives.TreemapTileValueGap;
             if (valueY + valueFontSize <= rect.Bottom - insetY * 0.45) {
-                DrawReadablePngLabel(c, rect.X + insetX, valueY, fittedValue, textColor, color, valueFontSize);
+                DrawReadablePngLabel(c, rect.X + insetX, valueY, fittedValue, textColor, color, valueFontSize, dataStyle);
             }
         }
     }

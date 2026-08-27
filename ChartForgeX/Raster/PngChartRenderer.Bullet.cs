@@ -15,11 +15,9 @@ public sealed partial class PngChartRenderer {
         }
 
         if (rows.Count == 0) return;
-        var labelFontSize = PngLegendFontSize(chart);
-        var valueFontSize = chart.Options.Theme.DataLabelFontSize;
         var tickFontSize = PngTickFontSize(chart);
-        var labelReserve = BulletLabelReserve(chart, rows, labelFontSize);
-        var valueReserve = BulletValueReserve(chart, rows, valueFontSize);
+        var labelReserve = BulletLabelReserve(chart, rows);
+        var valueReserve = BulletValueReserve(chart, rows);
         var content = BulletContentBounds(basePlot);
         FitBulletReserves(content.Width, ref labelReserve, ref valueReserve);
         var plot = new ChartRect(content.X + labelReserve, content.Y + 18, Math.Max(1, content.Width - labelReserve - valueReserve), Math.Max(1, content.Height - 54));
@@ -42,23 +40,24 @@ public sealed partial class PngChartRenderer {
             var targetX = BulletX(plot, min, max, target);
             var status = BulletStatus(actualValue, targetValue);
             var statusColor = BulletStatusColor(chart, status);
+            var dataStyle = DataLabelStyle(chart, row.Series, 0);
             var rowLabelMaxWidth = Math.Max(8, labelReserve - 16);
-            var rowLabelFontSize = TextFontSizeForEmphasizedWidth(row.Series.Name, rowLabelMaxWidth, labelFontSize);
-            var rowLabel = TrimReadablePngLabelToWidth(row.Series.Name, rowLabelFontSize, rowLabelMaxWidth);
+            var rowLabelFontSize = TextFontSizeForEmphasizedWidth(row.Series.Name, rowLabelMaxWidth, PngStyleFontSize(dataStyle, chart.Options.Theme.LegendFontSize), dataStyle);
+            var rowLabel = TrimReadablePngLabelToWidth(row.Series.Name, rowLabelFontSize, rowLabelMaxWidth, dataStyle);
             var showLabels = row.Series.ShowDataLabels != false;
-            if (showLabels && rowLabel.Length > 0) c.DrawTextEmphasized(content.Left, y - rowLabelFontSize / 2.0, rowLabel, chart.Options.Theme.Text, rowLabelFontSize);
+            if (showLabels && rowLabel.Length > 0) DrawPngTextStyled(c, content.Left, y - EstimatePngStyledTextHeight(rowLabelFontSize, dataStyle) / 2.0, rowLabel, dataStyle, chart.Options.Theme.Text, rowLabelFontSize, emphasized: true);
             DrawBulletRanges(c, row.Series, plot, y, barHeight, min, max, accent);
             DrawGradientBar(c, plot.Left, y - barHeight * 0.24, Math.Max(2, valueX - plot.Left), barHeight * 0.48, barHeight * 0.24, accent);
             c.DrawLine(targetX, y - barHeight * 0.65, targetX, y + barHeight * 0.65, chart.Options.Theme.Text, ChartVisualPrimitives.BulletTargetStrokeWidth);
             if (showLabels) {
-                DrawBulletTargetLabel(c, chart, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot, tickFontSize);
+                DrawBulletTargetLabel(c, chart, row.Series, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot, tickFontSize);
                 c.DrawCircle(plot.Right + 8, y, ChartVisualPrimitives.PngStatusMarkerOutlineRadius, chart.Options.Theme.CardBackground);
                 c.DrawCircle(plot.Right + 8, y, ChartVisualPrimitives.StatusMarkerRadius, statusColor);
                 var rawValueLabel = FormatValue(chart, actualValue);
                 var valueLabelMaxWidth = Math.Max(8, valueReserve - 24);
-                var valueLabelFontSize = TextFontSizeForEmphasizedWidth(rawValueLabel, valueLabelMaxWidth, valueFontSize);
-                var valueLabel = TrimReadablePngLabelToWidth(rawValueLabel, valueLabelFontSize, valueLabelMaxWidth);
-                if (valueLabel.Length > 0) c.DrawTextEmphasized(plot.Right + 18, y - valueLabelFontSize / 2.0, valueLabel, chart.Options.Theme.Text, valueLabelFontSize);
+                var valueLabelFontSize = TextFontSizeForEmphasizedWidth(rawValueLabel, valueLabelMaxWidth, PngDataLabelFontSize(chart, row.Series, 0), dataStyle);
+                var valueLabel = TrimReadablePngLabelToWidth(rawValueLabel, valueLabelFontSize, valueLabelMaxWidth, dataStyle);
+                if (valueLabel.Length > 0) DrawPngTextStyled(c, plot.Right + 18, y - EstimatePngStyledTextHeight(valueLabelFontSize, dataStyle) / 2.0, valueLabel, dataStyle, chart.Options.Theme.Text, valueLabelFontSize, emphasized: true);
             }
         }
 
@@ -107,24 +106,26 @@ public sealed partial class PngChartRenderer {
             var x = BulletX(plot, min, max, tick);
             c.DrawLine(x, y - 4, x, y + 4, chart.Options.Theme.Axis, ChartVisualPrimitives.BulletAxisStrokeWidth);
             var label = FormatValue(chart, tick);
+            var style = chart.Options.TickLabelStyle;
             var fontSize = PngTickFontSize(chart);
-            c.DrawText(EdgeAwarePngLabelX(label, x, plot, fontSize), y + 20 - fontSize + 1, label, chart.Options.Theme.MutedText, fontSize);
+            DrawPngTextStyled(c, EdgeAwarePngLabelX(label, x, plot, fontSize, style), y + 20 - fontSize + 1, label, style, chart.Options.Theme.MutedText, fontSize, emphasized: false);
         }
     }
 
-    private static void DrawBulletTargetLabel(RgbaCanvas c, Chart chart, string label, double x, double y, ChartRect plot, double fontSize) {
+    private static void DrawBulletTargetLabel(RgbaCanvas c, Chart chart, ChartSeries series, string label, double x, double y, ChartRect plot, double fontSize) {
+        var style = DataLabelStyle(chart, series, 1);
         var text = "target " + label;
         var maxWidth = Math.Max(8, plot.Width - 8);
-        fontSize = TextFontSizeForEmphasizedWidth(text, maxWidth, fontSize);
-        text = TrimReadablePngLabelToWidth(text, fontSize, maxWidth);
+        fontSize = TextFontSizeForEmphasizedWidth(text, maxWidth, PngStyleFontSize(style, fontSize), style);
+        text = TrimReadablePngLabelToWidth(text, fontSize, maxWidth, style);
         if (text.Length == 0) return;
 
-        var width = EstimatePngEmphasizedTextWidth(text, fontSize);
-        var height = EstimatePngTextHeight(fontSize);
+        var width = EstimatePngStyledTextWidth(text, fontSize, style, emphasized: true);
+        var height = EstimatePngStyledTextHeight(fontSize, style);
         var safeX = Clamp(x - width / 2.0, plot.Left + 4, plot.Right - width - 4);
         var safeY = Clamp(y - fontSize + 1, plot.Top + 3, plot.Bottom - height - 3);
         var halo = ReadableLabelHalo(chart);
-        DrawReadablePngLabel(c, safeX, safeY, text, chart.Options.Theme.MutedText, halo, fontSize);
+        DrawReadablePngLabel(c, safeX, safeY, text, chart.Options.Theme.MutedText, halo, fontSize, style);
     }
 
     private static bool IsBulletChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Bullet);
@@ -167,15 +168,25 @@ public sealed partial class PngChartRenderer {
         return status == "below-target" ? chart.Options.Theme.Negative : chart.Options.Theme.Positive;
     }
 
-    private static double BulletLabelReserve(Chart chart, IReadOnlyList<BulletRow> rows, double fontSize) {
+    private static double BulletLabelReserve(Chart chart, IReadOnlyList<BulletRow> rows) {
         var widest = 0.0;
-        foreach (var row in rows) if (row.Series.ShowDataLabels != false) widest = Math.Max(widest, EstimatePngEmphasizedTextWidth(row.Series.Name, fontSize));
+        foreach (var row in rows) {
+            if (row.Series.ShowDataLabels == false) continue;
+            var style = DataLabelStyle(chart, row.Series, 0);
+            var fontSize = PngStyleFontSize(style, chart.Options.Theme.LegendFontSize);
+            widest = Math.Max(widest, EstimatePngStyledTextWidth(row.Series.Name, fontSize, style, emphasized: true));
+        }
         return widest <= 0 ? 10 : Math.Min(240, Math.Max(128, widest + 34));
     }
 
-    private static double BulletValueReserve(Chart chart, IReadOnlyList<BulletRow> rows, double fontSize) {
+    private static double BulletValueReserve(Chart chart, IReadOnlyList<BulletRow> rows) {
         var widest = 0.0;
-        foreach (var row in rows) if (row.Series.ShowDataLabels != false) widest = Math.Max(widest, EstimatePngEmphasizedTextWidth(FormatValue(chart, BulletValue(row.Series)), fontSize));
+        foreach (var row in rows) {
+            if (row.Series.ShowDataLabels == false) continue;
+            var style = DataLabelStyle(chart, row.Series, 0);
+            var fontSize = PngDataLabelFontSize(chart, row.Series, 0);
+            widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatValue(chart, BulletValue(row.Series)), fontSize, style, emphasized: true));
+        }
         return widest <= 0 ? 12 : Math.Min(142, Math.Max(84, widest + 38));
     }
 

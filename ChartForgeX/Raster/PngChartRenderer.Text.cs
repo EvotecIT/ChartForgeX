@@ -94,6 +94,19 @@ public sealed partial class PngChartRenderer {
         DrawPngTextEmphasizedCenteredX(c, centerX, y, fittedText, color, fittedFontSize);
     }
 
+    private static void DrawPngTextStyledCenteredX(RgbaCanvas c, double centerX, double y, string text, TextStyleOverride style, ChartColor color, double fontSize, double maxWidth, bool emphasized) {
+        var widthLimit = Math.Max(8, maxWidth);
+        var fittedFontSize = emphasized
+            ? TextFontSizeForEmphasizedWidth(text, widthLimit, PngStyleFontSize(style, fontSize), style)
+            : TextFontSizeForWidth(text, widthLimit, PngStyleFontSize(style, fontSize), style);
+        var fittedText = emphasized
+            ? TrimReadablePngLabelToWidth(text, fittedFontSize, widthLimit, style)
+            : TrimPngLabelToWidth(text, fittedFontSize, widthLimit, style);
+        if (fittedText.Length == 0) return;
+        var width = EstimatePngStyledTextWidth(fittedText, fittedFontSize, style, emphasized);
+        DrawPngTextStyled(c, centerX - width / 2.0, y, fittedText, style, color, fittedFontSize, emphasized);
+    }
+
     private static ChartColor ReadableLabelHalo(Chart chart) {
         var color = chart.Options.Theme.CardBackground;
         return color.A == 0 ? ChartColor.White : color;

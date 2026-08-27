@@ -64,8 +64,9 @@ public sealed partial class PngChartRenderer {
             var centerY = segmentY + segmentDrawHeight / 2;
             var labelColor = ChartColorMath.TextOnBackground(color, 0.58);
             var labelWidth = FunnelLabelWidth(topWidth, bottomWidth);
-            var labelFontSize = TextFontSizeForEmphasizedWidth(label, labelWidth, FunnelLabelFontSize(chart.Options.Theme.LegendFontSize));
-            var valueFontSize = TextFontSizeForEmphasizedWidth(value, labelWidth, FunnelValueFontSize(chart.Options.Theme.DataLabelFontSize));
+            var dataStyle = DataLabelStyle(chart, series, i);
+            var labelFontSize = TextFontSizeForEmphasizedWidth(label, labelWidth, PngStyleFontSize(dataStyle, FunnelLabelFontSize(chart.Options.Theme.LegendFontSize)), dataStyle);
+            var valueFontSize = TextFontSizeForEmphasizedWidth(value, labelWidth, PngStyleFontSize(dataStyle, FunnelValueFontSize(chart.Options.Theme.DataLabelFontSize)), dataStyle);
             var labelY = centerY - labelFontSize - 2;
             var valueY = centerY + 4;
             var halo = FunnelTextHalo(labelColor, chart.Options.Theme.CardBackground);
@@ -73,11 +74,12 @@ public sealed partial class PngChartRenderer {
                 if (values[i].Y <= 0) {
                     var zeroLabelX = topRight + 18;
                     var zeroLabelMaxWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
-                    var zeroLabel = TrimReadablePngLabelToWidth(label + ": " + value, Math.Min(12.5, labelFontSize), zeroLabelMaxWidth);
-                    if (zeroLabel.Length > 0) c.DrawTextEmphasized(zeroLabelX, centerY - Math.Min(12.5, labelFontSize) / 2.0, zeroLabel, chart.Options.Theme.MutedText, Math.Min(12.5, labelFontSize));
+                    var zeroFontSize = Math.Min(12.5, labelFontSize);
+                    var zeroLabel = TrimReadablePngLabelToWidth(label + ": " + value, zeroFontSize, zeroLabelMaxWidth, dataStyle);
+                    if (zeroLabel.Length > 0) DrawPngTextStyled(c, zeroLabelX, centerY - EstimatePngStyledTextHeight(zeroFontSize, dataStyle) / 2.0, zeroLabel, dataStyle, chart.Options.Theme.MutedText, zeroFontSize, emphasized: true);
                 } else {
-                    DrawReadablePngLabel(c, centerX - EstimatePngEmphasizedTextWidth(label, labelFontSize) / 2.0, labelY, label, labelColor, halo, labelFontSize);
-                    DrawReadablePngLabel(c, centerX - EstimatePngEmphasizedTextWidth(value, valueFontSize) / 2.0, valueY, value, labelColor, halo, valueFontSize);
+                    DrawReadablePngLabel(c, centerX - EstimatePngStyledTextWidth(label, labelFontSize, dataStyle, emphasized: true) / 2.0, labelY, label, labelColor, halo, labelFontSize, dataStyle);
+                    DrawReadablePngLabel(c, centerX - EstimatePngStyledTextWidth(value, valueFontSize, dataStyle, emphasized: true) / 2.0, valueY, value, labelColor, halo, valueFontSize, dataStyle);
                 }
             }
             if (showLabels && i > 0) {
@@ -89,13 +91,13 @@ public sealed partial class PngChartRenderer {
                 var dropOffLabel = FormatFunnelDropOffLabel(dropOff, values[i - 1].Y);
                 var metricMaxWidth = Math.Max(32, basePlot.Right - metricsX - 6);
                 var metricFontSize = Math.Min(
-                    TextFontSizeForEmphasizedWidth(retentionLabel, metricMaxWidth, PngTickFontSize(chart)),
-                    TextFontSizeForEmphasizedWidth(dropOffLabel, metricMaxWidth, PngTickFontSize(chart)));
-                retentionLabel = TrimReadablePngLabelToWidth(retentionLabel, metricFontSize, metricMaxWidth);
-                dropOffLabel = TrimReadablePngLabelToWidth(dropOffLabel, metricFontSize, metricMaxWidth);
+                    TextFontSizeForEmphasizedWidth(retentionLabel, metricMaxWidth, PngStyleFontSize(dataStyle, PngTickFontSize(chart)), dataStyle),
+                    TextFontSizeForEmphasizedWidth(dropOffLabel, metricMaxWidth, PngStyleFontSize(dataStyle, PngTickFontSize(chart)), dataStyle));
+                retentionLabel = TrimReadablePngLabelToWidth(retentionLabel, metricFontSize, metricMaxWidth, dataStyle);
+                dropOffLabel = TrimReadablePngLabelToWidth(dropOffLabel, metricFontSize, metricMaxWidth, dataStyle);
                 if (hasPreviousBaseline) c.DrawDashedLine(guideX, segmentY - gap * 0.35, guideX, segmentY + segmentDrawHeight * 0.55, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.FunnelDropoffLineOpacity), ChartVisualPrimitives.FunnelDropoffLineStrokeWidth, 3, 4);
-                if (retentionLabel.Length > 0) c.DrawTextEmphasized(metricsX, centerY - metricFontSize - 4, retentionLabel, chart.Options.Theme.MutedText, metricFontSize);
-                if (hasPreviousBaseline && dropOffLabel.Length > 0) c.DrawTextEmphasized(metricsX, centerY + 4, dropOffLabel, chart.Options.Theme.Negative, metricFontSize);
+                if (retentionLabel.Length > 0) DrawPngTextStyled(c, metricsX, centerY - metricFontSize - 4, retentionLabel, dataStyle, chart.Options.Theme.MutedText, metricFontSize, emphasized: true);
+                if (hasPreviousBaseline && dropOffLabel.Length > 0) DrawPngTextStyled(c, metricsX, centerY + 4, dropOffLabel, dataStyle, chart.Options.Theme.Negative, metricFontSize, emphasized: true);
             }
 
             y += segmentHeight + gap;

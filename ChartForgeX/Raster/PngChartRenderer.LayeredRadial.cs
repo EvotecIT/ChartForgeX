@@ -41,11 +41,12 @@ public sealed partial class PngChartRenderer {
 
         if (series.ShowDataLabels != false) {
             var valueLayer = series.RadialLayers[series.RadialLayers.Count - 1];
+            var dataStyle = DataLabelStyle(chart, series);
             var labelWidth = Math.Max(60, Math.Min(plot.Width - 24, outerRadius * 1.45));
-            var valueFontSize = Math.Max(24, theme.TitleFontSize * 1.45);
-            var nameFontSize = Math.Max(9, theme.LegendFontSize);
-            DrawPngTextEmphasizedCenteredX(c, cx, cy - theme.TitleFontSize * 0.36 - valueFontSize / 2.0, FormatValue(chart, valueLayer.Value), theme.Text, valueFontSize, labelWidth);
-            DrawPngTextEmphasizedCenteredX(c, cx, cy + Math.Max(10, theme.LegendFontSize + 12) - nameFontSize + 1, series.Name, theme.MutedText, nameFontSize, labelWidth);
+            var valueFontSize = Math.Max(24, PngStyleFontSize(dataStyle, theme.TitleFontSize * 1.45));
+            var nameFontSize = Math.Max(9, PngStyleFontSize(dataStyle, theme.LegendFontSize));
+            DrawPngTextStyledCenteredX(c, cx, cy - theme.TitleFontSize * 0.36 - valueFontSize / 2.0, FormatValue(chart, valueLayer.Value), dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
+            DrawPngTextStyledCenteredX(c, cx, cy + Math.Max(10, theme.LegendFontSize + 12) - nameFontSize + 1, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
         }
     }
 

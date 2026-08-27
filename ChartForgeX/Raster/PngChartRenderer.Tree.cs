@@ -10,21 +10,22 @@ public sealed partial class PngChartRenderer {
     private static void DrawTree(RgbaCanvas c, Chart chart, ChartRect plot) {
         var model = ChartTreeLayout.Build(chart, plot);
         if (model.Nodes.Count == 0 || model.Links.Count == 0) return;
-        var showLabels = chart.Series.First(series => series.Kind == ChartSeriesKind.Tree).ShowDataLabels != false;
+        var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Tree);
+        var showLabels = series.ShowDataLabels != false;
         foreach (var link in model.Links) DrawTreeLink(c, chart, model, link);
-        foreach (var node in model.Nodes) DrawTreeNode(c, chart, model, node, showLabels);
+        foreach (var node in model.Nodes) DrawTreeNode(c, chart, series, model, node, showLabels);
     }
 
     private static bool IsTreeChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Tree);
 
-    private static void DrawTreeNode(RgbaCanvas c, Chart chart, ChartTreeModel model, ChartTreeNode node, bool showLabels) {
+    private static void DrawTreeNode(RgbaCanvas c, Chart chart, ChartSeries series, ChartTreeModel model, ChartTreeNode node, bool showLabels) {
         var theme = chart.Options.Theme;
         var color = theme.Palette[node.Depth % theme.Palette.Length];
         var labelColor = ChartColorMath.TextOnBackground(color);
         var radius = Math.Min(ChartVisualPrimitives.TreeNodeCornerRadiusMax, model.NodeHeight / 2);
         c.FillRoundedRectVerticalGradient(node.X, node.Y, model.NodeWidth, model.NodeHeight, radius, TreeNodeGradientTop(color), TreeNodeGradientBottom(color));
         c.StrokeRoundedRect(node.X, node.Y, model.NodeWidth, model.NodeHeight, radius, ApplyOpacity(ChartColorMath.TextOnBackground(labelColor, 0.70), ChartVisualPrimitives.TreeNodeBorderOpacity), ChartVisualPrimitives.TreeNodeBorderStrokeWidth);
-        if (showLabels) DrawTreeNodeLabel(c, chart, model, node, color, labelColor);
+        if (showLabels) DrawTreeNodeLabel(c, chart, series, model, node, color, labelColor);
     }
 
     private static void DrawTreeLink(RgbaCanvas c, Chart chart, ChartTreeModel model, ChartTreeLayoutLink link) {
@@ -46,17 +47,18 @@ public sealed partial class PngChartRenderer {
 
     private static double TreeNodeLabelFontSize(double baseSize) => Math.Max(ChartVisualPrimitives.TreeNodeLabelMinFontSize, baseSize);
 
-    private static void DrawTreeNodeLabel(RgbaCanvas c, Chart chart, ChartTreeModel model, ChartTreeNode node, ChartColor nodeColor, ChartColor labelColor) {
-        var fontSize = TreeNodeLabelFontSize(chart.Options.Theme.TickLabelFontSize);
+    private static void DrawTreeNodeLabel(RgbaCanvas c, Chart chart, ChartSeries series, ChartTreeModel model, ChartTreeNode node, ChartColor nodeColor, ChartColor labelColor) {
+        var dataStyle = DataLabelStyle(chart, series);
+        var fontSize = TreeNodeLabelFontSize(PngStyleFontSize(dataStyle, chart.Options.Theme.TickLabelFontSize));
         var maxWidth = model.NodeWidth - ChartVisualPrimitives.TreeNodeLabelHorizontalPadding * 2;
-        var lines = ChartLabelWrapping.BalancedTwoLine(node.Label, fontSize, maxWidth, EstimatePngEmphasizedTextWidth);
+        var lines = ChartLabelWrapping.BalancedTwoLine(node.Label, fontSize, maxWidth, (text, size) => EstimatePngStyledTextWidth(text, size, dataStyle, emphasized: true));
         var lineHeight = fontSize * ChartVisualPrimitives.TreeNodeLabelLineHeightFactor;
         var textHeight = lines.Length * lineHeight;
         var top = node.Y + (model.NodeHeight - textHeight) / 2.0;
         for (var i = 0; i < lines.Length; i++) {
             var y = top + i * lineHeight;
-            var x = node.X + (model.NodeWidth - EstimatePngEmphasizedTextWidth(lines[i], fontSize)) / 2.0;
-            DrawReadablePngLabel(c, x, y, lines[i], labelColor, nodeColor, fontSize);
+            var x = node.X + (model.NodeWidth - EstimatePngStyledTextWidth(lines[i], fontSize, dataStyle, emphasized: true)) / 2.0;
+            DrawReadablePngLabel(c, x, y, lines[i], labelColor, nodeColor, fontSize, dataStyle);
         }
     }
 

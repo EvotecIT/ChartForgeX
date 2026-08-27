@@ -699,8 +699,10 @@ internal static partial class SvgRasterRenderer {
     private static bool IsSymbolElement(string name) =>
         string.Equals(name, "symbol", StringComparison.Ordinal);
 
-    private static bool IsBold(string value) =>
-        string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "600", StringComparison.Ordinal) || string.Equals(value, "700", StringComparison.Ordinal) || string.Equals(value, "800", StringComparison.Ordinal) || string.Equals(value, "900", StringComparison.Ordinal);
+    private static bool IsBold(string value) {
+        if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase)) return true;
+        return int.TryParse(value, out var numericWeight) && numericWeight >= 600;
+    }
 
     private static RasterLineCap LineCap(string value) =>
         string.Equals(value, "round", StringComparison.OrdinalIgnoreCase) ? RasterLineCap.Round : RasterLineCap.Butt;

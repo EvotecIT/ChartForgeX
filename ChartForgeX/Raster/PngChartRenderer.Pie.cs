@@ -106,17 +106,18 @@ public sealed partial class PngChartRenderer {
         DrawPieOutsideLabels(c, chart, series, outsideLabels, cx, cy, radius, plot);
 
         if (series.Kind == ChartSeriesKind.Donut && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false) {
+            var dataStyle = DataLabelStyle(chart, series);
             var totalLabel = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var nameLabel = chart.Options.DonutCenterLabel ?? series.Name;
             var totalFontSize = Math.Max(14, Math.Min(26, inner * 0.45));
             var nameFontSize = Math.Max(9, Math.Min(chart.Options.Theme.TickLabelFontSize, inner * 0.22));
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerLineGap = Math.Max(4, Math.Min(8, inner * 0.08));
-            var totalHeight = EstimatePngTextHeight(totalFontSize);
-            var nameHeight = EstimatePngTextHeight(nameFontSize);
+            var totalHeight = EstimatePngStyledTextHeight(totalFontSize, dataStyle);
+            var nameHeight = EstimatePngStyledTextHeight(nameFontSize, dataStyle);
             var groupTop = cy - (totalHeight + centerLineGap + nameHeight) / 2.0;
-            DrawPngTextEmphasizedCenteredX(c, cx, groupTop, totalLabel, chart.Options.Theme.Text, totalFontSize, centerLabelWidth);
-            DrawPngTextEmphasizedCenteredX(c, cx, groupTop + totalHeight + centerLineGap, nameLabel, chart.Options.Theme.MutedText, nameFontSize, centerLabelWidth);
+            DrawPngTextStyledCenteredX(c, cx, groupTop, totalLabel, dataStyle, chart.Options.Theme.Text, totalFontSize, centerLabelWidth, emphasized: true);
+            DrawPngTextStyledCenteredX(c, cx, groupTop + totalHeight + centerLineGap, nameLabel, dataStyle, chart.Options.Theme.MutedText, nameFontSize, centerLabelWidth, emphasized: true);
         }
 
         if (chart.Options.ShowLegend) DrawSliceLegend(c, chart, series, legendValues, plot, total);

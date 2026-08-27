@@ -10,15 +10,18 @@ internal static partial class SmokeTests {
         const string regularSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' fill='#ef4444'>MMMMiiii</text></svg>";
         const string italicSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-style='italic' fill='#ef4444'>MMMMiiii</text></svg>";
         const string underlinedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' text-decoration='underline' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string numericBoldSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-weight='750' fill='#ef4444'>MMMMiiii</text></svg>";
         var regular = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularSvg));
         var italic = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicSvg));
         var underlined = RasterImageDecoder.Decode(SvgRasterizer.ToPng(underlinedSvg));
+        var numericBold = RasterImageDecoder.Decode(SvgRasterizer.ToPng(numericBoldSvg));
         var regularBounds = SvgColorBounds(regular.Pixels, regular.Width, regular.Height, 239, 68, 68);
         var italicBounds = SvgColorBounds(italic.Pixels, italic.Width, italic.Height, 239, 68, 68);
         var underlinedBounds = SvgColorBounds(underlined.Pixels, underlined.Width, underlined.Height, 239, 68, 68);
 
         Assert(italicBounds.Width > regularBounds.Width, "SVG rasterization should preserve italic or oblique glyph overhang and measurement.");
         Assert(underlinedBounds.Bottom > regularBounds.Bottom, "SVG rasterization should preserve underlined text decoration in the raster artifact.");
+        Assert(CountPixelsNear(numericBold.Pixels, numericBold.Width, 0, 0, numericBold.Width - 1, numericBold.Height - 1, 239, 68, 68) > CountPixelsNear(regular.Pixels, regular.Width, 0, 0, regular.Width - 1, regular.Height - 1, 239, 68, 68), "SVG rasterization should treat numeric font weights of 600 or greater as emphasized text.");
 
         var serifFont = TrueTypeFont.TryLoadForFamily("serif", out _);
         var monospaceFont = TrueTypeFont.TryLoadForFamily("monospace", out _);

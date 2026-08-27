@@ -112,7 +112,7 @@ public sealed partial class SvgChartRenderer {
             }
             DrawTimelineRangeBar(writer, chart, item, id, i, left, y, width, rowHeight, duration, summary);
             if (item.ShowDataLabels && width >= 72) {
-                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 6, "750");
+                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 6, "750", style: DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0));
             }
         }
 

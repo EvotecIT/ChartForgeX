@@ -13,6 +13,11 @@ public sealed partial class PngChartRenderer {
         return Clamp(x - width / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
     }
 
+    private static double EdgeAwarePngLabelX(string label, double x, ChartRect plot, double fontSize, TextStyleOverride style, bool emphasized = false) {
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized);
+        return Clamp(x - width / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
+    }
+
     private static void DrawXAxisTickLabel(RgbaCanvas c, Chart chart, ChartRect plot, string label, double x, double value, IReadOnlyList<string>? axisLabels = null) {
         var preferredFontSize = PngTickFontSize(chart);
         var color = chart.Options.TryGetXAxisLabelHighlight(value, out var highlight) ? highlight : PngTickColor(chart);

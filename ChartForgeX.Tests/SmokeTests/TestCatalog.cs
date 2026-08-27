@@ -161,6 +161,7 @@ internal static partial class SmokeTests {
         ("Series fill patterns render for filled marks", SeriesFillPatternsRenderForFilledMarks),
         ("Series data-label styles override chart defaults", SeriesDataLabelStylesOverrideChartDefaults),
         ("Specialized series data-label styles override chart defaults", SpecializedSeriesDataLabelStylesOverrideChartDefaults),
+        ("Intrinsic specialized data-label styles render across formats", IntrinsicSpecializedDataLabelStylesRenderAcrossFormats),
         ("Point data-label styles override series defaults", PointDataLabelStylesOverrideSeriesDefaults),
         ("Point colors override series color for bars", PointColorsOverrideSeriesColorForBars),
         ("Map point colors override series color", MapPointColorsOverrideSeriesColor),

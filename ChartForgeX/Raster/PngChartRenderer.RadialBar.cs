@@ -54,8 +54,9 @@ public sealed partial class PngChartRenderer {
         c.DrawCircle(cx, cy, centerDiskRadius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.RadialCenterFillOpacity));
         c.DrawCircleOutline(cx, cy, centerDiskRadius, ApplyOpacity(theme.Grid, ChartVisualPrimitives.RadialCenterStrokeOpacity), 1);
         if (series.ShowDataLabels != false && chart.Options.ShowRadialBarCenterLabel) {
-            DrawPngTextEmphasizedCenteredX(c, cx, cy - theme.TitleFontSize * 0.42 - valueFontSize / 2.0, centerLabel, theme.Text, valueFontSize, labelWidth);
-            DrawPngTextEmphasizedCenteredX(c, cx, cy + theme.LegendFontSize + 14 - nameFontSize + 1, series.Name, theme.MutedText, nameFontSize, labelWidth);
+            var dataStyle = DataLabelStyle(chart, series);
+            DrawPngTextStyledCenteredX(c, cx, cy - theme.TitleFontSize * 0.42 - valueFontSize / 2.0, centerLabel, dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
+            DrawPngTextStyledCenteredX(c, cx, cy + theme.LegendFontSize + 14 - nameFontSize + 1, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
         }
         if (chart.Options.ShowLegend) DrawRadialBarLegend(c, chart, plot, series);
     }

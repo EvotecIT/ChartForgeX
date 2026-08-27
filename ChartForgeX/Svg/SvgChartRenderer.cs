@@ -460,7 +460,7 @@ public sealed partial class SvgChartRenderer {
             if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
-                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize);
+                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
                     WriteSvgTextStyleAttributes(writer, tickStyle);
                     writer.Text(FormatYAxisValue(chart, yv)).EndElement().Line();
                 });
@@ -504,7 +504,7 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, writer => {
                 writer.StartElement("text");
                 if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
-                writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize);
+                writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
                 WriteSvgTextStyleAttributes(writer, style);
                 writer.Text(label).EndElement().Line();
             });
@@ -516,7 +516,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, writer => {
             writer.StartElement("text");
             if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
-            writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize);
+            writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
             WriteSvgTextStyleAttributes(writer, style);
             writer.Text(label).EndElement().Line();
         });

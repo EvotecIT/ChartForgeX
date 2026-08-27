@@ -18,7 +18,7 @@ internal static partial class SmokeTests {
             .WithTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Comic Sans MS, cursive").WithWeight("900").WithItalic().WithUnderline().WithFontSize(24))
             .WithSubtitleStyle(style => style.WithColor("#0e7490").WithItalic())
             .WithAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline())
-            .WithTickLabelStyle(style => style.WithColor("#2563eb").WithItalic())
+            .WithTickLabelStyle(style => style.WithColor("#2563eb").WithWeight("650").WithItalic())
             .WithLegendStyle(style => style.WithColor("#15803d").WithUnderline())
             .WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800"))
             .AddBar("North America adoption is intentionally long", Points(28, 41, 64, 83))
@@ -29,6 +29,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "SVG text styles should support italic text.");
         Assert(svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "SVG text styles should support underlined text.");
         Assert(svg.Contains(">Quarter</text>", StringComparison.Ordinal) && svg.Contains("fill=\"#2563EB\"", StringComparison.Ordinal), "SVG tick labels should honor role-specific text colors.");
+        Assert(svg.Contains("font-weight=\"650\"", StringComparison.Ordinal), "SVG axis tick and category labels should honor numeric text weights.");
         Assert(svg.Contains("data-cfx-role=\"legend-label\"", StringComparison.Ordinal) && svg.Contains("fill=\"#15803D\"", StringComparison.Ordinal), "SVG legends should honor role-specific text colors.");
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal) && svg.Contains("fill=\"#B45309\"", StringComparison.Ordinal), "SVG data labels should honor role-specific text colors.");
         Assert(chart.ToPng().Length > 64, "Styled text should render PNG output.");

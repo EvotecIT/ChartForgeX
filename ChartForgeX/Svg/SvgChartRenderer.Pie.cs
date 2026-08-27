@@ -112,6 +112,7 @@ public sealed partial class SvgChartRenderer {
         DrawPieOutsideLabels(sb, chart, outsideLabels, radius, plot, series);
 
         if (series.Kind == ChartSeriesKind.Donut && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false) {
+            var dataStyle = DataLabelStyle(chart, series);
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerValue = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var centerLabel = chart.Options.DonutCenterLabel ?? series.Name;
@@ -122,8 +123,8 @@ public sealed partial class SvgChartRenderer {
             var valueY = cy - centerGroupHeight / 2.0 + valueFontSize / 2.0;
             var labelY = valueY + valueFontSize / 2.0 + centerLineGap + labelFontSize / 2.0;
             var centerWriter = new SvgMarkupWriter(512);
-            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850");
-            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650");
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850", style: dataStyle);
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650", style: dataStyle);
             sb.Append(centerWriter.Build());
         }
 

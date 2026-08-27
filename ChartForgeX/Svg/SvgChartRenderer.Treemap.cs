@@ -40,7 +40,7 @@ public sealed partial class SvgChartRenderer {
             var summary = label + ": " + value;
             var radius = Math.Min(ChartVisualPrimitives.TreemapTileCornerRadiusMax, Math.Min(rect.Width, rect.Height) * ChartVisualPrimitives.TreemapTileCornerRadiusFactor);
             DrawTreemapTile(writer, chart, id, series, seriesIndex, tile.PointIndex, rect, radius, summary, label, tile.Point.Y);
-            if (showLabels) DrawTreemapTileLabels(writer, chart, rect, label, value, color);
+            if (showLabels) DrawTreemapTileLabels(writer, chart, series, tile.PointIndex, rect, label, value, color);
         }
 
         writer.EndElement().Line();
@@ -144,14 +144,15 @@ public sealed partial class SvgChartRenderer {
         return new ChartRect(basePlot.X + 10, basePlot.Y + 12, Math.Max(1, basePlot.Width - 20), Math.Max(1, basePlot.Height - 24));
     }
 
-    private static void DrawTreemapTileLabels(SvgMarkupWriter writer, Chart chart, ChartRect rect, string label, string value, ChartColor color) {
+    private static void DrawTreemapTileLabels(SvgMarkupWriter writer, Chart chart, ChartSeries series, int pointIndex, ChartRect rect, string label, string value, ChartColor color) {
         if (rect.Width < 48 || rect.Height < 30) return;
         var t = chart.Options.Theme;
+        var dataStyle = DataLabelStyle(chart, series, pointIndex);
         var textColor = ChartColorMath.TextOnBackground(color);
         var insetX = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetX, Math.Max(6, rect.Width * 0.12));
         var insetY = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetY, Math.Max(7, rect.Height * 0.14));
         var maxWidth = Math.Max(8, rect.Width - insetX * 2);
-        var labelFontSize = TextFontSizeForSvgWidth(label, maxWidth, Math.Min(t.LegendFontSize, Math.Max(8, rect.Height * 0.20)));
+        var labelFontSize = TextFontSizeForSvgWidth(label, maxWidth, Math.Min(StyleFontSize(dataStyle, t.LegendFontSize), Math.Max(8, rect.Height * 0.20)));
         var fittedLabel = TrimSvgLabelToWidth(label, labelFontSize, maxWidth);
         if (fittedLabel.Length > 0) {
             writer
@@ -159,17 +160,18 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-role", "treemap-label")
                 .Attribute("x", rect.X + insetX)
                 .Attribute("y", rect.Y + insetY + labelFontSize)
-                .Attribute("fill", textColor.ToCss())
-                .Attribute("font-family", TreemapSvgFontFamily(t.FontFamily))
+                .Attribute("fill", StyleColor(dataStyle, textColor).ToCss())
+                .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                 .Attribute("font-size", labelFontSize)
-                .Attribute("font-weight", "800")
-                .Text(fittedLabel)
+                .Attribute("font-weight", StyleWeight(dataStyle, "800"));
+            WriteSvgTextStyleAttributes(writer, dataStyle);
+            writer.Text(fittedLabel)
                 .EndElement()
                 .Line();
         }
 
         if (rect.Height < 52) return;
-        var valueFontSize = TextFontSizeForSvgWidth(value, maxWidth, Math.Min(t.DataLabelFontSize, Math.Max(8, rect.Height * 0.18)));
+        var valueFontSize = TextFontSizeForSvgWidth(value, maxWidth, Math.Min(StyleFontSize(dataStyle, t.DataLabelFontSize), Math.Max(8, rect.Height * 0.18)));
         var fittedValue = TrimSvgLabelToWidth(value, valueFontSize, maxWidth);
         if (fittedValue.Length > 0) {
             var valueY = rect.Y + insetY + labelFontSize + ChartVisualPrimitives.TreemapTileValueGap + valueFontSize;
@@ -179,19 +181,18 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-role", "treemap-value")
                     .Attribute("x", rect.X + insetX)
                     .Attribute("y", valueY)
-                    .Attribute("fill", textColor.ToCss())
+                    .Attribute("fill", StyleColor(dataStyle, textColor).ToCss())
                     .Attribute("fill-opacity", ChartVisualPrimitives.TreemapValueOpacity)
-                    .Attribute("font-family", TreemapSvgFontFamily(t.FontFamily))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                     .Attribute("font-size", valueFontSize)
-                    .Attribute("font-weight", "700")
-                    .Text(fittedValue)
+                    .Attribute("font-weight", StyleWeight(dataStyle, "700"));
+                WriteSvgTextStyleAttributes(writer, dataStyle);
+                writer.Text(fittedValue)
                     .EndElement()
                     .Line();
             }
         }
     }
-
-    private static string TreemapSvgFontFamily(string value) => string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value;
 
     private static bool IsTreemapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Treemap);
 

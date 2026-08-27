@@ -58,9 +58,10 @@ public sealed partial class SvgChartRenderer {
 
         if (series.ShowDataLabels != false) {
             var valueLayer = series.RadialLayers.Last();
+            var dataStyle = DataLabelStyle(chart, series);
             var labelWidth = Math.Max(60, Math.Min(plot.Width - 24, outerRadius * 1.45));
-            DrawSvgTextCenteredX(w, chart, "layered-radial-value", FormatValue(chart, valueLayer.Value), cx, cy - t.TitleFontSize * 0.36, t.Text, Math.Max(24, t.TitleFontSize * 1.45), labelWidth, "850", t.CardBackground, 3.2);
-            DrawSvgTextCenteredX(w, chart, "layered-radial-title", series.Name, cx, cy + Math.Max(10, t.LegendFontSize + 12), t.MutedText, Math.Max(9, t.LegendFontSize), labelWidth, "700", t.CardBackground, 2.4, middleBaseline: false);
+            DrawSvgTextCenteredX(w, chart, "layered-radial-value", FormatValue(chart, valueLayer.Value), cx, cy - t.TitleFontSize * 0.36, t.Text, Math.Max(24, t.TitleFontSize * 1.45), labelWidth, "850", t.CardBackground, 3.2, style: dataStyle);
+            DrawSvgTextCenteredX(w, chart, "layered-radial-title", series.Name, cx, cy + Math.Max(10, t.LegendFontSize + 12), t.MutedText, Math.Max(9, t.LegendFontSize), labelWidth, "700", t.CardBackground, 2.4, middleBaseline: false, style: dataStyle);
         }
 
         w.EndElement().Line();

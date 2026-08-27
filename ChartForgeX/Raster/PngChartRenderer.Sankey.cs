@@ -12,26 +12,28 @@ public sealed partial class PngChartRenderer {
     private static void DrawSankey(RgbaCanvas c, Chart chart, ChartRect plot) {
         var model = BuildSankeyModel(chart, plot);
         if (model.Nodes.Count == 0 || model.Links.Count == 0) return;
-        var showDataLabels = chart.Series.First(series => series.Kind == ChartSeriesKind.Sankey).ShowDataLabels ?? chart.Options.ShowDataLabels;
+        var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Sankey);
+        var showDataLabels = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
         foreach (var link in model.Links) DrawSankeyLink(c, chart, model, link);
-        foreach (var node in model.Nodes) DrawSankeyNode(c, chart, plot, model, node, showDataLabels);
+        foreach (var node in model.Nodes) DrawSankeyNode(c, chart, series, plot, model, node, showDataLabels);
     }
 
     private static bool IsSankeyChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Sankey);
 
-    private static void DrawSankeyNode(RgbaCanvas c, Chart chart, ChartRect plot, SankeyModel model, SankeyNode node, bool showDataLabels) {
+    private static void DrawSankeyNode(RgbaCanvas c, Chart chart, ChartSeries series, ChartRect plot, SankeyModel model, SankeyNode node, bool showDataLabels) {
         var theme = chart.Options.Theme;
         var color = theme.Palette[node.Index % theme.Palette.Length];
         var radius = Math.Min(ChartVisualPrimitives.SankeyNodeCornerRadiusMax, model.NodeWidth / 2);
         c.FillRoundedRectVerticalGradient(node.X, node.Y, model.NodeWidth, node.Height, radius, SankeyNodeGradientTop(color), SankeyNodeGradientBottom(color));
         c.StrokeRoundedRect(node.X, node.Y, model.NodeWidth, node.Height, radius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.SankeyNodeBorderOpacity), ChartVisualPrimitives.SankeyNodeBorderStrokeWidth);
         if (!showDataLabels) return;
-        var preferredFontSize = PngTickFontSize(chart);
+        var dataStyle = DataLabelStyle(chart, series);
+        var preferredFontSize = PngStyleFontSize(dataStyle, theme.TickLabelFontSize);
         var labelMaxWidth = Math.Max(64, plot.Width / Math.Max(2, model.MaxLayer + 1) * 0.62);
-        var fontSize = TextFontSizeForEmphasizedWidth(node.Label, labelMaxWidth, preferredFontSize);
-        var label = TrimReadablePngLabelToWidth(node.Label, fontSize, labelMaxWidth);
+        var fontSize = TextFontSizeForEmphasizedWidth(node.Label, labelMaxWidth, preferredFontSize, dataStyle);
+        var label = TrimReadablePngLabelToWidth(node.Label, fontSize, labelMaxWidth, dataStyle);
         if (label.Length == 0) return;
-        var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
+        var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, emphasized: true);
         var y = node.Y + node.Height / 2 - fontSize / 2;
         var labelBounds = new ChartRect(chart.Options.Padding.Left, chart.Options.Padding.Top, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right, chart.Options.Size.Height - chart.Options.Padding.Top - chart.Options.Padding.Bottom);
         var padX = ChartVisualPrimitives.SankeyLabelBackdropPaddingX;
@@ -40,11 +42,7 @@ public sealed partial class PngChartRenderer {
         var labelRadius = Math.Min(6, (fontSize + padY * 2) / 2);
         c.FillRoundedRect(labelX - padX, y - padY, labelWidth + padX * 2, fontSize + padY * 2, labelRadius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.SankeyLabelBackdropOpacity));
         c.StrokeRoundedRect(labelX - padX, y - padY, labelWidth + padX * 2, fontSize + padY * 2, labelRadius, ApplyOpacity(theme.PlotBorder, ChartVisualPrimitives.SankeyLabelBackdropBorderOpacity));
-        if (node.Layer == model.MaxLayer) {
-            DrawReadablePngLabel(c, labelBounds, labelX, y, label, theme.MutedText, theme.CardBackground, fontSize);
-        } else {
-            DrawReadablePngLabel(c, labelBounds, labelX, y, label, theme.MutedText, theme.CardBackground, fontSize);
-        }
+        DrawReadablePngLabel(c, labelBounds, labelX, y, label, theme.MutedText, theme.CardBackground, fontSize, dataStyle);
     }
 
     private static void DrawSankeyLink(RgbaCanvas c, Chart chart, SankeyModel model, SankeyLink link) {

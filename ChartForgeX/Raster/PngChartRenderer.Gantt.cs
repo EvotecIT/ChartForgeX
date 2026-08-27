@@ -95,7 +95,7 @@ public sealed partial class PngChartRenderer {
             var range = series.Points[0];
             var metadata = series.Points[1];
             var flags = series.Points[2];
-            items.Add(new GanttItem(series.Name, Math.Min(range.X, range.Y), Math.Max(range.X, range.Y), Clamp(metadata.X, 0, 1), (int)Math.Round(metadata.Y), flags.X >= 0.5, series.Color ?? chart.Options.Theme.Palette[i % chart.Options.Theme.Palette.Length], ShouldDrawDataLabels(chart, series)));
+            items.Add(new GanttItem(i, series.Name, Math.Min(range.X, range.Y), Math.Max(range.X, range.Y), Clamp(metadata.X, 0, 1), (int)Math.Round(metadata.Y), flags.X >= 0.5, series.Color ?? chart.Options.Theme.Palette[i % chart.Options.Theme.Palette.Length], ShouldDrawDataLabels(chart, series)));
         }
 
         return items;
@@ -109,8 +109,10 @@ public sealed partial class PngChartRenderer {
         c.StrokeRoundedRect(left, y, width, height, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.GanttTaskBorderOpacity), ChartVisualPrimitives.GanttTaskBorderStrokeWidth);
         var inset = Math.Min(radius, width / 3);
         if (width > inset * 2 + 3) c.DrawLine(left + inset, y + ChartVisualPrimitives.GanttTaskHighlightOffsetY, left + width - inset, y + ChartVisualPrimitives.GanttTaskHighlightOffsetY, ApplyOpacity(ChartColor.White, ChartVisualPrimitives.GanttTaskHighlightOpacity), ChartVisualPrimitives.GridStrokeWidth);
-        if (item.ShowDataLabels && width >= Math.Max(74, EstimatePngEmphasizedTextWidth("100%", chart.Options.Theme.DataLabelFontSize) + 14)) {
-            DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, height), FormatPercent(item.Progress), ChartColorMath.TextOnBackground(item.Color), item.Color, chart.Options.Theme.DataLabelFontSize);
+        var dataStyle = DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0);
+        var dataFontSize = PngDataLabelFontSize(chart, chart.Series[item.SeriesIndex], 0);
+        if (item.ShowDataLabels && width >= Math.Max(74, EstimatePngStyledTextWidth("100%", dataFontSize, dataStyle, emphasized: true) + 14)) {
+            DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, height), FormatPercent(item.Progress), ChartColorMath.TextOnBackground(item.Color), item.Color, dataFontSize, dataStyle);
         }
     }
 
@@ -164,7 +166,8 @@ public sealed partial class PngChartRenderer {
     }
 
     private readonly struct GanttItem {
-        public GanttItem(string name, double start, double end, double progress, int dependsOn, bool milestone, ChartColor color, bool showDataLabels) {
+        public GanttItem(int seriesIndex, string name, double start, double end, double progress, int dependsOn, bool milestone, ChartColor color, bool showDataLabels) {
+            SeriesIndex = seriesIndex;
             Name = name;
             Start = start;
             End = end;
@@ -175,6 +178,7 @@ public sealed partial class PngChartRenderer {
             ShowDataLabels = showDataLabels;
         }
 
+        public int SeriesIndex { get; }
         public string Name { get; }
         public double Start { get; }
         public double End { get; }
