@@ -100,8 +100,14 @@ public sealed partial class SvgChartRenderer {
             .Line();
         if (showLabels && chart.Options.ShowRadialBarCenterLabel) {
             var dataStyle = DataLabelStyle(chart, series);
-            DrawSvgTextCenteredX(writer, chart, "radial-bar-total", centerLabel, cx, cy - t.TitleFontSize * 0.42, t.Text, Math.Max(26, t.TitleFontSize * 1.32), labelWidth, "850", t.CardBackground, 3.2, style: dataStyle);
-            DrawSvgTextCenteredX(writer, chart, "radial-bar-title", series.Name, cx, cy + t.LegendFontSize + 14, t.MutedText, Math.Max(9, t.LegendFontSize - 1), labelWidth, "700", t.CardBackground, 2.4, middleBaseline: false, style: dataStyle);
+            var valueFontSize = StyleFontSize(dataStyle, Math.Max(26, t.TitleFontSize * 1.32));
+            var nameFontSize = StyleFontSize(dataStyle, Math.Max(9, t.LegendFontSize - 1));
+            var lineGap = Math.Max(4, Math.Min(8, centerDiskRadius * 0.10));
+            var groupHeight = valueFontSize + lineGap + nameFontSize;
+            var valueY = cy - groupHeight / 2.0 + valueFontSize / 2.0;
+            var nameY = valueY + valueFontSize / 2.0 + lineGap + nameFontSize / 2.0;
+            DrawSvgTextCenteredX(writer, chart, "radial-bar-total", centerLabel, cx, valueY, t.Text, valueFontSize, labelWidth, "850", t.CardBackground, 3.2, style: dataStyle);
+            DrawSvgTextCenteredX(writer, chart, "radial-bar-title", series.Name, cx, nameY, t.MutedText, nameFontSize, labelWidth, "700", t.CardBackground, 2.4, style: dataStyle);
         }
         if (chart.Options.ShowLegend) DrawRadialBarLegend(writer, chart, plot, series);
         writer.EndElement().Line();

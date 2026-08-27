@@ -194,4 +194,40 @@ internal static partial class SmokeTests {
             Assert(!regular.ToPng().SequenceEqual(styled.ToPng()), item.Name + " raster labels should honor the same data-label typography style.");
         }
     }
+
+    private static void CenterDataLabelFontSizesDriveLayout() {
+        AssertCenterDataLabelSpacing(
+            () => Chart.Create().WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)),
+            "donut-total-label",
+            "donut-title",
+            "donut");
+        AssertCenterDataLabelSpacing(
+            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)),
+            "radial-bar-total",
+            "radial-bar-title",
+            "radial bar");
+        AssertCenterDataLabelSpacing(
+            () => Chart.Create().WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)),
+            "layered-radial-value",
+            "layered-radial-title",
+            "layered radial");
+    }
+
+    private static void AssertCenterDataLabelSpacing(Func<Chart> create, string valueRole, string titleRole, string name) {
+        var compact = create();
+        compact.Series[0].WithDataLabelStyle(style => style.WithFontSize(10));
+        var compactSvg = compact.ToSvg();
+        var compactGap = GetAttribute(compactSvg, "data-cfx-role=\"" + titleRole + "\"", "y") - GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "y");
+
+        var large = create();
+        large.Series[0].WithDataLabelStyle(style => style.WithFontSize(24));
+        var largeSvg = large.ToSvg();
+        var largeGap = GetAttribute(largeSvg, "data-cfx-role=\"" + titleRole + "\"", "y") - GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "y");
+        var compactFontSize = GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
+        var largeFontSize = GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
+
+        Assert(largeFontSize > compactFontSize, name + " center labels should emit a larger fitted font size when the resolved data-label font size increases (compact " + compactFontSize + ", large " + largeFontSize + ").");
+        Assert(largeGap > compactGap + 10, name + " center-label spacing should expand with the resolved data-label font size instead of using fallback theme metrics.");
+        Assert(!compact.ToPng().SequenceEqual(large.ToPng()), name + " PNG center-label layout should respond to the resolved data-label font size.");
+    }
 }

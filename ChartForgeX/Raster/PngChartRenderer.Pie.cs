@@ -109,8 +109,8 @@ public sealed partial class PngChartRenderer {
             var dataStyle = DataLabelStyle(chart, series);
             var totalLabel = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var nameLabel = chart.Options.DonutCenterLabel ?? series.Name;
-            var totalFontSize = Math.Max(14, Math.Min(26, inner * 0.45));
-            var nameFontSize = Math.Max(9, Math.Min(chart.Options.Theme.TickLabelFontSize, inner * 0.22));
+            var totalFontSize = PngStyleFontSize(dataStyle, Math.Max(14, Math.Min(26, inner * 0.45)));
+            var nameFontSize = PngStyleFontSize(dataStyle, Math.Max(9, Math.Min(chart.Options.Theme.TickLabelFontSize, inner * 0.22)));
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerLineGap = Math.Max(4, Math.Min(8, inner * 0.08));
             var totalHeight = EstimatePngStyledTextHeight(totalFontSize, dataStyle);

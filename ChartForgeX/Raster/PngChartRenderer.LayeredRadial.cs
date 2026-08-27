@@ -43,10 +43,14 @@ public sealed partial class PngChartRenderer {
             var valueLayer = series.RadialLayers[series.RadialLayers.Count - 1];
             var dataStyle = DataLabelStyle(chart, series);
             var labelWidth = Math.Max(60, Math.Min(plot.Width - 24, outerRadius * 1.45));
-            var valueFontSize = Math.Max(24, PngStyleFontSize(dataStyle, theme.TitleFontSize * 1.45));
-            var nameFontSize = Math.Max(9, PngStyleFontSize(dataStyle, theme.LegendFontSize));
-            DrawPngTextStyledCenteredX(c, cx, cy - theme.TitleFontSize * 0.36 - valueFontSize / 2.0, FormatValue(chart, valueLayer.Value), dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
-            DrawPngTextStyledCenteredX(c, cx, cy + Math.Max(10, theme.LegendFontSize + 12) - nameFontSize + 1, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
+            var valueFontSize = PngStyleFontSize(dataStyle, Math.Max(24, theme.TitleFontSize * 1.45));
+            var nameFontSize = PngStyleFontSize(dataStyle, Math.Max(9, theme.LegendFontSize));
+            var lineGap = Math.Max(4, Math.Min(8, outerRadius * 0.05));
+            var valueHeight = EstimatePngStyledTextHeight(valueFontSize, dataStyle);
+            var nameHeight = EstimatePngStyledTextHeight(nameFontSize, dataStyle);
+            var groupTop = cy - (valueHeight + lineGap + nameHeight) / 2.0;
+            DrawPngTextStyledCenteredX(c, cx, groupTop, FormatValue(chart, valueLayer.Value), dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
+            DrawPngTextStyledCenteredX(c, cx, groupTop + valueHeight + lineGap, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
         }
     }
 

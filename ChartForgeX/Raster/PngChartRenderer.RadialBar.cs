@@ -49,14 +49,18 @@ public sealed partial class PngChartRenderer {
         var centerLabel = FormatValue(chart, average);
         var labelWidth = Math.Max(54, Math.Min(chartPlot.Width * 0.32, outerRadius * 1.25));
         var centerDiskRadius = Math.Max(26, outerRadius - count * (stroke + gap) - 2);
-        var valueFontSize = Math.Max(26, theme.TitleFontSize * 1.32);
-        var nameFontSize = Math.Max(9, theme.LegendFontSize - 1);
         c.DrawCircle(cx, cy, centerDiskRadius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.RadialCenterFillOpacity));
         c.DrawCircleOutline(cx, cy, centerDiskRadius, ApplyOpacity(theme.Grid, ChartVisualPrimitives.RadialCenterStrokeOpacity), 1);
         if (series.ShowDataLabels != false && chart.Options.ShowRadialBarCenterLabel) {
             var dataStyle = DataLabelStyle(chart, series);
-            DrawPngTextStyledCenteredX(c, cx, cy - theme.TitleFontSize * 0.42 - valueFontSize / 2.0, centerLabel, dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
-            DrawPngTextStyledCenteredX(c, cx, cy + theme.LegendFontSize + 14 - nameFontSize + 1, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
+            var valueFontSize = PngStyleFontSize(dataStyle, Math.Max(26, theme.TitleFontSize * 1.32));
+            var nameFontSize = PngStyleFontSize(dataStyle, Math.Max(9, theme.LegendFontSize - 1));
+            var lineGap = Math.Max(4, Math.Min(8, centerDiskRadius * 0.10));
+            var valueHeight = EstimatePngStyledTextHeight(valueFontSize, dataStyle);
+            var nameHeight = EstimatePngStyledTextHeight(nameFontSize, dataStyle);
+            var groupTop = cy - (valueHeight + lineGap + nameHeight) / 2.0;
+            DrawPngTextStyledCenteredX(c, cx, groupTop, centerLabel, dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
+            DrawPngTextStyledCenteredX(c, cx, groupTop + valueHeight + lineGap, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
         }
         if (chart.Options.ShowLegend) DrawRadialBarLegend(c, chart, plot, series);
     }

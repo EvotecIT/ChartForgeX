@@ -116,8 +116,8 @@ public sealed partial class SvgChartRenderer {
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerValue = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var centerLabel = chart.Options.DonutCenterLabel ?? series.Name;
-            var valueFontSize = Math.Max(14, Math.Min(26, inner * 0.45));
-            var labelFontSize = Math.Max(9, Math.Min(t.TickLabelFontSize, inner * 0.22));
+            var valueFontSize = StyleFontSize(dataStyle, Math.Max(14, Math.Min(26, inner * 0.45)));
+            var labelFontSize = StyleFontSize(dataStyle, Math.Max(9, Math.Min(t.TickLabelFontSize, inner * 0.22)));
             var centerLineGap = Math.Max(4, Math.Min(8, inner * 0.08));
             var centerGroupHeight = valueFontSize + centerLineGap + labelFontSize;
             var valueY = cy - centerGroupHeight / 2.0 + valueFontSize / 2.0;
