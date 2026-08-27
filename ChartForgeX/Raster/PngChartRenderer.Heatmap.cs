@@ -74,7 +74,7 @@ public sealed partial class PngChartRenderer {
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 var labelFits = cellWidth >= EstimatePngStyledTextWidth("100%", dataFontSize, dataStyle, emphasized: true) + 12 &&
-                    cellHeight >= EstimatePngStyledTextHeight(dataFontSize, dataStyle) + 10;
+                    cellHeight >= EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle) + 10;
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (drawValueText) {
@@ -84,7 +84,7 @@ public sealed partial class PngChartRenderer {
                         DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, ChartColorMath.TextOnBackground(color), color, dataFontSize, dataStyle);
                     } else {
                         var heatmapLabelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, emphasized: true);
-                        var heatmapLabelHeight = EstimatePngStyledTextHeight(dataFontSize, dataStyle);
+                        var heatmapLabelHeight = EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle);
                         var labelX = placement == ChartDataLabelPlacement.Left
                             ? x - heatmapLabelWidth - 8
                             : placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside
@@ -96,7 +96,7 @@ public sealed partial class PngChartRenderer {
                             var connectorEndX = placement == ChartDataLabelPlacement.Left ? x - 5 : x + cellWidth + 5;
                             c.DrawLine(connectorStartX, y + cellHeight / 2.0, connectorEndX, y + cellHeight / 2.0, ApplyOpacity(DataLabelConnectorColor(chart), chart.Options.DataLabelConnectorOpacity), chart.Options.DataLabelConnectorStrokeWidth);
                         }
-                        DrawReadablePngLabel(c, labelBounds, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
+                        DrawReadablePngLabel(c, labelBounds, labelX, labelY - PngStyledTextTopExtent(dataFontSize, dataStyle), label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
                     }
                 }
             }

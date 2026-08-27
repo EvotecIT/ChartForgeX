@@ -14,26 +14,31 @@ public sealed partial class PngChartRenderer {
         var italic = style?.Italic == true;
         var font = style == null ? CurrentOutlineFont : PngStyleFont(style);
         var emphasized = style == null || PngStyleEmphasized(style, fallback: true);
-        foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, y + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize, font, italic);
-        if (emphasized) c.DrawTextEmphasized(x, y, label, text, fontSize, font, italic);
-        else c.DrawText(x, y, label, text, fontSize, font, italic);
-        if (style != null) DrawPngDecorations(c, x, y, label, style, text, fontSize, emphasized);
+        var drawY = y + (style == null ? 0 : PngBaselineOffset(style, fontSize));
+        foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, drawY + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize, font, italic);
+        if (emphasized) c.DrawTextEmphasized(x, drawY, label, text, fontSize, font, italic);
+        else c.DrawText(x, drawY, label, text, fontSize, font, italic);
+        if (style != null) DrawPngDecorations(c, x, drawY, label, style, text, fontSize, emphasized);
     }
 
     private static void DrawReadablePngLabel(RgbaCanvas c, ChartRect plot, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
         FitReadablePngLabel(label, fontSize, Math.Max(8, plot.Width - ChartVisualPrimitives.DataLabelPlotInset * 2), Math.Max(8, plot.Height - ChartVisualPrimitives.DataLabelPlotInset * 2), out var fittedLabel, out var fittedFontSize, style);
         if (fittedLabel.Length == 0) return;
         var width = style == null ? EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize) : EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style, emphasized: true);
-        var height = style == null ? EstimatePngTextHeight(fittedFontSize) : EstimatePngStyledTextHeight(fittedFontSize, style);
-        DrawReadablePngLabel(c, Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset), Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset, plot.Bottom - height - ChartVisualPrimitives.DataLabelPlotInset), fittedLabel, text, halo, fittedFontSize, style);
+        var safeY = style == null
+            ? Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset, plot.Bottom - EstimatePngTextHeight(fittedFontSize) - ChartVisualPrimitives.DataLabelPlotInset)
+            : ClampPngStyledTextY(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset, fittedFontSize, style);
+        DrawReadablePngLabel(c, Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset), safeY, fittedLabel, text, halo, fittedFontSize, style);
     }
 
     private static void DrawReadablePngLabelCentered(RgbaCanvas c, ChartRect bounds, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
         FitReadablePngLabel(label, fontSize, Math.Max(8, bounds.Width - 8), Math.Max(8, bounds.Height - 6), out var fittedLabel, out var fittedFontSize, style);
         if (fittedLabel.Length == 0) return;
         var width = style == null ? EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize) : EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style, emphasized: true);
-        var height = style == null ? EstimatePngTextHeight(fittedFontSize) : EstimatePngStyledTextHeight(fittedFontSize, style);
-        DrawReadablePngLabel(c, bounds.Left + (bounds.Width - width) / 2.0, bounds.Top + (bounds.Height - height) / 2.0, fittedLabel, text, halo, fittedFontSize, style);
+        var y = style == null
+            ? bounds.Top + (bounds.Height - EstimatePngTextHeight(fittedFontSize)) / 2.0
+            : CenterPngStyledTextY(bounds, fittedFontSize, style);
+        DrawReadablePngLabel(c, bounds.Left + (bounds.Width - width) / 2.0, y, fittedLabel, text, halo, fittedFontSize, style);
     }
 
     private static bool IsPointCalloutSeries(ChartSeries series) => series.SemanticRole == "point-callout";
@@ -45,7 +50,7 @@ public sealed partial class PngChartRenderer {
         var padX = 12.0;
         var padY = 8.0;
         var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true) + padX * 2;
-        var height = EstimatePngStyledTextHeight(fontSize, style) + padY * 2;
+        var height = EstimatePngStyledTextBoundsHeight(fontSize, style) + padY * 2;
         var gap = 14.0;
         var rectX = x - width / 2;
         var rectY = y - gap - height;
@@ -63,7 +68,7 @@ public sealed partial class PngChartRenderer {
         var fill = ChartColor.FromRgba(20, 20, 22, 238);
         c.FillRoundedRect(rectX, rectY, width, height, 9, fill);
         DrawPngPointCalloutPointer(c, x, y, rectX, rectY, width, height, placement, fill);
-        DrawReadablePngLabel(c, rectX + padX, rectY + padY, label, ChartColor.White, fill, fontSize, style);
+        DrawReadablePngLabel(c, rectX + padX, rectY + padY - PngStyledTextTopExtent(fontSize, style), label, ChartColor.White, fill, fontSize, style);
     }
 
     private static void DrawPngPointCalloutPointer(RgbaCanvas c, double x, double y, double rectX, double rectY, double width, double height, ChartDataLabelPlacement placement, ChartColor fill) {
@@ -113,12 +118,12 @@ public sealed partial class PngChartRenderer {
             fittedText,
             fittedFontSize,
             fittedText.Length == 0 ? 0 : EstimatePngStyledTextWidth(fittedText, fittedFontSize, style, emphasized),
-            fittedText.Length == 0 ? 0 : EstimatePngStyledTextHeight(fittedFontSize, style));
+            fittedText.Length == 0 ? 0 : EstimatePngStyledTextBoundsHeight(fittedFontSize, style));
     }
 
     private static void DrawPngFittedTextStyledCenteredX(RgbaCanvas c, double centerX, double y, PngStyledTextFit fit, TextStyleOverride style, ChartColor color, bool emphasized) {
         if (fit.Text.Length == 0) return;
-        DrawPngTextStyled(c, centerX - fit.Width / 2.0, y, fit.Text, style, color, fit.FontSize, emphasized);
+        DrawPngTextStyled(c, centerX - fit.Width / 2.0, y - PngStyledTextTopExtent(fit.FontSize, style), fit.Text, style, color, fit.FontSize, emphasized);
     }
 
     private static ChartColor ReadableLabelHalo(Chart chart) {
@@ -146,8 +151,15 @@ public sealed partial class PngChartRenderer {
         var height = RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style));
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         if (PngUnderlineStyle(style) != TextDecorationStyle.None) height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(PngUnderlineStyle(style), decorationThickness));
-        return height + Math.Abs(PngBaselineOffset(style, fontSize));
+        return height;
     }
+    private static double PngStyledTextTopExtent(double fontSize, TextStyleOverride style) => Math.Min(0, PngBaselineOffset(style, fontSize));
+    private static double PngStyledTextBottomExtent(double fontSize, TextStyleOverride style) => EstimatePngStyledTextHeight(fontSize, style) + Math.Max(0, PngBaselineOffset(style, fontSize));
+    private static double EstimatePngStyledTextBoundsHeight(double fontSize, TextStyleOverride style) => PngStyledTextBottomExtent(fontSize, style) - PngStyledTextTopExtent(fontSize, style);
+    private static double ClampPngStyledTextY(double y, double top, double bottom, double fontSize, TextStyleOverride style) =>
+        Clamp(y, top - PngStyledTextTopExtent(fontSize, style), bottom - PngStyledTextBottomExtent(fontSize, style));
+    private static double CenterPngStyledTextY(ChartRect bounds, double fontSize, TextStyleOverride style) =>
+        bounds.Top + (bounds.Height - EstimatePngStyledTextBoundsHeight(fontSize, style)) / 2.0 - PngStyledTextTopExtent(fontSize, style);
     private static double EstimatePngTextHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont);
     private static double PngTickFontSize(Chart chart) => PngStyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize);
     private static ChartColor PngTickColor(Chart chart) => PngStyleColor(chart.Options.TickLabelStyle, chart.Options.Theme.MutedText);
@@ -241,7 +253,7 @@ public sealed partial class PngChartRenderer {
     private static double FitReadablePngLabelFontSize(string value, double preferredFontSize, double maxWidth, double maxHeight, TextStyleOverride? style = null) {
         for (var fontSize = Math.Max(8, preferredFontSize); fontSize > 8; fontSize -= 1) {
             var width = style == null ? EstimatePngEmphasizedTextWidth(value, fontSize) : EstimatePngStyledTextWidth(value, fontSize, style, emphasized: true);
-            var height = style == null ? EstimatePngTextHeight(fontSize) : EstimatePngStyledTextHeight(fontSize, style);
+            var height = style == null ? EstimatePngTextHeight(fontSize) : EstimatePngStyledTextBoundsHeight(fontSize, style);
             if (width <= maxWidth && height <= maxHeight) return fontSize;
         }
 

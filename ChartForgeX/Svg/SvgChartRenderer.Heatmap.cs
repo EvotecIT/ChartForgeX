@@ -55,15 +55,18 @@ public sealed partial class SvgChartRenderer {
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color);
-                var labelFits = cellWidth >= 34 && cellHeight >= 20;
+                var label = FormatDataLabel(chart, series, pointIndex, value);
+                var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                var styledLabel = StyleText(dataStyle, label);
+                var preferredLabelFontSize = StyleFontSize(dataStyle, t.DataLabelFontSize);
+                var fittedCellFontSize = TextFontSizeForSvgBounds(styledLabel, Math.Max(1, cellWidth - 6), Math.Max(1, cellHeight - 6), preferredLabelFontSize, dataStyle, minFontSize: 1);
+                var labelFits = cellWidth >= 34 && cellHeight >= 20 && EstimateSvgStyledTextHeight(fittedCellFontSize, dataStyle) <= Math.Max(1, cellHeight - 6);
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (drawValueText) {
-                    var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        var dataStyle = DataLabelStyle(chart, series, pointIndex);
-                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), StyleFontSize(dataStyle, t.DataLabelFontSize), cellWidth - 6, "750", style: dataStyle);
+                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), fittedCellFontSize, cellWidth - 6, "750", style: dataStyle);
                     } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                         var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + cellWidth + 8;
                         var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
@@ -225,7 +228,7 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var style = DataLabelStyle(chart, row, pointIndex);
                 var fontSize = StyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
-                max = Math.Max(max, EstimateTextWidth(FormatDataLabel(chart, row, pointIndex, FindHeatmapValue(row, columns[i])), fontSize));
+                max = Math.Max(max, EstimateTextWidth(StyleText(style, FormatDataLabel(chart, row, pointIndex, FindHeatmapValue(row, columns[i]))), fontSize));
             }
         }
 

@@ -170,7 +170,8 @@ internal static partial class SvgRasterRenderer {
         var italic = IsItalic(style.FontStyle);
         var underline = HasUnderline(style.TextDecoration);
         var strikethrough = HasLineThrough(style.TextDecoration);
-        var decorationStyle = DecorationStyle(style.TextDecorationStyle);
+        var underlineStyle = DecorationStyle(style.UnderlineDecorationStyle);
+        var strikethroughStyle = DecorationStyle(style.StrikethroughDecorationStyle);
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic);
         var advanceWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic: false) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic: false);
         var advance = advanceWidth / renderScale;
@@ -187,7 +188,7 @@ internal static partial class SvgRasterRenderer {
         var underlineThickness = Math.Max(1, fontSize / 13.0);
         var underlineY = padding + fontSize + 2;
         var strikeY = padding + fontSize * 0.55;
-        var contentHeight = underline ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(decorationStyle, underlineThickness)) : textHeight;
+        var contentHeight = underline ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, underlineThickness)) : textHeight;
         var localWidth = Math.Max(1, (int)Math.Ceiling(width + padding * 2.0));
         var localHeight = Math.Max(1, (int)Math.Ceiling(contentHeight + padding * 2.0));
         var buffer = new RgbaCanvas(localWidth, localHeight, 1, font);
@@ -195,8 +196,8 @@ internal static partial class SvgRasterRenderer {
         if (style.Fill.IsReference || strokeColor.A > 0) {
             glyphMask = new RgbaCanvas(localWidth, localHeight, 1, font);
             DrawTextGlyphs(glyphMask, padding, padding, text, ChartColor.White, fontSize, emphasized, italic);
-            if (underline) RasterTextDecoration.Draw(glyphMask, padding, padding + width, underlineY, decorationStyle, ChartColor.White, underlineThickness);
-            if (strikethrough) RasterTextDecoration.Draw(glyphMask, padding, padding + width, strikeY, decorationStyle, ChartColor.White, underlineThickness);
+            if (underline) RasterTextDecoration.Draw(glyphMask, padding, padding + width, underlineY, underlineStyle, ChartColor.White, underlineThickness);
+            if (strikethrough) RasterTextDecoration.Draw(glyphMask, padding, padding + width, strikeY, strikethroughStyle, ChartColor.White, underlineThickness);
         }
         if (style.Fill.IsReference && glyphMask != null) {
             var localToCanvas = matrix
@@ -218,8 +219,8 @@ internal static partial class SvgRasterRenderer {
             }
         } else if (fillColor.A > 0) {
             DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized, italic);
-            if (underline) RasterTextDecoration.Draw(buffer, padding, padding + width, underlineY, decorationStyle, fillColor, underlineThickness);
-            if (strikethrough) RasterTextDecoration.Draw(buffer, padding, padding + width, strikeY, decorationStyle, fillColor, underlineThickness);
+            if (underline) RasterTextDecoration.Draw(buffer, padding, padding + width, underlineY, underlineStyle, fillColor, underlineThickness);
+            if (strikethrough) RasterTextDecoration.Draw(buffer, padding, padding + width, strikeY, strikethroughStyle, fillColor, underlineThickness);
         }
         if (strokeColor.A > 0) {
             PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
@@ -243,7 +244,7 @@ internal static partial class SvgRasterRenderer {
             var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, font));
             if (HasUnderline(style.TextDecoration)) {
                 var thickness = Math.Max(1, fontSize / 13.0);
-                height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.TextDecorationStyle), thickness));
+                height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.UnderlineDecorationStyle), thickness));
             }
             var padding = Math.Max(2, Math.Ceiling(fontSize * 0.2 + style.StrokeWidth * scale / 2.0));
             var pixels = (width + padding * 2) * (height + padding * 2);
@@ -301,7 +302,7 @@ internal static partial class SvgRasterRenderer {
         var height = RgbaCanvas.MeasureTextHeight(style.FontSize, font);
         if (!HasUnderline(style.TextDecoration)) return height;
         var thickness = Math.Max(1, style.FontSize / 13.0);
-        return Math.Max(height, style.FontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.TextDecorationStyle), thickness));
+        return Math.Max(height, style.FontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.UnderlineDecorationStyle), thickness));
     }
 
     private static void DrawTextGlyphs(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool emphasized, bool italic) {

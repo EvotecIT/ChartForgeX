@@ -68,7 +68,7 @@ public sealed partial class PngChartRenderer {
                 var isSideLabel = IsPieSideLabelPlacement(placement);
                 var isLeftSide = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(mid) < 0);
                 var labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
-                var labelHeight = EstimatePngStyledTextHeight(fontSize, style);
+                var labelHeight = EstimatePngStyledTextBoundsHeight(fontSize, style);
                 var labelX = sliceCx + Math.Cos(mid) * labelRadius - labelWidth / 2.0;
                 var labelY = sliceCy + Math.Sin(mid) * labelRadius - labelHeight / 2.0;
                 if (isSideLabel) {
@@ -81,17 +81,17 @@ public sealed partial class PngChartRenderer {
                     }
 
                     labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
-                    labelHeight = EstimatePngStyledTextHeight(fontSize, style);
+                    labelHeight = EstimatePngStyledTextBoundsHeight(fontSize, style);
                     labelX = isLeftSide ? anchorX - labelWidth : anchorX;
                 }
 
                 if (placement == ChartDataLabelPlacement.Above) labelY = cy - radius * 1.10 - labelHeight / 2.0;
                 else if (placement == ChartDataLabelPlacement.Below) labelY = cy + radius * 1.10 - labelHeight / 2.0;
-                if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) DrawReadablePngLabel(c, labelX, labelY, label, chart.Options.Theme.CardBackground, chart.Options.Theme.Text, fontSize, style);
+                if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) DrawReadablePngLabel(c, labelX, labelY - PngStyledTextTopExtent(fontSize, style), label, chart.Options.Theme.CardBackground, chart.Options.Theme.Text, fontSize, style);
                 else if (isSideLabel) outsideLabels.Add(new PieLabelCandidate(pointIndex, label, mid, isLeftSide ? labelX + labelWidth : labelX, labelY + labelHeight / 2.0, labelWidth, labelHeight, fontSize, style, sliceCx, sliceCy, isLeftSide));
                 else {
                     DrawPieLabelConnector(c, chart, series, pointIndex, sliceCx, sliceCy, radius, mid, labelX + labelWidth / 2.0, labelY + labelHeight / 2.0);
-                    DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
+                    DrawReadablePngLabel(c, plot, labelX, labelY - PngStyledTextTopExtent(fontSize, style), label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
                 }
             }
 
@@ -168,7 +168,7 @@ public sealed partial class PngChartRenderer {
             var labelX = label.IsLeftSide ? label.AnchorX - label.Width : label.AnchorX;
             var labelY = label.CenterY - label.Height / 2.0;
             DrawPieLabelConnector(c, chart, series, label.PointIndex, label.SliceCx, label.SliceCy, radius, label.Angle, label.AnchorX, label.CenterY);
-            DrawReadablePngLabel(c, plot, labelX, labelY, label.Text, chart.Options.Theme.Text, ReadableLabelHalo(chart), label.FontSize, label.Style);
+            DrawReadablePngLabel(c, plot, labelX, labelY - PngStyledTextTopExtent(label.FontSize, label.Style), label.Text, chart.Options.Theme.Text, ReadableLabelHalo(chart), label.FontSize, label.Style);
         }
     }
 

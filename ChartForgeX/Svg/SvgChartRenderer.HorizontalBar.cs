@@ -35,17 +35,18 @@ public sealed partial class SvgChartRenderer {
                 var placement = DataLabelPlacement(chart, s);
                 var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center || (chart.Options.BarMode == ChartBarMode.Stacked && placement == ChartDataLabelPlacement.Auto);
                 if (inside) {
-                    if (width < EstimateTextWidth(label, chart.Options.Theme.DataLabelFontSize) + 8) continue;
-                    if (!ReserveSvgLabel(label, left + width / 2, y + layout.BarHeight / 2, chart, plot, reservedLabels)) continue;
+                    var dataStyle = DataLabelStyle(chart, s, pointIndex);
+                    if (width < EstimateTextWidth(StyleText(dataStyle, label), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize)) + 8) continue;
+                    if (!ReserveSvgLabel(label, left + width / 2, y + layout.BarHeight / 2, chart, plot, reservedLabels, s, pointIndex)) continue;
                     DrawDataLabel(sb, chart, label, left + width / 2, y + layout.BarHeight / 2, plot, series: s, pointIndex: pointIndex);
                 } else if (placement == ChartDataLabelPlacement.Above || placement == ChartDataLabelPlacement.Below) {
                     var labelY = placement == ChartDataLabelPlacement.Above ? y - 8 : y + layout.BarHeight + 12;
-                    if (!ReserveSvgLabel(label, left + width / 2, labelY, chart, plot, reservedLabels)) continue;
+                    if (!ReserveSvgLabel(label, left + width / 2, labelY, chart, plot, reservedLabels, s, pointIndex)) continue;
                     DrawDataLabel(sb, chart, label, left + width / 2, labelY, plot, series: s, pointIndex: pointIndex);
                 } else {
                     var labelX = placement == ChartDataLabelPlacement.Right ? left + width + 8 : placement == ChartDataLabelPlacement.Left ? left - 8 : p.Y >= 0 ? left + width + 8 : left - 8;
                     var anchor = labelX >= left + width / 2 ? "start" : "end";
-                    if (!ReserveSvgHorizontalLabel(label, labelX, y + layout.BarHeight / 2, anchor, chart, plot, reservedLabels)) continue;
+                    if (!ReserveSvgHorizontalLabel(label, labelX, y + layout.BarHeight / 2, anchor, chart, plot, reservedLabels, s, pointIndex)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, y + layout.BarHeight / 2, anchor, plot, s, pointIndex);
                 }
             }

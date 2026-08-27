@@ -40,7 +40,7 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
                     var labelX = placement == ChartDataLabelPlacement.Left ? x - candleWidth / 2 - 8 : x + candleWidth / 2 + 8;
-                    if (ReserveSvgHorizontalLabel(label, labelX, bodyTop + bodyHeight / 2, anchor, chart, plot, reservedLabels)) DrawHorizontalValueLabel(sb, chart, label, labelX, bodyTop + bodyHeight / 2, anchor, plot, series, item);
+                    if (ReserveSvgHorizontalLabel(label, labelX, bodyTop + bodyHeight / 2, anchor, chart, plot, reservedLabels, series, item)) DrawHorizontalValueLabel(sb, chart, label, labelX, bodyTop + bodyHeight / 2, anchor, plot, series, item);
                 } else {
                     var aboveY = bodyTop - chart.Options.Theme.DataLabelFontSize - 4;
                     var belowY = Math.Max(yOpen, yClose) + 5;
@@ -49,7 +49,7 @@ public sealed partial class SvgChartRenderer {
                         : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                             ? bodyTop + bodyHeight / 2
                             : aboveY < plot.Top + 2 ? belowY : aboveY;
-                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
+                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, item)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
                 }
             }
         }

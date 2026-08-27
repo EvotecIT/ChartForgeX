@@ -108,12 +108,21 @@ internal static partial class SmokeTests {
     private static void RasterWeightThresholdPreservesNumericSemantics() {
         Assert(new TextStyleOverride().WithWeight("550").ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
         Assert(new TextStyleOverride().WithWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
+        Assert(new TextStyleOverride().WithWeight("bolder").ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
+        Assert(new TextStyleOverride().WithWeight("lighter").ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
 
         var medium = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("500")).AddLine("Values", Points(1, 3, 2)).ToPng();
         var semiboldBelowThreshold = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("550")).AddLine("Values", Points(1, 3, 2)).ToPng();
         var semibold = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("600")).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(medium.SequenceEqual(semiboldBelowThreshold), "Raster output should not promote numeric weight 550 to bold pixels.");
         Assert(!semiboldBelowThreshold.SequenceEqual(semibold), "Raster output should emphasize numeric weight 600 at the documented threshold.");
+
+        var normal = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var lighter = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("lighter")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var bold = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var bolder = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("bolder")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(normal.SequenceEqual(lighter), "CSS lighter should render the same regular pixels as explicit normal on an emphasized title role.");
+        Assert(bold.SequenceEqual(bolder), "CSS bolder should render the same emphasized pixels as explicit bold on a regular or emphasized role.");
     }
 
     private static void ImageCompositionUsesSharedTypographyContract() {

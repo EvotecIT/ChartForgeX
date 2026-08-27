@@ -16,6 +16,8 @@ internal static partial class SmokeTests {
         const string transformedSuperscriptSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='48' font-size='22' baseline-shift='super' text-transform='uppercase' fill='#ef4444'>mixed</text></svg>";
         const string transformedSubscriptSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='48' font-size='22' baseline-shift='sub' text-transform='uppercase' fill='#ef4444'>mixed</text></svg>";
         const string numericBoldSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-weight='750' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string childUnderlineSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' fill='#ef4444'><tspan text-decoration='underline' text-decoration-style='wavy'>MMMMiiii</tspan></text></svg>";
+        const string inheritedStrikeAndChildUnderlineSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' fill='#ef4444' text-decoration='line-through' text-decoration-style='double'><tspan text-decoration='underline' text-decoration-style='wavy'>MMMMiiii</tspan></text></svg>";
         var regular = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularSvg));
         var italic = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicSvg));
         var underlined = RasterImageDecoder.Decode(SvgRasterizer.ToPng(underlinedSvg));
@@ -24,6 +26,8 @@ internal static partial class SmokeTests {
         var transformedSuperscript = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSuperscriptSvg));
         var transformedSubscript = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSubscriptSvg));
         var numericBold = RasterImageDecoder.Decode(SvgRasterizer.ToPng(numericBoldSvg));
+        var childUnderline = RasterImageDecoder.Decode(SvgRasterizer.ToPng(childUnderlineSvg));
+        var inheritedStrikeAndChildUnderline = RasterImageDecoder.Decode(SvgRasterizer.ToPng(inheritedStrikeAndChildUnderlineSvg));
         var regularBounds = SvgColorBounds(regular.Pixels, regular.Width, regular.Height, 239, 68, 68);
         var italicBounds = SvgColorBounds(italic.Pixels, italic.Width, italic.Height, 239, 68, 68);
         var underlinedBounds = SvgColorBounds(underlined.Pixels, underlined.Width, underlined.Height, 239, 68, 68);
@@ -35,6 +39,7 @@ internal static partial class SmokeTests {
         var subscriptBounds = SvgColorBounds(transformedSubscript.Pixels, transformedSubscript.Width, transformedSubscript.Height, 239, 68, 68);
         Assert(superscriptBounds.Top < subscriptBounds.Top && superscriptBounds.Width > 0, "SVG rasterization should apply casing before measurement and preserve super/sub baseline shifts.");
         Assert(CountPixelsNear(numericBold.Pixels, numericBold.Width, 0, 0, numericBold.Width - 1, numericBold.Height - 1, 239, 68, 68) > CountPixelsNear(regular.Pixels, regular.Width, 0, 0, regular.Width - 1, regular.Height - 1, 239, 68, 68), "SVG rasterization should treat numeric font weights of 600 or greater as emphasized text.");
+        Assert(CountPixelsNear(inheritedStrikeAndChildUnderline.Pixels, inheritedStrikeAndChildUnderline.Width, 0, 0, inheritedStrikeAndChildUnderline.Width - 1, inheritedStrikeAndChildUnderline.Height - 1, 239, 68, 68) > CountPixelsNear(childUnderline.Pixels, childUnderline.Width, 0, 0, childUnderline.Width - 1, childUnderline.Height - 1, 239, 68, 68), "SVG rasterization should retain an ancestor strikethrough when a child span introduces a differently styled underline.");
 
         var serifFont = TrueTypeFont.TryLoadForFamily("serif", out _);
         var monospaceFont = TrueTypeFont.TryLoadForFamily("monospace", out _);

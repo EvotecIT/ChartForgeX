@@ -50,9 +50,10 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                     var labelX = placement == ChartDataLabelPlacement.Left ? centerX - barWidth / 2 - 8 : centerX + barWidth / 2 + 8;
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
-                    if (ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels)) DrawHorizontalValueLabel(body, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
+                    if (ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(body, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
                 } else {
-                    var labelFits = (placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) || height >= StyleFontSize(DataLabelStyle(chart, series, pointIndex), t.DataLabelFontSize) + 8;
+                    var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                    var labelFits = (placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) || height >= EstimateSvgStyledTextHeight(StyleFontSize(dataStyle, t.DataLabelFontSize), dataStyle) + 8;
                     if (labelFits) {
                         var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
                             ? top + height / 2
@@ -61,7 +62,7 @@ public sealed partial class SvgChartRenderer {
                                 : placement == ChartDataLabelPlacement.Below
                                     ? top + height + 13
                                     : step.Delta >= 0 || step.IsTotal ? top - 11 : top + height + 13;
-                        if (ReserveSvgLabel(label, centerX, labelY, chart, plot, reservedLabels)) DrawDataLabel(body, chart, label, centerX, labelY, plot, series: series, pointIndex: pointIndex);
+                        if (ReserveSvgLabel(label, centerX, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(body, chart, label, centerX, labelY, plot, series: series, pointIndex: pointIndex);
                     }
                 }
             }

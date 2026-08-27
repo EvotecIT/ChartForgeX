@@ -17,8 +17,14 @@ public sealed partial class SvgChartRenderer {
 
         var t = chart.Options.Theme;
         var labeledRows = rows.Where(row => row.series.ShowDataLabels != false).ToArray();
-        var labelReserve = labeledRows.Length == 0 ? 10 : Math.Min(240, Math.Max(128, labeledRows.Max(row => EstimateTextWidth(row.series.Name, StyleFontSize(DataLabelStyle(chart, row.series, 0), t.LegendFontSize))) + 34));
-        var valueReserve = labeledRows.Length == 0 ? 12 : Math.Min(142, Math.Max(84, labeledRows.Max(row => EstimateTextWidth(FormatValue(chart, BulletValue(row.series)), StyleFontSize(DataLabelStyle(chart, row.series, 0), t.DataLabelFontSize))) + 38));
+        var labelReserve = labeledRows.Length == 0 ? 10 : Math.Min(240, Math.Max(128, labeledRows.Max(row => {
+            var style = DataLabelStyle(chart, row.series, 0);
+            return EstimateTextWidth(StyleText(style, row.series.Name), StyleFontSize(style, t.LegendFontSize));
+        }) + 34));
+        var valueReserve = labeledRows.Length == 0 ? 12 : Math.Min(142, Math.Max(84, labeledRows.Max(row => {
+            var style = DataLabelStyle(chart, row.series, 0);
+            return EstimateTextWidth(StyleText(style, FormatValue(chart, BulletValue(row.series))), StyleFontSize(style, t.DataLabelFontSize));
+        }) + 38));
         var content = BulletContentBounds(basePlot);
         FitBulletReserves(content.Width, ref labelReserve, ref valueReserve);
         var plot = new ChartRect(content.X + labelReserve, content.Y + 18, Math.Max(1, content.Width - labelReserve - valueReserve), Math.Max(1, content.Height - 54));

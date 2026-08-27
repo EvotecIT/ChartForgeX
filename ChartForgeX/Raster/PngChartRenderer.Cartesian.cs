@@ -388,9 +388,9 @@ public sealed partial class PngChartRenderer {
             : TrimReadablePngLabelToWidth(label, fittedFontSize, Math.Max(8, plot.Width - 4), style);
         if (fittedLabel.Length == 0) return false;
         var width = (style == null ? EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize) : EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style, emphasized: true)) + 8;
-        var height = (style == null ? EstimatePngTextHeight(fittedFontSize) : EstimatePngStyledTextHeight(fittedFontSize, style)) + 6;
+        var height = (style == null ? EstimatePngTextHeight(fittedFontSize) : EstimatePngStyledTextBoundsHeight(fittedFontSize, style)) + 6;
         var left = Clamp(x, plot.Left + 2, plot.Right - width - 2);
-        var top = Clamp(y, plot.Top + 2, plot.Bottom - height - 2);
+        var top = Clamp(y + (style == null ? 0 : PngStyledTextTopExtent(fittedFontSize, style)), plot.Top + 2, plot.Bottom - height - 2);
         var bounds = new ChartLabelBounds(left, top, width, height);
         foreach (var item in reserved) if (bounds.Intersects(item)) return false;
         reserved.Add(bounds);

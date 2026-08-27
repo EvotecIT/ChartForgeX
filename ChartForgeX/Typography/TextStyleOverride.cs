@@ -140,6 +140,8 @@ public sealed class TextStyleOverride {
         if (int.TryParse(value, out var numeric)) return Math.Max(100, Math.Min(900, (int)Math.Round(numeric / 100.0) * 100));
         if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
         if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
+        if (string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase)) return 700;
+        if (string.Equals(value, "lighter", StringComparison.OrdinalIgnoreCase)) return 400;
         return fallback;
     }
 
@@ -147,6 +149,8 @@ public sealed class TextStyleOverride {
         if (int.TryParse(value, out var numeric)) return Math.Max(1, Math.Min(1000, numeric));
         if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
         if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
+        if (string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase)) return 700;
+        if (string.Equals(value, "lighter", StringComparison.OrdinalIgnoreCase)) return 400;
         return fallback;
     }
 

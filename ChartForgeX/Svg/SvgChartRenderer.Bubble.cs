@@ -70,7 +70,7 @@ public sealed partial class SvgChartRenderer {
         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
             var labelX = placement == ChartDataLabelPlacement.Left ? x - radius - 8 : x + radius + 8;
-            if (ReserveSvgHorizontalLabel(label, labelX, y, anchor, chart, plot, reservedLabels)) DrawHorizontalValueLabel(sb, chart, label, labelX, y, anchor, plot, series, pointIndex);
+            if (ReserveSvgHorizontalLabel(label, labelX, y, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(sb, chart, label, labelX, y, anchor, plot, series, pointIndex);
             return;
         }
 
@@ -81,7 +81,7 @@ public sealed partial class SvgChartRenderer {
             : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                 ? y
                 : aboveY < plot.Top + 2 ? belowY : aboveY;
-        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
+        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
     }
 
     private static (double min, double max) BubbleSizeRange(ChartSeries series) {

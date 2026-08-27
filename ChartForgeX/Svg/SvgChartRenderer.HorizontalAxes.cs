@@ -69,7 +69,7 @@ public sealed partial class SvgChartRenderer {
         var wrapWidth = SvgHorizontalCategoryWrapWidth(chart);
         var leftShift = 0.0;
         if (ShowYAxis(chart)) {
-            var widest = categoryTicks.Max(tick => WrappedSvgLabelWidth(FormatX(chart, tick), StyleFontSize(style, t.TickLabelFontSize), wrapWidth));
+            var widest = categoryTicks.Max(tick => WrappedSvgLabelWidth(StyleText(style, FormatX(chart, tick)), StyleFontSize(style, t.TickLabelFontSize), wrapWidth));
             var desiredLeft = Math.Max(plot.Left, widest + 58);
             var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 180);
             var adjustedLeft = Math.Min(desiredLeft, maxLeft);

@@ -652,12 +652,10 @@ public sealed partial class SvgChartRenderer {
         if (ShouldDrawDataLabels(chart, s)) DrawPointLabels(sb, chart, s, mapped, plot);
     }
 
-    private static bool ReserveSvgLabel(string label, double x, double y, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved) {
-        var fontSize = chart.Options.Theme.DataLabelFontSize;
-        label = TrimSvgLabelToWidth(label, fontSize, PlotLabelMaxWidth(plot));
-        if (label.Length == 0) return false;
+    private static bool ReserveSvgLabel(string label, double x, double y, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved, ChartSeries? series = null, int pointIndex = -1) {
+        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return false;
         var width = EstimateTextWidth(label, fontSize) + 8;
-        var height = fontSize + 6;
+        var height = EstimateSvgStyledTextHeight(fontSize, style) + 6;
         var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
         var safeX = EdgeAwareTextX(label, x, plot, fontSize);
         var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
@@ -722,7 +720,7 @@ public sealed partial class SvgChartRenderer {
 
     private static double HorizontalValueLabelReserve(Chart chart) {
         if (!HasHorizontalBarDataLabels(chart) && !(chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals)) return 0;
-        string[] labels;
+        var maxWidth = 0.0;
         if (chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals) {
             var positiveTotals = new Dictionary<double, double>();
             var negativeTotals = new Dictionary<double, double>();
@@ -731,16 +729,23 @@ public sealed partial class SvgChartRenderer {
                 foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
             }
 
-            labels = positiveTotals.Values.Concat(negativeTotals.Values).Select(value => FormatValue(chart, value)).ToArray();
+            var style = chart.Options.DataLabelStyle;
+            var fontSize = StyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
+            foreach (var value in positiveTotals.Values.Concat(negativeTotals.Values)) {
+                maxWidth = Math.Max(maxWidth, EstimateTextWidth(StyleText(style, FormatValue(chart, value)), fontSize));
+            }
         } else {
-            labels = chart.Series
-                .Where(series => series.Kind == ChartSeriesKind.HorizontalBar)
-                .SelectMany(series => series.Points.Select(point => FormatValue(chart, point.Y)))
-                .ToArray();
+            foreach (var series in chart.Series.Where(series => series.Kind == ChartSeriesKind.HorizontalBar)) {
+                for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                    var style = DataLabelStyle(chart, series, pointIndex);
+                    var fontSize = StyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
+                    var label = StyleText(style, FormatValue(chart, series.Points[pointIndex].Y));
+                    maxWidth = Math.Max(maxWidth, EstimateTextWidth(label, fontSize));
+                }
+            }
         }
 
-        if (labels.Length == 0) return 0;
-        return Math.Min(96, labels.Max(label => EstimateTextWidth(label, chart.Options.Theme.DataLabelFontSize)) + 24);
+        return maxWidth <= 0 ? 0 : Math.Min(96, maxWidth + 24);
     }
 
     private static void ApplyHorizontalValueBounds(Chart chart, ChartRange range, IReadOnlyList<double> xTicks) {

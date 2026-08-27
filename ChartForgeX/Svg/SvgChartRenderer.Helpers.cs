@@ -233,12 +233,10 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawDataLabel(StringBuilder sb, Chart chart, string label, double x, double y, ChartRect plot, string role = "data-label", ChartSeries? series = null, int pointIndex = -1) {
         var t = chart.Options.Theme;
-        var style = DataLabelStyle(chart, series, pointIndex);
-        var fontSize = StyleFontSize(style, t.DataLabelFontSize);
-        label = TrimSvgLabelToWidth(label, fontSize, PlotLabelMaxWidth(plot));
-        if (label.Length == 0) return;
+        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return;
 
-        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + fontSize / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - fontSize / 2.0);
+        var height = EstimateSvgStyledTextHeight(fontSize, style);
+        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
         var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
         var safeX = EdgeAwareTextX(label, x, plot, fontSize);
         var writer = new SvgMarkupWriter(512);
@@ -267,12 +265,10 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawHorizontalValueLabel(StringBuilder sb, Chart chart, string label, double x, double y, string anchor, ChartRect plot, ChartSeries? series = null, int pointIndex = -1) {
         var t = chart.Options.Theme;
-        var style = DataLabelStyle(chart, series, pointIndex);
-        var fontSize = StyleFontSize(style, t.DataLabelFontSize);
-        label = TrimSvgLabelToWidth(label, fontSize, PlotLabelMaxWidth(plot));
-        if (label.Length == 0) return;
+        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return;
 
         var width = EstimateTextWidth(label, fontSize);
+        var height = EstimateSvgStyledTextHeight(fontSize, style);
         var effectiveAnchor = anchor == "end" ? "end" : "start";
         var safeX = effectiveAnchor == "end"
             ? Clamp(x, plot.Left + width + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - ChartVisualPrimitives.DataLabelPlotInset)
@@ -285,19 +281,17 @@ public sealed partial class SvgChartRenderer {
             safeX = plot.Right - ChartVisualPrimitives.DataLabelPlotInset;
         }
 
-        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + fontSize / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - fontSize / 2.0);
+        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
         var writer = new SvgMarkupWriter(512);
         WriteSvgDataLabelText(writer, chart, style, "data-label", label, safeX, safeY, effectiveAnchor, t.Text, t.CardBackground, fontSize);
         sb.Append(writer.Build());
     }
 
-    private static bool ReserveSvgHorizontalLabel(string label, double x, double y, string anchor, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved) {
-        var fontSize = chart.Options.Theme.DataLabelFontSize;
-        label = TrimSvgLabelToWidth(label, fontSize, PlotLabelMaxWidth(plot));
-        if (label.Length == 0) return false;
+    private static bool ReserveSvgHorizontalLabel(string label, double x, double y, string anchor, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved, ChartSeries? series = null, int pointIndex = -1) {
+        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return false;
 
         var width = EstimateTextWidth(label, fontSize) + 8;
-        var height = fontSize + 6;
+        var height = EstimateSvgStyledTextHeight(fontSize, style) + 6;
         var effectiveAnchor = anchor == "end" ? "end" : "start";
         var safeX = effectiveAnchor == "end"
             ? Clamp(x, plot.Left + width + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - ChartVisualPrimitives.DataLabelPlotInset)

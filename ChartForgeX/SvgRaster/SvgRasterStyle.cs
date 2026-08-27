@@ -27,6 +27,8 @@ internal sealed class SvgRasterStyle {
         FontStyle = "normal",
         TextDecoration = "none",
         TextDecorationStyle = "solid",
+        UnderlineDecorationStyle = "solid",
+        StrikethroughDecorationStyle = "solid",
         BaselineShift = "baseline",
         TextTransform = "none",
         TextAnchor = "start",
@@ -59,6 +61,8 @@ internal sealed class SvgRasterStyle {
     public string FontStyle { get; set; } = "normal";
     public string TextDecoration { get; set; } = "none";
     public string TextDecorationStyle { get; set; } = "solid";
+    public string UnderlineDecorationStyle { get; set; } = "solid";
+    public string StrikethroughDecorationStyle { get; set; } = "solid";
     public string BaselineShift { get; set; } = "baseline";
     public string TextTransform { get; set; } = "none";
     public string TextAnchor { get; set; } = "start";
@@ -94,6 +98,8 @@ internal sealed class SvgRasterStyle {
             FontStyle = FontStyle,
             TextDecoration = TextDecoration,
             TextDecorationStyle = TextDecorationStyle,
+            UnderlineDecorationStyle = UnderlineDecorationStyle,
+            StrikethroughDecorationStyle = StrikethroughDecorationStyle,
             BaselineShift = BaselineShift,
             TextTransform = TextTransform,
             TextAnchor = TextAnchor,
@@ -130,8 +136,28 @@ internal sealed class SvgRasterStyle {
             Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties));
         }
 
+        if (declarations.Any(declaration => string.Equals(declaration.Name, "text-decoration", StringComparison.OrdinalIgnoreCase))) {
+            var localDecoration = style.TextDecoration;
+            var localDecorationStyle = style.TextDecorationStyle;
+            style.TextDecoration = MergeTextDecorations(parent.TextDecoration, localDecoration);
+            if (ContainsDecoration(localDecoration, "underline")) style.UnderlineDecorationStyle = localDecorationStyle;
+            if (ContainsDecoration(localDecoration, "line-through")) style.StrikethroughDecorationStyle = localDecorationStyle;
+        }
+
         return style;
     }
+
+    private static string MergeTextDecorations(string inherited, string local) {
+        var underline = ContainsDecoration(inherited, "underline") || ContainsDecoration(local, "underline");
+        var strikethrough = ContainsDecoration(inherited, "line-through") || ContainsDecoration(local, "line-through");
+        if (underline && strikethrough) return "underline line-through";
+        if (underline) return "underline";
+        if (strikethrough) return "line-through";
+        return "none";
+    }
+
+    private static bool ContainsDecoration(string value, string decoration) =>
+        value.IndexOf(decoration, StringComparison.OrdinalIgnoreCase) >= 0;
 
     public static IReadOnlyDictionary<string, string> ResolveCustomProperties(SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterElement element) {
         var properties = new Dictionary<string, string>(StringComparer.Ordinal);
