@@ -76,27 +76,39 @@ public static class TextCaseTransformer {
         var normalized = text.ToLower(culture);
         var output = new StringBuilder(normalized.Length);
         var capitalize = true;
-        for (var index = 0; index < normalized.Length; index++) {
-            var character = normalized[index];
-            if (capitalize && char.IsLetter(character)) {
-                output.Append(char.ToUpper(character, culture));
+        var enumerator = StringInfo.GetTextElementEnumerator(normalized);
+        while (enumerator.MoveNext()) {
+            var element = enumerator.GetTextElement();
+            if (capitalize && IsLetter(element)) {
+                output.Append(element.ToUpper(culture));
                 capitalize = false;
             } else {
-                output.Append(character);
+                output.Append(element);
             }
-            if (character == '.' || character == '!' || character == '?' || character == '\r' || character == '\n') capitalize = true;
+            if (element == "." || element == "!" || element == "?" || element == "\r" || element == "\n") capitalize = true;
         }
         return output.ToString();
     }
 
     private static string ToggleCase(string text, CultureInfo culture) {
         var output = new StringBuilder(text.Length);
-        for (var index = 0; index < text.Length; index++) {
-            var character = text[index];
-            if (char.IsUpper(character)) output.Append(char.ToLower(character, culture));
-            else if (char.IsLower(character)) output.Append(char.ToUpper(character, culture));
-            else output.Append(character);
+        var enumerator = StringInfo.GetTextElementEnumerator(text);
+        while (enumerator.MoveNext()) {
+            var element = enumerator.GetTextElement();
+            var category = CharUnicodeInfo.GetUnicodeCategory(element, 0);
+            if (category == UnicodeCategory.UppercaseLetter) output.Append(element.ToLower(culture));
+            else if (category == UnicodeCategory.LowercaseLetter) output.Append(element.ToUpper(culture));
+            else output.Append(element);
         }
         return output.ToString();
+    }
+
+    private static bool IsLetter(string element) {
+        var category = CharUnicodeInfo.GetUnicodeCategory(element, 0);
+        return category == UnicodeCategory.UppercaseLetter ||
+            category == UnicodeCategory.LowercaseLetter ||
+            category == UnicodeCategory.TitlecaseLetter ||
+            category == UnicodeCategory.ModifierLetter ||
+            category == UnicodeCategory.OtherLetter;
     }
 }

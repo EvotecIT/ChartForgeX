@@ -1,6 +1,8 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Composition;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Typography;
@@ -85,6 +87,33 @@ internal static partial class SmokeTests {
         style.TextCase = TextCaseTransform.Uppercase;
         var layout = TextLayoutEngine.Layout("measured output", 300, style);
         Assert(layout.Lines.Single().Text == "MEASURED OUTPUT", "Shared layout should measure and return the transformed display text.");
+
+        const string deseretUpper = "\U00010400";
+        const string deseretLower = "\U00010428";
+        Assert(TextCaseTransformer.Apply(deseretLower + deseretUpper, TextCaseTransform.ToggleCase, CultureInfo.InvariantCulture) == deseretUpper + deseretLower, "Toggle case should preserve supplementary Unicode text elements instead of splitting surrogate pairs.");
+        Assert(TextCaseTransformer.Apply(deseretUpper + " TEST. " + deseretLower + " AGAIN", TextCaseTransform.SentenceCase, CultureInfo.InvariantCulture) == deseretUpper + " test. " + deseretUpper + " again", "Sentence case should capitalize supplementary Unicode letters at sentence starts.");
+
+        var priorCulture = CultureInfo.CurrentCulture;
+        try {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+            Assert(TextCaseTransformer.Apply("indigo i", TextCaseTransform.Uppercase) == "İNDİGO İ", "The public casing helper should remain culture-aware by default.");
+            var invariantStyle = TextStyle.Create(16, ChartColor.Black);
+            invariantStyle.TextCase = TextCaseTransform.Uppercase;
+            Assert(TextLayoutEngine.Layout("indigo i", 300, invariantStyle).Lines.Single().Text == "INDIGO I", "Renderer-owned layout should use invariant casing so output does not vary with the host culture.");
+        } finally {
+            CultureInfo.CurrentCulture = priorCulture;
+        }
+    }
+
+    private static void RasterWeightThresholdPreservesNumericSemantics() {
+        Assert(new TextStyleOverride().WithWeight("550").ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
+        Assert(new TextStyleOverride().WithWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
+
+        var medium = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("500")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var semiboldBelowThreshold = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("550")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var semibold = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("600")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(medium.SequenceEqual(semiboldBelowThreshold), "Raster output should not promote numeric weight 550 to bold pixels.");
+        Assert(!semiboldBelowThreshold.SequenceEqual(semibold), "Raster output should emphasize numeric weight 600 at the documented threshold.");
     }
 
     private static void ImageCompositionUsesSharedTypographyContract() {

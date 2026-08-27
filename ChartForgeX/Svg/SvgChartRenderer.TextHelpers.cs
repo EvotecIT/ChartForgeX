@@ -25,7 +25,7 @@ public sealed partial class SvgChartRenderer {
         }
         writer.Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fittedFontSize).Attribute("font-weight", StyleWeight(style, fontWeight));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(fittedText)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, fittedText).EndElement().Line();
         sb.Append(writer.Build());
     }
 
@@ -40,7 +40,7 @@ public sealed partial class SvgChartRenderer {
         if (!string.IsNullOrEmpty(role)) writer.Attribute("data-cfx-role", role);
         writer.Attribute("x", x).Attribute("y", y).Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fittedFontSize).Attribute("font-weight", StyleWeight(style, fontWeight));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(fittedText)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, fittedText).EndElement().Line();
         sb.Append(writer.Build());
     }
 
@@ -63,7 +63,7 @@ public sealed partial class SvgChartRenderer {
         if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
         writer.Attribute("transform", "translate(" + F(axisX) + " " + F(plot.Top + plot.Height / 2) + ") rotate(-90)").Attribute("text-anchor", "middle").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "600"));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(text)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, text).EndElement().Line();
         sb.Append(writer.Build());
     }
 
@@ -71,6 +71,6 @@ public sealed partial class SvgChartRenderer {
         label = StyleText(style, label);
         writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "700"));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(label)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
     }
 }

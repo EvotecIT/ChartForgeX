@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -282,11 +283,11 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static string ApplyTextTransform(string text, string value) {
-        if (value.IndexOf("uppercase", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.Uppercase);
-        if (value.IndexOf("lowercase", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.Lowercase);
-        if (value.IndexOf("capitalize", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.TitleCase);
-        if (value.IndexOf("sentence-case", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.SentenceCase);
-        if (value.IndexOf("toggle-case", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.ToggleCase);
+        if (value.IndexOf("uppercase", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.Uppercase, CultureInfo.InvariantCulture);
+        if (value.IndexOf("lowercase", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.Lowercase, CultureInfo.InvariantCulture);
+        if (value.IndexOf("capitalize", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.TitleCase, CultureInfo.InvariantCulture);
+        if (value.IndexOf("sentence-case", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.SentenceCase, CultureInfo.InvariantCulture);
+        if (value.IndexOf("toggle-case", StringComparison.OrdinalIgnoreCase) >= 0) return TextCaseTransformer.Apply(text, TextCaseTransform.ToggleCase, CultureInfo.InvariantCulture);
         return text;
     }
 

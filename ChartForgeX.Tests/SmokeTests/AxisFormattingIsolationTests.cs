@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -58,13 +59,19 @@ internal static partial class SmokeTests {
         var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
         var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
         if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
-            var serifChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("serif").WithItalic());
-            var monospaceChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("monospace").WithItalic());
+            const string sample = "MMMMMMMMiiiiiiii";
+            var serifChart = FormattedAxisChart(_ => sample).WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("serif").WithItalic());
+            var monospaceChart = FormattedAxisChart(_ => sample).WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("monospace").WithItalic());
             var serifPixels = ReadPngRgba(serifChart.ToPng(), out var styledWidth, out _);
             var monospacePixels = ReadPngRgba(monospaceChart.ToPng(), out _, out _);
             var serifAxis = FindNearColorBounds(serifPixels, styledWidth, 255, 0, 255, 4);
             var monospaceAxis = FindNearColorBounds(monospacePixels, styledWidth, 255, 0, 255, 4);
-            Assert(!serifAxis.IsEmpty && !monospaceAxis.IsEmpty && Math.Abs(serifAxis.Left - monospaceAxis.Left) > 2, "PNG y-axis reserve should measure the resolved tick font family and italic overhang.");
+            var fontSize = serifChart.Options.Theme.TickLabelFontSize;
+            var expectedSerifLeft = Math.Max(40, Math.Ceiling(RgbaCanvas.MeasureTextWidthWithFont(sample, fontSize, serifFont, italic: true)) + 54);
+            var expectedMonospaceLeft = Math.Max(40, Math.Ceiling(RgbaCanvas.MeasureTextWidthWithFont(sample, fontSize, monospaceFont, italic: true)) + 54);
+            Assert(!serifAxis.IsEmpty && !monospaceAxis.IsEmpty, "PNG y-axis reserve proof should find both styled axis rules.");
+            Assert(Math.Abs(serifAxis.Left - expectedSerifLeft) <= 3 && Math.Abs(monospaceAxis.Left - expectedMonospaceLeft) <= 3,
+                "PNG y-axis reserve should match the resolved family-specific italic metrics even when two platform fonts happen to have similar widths.");
         }
     }
 

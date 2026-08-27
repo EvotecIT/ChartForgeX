@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ChartForgeX.Raster;
 
 namespace ChartForgeX.Typography;
@@ -12,7 +13,7 @@ public static class TextLayoutEngine {
     public static TextMetrics Measure(string text, TextStyle style) {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (style == null) throw new ArgumentNullException(nameof(style));
-        text = TextCaseTransformer.Apply(text, style.TextCase);
+        text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
         var font = TypographyFontResolver.Resolve(style.Font);
         var lineHeight = ResolveLineHeight(style, font);
         var width = 0d;
@@ -33,7 +34,7 @@ public static class TextLayoutEngine {
         if (!Enum.IsDefined(typeof(TextWrapMode), wrapMode)) throw new ArgumentOutOfRangeException(nameof(wrapMode), wrapMode, "Unknown text wrap mode.");
         if (!Enum.IsDefined(typeof(TextTrimming), trimming)) throw new ArgumentOutOfRangeException(nameof(trimming), trimming, "Unknown text trimming mode.");
 
-        text = TextCaseTransformer.Apply(text, style.TextCase);
+        text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
         var font = TypographyFontResolver.Resolve(style.Font);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;

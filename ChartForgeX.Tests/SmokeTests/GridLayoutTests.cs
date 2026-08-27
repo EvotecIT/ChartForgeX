@@ -51,18 +51,18 @@ internal static partial class SmokeTests {
         var grid = ChartGrid.Create()
             .WithTitle("styled grid header")
             .WithSubtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
-            .WithTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
+            .WithTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
             .WithSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(15).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
             .WithPanelSize(260, 160)
             .Add(Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3)));
         var svg = grid.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"grid-title\"", StringComparison.Ordinal) && svg.Contains("fill=\"#BE123C\"", StringComparison.Ordinal), "SVG grid titles should honor grid title styles.");
         Assert(svg.Contains("font-family=\"Georgia, serif\"", StringComparison.Ordinal), "SVG grid title styles should honor font families.");
-        Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline line-through\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"wavy\"", StringComparison.Ordinal), "SVG grid title styles should honor italic, underline variants, and strikethrough.");
+        Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"line-through\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"wavy\"", StringComparison.Ordinal) && svg.Contains("<tspan text-decoration=\"underline\" text-decoration-style=\"dotted\">STYLED GRID HEADER</tspan>", StringComparison.Ordinal), "SVG grid title styles should preserve independent underline and strikethrough patterns.");
         Assert(svg.Contains("data-cfx-role=\"grid-subtitle\"", StringComparison.Ordinal) && svg.Contains("fill=\"#0E7490\"", StringComparison.Ordinal) && svg.Contains("baseline-shift=\"sub\"", StringComparison.Ordinal), "SVG grid subtitles should honor colors and script placement.");
-        Assert(svg.Contains(">STYLED GRID HEADER</text>", StringComparison.Ordinal) && svg.Contains(">grid-level typography", StringComparison.Ordinal), "SVG grid headers should materialize casing before fitting and trimming.");
+        Assert(svg.Contains(">STYLED GRID HEADER</tspan></text>", StringComparison.Ordinal) && svg.Contains(">grid-level typography", StringComparison.Ordinal), "SVG grid headers should materialize casing before fitting and trimming.");
         var html = grid.ToHtmlFragment();
-        Assert(html.Contains("text-decoration:underline line-through", StringComparison.Ordinal) && html.Contains("text-decoration-style:wavy", StringComparison.Ordinal) && html.Contains("vertical-align:super", StringComparison.Ordinal), "HTML grid headers should honor combined decoration and baseline styling.");
+        Assert(html.Contains("text-decoration:line-through;text-decoration-style:wavy", StringComparison.Ordinal) && html.Contains("<span style=\"text-decoration:underline;text-decoration-style:dotted\">STYLED GRID HEADER</span>", StringComparison.Ordinal) && html.Contains("vertical-align:super", StringComparison.Ordinal), "HTML grid headers should preserve independent decoration patterns and baseline styling on inline text.");
         Assert(html.Contains("STYLED GRID HEADER", StringComparison.Ordinal) && html.Contains("grid-level typography should match chart-level polish", StringComparison.Ordinal), "HTML grid headers should materialize casing transforms.");
         Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render PNG output.");
 

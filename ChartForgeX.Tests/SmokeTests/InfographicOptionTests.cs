@@ -90,6 +90,27 @@ internal static partial class SmokeTests {
         Assert(customDonut.ToPng().Length > 64, "Custom donut center text should render PNG output.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithDonutInnerRadiusRatio(0.2), "Donut inner radius ratio should reject tiny holes.");
 
+        var regularCenter = Chart.Create()
+            .WithSize(420, 280)
+            .WithLegend(false)
+            .WithDonutCenterText("60", "A")
+            .WithDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32))
+            .WithXLabels("Male", "Female")
+            .AddDonut("Audience", Points(60.5, 39.5));
+        var scriptedCenter = Chart.Create()
+            .WithSize(420, 280)
+            .WithLegend(false)
+            .WithDonutCenterText("60", "A")
+            .WithDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32).WithSuperscript())
+            .WithXLabels("Male", "Female")
+            .AddDonut("Audience", Points(60.5, 39.5));
+        var regularCenterPixels = ReadPngRgba(regularCenter.ToPng(), out var centerWidth, out _);
+        var scriptedCenterPixels = ReadPngRgba(scriptedCenter.ToPng(), out _, out _);
+        var regularCenterBounds = FindNearColorBounds(regularCenterPixels, centerWidth, 255, 0, 255, 10);
+        var scriptedCenterBounds = FindNearColorBounds(scriptedCenterPixels, centerWidth, 255, 0, 255, 10);
+        Assert(!regularCenterBounds.IsEmpty && !scriptedCenterBounds.IsEmpty, "PNG center-label script proof should find both configured center labels.");
+        Assert(scriptedCenterBounds.Height > regularCenterBounds.Height * 0.50 && scriptedCenterBounds.Height < regularCenterBounds.Height * 0.82, "PNG center labels should apply script scaling exactly once instead of shrinking to roughly forty-two percent. Regular height: " + regularCenterBounds.Height + "; scripted height: " + scriptedCenterBounds.Height + ".");
+
         var calloutDonut = Chart.Create()
             .WithSize(520, 320)
             .WithDataLabels()

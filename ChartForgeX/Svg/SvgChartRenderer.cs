@@ -457,7 +457,7 @@ public sealed partial class SvgChartRenderer {
                     var label = StyleText(tickStyle, FormatYAxisValue(chart, yv));
                     writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
                     WriteSvgTextStyleAttributes(writer, tickStyle);
-                    writer.Text(label).EndElement().Line();
+                    WriteSvgStyledTextContent(writer, tickStyle, label).EndElement().Line();
                 });
             }
         }
@@ -502,7 +502,7 @@ public sealed partial class SvgChartRenderer {
                 if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
                 writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
                 WriteSvgTextStyleAttributes(writer, style);
-                writer.Text(label).EndElement().Line();
+                WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
             });
             return;
         }
@@ -514,7 +514,7 @@ public sealed partial class SvgChartRenderer {
             if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
             writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
             WriteSvgTextStyleAttributes(writer, style);
-            writer.Text(label).EndElement().Line();
+            WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
         });
     }
     private static double AxisTickLabelMaxWidth(ChartRect plot, int tickCount, double angle) {

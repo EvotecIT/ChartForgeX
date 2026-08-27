@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -103,8 +104,8 @@ public sealed partial class PngChartRenderer {
     private static PngStyledTextFit FitPngStyledText(string text, TextStyleOverride style, double fontSize, double maxWidth, bool emphasized) {
         var widthLimit = Math.Max(8, maxWidth);
         var fittedFontSize = emphasized
-            ? TextFontSizeForEmphasizedWidth(text, widthLimit, PngStyleFontSize(style, fontSize), style)
-            : TextFontSizeForWidth(text, widthLimit, PngStyleFontSize(style, fontSize), style);
+            ? TextFontSizeForEmphasizedWidth(text, widthLimit, fontSize, style)
+            : TextFontSizeForWidth(text, widthLimit, fontSize, style);
         var fittedText = emphasized
             ? TrimReadablePngLabelToWidth(text, fittedFontSize, widthLimit, style)
             : TrimPngLabelToWidth(text, fittedFontSize, widthLimit, style);
@@ -174,7 +175,7 @@ public sealed partial class PngChartRenderer {
         return series != null && series.DataLabelStyle.HasOverrides ? series.DataLabelStyle : chart.Options.DataLabelStyle;
     }
 
-    private static string PngStyleText(TextStyleOverride style, string text) => style.TransformText(text);
+    private static string PngStyleText(TextStyleOverride style, string text) => style.TransformText(text, CultureInfo.InvariantCulture);
 
     private static TextDecorationStyle PngUnderlineStyle(TextStyleOverride style) => style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
 

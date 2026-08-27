@@ -167,7 +167,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("font-size", labelFontSize)
                 .Attribute("font-weight", StyleWeight(dataStyle, "800"));
             WriteSvgTextStyleAttributes(writer, dataStyle);
-            writer.Text(fittedLabel)
+            WriteSvgStyledTextContent(writer, dataStyle, fittedLabel)
                 .EndElement()
                 .Line();
         }
@@ -189,7 +189,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("font-size", valueFontSize)
                     .Attribute("font-weight", StyleWeight(dataStyle, "700"));
                 WriteSvgTextStyleAttributes(writer, dataStyle);
-                writer.Text(fittedValue)
+                WriteSvgStyledTextContent(writer, dataStyle, fittedValue)
                     .EndElement()
                     .Line();
             }

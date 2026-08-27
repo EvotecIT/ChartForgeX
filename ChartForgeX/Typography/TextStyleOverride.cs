@@ -132,12 +132,19 @@ public sealed class TextStyleOverride {
     /// <summary>Transforms text according to this override.</summary>
     public string TransformText(string text, System.Globalization.CultureInfo? culture = null) => TextCaseTransformer.Apply(text, TextCase ?? TextCaseTransform.None, culture);
 
-    internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveWeight(FontWeight, fallback);
+    internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
 
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
     private static int ResolveWeight(string value, int fallback) {
         if (int.TryParse(value, out var numeric)) return Math.Max(100, Math.Min(900, (int)Math.Round(numeric / 100.0) * 100));
+        if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
+        if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
+        return fallback;
+    }
+
+    private static int ResolveEmphasisWeight(string value, int fallback) {
+        if (int.TryParse(value, out var numeric)) return Math.Max(1, Math.Min(1000, numeric));
         if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
         if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
         return fallback;

@@ -80,8 +80,8 @@ public sealed class SvgChartGridRenderer {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.TitleStyle.TransformText(grid.Title), titleFontSize, headerWidth, EstimateTextWidth));
-            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, ChartTextFitting.TrimEnd(grid.SubtitleStyle.TransformText(grid.Subtitle), subtitleFontSize, headerWidth, EstimateTextWidth));
+            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.TitleStyle.TransformText(grid.Title, CultureInfo.InvariantCulture), titleFontSize, headerWidth, EstimateTextWidth));
+            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, ChartTextFitting.TrimEnd(grid.SubtitleStyle.TransformText(grid.Subtitle, CultureInfo.InvariantCulture), subtitleFontSize, headerWidth, EstimateTextWidth));
         }
 
         for (var i = 0; i < layout.Cells.Count; i++) {
@@ -105,10 +105,7 @@ public sealed class SvgChartGridRenderer {
             .Attribute("font-size", fontSize)
             .Attribute("font-weight", fontWeight);
         WriteTextStyleAttributes(writer, style);
-        writer
-            .Text(text)
-            .EndElement()
-            .Line();
+        WriteStyledTextContent(writer, style, text).EndElement().Line();
     }
 
     private static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
@@ -128,14 +125,30 @@ public sealed class SvgChartGridRenderer {
         if (style.Italic) writer.Attribute("font-style", "italic");
         var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
         var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var splitDecorations = RequiresSeparateDecorations(underline, strike);
         if (underline != TextDecorationStyle.None || strike != TextDecorationStyle.None) {
-            var decorations = (underline != TextDecorationStyle.None ? "underline" : string.Empty) + (underline != TextDecorationStyle.None && strike != TextDecorationStyle.None ? " " : string.Empty) + (strike != TextDecorationStyle.None ? "line-through" : string.Empty);
+            var decorations = (underline != TextDecorationStyle.None && !splitDecorations ? "underline" : string.Empty) + (underline != TextDecorationStyle.None && strike != TextDecorationStyle.None && !splitDecorations ? " " : string.Empty) + (strike != TextDecorationStyle.None ? "line-through" : string.Empty);
             writer.Attribute("text-decoration", decorations);
-            writer.Attribute("text-decoration-style", DecorationStyle(underline != TextDecorationStyle.None ? underline : strike));
+            writer.Attribute("text-decoration-style", DecorationStyle(splitDecorations ? strike : underline != TextDecorationStyle.None ? underline : strike));
         }
         if (style.Baseline == TextBaseline.Superscript) writer.Attribute("baseline-shift", "super");
         else if (style.Baseline == TextBaseline.Subscript) writer.Attribute("baseline-shift", "sub");
     }
+
+    private static SvgMarkupWriter WriteStyledTextContent(SvgMarkupWriter writer, TextStyleOverride style, string text) {
+        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        if (!RequiresSeparateDecorations(underline, strike)) return writer.Text(text);
+        return writer.EndStartElement()
+            .StartElement("tspan")
+            .Attribute("text-decoration", "underline")
+            .Attribute("text-decoration-style", DecorationStyle(underline))
+            .Text(text)
+            .EndElement();
+    }
+
+    private static bool RequiresSeparateDecorations(TextDecorationStyle underline, TextDecorationStyle strike) =>
+        underline != TextDecorationStyle.None && strike != TextDecorationStyle.None && underline != strike;
 
     private static string DecorationStyle(TextDecorationStyle style) => style switch {
         TextDecorationStyle.Dotted => "dotted",

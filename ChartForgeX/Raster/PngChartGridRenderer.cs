@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -59,7 +60,7 @@ public sealed class PngChartGridRenderer {
     private static bool StyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
 
     private static double MeasureStyledTextWidth(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
-        text = style.TransformText(text);
+        text = style.TransformText(text, CultureInfo.InvariantCulture);
         return MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
     }
 
@@ -72,7 +73,7 @@ public sealed class PngChartGridRenderer {
     }
 
     private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
-        text = style.TransformText(text);
+        text = style.TransformText(text, CultureInfo.InvariantCulture);
         var color = StyleColor(style, fallback);
         var font = StyleFont(style);
         y += style.Baseline == TextBaseline.Superscript ? -fontSize * 0.35 : style.Baseline == TextBaseline.Subscript ? fontSize * 0.22 : 0;

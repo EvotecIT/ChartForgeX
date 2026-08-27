@@ -35,9 +35,8 @@ public sealed partial class SvgChartRenderer {
                 DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var style = chart.Options.LegendStyle;
                 var labelMaxWidth = Math.Max(8, item.Width - 30);
-                var styledLabel = StyleText(style, item.Label);
-                var labelFontSize = TextFontSizeForSvgWidth(styledLabel, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
-                var label = TrimSvgLabelToWidth(styledLabel, labelFontSize, labelMaxWidth);
+                var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
+                var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
                 if (label.Length > 0) {
                     writer.StartElement("text")
                         .Attribute("data-cfx-role", "legend-label")
@@ -47,7 +46,7 @@ public sealed partial class SvgChartRenderer {
                     if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
                     writer.Attribute("x", item.X + 26).Attribute("y", "0").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", labelFontSize).Attribute("font-weight", StyleWeight(style, "600"));
                     WriteSvgTextStyleAttributes(writer, style);
-                    writer.Raw(Escape(label)).EndElement().Line();
+                    WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
                 }
                 writer.EndElement().Line();
             }
@@ -68,15 +67,20 @@ public sealed partial class SvgChartRenderer {
         var row = new LegendRow();
         rows.Add(row);
         var x = 0.0;
+        var style = chart.Options.LegendStyle;
+        var preferredFontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
+        var labelWidthLimit = LegendLabelMaxWidth(width);
         foreach (var entry in BuildLegendEntries(chart, width)) {
-            var itemWidth = Math.Min(maxX, 34 + EstimateTextWidth(entry.Label, chart.Options.Theme.LegendFontSize) + 18);
+            var transformedLabel = StyleText(style, entry.Label);
+            var label = TrimSvgLabelToWidth(transformedLabel, preferredFontSize, labelWidthLimit);
+            var itemWidth = Math.Min(maxX, 34 + EstimateTextWidth(label, preferredFontSize) + 18);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new LegendRow();
                 rows.Add(row);
                 x = 0;
             }
 
-            row.Items.Add(new LegendItem(entry.SeriesIndex, entry.PointIndex, x, itemWidth, entry.Label, entry.Color));
+            row.Items.Add(new LegendItem(entry.SeriesIndex, entry.PointIndex, x, itemWidth, label, entry.Color));
             row.Width = Math.Max(row.Width, x + itemWidth);
             x += itemWidth;
         }
@@ -99,8 +103,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static string SvgLegendLabel(Chart chart, int index, double width) =>
-        TrimSvgLabelToWidth(chart.Series[index].Name, chart.Options.Theme.LegendFontSize, LegendLabelMaxWidth(width));
+    private static string SvgLegendLabel(Chart chart, int index, double width) => chart.Series[index].Name;
 
     private static List<LegendEntry> BuildLegendEntries(Chart chart, double width) {
         if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !chart.Series[0].ShowInLegend || !CanUsePointLegend(chart.Series[0])) {
@@ -118,7 +121,6 @@ public sealed partial class SvgChartRenderer {
             var rawIndex = VisualPointRawIndex(series0, i);
             if (rawIndex < 0 || rawIndex >= series0.Points.Count) continue;
             var label = LegendPointLabel(chart, series0.Points[rawIndex], i);
-            label = TrimSvgLabelToWidth(label, chart.Options.Theme.LegendFontSize, LegendLabelMaxWidth(width));
             entries.Add(new LegendEntry(0, i, label, LegendPointColor(chart, series0, 0, i)));
         }
 
@@ -170,7 +172,10 @@ public sealed partial class SvgChartRenderer {
     private static double LegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;
         var t = chart.Options.Theme;
-        var widest = BuildLegendEntries(chart, LegendSideReserveMaximumWidth).Max(item => EstimateTextWidth(item.Label, t.LegendFontSize));
+        var style = chart.Options.LegendStyle;
+        var fontSize = StyleFontSize(style, t.LegendFontSize);
+        var widest = BuildLegendEntries(chart, LegendSideReserveMaximumWidth)
+            .Max(item => EstimateTextWidth(StyleText(style, item.Label), fontSize));
         return Math.Min(240, Math.Max(124, widest + 54));
     }
 

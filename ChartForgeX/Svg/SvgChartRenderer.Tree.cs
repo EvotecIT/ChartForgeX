@@ -164,7 +164,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("font-size", fittedFontSize)
             .Attribute("font-weight", StyleWeight(dataStyle, "800"));
         WriteSvgTextStyleAttributes(writer, dataStyle);
-        writer.Text(fittedText)
+        WriteSvgStyledTextContent(writer, dataStyle, fittedText)
             .EndElement()
             .Line();
     }
