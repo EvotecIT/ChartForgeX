@@ -138,6 +138,23 @@ internal static partial class SmokeTests {
         Assert(radar.ToSvg().Contains("fill=\"#7C3AED\"", StringComparison.Ordinal), "Radar data labels should honor per-series data-label color overrides.");
         Assert(radar.ToPng().Length > 64, "Radar series data-label styles should render PNG output.");
 
+        var regularPolarArea = Chart.Create()
+            .WithSize(460, 320)
+            .WithLegend(false)
+            .WithDataLabels()
+            .AddPolarArea("Polar", Points(92, 74, 88))
+            .ToPng();
+        var polarArea = Chart.Create()
+            .WithSize(460, 320)
+            .WithLegend(false)
+            .WithDataLabels()
+            .AddPolarArea("Polar", Points(92, 74, 88));
+        polarArea.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithFontFamily("monospace").WithWeight("normal").WithItalic().WithUnderline().WithFontSize(16));
+        var polarAreaSvg = polarArea.ToSvg();
+        var polarAreaPng = polarArea.ToPng();
+        Assert(polarAreaSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && polarAreaSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Polar-area labels should honor per-series data-label style overrides.");
+        Assert(!regularPolarArea.SequenceEqual(polarAreaPng), "Polar-area PNG labels should render and position with resolved series text styling.");
+
         var waterfall = Chart.Create()
             .WithSize(480, 320)
             .WithDataLabels()
