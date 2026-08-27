@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 
@@ -31,6 +32,19 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"legend-label\"", StringComparison.Ordinal) && svg.Contains("fill=\"#15803D\"", StringComparison.Ordinal), "SVG legends should honor role-specific text colors.");
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal) && svg.Contains("fill=\"#B45309\"", StringComparison.Ordinal), "SVG data labels should honor role-specific text colors.");
         Assert(chart.ToPng().Length > 64, "Styled text should render PNG output.");
+        var regularTitle = Chart.Create().WithSize(360, 220).WithTitle("Raster Italic Title").AddLine("Values", Points(1, 3, 2)).ToPng();
+        var italicTitle = Chart.Create().WithSize(360, 220).WithTitle("Raster Italic Title").WithTitleStyle(style => style.WithItalic()).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(!regularTitle.SequenceEqual(italicTitle), "PNG chart titles should render italic pixels instead of silently using regular text.");
+        var normalWeightTitle = Chart.Create().WithSize(360, 220).WithTitle("Raster Weight Title").WithTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var boldWeightTitle = Chart.Create().WithSize(360, 220).WithTitle("Raster Weight Title").WithTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(!normalWeightTitle.SequenceEqual(boldWeightTitle), "PNG text styles should honor explicit normal and bold font weights.");
+        var serifTitle = Chart.Create().WithSize(360, 220).WithTitle("MMMM Raster Family iii").WithTitleStyle(style => style.WithFontFamily("serif")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var monospaceTitle = Chart.Create().WithSize(360, 220).WithTitle("MMMM Raster Family iii").WithTitleStyle(style => style.WithFontFamily("monospace")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
+        var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
+        if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
+            Assert(!serifTitle.SequenceEqual(monospaceTitle), "PNG text styles should honor role-specific font families when distinct platform fonts are available.");
+        }
         AssertThrows<ArgumentNullException>(() => Chart.Create().WithTitleStyle(null!), "Text style callbacks should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");

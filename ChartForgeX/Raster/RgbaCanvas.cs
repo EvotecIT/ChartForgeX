@@ -197,27 +197,39 @@ internal sealed partial class RgbaCanvas {
     }
 
     public void DrawTextRotated(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY) {
-        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, false);
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, false, _outlineFont, false);
     }
+
+    internal void DrawTextRotated(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool italic) =>
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, false, _outlineFont, italic);
+
+    internal void DrawTextRotated(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, TrueTypeFont? font, bool italic) =>
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, false, font, italic);
 
     public void DrawTextRotatedEmphasized(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY) {
-        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true);
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, _outlineFont, false);
     }
 
-    private void DrawTextRotatedCore(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool emphasized) {
+    internal void DrawTextRotatedEmphasized(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool italic) =>
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, _outlineFont, italic);
+
+    internal void DrawTextRotatedEmphasized(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, TrueTypeFont? font, bool italic) =>
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, font, italic);
+
+    private void DrawTextRotatedCore(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool emphasized, TrueTypeFont? font, bool italic) {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
         if (Math.Abs(degrees) < 0.001) {
-            if (emphasized) DrawTextEmphasized(anchorX - originX, anchorY - originY, text, color, fontSize);
-            else DrawText(anchorX - originX, anchorY - originY, text, color, fontSize);
+            if (emphasized) DrawTextEmphasized(anchorX - originX, anchorY - originY, text, color, fontSize, font, italic);
+            else DrawText(anchorX - originX, anchorY - originY, text, color, fontSize, font, italic);
             return;
         }
 
         var padding = Math.Max(4, fontSize * 0.45);
-        var textWidth = emphasized ? MeasureTextEmphasizedWidth(text, fontSize, _outlineFont) : MeasureTextWidth(text, fontSize, _outlineFont);
-        var textHeight = MeasureTextHeight(fontSize, _outlineFont);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(textHeight + padding * 2), _scale, _outlineFont);
-        if (emphasized) buffer.DrawTextEmphasized(padding, padding, text, color, fontSize);
-        else buffer.DrawText(padding, padding, text, color, fontSize);
+        var textWidth = emphasized ? MeasureTextEmphasizedWidth(text, fontSize, font, italic) : MeasureTextWidthWithFont(text, fontSize, font, italic);
+        var textHeight = font?.LineHeight(Math.Max(1, fontSize)) ?? MeasureTextHeight(fontSize, _outlineFont);
+        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(textHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false);
+        if (emphasized) buffer.DrawTextEmphasized(padding, padding, text, color, fontSize, buffer._outlineFont, italic);
+        else buffer.DrawText(padding, padding, text, color, fontSize, buffer._outlineFont, italic);
 
         var radians = degrees * Math.PI / 180.0;
         var cos = Math.Cos(radians);
@@ -270,66 +282,6 @@ internal sealed partial class RgbaCanvas {
                 (int)Math.Round(destY * _scale),
                 ChartColor.FromRgba(buffer.Pixels[source], buffer.Pixels[source + 1], buffer.Pixels[source + 2], alpha));
         }
-    }
-
-    public static double MeasureTextTinyWidth(string text, int scale) {
-        return MeasureTextTinyWidth(text, scale, null);
-    }
-
-    public static double MeasureTextTinyWidth(string text, int scale, TrueTypeFont? outlineFont) {
-        var font = outlineFont ?? DefaultOutlineFont;
-        if (font != null) return font.Measure(text, OutlineFontSize(scale));
-        return MeasureTinyFallbackWidth(text, scale);
-    }
-
-    public static double MeasureTextWidth(string text, double fontSize, TrueTypeFont? outlineFont) {
-        var font = outlineFont ?? DefaultOutlineFont;
-        if (font != null) return font.Measure(text, Math.Max(1, fontSize));
-        return MeasureTextTinyWidth(text, FallbackScaleForFontSize(fontSize), null);
-    }
-
-    internal double MeasureTextWidth(string text, double fontSize) {
-        if (_outlineFont != null) {
-            return _outlineFont.Measure(text, Math.Max(1, fontSize));
-        }
-        return MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
-    }
-
-    internal static double MeasureTextWidthWithFont(string text, double fontSize, TrueTypeFont? font) {
-        return font != null
-            ? font.Measure(text, Math.Max(1, fontSize))
-            : MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
-    }
-
-    public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
-
-    internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);
-
-    public static double MeasureTextHeight(double fontSize, TrueTypeFont? outlineFont) {
-        var font = outlineFont ?? DefaultOutlineFont;
-        if (font != null) return font.LineHeight(Math.Max(1, fontSize));
-        return TinyFont.Height * FallbackScaleForFontSize(fontSize);
-    }
-
-    internal double MeasureTextHeight(double fontSize) => MeasureTextHeight(fontSize, _outlineFont);
-
-    public static double MeasureTextTinyHeight(int scale) {
-        return MeasureTextTinyHeight(scale, null);
-    }
-
-    public static double MeasureTextTinyHeight(int scale, TrueTypeFont? outlineFont) {
-        var font = outlineFont ?? DefaultOutlineFont;
-        return font != null ? OutlineFontSize(scale) : TinyFont.Height * Math.Max(1, scale);
-    }
-
-    private static double OutlineFontSize(int scale) => TinyFont.Height * Math.Max(1, scale) * 1.45;
-    private static int FallbackScaleForFontSize(double fontSize) => Math.Max(1, (int)Math.Round(Math.Max(1, fontSize) / OutlineFontSize(1)));
-    private static double EmphasisOffset(double fontSize) => Math.Max(0.24, Math.Min(0.58, fontSize * 0.025));
-
-    private static double MeasureTinyFallbackWidth(string text, int scale) {
-        var width = 0;
-        foreach (var ch in text) width += TinyFont.AdvanceFor(ch);
-        return width * Math.Max(1, scale);
     }
 
     public byte[] ToOutputPixels() {
@@ -662,38 +614,48 @@ internal sealed partial class RgbaCanvas {
         return startAngle <= endAngle ? angle >= startAngle && angle <= endAngle : angle >= startAngle || angle <= endAngle;
     }
 
-    private void DrawGlyph(int x, int y, char ch, ChartColor color, int scale) {
+    private void DrawGlyph(int x, int y, char ch, ChartColor color, int scale, bool italic) {
         var glyph = TinyFont.GetBitmap(ch);
         var thickness = Math.Max(1.4, scale * 0.8);
         var radius = thickness / 2.0;
         for (var row = 0; row < TinyFont.Height; row++) {
             for (var col = 0; col < TinyFont.Width; col++) {
                 if (!GlyphCell(glyph, row, col)) continue;
-                var cx = x + (col + 0.5) * scale;
-                var cy = y + (row + 0.5) * scale;
+                var center = GlyphCenter(row, col);
+                var cx = center.X;
+                var cy = center.Y;
                 var connected = false;
                 if (GlyphCell(glyph, row, col + 1)) {
-                    DrawStrokePixels(cx, cy, x + (col + 1.5) * scale, cy, thickness, color);
+                    var right = GlyphCenter(row, col + 1);
+                    DrawStrokePixels(cx, cy, right.X, right.Y, thickness, color);
                     connected = true;
                 }
 
                 if (GlyphCell(glyph, row + 1, col)) {
-                    DrawStrokePixels(cx, cy, cx, y + (row + 1.5) * scale, thickness, color);
+                    var down = GlyphCenter(row + 1, col);
+                    DrawStrokePixels(cx, cy, down.X, down.Y, thickness, color);
                     connected = true;
                 }
 
                 if (GlyphCell(glyph, row + 1, col + 1) && !GlyphCell(glyph, row, col + 1) && !GlyphCell(glyph, row + 1, col)) {
-                    DrawStrokePixels(cx, cy, x + (col + 1.5) * scale, y + (row + 1.5) * scale, thickness, color);
+                    var downRight = GlyphCenter(row + 1, col + 1);
+                    DrawStrokePixels(cx, cy, downRight.X, downRight.Y, thickness, color);
                     connected = true;
                 }
 
                 if (GlyphCell(glyph, row + 1, col - 1) && !GlyphCell(glyph, row, col - 1) && !GlyphCell(glyph, row + 1, col)) {
-                    DrawStrokePixels(cx, cy, x + (col - 0.5) * scale, y + (row + 1.5) * scale, thickness, color);
+                    var downLeft = GlyphCenter(row + 1, col - 1);
+                    DrawStrokePixels(cx, cy, downLeft.X, downLeft.Y, thickness, color);
                     connected = true;
                 }
 
                 if (!connected) DrawSoftCirclePixels(cx, cy, radius, color);
             }
+        }
+
+        ChartPoint GlyphCenter(int row, int col) {
+            var italicOffset = italic ? (TinyFont.Height - 1 - row) * scale * TrueTypeFont.ObliqueShear : 0;
+            return new ChartPoint(x + (col + 0.5) * scale + italicOffset, y + (row + 0.5) * scale);
         }
     }
 

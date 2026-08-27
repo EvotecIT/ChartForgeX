@@ -72,6 +72,8 @@ public sealed class TextStyleOverride {
     /// <summary>Sets underlined text.</summary>
     public TextStyleOverride WithUnderline(bool enabled = true) { Underline = enabled; return this; }
 
+    internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveWeight(FontWeight, fallback);
+
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
     private static int ResolveWeight(string value, int fallback) {

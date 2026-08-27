@@ -70,7 +70,7 @@ public static class TextLayoutEngine {
     }
 
     internal static double MeasureWidth(string text, TextStyle style, TrueTypeFont? font) {
-        var width = RgbaCanvas.MeasureTextWidth(text, style.FontSize, font);
+        var width = RgbaCanvas.MeasureTextWidth(text, style.FontSize, font, style.Font.Italic);
         if (style.Font.Weight >= 600 && text.Length > 0) width += Math.Max(0.6, style.FontSize / 18.0);
         return width;
     }

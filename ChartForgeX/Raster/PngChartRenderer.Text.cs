@@ -9,24 +9,28 @@ namespace ChartForgeX.Raster;
 public sealed partial class PngChartRenderer {
     private static void DrawReadablePngLabel(RgbaCanvas c, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
         text = style == null ? text : PngStyleColor(style, text);
-        foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, y + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize);
-        c.DrawTextEmphasized(x, y, label, text, fontSize);
+        var italic = style?.Italic == true;
+        var font = style == null ? CurrentOutlineFont : PngStyleFont(style);
+        var emphasized = style == null || PngStyleEmphasized(style, fallback: true);
+        foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, y + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize, font, italic);
+        if (emphasized) c.DrawTextEmphasized(x, y, label, text, fontSize, font, italic);
+        else c.DrawText(x, y, label, text, fontSize, font, italic);
         if (style != null) DrawPngUnderline(c, x, y + fontSize, label, style, text, fontSize, emphasized: true);
     }
 
     private static void DrawReadablePngLabel(RgbaCanvas c, ChartRect plot, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
-        FitReadablePngLabel(label, fontSize, Math.Max(8, plot.Width - ChartVisualPrimitives.DataLabelPlotInset * 2), Math.Max(8, plot.Height - ChartVisualPrimitives.DataLabelPlotInset * 2), out var fittedLabel, out var fittedFontSize);
+        FitReadablePngLabel(label, fontSize, Math.Max(8, plot.Width - ChartVisualPrimitives.DataLabelPlotInset * 2), Math.Max(8, plot.Height - ChartVisualPrimitives.DataLabelPlotInset * 2), out var fittedLabel, out var fittedFontSize, style);
         if (fittedLabel.Length == 0) return;
-        var width = EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize);
-        var height = EstimatePngTextHeight(fittedFontSize);
+        var width = style == null ? EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize) : EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style, emphasized: true);
+        var height = style == null ? EstimatePngTextHeight(fittedFontSize) : EstimatePngStyledTextHeight(fittedFontSize, style);
         DrawReadablePngLabel(c, Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset), Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset, plot.Bottom - height - ChartVisualPrimitives.DataLabelPlotInset), fittedLabel, text, halo, fittedFontSize, style);
     }
 
     private static void DrawReadablePngLabelCentered(RgbaCanvas c, ChartRect bounds, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
-        FitReadablePngLabel(label, fontSize, Math.Max(8, bounds.Width - 8), Math.Max(8, bounds.Height - 6), out var fittedLabel, out var fittedFontSize);
+        FitReadablePngLabel(label, fontSize, Math.Max(8, bounds.Width - 8), Math.Max(8, bounds.Height - 6), out var fittedLabel, out var fittedFontSize, style);
         if (fittedLabel.Length == 0) return;
-        var width = EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize);
-        var height = EstimatePngTextHeight(fittedFontSize);
+        var width = style == null ? EstimatePngEmphasizedTextWidth(fittedLabel, fittedFontSize) : EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style, emphasized: true);
+        var height = style == null ? EstimatePngTextHeight(fittedFontSize) : EstimatePngStyledTextHeight(fittedFontSize, style);
         DrawReadablePngLabel(c, bounds.Left + (bounds.Width - width) / 2.0, bounds.Top + (bounds.Height - height) / 2.0, fittedLabel, text, halo, fittedFontSize, style);
     }
 
@@ -97,8 +101,17 @@ public sealed partial class PngChartRenderer {
 
     private static ChartColor ApplyOpacity(ChartColor color, double opacity) => ChartColorMath.WithOpacity(color, opacity);
 
-    private static double EstimatePngTextWidth(string value, double fontSize) => Math.Ceiling(RgbaCanvas.MeasureTextWidth(value, fontSize, CurrentOutlineFont));
-    private static double EstimatePngEmphasizedTextWidth(string value, double fontSize) => Math.Ceiling(RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, CurrentOutlineFont));
+    private static double EstimatePngTextWidth(string value, double fontSize) => EstimatePngTextWidth(value, fontSize, italic: false);
+    private static double EstimatePngTextWidth(string value, double fontSize, bool italic) => Math.Ceiling(RgbaCanvas.MeasureTextWidth(value, fontSize, CurrentOutlineFont, italic));
+    private static double EstimatePngEmphasizedTextWidth(string value, double fontSize) => EstimatePngEmphasizedTextWidth(value, fontSize, italic: false);
+    private static double EstimatePngEmphasizedTextWidth(string value, double fontSize, bool italic) => Math.Ceiling(RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, CurrentOutlineFont, italic));
+    private static double EstimatePngStyledTextWidth(string value, double fontSize, TextStyleOverride style, bool emphasized) {
+        var font = PngStyleFont(style);
+        return Math.Ceiling(PngStyleEmphasized(style, emphasized)
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, font, style.Italic)
+            : RgbaCanvas.MeasureTextWidthWithFont(value, fontSize, font, style.Italic));
+    }
+    private static double EstimatePngStyledTextHeight(double fontSize, TextStyleOverride style) => RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style));
     private static double EstimatePngTextHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont);
     private static double PngTickFontSize(Chart chart) => PngStyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize);
     private static ChartColor PngTickColor(Chart chart) => PngStyleColor(chart.Options.TickLabelStyle, chart.Options.Theme.MutedText);
@@ -110,6 +123,8 @@ public sealed partial class PngChartRenderer {
     private static ChartColor DataLabelConnectorColor(Chart chart) => chart.Options.DataLabelConnectorColor ?? chart.Options.Theme.MutedText;
     private static ChartColor PngStyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
     private static double PngStyleFontSize(TextStyleOverride style, double fallback) => style.FontSize ?? fallback;
+    private static TrueTypeFont? PngStyleFont(TextStyleOverride style) => CurrentOutlineFontIsExplicit || style.FontFamily == null ? CurrentOutlineFont : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _) ?? CurrentOutlineFont;
+    private static bool PngStyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
     private static TextStyleOverride SeriesDataLabelStyle(Chart chart, ChartSeries? series) => DataLabelStyle(chart, series);
 
     private static TextStyleOverride DataLabelStyle(Chart chart, ChartSeries? series, int pointIndex = -1) {
@@ -123,68 +138,104 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawPngUnderline(RgbaCanvas c, double x, double y, string text, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {
         if (!style.Underline || text.Length == 0) return;
-        var width = emphasized ? EstimatePngEmphasizedTextWidth(text, fontSize) : EstimatePngTextWidth(text, fontSize);
+        var width = EstimatePngStyledTextWidth(text, fontSize, style, emphasized);
         c.DrawLine(x, y + 2, x + width, y + 2, color, Math.Max(1, fontSize / 13.0));
     }
 
     private static void DrawPngTextStyled(RgbaCanvas c, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
         var color = PngStyleColor(style, fallback);
-        if (emphasized) c.DrawTextEmphasized(x, y, text, color, fontSize);
-        else c.DrawText(x, y, text, color, fontSize);
+        var font = PngStyleFont(style);
+        var effectiveEmphasis = PngStyleEmphasized(style, emphasized);
+        if (effectiveEmphasis) c.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
+        else c.DrawText(x, y, text, color, fontSize, font, style.Italic);
         DrawPngUnderline(c, x, y + fontSize, text, style, color, fontSize, emphasized);
     }
 
     private static double TextFontSizeForWidth(string value, double maxWidth, double preferredFontSize) => TextFontSizeForWidth(value, maxWidth, preferredFontSize, false);
     private static double TextFontSizeForEmphasizedWidth(string value, double maxWidth, double preferredFontSize) => TextFontSizeForWidth(value, maxWidth, preferredFontSize, true);
+    private static double TextFontSizeForWidth(string value, double maxWidth, double preferredFontSize, TextStyleOverride style) => TextFontSizeForStyledWidth(value, maxWidth, preferredFontSize, style, emphasized: false);
+    private static double TextFontSizeForEmphasizedWidth(string value, double maxWidth, double preferredFontSize, TextStyleOverride style) => TextFontSizeForStyledWidth(value, maxWidth, preferredFontSize, style, emphasized: true);
 
-    private static double TextFontSizeForWidth(string value, double maxWidth, double preferredFontSize, bool emphasized) {
+    private static double TextFontSizeForStyledWidth(string value, double maxWidth, double preferredFontSize, TextStyleOverride style, bool emphasized) {
         for (var fontSize = Math.Max(8, preferredFontSize); fontSize > 8; fontSize -= 1) {
-            var width = emphasized ? EstimatePngEmphasizedTextWidth(value, fontSize) : EstimatePngTextWidth(value, fontSize);
+            if (EstimatePngStyledTextWidth(value, fontSize, style, emphasized) <= maxWidth) return fontSize;
+        }
+
+        return 8;
+    }
+
+    private static double TextFontSizeForWidth(string value, double maxWidth, double preferredFontSize, bool emphasized, bool italic = false) {
+        for (var fontSize = Math.Max(8, preferredFontSize); fontSize > 8; fontSize -= 1) {
+            var width = emphasized ? EstimatePngEmphasizedTextWidth(value, fontSize, italic) : EstimatePngTextWidth(value, fontSize, italic);
             if (width <= maxWidth) return fontSize;
         }
 
         return 8;
     }
 
-    private static double FitReadablePngLabelFontSize(string value, double preferredFontSize, double maxWidth, double maxHeight) {
+    private static double FitReadablePngLabelFontSize(string value, double preferredFontSize, double maxWidth, double maxHeight, TextStyleOverride? style = null) {
         for (var fontSize = Math.Max(8, preferredFontSize); fontSize > 8; fontSize -= 1) {
-            if (EstimatePngEmphasizedTextWidth(value, fontSize) <= maxWidth && EstimatePngTextHeight(fontSize) <= maxHeight) return fontSize;
+            var width = style == null ? EstimatePngEmphasizedTextWidth(value, fontSize) : EstimatePngStyledTextWidth(value, fontSize, style, emphasized: true);
+            var height = style == null ? EstimatePngTextHeight(fontSize) : EstimatePngStyledTextHeight(fontSize, style);
+            if (width <= maxWidth && height <= maxHeight) return fontSize;
         }
 
         return 8;
     }
 
-    private static void FitReadablePngLabel(string value, double preferredFontSize, double maxWidth, double maxHeight, out string fittedValue, out double fittedFontSize) {
-        fittedFontSize = FitReadablePngLabelFontSize(value, preferredFontSize, maxWidth, maxHeight);
-        fittedValue = TrimReadablePngLabelToWidth(value, fittedFontSize, maxWidth);
+    private static void FitReadablePngLabel(string value, double preferredFontSize, double maxWidth, double maxHeight, out string fittedValue, out double fittedFontSize, TextStyleOverride? style = null) {
+        fittedFontSize = FitReadablePngLabelFontSize(value, preferredFontSize, maxWidth, maxHeight, style);
+        fittedValue = style == null ? TrimReadablePngLabelToWidth(value, fittedFontSize, maxWidth) : TrimReadablePngLabelToWidth(value, fittedFontSize, maxWidth, style);
     }
 
-    private static string TrimReadablePngLabelToWidth(string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || EstimatePngEmphasizedTextWidth(value, fontSize) <= maxWidth) return value;
+    private static string TrimReadablePngLabelToWidth(string value, double fontSize, double maxWidth, bool italic = false) {
+        if (string.IsNullOrEmpty(value) || EstimatePngEmphasizedTextWidth(value, fontSize, italic) <= maxWidth) return value;
         const string suffix = "...";
-        if (EstimatePngEmphasizedTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
+        if (EstimatePngEmphasizedTextWidth(suffix, fontSize, italic) > maxWidth) return string.Empty;
         var low = 0;
         var high = value.Length;
         while (low < high) {
             var mid = low + (high - low + 1) / 2;
             var candidate = value.Substring(0, mid).TrimEnd() + suffix;
-            if (EstimatePngEmphasizedTextWidth(candidate, fontSize) <= maxWidth) low = mid;
+            if (EstimatePngEmphasizedTextWidth(candidate, fontSize, italic) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 
         return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
     }
 
-    private static string TrimPngLabelToWidth(string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || EstimatePngTextWidth(value, fontSize) <= maxWidth) return value;
+    private static string TrimReadablePngLabelToWidth(string value, double fontSize, double maxWidth, TextStyleOverride style) =>
+        TrimPngStyledLabelToWidth(value, fontSize, maxWidth, style, emphasized: true);
+
+    private static string TrimPngLabelToWidth(string value, double fontSize, double maxWidth, bool italic = false) {
+        if (string.IsNullOrEmpty(value) || EstimatePngTextWidth(value, fontSize, italic) <= maxWidth) return value;
         const string suffix = "...";
-        if (EstimatePngTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
+        if (EstimatePngTextWidth(suffix, fontSize, italic) > maxWidth) return string.Empty;
         var low = 0;
         var high = value.Length;
         while (low < high) {
             var mid = low + (high - low + 1) / 2;
             var candidate = value.Substring(0, mid).TrimEnd() + suffix;
-            if (EstimatePngTextWidth(candidate, fontSize) <= maxWidth) low = mid;
+            if (EstimatePngTextWidth(candidate, fontSize, italic) <= maxWidth) low = mid;
+            else high = mid - 1;
+        }
+
+        return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+    }
+
+    private static string TrimPngLabelToWidth(string value, double fontSize, double maxWidth, TextStyleOverride style) =>
+        TrimPngStyledLabelToWidth(value, fontSize, maxWidth, style, emphasized: false);
+
+    private static string TrimPngStyledLabelToWidth(string value, double fontSize, double maxWidth, TextStyleOverride style, bool emphasized) {
+        if (string.IsNullOrEmpty(value) || EstimatePngStyledTextWidth(value, fontSize, style, emphasized) <= maxWidth) return value;
+        const string suffix = "...";
+        if (EstimatePngStyledTextWidth(suffix, fontSize, style, emphasized) > maxWidth) return string.Empty;
+        var low = 0;
+        var high = value.Length;
+        while (low < high) {
+            var mid = low + (high - low + 1) / 2;
+            var candidate = value.Substring(0, mid).TrimEnd() + suffix;
+            if (EstimatePngStyledTextWidth(candidate, fontSize, style, emphasized) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 

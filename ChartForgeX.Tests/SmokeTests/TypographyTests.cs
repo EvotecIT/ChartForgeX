@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
@@ -90,5 +91,31 @@ internal static partial class SmokeTests {
             }
         }
         Assert(lowerLinePixels > 0, "Simple composition text should preserve explicit line breaks instead of truncating after the first line.");
+    }
+
+    private static void RasterTypographyRendersItalicAcrossOutlineAndFallbackFonts() {
+        var regular = TextStyle.Create(24, ChartColor.Black);
+        regular.Font = FontSpec.FromFamily("Segoe UI, Arial, sans-serif");
+        var italic = regular.Clone();
+        italic.Font.Italic = true;
+
+        var regularLayout = TextLayoutEngine.Layout("Italic contract", 240, regular);
+        var italicLayout = TextLayoutEngine.Layout("Italic contract", 240, italic);
+        Assert(italicLayout.Metrics.Width > regularLayout.Metrics.Width, "Italic text measurement should reserve synthetic oblique overhang.");
+
+        var regularImage = ImageComposition.CreateTransparent(260, 64)
+            .DrawText(8, 8, 244, "Italic contract", regular)
+            .ToImage();
+        var italicImage = ImageComposition.CreateTransparent(260, 64)
+            .DrawText(8, 8, 244, "Italic contract", italic)
+            .ToImage();
+        Assert(!regularImage.Pixels.SequenceEqual(italicImage.Pixels), "Image composition should render italic pixels differently from regular text.");
+
+        var regularFallback = new RgbaCanvas(180, 48, 2, null, 1, useDefaultOutlineFont: false);
+        regularFallback.DrawText(4, 4, "Fallback", ChartColor.Black, 18, italic: false);
+        var italicFallback = new RgbaCanvas(180, 48, 2, null, 1, useDefaultOutlineFont: false);
+        italicFallback.DrawText(4, 4, "Fallback", ChartColor.Black, 18, italic: true);
+        Assert(!regularFallback.Pixels.SequenceEqual(italicFallback.Pixels), "The built-in raster fallback font should preserve italic styling when no outline font is available.");
+        Assert(italicFallback.MeasureTextWidth("Fallback", 18, italic: true) > regularFallback.MeasureTextWidth("Fallback", 18), "Fallback italic measurement should reserve oblique overhang.");
     }
 }

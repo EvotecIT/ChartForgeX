@@ -180,8 +180,8 @@ public sealed class ImageComposition {
             var line = layout.Lines[index];
             var drawX = ResolveAlignedX(x, width, line.Width, style.Alignment);
             var drawY = y + index * layout.Metrics.LineHeight;
-            if (style.Font.Weight >= 600) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, style.FontSize, font);
-            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, style.FontSize, font);
+            if (style.Font.Weight >= 600) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, style.FontSize, font, style.Font.Italic);
+            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, style.FontSize, font, style.Font.Italic);
             if (style.Underline && line.Width > 0) _canvas.DrawLine(drawX, drawY + style.FontSize * 1.05, drawX + line.Width, drawY + style.FontSize * 1.05, style.Color, Math.Max(1, style.FontSize / 16));
         }
 

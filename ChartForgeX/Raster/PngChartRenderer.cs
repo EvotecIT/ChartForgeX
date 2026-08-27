@@ -15,6 +15,9 @@ public sealed partial class PngChartRenderer {
     [ThreadStatic]
     private static TrueTypeFont? CurrentOutlineFont;
 
+    [ThreadStatic]
+    private static bool CurrentOutlineFontIsExplicit;
+
     /// <summary>
     /// Resolves the font that would be used for PNG text rendering.
     /// </summary>
@@ -38,9 +41,12 @@ public sealed partial class PngChartRenderer {
     internal RgbaCanvas RenderCanvas(Chart chart) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
-        var outlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName) ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
+        var explicitOutlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
+        var outlineFont = explicitOutlineFont ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
         var previousOutlineFont = CurrentOutlineFont;
+        var previousOutlineFontIsExplicit = CurrentOutlineFontIsExplicit;
         CurrentOutlineFont = outlineFont;
+        CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         try {
             var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale);
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
@@ -212,7 +218,7 @@ public sealed partial class PngChartRenderer {
                 if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, PngTickFontSize(chart), o.YAxisLabelDensity)) {
                     var label = FormatYAxisValue(chart, yv);
                     var fontSize = PngTickFontSize(chart);
-                    DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize + 4, label, o.TickLabelStyle, t.MutedText, fontSize, emphasized: false);
+                    DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, o.TickLabelStyle, emphasized: false) - 8), y - fontSize + 4, label, o.TickLabelStyle, t.MutedText, fontSize, emphasized: false);
                 }
             }
             var xLabels = XAxisTickLabels(chart, xTicks, false);
@@ -244,6 +250,7 @@ public sealed partial class PngChartRenderer {
             return c;
         } finally {
             CurrentOutlineFont = previousOutlineFont;
+            CurrentOutlineFontIsExplicit = previousOutlineFontIsExplicit;
         }
     }
 
@@ -331,14 +338,14 @@ public sealed partial class PngChartRenderer {
         var theme = chart.Options.Theme;
         var maxWidth = Math.Max(24, chart.Options.Size.Width - 80);
         var titleStyle = chart.Options.TitleStyle;
-        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize));
-        var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth);
+        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize), titleStyle);
+        var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth, titleStyle);
         if (title.Length > 0) DrawPngTextStyled(c, 40, 52 - titleFontSize + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
             var subtitleStyle = chart.Options.SubtitleStyle;
             var subtitleMaxWidth = Math.Max(24, chart.Options.Size.Width - 84);
-            var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, PngStyleFontSize(subtitleStyle, theme.SubtitleFontSize));
-            var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth);
+            var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, PngStyleFontSize(subtitleStyle, theme.SubtitleFontSize), subtitleStyle);
+            var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth, subtitleStyle);
             if (subtitle.Length > 0) DrawPngTextStyled(c, 42, 79 - subtitleFontSize + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
     }

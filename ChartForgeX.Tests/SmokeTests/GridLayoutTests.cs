@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
 
@@ -60,6 +61,18 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"grid-subtitle\"", StringComparison.Ordinal) && svg.Contains("fill=\"#0E7490\"", StringComparison.Ordinal), "SVG grid subtitles should honor grid subtitle styles.");
         Assert(grid.ToHtmlFragment().Contains("text-decoration:underline", StringComparison.Ordinal), "HTML grid headers should honor grid text decoration.");
         Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render PNG output.");
+
+        var panel = Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3));
+        var regularRaster = ChartGrid.Create().WithTitle("Italic Grid Header").WithSubtitle("Italic Grid Subtitle").WithPanelSize(260, 160).Add(panel).ToPng();
+        var italicRaster = ChartGrid.Create()
+            .WithTitle("Italic Grid Header")
+            .WithSubtitle("Italic Grid Subtitle")
+            .WithTitleStyle(style => style.WithItalic())
+            .WithSubtitleStyle(style => style.WithItalic())
+            .WithPanelSize(260, 160)
+            .Add(panel)
+            .ToPng();
+        Assert(!regularRaster.SequenceEqual(italicRaster), "PNG grid headers should render italic pixels instead of silently using regular text.");
         AssertThrows<ArgumentNullException>(() => ChartGrid.Create().WithTitleStyle(null!), "Grid title styles should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithSubtitleStyle(style => style.WithFontSize(0)), "Grid subtitle styles should reject invalid font sizes.");
     }
