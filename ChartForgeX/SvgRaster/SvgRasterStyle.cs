@@ -22,7 +22,10 @@ internal sealed class SvgRasterStyle {
         FillRule = "nonzero",
         ClipRule = "nonzero",
         FontSize = 16,
+        FontFamily = null,
         FontWeight = "normal",
+        FontStyle = "normal",
+        TextDecoration = "none",
         TextAnchor = "start",
         DominantBaseline = "auto",
         WhiteSpace = "normal",
@@ -48,7 +51,10 @@ internal sealed class SvgRasterStyle {
     public string ClipRule { get; set; } = "nonzero";
     public string? ClipPath { get; set; }
     public double FontSize { get; set; }
+    public string? FontFamily { get; set; }
     public string FontWeight { get; set; } = "normal";
+    public string FontStyle { get; set; } = "normal";
+    public string TextDecoration { get; set; } = "none";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
     public string WhiteSpace { get; set; } = "normal";
@@ -77,7 +83,10 @@ internal sealed class SvgRasterStyle {
             FillRule = FillRule,
             ClipRule = ClipRule,
             FontSize = FontSize,
+            FontFamily = FontFamily,
             FontWeight = FontWeight,
+            FontStyle = FontStyle,
+            TextDecoration = TextDecoration,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
             WhiteSpace = WhiteSpace,
@@ -151,7 +160,10 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "fill-opacity");
         AddAttribute(declarations, element, "stroke-opacity");
         AddAttribute(declarations, element, "font-size");
+        AddAttribute(declarations, element, "font-family");
         AddAttribute(declarations, element, "font-weight");
+        AddAttribute(declarations, element, "font-style");
+        AddAttribute(declarations, element, "text-decoration");
         AddAttribute(declarations, element, "text-anchor");
         AddAttribute(declarations, element, "dominant-baseline");
         AddAttribute(declarations, element, "alignment-baseline");
@@ -237,8 +249,17 @@ internal sealed class SvgRasterStyle {
             case "font-size":
                 style.FontSize = Math.Max(1, ParseLength(value, style.FontSize));
                 break;
+            case "font-family":
+                style.FontFamily = value.Trim();
+                break;
             case "font-weight":
                 style.FontWeight = value.Trim();
+                break;
+            case "font-style":
+                style.FontStyle = value.Trim();
+                break;
+            case "text-decoration":
+                style.TextDecoration = value.Trim();
                 break;
             case "text-anchor":
                 style.TextAnchor = value.Trim();

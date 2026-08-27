@@ -110,6 +110,7 @@ internal static partial class SmokeTests {
         ("PNG renderer uses supersampled edges", PngUsesSupersampledEdges),
         ("PNG supersampling scale is configurable", PngSupersamplingScaleIsConfigurable),
         ("SVG raster stroke joins honor round bevel and miter", SvgRasterStrokeJoinsHonorRoundBevelAndMiter),
+        ("SVG raster text preserves typography styles", SvgRasterTextPreservesTypographyStyles),
         ("Public SVG rasterizer preserves viewport and DPI metadata", PublicSvgRasterizerPreservesViewportAndDpiMetadata),
         ("SVG raster symbols preserve fractional viewports and overflow clipping", SvgRasterSymbolsPreserveFractionalViewportsAndOverflowClipping),
         ("PNG output scale emits high-density assets", PngOutputScaleEmitsHighDensityAssets),

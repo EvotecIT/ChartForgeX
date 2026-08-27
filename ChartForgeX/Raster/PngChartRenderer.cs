@@ -574,37 +574,38 @@ public sealed partial class PngChartRenderer {
         if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || labels.Count < 3) return LabelValues(labels);
 
         var fontSize = PngTickFontSize(chart);
+        var style = chart.Options.TickLabelStyle;
         var widest = 0.0;
-        foreach (var label in labels) widest = Math.Max(widest, EstimatePngTextWidth(label.Text, fontSize));
+        foreach (var label in labels) widest = Math.Max(widest, EstimatePngStyledTextWidth(label.Text, fontSize, style, emphasized: false));
         var densityFactor = chart.Options.XAxisLabelDensity == ChartLabelDensity.Dense ? 0.72 : chart.Options.XAxisLabelDensity == ChartLabelDensity.Relaxed ? 1.35 : 1.0;
         var minSpacing = Math.Max(28, (widest + 18) * densityFactor);
         var maxCount = Math.Max(2, (int)Math.Floor(plot.Width / minSpacing) + 1);
-        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, fontSize, 6)) return LabelValues(labels);
+        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, fontSize, style, 6)) return LabelValues(labels);
 
         var lastLabel = labels[labels.Count - 1];
         var step = Math.Max(1, (int)Math.Ceiling((labels.Count - 1) / (double)(maxCount - 1)));
         var selected = new List<ChartAxisLabel>();
         selected.Add(labels[0]);
         for (var i = step; i < labels.Count - 1; i += step) {
-            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, fontSize) >= 6 && LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, fontSize) >= 6) selected.Add(labels[i]);
+            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, fontSize, style) >= 6 && LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, fontSize, style) >= 6) selected.Add(labels[i]);
         }
 
-        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, fontSize) < 6) selected.RemoveAt(selected.Count - 1);
+        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, fontSize, style) < 6) selected.RemoveAt(selected.Count - 1);
         selected.Add(lastLabel);
         return LabelValues(selected);
     }
 
-    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, double minGap) {
+    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style, double minGap) {
         for (var i = 1; i < labels.Count; i++) {
-            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize) < minGap) return false;
+            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize, style) < minGap) return false;
         }
 
         return true;
     }
 
-    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize) {
-        var leftWidth = EstimatePngTextWidth(left.Text, fontSize);
-        var rightWidth = EstimatePngTextWidth(right.Text, fontSize);
+    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style) {
+        var leftWidth = EstimatePngStyledTextWidth(left.Text, fontSize, style, emphasized: false);
+        var rightWidth = EstimatePngStyledTextWidth(right.Text, fontSize, style, emphasized: false);
         var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
         var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
         return rightX - (leftX + leftWidth);

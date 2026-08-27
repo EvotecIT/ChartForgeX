@@ -266,8 +266,9 @@ public sealed partial class PngChartRenderer {
     private static void DrawHorizontalCategoryLabel(RgbaCanvas c, Chart chart, ChartRect plot, string label, double y) {
         var fontSize = HorizontalCategoryFontSize(chart);
         var lines = WrapHorizontalCategoryLabel(label, fontSize, HorizontalCategoryWrapWidth(chart), chart.Options.TickLabelStyle);
-        var lineHeight = EstimatePngTextHeight(fontSize) + 3;
-        var top = y - (lines.Length * lineHeight - (lineHeight - EstimatePngTextHeight(fontSize))) / 2.0;
+        var textHeight = EstimatePngStyledTextHeight(fontSize, chart.Options.TickLabelStyle);
+        var lineHeight = textHeight + 3;
+        var top = y - (lines.Length * lineHeight - (lineHeight - textHeight)) / 2.0;
         var maxWidth = Math.Max(8, plot.Left - 24);
         for (var i = 0; i < lines.Length; i++) {
             var line = TrimReadablePngLabelToWidth(lines[i], fontSize, maxWidth, chart.Options.TickLabelStyle);
@@ -279,8 +280,9 @@ public sealed partial class PngChartRenderer {
     private static double HorizontalValueLabelReserve(Chart chart) {
         if (!HasHorizontalBarDataLabels(chart) && !(chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals)) return 0;
         var widest = 0.0;
-        var fontSize = HorizontalValueLabelFontSize(chart);
         if (chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals) {
+            var style = chart.Options.DataLabelStyle;
+            var fontSize = PngStyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
             var positiveTotals = new Dictionary<double, double>();
             var negativeTotals = new Dictionary<double, double>();
             foreach (var series in chart.Series) {
@@ -288,19 +290,21 @@ public sealed partial class PngChartRenderer {
                 foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
             }
 
-            foreach (var value in positiveTotals.Values) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, value), fontSize));
-            foreach (var value in negativeTotals.Values) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, value), fontSize));
+            foreach (var value in positiveTotals.Values) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatValue(chart, value), fontSize, style, emphasized: true));
+            foreach (var value in negativeTotals.Values) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatValue(chart, value), fontSize, style, emphasized: true));
         } else {
             foreach (var series in chart.Series) {
                 if (series.Kind != ChartSeriesKind.HorizontalBar) continue;
-                foreach (var point in series.Points) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, point.Y), fontSize));
+                for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                    var style = DataLabelStyle(chart, series, pointIndex);
+                    var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
+                    widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatDataLabel(chart, series, pointIndex, series.Points[pointIndex].Y), fontSize, style, emphasized: true));
+                }
             }
         }
 
         return widest == 0 ? 0 : Math.Min(104, widest + 20);
     }
-
-    private static double HorizontalValueLabelFontSize(Chart chart) => TextFontSizeForEmphasizedWidth("100%", 72, chart.Options.Theme.DataLabelFontSize);
 
     private static void ApplyHorizontalValueBounds(Chart chart, ChartRange range, IReadOnlyList<double> xTicks) {
         var min = xTicks[0];

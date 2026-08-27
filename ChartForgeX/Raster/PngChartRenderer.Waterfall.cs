@@ -53,7 +53,8 @@ public sealed partial class PngChartRenderer {
                     var placement = DataLabelPlacement(chart, series);
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
                     var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
-                    if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) && height < dataFontSize + 8) continue;
+                    var dataTextHeight = EstimatePngStyledTextHeight(dataFontSize, dataStyle);
+                    if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) && height < dataTextHeight + 8) continue;
                     var labelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, true);
                     var labelX = placement == ChartDataLabelPlacement.Left
                         ? centerX - barWidth / 2 - labelWidth - 8
@@ -61,12 +62,12 @@ public sealed partial class PngChartRenderer {
                             ? centerX + barWidth / 2 + 8
                             : centerX - labelWidth / 2.0;
                     var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
-                        ? top + height / 2 - dataFontSize / 2.0
+                        ? top + height / 2 - dataTextHeight / 2.0
                         : placement == ChartDataLabelPlacement.Above
-                            ? top - 11 - dataFontSize
+                            ? top - 11 - dataTextHeight
                             : placement == ChartDataLabelPlacement.Below
-                                ? top + height + 13 - dataFontSize
-                                : step.Delta >= 0 || step.IsTotal ? top - 11 - dataFontSize : top + height + 13 - dataFontSize;
+                                ? top + height + 13 - dataTextHeight
+                                : step.Delta >= 0 || step.IsTotal ? top - 11 - dataTextHeight : top + height + 13 - dataTextHeight;
                     if (!ReservePngLabel(label, labelX, labelY, chart, plot, dataFontSize, reservedLabels, dataStyle)) continue;
                     DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
             }

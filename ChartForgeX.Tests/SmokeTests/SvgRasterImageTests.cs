@@ -6,6 +6,30 @@ using ChartForgeX.SvgRaster;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void SvgRasterTextPreservesTypographyStyles() {
+        const string regularSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string italicSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-style='italic' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string underlinedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' text-decoration='underline' fill='#ef4444'>MMMMiiii</text></svg>";
+        var regular = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularSvg));
+        var italic = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicSvg));
+        var underlined = RasterImageDecoder.Decode(SvgRasterizer.ToPng(underlinedSvg));
+        var regularBounds = SvgColorBounds(regular.Pixels, regular.Width, regular.Height, 239, 68, 68);
+        var italicBounds = SvgColorBounds(italic.Pixels, italic.Width, italic.Height, 239, 68, 68);
+        var underlinedBounds = SvgColorBounds(underlined.Pixels, underlined.Width, underlined.Height, 239, 68, 68);
+
+        Assert(italicBounds.Width > regularBounds.Width, "SVG rasterization should preserve italic or oblique glyph overhang and measurement.");
+        Assert(underlinedBounds.Bottom > regularBounds.Bottom, "SVG rasterization should preserve underlined text decoration in the raster artifact.");
+
+        var serifFont = TrueTypeFont.TryLoadForFamily("serif", out _);
+        var monospaceFont = TrueTypeFont.TryLoadForFamily("monospace", out _);
+        if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
+            const string styledFamilySvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><style>.styled{font-family:monospace;font-style:oblique;text-decoration:underline}</style><g class='styled'><text x='8' y='42' font-size='32' fill='#2563eb'>MMMMiiii</text></g></svg>";
+            var styledFamily = RasterImageDecoder.Decode(SvgRasterizer.ToPng(styledFamilySvg));
+            var styledBounds = SvgColorBounds(styledFamily.Pixels, styledFamily.Width, styledFamily.Height, 37, 99, 235);
+            Assert(styledBounds.HasPixels && styledBounds.Bottom > regularBounds.Bottom && styledBounds.Width != italicBounds.Width, "SVG rasterization should resolve CSS font family, oblique style, and underline together.");
+        }
+    }
+
     private static void PublicSvgRasterizerPreservesViewportAndDpiMetadata() {
         const string svg = "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='60' viewBox='0 0 120 60'><rect width='120' height='60' fill='#2563eb'/></svg>";
         byte[] png = SvgRasterizer.ToPng(svg, options: new ChartForgeX.Core.RasterImageOptions { Dpi = 144D });
