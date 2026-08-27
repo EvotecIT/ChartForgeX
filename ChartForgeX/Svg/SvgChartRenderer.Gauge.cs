@@ -53,8 +53,9 @@ public sealed partial class SvgChartRenderer {
         var labelWidth = Math.Max(48, Math.Min(plot.Width - 24, radius * 1.8));
         if (showLabels) {
             var dataStyle = DataLabelStyle(chart, series, 0);
-            DrawSvgTextCenteredX(writer, chart, "gauge-label", valueLabel, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor, t.Text, Math.Max(34, t.TitleFontSize * 1.65), labelWidth, "850", style: dataStyle);
-            DrawSvgTextCenteredX(writer, chart, "gauge-title", series.Name, cx, cy + ChartVisualPrimitives.GaugeTitleOffsetY, t.MutedText, t.LegendFontSize, labelWidth, "650", middleBaseline: false, style: dataStyle);
+            DrawSvgTextCenteredX(writer, chart, "gauge-label", valueLabel, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor, t.Text, StyleFontSize(dataStyle, Math.Max(34, t.TitleFontSize * 1.65)), labelWidth, "850", style: dataStyle);
+            DrawSvgTextCenteredX(writer, chart, "gauge-title", series.Name, cx, cy + ChartVisualPrimitives.GaugeTitleOffsetY, t.MutedText, StyleFontSize(dataStyle, t.LegendFontSize), labelWidth, "650", middleBaseline: false, style: dataStyle);
+            statusLabel = StyleText(dataStyle, statusLabel);
             var statusFontSize = TextFontSizeForSvgWidth(statusLabel, labelWidth, StyleFontSize(dataStyle, t.TickLabelFontSize));
             statusLabel = TrimSvgLabelToWidth(statusLabel, statusFontSize, labelWidth);
             var statusLeft = cx - EstimateTextWidth(statusLabel, statusFontSize) / 2.0;
@@ -77,16 +78,17 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("fill", StyleColor(dataStyle, t.MutedText).ToCss())
                 .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                 .Attribute("font-size", statusFontSize)
-                .Attribute("font-weight", StyleWeight(dataStyle, "650"))
-                .Raw(SvgTextStyleAttributes(dataStyle))
+                .Attribute("font-weight", StyleWeight(dataStyle, "650"));
+            WriteSvgTextStyleAttributes(writer, dataStyle);
+            writer
                 .Text(statusLabel)
                 .EndElement()
                 .Line();
         }
         if (chart.Options.ShowAxes) {
             var axisLabelWidth = Math.Max(32, radius * 0.76);
-            DrawSvgTextCenteredX(writer, chart, "gauge-min-label", FormatValue(chart, min), cx - radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, t.TickLabelFontSize, axisLabelWidth, "400", style: chart.Options.TickLabelStyle);
-            DrawSvgTextCenteredX(writer, chart, "gauge-max-label", FormatValue(chart, max), cx + radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, t.TickLabelFontSize, axisLabelWidth, "400", style: chart.Options.TickLabelStyle);
+            DrawSvgTextCenteredX(writer, chart, "gauge-min-label", FormatValue(chart, min), cx - radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), axisLabelWidth, "400", style: chart.Options.TickLabelStyle);
+            DrawSvgTextCenteredX(writer, chart, "gauge-max-label", FormatValue(chart, max), cx + radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY, t.MutedText, StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), axisLabelWidth, "400", style: chart.Options.TickLabelStyle);
         }
         writer.EndElement().Line();
         sb.Append(writer.Build());

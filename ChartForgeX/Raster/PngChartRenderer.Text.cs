@@ -9,13 +9,14 @@ namespace ChartForgeX.Raster;
 public sealed partial class PngChartRenderer {
     private static void DrawReadablePngLabel(RgbaCanvas c, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
         text = style == null ? text : PngStyleColor(style, text);
+        if (style != null) label = PngStyleText(style, label);
         var italic = style?.Italic == true;
         var font = style == null ? CurrentOutlineFont : PngStyleFont(style);
         var emphasized = style == null || PngStyleEmphasized(style, fallback: true);
         foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, y + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize, font, italic);
         if (emphasized) c.DrawTextEmphasized(x, y, label, text, fontSize, font, italic);
         else c.DrawText(x, y, label, text, fontSize, font, italic);
-        if (style != null) DrawPngUnderline(c, x, y + fontSize, label, style, text, fontSize, emphasized);
+        if (style != null) DrawPngDecorations(c, x, y, label, style, text, fontSize, emphasized);
     }
 
     private static void DrawReadablePngLabel(RgbaCanvas c, ChartRect plot, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
@@ -131,6 +132,10 @@ public sealed partial class PngChartRenderer {
     private static double EstimatePngEmphasizedTextWidth(string value, double fontSize) => EstimatePngEmphasizedTextWidth(value, fontSize, italic: false);
     private static double EstimatePngEmphasizedTextWidth(string value, double fontSize, bool italic) => Math.Ceiling(RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, CurrentOutlineFont, italic));
     private static double EstimatePngStyledTextWidth(string value, double fontSize, TextStyleOverride style, bool emphasized) {
+        value = PngStyleText(style, value);
+        return MeasurePngStyledTextWidth(value, fontSize, style, emphasized);
+    }
+    private static double MeasurePngStyledTextWidth(string value, double fontSize, TextStyleOverride style, bool emphasized) {
         var font = PngStyleFont(style);
         return Math.Ceiling(PngStyleEmphasized(style, emphasized)
             ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, font, style.Italic)
@@ -138,9 +143,9 @@ public sealed partial class PngChartRenderer {
     }
     private static double EstimatePngStyledTextHeight(double fontSize, TextStyleOverride style) {
         var height = RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style));
-        if (!style.Underline) return height;
-        var underlineThickness = Math.Max(1, fontSize / 13.0);
-        return Math.Max(height, fontSize + 2 + underlineThickness / 2.0);
+        var decorationThickness = Math.Max(1, fontSize / 13.0);
+        if (PngUnderlineStyle(style) != TextDecorationStyle.None) height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(PngUnderlineStyle(style), decorationThickness));
+        return height + Math.Abs(PngBaselineOffset(style, fontSize));
     }
     private static double EstimatePngTextHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont);
     private static double PngTickFontSize(Chart chart) => PngStyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize);
@@ -152,7 +157,10 @@ public sealed partial class PngChartRenderer {
     private static ChartDataLabelPlacement DataLabelPlacement(Chart chart, ChartSeries? series) => series?.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
     private static ChartColor DataLabelConnectorColor(Chart chart) => chart.Options.DataLabelConnectorColor ?? chart.Options.Theme.MutedText;
     private static ChartColor PngStyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
-    private static double PngStyleFontSize(TextStyleOverride style, double fallback) => style.FontSize ?? fallback;
+    private static double PngStyleFontSize(TextStyleOverride style, double fallback) {
+        var size = style.FontSize ?? fallback;
+        return style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript ? size * 0.65 : size;
+    }
     private static TrueTypeFont? PngStyleFont(TextStyleOverride style) => CurrentOutlineFontIsExplicit || style.FontFamily == null ? CurrentOutlineFont : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _) ?? CurrentOutlineFont;
     private static bool PngStyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
     private static TextStyleOverride SeriesDataLabelStyle(Chart chart, ChartSeries? series) => DataLabelStyle(chart, series);
@@ -166,19 +174,45 @@ public sealed partial class PngChartRenderer {
         return series != null && series.DataLabelStyle.HasOverrides ? series.DataLabelStyle : chart.Options.DataLabelStyle;
     }
 
-    private static void DrawPngUnderline(RgbaCanvas c, double x, double y, string text, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {
-        if (!style.Underline || text.Length == 0) return;
-        var width = EstimatePngStyledTextWidth(text, fontSize, style, emphasized);
-        c.DrawLine(x, y + 2, x + width, y + 2, color, Math.Max(1, fontSize / 13.0));
+    private static string PngStyleText(TextStyleOverride style, string text) => style.TransformText(text);
+
+    private static TextDecorationStyle PngUnderlineStyle(TextStyleOverride style) => style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+
+    private static TextDecorationStyle PngStrikethroughStyle(TextStyleOverride style) => style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+
+    private static double PngBaselineOffset(TextStyleOverride style, double effectiveFontSize) => style.Baseline switch {
+        TextBaseline.Superscript => -effectiveFontSize * 0.35,
+        TextBaseline.Subscript => effectiveFontSize * 0.22,
+        _ => 0
+    };
+
+    private static void DrawPngDecorations(RgbaCanvas c, double x, double y, string text, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {
+        if (text.Length == 0) return;
+        var width = MeasurePngStyledTextWidth(text, fontSize, style, emphasized);
+        var thickness = Math.Max(1, fontSize / 13.0);
+        RasterTextDecoration.Draw(c, x, x + width, y + fontSize + 2, PngUnderlineStyle(style), color, thickness);
+        RasterTextDecoration.Draw(c, x, x + width, y + fontSize * 0.55, PngStrikethroughStyle(style), color, thickness);
     }
 
     private static void DrawPngTextStyled(RgbaCanvas c, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
+        text = PngStyleText(style, text);
         var color = PngStyleColor(style, fallback);
         var font = PngStyleFont(style);
         var effectiveEmphasis = PngStyleEmphasized(style, emphasized);
-        if (effectiveEmphasis) c.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
-        else c.DrawText(x, y, text, color, fontSize, font, style.Italic);
-        DrawPngUnderline(c, x, y + fontSize, text, style, color, fontSize, emphasized);
+        var drawY = y + PngBaselineOffset(style, fontSize);
+        if (effectiveEmphasis) c.DrawTextEmphasized(x, drawY, text, color, fontSize, font, style.Italic);
+        else c.DrawText(x, drawY, text, color, fontSize, font, style.Italic);
+        DrawPngDecorations(c, x, drawY, text, style, color, fontSize, emphasized);
+    }
+
+    private static void DrawPngTextStyledRotated(RgbaCanvas c, double anchorX, double anchorY, string text, TextStyleOverride style, ChartColor fallback, double fontSize, double degrees, double originX, double originY, bool emphasized) {
+        text = PngStyleText(style, text);
+        var color = PngStyleColor(style, fallback);
+        var font = PngStyleFont(style);
+        var effectiveEmphasis = PngStyleEmphasized(style, emphasized);
+        var baselineOffset = PngBaselineOffset(style, fontSize);
+        if (effectiveEmphasis) c.DrawTextRotatedEmphasized(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, font, style.Italic, PngUnderlineStyle(style), PngStrikethroughStyle(style), baselineOffset);
+        else c.DrawTextRotated(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, font, style.Italic, PngUnderlineStyle(style), PngStrikethroughStyle(style), baselineOffset);
     }
 
     private static double TextFontSizeForWidth(string value, double maxWidth, double preferredFontSize) => TextFontSizeForWidth(value, maxWidth, preferredFontSize, false);

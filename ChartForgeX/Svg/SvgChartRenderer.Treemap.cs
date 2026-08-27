@@ -148,6 +148,8 @@ public sealed partial class SvgChartRenderer {
         if (rect.Width < 48 || rect.Height < 30) return;
         var t = chart.Options.Theme;
         var dataStyle = DataLabelStyle(chart, series, pointIndex);
+        label = StyleText(dataStyle, label);
+        value = StyleText(dataStyle, value);
         var textColor = ChartColorMath.TextOnBackground(color);
         var insetX = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetX, Math.Max(6, rect.Width * 0.12));
         var insetY = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetY, Math.Max(7, rect.Height * 0.14));

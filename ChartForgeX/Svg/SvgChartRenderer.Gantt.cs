@@ -266,7 +266,10 @@ public sealed partial class SvgChartRenderer {
                 .Line();
         }
 
-        if (item.ShowDataLabels && width >= 74) DrawSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 8, "750", t.CardBackground, 2.2, style: DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0));
+        if (item.ShowDataLabels && width >= 74) {
+            var dataStyle = DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0);
+            DrawSvgTextCenteredX(writer, chart, "gantt-progress-label", FormatPercent(item.Progress), left + width / 2, y + height / 2, ChartColorMath.TextOnBackground(item.Color), StyleFontSize(dataStyle, t.DataLabelFontSize), width - 8, "750", t.CardBackground, 2.2, style: dataStyle);
+        }
     }
 
     private static void DrawGanttMilestone(SvgMarkupWriter writer, Chart chart, GanttItem item, string id, double x, double centerY, double rowHeight) {
@@ -341,7 +344,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawGanttSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawGanttSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
@@ -349,8 +352,9 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        var transformedTitle = StyleText(style, chart.YAxisTitle);
+        var fontSize = TextFontSizeForSvgWidth(transformedTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
+        var text = TrimSvgLabelToWidth(transformedTitle, fontSize, maxWidth);
         if (text.Length == 0) return;
 
         writer

@@ -60,12 +60,31 @@ internal static partial class SmokeTests {
             .WithFontSize(22)
             .WithWeight("bold")
             .WithItalic()
-            .WithUnderline();
+            .WithUnderline(TextDecorationStyle.Wavy)
+            .WithStrikethrough(TextDecorationStyle.Double)
+            .WithSuperscript()
+            .WithTextCase(TextCaseTransform.Uppercase);
 
         var resolved = overrides.Resolve(fallback);
         Assert(resolved.Color.ToHex() == "#7C3AED" && resolved.Font.Family == "Aptos, sans-serif" && resolved.FontSize == 22, "Text overrides should resolve color, family, and size over the shared complete style.");
-        Assert(resolved.Font.Weight == 700 && resolved.Font.Italic && resolved.Underline, "Text overrides should resolve weight and decoration into the shared typography model.");
+        Assert(resolved.Font.Weight == 700 && resolved.Font.Italic && resolved.UnderlineStyle == TextDecorationStyle.Wavy && resolved.StrikethroughStyle == TextDecorationStyle.Double, "Text overrides should resolve weight and typed decorations into the shared typography model.");
+        Assert(resolved.Baseline == TextBaseline.Superscript && resolved.TextCase == TextCaseTransform.Uppercase && resolved.EffectiveFontSize == 22 * 0.65, "Text overrides should resolve script placement and casing into the shared typography model.");
         Assert(fallback.Font.Family == "system-ui, sans-serif" && fallback.FontSize == 16, "Resolving text overrides should not mutate the fallback style.");
+        AssertThrows<ArgumentOutOfRangeException>(() => overrides.WithUnderline((TextDecorationStyle)999), "Text overrides should reject unknown underline variants.");
+        AssertThrows<ArgumentOutOfRangeException>(() => overrides.WithBaseline((TextBaseline)999), "Text overrides should reject unknown baselines.");
+    }
+
+    private static void TextCaseTransformsCoverEverySharedVariant() {
+        Assert(TextCaseTransformer.Apply("mIxEd", TextCaseTransform.Uppercase) == "MIXED", "Uppercase should transform every cased character.");
+        Assert(TextCaseTransformer.Apply("mIxEd", TextCaseTransform.Lowercase) == "mixed", "Lowercase should transform every cased character.");
+        Assert(TextCaseTransformer.Apply("mIXeD words", TextCaseTransform.TitleCase) == "Mixed Words", "Title case should normalize and capitalize words.");
+        Assert(TextCaseTransformer.Apply("hELLO. wORLD!", TextCaseTransform.SentenceCase) == "Hello. World!", "Sentence case should capitalize sentence starts.");
+        Assert(TextCaseTransformer.Apply("AbC 12", TextCaseTransform.ToggleCase) == "aBc 12", "Toggle case should swap uppercase and lowercase characters.");
+
+        var style = TextStyle.Create(16, ChartColor.Black);
+        style.TextCase = TextCaseTransform.Uppercase;
+        var layout = TextLayoutEngine.Layout("measured output", 300, style);
+        Assert(layout.Lines.Single().Text == "MEASURED OUTPUT", "Shared layout should measure and return the transformed display text.");
     }
 
     private static void ImageCompositionUsesSharedTypographyContract() {
@@ -73,6 +92,10 @@ internal static partial class SmokeTests {
         style.Font = FontSpec.FromFamily("Consolas, monospace");
         style.Font.Weight = 700;
         style.Alignment = TextAlignment.Center;
+        style.UnderlineStyle = TextDecorationStyle.Wavy;
+        style.StrikethroughStyle = TextDecorationStyle.Double;
+        style.Baseline = TextBaseline.Superscript;
+        style.TextCase = TextCaseTransform.Uppercase;
 
         var png = ImageComposition.Create(260, 100, ChartColor.FromHex("#0F172A"))
             .DrawText(20, 16, 220, "ChartForgeX typography wraps without System.Drawing", style, maximumLines: 3)
@@ -91,6 +114,14 @@ internal static partial class SmokeTests {
             }
         }
         Assert(lowerLinePixels > 0, "Simple composition text should preserve explicit line breaks instead of truncating after the first line.");
+
+        var variants = new[] { TextDecorationStyle.Single, TextDecorationStyle.Double, TextDecorationStyle.Dotted, TextDecorationStyle.Dashed, TextDecorationStyle.Wavy }
+            .Select(decoration => {
+                var variant = TextStyle.Create(22, ChartColor.Black);
+                variant.UnderlineStyle = decoration;
+                return ImageComposition.CreateTransparent(180, 60).DrawText(6, 6, 168, "Variant", variant).ToImage().Pixels;
+            }).ToArray();
+        Assert(variants.Select(pixels => Convert.ToBase64String(pixels)).Distinct(StringComparer.Ordinal).Count() == variants.Length, "Shared raster composition should render distinct pixels for every underline pattern.");
     }
 
     private static void RasterTypographyRendersItalicAcrossOutlineAndFallbackFonts() {

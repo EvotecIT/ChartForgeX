@@ -134,7 +134,7 @@ public sealed partial class SvgChartRenderer {
         var dataStyle = DataLabelStyle(chart, series);
         var fontSize = TreeNodeLabelFontSize(StyleFontSize(dataStyle, chart.Options.Theme.TickLabelFontSize));
         var maxWidth = model.NodeWidth - ChartVisualPrimitives.TreeNodeLabelHorizontalPadding * 2;
-        var lines = ChartLabelWrapping.BalancedTwoLine(node.Label, fontSize, maxWidth, EstimateTextWidth);
+        var lines = ChartLabelWrapping.BalancedTwoLine(StyleText(dataStyle, node.Label), fontSize, maxWidth, EstimateTextWidth);
         var lineHeight = fontSize * ChartVisualPrimitives.TreeNodeLabelLineHeightFactor;
         var firstY = node.Y + model.NodeHeight / 2 - (lines.Length - 1) * lineHeight / 2;
         for (var i = 0; i < lines.Length; i++) {

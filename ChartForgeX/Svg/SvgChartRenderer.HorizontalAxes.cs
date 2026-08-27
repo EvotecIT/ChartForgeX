@@ -83,6 +83,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawHorizontalCategoryLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double y) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
+        label = StyleText(style, label);
         var fontSize = StyleFontSize(style, t.TickLabelFontSize);
         var lines = WrapSvgHorizontalCategoryLabel(label, fontSize, SvgHorizontalCategoryWrapWidth(chart));
         var lineHeight = fontSize + 3;
@@ -108,8 +109,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", fill)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, "600"))
-            .Raw(SvgTextStyleAttributes(style))
+            .Attribute("font-weight", StyleWeight(style, "600"));
+        WriteSvgTextStyleAttributes(writer, style);
+        writer
             .Text(label)
             .EndElement()
             .Line();

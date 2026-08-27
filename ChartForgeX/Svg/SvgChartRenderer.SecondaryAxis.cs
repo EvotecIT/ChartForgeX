@@ -26,7 +26,7 @@ public sealed partial class SvgChartRenderer {
             var yv = yTicks[yIndex];
             if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.SecondaryYAxis.LabelDensity)) continue;
             var y = map.Y(yv);
-            var rawLabel = FormatSecondaryValue(chart, yv);
+            var rawLabel = StyleText(tickStyle, FormatSecondaryValue(chart, yv));
             var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelMaxWidth, tickFontSize);
             var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, tickLabelMaxWidth);
             if (label.Length == 0) continue;
@@ -41,8 +41,9 @@ public sealed partial class SvgChartRenderer {
 
         var style = chart.Options.AxisTitleStyle;
         var titleMaxWidth = Math.Max(40, plot.Height * 0.72);
-        var titleFontSize = TextFontSizeForSvgWidth(chart.SecondaryYAxisTitle, titleMaxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var title = TrimSvgLabelToWidth(chart.SecondaryYAxisTitle, titleFontSize, titleMaxWidth);
+        var transformedTitle = StyleText(style, chart.SecondaryYAxisTitle);
+        var titleFontSize = TextFontSizeForSvgWidth(transformedTitle, titleMaxWidth, StyleFontSize(style, t.AxisTitleFontSize));
+        var title = TrimSvgLabelToWidth(transformedTitle, titleFontSize, titleMaxWidth);
         if (title.Length != 0) {
             WriteSecondaryYAxisTitle(
                 writer,
@@ -70,8 +71,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(tickStyle, "400"))
-            .Raw(SvgTextStyleAttributes(tickStyle))
+            .Attribute("font-weight", StyleWeight(tickStyle, "400"));
+        WriteSvgTextStyleAttributes(writer, tickStyle);
+        writer
             .Text(label)
             .EndElement()
             .Line();
@@ -102,8 +104,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, "600"))
-            .Raw(SvgTextStyleAttributes(style))
+            .Attribute("font-weight", StyleWeight(style, "600"));
+        WriteSvgTextStyleAttributes(writer, style);
+        writer
             .Text(title)
             .EndElement()
             .Line();

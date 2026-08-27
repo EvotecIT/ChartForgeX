@@ -8,7 +8,8 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
+        text = StyleText(style, text);
+        var preferredFontSize = fontSize;
         var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
         var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
         if (fittedText.Length == 0) return;
@@ -29,7 +30,8 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgTextLeft(StringBuilder sb, Chart chart, string role, string text, double x, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, TextStyleOverride? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
+        text = StyleText(style, text);
+        var preferredFontSize = fontSize;
         var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
         var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
         if (fittedText.Length == 0) return;
@@ -44,7 +46,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawSvgXAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double y, string role = "") {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawSvgYAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double axisX, string role = "") {
@@ -52,8 +54,9 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        var transformedTitle = StyleText(style, chart.YAxisTitle);
+        var fontSize = TextFontSizeForSvgWidth(transformedTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
+        var text = TrimSvgLabelToWidth(transformedTitle, fontSize, maxWidth);
         if (text.Length == 0) return;
         var writer = new SvgMarkupWriter(512);
         writer.StartElement("text");
@@ -65,7 +68,8 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void WriteSvgDataLabelText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, string label, double x, double y, string anchor, ChartColor fill, ChartColor stroke, double fontSize) {
-        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", StyleFontSize(style, fontSize)).Attribute("font-weight", StyleWeight(style, "700"));
+        label = StyleText(style, label);
+        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "700"));
         WriteSvgTextStyleAttributes(writer, style);
         writer.Raw(Escape(label)).EndElement().Line();
     }

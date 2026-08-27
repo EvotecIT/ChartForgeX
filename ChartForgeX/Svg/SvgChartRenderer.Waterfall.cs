@@ -162,6 +162,7 @@ public sealed partial class SvgChartRenderer {
     private static void WriteWaterfallYAxisLabel(StringBuilder sb, Chart chart, double x, double y, string label) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
+        label = StyleText(style, label);
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("text")

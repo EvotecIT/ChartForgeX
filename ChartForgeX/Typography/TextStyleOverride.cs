@@ -10,6 +10,10 @@ public sealed class TextStyleOverride {
     private string? _fontFamily;
     private string? _fontWeight;
     private double? _fontSize;
+    private TextDecorationStyle? _underlineStyle;
+    private TextDecorationStyle? _strikethroughStyle;
+    private TextBaseline? _baseline;
+    private TextCaseTransform? _textCase;
 
     /// <summary>Gets or sets the optional text color override.</summary>
     public ChartColor? Color { get; set; }
@@ -35,8 +39,35 @@ public sealed class TextStyleOverride {
     /// <summary>Gets or sets a value indicating whether text is underlined.</summary>
     public bool Underline { get; set; }
 
+    /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline.</summary>
+    public TextDecorationStyle? UnderlineStyle {
+        get => _underlineStyle;
+        set { ValidateOptionalEnum(value, nameof(value)); _underlineStyle = value; }
+    }
+
+    /// <summary>Gets or sets a compatibility value that enables a single solid strikethrough.</summary>
+    public bool Strikethrough { get; set; }
+
+    /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike.</summary>
+    public TextDecorationStyle? StrikethroughStyle {
+        get => _strikethroughStyle;
+        set { ValidateOptionalEnum(value, nameof(value)); _strikethroughStyle = value; }
+    }
+
+    /// <summary>Gets or sets optional subscript or superscript placement.</summary>
+    public TextBaseline? Baseline {
+        get => _baseline;
+        set { ValidateOptionalEnum(value, nameof(value)); _baseline = value; }
+    }
+
+    /// <summary>Gets or sets an optional display-time casing transform.</summary>
+    public TextCaseTransform? TextCase {
+        get => _textCase;
+        set { ValidateOptionalEnum(value, nameof(value)); _textCase = value; }
+    }
+
     /// <summary>Gets a value indicating whether this instance contains explicit overrides.</summary>
-    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline;
+    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue;
 
     /// <summary>Resolves these overrides over a complete text style without mutating the fallback.</summary>
     public TextStyle Resolve(TextStyle fallback) {
@@ -47,7 +78,12 @@ public sealed class TextStyleOverride {
         if (FontWeight != null) resolved.Font.Weight = ResolveWeight(FontWeight, resolved.Font.Weight);
         if (FontSize.HasValue) resolved.FontSize = FontSize.Value;
         if (Italic) resolved.Font.Italic = true;
-        if (Underline) resolved.Underline = true;
+        if (UnderlineStyle.HasValue) resolved.UnderlineStyle = UnderlineStyle.Value;
+        else if (Underline) resolved.UnderlineStyle = TextDecorationStyle.Single;
+        if (StrikethroughStyle.HasValue) resolved.StrikethroughStyle = StrikethroughStyle.Value;
+        else if (Strikethrough) resolved.StrikethroughStyle = TextDecorationStyle.Single;
+        if (Baseline.HasValue) resolved.Baseline = Baseline.Value;
+        if (TextCase.HasValue) resolved.TextCase = TextCase.Value;
         return resolved;
     }
 
@@ -70,7 +106,31 @@ public sealed class TextStyleOverride {
     public TextStyleOverride WithItalic(bool enabled = true) { Italic = enabled; return this; }
 
     /// <summary>Sets underlined text.</summary>
-    public TextStyleOverride WithUnderline(bool enabled = true) { Underline = enabled; return this; }
+    public TextStyleOverride WithUnderline(bool enabled = true) { Underline = enabled; UnderlineStyle = enabled ? TextDecorationStyle.Single : TextDecorationStyle.None; return this; }
+
+    /// <summary>Sets the underline pattern.</summary>
+    public TextStyleOverride WithUnderline(TextDecorationStyle style) { UnderlineStyle = style; Underline = style != TextDecorationStyle.None; return this; }
+
+    /// <summary>Sets a single solid strikethrough.</summary>
+    public TextStyleOverride WithStrikethrough(bool enabled = true) { Strikethrough = enabled; StrikethroughStyle = enabled ? TextDecorationStyle.Single : TextDecorationStyle.None; return this; }
+
+    /// <summary>Sets the strikethrough pattern.</summary>
+    public TextStyleOverride WithStrikethrough(TextDecorationStyle style) { StrikethroughStyle = style; Strikethrough = style != TextDecorationStyle.None; return this; }
+
+    /// <summary>Sets subscript or superscript placement.</summary>
+    public TextStyleOverride WithBaseline(TextBaseline baseline) { Baseline = baseline; return this; }
+
+    /// <summary>Sets superscript placement.</summary>
+    public TextStyleOverride WithSuperscript() => WithBaseline(TextBaseline.Superscript);
+
+    /// <summary>Sets subscript placement.</summary>
+    public TextStyleOverride WithSubscript() => WithBaseline(TextBaseline.Subscript);
+
+    /// <summary>Sets a display-time casing transform.</summary>
+    public TextStyleOverride WithTextCase(TextCaseTransform textCase) { TextCase = textCase; return this; }
+
+    /// <summary>Transforms text according to this override.</summary>
+    public string TransformText(string text, System.Globalization.CultureInfo? culture = null) => TextCaseTransformer.Apply(text, TextCase ?? TextCaseTransform.None, culture);
 
     internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveWeight(FontWeight, fallback);
 
@@ -81,5 +141,9 @@ public sealed class TextStyleOverride {
         if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
         if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
         return fallback;
+    }
+
+    private static void ValidateOptionalEnum<T>(T? value, string parameterName) where T : struct {
+        if (value.HasValue && !Enum.IsDefined(typeof(T), value.Value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown text formatting value.");
     }
 }

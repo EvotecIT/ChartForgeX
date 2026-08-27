@@ -26,6 +26,9 @@ internal sealed class SvgRasterStyle {
         FontWeight = "normal",
         FontStyle = "normal",
         TextDecoration = "none",
+        TextDecorationStyle = "solid",
+        BaselineShift = "baseline",
+        TextTransform = "none",
         TextAnchor = "start",
         DominantBaseline = "auto",
         WhiteSpace = "normal",
@@ -55,6 +58,9 @@ internal sealed class SvgRasterStyle {
     public string FontWeight { get; set; } = "normal";
     public string FontStyle { get; set; } = "normal";
     public string TextDecoration { get; set; } = "none";
+    public string TextDecorationStyle { get; set; } = "solid";
+    public string BaselineShift { get; set; } = "baseline";
+    public string TextTransform { get; set; } = "none";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
     public string WhiteSpace { get; set; } = "normal";
@@ -87,6 +93,9 @@ internal sealed class SvgRasterStyle {
             FontWeight = FontWeight,
             FontStyle = FontStyle,
             TextDecoration = TextDecoration,
+            TextDecorationStyle = TextDecorationStyle,
+            BaselineShift = BaselineShift,
+            TextTransform = TextTransform,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
             WhiteSpace = WhiteSpace,
@@ -164,6 +173,9 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "font-weight");
         AddAttribute(declarations, element, "font-style");
         AddAttribute(declarations, element, "text-decoration");
+        AddAttribute(declarations, element, "text-decoration-style");
+        AddAttribute(declarations, element, "baseline-shift");
+        AddAttribute(declarations, element, "text-transform");
         AddAttribute(declarations, element, "text-anchor");
         AddAttribute(declarations, element, "dominant-baseline");
         AddAttribute(declarations, element, "alignment-baseline");
@@ -260,6 +272,15 @@ internal sealed class SvgRasterStyle {
                 break;
             case "text-decoration":
                 style.TextDecoration = value.Trim();
+                break;
+            case "text-decoration-style":
+                style.TextDecorationStyle = value.Trim();
+                break;
+            case "baseline-shift":
+                style.BaselineShift = value.Trim();
+                break;
+            case "text-transform":
+                style.TextTransform = value.Trim();
                 break;
             case "text-anchor":
                 style.TextAnchor = value.Trim();

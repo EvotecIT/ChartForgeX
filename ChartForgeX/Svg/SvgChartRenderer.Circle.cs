@@ -94,6 +94,7 @@ public sealed partial class SvgChartRenderer {
             DrawSvgTextCenteredX(writer, chart, "circle-label", valueLabel, cx, valueY, t.Text, valueFontSize, labelWidth, "850", t.CardBackground, 3.2, style: dataStyle);
             DrawSvgTextCenteredX(writer, chart, "circle-title", series.Name, cx, titleY, t.MutedText, titleFontSize, labelWidth, "700", t.CardBackground, 2.4, style: dataStyle);
             if (chart.Options.ShowCircleStatusLabel) {
+                statusLabel = StyleText(dataStyle, statusLabel);
                 var statusFontSize = TextFontSizeForSvgWidth(statusLabel, labelWidth, StyleFontSize(dataStyle, t.TickLabelFontSize));
                 statusLabel = TrimSvgLabelToWidth(statusLabel, statusFontSize, labelWidth);
                 var statusLeft = cx - EstimateTextWidth(statusLabel, statusFontSize) / 2.0;
@@ -116,8 +117,9 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("fill", StyleColor(dataStyle, t.MutedText).ToCss())
                     .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                     .Attribute("font-size", statusFontSize)
-                    .Attribute("font-weight", StyleWeight(dataStyle, "650"))
-                    .Raw(SvgTextStyleAttributes(dataStyle))
+                    .Attribute("font-weight", StyleWeight(dataStyle, "650"));
+                WriteSvgTextStyleAttributes(writer, dataStyle);
+                writer
                     .Text(statusLabel)
                     .EndElement()
                     .Line();

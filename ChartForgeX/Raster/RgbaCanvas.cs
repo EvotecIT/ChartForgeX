@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
@@ -209,6 +210,9 @@ internal sealed partial class RgbaCanvas {
     internal void DrawTextRotated(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, TrueTypeFont? font, bool italic, bool underline) =>
         DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, false, font, italic, underline);
 
+    internal void DrawTextRotated(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, TrueTypeFont? font, bool italic, TextDecorationStyle underlineStyle, TextDecorationStyle strikethroughStyle, double baselineOffset) =>
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, false, font, italic, false, underlineStyle, strikethroughStyle, baselineOffset);
+
     public void DrawTextRotatedEmphasized(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY) {
         DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, _outlineFont, false);
     }
@@ -222,26 +226,36 @@ internal sealed partial class RgbaCanvas {
     internal void DrawTextRotatedEmphasized(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, TrueTypeFont? font, bool italic, bool underline) =>
         DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, font, italic, underline);
 
-    private void DrawTextRotatedCore(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool emphasized, TrueTypeFont? font, bool italic, bool underline = false) {
+    internal void DrawTextRotatedEmphasized(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, TrueTypeFont? font, bool italic, TextDecorationStyle underlineStyle, TextDecorationStyle strikethroughStyle, double baselineOffset) =>
+        DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, font, italic, false, underlineStyle, strikethroughStyle, baselineOffset);
+
+    private void DrawTextRotatedCore(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool emphasized, TrueTypeFont? font, bool italic, bool underline = false, TextDecorationStyle underlineStyle = TextDecorationStyle.None, TextDecorationStyle strikethroughStyle = TextDecorationStyle.None, double baselineOffset = 0) {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
+        if (underlineStyle == TextDecorationStyle.None && underline) underlineStyle = TextDecorationStyle.Single;
         if (Math.Abs(degrees) < 0.001) {
             var textX = anchorX - originX;
-            var textY = anchorY - originY;
-            if (emphasized) DrawTextEmphasized(textX, textY, text, color, fontSize, font, italic);
-            else DrawText(textX, textY, text, color, fontSize, font, italic);
-            if (underline) DrawLine(textX, textY + fontSize + 2, textX + (emphasized ? MeasureTextEmphasizedWidth(text, fontSize, font, italic) : MeasureTextWidthWithFont(text, fontSize, font, italic)), textY + fontSize + 2, color, Math.Max(1, fontSize / 13.0));
+            var unrotatedTextY = anchorY - originY + baselineOffset;
+            if (emphasized) DrawTextEmphasized(textX, unrotatedTextY, text, color, fontSize, font, italic);
+            else DrawText(textX, unrotatedTextY, text, color, fontSize, font, italic);
+            var unrotatedTextWidth = emphasized ? MeasureTextEmphasizedWidth(text, fontSize, font, italic) : MeasureTextWidthWithFont(text, fontSize, font, italic);
+            var thickness = Math.Max(1, fontSize / 13.0);
+            RasterTextDecoration.Draw(this, textX, textX + unrotatedTextWidth, unrotatedTextY + fontSize + 2, underlineStyle, color, thickness);
+            RasterTextDecoration.Draw(this, textX, textX + unrotatedTextWidth, unrotatedTextY + fontSize * 0.55, strikethroughStyle, color, thickness);
             return;
         }
 
         var padding = Math.Max(4, fontSize * 0.45);
         var textWidth = emphasized ? MeasureTextEmphasizedWidth(text, fontSize, font, italic) : MeasureTextWidthWithFont(text, fontSize, font, italic);
         var textHeight = font?.LineHeight(Math.Max(1, fontSize)) ?? MeasureTextHeight(fontSize, _outlineFont);
-        var underlineThickness = Math.Max(1, fontSize / 13.0);
-        var contentHeight = underline ? Math.Max(textHeight, fontSize + 2 + underlineThickness / 2.0) : textHeight;
+        var decorationThickness = Math.Max(1, fontSize / 13.0);
+        var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
+        contentHeight += Math.Abs(baselineOffset);
         var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(contentHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false);
-        if (emphasized) buffer.DrawTextEmphasized(padding, padding, text, color, fontSize, buffer._outlineFont, italic);
-        else buffer.DrawText(padding, padding, text, color, fontSize, buffer._outlineFont, italic);
-        if (underline) buffer.DrawLine(padding, padding + fontSize + 2, padding + textWidth, padding + fontSize + 2, color, underlineThickness);
+        var textY = padding + baselineOffset;
+        if (emphasized) buffer.DrawTextEmphasized(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
+        else buffer.DrawText(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
+        RasterTextDecoration.Draw(buffer, padding, padding + textWidth, textY + fontSize + 2, underlineStyle, color, decorationThickness);
+        RasterTextDecoration.Draw(buffer, padding, padding + textWidth, textY + fontSize * 0.55, strikethroughStyle, color, decorationThickness);
 
         var radians = degrees * Math.PI / 180.0;
         var cos = Math.Cos(radians);

@@ -45,9 +45,10 @@ public sealed partial class SvgChartRenderer {
             var statusColor = BulletStatusColor(t, status);
             var dataStyle = DataLabelStyle(chart, row.series, 0);
             var rowLabelMaxWidth = Math.Max(8, labelReserve - 16);
-            var rowLabelFontSize = TextFontSizeForSvgWidth(row.series.Name, rowLabelMaxWidth, StyleFontSize(dataStyle, t.LegendFontSize));
-            var rowLabel = TrimSvgLabelToWidth(row.series.Name, rowLabelFontSize, rowLabelMaxWidth);
-            var rawValueLabel = FormatValue(chart, actualValue);
+            var styledRowLabel = StyleText(dataStyle, row.series.Name);
+            var rowLabelFontSize = TextFontSizeForSvgWidth(styledRowLabel, rowLabelMaxWidth, StyleFontSize(dataStyle, t.LegendFontSize));
+            var rowLabel = TrimSvgLabelToWidth(styledRowLabel, rowLabelFontSize, rowLabelMaxWidth);
+            var rawValueLabel = StyleText(dataStyle, FormatValue(chart, actualValue));
             var valueLabelMaxWidth = Math.Max(8, valueReserve - 24);
             var valueLabelFontSize = TextFontSizeForSvgWidth(rawValueLabel, valueLabelMaxWidth, StyleFontSize(dataStyle, t.DataLabelFontSize));
             var valueLabel = TrimSvgLabelToWidth(rawValueLabel, valueLabelFontSize, valueLabelMaxWidth);
@@ -148,7 +149,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawBulletTargetLabel(SvgMarkupWriter writer, Chart chart, ChartSeries series, string label, double x, double y, ChartRect plot) {
         var t = chart.Options.Theme;
         var style = DataLabelStyle(chart, series, 1);
-        var text = "target " + label;
+        var text = StyleText(style, "target " + label);
         var maxWidth = Math.Max(8, plot.Width - 8);
         var fontSize = TextFontSizeForSvgWidth(text, maxWidth, StyleFontSize(style, t.TickLabelFontSize));
         text = TrimSvgLabelToWidth(text, fontSize, maxWidth);
@@ -173,8 +174,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke-linejoin", "round")
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", F(fontSize))
-            .Attribute("font-weight", StyleWeight(style, "650"))
-            .Raw(SvgTextStyleAttributes(style))
+            .Attribute("font-weight", StyleWeight(style, "650"));
+        WriteSvgTextStyleAttributes(writer, style);
+        writer
             .Raw(Escape(text))
             .EndElement()
             .Line();
@@ -228,7 +230,7 @@ public sealed partial class SvgChartRenderer {
             .Line();
         foreach (var tick in ticks) {
             var x = BulletX(plot, min, max, tick);
-            var label = FormatValue(chart, tick);
+            var label = StyleText(chart.Options.TickLabelStyle, FormatValue(chart, tick));
             var tickFontSize = StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize);
             var anchor = EdgeAwareAnchor(label, x, plot, tickFontSize);
             var safeX = EdgeAwareTextX(label, x, plot, tickFontSize);
@@ -259,8 +261,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", StyleColor(style, fill).ToCss())
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", F(fontSize))
-            .Attribute("font-weight", StyleWeight(style, fontWeight))
-            .Raw(SvgTextStyleAttributes(style))
+            .Attribute("font-weight", StyleWeight(style, fontWeight));
+        WriteSvgTextStyleAttributes(writer, style);
+        writer
             .Raw(Escape(text))
             .EndElement()
             .Line();

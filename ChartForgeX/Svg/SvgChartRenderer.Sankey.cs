@@ -29,8 +29,9 @@ public sealed partial class SvgChartRenderer {
             var labelMaxWidth = Math.Max(64, plot.Width / Math.Max(2, model.MaxLayer + 1) * 0.62);
             var anchor = node.Layer == model.MaxLayer ? "end" : "start";
             var labelX = node.Layer == model.MaxLayer ? node.X - 10 : node.X + model.NodeWidth + 10;
-            var labelFontSize = TextFontSizeForSvgWidth(node.Label, labelMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize));
-            var label = TrimSvgLabelToWidth(node.Label, labelFontSize, labelMaxWidth);
+            var styledLabel = StyleText(dataStyle, node.Label);
+            var labelFontSize = TextFontSizeForSvgWidth(styledLabel, labelMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize));
+            var label = TrimSvgLabelToWidth(styledLabel, labelFontSize, labelMaxWidth);
             var summary = node.Label + ": " + FormatValue(chart, node.Value);
             var borderStroke = ChartVisualPrimitives.SankeyNodeBorderStrokeWidth;
             var borderInset = borderStroke / 2.0;

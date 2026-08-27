@@ -112,7 +112,8 @@ public sealed partial class SvgChartRenderer {
             }
             DrawTimelineRangeBar(writer, chart, item, id, i, left, y, width, rowHeight, duration, summary);
             if (item.ShowDataLabels && width >= 72) {
-                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 6, "750", style: DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0));
+                var dataStyle = DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0);
+                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), StyleFontSize(dataStyle, t.DataLabelFontSize), width - 6, "750", style: dataStyle);
             }
         }
 
@@ -234,7 +235,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawTimelineSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawTimelineSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
@@ -242,8 +243,9 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        var transformedTitle = StyleText(style, chart.YAxisTitle);
+        var fontSize = TextFontSizeForSvgWidth(transformedTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
+        var text = TrimSvgLabelToWidth(transformedTitle, fontSize, maxWidth);
         if (text.Length == 0) return;
 
         writer

@@ -13,7 +13,8 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgTextCenteredX(SvgMarkupWriter writer, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
+        text = StyleText(style, text);
+        var preferredFontSize = fontSize;
         var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
         var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
         if (fittedText.Length == 0) return;

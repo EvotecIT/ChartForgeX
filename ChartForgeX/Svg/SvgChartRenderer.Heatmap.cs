@@ -62,7 +62,8 @@ public sealed partial class SvgChartRenderer {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
                     var placement = DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), t.DataLabelFontSize, cellWidth - 6, "750", style: DataLabelStyle(chart, series, pointIndex));
+                        var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), StyleFontSize(dataStyle, t.DataLabelFontSize), cellWidth - 6, "750", style: dataStyle);
                     } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                         var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + cellWidth + 8;
                         var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";

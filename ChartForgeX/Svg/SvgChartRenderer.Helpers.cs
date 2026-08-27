@@ -35,8 +35,9 @@ public sealed partial class SvgChartRenderer {
                 DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var style = chart.Options.LegendStyle;
                 var labelMaxWidth = Math.Max(8, item.Width - 30);
-                var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
-                var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
+                var styledLabel = StyleText(style, item.Label);
+                var labelFontSize = TextFontSizeForSvgWidth(styledLabel, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
+                var label = TrimSvgLabelToWidth(styledLabel, labelFontSize, labelMaxWidth);
                 if (label.Length > 0) {
                     writer.StartElement("text")
                         .Attribute("data-cfx-role", "legend-label")
@@ -391,19 +392,14 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartColor StyleColor(TextStyleOverride? style, ChartColor fallback) => style?.Color ?? fallback;
 
-    private static double StyleFontSize(TextStyleOverride? style, double fallback) => style?.FontSize ?? fallback;
+    private static double StyleFontSize(TextStyleOverride? style, double fallback) {
+        var size = style?.FontSize ?? fallback;
+        return style?.Baseline is TextBaseline.Superscript or TextBaseline.Subscript ? size * 0.65 : size;
+    }
 
     private static string StyleWeight(TextStyleOverride? style, string fallback) => style?.FontWeight ?? fallback;
 
     private static string StyleFontFamily(Chart chart, TextStyleOverride? style) => style?.FontFamily ?? chart.Options.Theme.FontFamily;
-
-    private static string SvgTextStyleAttributes(TextStyleOverride? style) {
-        if (style == null) return string.Empty;
-        var value = string.Empty;
-        if (style.Italic) value += " font-style=\"italic\"";
-        if (style.Underline) value += " text-decoration=\"underline\"";
-        return value;
-    }
 
     private static ChartColor Color(Chart chart, int index) => chart.Series[index].Color ?? chart.Options.Theme.Palette[index % chart.Options.Theme.Palette.Length];
 

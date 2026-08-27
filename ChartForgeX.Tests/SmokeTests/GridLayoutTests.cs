@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
 
@@ -48,18 +49,21 @@ internal static partial class SmokeTests {
 
     private static void ChartGridHeadersSupportTextStyles() {
         var grid = ChartGrid.Create()
-            .WithTitle("Styled Grid Header")
-            .WithSubtitle("Grid-level typography should match chart-level polish")
-            .WithTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline())
-            .WithSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(15).WithItalic())
+            .WithTitle("styled grid header")
+            .WithSubtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
+            .WithTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
+            .WithSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(15).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
             .WithPanelSize(260, 160)
             .Add(Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3)));
         var svg = grid.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"grid-title\"", StringComparison.Ordinal) && svg.Contains("fill=\"#BE123C\"", StringComparison.Ordinal), "SVG grid titles should honor grid title styles.");
         Assert(svg.Contains("font-family=\"Georgia, serif\"", StringComparison.Ordinal), "SVG grid title styles should honor font families.");
-        Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "SVG grid title styles should honor italic and underline.");
-        Assert(svg.Contains("data-cfx-role=\"grid-subtitle\"", StringComparison.Ordinal) && svg.Contains("fill=\"#0E7490\"", StringComparison.Ordinal), "SVG grid subtitles should honor grid subtitle styles.");
-        Assert(grid.ToHtmlFragment().Contains("text-decoration:underline", StringComparison.Ordinal), "HTML grid headers should honor grid text decoration.");
+        Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline line-through\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"wavy\"", StringComparison.Ordinal), "SVG grid title styles should honor italic, underline variants, and strikethrough.");
+        Assert(svg.Contains("data-cfx-role=\"grid-subtitle\"", StringComparison.Ordinal) && svg.Contains("fill=\"#0E7490\"", StringComparison.Ordinal) && svg.Contains("baseline-shift=\"sub\"", StringComparison.Ordinal), "SVG grid subtitles should honor colors and script placement.");
+        Assert(svg.Contains(">STYLED GRID HEADER</text>", StringComparison.Ordinal) && svg.Contains(">grid-level typography", StringComparison.Ordinal), "SVG grid headers should materialize casing before fitting and trimming.");
+        var html = grid.ToHtmlFragment();
+        Assert(html.Contains("text-decoration:underline line-through", StringComparison.Ordinal) && html.Contains("text-decoration-style:wavy", StringComparison.Ordinal) && html.Contains("vertical-align:super", StringComparison.Ordinal), "HTML grid headers should honor combined decoration and baseline styling.");
+        Assert(html.Contains("STYLED GRID HEADER", StringComparison.Ordinal) && html.Contains("grid-level typography should match chart-level polish", StringComparison.Ordinal), "HTML grid headers should materialize casing transforms.");
         Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render PNG output.");
 
         var panel = Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3));

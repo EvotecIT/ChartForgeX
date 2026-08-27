@@ -176,17 +176,26 @@ public sealed class ImageComposition {
 
         var layout = TextLayoutEngine.Layout(text, width, style, wrapMode, maximumLines, trimming);
         var font = TypographyFontResolver.Resolve(style.Font);
+        var fontSize = style.EffectiveFontSize;
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
             var drawX = ResolveAlignedX(x, width, line.Width, style.Alignment);
-            var drawY = y + index * layout.Metrics.LineHeight;
-            if (style.Font.Weight >= 600) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, style.FontSize, font, style.Font.Italic);
-            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, style.FontSize, font, style.Font.Italic);
-            if (style.Underline && line.Width > 0) _canvas.DrawLine(drawX, drawY + style.FontSize * 1.05, drawX + line.Width, drawY + style.FontSize * 1.05, style.Color, Math.Max(1, style.FontSize / 16));
+            var drawY = y + index * layout.Metrics.LineHeight + BaselineOffset(style.Baseline, fontSize);
+            if (style.Font.Weight >= 600) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, fontSize, font, style.Font.Italic);
+            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, fontSize, font, style.Font.Italic);
+            var thickness = Math.Max(1, fontSize / 16);
+            RasterTextDecoration.Draw(_canvas, drawX, drawX + line.Width, drawY + fontSize * 1.05, style.UnderlineStyle, style.Color, thickness);
+            RasterTextDecoration.Draw(_canvas, drawX, drawX + line.Width, drawY + fontSize * 0.55, style.StrikethroughStyle, style.Color, thickness);
         }
 
         return this;
     }
+
+    private static double BaselineOffset(TextBaseline baseline, double effectiveFontSize) => baseline switch {
+        TextBaseline.Superscript => -effectiveFontSize * 0.35,
+        TextBaseline.Subscript => effectiveFontSize * 0.22,
+        _ => 0
+    };
 
     /// <summary>Draws an image into an explicit destination rectangle.</summary>
     public ImageComposition DrawImage(RgbaImage image, double x, double y, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {

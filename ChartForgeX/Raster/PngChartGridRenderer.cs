@@ -47,7 +47,10 @@ public sealed class PngChartGridRenderer {
         return output;
     }
 
-    private static double StyleFontSize(TextStyleOverride style, double fallback) => style.FontSize ?? fallback;
+    private static double StyleFontSize(TextStyleOverride style, double fallback) {
+        var size = style.FontSize ?? fallback;
+        return style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript ? size * 0.65 : size;
+    }
 
     private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
@@ -56,6 +59,11 @@ public sealed class PngChartGridRenderer {
     private static bool StyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
 
     private static double MeasureStyledTextWidth(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
+        text = style.TransformText(text);
+        return MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
+    }
+
+    private static double MeasureStyledTextWidthCore(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
         var font = StyleFont(style);
         if (font == null) return StyleEmphasized(style, emphasized) ? canvas.MeasureTextEmphasizedWidth(text, fontSize, style.Italic) : canvas.MeasureTextWidth(text, fontSize, style.Italic);
         return StyleEmphasized(style, emphasized)
@@ -64,8 +72,10 @@ public sealed class PngChartGridRenderer {
     }
 
     private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
+        text = style.TransformText(text);
         var color = StyleColor(style, fallback);
         var font = StyleFont(style);
+        y += style.Baseline == TextBaseline.Superscript ? -fontSize * 0.35 : style.Baseline == TextBaseline.Subscript ? fontSize * 0.22 : 0;
         if (StyleEmphasized(style, emphasized)) {
             if (font == null) canvas.DrawTextEmphasized(x, y, text, color, fontSize, style.Italic);
             else canvas.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
@@ -73,9 +83,13 @@ public sealed class PngChartGridRenderer {
             if (font == null) canvas.DrawText(x, y, text, color, fontSize, style.Italic);
             else canvas.DrawText(x, y, text, color, fontSize, font, style.Italic);
         }
-        if (!style.Underline || text.Length == 0) return;
-        var width = MeasureStyledTextWidth(canvas, text, fontSize, style, emphasized);
-        canvas.DrawLine(x, y + fontSize + 2, x + width, y + fontSize + 2, color, Math.Max(1, fontSize / 13.0));
+        if (text.Length == 0) return;
+        var width = MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
+        var thickness = Math.Max(1, fontSize / 13.0);
+        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        RasterTextDecoration.Draw(canvas, x, x + width, y + fontSize + 2, underline, color, thickness);
+        RasterTextDecoration.Draw(canvas, x, x + width, y + fontSize * 0.55, strike, color, thickness);
     }
 
 }

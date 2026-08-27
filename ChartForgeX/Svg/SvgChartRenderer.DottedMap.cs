@@ -413,6 +413,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var style = DataLabelStyle(chart, series, pointIndex);
         var fontSize = StyleFontSize(style, t.DataLabelFontSize);
+        label = StyleText(style, label);
         label = TrimSvgLabelToWidth(label, fontSize, Math.Min(132, PlotLabelMaxWidth(map)));
         if (label.Length == 0) return;
 

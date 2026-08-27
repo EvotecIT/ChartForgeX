@@ -71,6 +71,7 @@ internal static partial class SmokeTests {
         ("Shared typography measures and wraps deterministically", SharedTypographyMeasuresAndWrapsDeterministically),
         ("Shared typography trims at configured line limit", SharedTypographyTrimsAtConfiguredLineLimit),
         ("Text style overrides resolve without a second style brain", TextStyleOverridesResolveWithoutASecondStyleBrain),
+        ("Text case transforms cover every shared variant", TextCaseTransformsCoverEverySharedVariant),
         ("Image composition uses shared typography contract", ImageCompositionUsesSharedTypographyContract),
         ("Raster typography renders italic across outline and fallback fonts", RasterTypographyRendersItalicAcrossOutlineAndFallbackFonts),
         ("Visual canvas image IDs stay deterministic for fixed scope", VisualCanvasImageIdsStayDeterministicForFixedScope),

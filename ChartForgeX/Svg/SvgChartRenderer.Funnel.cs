@@ -122,8 +122,8 @@ public sealed partial class SvgChartRenderer {
                         .Line();
                 }
                 var metricsWriter = new StringBuilder();
-                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, centerY - 3, t.MutedText, t.TickLabelFontSize, metricMaxWidth, "700", dataStyle);
-                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, t.Negative, t.TickLabelFontSize, metricMaxWidth, "650", dataStyle);
+                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, centerY - 3, t.MutedText, StyleFontSize(dataStyle, t.TickLabelFontSize), metricMaxWidth, "700", dataStyle);
+                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, t.Negative, StyleFontSize(dataStyle, t.TickLabelFontSize), metricMaxWidth, "650", dataStyle);
                 writer.Raw(metricsWriter.ToString());
             }
 

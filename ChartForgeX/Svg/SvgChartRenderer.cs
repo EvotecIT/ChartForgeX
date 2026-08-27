@@ -34,12 +34,6 @@ public sealed partial class SvgChartRenderer {
         sb.Append('<').Append('/').Append(name).Append('>').AppendLine();
     }
 
-    private static void WriteSvgTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride? style) {
-        if (style == null) return;
-        if (style.Italic) writer.Attribute("font-style", "italic");
-        if (style.Underline) writer.Attribute("text-decoration", "underline");
-    }
-
     private static void AppendLinearGradient(StringBuilder sb, string id, string x1, string x2, string y1, string y2, string startColor, double startOpacity, string endColor, double endOpacity) {
         AppendSvg(sb, writer => writer
             .StartElement("linearGradient")
@@ -460,9 +454,10 @@ public sealed partial class SvgChartRenderer {
             if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
+                    var label = StyleText(tickStyle, FormatYAxisValue(chart, yv));
                     writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
                     WriteSvgTextStyleAttributes(writer, tickStyle);
-                    writer.Text(FormatYAxisValue(chart, yv)).EndElement().Line();
+                    writer.Text(label).EndElement().Line();
                 });
             }
         }
@@ -492,6 +487,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null, double maxWidth = 0, ChartColor? color = null) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
+        label = StyleText(style, label);
         var labelColor = color ?? StyleColor(style, t.MutedText);
         var preferredFontSize = StyleFontSize(style, t.TickLabelFontSize);
         var widthLimit = maxWidth > 0 ? maxWidth : PlotLabelMaxWidth(plot);

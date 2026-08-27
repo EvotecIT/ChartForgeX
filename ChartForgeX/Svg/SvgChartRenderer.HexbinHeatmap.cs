@@ -40,7 +40,8 @@ public sealed partial class SvgChartRenderer {
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, summary);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
-                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartColorMath.TextOnBackground(color), chart.Options.Theme.DataLabelFontSize, layout.HexWidth - 8, "750", style: DataLabelStyle(chart, series, pointIndex));
+                    var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartColorMath.TextOnBackground(color), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), layout.HexWidth - 8, "750", style: dataStyle);
                 }
             }
         }

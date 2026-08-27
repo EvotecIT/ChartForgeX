@@ -39,8 +39,8 @@ public sealed class HtmlChartGridRenderer {
             .EndStartElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
             writer.StartElement("header").Attribute("class", "chartforgex-grid-header").EndStartElement();
-            if (grid.Title.Length > 0) writer.StartElement("h1").Attribute("style", GridTextStyle(grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, "800")).EndStartElement().Text(grid.Title).EndElement();
-            if (grid.Subtitle.Length > 0) writer.StartElement("p").Attribute("style", GridTextStyle(grid.SubtitleStyle, theme.MutedText.ToCss(), CssFontFamily(theme.FontFamily), theme.SubtitleFontSize, "400")).EndStartElement().Text(grid.Subtitle).EndElement();
+            if (grid.Title.Length > 0) writer.StartElement("h1").Attribute("style", GridTextStyle(grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, "800")).EndStartElement().Text(grid.TitleStyle.TransformText(grid.Title)).EndElement();
+            if (grid.Subtitle.Length > 0) writer.StartElement("p").Attribute("style", GridTextStyle(grid.SubtitleStyle, theme.MutedText.ToCss(), CssFontFamily(theme.FontFamily), theme.SubtitleFontSize, "400")).EndStartElement().Text(grid.SubtitleStyle.TransformText(grid.Subtitle)).EndElement();
             writer.EndElement();
         }
 
@@ -137,12 +137,32 @@ public sealed class HtmlChartGridRenderer {
         var css = new StringBuilder();
         css.Append("color:").Append(style.Color?.ToCss() ?? fallbackColor);
         css.Append(";font-family:").Append(CssFontFamily(style.FontFamily ?? fallbackFontFamily));
-        css.Append(";font-size:").Append((style.FontSize ?? fallbackFontSize).ToString(CultureInfo.InvariantCulture)).Append("px");
+        var fontSize = style.FontSize ?? fallbackFontSize;
+        if (style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
+        css.Append(";font-size:").Append(fontSize.ToString(CultureInfo.InvariantCulture)).Append("px");
         css.Append(";font-weight:").Append(CssToken(style.FontWeight ?? fallbackWeight));
         if (style.Italic) css.Append(";font-style:italic");
-        if (style.Underline) css.Append(";text-decoration:underline");
+        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        if (underline != TextDecorationStyle.None || strike != TextDecorationStyle.None) {
+            css.Append(";text-decoration:");
+            if (underline != TextDecorationStyle.None) css.Append("underline");
+            if (underline != TextDecorationStyle.None && strike != TextDecorationStyle.None) css.Append(' ');
+            if (strike != TextDecorationStyle.None) css.Append("line-through");
+            css.Append(";text-decoration-style:").Append(CssDecorationStyle(underline != TextDecorationStyle.None ? underline : strike));
+        }
+        if (style.Baseline == TextBaseline.Superscript) css.Append(";vertical-align:super");
+        else if (style.Baseline == TextBaseline.Subscript) css.Append(";vertical-align:sub");
         return css.ToString();
     }
+
+    private static string CssDecorationStyle(TextDecorationStyle style) => style switch {
+        TextDecorationStyle.Dotted => "dotted",
+        TextDecorationStyle.Dashed => "dashed",
+        TextDecorationStyle.Wavy => "wavy",
+        TextDecorationStyle.Double => "double",
+        _ => "solid"
+    };
 
     private static string CssToken(string value) => value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
 }

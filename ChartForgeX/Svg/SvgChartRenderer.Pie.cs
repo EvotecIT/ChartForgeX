@@ -75,6 +75,7 @@ public sealed partial class SvgChartRenderer {
                 else if (placement == ChartDataLabelPlacement.Below) y = cy + radius * 1.10;
                 var style = DataLabelStyle(chart, series, pointIndex);
                 if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
+                    sliceText = StyleText(style, sliceText);
                     var maxLabelWidth = Math.Max(24, radius * 1.08);
                     var fontSize = TextFontSizeForSvgWidth(sliceText, maxLabelWidth, StyleFontSize(style, t.DataLabelFontSize));
                     sliceText = TrimSvgLabelToWidth(sliceText, fontSize, maxLabelWidth);
@@ -89,7 +90,7 @@ public sealed partial class SvgChartRenderer {
                             .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style)))
                             .Attribute("font-size", fontSize)
                             .Attribute("font-weight", StyleWeight(style, "750"));
-                        WritePieTextStyleAttributes(writer, style);
+                        WriteSvgTextStyleAttributes(writer, style);
                         writer
                             .Text(sliceText)
                             .EndElement()
@@ -384,12 +385,6 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartColor PieConnectorColor(Chart chart, ChartSeries series, int pointIndex) =>
         chart.Options.DataLabelConnectorColor ?? PieSliceColor(chart, series, pointIndex);
-
-    private static void WritePieTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride? style) {
-        if (style == null) return;
-        if (style.Italic) writer.Attribute("font-style", "italic");
-        if (style.Underline) writer.Attribute("text-decoration", "underline");
-    }
 
     private static void DrawPieLabelConnector(SvgMarkupWriter writer, Chart chart, ChartSeries series, int pointIndex, double cx, double cy, double radius, double angle, double labelX, double labelY) {
         var cos = Math.Cos(angle);

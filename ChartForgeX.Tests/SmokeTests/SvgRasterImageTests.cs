@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
@@ -10,10 +11,18 @@ internal static partial class SmokeTests {
         const string regularSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' fill='#ef4444'>MMMMiiii</text></svg>";
         const string italicSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-style='italic' fill='#ef4444'>MMMMiiii</text></svg>";
         const string underlinedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' text-decoration='underline' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string decoratedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' text-decoration='underline line-through' text-decoration-style='wavy' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string doubleDecoratedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' text-decoration='underline line-through' text-decoration-style='double' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string transformedSuperscriptSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='48' font-size='22' baseline-shift='super' text-transform='uppercase' fill='#ef4444'>mixed</text></svg>";
+        const string transformedSubscriptSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='48' font-size='22' baseline-shift='sub' text-transform='uppercase' fill='#ef4444'>mixed</text></svg>";
         const string numericBoldSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-weight='750' fill='#ef4444'>MMMMiiii</text></svg>";
         var regular = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularSvg));
         var italic = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicSvg));
         var underlined = RasterImageDecoder.Decode(SvgRasterizer.ToPng(underlinedSvg));
+        var decorated = RasterImageDecoder.Decode(SvgRasterizer.ToPng(decoratedSvg));
+        var doubleDecorated = RasterImageDecoder.Decode(SvgRasterizer.ToPng(doubleDecoratedSvg));
+        var transformedSuperscript = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSuperscriptSvg));
+        var transformedSubscript = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSubscriptSvg));
         var numericBold = RasterImageDecoder.Decode(SvgRasterizer.ToPng(numericBoldSvg));
         var regularBounds = SvgColorBounds(regular.Pixels, regular.Width, regular.Height, 239, 68, 68);
         var italicBounds = SvgColorBounds(italic.Pixels, italic.Width, italic.Height, 239, 68, 68);
@@ -21,6 +30,10 @@ internal static partial class SmokeTests {
 
         Assert(italicBounds.Width > regularBounds.Width, "SVG rasterization should preserve italic or oblique glyph overhang and measurement.");
         Assert(underlinedBounds.Bottom > regularBounds.Bottom, "SVG rasterization should preserve underlined text decoration in the raster artifact.");
+        Assert(!decorated.Pixels.SequenceEqual(doubleDecorated.Pixels), "SVG rasterization should preserve wavy and double decoration patterns instead of flattening them to one line.");
+        var superscriptBounds = SvgColorBounds(transformedSuperscript.Pixels, transformedSuperscript.Width, transformedSuperscript.Height, 239, 68, 68);
+        var subscriptBounds = SvgColorBounds(transformedSubscript.Pixels, transformedSubscript.Width, transformedSubscript.Height, 239, 68, 68);
+        Assert(superscriptBounds.Top < subscriptBounds.Top && superscriptBounds.Width > 0, "SVG rasterization should apply casing before measurement and preserve super/sub baseline shifts.");
         Assert(CountPixelsNear(numericBold.Pixels, numericBold.Width, 0, 0, numericBold.Width - 1, numericBold.Height - 1, 239, 68, 68) > CountPixelsNear(regular.Pixels, regular.Width, 0, 0, regular.Width - 1, regular.Height - 1, 239, 68, 68), "SVG rasterization should treat numeric font weights of 600 or greater as emphasized text.");
 
         var serifFont = TrueTypeFont.TryLoadForFamily("serif", out _);
