@@ -40,6 +40,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawPolarGrid(RgbaCanvas canvas, Chart chart, ChartRect plot, PolarChartGeometry geometry) {
         var theme = chart.Options.Theme;
         var tickFontSize = PngTickFontSize(chart);
+        var tickStyle = chart.Options.TickLabelStyle;
         foreach (var tick in geometry.RadiusTicks) {
             if (tick <= geometry.MinimumRadius) continue;
             var radius = geometry.RingRadius(tick);
@@ -47,9 +48,9 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !geometry.IsOuterRadius(tick)) {
                 var maxWidth = Math.Max(28, chart.Options.Size.Width - chart.Options.Padding.Right - geometry.CenterX - 14);
                 var label = FormatYAxisValue(chart, tick);
-                var fontSize = TextFontSizeForWidth(label, maxWidth, tickFontSize);
-                label = TrimPngLabelToWidth(label, fontSize, maxWidth);
-                if (label.Length > 0) canvas.DrawText(geometry.CenterX + 7, geometry.CenterY - radius + 14 - fontSize + 1, label, theme.MutedText, fontSize);
+                var fontSize = TextFontSizeForWidth(label, maxWidth, tickFontSize, tickStyle);
+                label = TrimPngLabelToWidth(label, fontSize, maxWidth, tickStyle);
+                if (label.Length > 0) DrawPngTextStyled(canvas, geometry.CenterX + 7, geometry.CenterY - radius + 14 - PngStyledTextBottomExtent(fontSize, tickStyle), label, tickStyle, theme.MutedText, fontSize, emphasized: false);
             }
         }
 
@@ -59,14 +60,14 @@ public sealed partial class PngChartRenderer {
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var rawLabel = FormatX(chart, angle);
             var maxWidth = Math.Max(44, PngPolarLabelWidth(chart, angle));
-            var fontSize = TextFontSizeForEmphasizedWidth(rawLabel, maxWidth, tickFontSize);
-            var label = TrimReadablePngLabelToWidth(rawLabel, fontSize, maxWidth);
+            var fontSize = TextFontSizeForEmphasizedWidth(rawLabel, maxWidth, tickFontSize, tickStyle);
+            var label = TrimReadablePngLabelToWidth(rawLabel, fontSize, maxWidth, tickStyle);
             if (label.Length == 0) continue;
             var target = geometry.OnOuterRing(angle, 24);
-            var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
+            var labelWidth = EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: true);
             var labelX = Clamp(target.X - labelWidth / 2.0, chart.Options.Padding.Left + 2, chart.Options.Size.Width - chart.Options.Padding.Right - labelWidth - 2);
             var labelY = Clamp(target.Y - fontSize / 2.0, chart.Options.Padding.Top + 12, chart.Options.Size.Height - chart.Options.Padding.Bottom - 18);
-            canvas.DrawTextEmphasized(labelX, labelY, label, theme.MutedText, fontSize);
+            DrawPngTextStyled(canvas, labelX, labelY - PngStyledTextTopExtent(fontSize, tickStyle), label, tickStyle, theme.MutedText, fontSize, emphasized: true);
         }
     }
 

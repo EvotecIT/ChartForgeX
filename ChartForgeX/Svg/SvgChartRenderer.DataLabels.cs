@@ -19,7 +19,7 @@ public sealed partial class SvgChartRenderer {
             var point = mapped[i];
             var label = FormatDataLabel(chart, series, i, series.Points[i].Y);
             if (IsPointCalloutSeries(series)) {
-                DrawPointCalloutLabel(sb, chart, label, point.X, point.Y, placement, plot);
+                DrawPointCalloutLabel(sb, chart, label, point.X, point.Y, placement, plot, DataLabelStyle(chart, series, i));
                 continue;
             }
 
@@ -45,15 +45,15 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsPointCalloutSeries(ChartSeries series) => series.SemanticRole == "point-callout";
 
-    private static void DrawPointCalloutLabel(StringBuilder sb, Chart chart, string label, double x, double y, ChartDataLabelPlacement placement, ChartRect plot) {
+    private static void DrawPointCalloutLabel(StringBuilder sb, Chart chart, string label, double x, double y, ChartDataLabelPlacement placement, ChartRect plot, TextStyleOverride style) {
         var t = chart.Options.Theme;
-        var fontSize = Math.Max(t.DataLabelFontSize, 15);
-        label = TrimSvgLabelToWidth(label, fontSize, Math.Max(72, plot.Width * 0.42));
+        var fontSize = Math.Max(StyleFontSize(style, t.DataLabelFontSize), 15);
+        label = TrimSvgLabelToWidth(chart, label, fontSize, Math.Max(72, plot.Width * 0.42), style, emphasized: true);
         if (label.Length == 0) return;
         var padX = 12.0;
         var padY = 8.0;
-        var width = EstimateTextWidth(label, fontSize) + padX * 2;
-        var height = fontSize + padY * 2;
+        var width = MeasureSvgStyledTextWidth(chart, label, fontSize, style, emphasized: true) + padX * 2;
+        var height = EstimateSvgStyledTextHeight(fontSize, style) + padY * 2;
         var gap = 14.0;
         var rectX = x - width / 2;
         var rectY = y - gap - height;
@@ -87,11 +87,12 @@ public sealed partial class SvgChartRenderer {
             .Attribute("x", rectX + width / 2)
             .Attribute("y", rectY + padY + fontSize * 0.78)
             .Attribute("text-anchor", "middle")
-            .Attribute("fill", "#fff")
-            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("fill", StyleColor(style, ChartColor.White).ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", "800")
-            .Raw(Escape(label))
+            .Attribute("font-weight", StyleWeight(style, "800"));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
             .Line();
         sb.Append(writer.Build());

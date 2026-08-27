@@ -57,7 +57,9 @@ public sealed partial class PngChartRenderer {
             }
             if (chart.Options.ShowMapLabels) {
                 var fontSize = Math.Min(PngTickFontSize(chart), tileSize * 0.32);
-                c.DrawTextEmphasized(x + tileSize / 2 - EstimatePngEmphasizedTextWidth(tile.Code, fontSize) / 2, y + tileSize / 2 - fontSize / 2, tile.Code, ChartColorMath.TextOnBackground(color), fontSize);
+                var style = chart.Options.TickLabelStyle;
+                var labelWidth = EstimatePngStyledTextWidth(tile.Code, fontSize, style, emphasized: true);
+                DrawPngTextStyled(c, x + tileSize / 2 - labelWidth / 2, y + tileSize / 2 - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), tile.Code, style, ChartColorMath.TextOnBackground(color), fontSize, emphasized: true);
             }
         }
 
@@ -87,17 +89,17 @@ public sealed partial class PngChartRenderer {
         var fontSize = PngTickFontSize(chart);
         if (hasMissing) DrawMapPngNoDataScale(c, chart, x, y, size, fontSize, plot);
         var lowLabel = ChartHeatmapSurface.MapLowLabel(chart);
-        c.DrawText(x - EstimatePngTextWidth(lowLabel, fontSize) - 8, y + size / 2 - fontSize / 2, lowLabel, t.MutedText, fontSize);
+        DrawMapPngTick(c, chart, x - EstimatePngStyledTextWidth(lowLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) - 8, y + size / 2, lowLabel, emphasized: false);
         for (var i = 0; i < 5; i++) {
             var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
             var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, Math.Min(3, size * 0.22), color);
         }
         var highLabel = ChartHeatmapSurface.MapHighLabel(chart);
-        c.DrawText(x + width + 8, y + size / 2 - fontSize / 2, highLabel, t.MutedText, fontSize);
+        DrawMapPngTick(c, chart, x + width + 8, y + size / 2, highLabel, emphasized: false);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            c.DrawText(x + 2 * (size + gap) + size / 2 - EstimatePngTextWidth(midpointLabel, fontSize) / 2, y + size + 2, midpointLabel, t.MutedText, fontSize);
+            DrawMapPngTick(c, chart, x + 2 * (size + gap) + size / 2 - EstimatePngStyledTextWidth(midpointLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) / 2, y + size + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, midpointLabel, emphasized: false);
         }
     }
 
@@ -111,7 +113,7 @@ public sealed partial class PngChartRenderer {
         }
 
         c.FillRoundedRect(x, y, size, size, Math.Min(3, size * 0.22), ChartHeatmapSurface.MapNoDataColor(chart));
-        c.DrawText(x + size + 5, y + size / 2 - fontSize / 2, label, chart.Options.Theme.MutedText, fontSize);
+        DrawMapPngTick(c, chart, x + size + 5, y + size / 2, label, emphasized: false, fontSize: fontSize);
     }
 
     private static List<ChartPoint> HexTilePoints(double x, double y, double size) {

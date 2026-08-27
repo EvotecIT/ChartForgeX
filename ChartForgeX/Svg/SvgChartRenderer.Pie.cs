@@ -133,6 +133,8 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawSliceLegend(StringBuilder sb, Chart chart, ChartSeries series, IReadOnlyList<IndexedPieValue> values, ChartRect plot, double total) {
         var t = chart.Options.Theme;
+        var style = chart.Options.LegendStyle;
+        var fontSize = StyleFontSize(style, t.LegendFontSize);
         var area = SliceLegendArea(chart, plot, values);
         var rows = BuildSliceLegendRows(chart, series, values, total, area.Width);
         var y = SliceLegendStartY(chart, area, rows.Count);
@@ -148,10 +150,8 @@ public sealed partial class SvgChartRenderer {
             var x = SliceLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
-                var percentWidth = EstimateTextWidth(item.Percent, t.LegendFontSize);
-                var labelMaxWidth = Math.Max(8, item.Width - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 28);
-                var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, t.LegendFontSize);
-                var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
+                var labelFontSize = item.LabelFontSize;
+                var label = item.Label;
                 if (item.IsZero) {
                     writer
                         .StartElement("rect")
@@ -183,7 +183,7 @@ public sealed partial class SvgChartRenderer {
                         .EndEmptyElement()
                         .Line();
                 }
-                var labelColor = item.IsZero ? t.MutedText : t.Text;
+                var labelColor = StyleColor(style, item.IsZero ? t.MutedText : t.Text);
                 if (label.Length > 0) {
                     writer
                         .StartElement("text")
@@ -192,10 +192,11 @@ public sealed partial class SvgChartRenderer {
                         .Attribute("x", itemX + ChartVisualPrimitives.SliceLegendSwatchSize + 6)
                         .Attribute("y", y)
                         .Attribute("fill", labelColor.ToCss())
-                        .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                        .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
                         .Attribute("font-size", labelFontSize)
-                        .Attribute("font-weight", "650")
-                        .Text(label)
+                        .Attribute("font-weight", StyleWeight(style, "650"));
+                    WriteSvgTextStyleAttributes(writer, style);
+                    WriteSvgStyledTextContent(writer, style, label)
                         .EndElement()
                         .Line();
                 }
@@ -207,10 +208,12 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("x", itemX + item.Width - 10)
                     .Attribute("y", y)
                     .Attribute("text-anchor", "end")
-                    .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", SvgFontFamily(t.FontFamily))
-                    .Attribute("font-size", t.LegendFontSize)
-                    .Text(item.Percent)
+                    .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
+                    .Attribute("font-size", fontSize)
+                    .Attribute("font-weight", StyleWeight(style, "400"));
+                WriteSvgTextStyleAttributes(writer, style);
+                WriteSvgStyledTextContent(writer, style, item.Percent)
                     .EndElement()
                     .Line();
             }
@@ -240,10 +243,12 @@ public sealed partial class SvgChartRenderer {
     private static double SliceLegendWidestItem(Chart chart, IReadOnlyList<IndexedPieValue> values) {
         var widest = 0.0;
         var total = Math.Max(0.000001, values.Sum(item => item.Point.Y));
+        var style = chart.Options.LegendStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
         for (var i = 0; i < values.Count; i++) {
             var label = SliceLabel(chart, values[i].Point, values[i].PointIndex);
             var percent = FormatPercent(values[i].Point.Y / total);
-            widest = Math.Max(widest, ChartVisualPrimitives.SliceLegendSwatchSize + EstimateTextWidth(label, chart.Options.Theme.LegendFontSize) + EstimateTextWidth(percent, chart.Options.Theme.LegendFontSize) + 34);
+            widest = Math.Max(widest, ChartVisualPrimitives.SliceLegendSwatchSize + EstimateSvgStyledTextWidth(chart, label, fontSize, style, emphasized: true) + EstimateSvgStyledTextWidth(chart, percent, fontSize, style) + 34);
         }
 
         return widest;
@@ -264,22 +269,24 @@ public sealed partial class SvgChartRenderer {
         var x = 0.0;
         var vertical = IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition);
         var maxX = Math.Max(48, width);
+        var style = chart.Options.LegendStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
         for (var i = 0; i < values.Count; i++) {
             var pointIndex = values[i].PointIndex;
-            var percent = FormatPercent(values[i].Point.Y / Math.Max(0.000001, total));
-            var percentWidth = EstimateTextWidth(percent, chart.Options.Theme.LegendFontSize);
+            var percent = StyleText(style, FormatPercent(values[i].Point.Y / Math.Max(0.000001, total)));
+            var percentWidth = MeasureSvgStyledTextWidth(chart, percent, fontSize, style);
             var labelMax = Math.Max(24, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 30);
             var rawLabel = SliceLabel(chart, values[i].Point, pointIndex);
-            var labelFontSize = TextFontSizeForSvgWidth(rawLabel, labelMax, chart.Options.Theme.LegendFontSize);
-            var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, labelMax);
-            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + EstimateTextWidth(label, labelFontSize) + percentWidth + 32);
+            var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
+            var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
+            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style, emphasized: true) + percentWidth + 32);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new SliceLegendRow();
                 rows.Add(row);
                 x = 0;
             }
 
-            row.Items.Add(new SliceLegendItem(pointIndex, x, itemWidth, label, percent, PieSliceColor(chart, series, pointIndex), values[i].Point.Y <= 0));
+            row.Items.Add(new SliceLegendItem(pointIndex, x, itemWidth, label, labelFontSize, percent, PieSliceColor(chart, series, pointIndex), values[i].Point.Y <= 0));
             row.Width = Math.Max(row.Width, x + itemWidth);
             x += itemWidth;
         }
@@ -298,7 +305,7 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsTopOrBottomLegend(ChartLegendPosition position) => IsTopLegend(position) || IsBottomLegend(position);
 
-    private static double SliceLegendRowHeight(Chart chart) => chart.Options.Theme.LegendFontSize + 10;
+    private static double SliceLegendRowHeight(Chart chart) => EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.LegendStyle, chart.Options.Theme.LegendFontSize), chart.Options.LegendStyle) + 10;
 
     private static double PieLabelRadius(double inner, double radius, ChartDataLabelPlacement placement) {
         if (placement == ChartDataLabelPlacement.Outside || placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Above || placement == ChartDataLabelPlacement.Below) return radius * 1.10;
@@ -459,11 +466,12 @@ public sealed partial class SvgChartRenderer {
     }
 
     private readonly struct SliceLegendItem {
-        public SliceLegendItem(int pointIndex, double x, double width, string label, string percent, ChartColor color, bool isZero) {
+        public SliceLegendItem(int pointIndex, double x, double width, string label, double labelFontSize, string percent, ChartColor color, bool isZero) {
             PointIndex = pointIndex;
             X = x;
             Width = width;
             Label = label;
+            LabelFontSize = labelFontSize;
             Percent = percent;
             Color = color;
             IsZero = isZero;
@@ -473,6 +481,7 @@ public sealed partial class SvgChartRenderer {
         public double X { get; }
         public double Width { get; }
         public string Label { get; }
+        public double LabelFontSize { get; }
         public string Percent { get; }
         public ChartColor Color { get; }
         public bool IsZero { get; }

@@ -39,13 +39,14 @@ public sealed partial class SvgChartRenderer {
             var y = startY + i * rowHeight + rowHeight / 2;
             var labelMaxWidth = Math.Max(8, labelWidth - 8);
             var rawLabel = FormatX(chart, point.X);
-            var labelFontSize = TextFontSizeForSvgWidth(rawLabel, labelMaxWidth, t.TickLabelFontSize);
-            var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, labelMaxWidth);
+            var tickStyle = chart.Options.TickLabelStyle;
+            var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMaxWidth, StyleFontSize(tickStyle, t.TickLabelFontSize), tickStyle, emphasized: true);
+            var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMaxWidth, tickStyle, emphasized: true);
             var color = ProgressItemColor(series, t, i);
             var ratio = Clamp(point.Y / maximum, 0, 1);
             var filledWidth = barArea * ratio;
             if (label.Length > 0) {
-                WriteProgressText(writer, "progress-label", i, plot.Left + labelWidth - 8, y + labelFontSize / 3.0, label, t.MutedText.ToCss(), t.FontFamily, labelFontSize, "700", "end");
+                WriteProgressText(writer, chart, tickStyle, "progress-label", i, plot.Left + labelWidth - 8, y + labelFontSize / 3.0, label, t.MutedText, labelFontSize, "700", "end");
             }
             WriteProgressRect(writer, "progress-track", i, startX, y - barHeight / 2, barArea, barHeight, barHeight / 2, PictorialOpacity(t.Grid, chart.Options.ProgressTrackOpacity).ToCss());
             WriteProgressRect(writer, "progress-fill", i, startX, y - barHeight / 2, filledWidth, barHeight, barHeight / 2, color.ToCss(), point.Y, ratio);
@@ -66,10 +67,11 @@ public sealed partial class SvgChartRenderer {
             if (showValues) {
                 var valueMaxWidth = Math.Max(8, valueWidth - 4);
                 var rawValue = FormatValue(chart, point.Y);
-                var valueFontSize = TextFontSizeForSvgWidth(rawValue, valueMaxWidth, t.DataLabelFontSize);
-                var value = TrimSvgLabelToWidth(rawValue, valueFontSize, valueMaxWidth);
+                var dataStyle = DataLabelStyle(chart, series, i);
+                var valueFontSize = TextFontSizeForSvgWidth(chart, rawValue, valueMaxWidth, StyleFontSize(dataStyle, t.DataLabelFontSize), dataStyle, emphasized: true);
+                var value = TrimSvgLabelToWidth(chart, rawValue, valueFontSize, valueMaxWidth, dataStyle, emphasized: true);
                 if (value.Length > 0) {
-                    WriteProgressText(writer, "progress-value", i, startX + barArea + 12, y + valueFontSize / 3.0, value, t.Text.ToCss(), t.FontFamily, valueFontSize, "800");
+                    WriteProgressText(writer, chart, dataStyle, "progress-value", i, startX + barArea + 12, y + valueFontSize / 3.0, value, t.Text, valueFontSize, "800");
                 }
             }
         }
@@ -101,7 +103,7 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static void WriteProgressText(SvgMarkupWriter writer, string role, int pointIndex, double x, double y, string text, string fill, string fontFamily, double fontSize, string fontWeight, string? anchor = null) {
+    private static void WriteProgressText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, int pointIndex, double x, double y, string text, ChartColor fill, double fontSize, string fontWeight, string? anchor = null) {
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", role)
@@ -110,11 +112,12 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", y);
         if (anchor != null) writer.Attribute("text-anchor", anchor);
         writer
-            .Attribute("fill", fill)
-            .Attribute("font-family", fontFamily)
+            .Attribute("fill", StyleColor(style, fill).ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", fontWeight)
-            .Text(text)
+            .Attribute("font-weight", StyleWeight(style, fontWeight));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, text)
             .EndElement()
             .Line();
     }

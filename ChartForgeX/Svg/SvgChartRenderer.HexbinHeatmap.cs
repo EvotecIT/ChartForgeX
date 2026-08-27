@@ -47,7 +47,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels) {
-            var columnLabelFontSize = Math.Min(chart.Options.Theme.TickLabelFontSize, Math.Max(9, layout.ColumnStep * 0.32));
+            var columnLabelFontSize = Math.Min(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), Math.Max(9, layout.ColumnStep * 0.32));
             var columnLabelWidth = Math.Max(20, layout.ColumnStep * 0.82);
             for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep;
@@ -100,28 +100,32 @@ public sealed partial class SvgChartRenderer {
 
     private static void WriteHexbinAxisLabel(StringBuilder sb, Chart chart, double x, double y, string anchor, string text, string role, double? fontSize = null, double? maxWidth = null) {
         var t = chart.Options.Theme;
-        var resolvedFontSize = fontSize ?? t.TickLabelFontSize;
+        var style = chart.Options.TickLabelStyle;
+        var resolvedFontSize = fontSize ?? StyleFontSize(style, t.TickLabelFontSize);
         var resolvedMaxWidth = maxWidth ?? (anchor == "end" ? Math.Max(24, x - 8) : 84);
-        var label = TrimSvgLabelToWidth(text, resolvedFontSize, resolvedMaxWidth);
+        var label = TrimSvgLabelToWidth(chart, text, resolvedFontSize, resolvedMaxWidth, style, emphasized: true);
         if (label.Length == 0) return;
-        AppendSvg(sb, writer => writer
-            .StartElement("text")
+        AppendSvg(sb, writer => {
+            writer.StartElement("text")
             .Attribute("data-cfx-role", role)
             .Attribute("x", x)
             .Attribute("y", y + 4)
             .Attribute("text-anchor", anchor)
-            .Attribute("fill", t.MutedText.ToCss())
-            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+            .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", resolvedFontSize)
-            .Attribute("font-weight", "650")
-            .Text(label)
+            .Attribute("font-weight", StyleWeight(style, "650"));
+            WriteSvgTextStyleAttributes(writer, style);
+            WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
-            .Line());
+            .Line();
+        });
     }
 
     private static ChartRect ApplyHexbinHeatmapReserve(Chart chart, ChartRect plot, ChartSeries[] rows, double[] columns) {
-        var t = chart.Options.Theme;
-        var rowLabelReserve = chart.Options.ShowAxes ? rows.Max(series => EstimateTextWidth(series.Name, t.TickLabelFontSize)) + 18 : 0;
+        var style = chart.Options.TickLabelStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.TickLabelFontSize);
+        var rowLabelReserve = chart.Options.ShowAxes ? rows.Max(series => EstimateSvgStyledTextWidth(chart, series.Name, fontSize, style, emphasized: true)) + 18 : 0;
         var bottomReserve = chart.Options.ShowAxes ? (chart.Options.ShowHeatmapScale ? 58 : chart.Options.ShowHeatmapColumnLabels ? 38 : 10) : chart.Options.ShowHeatmapScale ? 46 : 0;
         var desiredLeft = plot.Left + rowLabelReserve;
         var maxLeft = Math.Max(plot.Left, plot.Right - 160);

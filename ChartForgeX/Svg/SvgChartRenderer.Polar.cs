@@ -76,7 +76,7 @@ public sealed partial class SvgChartRenderer {
             }
 
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !geometry.IsOuterRadius(tick)) {
-                DrawSvgTextLeft(sb, chart, "polar-radius-label", FormatYAxisValue(chart, tick), geometry.CenterX + 7, geometry.CenterY - radius + 14, theme.MutedText, theme.TickLabelFontSize, Math.Max(28, plot.Right - geometry.CenterX - 14), "400");
+                DrawSvgTextLeft(sb, chart, "polar-radius-label", FormatYAxisValue(chart, tick), geometry.CenterX + 7, geometry.CenterY - radius + 14, theme.MutedText, StyleFontSize(chart.Options.TickLabelStyle, theme.TickLabelFontSize), Math.Max(28, plot.Right - geometry.CenterX - 14), "400", style: chart.Options.TickLabelStyle);
             }
         }
 
@@ -104,32 +104,35 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawPolarAngleLabel(StringBuilder sb, Chart chart, ChartRect plot, PolarChartGeometry geometry, double angle) {
         var theme = chart.Options.Theme;
+        var style = chart.Options.TickLabelStyle;
         var rawLabel = FormatX(chart, angle);
         var maxWidth = Math.Max(44, SvgPolarLabelWidth(chart, angle));
-        var fontSize = TextFontSizeForSvgWidth(rawLabel, maxWidth, theme.TickLabelFontSize);
-        var label = TrimSvgLabelToWidth(rawLabel, fontSize, maxWidth);
+        var fontSize = TextFontSizeForSvgWidth(chart, rawLabel, maxWidth, StyleFontSize(style, theme.TickLabelFontSize), style, emphasized: true);
+        var label = TrimSvgLabelToWidth(chart, rawLabel, fontSize, maxWidth, style, emphasized: true);
         if (label.Length == 0) return;
         var target = geometry.OnOuterRing(angle, 24);
         var bounds = new ChartRect(24, Math.Min(24, plot.Top), Math.Max(1, chart.Options.Size.Width - 48), Math.Max(1, chart.Options.Size.Height - 48));
-        var safeX = EdgeAwareTextX(label, target.X, bounds, fontSize);
+        var safeX = EdgeAwareStyledTextX(chart, label, target.X, bounds, fontSize, style, emphasized: true);
         var safeY = Clamp(target.Y, bounds.Top + fontSize, bounds.Bottom - fontSize);
-        var anchor = EdgeAwareAnchor(label, safeX, bounds, fontSize);
+        var anchor = EdgeAwareStyledAnchor(chart, label, safeX, bounds, fontSize, style, emphasized: true);
         if (anchor == "middle") anchor = Math.Cos(angle) > 0.32 ? "start" : Math.Cos(angle) < -0.32 ? "end" : "middle";
-        AppendSvg(sb, writer => writer
-            .StartElement("text")
+        AppendSvg(sb, writer => {
+            writer.StartElement("text")
             .Attribute("data-cfx-role", "polar-angle-label")
             .Attribute("data-cfx-angle", angle)
             .Attribute("x", safeX)
             .Attribute("y", safeY)
             .Attribute("text-anchor", anchor)
             .Attribute("dominant-baseline", "middle")
-            .Attribute("fill", theme.MutedText.ToCss())
-            .Attribute("font-family", SvgFontFamilyAttributeValue(theme.FontFamily))
+            .Attribute("fill", StyleColor(style, theme.MutedText).ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", "650")
-            .Text(label)
+            .Attribute("font-weight", StyleWeight(style, "650"));
+            WriteSvgTextStyleAttributes(writer, style);
+            WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
-            .Line());
+            .Line();
+        });
     }
 
     private static double SvgPolarLabelWidth(Chart chart, double angle) {

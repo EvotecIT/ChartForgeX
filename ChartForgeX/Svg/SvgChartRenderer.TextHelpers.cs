@@ -8,10 +8,10 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
-        text = StyleText(style, text);
         var preferredFontSize = fontSize;
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize, Math.Min(8, preferredFontSize));
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        var resolvedStyle = style ?? new TextStyleOverride();
+        var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));
+        var fittedText = TrimSvgLabelToWidth(chart, text, fittedFontSize, Math.Max(8, maxWidth), resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight));
         if (fittedText.Length == 0) return;
 
         var writer = new SvgMarkupWriter(512);
@@ -30,10 +30,10 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgTextLeft(StringBuilder sb, Chart chart, string role, string text, double x, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, TextStyleOverride? style = null) {
-        text = StyleText(style, text);
         var preferredFontSize = fontSize;
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize, Math.Min(8, preferredFontSize));
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        var resolvedStyle = style ?? new TextStyleOverride();
+        var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));
+        var fittedText = TrimSvgLabelToWidth(chart, text, fittedFontSize, Math.Max(8, maxWidth), resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight));
         if (fittedText.Length == 0) return;
         var writer = new SvgMarkupWriter(512);
         writer.StartElement("text");
@@ -54,9 +54,8 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
-        var transformedTitle = StyleText(style, chart.YAxisTitle);
-        var fontSize = TextFontSizeForSvgWidth(transformedTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(transformedTitle, fontSize, maxWidth);
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize), style, emphasized: true);
+        var text = TrimSvgLabelToWidth(chart, chart.YAxisTitle, fontSize, maxWidth, style, emphasized: true);
         if (text.Length == 0) return;
         var writer = new SvgMarkupWriter(512);
         writer.StartElement("text");
@@ -65,6 +64,25 @@ public sealed partial class SvgChartRenderer {
         WriteSvgTextStyleAttributes(writer, style);
         WriteSvgStyledTextContent(writer, style, text).EndElement().Line();
         sb.Append(writer.Build());
+    }
+
+    private static double SvgXAxisTitleHeight(Chart chart, double maxWidth) {
+        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return 0;
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.XAxisTitle, Math.Max(48, maxWidth), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
+        return EstimateSvgStyledTextHeight(fontSize, style);
+    }
+
+    private static double SvgYAxisTitleHeight(Chart chart, double maxWidth) {
+        if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return 0;
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.YAxisTitle, Math.Max(40, maxWidth * 0.72), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
+        return EstimateSvgStyledTextHeight(fontSize, style);
+    }
+
+    private static bool IsEmphasizedWeight(string value) {
+        if (int.TryParse(value, out var numeric)) return numeric >= 600;
+        return string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void WriteSvgDataLabelText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, string label, double x, double y, string anchor, ChartColor fill, ChartColor stroke, double fontSize) {

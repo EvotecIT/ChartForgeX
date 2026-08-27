@@ -1,5 +1,4 @@
 using System;
-
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
@@ -77,6 +76,11 @@ internal static partial class SmokeTests {
         ("SVG specialized layouts reserve transformed text", SvgSpecializedLayoutsReserveTransformedText),
         ("SVG heatmap and funnel fit styled text vertically", SvgHeatmapAndFunnelFitStyledTextVertically),
         ("Legend casing drives allocation before serialization", LegendCasingDrivesAllocationBeforeSerialization),
+        ("SVG axis layout uses resolved typography", SvgAxisLayoutUsesResolvedTypography),
+        ("Specialized legends honor role typography", SpecializedLegendsHonorRoleTypography),
+        ("Specialized axes honor tick typography", SpecializedAxesHonorTickTypography),
+        ("SVG raster case transforms cross tspan boundaries", SvgRasterCaseTransformsCrossTspanBoundaries),
+        ("Funnel gallery text stays readable", FunnelGalleryTextStaysReadable),
         ("Image composition uses shared typography contract", ImageCompositionUsesSharedTypographyContract),
         ("Raster typography renders italic across outline and fallback fonts", RasterTypographyRendersItalicAcrossOutlineAndFallbackFonts),
         ("Visual canvas image IDs stay deterministic for fixed scope", VisualCanvasImageIdsStayDeterministicForFixedScope),

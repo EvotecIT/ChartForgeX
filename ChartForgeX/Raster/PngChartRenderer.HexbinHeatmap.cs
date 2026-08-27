@@ -78,7 +78,7 @@ public sealed partial class PngChartRenderer {
     private static ChartRect ApplyHexbinHeatmapReserve(Chart chart, ChartRect plot, IReadOnlyList<ChartSeries> rows) {
         var tickFontSize = PngTickFontSize(chart);
         var rowLabelReserve = 0.0;
-        if (chart.Options.ShowAxes) foreach (var row in rows) rowLabelReserve = Math.Max(rowLabelReserve, EstimatePngEmphasizedTextWidth(row.Name, tickFontSize));
+        if (chart.Options.ShowAxes) foreach (var row in rows) rowLabelReserve = Math.Max(rowLabelReserve, EstimatePngStyledTextWidth(row.Name, tickFontSize, chart.Options.TickLabelStyle, emphasized: true));
         var bottomReserve = chart.Options.ShowAxes ? (chart.Options.ShowHeatmapScale ? 58 : chart.Options.ShowHeatmapColumnLabels ? 38 : 10) : chart.Options.ShowHeatmapScale ? 46 : 0;
         var desiredLeft = plot.Left + rowLabelReserve + (chart.Options.ShowAxes ? 18 : 0);
         var maxLeft = Math.Max(plot.Left, plot.Right - 160);
@@ -88,10 +88,11 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawHexbinPngLabel(RgbaCanvas c, Chart chart, double x, double y, string text, double fontSize, bool rightAligned, double? maxLabelWidth = null) {
         var maxWidth = maxLabelWidth ?? (rightAligned ? Math.Max(24, x - 8) : 84);
-        var label = TrimReadablePngLabelToWidth(text, fontSize, maxWidth);
+        var style = chart.Options.TickLabelStyle;
+        var label = TrimReadablePngLabelToWidth(text, fontSize, maxWidth, style);
         if (label.Length == 0) return;
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-        c.DrawTextEmphasized(rightAligned ? x - width : x - width / 2, y - fontSize / 2, label, chart.Options.Theme.MutedText, fontSize);
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true);
+        DrawPngTextStyled(c, rightAligned ? x - width : x - width / 2, y - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), label, style, chart.Options.Theme.MutedText, fontSize, emphasized: true);
     }
 
     private static void DrawPolygonOutline(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) {

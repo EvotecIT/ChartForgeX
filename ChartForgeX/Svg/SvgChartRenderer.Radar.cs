@@ -58,7 +58,7 @@ public sealed partial class SvgChartRenderer {
             var isOuterTick = scale.IsMaximum(tick);
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !isOuterTick) {
                 var label = FormatYAxisValue(chart, tick);
-                DrawSvgTextLeft(sb, chart, "radar-ring-label", label, cx + 7, cy - ringRadius + 14, t.MutedText, t.TickLabelFontSize, Math.Max(28, plot.Right - cx - 14), "400");
+                DrawSvgTextLeft(sb, chart, "radar-ring-label", label, cx + 7, cy - ringRadius + 14, t.MutedText, StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), Math.Max(28, plot.Right - cx - 14), "400", style: chart.Options.TickLabelStyle);
             }
         }
 
@@ -73,17 +73,18 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawRadarAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, double category, double x, double y, double angle) {
         var t = chart.Options.Theme;
+        var style = chart.Options.TickLabelStyle;
         var rawLabel = FormatX(chart, category);
         var maxWidth = Math.Max(44, SvgRadarLabelWidth(chart, angle));
-        var fontSize = TextFontSizeForSvgWidth(rawLabel, maxWidth, t.TickLabelFontSize);
-        var label = TrimSvgLabelToWidth(rawLabel, fontSize, maxWidth);
+        var fontSize = TextFontSizeForSvgWidth(chart, rawLabel, maxWidth, StyleFontSize(style, t.TickLabelFontSize), style, emphasized: true);
+        var label = TrimSvgLabelToWidth(chart, rawLabel, fontSize, maxWidth, style, emphasized: true);
         if (label.Length == 0) return;
         var labelBounds = new ChartRect(24, Math.Min(24, plot.Top), Math.Max(1, chart.Options.Size.Width - 48), Math.Max(1, chart.Options.Size.Height - 48));
-        var safeX = EdgeAwareTextX(label, x, labelBounds, fontSize);
+        var safeX = EdgeAwareStyledTextX(chart, label, x, labelBounds, fontSize, style, emphasized: true);
         var safeY = Clamp(y, labelBounds.Top + fontSize, labelBounds.Bottom - fontSize);
-        var anchor = EdgeAwareAnchor(label, safeX, labelBounds, fontSize);
+        var anchor = EdgeAwareStyledAnchor(chart, label, safeX, labelBounds, fontSize, style, emphasized: true);
         if (anchor == "middle") anchor = Math.Cos(angle) > 0.32 ? "start" : Math.Cos(angle) < -0.32 ? "end" : "middle";
-        WriteRadarAxisLabel(sb, label, safeX, safeY, anchor, t.MutedText.ToCss(), SvgFontFamilyAttributeValue(t.FontFamily), fontSize);
+        WriteRadarAxisLabel(sb, chart, style, label, safeX, safeY, anchor, t.MutedText, fontSize);
     }
 
     private static void WriteRadarChartStart(StringBuilder sb) {
@@ -182,7 +183,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteRadarAxisLabel(StringBuilder sb, string label, double x, double y, string anchor, string fill, string fontFamily, double fontSize) {
+    private static void WriteRadarAxisLabel(StringBuilder sb, Chart chart, TextStyleOverride style, string label, double x, double y, string anchor, ChartColor fill, double fontSize) {
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("text")
@@ -191,11 +192,12 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", y)
             .Attribute("text-anchor", anchor)
             .Attribute("dominant-baseline", "middle")
-            .Attribute("fill", fill)
-            .Attribute("font-family", fontFamily)
+            .Attribute("fill", StyleColor(style, fill).ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", "650")
-            .Text(label)
+            .Attribute("font-weight", StyleWeight(style, "650"));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
             .Line();
         sb.Append(writer.Build());

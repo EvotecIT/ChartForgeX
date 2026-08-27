@@ -487,19 +487,18 @@ public sealed partial class SvgChartRenderer {
     private static void DrawXAxisLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double x, double y, double angle, string? role = null, double maxWidth = 0, ChartColor? color = null) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
-        label = StyleText(style, label);
         var labelColor = color ?? StyleColor(style, t.MutedText);
         var preferredFontSize = StyleFontSize(style, t.TickLabelFontSize);
         var widthLimit = maxWidth > 0 ? maxWidth : PlotLabelMaxWidth(plot);
-        var fontSize = TextFontSizeForSvgWidth(label, widthLimit, preferredFontSize);
-        label = TrimSvgLabelToWidth(label, fontSize, widthLimit);
+        var fontSize = TextFontSizeForSvgWidth(chart, label, widthLimit, preferredFontSize, style);
+        label = TrimSvgLabelToWidth(chart, label, fontSize, widthLimit, style);
         if (label.Length == 0) return;
         if (Math.Abs(angle) < 0.001) {
-            var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
-            var safeX = EdgeAwareTextX(label, x, plot, fontSize);
+            var anchor = EdgeAwareStyledAnchor(chart, label, x, plot, fontSize, style);
+            var safeX = EdgeAwareStyledTextX(chart, label, x, plot, fontSize, style);
             AppendSvg(sb, writer => {
                 writer.StartElement("text");
-                if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
+                writer.Attribute("data-cfx-role", string.IsNullOrWhiteSpace(role) ? "x-axis-label" : role);
                 writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
                 WriteSvgTextStyleAttributes(writer, style);
                 WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
@@ -507,11 +506,11 @@ public sealed partial class SvgChartRenderer {
             return;
         }
 
-        var rotatedAnchor = RotatedAnchor(label, x, plot, angle, fontSize);
+        var rotatedAnchor = RotatedStyledAnchor(chart, label, x, plot, angle, fontSize, style);
         var rotatedX = Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - ChartVisualPrimitives.DataLabelPlotInset);
         AppendSvg(sb, writer => {
             writer.StartElement("text");
-            if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
+            writer.Attribute("data-cfx-role", string.IsNullOrWhiteSpace(role) ? "x-axis-label" : role);
             writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
             WriteSvgTextStyleAttributes(writer, style);
             WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
@@ -683,8 +682,7 @@ public sealed partial class SvgChartRenderer {
 
         var bottomReserve = 0.0;
         if (ShowXAxis(chart)) {
-            bottomReserve += XAxisTitleOffset(chart) + chart.Options.Theme.AxisTitleFontSize + 4;
-            if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) bottomReserve -= 18;
+            bottomReserve += SvgXAxisBottomReserve(chart, null, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right);
         }
 
         if (ShouldDrawLegend(chart) && IsBottomLegend(chart.Options.LegendPosition)) bottomReserve += LegendBottomReserve(chart);
@@ -697,8 +695,11 @@ public sealed partial class SvgChartRenderer {
     private static ChartRect ApplyYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
         if (!ShowYAxis(chart) || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
         var t = chart.Options.Theme;
-        var widest = yTicks.Max(tick => EstimateTextWidth(FormatYAxisValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
-        var desiredLeft = Math.Max(plot.Left, widest + 54);
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
+        var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick), tickFontSize, tickStyle));
+        var titleHeight = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : SvgYAxisTitleHeight(chart, plot.Height);
+        var desiredLeft = Math.Max(plot.Left, widest + 54 + Math.Max(0, titleHeight - t.AxisTitleFontSize));
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);
         if (adjustedLeft <= plot.Left) return plot;
@@ -709,8 +710,7 @@ public sealed partial class SvgChartRenderer {
     private static ChartRect ApplyXAxisBottomReserve(Chart chart, ChartRect plot, IReadOnlyList<double> xTicks, bool valueAxisOnly) {
         if (!ShowXAxis(chart) || chart.Options.IsSparkline || IsPieLike(chart) || xTicks.Count == 0) return plot;
         var labels = XAxisTickLabels(chart, xTicks, valueAxisOnly);
-        var bottomReserve = XAxisTitleOffset(chart, labels) + chart.Options.Theme.AxisTitleFontSize + 4;
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) bottomReserve -= 18;
+        var bottomReserve = SvgXAxisBottomReserve(chart, labels, plot.Width);
         if (ShouldDrawLegend(chart) && IsBottomLegend(chart.Options.LegendPosition)) bottomReserve += LegendBottomReserve(chart);
 
         var maxBottom = Math.Max(plot.Top + 1, chart.Options.Size.Height - bottomReserve);
@@ -770,16 +770,27 @@ public sealed partial class SvgChartRenderer {
 
     private static double XAxisLabelOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var angle = Math.Abs(Clamp(chart.Options.XAxisLabelAngle, -80, 80)) * Math.PI / 180;
-        if (angle < 0.001) return 21;
-        if ((labels == null || labels.Count == 0) && chart.Options.XAxisLabels.Count == 0) return 21;
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, chart.Options.Theme.TickLabelFontSize);
+        var tickHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
+        var baseOffset = Math.Max(21, tickHeight + 8);
+        if (angle < 0.001) return baseOffset;
+        if ((labels == null || labels.Count == 0) && chart.Options.XAxisLabels.Count == 0) return baseOffset;
         var widest = labels != null && labels.Count > 0
-            ? labels.Max(label => EstimateTextWidth(label, StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize)))
-            : chart.Options.XAxisLabels.Max(label => EstimateTextWidth(label.Text, StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize)));
-        return 20 + Math.Sin(angle) * Math.Min(96, widest);
+            ? labels.Max(label => EstimateSvgStyledTextWidth(chart, label, tickFontSize, tickStyle))
+            : chart.Options.XAxisLabels.Max(label => EstimateSvgStyledTextWidth(chart, label.Text, tickFontSize, tickStyle));
+        return Math.Max(baseOffset, tickHeight + 7 + Math.Sin(angle) * Math.Min(96, widest));
     }
 
     private static double XAxisTitleOffset(Chart chart, IReadOnlyList<string>? labels = null) {
-        return XAxisLabelOffset(chart, labels) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? 23 : 48);
+        var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
+        return XAxisLabelOffset(chart, labels) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10));
+    }
+
+    private static double SvgXAxisBottomReserve(Chart chart, IReadOnlyList<string>? labels, double maxWidth) {
+        var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
+        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return XAxisLabelOffset(chart, labels) + tickHeight + 10;
+        return XAxisTitleOffset(chart, labels) + SvgXAxisTitleHeight(chart, maxWidth) + 4;
     }
 
 }

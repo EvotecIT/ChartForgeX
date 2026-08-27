@@ -97,7 +97,7 @@ public sealed partial class SvgChartRenderer {
         if (ShowYAxisLine(chart)) WriteWaterfallAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         if (ShowXAxis(chart)) DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart), "waterfall-x-axis-title");
         if (ShowYAxis(chart) && !string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-            var widestTick = ticks.Max(tick => EstimateTextWidth(FormatYAxisValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
+            var widestTick = ticks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), chart.Options.TickLabelStyle));
             var axisX = Math.Max(24, plot.Left - widestTick - 48);
             DrawSvgYAxisTitle(sb, chart, plot, axisX, "waterfall-y-axis-title");
         }

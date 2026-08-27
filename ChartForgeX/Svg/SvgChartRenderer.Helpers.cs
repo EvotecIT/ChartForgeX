@@ -356,6 +356,25 @@ public sealed partial class SvgChartRenderer {
         return angle < 0 ? "end" : "start";
     }
 
+    private static string EdgeAwareStyledAnchor(Chart chart, string label, double x, ChartRect plot, double fontSize, TextStyleOverride style, bool emphasized = false) {
+        var halfWidth = MeasureSvgStyledTextWidth(chart, label, fontSize, style, emphasized) / 2;
+        if (x - halfWidth < plot.Left + ChartVisualPrimitives.DataLabelPlotInset) return "start";
+        if (x + halfWidth > plot.Right - ChartVisualPrimitives.DataLabelPlotInset) return "end";
+        return "middle";
+    }
+
+    private static double EdgeAwareStyledTextX(Chart chart, string label, double x, ChartRect plot, double fontSize, TextStyleOverride style, bool emphasized = false) {
+        var halfWidth = MeasureSvgStyledTextWidth(chart, label, fontSize, style, emphasized) / 2;
+        return Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset + halfWidth, plot.Right - ChartVisualPrimitives.DataLabelPlotInset - halfWidth);
+    }
+
+    private static string RotatedStyledAnchor(Chart chart, string label, double x, ChartRect plot, double angle, double fontSize, TextStyleOverride style, bool emphasized = false) {
+        var projectedWidth = MeasureSvgStyledTextWidth(chart, label, fontSize, style, emphasized) * Math.Abs(Math.Cos(angle * Math.PI / 180));
+        if (x - projectedWidth < plot.Left + ChartVisualPrimitives.DataLabelPlotInset) return "start";
+        if (x + projectedWidth > plot.Right - ChartVisualPrimitives.DataLabelPlotInset) return "end";
+        return angle < 0 ? "end" : "start";
+    }
+
     private static double PlotLabelMaxWidth(ChartRect plot) =>
         Math.Max(8, plot.Width - ChartVisualPrimitives.DataLabelPlotInset * 2);
 
@@ -558,37 +577,39 @@ public sealed partial class SvgChartRenderer {
 
     private static IReadOnlyList<double> SelectXAxisTickValues(Chart chart, ChartRange range, ChartRect plot, IReadOnlyList<ChartAxisLabel> labels) {
         if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || labels.Count < 3) return labels.Select(label => label.Value).ToArray();
-        var widest = labels.Max(label => EstimateTextWidth(label.Text, chart.Options.Theme.TickLabelFontSize));
+        var style = chart.Options.TickLabelStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.TickLabelFontSize);
+        var widest = labels.Max(label => EstimateSvgStyledTextWidth(chart, label.Text, fontSize, style));
         var densityFactor = chart.Options.XAxisLabelDensity == ChartLabelDensity.Dense ? 0.72 : chart.Options.XAxisLabelDensity == ChartLabelDensity.Relaxed ? 1.35 : 1.0;
         var minSpacing = Math.Max(28, (widest + 18) * densityFactor);
         var maxCount = Math.Max(2, (int)Math.Floor(plot.Width / minSpacing) + 1);
-        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize, 6)) return labels.Select(label => label.Value).ToArray();
+        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(chart, labels, range, plot, chart.Options.XAxis, fontSize, style, 6)) return labels.Select(label => label.Value).ToArray();
 
         var lastLabel = labels[labels.Count - 1];
         var step = Math.Max(1, (int)Math.Ceiling((labels.Count - 1) / (double)(maxCount - 1)));
         var selected = new List<ChartAxisLabel>();
         selected.Add(labels[0]);
         for (var i = step; i < labels.Count - 1; i += step) {
-            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize) >= 6 &&
-                LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize) >= 6) selected.Add(labels[i]);
+            if (LabelGap(chart, selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, fontSize, style) >= 6 &&
+                LabelGap(chart, labels[i], lastLabel, range, plot, chart.Options.XAxis, fontSize, style) >= 6) selected.Add(labels[i]);
         }
 
-        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, chart.Options.Theme.TickLabelFontSize) < 6) selected.RemoveAt(selected.Count - 1);
+        if (selected.Count > 1 && LabelGap(chart, selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, fontSize, style) < 6) selected.RemoveAt(selected.Count - 1);
         selected.Add(lastLabel);
         return selected.Select(label => label.Value).ToArray();
     }
 
-    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, double minGap) {
+    private static bool LabelsHaveMinimumLabelGap(Chart chart, IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style, double minGap) {
         for (var i = 1; i < labels.Count; i++) {
-            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize) < minGap) return false;
+            if (LabelGap(chart, labels[i - 1], labels[i], range, plot, axis, fontSize, style) < minGap) return false;
         }
 
         return true;
     }
 
-    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize) {
-        var leftWidth = EstimateTextWidth(left.Text, fontSize);
-        var rightWidth = EstimateTextWidth(right.Text, fontSize);
+    private static double LabelGap(Chart chart, ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style) {
+        var leftWidth = EstimateSvgStyledTextWidth(chart, left.Text, fontSize, style);
+        var rightWidth = EstimateSvgStyledTextWidth(chart, right.Text, fontSize, style);
         var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
         var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
         return rightX - (leftX + leftWidth);

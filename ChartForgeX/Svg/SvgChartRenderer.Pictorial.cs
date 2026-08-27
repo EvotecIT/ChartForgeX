@@ -55,8 +55,9 @@ public sealed partial class SvgChartRenderer {
             var labelY = itemTop + rowsForItem * rowHeight / 2;
             var labelMaxWidth = Math.Max(8, labelWidth - 8);
             var rawLabel = FormatX(chart, values[i].X);
-            var labelFontSize = TextFontSizeForSvgWidth(rawLabel, labelMaxWidth, t.TickLabelFontSize);
-            var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, labelMaxWidth);
+            var tickStyle = chart.Options.TickLabelStyle;
+            var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMaxWidth, StyleFontSize(tickStyle, t.TickLabelFontSize), tickStyle, emphasized: true);
+            var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMaxWidth, tickStyle, emphasized: true);
             if (label.Length > 0) {
                 writer
                     .StartElement("text")
@@ -65,11 +66,12 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("x", plot.Left + labelWidth - 8)
                     .Attribute("y", labelY + labelFontSize / 3.0)
                     .Attribute("text-anchor", "end")
-                    .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                    .Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss())
+                    .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle)))
                     .Attribute("font-size", labelFontSize)
-                    .Attribute("font-weight", "700")
-                    .Raw(Escape(label))
+                    .Attribute("font-weight", StyleWeight(tickStyle, "700"));
+                WriteSvgTextStyleAttributes(writer, tickStyle);
+                WriteSvgStyledTextContent(writer, tickStyle, label)
                     .EndElement()
                     .Line();
             }
@@ -89,8 +91,9 @@ public sealed partial class SvgChartRenderer {
             if (showValues) {
                 var valueMaxWidth = Math.Max(8, valueWidth - 4);
                 var rawValue = FormatValue(chart, values[i].Y);
-                var valueFontSize = TextFontSizeForSvgWidth(rawValue, valueMaxWidth, t.DataLabelFontSize);
-                var value = TrimSvgLabelToWidth(rawValue, valueFontSize, valueMaxWidth);
+                var dataStyle = DataLabelStyle(chart, series, i);
+                var valueFontSize = TextFontSizeForSvgWidth(chart, rawValue, valueMaxWidth, StyleFontSize(dataStyle, t.DataLabelFontSize), dataStyle, emphasized: true);
+                var value = TrimSvgLabelToWidth(chart, rawValue, valueFontSize, valueMaxWidth, dataStyle, emphasized: true);
                 if (value.Length > 0) {
                     writer
                         .StartElement("text")
@@ -100,11 +103,12 @@ public sealed partial class SvgChartRenderer {
                         .Attribute("data-cfx-value", values[i].Y)
                         .Attribute("x", startX + symbolArea + 12)
                         .Attribute("y", labelY + valueFontSize / 3.0)
-                        .Attribute("fill", t.Text.ToCss())
-                        .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                        .Attribute("fill", StyleColor(dataStyle, t.Text).ToCss())
+                        .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, dataStyle)))
                         .Attribute("font-size", valueFontSize)
-                        .Attribute("font-weight", "800")
-                        .Raw(Escape(value))
+                        .Attribute("font-weight", StyleWeight(dataStyle, "800"));
+                    WriteSvgTextStyleAttributes(writer, dataStyle);
+                    WriteSvgStyledTextContent(writer, dataStyle, value)
                         .EndElement()
                         .Line();
                 }

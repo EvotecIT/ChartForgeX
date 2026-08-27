@@ -88,15 +88,15 @@ public sealed partial class SvgChartRenderer {
             var labelFontSize = StyleFontSize(dataStyle, FunnelLabelFontSize(t.LegendFontSize));
             var valueFontSize = StyleFontSize(dataStyle, FunnelValueFontSize(t.DataLabelFontSize));
             var labelWidth = FunnelLabelWidth(topWidth, bottomWidth);
-            labelFontSize = TextFontSizeForSvgWidth(StyleText(dataStyle, label), labelWidth, labelFontSize, minFontSize: 4);
-            valueFontSize = TextFontSizeForSvgWidth(StyleText(dataStyle, value), labelWidth, valueFontSize, minFontSize: 4);
+            labelFontSize = TextFontSizeForSvgWidth(chart, label, labelWidth, labelFontSize, dataStyle, emphasized: true);
+            valueFontSize = TextFontSizeForSvgWidth(chart, value, labelWidth, valueFontSize, dataStyle, emphasized: true);
             var rowGap = Math.Max(2, Math.Min(6, segmentDrawHeight * 0.08));
-            var availableTextHeight = Math.Max(8, segmentDrawHeight - 6);
-            while (labelFontSize > 4 || valueFontSize > 4) {
+            var availableTextHeight = Math.Max(8, (values[i].Y <= 0 ? segmentHeight : segmentDrawHeight) - 6);
+            while (labelFontSize > 8 || valueFontSize > 8) {
                 var requiredHeight = EstimateSvgStyledTextHeight(labelFontSize, dataStyle) + rowGap + EstimateSvgStyledTextHeight(valueFontSize, dataStyle);
                 if (requiredHeight <= availableTextHeight) break;
-                if (labelFontSize >= valueFontSize && labelFontSize > 4) labelFontSize -= 0.5;
-                else if (valueFontSize > 4) valueFontSize -= 0.5;
+                if (labelFontSize >= valueFontSize && labelFontSize > 8) labelFontSize -= 0.5;
+                else if (valueFontSize > 8) valueFontSize -= 0.5;
                 else break;
             }
             var labelHeight = EstimateSvgStyledTextHeight(labelFontSize, dataStyle);
@@ -138,14 +138,14 @@ public sealed partial class SvgChartRenderer {
                         .Line();
                 }
                 var metricsWriter = new StringBuilder();
-                var retentionFontSize = TextFontSizeForSvgWidth(StyleText(dataStyle, retentionLabel), metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), minFontSize: 4);
-                var dropOffFontSize = TextFontSizeForSvgWidth(StyleText(dataStyle, dropOffLabel), metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), minFontSize: 4);
+                var retentionFontSize = TextFontSizeForSvgWidth(chart, retentionLabel, metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), dataStyle, emphasized: true);
+                var dropOffFontSize = TextFontSizeForSvgWidth(chart, dropOffLabel, metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), dataStyle, emphasized: true);
                 var metricGap = Math.Max(2, Math.Min(5, segmentDrawHeight * 0.07));
-                while (hasPreviousBaseline && (retentionFontSize > 4 || dropOffFontSize > 4)) {
+                while (hasPreviousBaseline && (retentionFontSize > 8 || dropOffFontSize > 8)) {
                     var requiredHeight = EstimateSvgStyledTextHeight(retentionFontSize, dataStyle) + metricGap + EstimateSvgStyledTextHeight(dropOffFontSize, dataStyle);
-                    if (requiredHeight <= Math.Max(8, segmentDrawHeight - 6)) break;
-                    if (retentionFontSize >= dropOffFontSize && retentionFontSize > 4) retentionFontSize -= 0.5;
-                    else if (dropOffFontSize > 4) dropOffFontSize -= 0.5;
+                    if (requiredHeight <= Math.Max(8, segmentHeight - 6)) break;
+                    if (retentionFontSize >= dropOffFontSize && retentionFontSize > 8) retentionFontSize -= 0.5;
+                    else if (dropOffFontSize > 8) dropOffFontSize -= 0.5;
                     else break;
                 }
                 var retentionHeight = EstimateSvgStyledTextHeight(retentionFontSize, dataStyle);
