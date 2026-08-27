@@ -131,6 +131,14 @@ internal static partial class SvgRasterRenderer {
     private static double MeasureTextAdvance(string text, SvgRasterStyle style) {
         if (text.Length == 0) return 0;
         var font = SvgTextFont(style);
+        return IsBold(style.FontWeight)
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, font, italic: false)
+            : RgbaCanvas.MeasureTextWidth(text, style.FontSize, font, italic: false);
+    }
+
+    private static double MeasureTextPaintWidth(string text, SvgRasterStyle style) {
+        if (text.Length == 0) return 0;
+        var font = SvgTextFont(style);
         var italic = IsItalic(style.FontStyle);
         return IsBold(style.FontWeight)
             ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, font, italic)
@@ -147,7 +155,7 @@ internal static partial class SvgRasterRenderer {
         if (text.Length == 0) return 0;
         if (measureOnly) {
             var measuredAdvance = MeasureTextAdvance(text, style);
-            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline), measuredAdvance, SvgTextPaintHeight(style, SvgTextFont(style)), matrix);
+            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline), MeasureTextPaintWidth(text, style), SvgTextPaintHeight(style, SvgTextFont(style)), matrix);
             return measuredAdvance;
         }
         if (canvas == null) throw new InvalidOperationException("SVG text rendering requires a target canvas.");
@@ -158,7 +166,8 @@ internal static partial class SvgRasterRenderer {
         var italic = IsItalic(style.FontStyle);
         var underline = HasUnderline(style.TextDecoration);
         var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic);
-        var advance = width / renderScale;
+        var advanceWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic: false) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic: false);
+        var advance = advanceWidth / renderScale;
         if (!style.VisibilityVisible) return advance;
         var fillColor = style.FillColor();
         var strokeColor = style.StrokeWidth > 0 ? ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions) : ChartColor.Transparent;

@@ -66,8 +66,13 @@ public sealed class PngChartGridRenderer {
     private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
         var color = StyleColor(style, fallback);
         var font = StyleFont(style);
-        if (StyleEmphasized(style, emphasized)) canvas.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
-        else canvas.DrawText(x, y, text, color, fontSize, font, style.Italic);
+        if (StyleEmphasized(style, emphasized)) {
+            if (font == null) canvas.DrawTextEmphasized(x, y, text, color, fontSize, style.Italic);
+            else canvas.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
+        } else {
+            if (font == null) canvas.DrawText(x, y, text, color, fontSize, style.Italic);
+            else canvas.DrawText(x, y, text, color, fontSize, font, style.Italic);
+        }
         if (!style.Underline || text.Length == 0) return;
         var width = MeasureStyledTextWidth(canvas, text, fontSize, style, emphasized);
         canvas.DrawLine(x, y + fontSize + 2, x + width, y + fontSize + 2, color, Math.Max(1, fontSize / 13.0));

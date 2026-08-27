@@ -34,14 +34,16 @@ public sealed partial class PngChartRenderer {
         var label = TrimReadablePngLabelToWidth(node.Label, fontSize, labelMaxWidth, dataStyle);
         if (label.Length == 0) return;
         var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, emphasized: true);
-        var y = node.Y + node.Height / 2 - fontSize / 2;
+        var labelHeight = EstimatePngStyledTextHeight(fontSize, dataStyle);
+        var y = node.Y + node.Height / 2 - labelHeight / 2;
         var labelBounds = new ChartRect(chart.Options.Padding.Left, chart.Options.Padding.Top, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right, chart.Options.Size.Height - chart.Options.Padding.Top - chart.Options.Padding.Bottom);
         var padX = ChartVisualPrimitives.SankeyLabelBackdropPaddingX;
         var padY = ChartVisualPrimitives.SankeyLabelBackdropPaddingY;
         var labelX = node.Layer == model.MaxLayer ? node.X - labelWidth - 10 : node.X + model.NodeWidth + 10;
-        var labelRadius = Math.Min(6, (fontSize + padY * 2) / 2);
-        c.FillRoundedRect(labelX - padX, y - padY, labelWidth + padX * 2, fontSize + padY * 2, labelRadius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.SankeyLabelBackdropOpacity));
-        c.StrokeRoundedRect(labelX - padX, y - padY, labelWidth + padX * 2, fontSize + padY * 2, labelRadius, ApplyOpacity(theme.PlotBorder, ChartVisualPrimitives.SankeyLabelBackdropBorderOpacity));
+        var backdropHeight = labelHeight + padY * 2;
+        var labelRadius = Math.Min(6, backdropHeight / 2);
+        c.FillRoundedRect(labelX - padX, y - padY, labelWidth + padX * 2, backdropHeight, labelRadius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.SankeyLabelBackdropOpacity));
+        c.StrokeRoundedRect(labelX - padX, y - padY, labelWidth + padX * 2, backdropHeight, labelRadius, ApplyOpacity(theme.PlotBorder, ChartVisualPrimitives.SankeyLabelBackdropBorderOpacity));
         DrawReadablePngLabel(c, labelBounds, labelX, y, label, theme.MutedText, theme.CardBackground, fontSize, dataStyle);
     }
 

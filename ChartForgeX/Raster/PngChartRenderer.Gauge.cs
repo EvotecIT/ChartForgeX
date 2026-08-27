@@ -40,19 +40,23 @@ public sealed partial class PngChartRenderer {
         var statusLabel = status.Replace("-", " ");
         var labelWidth = Math.Max(48, Math.Min(plot.Width - 24, radius * 1.8));
         if (gauge.ShowDataLabels != false) {
-            DrawPngTextStyledCenteredX(c, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor - valueFontSize / 2.0, label, dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
-            DrawPngTextStyledCenteredX(c, cx, cy + ChartVisualPrimitives.GaugeTitleOffsetY - nameFontSize + 1, gauge.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
+            var valueFit = FitPngStyledText(label, dataStyle, valueFontSize, labelWidth, emphasized: true);
+            var nameFit = FitPngStyledText(gauge.Name, dataStyle, nameFontSize, labelWidth, emphasized: true);
+            DrawPngFittedTextStyledCenteredX(c, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor - valueFit.Height / 2.0, valueFit, dataStyle, theme.Text, emphasized: true);
+            DrawPngFittedTextStyledCenteredX(c, cx, cy + ChartVisualPrimitives.GaugeTitleOffsetY - nameFit.Height + 1, nameFit, dataStyle, theme.MutedText, emphasized: true);
             var statusFontSize = TextFontSizeForEmphasizedWidth(statusLabel, labelWidth, PngStyleFontSize(dataStyle, tickFontSize), dataStyle);
             statusLabel = TrimReadablePngLabelToWidth(statusLabel, statusFontSize, labelWidth, dataStyle);
             var statusLeft = cx - EstimatePngStyledTextWidth(statusLabel, statusFontSize, dataStyle, emphasized: true) / 2.0;
             c.DrawCircle(statusLeft - ChartVisualPrimitives.GaugeStatusMarkerOffsetX, cy + ChartVisualPrimitives.GaugeStatusMarkerOffsetY, ChartVisualPrimitives.PngStatusMarkerOutlineRadius, theme.CardBackground);
             c.DrawCircle(statusLeft - ChartVisualPrimitives.GaugeStatusMarkerOffsetX, cy + ChartVisualPrimitives.GaugeStatusMarkerOffsetY, ChartVisualPrimitives.StatusMarkerRadius, statusColor);
-            DrawPngTextStyled(c, statusLeft, cy + ChartVisualPrimitives.GaugeStatusTextOffsetY - statusFontSize + 1, statusLabel, dataStyle, theme.MutedText, statusFontSize, emphasized: true);
+            DrawPngTextStyled(c, statusLeft, cy + ChartVisualPrimitives.GaugeStatusTextOffsetY - EstimatePngStyledTextHeight(statusFontSize, dataStyle) + 1, statusLabel, dataStyle, theme.MutedText, statusFontSize, emphasized: true);
         }
         if (chart.Options.ShowAxes) {
             var axisLabelWidth = Math.Max(32, radius * 0.76);
-            DrawPngTextStyledCenteredX(c, cx - radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY - tickFontSize + 1, FormatValue(chart, min), tickStyle, theme.MutedText, tickFontSize, axisLabelWidth, emphasized: false);
-            DrawPngTextStyledCenteredX(c, cx + radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY - tickFontSize + 1, FormatValue(chart, max), tickStyle, theme.MutedText, tickFontSize, axisLabelWidth, emphasized: false);
+            var minimumFit = FitPngStyledText(FormatValue(chart, min), tickStyle, tickFontSize, axisLabelWidth, emphasized: false);
+            var maximumFit = FitPngStyledText(FormatValue(chart, max), tickStyle, tickFontSize, axisLabelWidth, emphasized: false);
+            DrawPngFittedTextStyledCenteredX(c, cx - radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY - minimumFit.Height + 1, minimumFit, tickStyle, theme.MutedText, emphasized: false);
+            DrawPngFittedTextStyledCenteredX(c, cx + radius, cy + ChartVisualPrimitives.GaugeAxisLabelOffsetY - maximumFit.Height + 1, maximumFit, tickStyle, theme.MutedText, emphasized: false);
         }
     }
 

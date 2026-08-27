@@ -520,6 +520,13 @@ internal static partial class SmokeTests {
         Assert(statusSvg.Contains("data-cfx-status=\"below-target\"", StringComparison.Ordinal), "Bullet rows should identify below-target values.");
         Assert(statusSvg.Contains("data-cfx-status=\"meets-target\"", StringComparison.Ordinal), "Bullet rows should identify target-matching values.");
         Assert(statusSvg.Contains("data-cfx-status=\"above-target\"", StringComparison.Ordinal), "Bullet rows should identify above-target values.");
+        var fittedSvg = Chart.Create()
+            .WithSize(320, 220)
+            .WithDataLabelStyle(style => style.WithFontSize(48))
+            .AddBullet("A deliberately long bullet row label", 80, 90)
+            .ToSvg();
+        var fittedRowFontSize = double.Parse(GetStringAttribute(fittedSvg, "data-cfx-role=\"bullet-row-label\"", "font-size"), CultureInfo.InvariantCulture);
+        Assert(fittedRowFontSize < 48, "Fitted SVG bullet labels should emit their reduced font size instead of restoring the requested style override.");
         Assert(Chart.Create().AddBullet("Score", 80, 90).ToPng().Length > 64, "Bullet charts should render PNG output.");
     }
 

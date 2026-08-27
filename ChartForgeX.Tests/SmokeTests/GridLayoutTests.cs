@@ -73,6 +73,26 @@ internal static partial class SmokeTests {
             .Add(panel)
             .ToPng();
         Assert(!regularRaster.SequenceEqual(italicRaster), "PNG grid headers should render italic pixels instead of silently using regular text.");
+
+        var themedFont = ChartTheme.ReportLight();
+        themedFont.FontFamily = "Georgia, serif";
+        var inheritedFontRaster = ChartGrid.Create()
+            .WithTheme(themedFont)
+            .WithTitle("Inherited Grid Header")
+            .WithSubtitle("Theme font inheritance")
+            .WithPanelSize(260, 160)
+            .Add(panel)
+            .ToPng();
+        var explicitFontRaster = ChartGrid.Create()
+            .WithTheme(themedFont)
+            .WithTitle("Inherited Grid Header")
+            .WithSubtitle("Theme font inheritance")
+            .WithTitleStyle(style => style.WithFontFamily("Georgia, serif"))
+            .WithSubtitleStyle(style => style.WithFontFamily("Georgia, serif"))
+            .WithPanelSize(260, 160)
+            .Add(panel)
+            .ToPng();
+        Assert(inheritedFontRaster.SequenceEqual(explicitFontRaster), "PNG grid headers without a role font override should draw with the grid theme font used for measurement.");
         AssertThrows<ArgumentNullException>(() => ChartGrid.Create().WithTitleStyle(null!), "Grid title styles should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithSubtitleStyle(style => style.WithFontSize(0)), "Grid subtitle styles should reject invalid font sizes.");
     }

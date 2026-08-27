@@ -211,14 +211,15 @@ public sealed partial class PngChartRenderer {
 
             DrawAnnotationBands(c, chart, plot, map);
             var gridStyle = o.GridLineStyle;
+            var yTickFontSize = PngTickFontSize(chart);
+            var yTickHeight = EstimatePngStyledTextHeight(yTickFontSize, o.TickLabelStyle);
             for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
                 var yv = yTicks[yIndex];
                 var y = map.Y(yv);
                 if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
-                if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, PngTickFontSize(chart), o.YAxisLabelDensity)) {
+                if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, yTickHeight, o.YAxisLabelDensity)) {
                     var label = FormatYAxisValue(chart, yv);
-                    var fontSize = PngTickFontSize(chart);
-                    DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, o.TickLabelStyle, emphasized: false) - 8), y - fontSize + 4, label, o.TickLabelStyle, t.MutedText, fontSize, emphasized: false);
+                    DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, yTickFontSize, o.TickLabelStyle, emphasized: false) - 8), y - yTickHeight + 4, label, o.TickLabelStyle, t.MutedText, yTickFontSize, emphasized: false);
                 }
             }
             var xLabels = XAxisTickLabels(chart, xTicks, false);
@@ -340,13 +341,13 @@ public sealed partial class PngChartRenderer {
         var titleStyle = chart.Options.TitleStyle;
         var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize), titleStyle);
         var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth, titleStyle);
-        if (title.Length > 0) DrawPngTextStyled(c, 40, 52 - titleFontSize + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
+        if (title.Length > 0) DrawPngTextStyled(c, 40, 52 - EstimatePngStyledTextHeight(titleFontSize, titleStyle) + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
             var subtitleStyle = chart.Options.SubtitleStyle;
             var subtitleMaxWidth = Math.Max(24, chart.Options.Size.Width - 84);
             var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, PngStyleFontSize(subtitleStyle, theme.SubtitleFontSize), subtitleStyle);
             var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth, subtitleStyle);
-            if (subtitle.Length > 0) DrawPngTextStyled(c, 42, 79 - subtitleFontSize + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
+            if (subtitle.Length > 0) DrawPngTextStyled(c, 42, 79 - EstimatePngStyledTextHeight(subtitleFontSize, subtitleStyle) + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
     }
 

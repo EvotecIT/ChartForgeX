@@ -67,7 +67,8 @@ public sealed partial class PngChartRenderer {
             var dataStyle = DataLabelStyle(chart, series, i);
             var labelFontSize = TextFontSizeForEmphasizedWidth(label, labelWidth, PngStyleFontSize(dataStyle, FunnelLabelFontSize(chart.Options.Theme.LegendFontSize)), dataStyle);
             var valueFontSize = TextFontSizeForEmphasizedWidth(value, labelWidth, PngStyleFontSize(dataStyle, FunnelValueFontSize(chart.Options.Theme.DataLabelFontSize)), dataStyle);
-            var labelY = centerY - labelFontSize - 2;
+            var labelHeight = EstimatePngStyledTextHeight(labelFontSize, dataStyle);
+            var labelY = centerY - labelHeight - 2;
             var valueY = centerY + 4;
             var halo = FunnelTextHalo(labelColor, chart.Options.Theme.CardBackground);
             if (showLabels) {
@@ -95,8 +96,9 @@ public sealed partial class PngChartRenderer {
                     TextFontSizeForEmphasizedWidth(dropOffLabel, metricMaxWidth, PngStyleFontSize(dataStyle, PngTickFontSize(chart)), dataStyle));
                 retentionLabel = TrimReadablePngLabelToWidth(retentionLabel, metricFontSize, metricMaxWidth, dataStyle);
                 dropOffLabel = TrimReadablePngLabelToWidth(dropOffLabel, metricFontSize, metricMaxWidth, dataStyle);
+                var metricHeight = EstimatePngStyledTextHeight(metricFontSize, dataStyle);
                 if (hasPreviousBaseline) c.DrawDashedLine(guideX, segmentY - gap * 0.35, guideX, segmentY + segmentDrawHeight * 0.55, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.FunnelDropoffLineOpacity), ChartVisualPrimitives.FunnelDropoffLineStrokeWidth, 3, 4);
-                if (retentionLabel.Length > 0) DrawPngTextStyled(c, metricsX, centerY - metricFontSize - 4, retentionLabel, dataStyle, chart.Options.Theme.MutedText, metricFontSize, emphasized: true);
+                if (retentionLabel.Length > 0) DrawPngTextStyled(c, metricsX, centerY - metricHeight - 4, retentionLabel, dataStyle, chart.Options.Theme.MutedText, metricFontSize, emphasized: true);
                 if (hasPreviousBaseline && dropOffLabel.Length > 0) DrawPngTextStyled(c, metricsX, centerY + 4, dropOffLabel, dataStyle, chart.Options.Theme.Negative, metricFontSize, emphasized: true);
             }
 

@@ -52,7 +52,7 @@ public sealed partial class PngChartRenderer {
         var fontSize = TreeNodeLabelFontSize(PngStyleFontSize(dataStyle, chart.Options.Theme.TickLabelFontSize));
         var maxWidth = model.NodeWidth - ChartVisualPrimitives.TreeNodeLabelHorizontalPadding * 2;
         var lines = ChartLabelWrapping.BalancedTwoLine(node.Label, fontSize, maxWidth, (text, size) => EstimatePngStyledTextWidth(text, size, dataStyle, emphasized: true));
-        var lineHeight = fontSize * ChartVisualPrimitives.TreeNodeLabelLineHeightFactor;
+        var lineHeight = Math.Max(EstimatePngStyledTextHeight(fontSize, dataStyle), fontSize * ChartVisualPrimitives.TreeNodeLabelLineHeightFactor);
         var textHeight = lines.Length * lineHeight;
         var top = node.Y + (model.NodeHeight - textHeight) / 2.0;
         for (var i = 0; i < lines.Length; i++) {

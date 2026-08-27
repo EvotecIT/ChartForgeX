@@ -95,6 +95,11 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawPngTextStyledCenteredX(RgbaCanvas c, double centerX, double y, string text, TextStyleOverride style, ChartColor color, double fontSize, double maxWidth, bool emphasized) {
+        var fit = FitPngStyledText(text, style, fontSize, maxWidth, emphasized);
+        DrawPngFittedTextStyledCenteredX(c, centerX, y, fit, style, color, emphasized);
+    }
+
+    private static PngStyledTextFit FitPngStyledText(string text, TextStyleOverride style, double fontSize, double maxWidth, bool emphasized) {
         var widthLimit = Math.Max(8, maxWidth);
         var fittedFontSize = emphasized
             ? TextFontSizeForEmphasizedWidth(text, widthLimit, PngStyleFontSize(style, fontSize), style)
@@ -102,9 +107,16 @@ public sealed partial class PngChartRenderer {
         var fittedText = emphasized
             ? TrimReadablePngLabelToWidth(text, fittedFontSize, widthLimit, style)
             : TrimPngLabelToWidth(text, fittedFontSize, widthLimit, style);
-        if (fittedText.Length == 0) return;
-        var width = EstimatePngStyledTextWidth(fittedText, fittedFontSize, style, emphasized);
-        DrawPngTextStyled(c, centerX - width / 2.0, y, fittedText, style, color, fittedFontSize, emphasized);
+        return new PngStyledTextFit(
+            fittedText,
+            fittedFontSize,
+            fittedText.Length == 0 ? 0 : EstimatePngStyledTextWidth(fittedText, fittedFontSize, style, emphasized),
+            fittedText.Length == 0 ? 0 : EstimatePngStyledTextHeight(fittedFontSize, style));
+    }
+
+    private static void DrawPngFittedTextStyledCenteredX(RgbaCanvas c, double centerX, double y, PngStyledTextFit fit, TextStyleOverride style, ChartColor color, bool emphasized) {
+        if (fit.Text.Length == 0) return;
+        DrawPngTextStyled(c, centerX - fit.Width / 2.0, y, fit.Text, style, color, fit.FontSize, emphasized);
     }
 
     private static ChartColor ReadableLabelHalo(Chart chart) {
@@ -124,7 +136,12 @@ public sealed partial class PngChartRenderer {
             ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, font, style.Italic)
             : RgbaCanvas.MeasureTextWidthWithFont(value, fontSize, font, style.Italic));
     }
-    private static double EstimatePngStyledTextHeight(double fontSize, TextStyleOverride style) => RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style));
+    private static double EstimatePngStyledTextHeight(double fontSize, TextStyleOverride style) {
+        var height = RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style));
+        if (!style.Underline) return height;
+        var underlineThickness = Math.Max(1, fontSize / 13.0);
+        return Math.Max(height, fontSize + 2 + underlineThickness / 2.0);
+    }
     private static double EstimatePngTextHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont);
     private static double PngTickFontSize(Chart chart) => PngStyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize);
     private static ChartColor PngTickColor(Chart chart) => PngStyleColor(chart.Options.TickLabelStyle, chart.Options.Theme.MutedText);
@@ -253,5 +270,19 @@ public sealed partial class PngChartRenderer {
         }
 
         return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+    }
+
+    private readonly struct PngStyledTextFit {
+        public PngStyledTextFit(string text, double fontSize, double width, double height) {
+            Text = text;
+            FontSize = fontSize;
+            Width = width;
+            Height = height;
+        }
+
+        public string Text { get; }
+        public double FontSize { get; }
+        public double Width { get; }
+        public double Height { get; }
     }
 }

@@ -318,6 +318,14 @@ internal static partial class SmokeTests {
         var blueText = SvgColorBounds(mixedTextImage.Pixels, 140, 40, 37, 99, 235);
         Assert(redText.HasPixels && blueText.HasPixels && redText.Left < blueText.Left && redText.Right > blueText.Right, "Mixed text content should preserve direct text nodes before and after styled tspans in document order.");
 
+        const string regularAdjacentText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='50'><text x='8' y='38' font-size='32' fill='#ef4444'>AAAA<tspan fill='#2563eb'>B</tspan></text></svg>";
+        const string italicAdjacentText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='50'><text x='8' y='38' font-size='32' font-style='italic' fill='#ef4444'>AAAA<tspan fill='#2563eb'>B</tspan></text></svg>";
+        var regularAdjacentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularAdjacentText));
+        var italicAdjacentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicAdjacentText));
+        var regularAdjacentBlue = SvgColorBounds(regularAdjacentImage.Pixels, 140, 50, 37, 99, 235);
+        var italicAdjacentBlue = SvgColorBounds(italicAdjacentImage.Pixels, 140, 50, 37, 99, 235);
+        Assert(regularAdjacentBlue.HasPixels && italicAdjacentBlue.HasPixels && Math.Abs(regularAdjacentBlue.Left - italicAdjacentBlue.Left) <= 1, "Synthetic italic overhang should expand painted bounds without advancing adjacent SVG text runs.");
+
         const string transformedText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><text x='12' y='18' font-size='16' fill='#ef4444' transform='rotate(90 12 18)'>TEST</text></svg>";
         var transformedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedText));
         var transformedTextBounds = SvgColorBounds(transformedTextImage.Pixels, 80, 80, 239, 68, 68);

@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var tickFontSize = PngTickFontSize(chart);
         var bottomReserve = ShowXAxis(chart) ? (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 32.0 : 60.0) : 0.0;
-        if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += 18 + PngLegendRowCount(chart) * (PngLegendFontSize(chart) + 6);
+        if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += 18 + PngLegendRowCount(chart) * PngLegendRowHeight(chart);
         plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(1, plot.Height - bottomReserve));
         var slot = plot.Width / steps.Count;
         var barWidth = Math.Max(8, Math.Min(46, slot * 0.58));
@@ -76,7 +76,7 @@ public sealed partial class PngChartRenderer {
             if (ShowXAxis(chart)) {
                 var categoryLabel = step.IsTotal ? "Total" : FormatX(chart, step.XValue);
                 var tickStyle = chart.Options.TickLabelStyle;
-                DrawPngTextStyled(c, EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize, tickStyle), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, tickStyle, chart.Options.Theme.MutedText, tickFontSize, emphasized: false);
+                DrawPngTextStyled(c, EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize, tickStyle), plot.Bottom + PngXAxisLabelOffset(chart) - EstimatePngStyledTextHeight(tickFontSize, tickStyle) + 1, categoryLabel, tickStyle, chart.Options.Theme.MutedText, tickFontSize, emphasized: false);
             }
         }
 
@@ -91,7 +91,8 @@ public sealed partial class PngChartRenderer {
             if (ShowYAxis(chart)) {
                 var label = FormatYAxisValue(chart, tick);
                 var tickStyle = chart.Options.TickLabelStyle;
-                DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: false) - 8), y - fontSize / 2.0, label, tickStyle, chart.Options.Theme.MutedText, fontSize, emphasized: false);
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, tickStyle);
+                DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: false) - 8), y - labelHeight / 2.0, label, tickStyle, chart.Options.Theme.MutedText, fontSize, emphasized: false);
             }
         }
 

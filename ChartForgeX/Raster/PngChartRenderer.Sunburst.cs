@@ -37,7 +37,7 @@ public sealed partial class PngChartRenderer {
         var angle = node.StartAngle + sweep / 2;
         var radius = node.Depth == 0 ? 0 : node.InnerRadius + ringWidth * 0.64;
         var x = model.CenterX + Math.Cos(angle) * radius - EstimatePngStyledTextWidth(label, labelFontSize, dataStyle, emphasized: true) / 2.0;
-        var y = model.CenterY + Math.Sin(angle) * radius - labelFontSize / 2.0;
+        var y = model.CenterY + Math.Sin(angle) * radius - EstimatePngStyledTextHeight(labelFontSize, dataStyle) / 2.0;
         var labelColor = ChartColorMath.TextOnBackground(color);
         DrawReadablePngLabel(c, x, y, label, labelColor, ChartColorMath.TextOnBackground(labelColor, 0.70), labelFontSize, dataStyle);
     }

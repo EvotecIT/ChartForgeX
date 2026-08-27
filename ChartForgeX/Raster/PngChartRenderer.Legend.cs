@@ -10,7 +10,7 @@ public sealed partial class PngChartRenderer {
         var theme = chart.Options.Theme;
         var fontSize = PngLegendFontSize(chart);
         var symbolWidth = 18;
-        var rowHeight = fontSize + 6;
+        var rowHeight = PngLegendRowHeight(chart);
         var area = PngLegendArea(chart);
         var rows = BuildPngLegendRows(chart, area.Width);
         var y = PngLegendStartY(chart, area, rows.Count);
@@ -25,7 +25,7 @@ public sealed partial class PngChartRenderer {
                 var labelMaxWidth = System.Math.Max(8, item.Width - symbolWidth - 14);
                 var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize, chart.Options.LegendStyle);
                 var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth, chart.Options.LegendStyle);
-                if (label.Length > 0) DrawPngTextStyled(c, itemX + symbolWidth + 8, y - labelFontSize + 3, label, chart.Options.LegendStyle, theme.MutedText, labelFontSize, emphasized: true);
+                if (label.Length > 0) DrawPngTextStyled(c, itemX + symbolWidth + 8, y - EstimatePngStyledTextHeight(labelFontSize, chart.Options.LegendStyle) + 3, label, chart.Options.LegendStyle, theme.MutedText, labelFontSize, emphasized: true);
             }
 
             y += rowHeight;
@@ -147,7 +147,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double PngLegendStartY(Chart chart, ChartRect area, int rows) =>
-        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 24 - System.Math.Max(0, rows - 1) * (PngLegendFontSize(chart) + 6) : area.Top + 14;
+        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 24 - System.Math.Max(0, rows - 1) * PngLegendRowHeight(chart) : area.Top + 14;
 
     private static double PngLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         var position = chart.Options.LegendPosition;
@@ -156,7 +156,9 @@ public sealed partial class PngChartRenderer {
         return area.X;
     }
 
-    private static double PngLegendBottomReserve(Chart chart) => 18 + PngLegendRowCount(chart) * (PngLegendFontSize(chart) + 6) + ChartVisualPrimitives.LegendPlotGap;
+    private static double PngLegendRowHeight(Chart chart) => EstimatePngStyledTextHeight(PngLegendFontSize(chart), chart.Options.LegendStyle) + 6;
+
+    private static double PngLegendBottomReserve(Chart chart) => 18 + PngLegendRowCount(chart) * PngLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
 
     private static double PngLegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;

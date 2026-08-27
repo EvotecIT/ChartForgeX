@@ -50,6 +50,7 @@ public sealed partial class PngChartRenderer {
         var maxWidth = Math.Max(8, rect.Width - insetX * 2);
         var labelFontSize = TextFontSizeForEmphasizedWidth(label, maxWidth, Math.Min(PngStyleFontSize(dataStyle, chart.Options.Theme.LegendFontSize), Math.Max(8, rect.Height * 0.20)), dataStyle);
         var fittedLabel = TrimReadablePngLabelToWidth(label, labelFontSize, maxWidth, dataStyle);
+        var labelHeight = EstimatePngStyledTextHeight(labelFontSize, dataStyle);
         if (fittedLabel.Length > 0) {
             DrawReadablePngLabel(c, rect.X + insetX, rect.Y + insetY, fittedLabel, textColor, color, labelFontSize, dataStyle);
         }
@@ -58,8 +59,8 @@ public sealed partial class PngChartRenderer {
         var valueFontSize = TextFontSizeForEmphasizedWidth(value, maxWidth, Math.Min(PngStyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), Math.Max(8, rect.Height * 0.18)), dataStyle);
         var fittedValue = TrimReadablePngLabelToWidth(value, valueFontSize, maxWidth, dataStyle);
         if (fittedValue.Length > 0) {
-            var valueY = rect.Y + insetY + labelFontSize + ChartVisualPrimitives.TreemapTileValueGap;
-            if (valueY + valueFontSize <= rect.Bottom - insetY * 0.45) {
+            var valueY = rect.Y + insetY + labelHeight + ChartVisualPrimitives.TreemapTileValueGap;
+            if (valueY + EstimatePngStyledTextHeight(valueFontSize, dataStyle) <= rect.Bottom - insetY * 0.45) {
                 DrawReadablePngLabel(c, rect.X + insetX, valueY, fittedValue, textColor, color, valueFontSize, dataStyle);
             }
         }

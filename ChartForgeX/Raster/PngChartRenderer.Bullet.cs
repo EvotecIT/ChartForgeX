@@ -108,7 +108,7 @@ public sealed partial class PngChartRenderer {
             var label = FormatValue(chart, tick);
             var style = chart.Options.TickLabelStyle;
             var fontSize = PngTickFontSize(chart);
-            DrawPngTextStyled(c, EdgeAwarePngLabelX(label, x, plot, fontSize, style), y + 20 - fontSize + 1, label, style, chart.Options.Theme.MutedText, fontSize, emphasized: false);
+            DrawPngTextStyled(c, EdgeAwarePngLabelX(label, x, plot, fontSize, style), y + 20 - EstimatePngStyledTextHeight(fontSize, style) + 1, label, style, chart.Options.Theme.MutedText, fontSize, emphasized: false);
         }
     }
 
@@ -123,7 +123,7 @@ public sealed partial class PngChartRenderer {
         var width = EstimatePngStyledTextWidth(text, fontSize, style, emphasized: true);
         var height = EstimatePngStyledTextHeight(fontSize, style);
         var safeX = Clamp(x - width / 2.0, plot.Left + 4, plot.Right - width - 4);
-        var safeY = Clamp(y - fontSize + 1, plot.Top + 3, plot.Bottom - height - 3);
+        var safeY = Clamp(y - height + 1, plot.Top + 3, plot.Bottom - height - 3);
         var halo = ReadableLabelHalo(chart);
         DrawReadablePngLabel(c, safeX, safeY, text, chart.Options.Theme.MutedText, halo, fontSize, style);
     }

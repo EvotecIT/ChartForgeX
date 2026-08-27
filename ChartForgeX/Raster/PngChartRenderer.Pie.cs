@@ -70,7 +70,7 @@ public sealed partial class PngChartRenderer {
                 var labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
                 var labelHeight = EstimatePngStyledTextHeight(fontSize, style);
                 var labelX = sliceCx + Math.Cos(mid) * labelRadius - labelWidth / 2.0;
-                var labelY = sliceCy + Math.Sin(mid) * labelRadius - fontSize / 2.0;
+                var labelY = sliceCy + Math.Sin(mid) * labelRadius - labelHeight / 2.0;
                 if (isSideLabel) {
                     var anchorX = cx + (isLeftSide ? -radius * chart.Options.PieOutsideLabelDistanceRatio : radius * chart.Options.PieOutsideLabelDistanceRatio);
                     var maxLabelWidth = isLeftSide ? anchorX - plot.Left - 6 : plot.Right - anchorX - 6;
@@ -85,8 +85,8 @@ public sealed partial class PngChartRenderer {
                     labelX = isLeftSide ? anchorX - labelWidth : anchorX;
                 }
 
-                if (placement == ChartDataLabelPlacement.Above) labelY = cy - radius * 1.10 - fontSize / 2.0;
-                else if (placement == ChartDataLabelPlacement.Below) labelY = cy + radius * 1.10 - fontSize / 2.0;
+                if (placement == ChartDataLabelPlacement.Above) labelY = cy - radius * 1.10 - labelHeight / 2.0;
+                else if (placement == ChartDataLabelPlacement.Below) labelY = cy + radius * 1.10 - labelHeight / 2.0;
                 if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) DrawReadablePngLabel(c, labelX, labelY, label, chart.Options.Theme.CardBackground, chart.Options.Theme.Text, fontSize, style);
                 else if (isSideLabel) outsideLabels.Add(new PieLabelCandidate(pointIndex, label, mid, isLeftSide ? labelX + labelWidth : labelX, labelY + labelHeight / 2.0, labelWidth, labelHeight, fontSize, style, sliceCx, sliceCy, isLeftSide));
                 else {

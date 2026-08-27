@@ -58,8 +58,8 @@ internal static partial class SmokeTests {
         var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
         var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
         if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
-            var serifChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithTickLabelStyle(style => style.WithFontFamily("serif").WithItalic());
-            var monospaceChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithTickLabelStyle(style => style.WithFontFamily("monospace").WithItalic());
+            var serifChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("serif").WithItalic());
+            var monospaceChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("monospace").WithItalic());
             var serifPixels = ReadPngRgba(serifChart.ToPng(), out var styledWidth, out _);
             var monospacePixels = ReadPngRgba(monospaceChart.ToPng(), out _, out _);
             var serifAxis = FindNearColorBounds(serifPixels, styledWidth, 255, 0, 255, 4);

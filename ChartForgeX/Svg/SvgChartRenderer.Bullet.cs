@@ -258,7 +258,7 @@ public sealed partial class SvgChartRenderer {
         writer
             .Attribute("fill", StyleColor(style, fill).ToCss())
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
-            .Attribute("font-size", F(StyleFontSize(style, fontSize)))
+            .Attribute("font-size", F(fontSize))
             .Attribute("font-weight", StyleWeight(style, fontWeight))
             .Raw(SvgTextStyleAttributes(style))
             .Raw(Escape(text))

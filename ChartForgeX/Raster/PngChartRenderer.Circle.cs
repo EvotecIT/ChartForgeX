@@ -46,11 +46,11 @@ public sealed partial class PngChartRenderer {
         var titleFontSize = PngStyleFontSize(dataStyle, Math.Max(9, Math.Min(theme.LegendFontSize, radius * 0.22)));
         if (circle.ShowDataLabels != false) {
             var centerLineGap = Math.Max(4, Math.Min(8, radius * 0.05));
-            var valueHeight = EstimatePngStyledTextHeight(valueFontSize, dataStyle);
-            var titleHeight = EstimatePngStyledTextHeight(titleFontSize, dataStyle);
-            var groupTop = cy - (valueHeight + centerLineGap + titleHeight) / 2.0;
-            DrawPngTextStyledCenteredX(c, cx, groupTop, valueLabel, dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
-            DrawPngTextStyledCenteredX(c, cx, groupTop + valueHeight + centerLineGap, circle.Name, dataStyle, theme.MutedText, titleFontSize, labelWidth, emphasized: true);
+            var valueFit = FitPngStyledText(valueLabel, dataStyle, valueFontSize, labelWidth, emphasized: true);
+            var titleFit = FitPngStyledText(circle.Name, dataStyle, titleFontSize, labelWidth, emphasized: true);
+            var groupTop = cy - (valueFit.Height + centerLineGap + titleFit.Height) / 2.0;
+            DrawPngFittedTextStyledCenteredX(c, cx, groupTop, valueFit, dataStyle, theme.Text, emphasized: true);
+            DrawPngFittedTextStyledCenteredX(c, cx, groupTop + valueFit.Height + centerLineGap, titleFit, dataStyle, theme.MutedText, emphasized: true);
             if (chart.Options.ShowCircleStatusLabel) {
                 var statusLabel = status.Replace("-", " ");
                 var statusFontSize = TextFontSizeForEmphasizedWidth(statusLabel, labelWidth, PngStyleFontSize(dataStyle, theme.TickLabelFontSize), dataStyle);
@@ -58,7 +58,7 @@ public sealed partial class PngChartRenderer {
                 var statusLeft = cx - EstimatePngStyledTextWidth(statusLabel, statusFontSize, dataStyle, emphasized: true) / 2.0;
                 c.DrawCircle(statusLeft - 9, cy + radius + 36, ChartVisualPrimitives.PngStatusMarkerOutlineRadius, theme.CardBackground);
                 c.DrawCircle(statusLeft - 9, cy + radius + 36, ChartVisualPrimitives.StatusMarkerRadius, statusColor);
-                DrawPngTextStyled(c, statusLeft, cy + radius + 40 - statusFontSize + 1, statusLabel, dataStyle, theme.MutedText, statusFontSize, emphasized: true);
+                DrawPngTextStyled(c, statusLeft, cy + radius + 40 - EstimatePngStyledTextHeight(statusFontSize, dataStyle) + 1, statusLabel, dataStyle, theme.MutedText, statusFontSize, emphasized: true);
             }
         }
     }
