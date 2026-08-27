@@ -260,6 +260,18 @@ internal static partial class SmokeTests {
         var pngAxes = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Axes.cs"));
         Assert(pngAxes.Contains("DrawPngXAxisTitle", StringComparison.Ordinal), "PNG chart renderer should share bounded x-axis title placement.");
         Assert(pngAxes.Contains("TrimReadablePngLabelToWidth(chart.YAxisTitle", StringComparison.Ordinal), "PNG chart renderer should trim y-axis titles after fitting font size.");
+        Assert(pngAxes.Contains("style.Italic, style.Underline", StringComparison.Ordinal), "PNG rotated axis text should carry italic and underline styling into the rotation buffer.");
+        Assert(pngAxes.Contains("EstimatePngStyledTextWidth(FormatYAxisValue", StringComparison.Ordinal) && pngAxes.Contains("EstimatePngStyledTextWidth(FormatSecondaryValue", StringComparison.Ordinal), "PNG axis reserves should measure primary and secondary labels with the resolved tick style.");
+        var pngText = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Text.cs"));
+        var pngCartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
+        var pngPie = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Pie.cs"));
+        var pngMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.DottedMap.cs"));
+        var pngHeatmap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Heatmap.cs"));
+        Assert(pngCartesian.Contains("TextStyleOverride? style = null", StringComparison.Ordinal) && pngCartesian.Contains("EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style", StringComparison.Ordinal), "PNG collision reservations should use the same resolved style metrics as data-label drawing.");
+        Assert(pngText.Contains("FitReadablePngLabel(label, fontSize", StringComparison.Ordinal) && pngText.Contains("EstimatePngStyledTextHeight", StringComparison.Ordinal), "PNG readable-label fitting should account for styled font width and height.");
+        Assert(pngPie.Contains("out label, out fontSize, style", StringComparison.Ordinal) && pngPie.Contains("EstimatePngStyledTextWidth(label, fontSize, style", StringComparison.Ordinal), "PNG pie label fitting and collision candidates should use resolved data-label metrics.");
+        Assert(pngMap.Contains("EstimatePngStyledTextWidth(label, fontSize, style", StringComparison.Ordinal) && pngMap.Contains("EstimatePngStyledTextHeight(fontSize, style)", StringComparison.Ordinal), "PNG map label collision boxes should match resolved data-label metrics.");
+        Assert(pngHeatmap.Contains("EstimatePngStyledTextWidth(\"100%\"", StringComparison.Ordinal) && pngHeatmap.Contains("EstimatePngStyledTextHeight(dataFontSize, dataStyle)", StringComparison.Ordinal), "PNG heatmap fitting and side-label reserves should use resolved data-label metrics.");
         var svgHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
         Assert(svgHelpers.Contains("TrimSvgLabelToWidth", StringComparison.Ordinal), "SVG chart renderer should share bounded label trimming for long formatter output.");
         Assert(svgHelpers.Contains("TextFontSizeForSvgWidth", StringComparison.Ordinal), "SVG chart renderer should shrink labels before trimming when chart surfaces are constrained.");

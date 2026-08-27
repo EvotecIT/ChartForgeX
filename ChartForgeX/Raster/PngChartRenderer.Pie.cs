@@ -58,7 +58,7 @@ public sealed partial class PngChartRenderer {
                 var style = DataLabelStyle(chart, series, pointIndex);
                 var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                    FitReadablePngLabel(label, fontSize, Math.Max(16, radius * 0.85), fontSize + 8, out label, out fontSize);
+                    FitReadablePngLabel(label, fontSize, Math.Max(16, radius * 0.85), fontSize + 8, out label, out fontSize, style);
                     if (label.Length == 0) {
                         start = end;
                         continue;
@@ -67,21 +67,21 @@ public sealed partial class PngChartRenderer {
 
                 var isSideLabel = IsPieSideLabelPlacement(placement);
                 var isLeftSide = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(mid) < 0);
-                var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
-                var labelHeight = EstimatePngTextHeight(fontSize);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, style);
                 var labelX = sliceCx + Math.Cos(mid) * labelRadius - labelWidth / 2.0;
                 var labelY = sliceCy + Math.Sin(mid) * labelRadius - fontSize / 2.0;
                 if (isSideLabel) {
                     var anchorX = cx + (isLeftSide ? -radius * chart.Options.PieOutsideLabelDistanceRatio : radius * chart.Options.PieOutsideLabelDistanceRatio);
                     var maxLabelWidth = isLeftSide ? anchorX - plot.Left - 6 : plot.Right - anchorX - 6;
-                    FitReadablePngLabel(label, fontSize, Math.Max(8, maxLabelWidth), fontSize + 8, out label, out fontSize);
+                    FitReadablePngLabel(label, fontSize, Math.Max(8, maxLabelWidth), fontSize + 8, out label, out fontSize, style);
                     if (label.Length == 0) {
                         start = end;
                         continue;
                     }
 
-                    labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
-                    labelHeight = EstimatePngTextHeight(fontSize);
+                    labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
+                    labelHeight = EstimatePngStyledTextHeight(fontSize, style);
                     labelX = isLeftSide ? anchorX - labelWidth : anchorX;
                 }
 

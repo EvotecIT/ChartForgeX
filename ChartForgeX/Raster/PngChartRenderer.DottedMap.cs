@@ -426,7 +426,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawDottedMapPngDataLabel(RgbaCanvas c, Chart chart, ChartSeries series, string label, int pointIndex, double x, double y, double dot, ChartRect map, List<ChartLabelBounds> reservedLabels) {
         var style = DataLabelStyle(chart, series, pointIndex);
         var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
-        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Min(132, Math.Max(8, map.Width - ChartVisualPrimitives.DataLabelPlotInset * 2)));
+        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Min(132, Math.Max(8, map.Width - ChartVisualPrimitives.DataLabelPlotInset * 2)), style);
         if (label.Length == 0) return;
 
         var offset = Math.Max(16, dot * 5.6);
@@ -445,8 +445,8 @@ public sealed partial class PngChartRenderer {
             new DottedMapPngLabelCandidate(x - offset * 1.32, y - offset * 2.0, "left")
         };
 
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize) + 8;
-        var height = fontSize + 6;
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, true) + 8;
+        var height = EstimatePngStyledTextHeight(fontSize, style) + 6;
         DottedMapPngLabelPlacement? fallback = null;
         foreach (var candidate in candidates) {
             var placement = PlaceDottedMapPngLabel(candidate, map, width, height);

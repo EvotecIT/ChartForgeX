@@ -52,6 +52,18 @@ internal static partial class SmokeTests {
 
         Assert(!shortAxis.IsEmpty && !longAxis.IsEmpty, "PNG y-axis reserve proof should find both configured axis rules.");
         Assert(longAxis.Left > shortAxis.Left + 20, "Long primary y-axis labels should move the PNG plot right even when no secondary axis is present.");
+
+        var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
+        var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
+        if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
+            var serifChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithTickLabelStyle(style => style.WithFontFamily("serif").WithItalic());
+            var monospaceChart = FormattedAxisChart(_ => "MMMMMMMMiiiiiiii").WithTickLabelStyle(style => style.WithFontFamily("monospace").WithItalic());
+            var serifPixels = ReadPngRgba(serifChart.ToPng(), out var styledWidth, out _);
+            var monospacePixels = ReadPngRgba(monospaceChart.ToPng(), out _, out _);
+            var serifAxis = FindNearColorBounds(serifPixels, styledWidth, 255, 0, 255, 4);
+            var monospaceAxis = FindNearColorBounds(monospacePixels, styledWidth, 255, 0, 255, 4);
+            Assert(!serifAxis.IsEmpty && !monospaceAxis.IsEmpty && Math.Abs(serifAxis.Left - monospaceAxis.Left) > 2, "PNG y-axis reserve should measure the resolved tick font family and italic overhang.");
+        }
     }
 
     private static Chart FormattedAxisChart(Func<double, string> formatter) {

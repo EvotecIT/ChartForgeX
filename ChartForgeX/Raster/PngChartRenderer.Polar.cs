@@ -29,7 +29,10 @@ public sealed partial class PngChartRenderer {
                 var labelPoint = geometry.DataLabelPoint(raw, point, DataLabelPlacement(chart, item.Series));
                 var label = FormatDataLabel(chart, item.Series, pointIndex, raw.Y);
                 var fontSize = PngDataLabelFontSize(chart, item.Series, pointIndex);
-                DrawReadablePngLabel(canvas, plot, labelPoint.X - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0, labelPoint.Y - fontSize / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, item.Series, pointIndex));
+                var dataStyle = DataLabelStyle(chart, item.Series, pointIndex);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, true);
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, dataStyle);
+                DrawReadablePngLabel(canvas, plot, labelPoint.X - labelWidth / 2.0, labelPoint.Y - labelHeight / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, dataStyle);
             }
         }
     }

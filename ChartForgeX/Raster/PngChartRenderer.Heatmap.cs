@@ -73,7 +73,8 @@ public sealed partial class PngChartRenderer {
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
-                var labelFits = cellWidth >= EstimatePngEmphasizedTextWidth("100%", dataFontSize) + 12 && cellHeight >= dataFontSize + 10;
+                var labelFits = cellWidth >= EstimatePngStyledTextWidth("100%", dataFontSize, dataStyle, emphasized: true) + 12 &&
+                    cellHeight >= EstimatePngStyledTextHeight(dataFontSize, dataStyle) + 10;
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (drawValueText) {
@@ -82,13 +83,14 @@ public sealed partial class PngChartRenderer {
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
                         DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, ChartColorMath.TextOnBackground(color), color, dataFontSize, dataStyle);
                     } else {
-                        var heatmapLabelWidth = EstimatePngEmphasizedTextWidth(label, dataFontSize);
+                        var heatmapLabelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, emphasized: true);
+                        var heatmapLabelHeight = EstimatePngStyledTextHeight(dataFontSize, dataStyle);
                         var labelX = placement == ChartDataLabelPlacement.Left
                             ? x - heatmapLabelWidth - 8
                             : placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside
                                 ? x + cellWidth + 8
                                 : x + cellWidth / 2 - heatmapLabelWidth / 2.0;
-                        var labelY = placement == ChartDataLabelPlacement.Above ? y - dataFontSize - 4 : placement == ChartDataLabelPlacement.Below ? y + cellHeight + 4 : y + cellHeight / 2 - dataFontSize / 2.0;
+                        var labelY = placement == ChartDataLabelPlacement.Above ? y - heatmapLabelHeight - 4 : placement == ChartDataLabelPlacement.Below ? y + cellHeight + 4 : y + cellHeight / 2 - heatmapLabelHeight / 2.0;
                         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                             var connectorStartX = placement == ChartDataLabelPlacement.Left ? x : x + cellWidth;
                             var connectorEndX = placement == ChartDataLabelPlacement.Left ? x - 5 : x + cellWidth + 5;
@@ -134,7 +136,8 @@ public sealed partial class PngChartRenderer {
                 var pointIndex = HeatmapPointIndex(row, columns[i]);
                 if (pointIndex < 0) continue;
                 var fontSize = PngDataLabelFontSize(chart, row, pointIndex);
-                max = Math.Max(max, EstimatePngEmphasizedTextWidth(FormatDataLabel(chart, row, pointIndex, FindHeatmapValue(row, columns[i])), fontSize));
+                var style = DataLabelStyle(chart, row, pointIndex);
+                max = Math.Max(max, EstimatePngStyledTextWidth(FormatDataLabel(chart, row, pointIndex, FindHeatmapValue(row, columns[i])), fontSize, style, emphasized: true));
             }
         }
 

@@ -26,7 +26,8 @@ public sealed partial class PngChartRenderer {
             if (ShouldDrawDataLabels(chart, series)) {
                 var label = FormatValue(chart, size);
                 var fontSize = PngDataLabelFontSize(chart, series, item);
-                var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
+                var dataStyle = DataLabelStyle(chart, series, item);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, emphasized: true);
                 var placement = DataLabelPlacement(chart, series);
                 var labelX = placement == ChartDataLabelPlacement.Left
                     ? x - radius - labelWidth - 8
@@ -40,8 +41,8 @@ public sealed partial class PngChartRenderer {
                     : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right
                         ? y - fontSize / 2.0
                         : aboveY < plot.Top + 2 ? belowY : aboveY;
-                if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reserved)) continue;
-                DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, series, item));
+                if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reserved, dataStyle)) continue;
+                DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, dataStyle);
             }
         }
     }

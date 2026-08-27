@@ -45,6 +45,9 @@ internal static partial class SmokeTests {
         if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
             Assert(!serifTitle.SequenceEqual(monospaceTitle), "PNG text styles should honor role-specific font families when distinct platform fonts are available.");
         }
+        var regularVerticalTitle = Chart.Create().WithSize(360, 240).WithYAxis("Engagement").AddLine("Values", Points(1, 3, 2)).ToPng();
+        var underlinedVerticalTitle = Chart.Create().WithSize(360, 240).WithYAxis("Engagement").WithAxisTitleStyle(style => style.WithUnderline()).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(!regularVerticalTitle.SequenceEqual(underlinedVerticalTitle), "PNG rotated axis titles should render underlines instead of dropping the decoration during rotation.");
         AssertThrows<ArgumentNullException>(() => Chart.Create().WithTitleStyle(null!), "Text style callbacks should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");

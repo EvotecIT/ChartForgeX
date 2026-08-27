@@ -15,7 +15,7 @@ public sealed partial class PngChartRenderer {
         foreach (var layer in ChartTextHalo.ReadableRasterLayers(fontSize)) c.DrawText(x + layer.Dx, y + layer.Dy, label, ApplyOpacity(halo, layer.Opacity), fontSize, font, italic);
         if (emphasized) c.DrawTextEmphasized(x, y, label, text, fontSize, font, italic);
         else c.DrawText(x, y, label, text, fontSize, font, italic);
-        if (style != null) DrawPngUnderline(c, x, y + fontSize, label, style, text, fontSize, emphasized: true);
+        if (style != null) DrawPngUnderline(c, x, y + fontSize, label, style, text, fontSize, emphasized);
     }
 
     private static void DrawReadablePngLabel(RgbaCanvas c, ChartRect plot, double x, double y, string label, ChartColor text, ChartColor halo, double fontSize, TextStyleOverride? style = null) {
@@ -36,14 +36,14 @@ public sealed partial class PngChartRenderer {
 
     private static bool IsPointCalloutSeries(ChartSeries series) => series.SemanticRole == "point-callout";
 
-    private static void DrawPngPointCalloutLabel(RgbaCanvas c, Chart chart, ChartRect plot, double x, double y, string label, ChartDataLabelPlacement placement, double preferredFontSize) {
+    private static void DrawPngPointCalloutLabel(RgbaCanvas c, Chart chart, ChartRect plot, double x, double y, string label, ChartDataLabelPlacement placement, double preferredFontSize, TextStyleOverride style) {
         var fontSize = Math.Max(preferredFontSize, 15);
-        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Max(72, plot.Width * 0.42));
+        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Max(72, plot.Width * 0.42), style);
         if (label.Length == 0) return;
         var padX = 12.0;
         var padY = 8.0;
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize) + padX * 2;
-        var height = EstimatePngTextHeight(fontSize) + padY * 2;
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true) + padX * 2;
+        var height = EstimatePngStyledTextHeight(fontSize, style) + padY * 2;
         var gap = 14.0;
         var rectX = x - width / 2;
         var rectY = y - gap - height;
@@ -61,7 +61,7 @@ public sealed partial class PngChartRenderer {
         var fill = ChartColor.FromRgba(20, 20, 22, 238);
         c.FillRoundedRect(rectX, rectY, width, height, 9, fill);
         DrawPngPointCalloutPointer(c, x, y, rectX, rectY, width, height, placement, fill);
-        c.DrawTextEmphasized(rectX + (width - EstimatePngEmphasizedTextWidth(label, fontSize)) / 2.0, rectY + padY, label, ChartColor.White, fontSize);
+        DrawReadablePngLabel(c, rectX + padX, rectY + padY, label, ChartColor.White, fill, fontSize, style);
     }
 
     private static void DrawPngPointCalloutPointer(RgbaCanvas c, double x, double y, double rectX, double rectY, double width, double height, ChartDataLabelPlacement placement, ChartColor fill) {

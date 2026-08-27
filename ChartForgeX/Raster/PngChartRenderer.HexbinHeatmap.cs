@@ -53,8 +53,10 @@ public sealed partial class PngChartRenderer {
                 var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
-                    var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-                    DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - fontSize / 2, label, ChartColorMath.TextOnBackground(color), color, fontSize, DataLabelStyle(chart, series, pointIndex));
+                    var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                    var width = EstimatePngStyledTextWidth(label, fontSize, dataStyle, true);
+                    var height = EstimatePngStyledTextHeight(fontSize, dataStyle);
+                    DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - height / 2, label, ChartColorMath.TextOnBackground(color), color, fontSize, dataStyle);
                 }
             }
         }

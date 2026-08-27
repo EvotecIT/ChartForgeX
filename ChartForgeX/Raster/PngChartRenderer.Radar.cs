@@ -41,7 +41,9 @@ public sealed partial class PngChartRenderer {
                     var pointIndex = RadarPointIndex(item.Series, categories[i]);
                     var style = DataLabelStyle(chart, item.Series, pointIndex);
                     var fontSize = PngDataLabelFontSize(chart, item.Series, pointIndex);
-                    DrawReadablePngLabel(c, plot, labelPoint.X - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0, labelPoint.Y - fontSize / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
+                    var labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
+                    var labelHeight = EstimatePngStyledTextHeight(fontSize, style);
+                    DrawReadablePngLabel(c, plot, labelPoint.X - labelWidth / 2.0, labelPoint.Y - labelHeight / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
                 }
             }
         }
