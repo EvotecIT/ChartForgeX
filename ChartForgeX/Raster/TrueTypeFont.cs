@@ -8,6 +8,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class TrueTypeFont {
+    internal const double ObliqueShear = 0.22;
     private static readonly object FontCacheLock = new();
     private static readonly Dictionary<string, TrueTypeFont?> FontCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly byte[] _data;
@@ -162,7 +163,9 @@ internal sealed partial class TrueTypeFont {
         return new TrueTypeFont(data, tables, collectionIndex);
     }
 
-    public double Measure(string text, double fontSize) {
+    public double Measure(string text, double fontSize) => Measure(text, fontSize, italic: false);
+
+    internal double Measure(string text, double fontSize, bool italic) {
         var scale = ScaleFor(fontSize);
         var width = 0.0;
         ushort? previous = null;
@@ -172,14 +175,17 @@ internal sealed partial class TrueTypeFont {
             width += AdvanceWidth(glyph) * scale;
             previous = glyph;
         }
-        return width;
+        return width + (italic && text.Length > 0 ? ItalicOverhang(fontSize) : 0);
     }
 
     public double LineHeight(double fontSize) {
         return Math.Max(1, _ascender - _descender) * ScaleFor(fontSize);
     }
 
-    public bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize) {
+    public bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize) =>
+        Draw(canvas, x, y, text, color, fontSize, italic: false);
+
+    internal bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool italic) {
         var scale = ScaleFor(fontSize);
         var cursor = x;
         var baseline = y + _ascender * scale;
@@ -188,7 +194,7 @@ internal sealed partial class TrueTypeFont {
         for (var index = 0; index < text.Length;) {
             var glyph = MapGlyph(ReadCodePoint(text, ref index));
             if (previous.HasValue) cursor += Kerning(previous.Value, glyph) * scale;
-            var contours = ReadGlyphContours(glyph, new FontTransform(scale, 0, 0, -scale, cursor, baseline), 0);
+            var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, cursor, baseline), 0);
             if (contours.Count > 0) {
                 canvas.FillContours(contours, color);
                 rendered = true;
@@ -200,6 +206,8 @@ internal sealed partial class TrueTypeFont {
 
         return rendered;
     }
+
+    internal static double ItalicOverhang(double fontSize) => Math.Max(0.5, Math.Max(1, fontSize) * ObliqueShear);
 
     internal string? DisplayName => FirstName(4) ?? FirstName(1) ?? FirstName(6) ?? FirstName(2);
 

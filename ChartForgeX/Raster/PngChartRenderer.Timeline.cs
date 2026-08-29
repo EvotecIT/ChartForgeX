@@ -21,7 +21,7 @@ public sealed partial class PngChartRenderer {
 
         ApplyTimelineAxisBounds(chart, ref min, ref max);
         var tickFontSize = PngTickFontSize(chart);
-        var dataFontSize = chart.Options.Theme.DataLabelFontSize;
+        var tickStyle = chart.Options.TickLabelStyle;
         plot = ApplyPngTimelineReserve(chart, plot, items, tickFontSize);
         var rowHeight = Math.Max(20, Math.Min(34, plot.Height / items.Count * 0.56));
         var slotHeight = plot.Height / items.Count;
@@ -34,10 +34,10 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowGrid) c.DrawLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.TimelineGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
             if (chart.Options.ShowAxes) {
                 var rawLabel = FormatTimelineTick(chart, tick);
-                var labelFontSize = TextFontSizeForWidth(rawLabel, tickLabelWidth, tickFontSize);
-                var label = TrimPngLabelToWidth(rawLabel, labelFontSize, tickLabelWidth);
-                var width = EstimatePngTextWidth(label, labelFontSize);
-                c.DrawText(Clamp(x - width / 2.0, plot.Left + 2, plot.Right - width - 2), plot.Bottom + 22 - labelFontSize + 1, label, chart.Options.Theme.MutedText, labelFontSize);
+                var labelFontSize = TextFontSizeForWidth(rawLabel, tickLabelWidth, tickFontSize, tickStyle);
+                var label = TrimPngLabelToWidth(rawLabel, labelFontSize, tickLabelWidth, tickStyle);
+                var width = EstimatePngStyledTextWidth(label, labelFontSize, tickStyle, emphasized: false);
+                DrawPngTextStyled(c, Clamp(x - width / 2.0, plot.Left + 2, plot.Right - width - 2), plot.Bottom + 22 - PngStyledTextBottomExtent(labelFontSize, tickStyle), label, tickStyle, chart.Options.Theme.MutedText, labelFontSize, emphasized: false);
             }
         }
 
@@ -50,14 +50,16 @@ public sealed partial class PngChartRenderer {
             var width = Math.Max(2, Math.Abs(x2 - x1));
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y + rowHeight / 2, plot.Right, y + rowHeight / 2, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.TimelineRowGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
             if (chart.Options.ShowAxes) {
-                var rowLabelFontSize = TextFontSizeForEmphasizedWidth(item.Name, rowLabelWidth, tickFontSize);
-                var rowLabel = TrimReadablePngLabelToWidth(item.Name, rowLabelFontSize, rowLabelWidth);
-                if (rowLabel.Length > 0) c.DrawTextEmphasized(plot.Left - EstimatePngEmphasizedTextWidth(rowLabel, rowLabelFontSize) - 14, y + rowHeight / 2 - rowLabelFontSize / 2, rowLabel, chart.Options.Theme.MutedText, rowLabelFontSize);
+                var rowLabelFontSize = TextFontSizeForEmphasizedWidth(item.Name, rowLabelWidth, tickFontSize, tickStyle);
+                var rowLabel = TrimReadablePngLabelToWidth(item.Name, rowLabelFontSize, rowLabelWidth, tickStyle);
+                if (rowLabel.Length > 0) DrawPngTextStyled(c, plot.Left - EstimatePngStyledTextWidth(rowLabel, rowLabelFontSize, tickStyle, emphasized: true) - 14, y + rowHeight / 2 - EstimatePngStyledTextBoundsHeight(rowLabelFontSize, tickStyle) / 2 - PngStyledTextTopExtent(rowLabelFontSize, tickStyle), rowLabel, tickStyle, chart.Options.Theme.MutedText, rowLabelFontSize, emphasized: true);
             }
             DrawTimelineRangeBar(c, chart, item.Color, left, y, width, rowHeight);
-            if (item.ShowDataLabels && width >= Math.Max(72, EstimatePngEmphasizedTextWidth("100d", dataFontSize) + 14)) {
+            var dataStyle = DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0);
+            var dataFontSize = PngDataLabelFontSize(chart, chart.Series[item.SeriesIndex], 0);
+            if (item.ShowDataLabels && width >= Math.Max(72, EstimatePngStyledTextWidth("100d", dataFontSize, dataStyle, emphasized: true) + 14)) {
                 var label = FormatTimelineDuration(chart, item.Start, item.End);
-                DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, rowHeight), label, ChartColorMath.TextOnBackground(item.Color), item.Color, dataFontSize);
+                DrawReadablePngLabelCentered(c, new ChartRect(left, y, width, rowHeight), label, ChartColorMath.TextOnBackground(item.Color), item.Color, dataFontSize, dataStyle);
             }
         }
 
@@ -69,7 +71,7 @@ public sealed partial class PngChartRenderer {
 
     private static ChartRect ApplyPngTimelineReserve(Chart chart, ChartRect plot, IReadOnlyList<TimelineItem> items, double tickFontSize) {
         var widest = 0.0;
-        foreach (var item in items) widest = Math.Max(widest, EstimatePngEmphasizedTextWidth(item.Name, tickFontSize));
+        foreach (var item in items) widest = Math.Max(widest, EstimatePngStyledTextWidth(item.Name, tickFontSize, chart.Options.TickLabelStyle, emphasized: true));
         var yAxisReserve = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : 28;
         var desiredLeft = Math.Max(plot.Left, widest + yAxisReserve + 64);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 180);
@@ -99,7 +101,7 @@ public sealed partial class PngChartRenderer {
             var point = series.Points[0];
             var start = Math.Min(point.X, point.Y);
             var end = Math.Max(point.X, point.Y);
-            items.Add(new TimelineItem(series.Name, start, end, series.Color ?? chart.Options.Theme.Palette[i % chart.Options.Theme.Palette.Length], ShouldDrawDataLabels(chart, series)));
+            items.Add(new TimelineItem(i, series.Name, start, end, series.Color ?? chart.Options.Theme.Palette[i % chart.Options.Theme.Palette.Length], ShouldDrawDataLabels(chart, series)));
         }
 
         return items;
@@ -157,7 +159,8 @@ public sealed partial class PngChartRenderer {
     }
 
     private readonly struct TimelineItem {
-        public TimelineItem(string name, double start, double end, ChartColor color, bool showDataLabels) {
+        public TimelineItem(int seriesIndex, string name, double start, double end, ChartColor color, bool showDataLabels) {
+            SeriesIndex = seriesIndex;
             Name = name;
             Start = start;
             End = end;
@@ -165,6 +168,7 @@ public sealed partial class PngChartRenderer {
             ShowDataLabels = showDataLabels;
         }
 
+        public int SeriesIndex { get; }
         public string Name { get; }
 
         public double Start { get; }

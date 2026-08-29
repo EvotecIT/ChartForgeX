@@ -27,7 +27,9 @@ public sealed partial class PngChartRenderer {
             if (ShouldDrawDataLabels(chart, series)) {
                 var label = FormatValue(chart, start.Y) + "-" + FormatValue(chart, end.Y);
                 var fontSize = PngDataLabelFontSize(chart, series, item);
-                var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
+                var dataStyle = DataLabelStyle(chart, series, item);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, true);
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, dataStyle);
                 var placement = DataLabelPlacement(chart, series);
                 var top = Math.Min(yStart, yEnd);
                 var bottom = Math.Max(yStart, yEnd);
@@ -39,10 +41,10 @@ public sealed partial class PngChartRenderer {
                 var labelY = placement == ChartDataLabelPlacement.Below
                     ? bottom + radius + 4
                     : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right
-                        ? (top + bottom) / 2.0 - fontSize / 2.0
-                        : top - radius - fontSize - 4;
-                if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reserved)) continue;
-                DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, series, item));
+                        ? (top + bottom) / 2.0 - labelHeight / 2.0
+                        : top - radius - labelHeight - 4;
+                if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reserved, dataStyle)) continue;
+                DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, dataStyle);
             }
         }
     }

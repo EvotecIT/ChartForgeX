@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
@@ -6,6 +7,50 @@ using ChartForgeX.SvgRaster;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void SvgRasterTextPreservesTypographyStyles() {
+        const string regularSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string italicSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-style='italic' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string underlinedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' text-decoration='underline' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string decoratedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' text-decoration='underline line-through' text-decoration-style='wavy' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string doubleDecoratedSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' text-decoration='underline line-through' text-decoration-style='double' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string transformedSuperscriptSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='48' font-size='22' baseline-shift='super' text-transform='uppercase' fill='#ef4444'>mixed</text></svg>";
+        const string transformedSubscriptSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='48' font-size='22' baseline-shift='sub' text-transform='uppercase' fill='#ef4444'>mixed</text></svg>";
+        const string numericBoldSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><text x='8' y='42' font-size='32' font-weight='750' fill='#ef4444'>MMMMiiii</text></svg>";
+        const string childUnderlineSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' fill='#ef4444'><tspan text-decoration='underline' text-decoration-style='wavy'>MMMMiiii</tspan></text></svg>";
+        const string inheritedStrikeAndChildUnderlineSvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='70'><text x='8' y='46' font-size='30' fill='#ef4444' text-decoration='line-through' text-decoration-style='double'><tspan text-decoration='underline' text-decoration-style='wavy'>MMMMiiii</tspan></text></svg>";
+        var regular = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularSvg));
+        var italic = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicSvg));
+        var underlined = RasterImageDecoder.Decode(SvgRasterizer.ToPng(underlinedSvg));
+        var decorated = RasterImageDecoder.Decode(SvgRasterizer.ToPng(decoratedSvg));
+        var doubleDecorated = RasterImageDecoder.Decode(SvgRasterizer.ToPng(doubleDecoratedSvg));
+        var transformedSuperscript = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSuperscriptSvg));
+        var transformedSubscript = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedSubscriptSvg));
+        var numericBold = RasterImageDecoder.Decode(SvgRasterizer.ToPng(numericBoldSvg));
+        var childUnderline = RasterImageDecoder.Decode(SvgRasterizer.ToPng(childUnderlineSvg));
+        var inheritedStrikeAndChildUnderline = RasterImageDecoder.Decode(SvgRasterizer.ToPng(inheritedStrikeAndChildUnderlineSvg));
+        var regularBounds = SvgColorBounds(regular.Pixels, regular.Width, regular.Height, 239, 68, 68);
+        var italicBounds = SvgColorBounds(italic.Pixels, italic.Width, italic.Height, 239, 68, 68);
+        var underlinedBounds = SvgColorBounds(underlined.Pixels, underlined.Width, underlined.Height, 239, 68, 68);
+
+        Assert(italicBounds.Width > regularBounds.Width, "SVG rasterization should preserve italic or oblique glyph overhang and measurement.");
+        Assert(underlinedBounds.Bottom > regularBounds.Bottom, "SVG rasterization should preserve underlined text decoration in the raster artifact.");
+        Assert(!decorated.Pixels.SequenceEqual(doubleDecorated.Pixels), "SVG rasterization should preserve wavy and double decoration patterns instead of flattening them to one line.");
+        var superscriptBounds = SvgColorBounds(transformedSuperscript.Pixels, transformedSuperscript.Width, transformedSuperscript.Height, 239, 68, 68);
+        var subscriptBounds = SvgColorBounds(transformedSubscript.Pixels, transformedSubscript.Width, transformedSubscript.Height, 239, 68, 68);
+        Assert(superscriptBounds.Top < subscriptBounds.Top && superscriptBounds.Width > 0, "SVG rasterization should apply casing before measurement and preserve super/sub baseline shifts.");
+        Assert(CountPixelsNear(numericBold.Pixels, numericBold.Width, 0, 0, numericBold.Width - 1, numericBold.Height - 1, 239, 68, 68) > CountPixelsNear(regular.Pixels, regular.Width, 0, 0, regular.Width - 1, regular.Height - 1, 239, 68, 68), "SVG rasterization should treat numeric font weights of 600 or greater as emphasized text.");
+        Assert(CountPixelsNear(inheritedStrikeAndChildUnderline.Pixels, inheritedStrikeAndChildUnderline.Width, 0, 0, inheritedStrikeAndChildUnderline.Width - 1, inheritedStrikeAndChildUnderline.Height - 1, 239, 68, 68) > CountPixelsNear(childUnderline.Pixels, childUnderline.Width, 0, 0, childUnderline.Width - 1, childUnderline.Height - 1, 239, 68, 68), "SVG rasterization should retain an ancestor strikethrough when a child span introduces a differently styled underline.");
+
+        var serifFont = TrueTypeFont.TryLoadForFamily("serif", out _);
+        var monospaceFont = TrueTypeFont.TryLoadForFamily("monospace", out _);
+        if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
+            const string styledFamilySvg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'><style>.styled{font-family:monospace;font-style:oblique;text-decoration:underline}</style><g class='styled'><text x='8' y='42' font-size='32' fill='#2563eb'>MMMMiiii</text></g></svg>";
+            var styledFamily = RasterImageDecoder.Decode(SvgRasterizer.ToPng(styledFamilySvg));
+            var styledBounds = SvgColorBounds(styledFamily.Pixels, styledFamily.Width, styledFamily.Height, 37, 99, 235);
+            Assert(styledBounds.HasPixels && styledBounds.Bottom > regularBounds.Bottom && styledBounds.Width != italicBounds.Width, "SVG rasterization should resolve CSS font family, oblique style, and underline together.");
+        }
+    }
+
     private static void PublicSvgRasterizerPreservesViewportAndDpiMetadata() {
         const string svg = "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='60' viewBox='0 0 120 60'><rect width='120' height='60' fill='#2563eb'/></svg>";
         byte[] png = SvgRasterizer.ToPng(svg, options: new ChartForgeX.Core.RasterImageOptions { Dpi = 144D });
@@ -290,6 +335,14 @@ internal static partial class SmokeTests {
         var redText = SvgColorBounds(mixedTextImage.Pixels, 140, 40, 239, 68, 68);
         var blueText = SvgColorBounds(mixedTextImage.Pixels, 140, 40, 37, 99, 235);
         Assert(redText.HasPixels && blueText.HasPixels && redText.Left < blueText.Left && redText.Right > blueText.Right, "Mixed text content should preserve direct text nodes before and after styled tspans in document order.");
+
+        const string regularAdjacentText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='50'><text x='8' y='38' font-size='32' fill='#ef4444'>AAAA<tspan fill='#2563eb'>B</tspan></text></svg>";
+        const string italicAdjacentText = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='50'><text x='8' y='38' font-size='32' font-style='italic' fill='#ef4444'>AAAA<tspan fill='#2563eb'>B</tspan></text></svg>";
+        var regularAdjacentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(regularAdjacentText));
+        var italicAdjacentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicAdjacentText));
+        var regularAdjacentBlue = SvgColorBounds(regularAdjacentImage.Pixels, 140, 50, 37, 99, 235);
+        var italicAdjacentBlue = SvgColorBounds(italicAdjacentImage.Pixels, 140, 50, 37, 99, 235);
+        Assert(regularAdjacentBlue.HasPixels && italicAdjacentBlue.HasPixels && Math.Abs(regularAdjacentBlue.Left - italicAdjacentBlue.Left) <= 1, "Synthetic italic overhang should expand painted bounds without advancing adjacent SVG text runs.");
 
         const string transformedText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><text x='12' y='18' font-size='16' fill='#ef4444' transform='rotate(90 12 18)'>TEST</text></svg>";
         var transformedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedText));

@@ -8,9 +8,10 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        var preferredFontSize = fontSize;
+        var resolvedStyle = style ?? new TextStyleOverride();
+        var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));
+        var fittedText = TrimSvgLabelToWidth(chart, text, fittedFontSize, Math.Max(8, maxWidth), resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight));
         if (fittedText.Length == 0) return;
 
         var writer = new SvgMarkupWriter(512);
@@ -24,27 +25,28 @@ public sealed partial class SvgChartRenderer {
         }
         writer.Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fittedFontSize).Attribute("font-weight", StyleWeight(style, fontWeight));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(fittedText)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, fittedText).EndElement().Line();
         sb.Append(writer.Build());
     }
 
     private static void DrawSvgTextLeft(StringBuilder sb, Chart chart, string role, string text, double x, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, TextStyleOverride? style = null) {
-        var preferredFontSize = StyleFontSize(style, fontSize);
-        var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), preferredFontSize);
-        var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
+        var preferredFontSize = fontSize;
+        var resolvedStyle = style ?? new TextStyleOverride();
+        var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));
+        var fittedText = TrimSvgLabelToWidth(chart, text, fittedFontSize, Math.Max(8, maxWidth), resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight));
         if (fittedText.Length == 0) return;
         var writer = new SvgMarkupWriter(512);
         writer.StartElement("text");
         if (!string.IsNullOrEmpty(role)) writer.Attribute("data-cfx-role", role);
         writer.Attribute("x", x).Attribute("y", y).Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fittedFontSize).Attribute("font-weight", StyleWeight(style, fontWeight));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(fittedText)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, fittedText).EndElement().Line();
         sb.Append(writer.Build());
     }
 
     private static void DrawSvgXAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double y, string role = "") {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawSvgYAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double axisX, string role = "") {
@@ -52,21 +54,40 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize), style, emphasized: true);
+        var text = TrimSvgLabelToWidth(chart, chart.YAxisTitle, fontSize, maxWidth, style, emphasized: true);
         if (text.Length == 0) return;
         var writer = new SvgMarkupWriter(512);
         writer.StartElement("text");
         if (!string.IsNullOrWhiteSpace(role)) writer.Attribute("data-cfx-role", role);
         writer.Attribute("transform", "translate(" + F(axisX) + " " + F(plot.Top + plot.Height / 2) + ") rotate(-90)").Attribute("text-anchor", "middle").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "600"));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(text)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, text).EndElement().Line();
         sb.Append(writer.Build());
     }
 
+    private static double SvgXAxisTitleHeight(Chart chart, double maxWidth) {
+        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return 0;
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.XAxisTitle, Math.Max(48, maxWidth), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
+        return EstimateSvgStyledTextHeight(fontSize, style);
+    }
+
+    private static double SvgYAxisTitleHeight(Chart chart, double maxWidth) {
+        if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return 0;
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.YAxisTitle, Math.Max(40, maxWidth * 0.72), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
+        return EstimateSvgStyledTextHeight(fontSize, style);
+    }
+
+    private static bool IsEmphasizedWeight(string value) {
+        if (int.TryParse(value, out var numeric)) return numeric >= 600;
+        return string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void WriteSvgDataLabelText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, string label, double x, double y, string anchor, ChartColor fill, ChartColor stroke, double fontSize) {
-        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", StyleFontSize(style, fontSize)).Attribute("font-weight", StyleWeight(style, "700"));
+        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "700"));
         WriteSvgTextStyleAttributes(writer, style);
-        writer.Raw(Escape(label)).EndElement().Line();
+        WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
     }
 }

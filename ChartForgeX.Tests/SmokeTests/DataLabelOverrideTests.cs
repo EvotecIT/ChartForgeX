@@ -1,5 +1,8 @@
+using System;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Tests;
 
@@ -162,5 +165,69 @@ internal static partial class SmokeTests {
         range.Series[0].WithPointLabel(0, "Custom range");
         Assert(range.ToSvg().Contains(">Custom range</text>", System.StringComparison.Ordinal), "SVG range-bar labels should honor interval point-label overrides.");
         Assert(vertical.ToPng().Length > 64 && horizontal.ToPng().Length > 64 && heatmap.ToPng().Length > 64 && range.ToPng().Length > 64, "Point-label override chart variants should render valid PNG output.");
+    }
+
+    private static void IntrinsicSpecializedDataLabelStylesRenderAcrossFormats() {
+        var cases = new (Func<Chart> Create, string Role, string Name)[] {
+            (() => Chart.Create().WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartSankeyLink("Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
+            (() => Chart.Create().WithSize(420, 280).WithDataLabels().AddGauge("Score", 87), "gauge-label", "gauge"),
+            (() => Chart.Create().WithSize(420, 280).WithDataLabels().AddCircle("Progress", 72), "circle-label", "circle"),
+            (() => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)), "radial-bar-total", "radial bar"),
+            (() => Chart.Create().WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
+            (() => Chart.Create().WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
+            (() => Chart.Create().WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartTreemapItem("Spoofing", 42), new ChartTreemapItem("Policy", 28) }), "treemap-label", "treemap"),
+            (() => Chart.Create().WithSize(560, 320).WithDataLabels().AddTree("Hierarchy", new[] { new ChartTreeLink("Root", "Mail"), new ChartTreeLink("Root", "Web") }), "tree-node-label", "tree"),
+            (() => Chart.Create().WithSize(520, 360).WithDataLabels().AddSunburst("Hierarchy", new[] { new ChartTreeLink("Root", "Mail", 3), new ChartTreeLink("Root", "Web", 2) }), "sunburst-label", "sunburst"),
+            (() => Chart.Create().WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),
+            (() => Chart.Create().WithSize(560, 260).WithDataLabels().AddBullet("Control", 82, 90), "bullet-row-label", "bullet"),
+            (() => Chart.Create().WithSize(640, 360).WithDataLabels().AddTimelineRange("Migration", 1, 5), "data-label", "timeline"),
+            (() => Chart.Create().WithSize(640, 360).WithDataLabels().AddGanttTask("Migration", 1, 5, 0.5), "gantt-progress-label", "Gantt")
+        };
+
+        foreach (var item in cases) {
+            var regular = item.Create();
+            var styled = item.Create();
+            styled.Series[0].WithDataLabelStyle(style => style.WithColor("#c026d3").WithFontFamily("monospace").WithWeight("750").WithItalic().WithUnderline().WithFontSize(14));
+            var svg = styled.ToSvg();
+            Assert(svg.Contains("data-cfx-role=\"" + item.Role + "\"", StringComparison.Ordinal), item.Name + " data labels should render when enabled.");
+            Assert(svg.Contains("fill=\"#C026D3\"", StringComparison.Ordinal) && svg.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && svg.Contains("font-weight=\"750\"", StringComparison.Ordinal) && svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), item.Name + " SVG and HTML labels should honor the complete data-label typography style.");
+            Assert(!regular.ToPng().SequenceEqual(styled.ToPng()), item.Name + " raster labels should honor the same data-label typography style.");
+        }
+    }
+
+    private static void CenterDataLabelFontSizesDriveLayout() {
+        AssertCenterDataLabelSpacing(
+            () => Chart.Create().WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)),
+            "donut-total-label",
+            "donut-title",
+            "donut");
+        AssertCenterDataLabelSpacing(
+            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)),
+            "radial-bar-total",
+            "radial-bar-title",
+            "radial bar");
+        AssertCenterDataLabelSpacing(
+            () => Chart.Create().WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)),
+            "layered-radial-value",
+            "layered-radial-title",
+            "layered radial");
+    }
+
+    private static void AssertCenterDataLabelSpacing(Func<Chart> create, string valueRole, string titleRole, string name) {
+        var compact = create();
+        compact.Series[0].WithDataLabelStyle(style => style.WithFontSize(10));
+        var compactSvg = compact.ToSvg();
+        var compactGap = GetAttribute(compactSvg, "data-cfx-role=\"" + titleRole + "\"", "y") - GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "y");
+
+        var large = create();
+        large.Series[0].WithDataLabelStyle(style => style.WithFontSize(24));
+        var largeSvg = large.ToSvg();
+        var largeGap = GetAttribute(largeSvg, "data-cfx-role=\"" + titleRole + "\"", "y") - GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "y");
+        var compactFontSize = GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
+        var largeFontSize = GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
+
+        Assert(largeFontSize > compactFontSize, name + " center labels should emit a larger fitted font size when the resolved data-label font size increases (compact " + compactFontSize + ", large " + largeFontSize + ").");
+        Assert(largeGap > compactGap + 10, name + " center-label spacing should expand with the resolved data-label font size instead of using fallback theme metrics.");
+        Assert(!compact.ToPng().SequenceEqual(large.ToPng()), name + " PNG center-label layout should respond to the resolved data-label font size.");
     }
 }

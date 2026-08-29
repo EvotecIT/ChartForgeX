@@ -413,6 +413,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var style = DataLabelStyle(chart, series, pointIndex);
         var fontSize = StyleFontSize(style, t.DataLabelFontSize);
+        label = StyleText(style, label);
         label = TrimSvgLabelToWidth(label, fontSize, Math.Min(132, PlotLabelMaxWidth(map)));
         if (label.Length == 0) return;
 
@@ -510,7 +511,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("font-size", StyleFontSize(style, t.DataLabelFontSize))
                 .Attribute("font-weight", StyleWeight(style, "700"));
             WriteSvgTextStyleAttributes(writer, style);
-            writer.Text(label).EndElement().Line();
+            WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
         });
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -35,8 +36,8 @@ public sealed class PngChartGridRenderer {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) DrawStyledText(output, grid.Padding, Math.Max(0, grid.Padding - titleFontSize * 0.3), ChartTextFitting.TrimEnd(grid.Title, titleFontSize, headerWidth, output.MeasureTextEmphasizedWidth), grid.TitleStyle, theme.Text, titleFontSize, emphasized: true);
-            if (grid.Subtitle.Length > 0) DrawStyledText(output, grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize * 0.3, ChartTextFitting.TrimEnd(grid.Subtitle, subtitleFontSize, headerWidth, output.MeasureTextWidth), grid.SubtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
+            if (grid.Title.Length > 0) DrawStyledText(output, grid.Padding, Math.Max(0, grid.Padding - titleFontSize * 0.3), ChartTextFitting.TrimEnd(grid.Title, titleFontSize, headerWidth, (text, size) => MeasureStyledTextWidth(output, text, size, grid.TitleStyle, emphasized: true)), grid.TitleStyle, theme.Text, titleFontSize, emphasized: true);
+            if (grid.Subtitle.Length > 0) DrawStyledText(output, grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize * 0.3, ChartTextFitting.TrimEnd(grid.Subtitle, subtitleFontSize, headerWidth, (text, size) => MeasureStyledTextWidth(output, text, size, grid.SubtitleStyle, emphasized: false)), grid.SubtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
 
         foreach (var cell in layout.Cells) {
@@ -47,17 +48,49 @@ public sealed class PngChartGridRenderer {
         return output;
     }
 
-    private static double StyleFontSize(TextStyleOverride style, double fallback) => style.FontSize ?? fallback;
+    private static double StyleFontSize(TextStyleOverride style, double fallback) {
+        var size = style.FontSize ?? fallback;
+        return style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript ? size * 0.65 : size;
+    }
 
     private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
+    private static TrueTypeFont? StyleFont(TextStyleOverride style) => style.FontFamily == null ? null : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _);
+
+    private static bool StyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
+
+    private static double MeasureStyledTextWidth(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
+        text = style.TransformText(text, CultureInfo.InvariantCulture);
+        return MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
+    }
+
+    private static double MeasureStyledTextWidthCore(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
+        var font = StyleFont(style);
+        if (font == null) return StyleEmphasized(style, emphasized) ? canvas.MeasureTextEmphasizedWidth(text, fontSize, style.Italic) : canvas.MeasureTextWidth(text, fontSize, style.Italic);
+        return StyleEmphasized(style, emphasized)
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, style.Italic)
+            : RgbaCanvas.MeasureTextWidthWithFont(text, fontSize, font, style.Italic);
+    }
+
     private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
+        text = style.TransformText(text, CultureInfo.InvariantCulture);
         var color = StyleColor(style, fallback);
-        if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
-        else canvas.DrawText(x, y, text, color, fontSize);
-        if (!style.Underline || text.Length == 0) return;
-        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
-        canvas.DrawLine(x, y + fontSize + 2, x + width, y + fontSize + 2, color, Math.Max(1, fontSize / 13.0));
+        var font = StyleFont(style);
+        y += style.Baseline == TextBaseline.Superscript ? -fontSize * 0.35 : style.Baseline == TextBaseline.Subscript ? fontSize * 0.22 : 0;
+        if (StyleEmphasized(style, emphasized)) {
+            if (font == null) canvas.DrawTextEmphasized(x, y, text, color, fontSize, style.Italic);
+            else canvas.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
+        } else {
+            if (font == null) canvas.DrawText(x, y, text, color, fontSize, style.Italic);
+            else canvas.DrawText(x, y, text, color, fontSize, font, style.Italic);
+        }
+        if (text.Length == 0) return;
+        var width = MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
+        var thickness = Math.Max(1, fontSize / 13.0);
+        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        RasterTextDecoration.Draw(canvas, x, x + width, y + fontSize + 2, underline, color, thickness);
+        RasterTextDecoration.Draw(canvas, x, x + width, y + fontSize * 0.55, strike, color, thickness);
     }
 
 }

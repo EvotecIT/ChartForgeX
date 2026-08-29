@@ -69,7 +69,7 @@ public sealed partial class SvgChartRenderer {
         var wrapWidth = SvgHorizontalCategoryWrapWidth(chart);
         var leftShift = 0.0;
         if (ShowYAxis(chart)) {
-            var widest = categoryTicks.Max(tick => WrappedSvgLabelWidth(FormatX(chart, tick), StyleFontSize(style, t.TickLabelFontSize), wrapWidth));
+            var widest = categoryTicks.Max(tick => WrappedSvgLabelWidth(StyleText(style, FormatX(chart, tick)), StyleFontSize(style, t.TickLabelFontSize), wrapWidth));
             var desiredLeft = Math.Max(plot.Left, widest + 58);
             var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 180);
             var adjustedLeft = Math.Min(desiredLeft, maxLeft);
@@ -83,6 +83,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawHorizontalCategoryLabel(StringBuilder sb, Chart chart, ChartRect plot, string label, double y) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
+        label = StyleText(style, label);
         var fontSize = StyleFontSize(style, t.TickLabelFontSize);
         var lines = WrapSvgHorizontalCategoryLabel(label, fontSize, SvgHorizontalCategoryWrapWidth(chart));
         var lineHeight = fontSize + 3;
@@ -108,9 +109,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", fill)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, "600"))
-            .Raw(SvgTextStyleAttributes(style))
-            .Text(label)
+            .Attribute("font-weight", StyleWeight(style, "600"));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
             .Line();
         sb.Append(writer.Build());

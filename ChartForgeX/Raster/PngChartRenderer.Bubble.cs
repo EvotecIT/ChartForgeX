@@ -26,22 +26,24 @@ public sealed partial class PngChartRenderer {
             if (ShouldDrawDataLabels(chart, series)) {
                 var label = FormatValue(chart, size);
                 var fontSize = PngDataLabelFontSize(chart, series, item);
-                var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
+                var dataStyle = DataLabelStyle(chart, series, item);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, emphasized: true);
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, dataStyle);
                 var placement = DataLabelPlacement(chart, series);
                 var labelX = placement == ChartDataLabelPlacement.Left
                     ? x - radius - labelWidth - 8
                     : placement == ChartDataLabelPlacement.Right
                         ? x + radius + 8
                         : x - labelWidth / 2.0;
-                var aboveY = y - radius - fontSize - 4;
+                var aboveY = y - radius - labelHeight - 4;
                 var belowY = y + radius + 4;
                 var labelY = placement == ChartDataLabelPlacement.Below
                     ? belowY
                     : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right
-                        ? y - fontSize / 2.0
+                        ? y - labelHeight / 2.0
                         : aboveY < plot.Top + 2 ? belowY : aboveY;
-                if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reserved)) continue;
-                DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, DataLabelStyle(chart, series, item));
+                if (!ReservePngLabel(label, labelX, labelY, chart, plot, fontSize, reserved, dataStyle)) continue;
+                DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, dataStyle);
             }
         }
     }

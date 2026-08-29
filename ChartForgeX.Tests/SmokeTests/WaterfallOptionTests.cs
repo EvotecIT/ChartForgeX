@@ -50,6 +50,21 @@ internal static partial class SmokeTests {
         independentTicks.Options.YAxis.TickCount = 10;
         Assert(CountOccurrences(independentTicks.ToSvg(), "data-cfx-role=\"waterfall-y-axis-label\"") > 2, "Waterfall value ticks should use the y-axis tick count independently from the category x-axis.");
         Assert(independentTicks.ToPng().Length > 64, "Waterfall y-axis tick counts should render through the PNG path.");
+
+        var crampedTheme = ChartTheme.ReportLight();
+        crampedTheme.MutedText = ChartColor.FromHex("#00FFFF");
+        var cramped = Chart.Create()
+            .WithSize(420, 220)
+            .WithTheme(crampedTheme)
+            .WithLegend(false)
+            .WithDataLabels()
+            .WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
+            .WithDataLabelStyle(style => style.WithColor("#FF00FF").WithFontSize(72))
+            .AddWaterfall("Delta", Points(0.01, 100, -25));
+        cramped.Options.YAxis.Visible = false;
+        Assert(CountOccurrences(cramped.ToSvg(), "data-cfx-role=\"waterfall-x-axis-label\"") == 4, "An inside data label that does not fit should not suppress the corresponding SVG waterfall category label.");
+        var crampedPixels = ReadPngRgba(cramped.ToPng(), out var crampedWidth, out var crampedHeight);
+        Assert(CountNearColorInRect(crampedPixels, crampedWidth, 0, crampedHeight / 2, crampedWidth, crampedHeight / 2, 0, 255, 255, 80) > 0, "An inside data label that does not fit should not suppress PNG waterfall category labels.");
     }
 
     private static Chart WaterfallSample() => Chart.Create()

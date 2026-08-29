@@ -1,7 +1,10 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Composition;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
@@ -59,12 +62,67 @@ internal static partial class SmokeTests {
             .WithFontSize(22)
             .WithWeight("bold")
             .WithItalic()
-            .WithUnderline();
+            .WithUnderline(TextDecorationStyle.Wavy)
+            .WithStrikethrough(TextDecorationStyle.Double)
+            .WithSuperscript()
+            .WithTextCase(TextCaseTransform.Uppercase);
 
         var resolved = overrides.Resolve(fallback);
         Assert(resolved.Color.ToHex() == "#7C3AED" && resolved.Font.Family == "Aptos, sans-serif" && resolved.FontSize == 22, "Text overrides should resolve color, family, and size over the shared complete style.");
-        Assert(resolved.Font.Weight == 700 && resolved.Font.Italic && resolved.Underline, "Text overrides should resolve weight and decoration into the shared typography model.");
+        Assert(resolved.Font.Weight == 700 && resolved.Font.Italic && resolved.UnderlineStyle == TextDecorationStyle.Wavy && resolved.StrikethroughStyle == TextDecorationStyle.Double, "Text overrides should resolve weight and typed decorations into the shared typography model.");
+        Assert(resolved.Baseline == TextBaseline.Superscript && resolved.TextCase == TextCaseTransform.Uppercase && resolved.EffectiveFontSize == 22 * 0.65, "Text overrides should resolve script placement and casing into the shared typography model.");
         Assert(fallback.Font.Family == "system-ui, sans-serif" && fallback.FontSize == 16, "Resolving text overrides should not mutate the fallback style.");
+        AssertThrows<ArgumentOutOfRangeException>(() => overrides.WithUnderline((TextDecorationStyle)999), "Text overrides should reject unknown underline variants.");
+        AssertThrows<ArgumentOutOfRangeException>(() => overrides.WithBaseline((TextBaseline)999), "Text overrides should reject unknown baselines.");
+    }
+
+    private static void TextCaseTransformsCoverEverySharedVariant() {
+        Assert(TextCaseTransformer.Apply("mIxEd", TextCaseTransform.Uppercase) == "MIXED", "Uppercase should transform every cased character.");
+        Assert(TextCaseTransformer.Apply("mIxEd", TextCaseTransform.Lowercase) == "mixed", "Lowercase should transform every cased character.");
+        Assert(TextCaseTransformer.Apply("mIXeD words", TextCaseTransform.TitleCase) == "Mixed Words", "Title case should normalize and capitalize words.");
+        Assert(TextCaseTransformer.Apply("hELLO. wORLD!", TextCaseTransform.SentenceCase) == "Hello. World!", "Sentence case should capitalize sentence starts.");
+        Assert(TextCaseTransformer.Apply("AbC 12", TextCaseTransform.ToggleCase) == "aBc 12", "Toggle case should swap uppercase and lowercase characters.");
+
+        var style = TextStyle.Create(16, ChartColor.Black);
+        style.TextCase = TextCaseTransform.Uppercase;
+        var layout = TextLayoutEngine.Layout("measured output", 300, style);
+        Assert(layout.Lines.Single().Text == "MEASURED OUTPUT", "Shared layout should measure and return the transformed display text.");
+
+        const string deseretUpper = "\U00010400";
+        const string deseretLower = "\U00010428";
+        Assert(TextCaseTransformer.Apply(deseretLower + deseretUpper, TextCaseTransform.ToggleCase, CultureInfo.InvariantCulture) == deseretUpper + deseretLower, "Toggle case should preserve supplementary Unicode text elements instead of splitting surrogate pairs.");
+        Assert(TextCaseTransformer.Apply(deseretUpper + " TEST. " + deseretLower + " AGAIN", TextCaseTransform.SentenceCase, CultureInfo.InvariantCulture) == deseretUpper + " test. " + deseretUpper + " again", "Sentence case should capitalize supplementary Unicode letters at sentence starts.");
+
+        var priorCulture = CultureInfo.CurrentCulture;
+        try {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+            Assert(TextCaseTransformer.Apply("indigo i", TextCaseTransform.Uppercase) == "İNDİGO İ", "The public casing helper should remain culture-aware by default.");
+            var invariantStyle = TextStyle.Create(16, ChartColor.Black);
+            invariantStyle.TextCase = TextCaseTransform.Uppercase;
+            Assert(TextLayoutEngine.Layout("indigo i", 300, invariantStyle).Lines.Single().Text == "INDIGO I", "Renderer-owned layout should use invariant casing so output does not vary with the host culture.");
+        } finally {
+            CultureInfo.CurrentCulture = priorCulture;
+        }
+    }
+
+    private static void RasterWeightThresholdPreservesNumericSemantics() {
+        Assert(new TextStyleOverride().WithWeight("550").ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
+        Assert(new TextStyleOverride().WithWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
+        Assert(new TextStyleOverride().WithWeight("bolder").ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
+        Assert(new TextStyleOverride().WithWeight("lighter").ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
+
+        var medium = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("500")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var semiboldBelowThreshold = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("550")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var semibold = Chart.Create().WithSize(360, 220).WithTitle("Numeric Weight").WithTitleStyle(style => style.WithWeight("600")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(medium.SequenceEqual(semiboldBelowThreshold), "Raster output should not promote numeric weight 550 to bold pixels.");
+        Assert(!semiboldBelowThreshold.SequenceEqual(semibold), "Raster output should emphasize numeric weight 600 at the documented threshold.");
+
+        var normal = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var lighter = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("lighter")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var bold = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var bolder = Chart.Create().WithSize(360, 220).WithTitle("Relative Weight").WithTitleStyle(style => style.WithWeight("bolder")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        Assert(normal.SequenceEqual(lighter), "CSS lighter should render the same regular pixels as explicit normal on an emphasized title role.");
+        Assert(bold.SequenceEqual(bolder), "CSS bolder should render the same emphasized pixels as explicit bold on a regular or emphasized role.");
     }
 
     private static void ImageCompositionUsesSharedTypographyContract() {
@@ -72,6 +130,10 @@ internal static partial class SmokeTests {
         style.Font = FontSpec.FromFamily("Consolas, monospace");
         style.Font.Weight = 700;
         style.Alignment = TextAlignment.Center;
+        style.UnderlineStyle = TextDecorationStyle.Wavy;
+        style.StrikethroughStyle = TextDecorationStyle.Double;
+        style.Baseline = TextBaseline.Superscript;
+        style.TextCase = TextCaseTransform.Uppercase;
 
         var png = ImageComposition.Create(260, 100, ChartColor.FromHex("#0F172A"))
             .DrawText(20, 16, 220, "ChartForgeX typography wraps without System.Drawing", style, maximumLines: 3)
@@ -90,5 +152,39 @@ internal static partial class SmokeTests {
             }
         }
         Assert(lowerLinePixels > 0, "Simple composition text should preserve explicit line breaks instead of truncating after the first line.");
+
+        var variants = new[] { TextDecorationStyle.Single, TextDecorationStyle.Double, TextDecorationStyle.Dotted, TextDecorationStyle.Dashed, TextDecorationStyle.Wavy }
+            .Select(decoration => {
+                var variant = TextStyle.Create(22, ChartColor.Black);
+                variant.UnderlineStyle = decoration;
+                return ImageComposition.CreateTransparent(180, 60).DrawText(6, 6, 168, "Variant", variant).ToImage().Pixels;
+            }).ToArray();
+        Assert(variants.Select(pixels => Convert.ToBase64String(pixels)).Distinct(StringComparer.Ordinal).Count() == variants.Length, "Shared raster composition should render distinct pixels for every underline pattern.");
+    }
+
+    private static void RasterTypographyRendersItalicAcrossOutlineAndFallbackFonts() {
+        var regular = TextStyle.Create(24, ChartColor.Black);
+        regular.Font = FontSpec.FromFamily("Segoe UI, Arial, sans-serif");
+        var italic = regular.Clone();
+        italic.Font.Italic = true;
+
+        var regularLayout = TextLayoutEngine.Layout("Italic contract", 240, regular);
+        var italicLayout = TextLayoutEngine.Layout("Italic contract", 240, italic);
+        Assert(italicLayout.Metrics.Width > regularLayout.Metrics.Width, "Italic text measurement should reserve synthetic oblique overhang.");
+
+        var regularImage = ImageComposition.CreateTransparent(260, 64)
+            .DrawText(8, 8, 244, "Italic contract", regular)
+            .ToImage();
+        var italicImage = ImageComposition.CreateTransparent(260, 64)
+            .DrawText(8, 8, 244, "Italic contract", italic)
+            .ToImage();
+        Assert(!regularImage.Pixels.SequenceEqual(italicImage.Pixels), "Image composition should render italic pixels differently from regular text.");
+
+        var regularFallback = new RgbaCanvas(180, 48, 2, null, 1, useDefaultOutlineFont: false);
+        regularFallback.DrawText(4, 4, "Fallback", ChartColor.Black, 18, italic: false);
+        var italicFallback = new RgbaCanvas(180, 48, 2, null, 1, useDefaultOutlineFont: false);
+        italicFallback.DrawText(4, 4, "Fallback", ChartColor.Black, 18, italic: true);
+        Assert(!regularFallback.Pixels.SequenceEqual(italicFallback.Pixels), "The built-in raster fallback font should preserve italic styling when no outline font is available.");
+        Assert(italicFallback.MeasureTextWidth("Fallback", 18, italic: true) > regularFallback.MeasureTextWidth("Fallback", 18), "Fallback italic measurement should reserve oblique overhang.");
     }
 }

@@ -50,17 +50,20 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                     var labelX = placement == ChartDataLabelPlacement.Left ? centerX - barWidth / 2 - 8 : centerX + barWidth / 2 + 8;
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
-                    if (ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels)) DrawHorizontalValueLabel(body, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
+                    if (ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(body, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
                 } else {
-                    if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) && height < t.DataLabelFontSize + 8) continue;
-                    var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
-                        ? top + height / 2
-                        : placement == ChartDataLabelPlacement.Above
-                            ? top - 11
-                            : placement == ChartDataLabelPlacement.Below
-                                ? top + height + 13
-                                : step.Delta >= 0 || step.IsTotal ? top - 11 : top + height + 13;
-                    if (ReserveSvgLabel(label, centerX, labelY, chart, plot, reservedLabels)) DrawDataLabel(body, chart, label, centerX, labelY, plot, series: series, pointIndex: pointIndex);
+                    var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                    var labelFits = (placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) || height >= EstimateSvgStyledTextHeight(StyleFontSize(dataStyle, t.DataLabelFontSize), dataStyle) + 8;
+                    if (labelFits) {
+                        var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
+                            ? top + height / 2
+                            : placement == ChartDataLabelPlacement.Above
+                                ? top - 11
+                                : placement == ChartDataLabelPlacement.Below
+                                    ? top + height + 13
+                                    : step.Delta >= 0 || step.IsTotal ? top - 11 : top + height + 13;
+                        if (ReserveSvgLabel(label, centerX, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(body, chart, label, centerX, labelY, plot, series: series, pointIndex: pointIndex);
+                    }
                 }
             }
 
@@ -94,7 +97,7 @@ public sealed partial class SvgChartRenderer {
         if (ShowYAxisLine(chart)) WriteWaterfallAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         if (ShowXAxis(chart)) DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart), "waterfall-x-axis-title");
         if (ShowYAxis(chart) && !string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-            var widestTick = ticks.Max(tick => EstimateTextWidth(FormatYAxisValue(chart, tick), t.TickLabelFontSize));
+            var widestTick = ticks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), chart.Options.TickLabelStyle));
             var axisX = Math.Max(24, plot.Left - widestTick - 48);
             DrawSvgYAxisTitle(sb, chart, plot, axisX, "waterfall-y-axis-title");
         }
@@ -159,6 +162,8 @@ public sealed partial class SvgChartRenderer {
 
     private static void WriteWaterfallYAxisLabel(StringBuilder sb, Chart chart, double x, double y, string label) {
         var t = chart.Options.Theme;
+        var style = chart.Options.TickLabelStyle;
+        label = StyleText(style, label);
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("text")
@@ -166,10 +171,12 @@ public sealed partial class SvgChartRenderer {
             .Attribute("x", x)
             .Attribute("y", y)
             .Attribute("text-anchor", "end")
-            .Attribute("fill", t.MutedText.ToCss())
-            .Attribute("font-family", SvgFontFamily(t.FontFamily))
-            .Attribute("font-size", t.TickLabelFontSize)
-            .Text(label)
+            .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
+            .Attribute("font-size", StyleFontSize(style, t.TickLabelFontSize))
+            .Attribute("font-weight", StyleWeight(style, "400"));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
             .Line();
         sb.Append(writer.Build());

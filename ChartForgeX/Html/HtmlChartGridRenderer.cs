@@ -39,8 +39,8 @@ public sealed class HtmlChartGridRenderer {
             .EndStartElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
             writer.StartElement("header").Attribute("class", "chartforgex-grid-header").EndStartElement();
-            if (grid.Title.Length > 0) writer.StartElement("h1").Attribute("style", GridTextStyle(grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, "800")).EndStartElement().Text(grid.Title).EndElement();
-            if (grid.Subtitle.Length > 0) writer.StartElement("p").Attribute("style", GridTextStyle(grid.SubtitleStyle, theme.MutedText.ToCss(), CssFontFamily(theme.FontFamily), theme.SubtitleFontSize, "400")).EndStartElement().Text(grid.Subtitle).EndElement();
+            if (grid.Title.Length > 0) WriteGridHeaderText(writer, "h1", grid.Title, grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, "800");
+            if (grid.Subtitle.Length > 0) WriteGridHeaderText(writer, "p", grid.Subtitle, grid.SubtitleStyle, theme.MutedText.ToCss(), CssFontFamily(theme.FontFamily), theme.SubtitleFontSize, "400");
             writer.EndElement();
         }
 
@@ -133,16 +133,58 @@ public sealed class HtmlChartGridRenderer {
         return value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
     }
 
-    private static string GridTextStyle(TextStyleOverride style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight) {
+    private static string GridTextStyle(TextStyleOverride style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight, bool includeUnderline = true, bool includeStrikethrough = true) {
         var css = new StringBuilder();
         css.Append("color:").Append(style.Color?.ToCss() ?? fallbackColor);
         css.Append(";font-family:").Append(CssFontFamily(style.FontFamily ?? fallbackFontFamily));
-        css.Append(";font-size:").Append((style.FontSize ?? fallbackFontSize).ToString(CultureInfo.InvariantCulture)).Append("px");
+        var fontSize = style.FontSize ?? fallbackFontSize;
+        if (style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
+        css.Append(";font-size:").Append(fontSize.ToString(CultureInfo.InvariantCulture)).Append("px");
         css.Append(";font-weight:").Append(CssToken(style.FontWeight ?? fallbackWeight));
         if (style.Italic) css.Append(";font-style:italic");
-        if (style.Underline) css.Append(";text-decoration:underline");
+        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        if (!includeUnderline) underline = TextDecorationStyle.None;
+        if (!includeStrikethrough) strike = TextDecorationStyle.None;
+        if (underline != TextDecorationStyle.None || strike != TextDecorationStyle.None) {
+            css.Append(";text-decoration:");
+            if (underline != TextDecorationStyle.None) css.Append("underline");
+            if (underline != TextDecorationStyle.None && strike != TextDecorationStyle.None) css.Append(' ');
+            if (strike != TextDecorationStyle.None) css.Append("line-through");
+            css.Append(";text-decoration-style:").Append(CssDecorationStyle(underline != TextDecorationStyle.None ? underline : strike));
+        }
+        if (style.Baseline == TextBaseline.Superscript) css.Append(";vertical-align:super");
+        else if (style.Baseline == TextBaseline.Subscript) css.Append(";vertical-align:sub");
         return css.ToString();
     }
+
+    private static void WriteGridHeaderText(HtmlMarkupWriter writer, string blockName, string text, TextStyleOverride style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight) {
+        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        var splitDecorations = underline != TextDecorationStyle.None && strike != TextDecorationStyle.None && underline != strike;
+        writer.StartElement(blockName).EndStartElement()
+            .StartElement("span")
+            .Attribute("style", GridTextStyle(style, fallbackColor, fallbackFontFamily, fallbackFontSize, fallbackWeight, includeUnderline: !splitDecorations))
+            .EndStartElement();
+        if (splitDecorations) {
+            writer.StartElement("span")
+                .Attribute("style", "text-decoration:underline;text-decoration-style:" + CssDecorationStyle(underline))
+                .EndStartElement()
+                .Text(style.TransformText(text, CultureInfo.InvariantCulture))
+                .EndElement();
+        } else {
+            writer.Text(style.TransformText(text, CultureInfo.InvariantCulture));
+        }
+        writer.EndElement().EndElement();
+    }
+
+    private static string CssDecorationStyle(TextDecorationStyle style) => style switch {
+        TextDecorationStyle.Dotted => "dotted",
+        TextDecorationStyle.Dashed => "dashed",
+        TextDecorationStyle.Wavy => "wavy",
+        TextDecorationStyle.Double => "double",
+        _ => "solid"
+    };
 
     private static string CssToken(string value) => value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
 }

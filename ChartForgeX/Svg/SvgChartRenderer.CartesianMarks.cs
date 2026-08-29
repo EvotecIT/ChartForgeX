@@ -216,7 +216,7 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                     var labelX = placement == ChartDataLabelPlacement.Right ? x + barWidth + 8 : x - 8;
                     var anchor = placement == ChartDataLabelPlacement.Right ? "start" : "end";
-                    if (!ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels)) continue;
+                    if (!ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels, s, pointIndex)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, top + height / 2, anchor, plot, s, pointIndex);
                     continue;
                 }
@@ -230,7 +230,7 @@ public sealed partial class SvgChartRenderer {
                         : inside
                             ? top + height / 2
                             : p.Y >= 0 ? top - 10 : top + height + 10;
-                if (!ReserveSvgLabel(label, x + barWidth / 2, labelY, chart, plot, reservedLabels)) continue;
+                if (!ReserveSvgLabel(label, x + barWidth / 2, labelY, chart, plot, reservedLabels, s, pointIndex)) continue;
                 DrawDataLabel(sb, chart, label, x + barWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
             }
         }

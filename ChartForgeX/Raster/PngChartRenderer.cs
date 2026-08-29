@@ -15,6 +15,9 @@ public sealed partial class PngChartRenderer {
     [ThreadStatic]
     private static TrueTypeFont? CurrentOutlineFont;
 
+    [ThreadStatic]
+    private static bool CurrentOutlineFontIsExplicit;
+
     /// <summary>
     /// Resolves the font that would be used for PNG text rendering.
     /// </summary>
@@ -38,9 +41,12 @@ public sealed partial class PngChartRenderer {
     internal RgbaCanvas RenderCanvas(Chart chart) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
-        var outlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName) ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
+        var explicitOutlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
+        var outlineFont = explicitOutlineFont ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
         var previousOutlineFont = CurrentOutlineFont;
+        var previousOutlineFontIsExplicit = CurrentOutlineFontIsExplicit;
         CurrentOutlineFont = outlineFont;
+        CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         try {
             var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale);
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
@@ -205,14 +211,15 @@ public sealed partial class PngChartRenderer {
 
             DrawAnnotationBands(c, chart, plot, map);
             var gridStyle = o.GridLineStyle;
+            var yTickFontSize = PngTickFontSize(chart);
+            var yTickHeight = EstimatePngStyledTextHeight(yTickFontSize, o.TickLabelStyle);
             for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
                 var yv = yTicks[yIndex];
                 var y = map.Y(yv);
                 if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
-                if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, PngTickFontSize(chart), o.YAxisLabelDensity)) {
+                if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, yTickHeight, o.YAxisLabelDensity)) {
                     var label = FormatYAxisValue(chart, yv);
-                    var fontSize = PngTickFontSize(chart);
-                    DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize + 4, label, o.TickLabelStyle, t.MutedText, fontSize, emphasized: false);
+                    DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, yTickFontSize, o.TickLabelStyle, emphasized: false) - 8), y - yTickHeight + 4, label, o.TickLabelStyle, t.MutedText, yTickFontSize, emphasized: false);
                 }
             }
             var xLabels = XAxisTickLabels(chart, xTicks, false);
@@ -244,6 +251,7 @@ public sealed partial class PngChartRenderer {
             return c;
         } finally {
             CurrentOutlineFont = previousOutlineFont;
+            CurrentOutlineFontIsExplicit = previousOutlineFontIsExplicit;
         }
     }
 
@@ -331,15 +339,15 @@ public sealed partial class PngChartRenderer {
         var theme = chart.Options.Theme;
         var maxWidth = Math.Max(24, chart.Options.Size.Width - 80);
         var titleStyle = chart.Options.TitleStyle;
-        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize));
-        var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth);
-        if (title.Length > 0) DrawPngTextStyled(c, 40, 52 - titleFontSize + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
+        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize), titleStyle);
+        var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth, titleStyle);
+        if (title.Length > 0) DrawPngTextStyled(c, 40, 52 - EstimatePngStyledTextHeight(titleFontSize, titleStyle) + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
             var subtitleStyle = chart.Options.SubtitleStyle;
             var subtitleMaxWidth = Math.Max(24, chart.Options.Size.Width - 84);
-            var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, PngStyleFontSize(subtitleStyle, theme.SubtitleFontSize));
-            var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth);
-            if (subtitle.Length > 0) DrawPngTextStyled(c, 42, 79 - subtitleFontSize + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
+            var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, PngStyleFontSize(subtitleStyle, theme.SubtitleFontSize), subtitleStyle);
+            var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth, subtitleStyle);
+            if (subtitle.Length > 0) DrawPngTextStyled(c, 42, 79 - EstimatePngStyledTextHeight(subtitleFontSize, subtitleStyle) + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
     }
 
@@ -567,37 +575,38 @@ public sealed partial class PngChartRenderer {
         if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || labels.Count < 3) return LabelValues(labels);
 
         var fontSize = PngTickFontSize(chart);
+        var style = chart.Options.TickLabelStyle;
         var widest = 0.0;
-        foreach (var label in labels) widest = Math.Max(widest, EstimatePngTextWidth(label.Text, fontSize));
+        foreach (var label in labels) widest = Math.Max(widest, EstimatePngStyledTextWidth(label.Text, fontSize, style, emphasized: false));
         var densityFactor = chart.Options.XAxisLabelDensity == ChartLabelDensity.Dense ? 0.72 : chart.Options.XAxisLabelDensity == ChartLabelDensity.Relaxed ? 1.35 : 1.0;
         var minSpacing = Math.Max(28, (widest + 18) * densityFactor);
         var maxCount = Math.Max(2, (int)Math.Floor(plot.Width / minSpacing) + 1);
-        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, fontSize, 6)) return LabelValues(labels);
+        if (labels.Count <= maxCount && LabelsHaveMinimumLabelGap(labels, range, plot, chart.Options.XAxis, fontSize, style, 6)) return LabelValues(labels);
 
         var lastLabel = labels[labels.Count - 1];
         var step = Math.Max(1, (int)Math.Ceiling((labels.Count - 1) / (double)(maxCount - 1)));
         var selected = new List<ChartAxisLabel>();
         selected.Add(labels[0]);
         for (var i = step; i < labels.Count - 1; i += step) {
-            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, fontSize) >= 6 && LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, fontSize) >= 6) selected.Add(labels[i]);
+            if (LabelGap(selected[selected.Count - 1], labels[i], range, plot, chart.Options.XAxis, fontSize, style) >= 6 && LabelGap(labels[i], lastLabel, range, plot, chart.Options.XAxis, fontSize, style) >= 6) selected.Add(labels[i]);
         }
 
-        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, fontSize) < 6) selected.RemoveAt(selected.Count - 1);
+        if (selected.Count > 1 && LabelGap(selected[selected.Count - 1], lastLabel, range, plot, chart.Options.XAxis, fontSize, style) < 6) selected.RemoveAt(selected.Count - 1);
         selected.Add(lastLabel);
         return LabelValues(selected);
     }
 
-    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, double minGap) {
+    private static bool LabelsHaveMinimumLabelGap(IReadOnlyList<ChartAxisLabel> labels, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style, double minGap) {
         for (var i = 1; i < labels.Count; i++) {
-            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize) < minGap) return false;
+            if (LabelGap(labels[i - 1], labels[i], range, plot, axis, fontSize, style) < minGap) return false;
         }
 
         return true;
     }
 
-    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize) {
-        var leftWidth = EstimatePngTextWidth(left.Text, fontSize);
-        var rightWidth = EstimatePngTextWidth(right.Text, fontSize);
+    private static double LabelGap(ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style) {
+        var leftWidth = EstimatePngStyledTextWidth(left.Text, fontSize, style, emphasized: false);
+        var rightWidth = EstimatePngStyledTextWidth(right.Text, fontSize, style, emphasized: false);
         var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
         var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
         return rightX - (leftX + leftWidth);

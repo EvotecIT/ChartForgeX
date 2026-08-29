@@ -48,9 +48,12 @@ public sealed partial class PngChartRenderer {
             if (ShouldDrawDataLabels(chart, series) && segmentRadius > ChartVisualPrimitives.PolarAreaLabelMinRadius) {
                 var mid = start + sweep / 2;
                 var label = FormatValue(chart, point.Y);
-                var fontSize = chart.Options.Theme.DataLabelFontSize;
+                var dataStyle = DataLabelStyle(chart, series, pointIndex);
+                var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, dataStyle, emphasized: true);
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, dataStyle);
                 var labelRadius = segmentRadius * ChartVisualPrimitives.PolarAreaLabelRadiusFactor;
-                DrawReadablePngLabel(c, plot, cx + Math.Cos(mid) * labelRadius - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0, cy + Math.Sin(mid) * labelRadius - fontSize / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize);
+                DrawReadablePngLabel(c, plot, cx + Math.Cos(mid) * labelRadius - labelWidth / 2.0, cy + Math.Sin(mid) * labelRadius - labelHeight / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, dataStyle);
             }
         }
 

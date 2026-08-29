@@ -79,7 +79,7 @@ public sealed partial class SvgChartRenderer {
         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
             var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + 8;
-            if (ReserveSvgHorizontalLabel(label, labelX, (top + bottom) / 2, anchor, chart, plot, reservedLabels)) DrawHorizontalValueLabel(sb, chart, label, labelX, (top + bottom) / 2, anchor, plot, series, pointIndex);
+            if (ReserveSvgHorizontalLabel(label, labelX, (top + bottom) / 2, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(sb, chart, label, labelX, (top + bottom) / 2, anchor, plot, series, pointIndex);
             return;
         }
 
@@ -88,7 +88,7 @@ public sealed partial class SvgChartRenderer {
             : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                 ? (top + bottom) / 2
                 : top - 10;
-        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
+        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
     }
 
     private static string BuildRangeBandPath(IReadOnlyList<ChartPoint> lower, IReadOnlyList<ChartPoint> upper) {

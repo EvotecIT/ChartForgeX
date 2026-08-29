@@ -269,6 +269,12 @@ internal static partial class SmokeTests {
         return (GetXmlElements(file, localName).FirstOrDefault()?.Value ?? string.Empty).Trim();
     }
 
+    private static string CurrentProductVersion() => System.Xml.Linq.XDocument
+        .Load(Path.Combine(FindRepositoryRoot(), "Directory.Build.props"))
+        .Descendants("ChartForgeXProductVersion")
+        .Select(static element => element.Value.Trim())
+        .Single();
+
     private static IEnumerable<System.Xml.Linq.XElement> GetXmlElements(string file, string localName) {
         var document = System.Xml.Linq.XDocument.Load(file);
         return document.Descendants().Where(element => string.Equals(element.Name.LocalName, localName, StringComparison.Ordinal));

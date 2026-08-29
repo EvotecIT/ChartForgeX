@@ -1,5 +1,4 @@
 using System;
-
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
@@ -71,7 +70,19 @@ internal static partial class SmokeTests {
         ("Shared typography measures and wraps deterministically", SharedTypographyMeasuresAndWrapsDeterministically),
         ("Shared typography trims at configured line limit", SharedTypographyTrimsAtConfiguredLineLimit),
         ("Text style overrides resolve without a second style brain", TextStyleOverridesResolveWithoutASecondStyleBrain),
+        ("Text case transforms cover every shared variant", TextCaseTransformsCoverEverySharedVariant),
+        ("Raster weight threshold preserves numeric semantics", RasterWeightThresholdPreservesNumericSemantics),
+        ("Raster script baselines use one directional shift", RasterScriptBaselinesUseSingleDirectionalShift),
+        ("SVG specialized layouts reserve transformed text", SvgSpecializedLayoutsReserveTransformedText),
+        ("SVG heatmap and funnel fit styled text vertically", SvgHeatmapAndFunnelFitStyledTextVertically),
+        ("Legend casing drives allocation before serialization", LegendCasingDrivesAllocationBeforeSerialization),
+        ("SVG axis layout uses resolved typography", SvgAxisLayoutUsesResolvedTypography),
+        ("Specialized legends honor role typography", SpecializedLegendsHonorRoleTypography),
+        ("Specialized axes honor tick typography", SpecializedAxesHonorTickTypography),
+        ("SVG raster case transforms cross tspan boundaries", SvgRasterCaseTransformsCrossTspanBoundaries),
+        ("Funnel gallery text stays readable", FunnelGalleryTextStaysReadable),
         ("Image composition uses shared typography contract", ImageCompositionUsesSharedTypographyContract),
+        ("Raster typography renders italic across outline and fallback fonts", RasterTypographyRendersItalicAcrossOutlineAndFallbackFonts),
         ("Visual canvas image IDs stay deterministic for fixed scope", VisualCanvasImageIdsStayDeterministicForFixedScope),
         ("Responsive visual canvas preserves design layout across outputs", ResponsiveVisualCanvasPreservesDesignLayoutAcrossOutputs),
         ("Shared accessibility metadata reaches SVG renderers", SharedAccessibilityMetadataReachesSvgRenderers),
@@ -109,6 +120,7 @@ internal static partial class SmokeTests {
         ("PNG renderer uses supersampled edges", PngUsesSupersampledEdges),
         ("PNG supersampling scale is configurable", PngSupersamplingScaleIsConfigurable),
         ("SVG raster stroke joins honor round bevel and miter", SvgRasterStrokeJoinsHonorRoundBevelAndMiter),
+        ("SVG raster text preserves typography styles", SvgRasterTextPreservesTypographyStyles),
         ("Public SVG rasterizer preserves viewport and DPI metadata", PublicSvgRasterizerPreservesViewportAndDpiMetadata),
         ("SVG raster symbols preserve fractional viewports and overflow clipping", SvgRasterSymbolsPreserveFractionalViewportsAndOverflowClipping),
         ("PNG output scale emits high-density assets", PngOutputScaleEmitsHighDensityAssets),
@@ -159,6 +171,8 @@ internal static partial class SmokeTests {
         ("Series fill patterns render for filled marks", SeriesFillPatternsRenderForFilledMarks),
         ("Series data-label styles override chart defaults", SeriesDataLabelStylesOverrideChartDefaults),
         ("Specialized series data-label styles override chart defaults", SpecializedSeriesDataLabelStylesOverrideChartDefaults),
+        ("Intrinsic specialized data-label styles render across formats", IntrinsicSpecializedDataLabelStylesRenderAcrossFormats),
+        ("Center data-label font sizes drive layout", CenterDataLabelFontSizesDriveLayout),
         ("Point data-label styles override series defaults", PointDataLabelStylesOverrideSeriesDefaults),
         ("Point colors override series color for bars", PointColorsOverrideSeriesColorForBars),
         ("Map point colors override series color", MapPointColorsOverrideSeriesColor),

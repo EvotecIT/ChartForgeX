@@ -58,7 +58,7 @@ public sealed partial class PngChartRenderer {
                 var style = DataLabelStyle(chart, series, pointIndex);
                 var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                    FitReadablePngLabel(label, fontSize, Math.Max(16, radius * 0.85), fontSize + 8, out label, out fontSize);
+                    FitReadablePngLabel(label, fontSize, Math.Max(16, radius * 0.85), fontSize + 8, out label, out fontSize, style);
                     if (label.Length == 0) {
                         start = end;
                         continue;
@@ -67,31 +67,31 @@ public sealed partial class PngChartRenderer {
 
                 var isSideLabel = IsPieSideLabelPlacement(placement);
                 var isLeftSide = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(mid) < 0);
-                var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
-                var labelHeight = EstimatePngTextHeight(fontSize);
+                var labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
+                var labelHeight = EstimatePngStyledTextBoundsHeight(fontSize, style);
                 var labelX = sliceCx + Math.Cos(mid) * labelRadius - labelWidth / 2.0;
-                var labelY = sliceCy + Math.Sin(mid) * labelRadius - fontSize / 2.0;
+                var labelY = sliceCy + Math.Sin(mid) * labelRadius - labelHeight / 2.0;
                 if (isSideLabel) {
                     var anchorX = cx + (isLeftSide ? -radius * chart.Options.PieOutsideLabelDistanceRatio : radius * chart.Options.PieOutsideLabelDistanceRatio);
                     var maxLabelWidth = isLeftSide ? anchorX - plot.Left - 6 : plot.Right - anchorX - 6;
-                    FitReadablePngLabel(label, fontSize, Math.Max(8, maxLabelWidth), fontSize + 8, out label, out fontSize);
+                    FitReadablePngLabel(label, fontSize, Math.Max(8, maxLabelWidth), fontSize + 8, out label, out fontSize, style);
                     if (label.Length == 0) {
                         start = end;
                         continue;
                     }
 
-                    labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
-                    labelHeight = EstimatePngTextHeight(fontSize);
+                    labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
+                    labelHeight = EstimatePngStyledTextBoundsHeight(fontSize, style);
                     labelX = isLeftSide ? anchorX - labelWidth : anchorX;
                 }
 
-                if (placement == ChartDataLabelPlacement.Above) labelY = cy - radius * 1.10 - fontSize / 2.0;
-                else if (placement == ChartDataLabelPlacement.Below) labelY = cy + radius * 1.10 - fontSize / 2.0;
-                if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) DrawReadablePngLabel(c, labelX, labelY, label, chart.Options.Theme.CardBackground, chart.Options.Theme.Text, fontSize, style);
+                if (placement == ChartDataLabelPlacement.Above) labelY = cy - radius * 1.10 - labelHeight / 2.0;
+                else if (placement == ChartDataLabelPlacement.Below) labelY = cy + radius * 1.10 - labelHeight / 2.0;
+                if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) DrawReadablePngLabel(c, labelX, labelY - PngStyledTextTopExtent(fontSize, style), label, chart.Options.Theme.CardBackground, chart.Options.Theme.Text, fontSize, style);
                 else if (isSideLabel) outsideLabels.Add(new PieLabelCandidate(pointIndex, label, mid, isLeftSide ? labelX + labelWidth : labelX, labelY + labelHeight / 2.0, labelWidth, labelHeight, fontSize, style, sliceCx, sliceCy, isLeftSide));
                 else {
                     DrawPieLabelConnector(c, chart, series, pointIndex, sliceCx, sliceCy, radius, mid, labelX + labelWidth / 2.0, labelY + labelHeight / 2.0);
-                    DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
+                    DrawReadablePngLabel(c, plot, labelX, labelY - PngStyledTextTopExtent(fontSize, style), label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
                 }
             }
 
@@ -106,17 +106,18 @@ public sealed partial class PngChartRenderer {
         DrawPieOutsideLabels(c, chart, series, outsideLabels, cx, cy, radius, plot);
 
         if (series.Kind == ChartSeriesKind.Donut && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false) {
+            var dataStyle = DataLabelStyle(chart, series);
             var totalLabel = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var nameLabel = chart.Options.DonutCenterLabel ?? series.Name;
-            var totalFontSize = Math.Max(14, Math.Min(26, inner * 0.45));
-            var nameFontSize = Math.Max(9, Math.Min(chart.Options.Theme.TickLabelFontSize, inner * 0.22));
+            var totalFontSize = PngStyleFontSize(dataStyle, Math.Max(14, Math.Min(26, inner * 0.45)));
+            var nameFontSize = PngStyleFontSize(dataStyle, Math.Max(9, Math.Min(chart.Options.Theme.TickLabelFontSize, inner * 0.22)));
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerLineGap = Math.Max(4, Math.Min(8, inner * 0.08));
-            var totalHeight = EstimatePngTextHeight(totalFontSize);
-            var nameHeight = EstimatePngTextHeight(nameFontSize);
+            var totalHeight = EstimatePngStyledTextHeight(totalFontSize, dataStyle);
+            var nameHeight = EstimatePngStyledTextHeight(nameFontSize, dataStyle);
             var groupTop = cy - (totalHeight + centerLineGap + nameHeight) / 2.0;
-            DrawPngTextEmphasizedCenteredX(c, cx, groupTop, totalLabel, chart.Options.Theme.Text, totalFontSize, centerLabelWidth);
-            DrawPngTextEmphasizedCenteredX(c, cx, groupTop + totalHeight + centerLineGap, nameLabel, chart.Options.Theme.MutedText, nameFontSize, centerLabelWidth);
+            DrawPngTextStyledCenteredX(c, cx, groupTop, totalLabel, dataStyle, chart.Options.Theme.Text, totalFontSize, centerLabelWidth, emphasized: true);
+            DrawPngTextStyledCenteredX(c, cx, groupTop + totalHeight + centerLineGap, nameLabel, dataStyle, chart.Options.Theme.MutedText, nameFontSize, centerLabelWidth, emphasized: true);
         }
 
         if (chart.Options.ShowLegend) DrawSliceLegend(c, chart, series, legendValues, plot, total);
@@ -167,7 +168,7 @@ public sealed partial class PngChartRenderer {
             var labelX = label.IsLeftSide ? label.AnchorX - label.Width : label.AnchorX;
             var labelY = label.CenterY - label.Height / 2.0;
             DrawPieLabelConnector(c, chart, series, label.PointIndex, label.SliceCx, label.SliceCy, radius, label.Angle, label.AnchorX, label.CenterY);
-            DrawReadablePngLabel(c, plot, labelX, labelY, label.Text, chart.Options.Theme.Text, ReadableLabelHalo(chart), label.FontSize, label.Style);
+            DrawReadablePngLabel(c, plot, labelX, labelY - PngStyledTextTopExtent(label.FontSize, label.Style), label.Text, chart.Options.Theme.Text, ReadableLabelHalo(chart), label.FontSize, label.Style);
         }
     }
 
@@ -289,6 +290,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawSliceLegend(RgbaCanvas c, Chart chart, ChartSeries series, IReadOnlyList<PngIndexedPieValue> values, ChartRect plot, double total) {
         var fontSize = PngLegendFontSize(chart);
+        var style = chart.Options.LegendStyle;
         const double swatchSize = ChartVisualPrimitives.SliceLegendSwatchSize;
         var area = PngSliceLegendArea(chart, plot, values);
         var rows = BuildPngSliceLegendRows(chart, series, values, total, area.Width);
@@ -298,10 +300,10 @@ public sealed partial class PngChartRenderer {
             var x = PngSliceLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
-                var percentWidth = EstimatePngTextWidth(item.Percent, fontSize);
+                var percentWidth = EstimatePngStyledTextWidth(item.Percent, fontSize, style, emphasized: false);
                 var labelMaxWidth = Math.Max(8, item.Width - percentWidth - swatchSize - 30);
-                var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize);
-                var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
+                var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize, style);
+                var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth, style);
                 if (item.IsZero) {
                     c.FillRoundedRect(itemX, y - swatchSize + 1, swatchSize, swatchSize, ChartVisualPrimitives.SliceLegendSwatchRadius, ApplyOpacity(item.Color, ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity));
                     c.StrokeRoundedRect(itemX, y - swatchSize + 1, swatchSize, swatchSize, ChartVisualPrimitives.SliceLegendSwatchRadius, ApplyOpacity(item.Color, ChartVisualPrimitives.PolarAreaZeroSlotStrokeOpacity));
@@ -309,8 +311,8 @@ public sealed partial class PngChartRenderer {
                     c.FillRoundedRect(itemX, y - swatchSize + 1, swatchSize, swatchSize, ChartVisualPrimitives.SliceLegendSwatchRadius, item.Color);
                 }
                 var labelColor = item.IsZero ? chart.Options.Theme.MutedText : chart.Options.Theme.Text;
-                if (label.Length > 0) c.DrawTextEmphasized(itemX + swatchSize + 8, y - labelFontSize + 3, label, labelColor, labelFontSize);
-                c.DrawText(itemX + item.Width - EstimatePngTextWidth(item.Percent, fontSize) - 10, y - fontSize + 3, item.Percent, chart.Options.Theme.MutedText, fontSize);
+                if (label.Length > 0) DrawPngTextStyled(c, itemX + swatchSize + 8, y - EstimatePngStyledTextHeight(labelFontSize, style) + 3, label, style, labelColor, labelFontSize, emphasized: true);
+                DrawPngTextStyled(c, itemX + item.Width - EstimatePngStyledTextWidth(item.Percent, fontSize, style, emphasized: false) - 10, y - EstimatePngStyledTextHeight(fontSize, style) + 3, item.Percent, style, chart.Options.Theme.MutedText, fontSize, emphasized: false);
             }
 
             y += PngSliceLegendRowHeight(chart);
@@ -335,10 +337,12 @@ public sealed partial class PngChartRenderer {
     private static double PngSliceLegendWidestItem(Chart chart, IReadOnlyList<PngIndexedPieValue> values) {
         var widest = 0.0;
         var total = Math.Max(0.000001, PngSliceLegendTotal(values));
+        var style = chart.Options.LegendStyle;
+        var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < values.Count; i++) {
             var label = SliceLabel(chart, values[i].Point, values[i].PointIndex);
             var percent = FormatPercent(values[i].Point.Y / total);
-            widest = Math.Max(widest, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngEmphasizedTextWidth(label, PngLegendFontSize(chart)) + EstimatePngTextWidth(percent, PngLegendFontSize(chart)) + 36);
+            widest = Math.Max(widest, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true) + EstimatePngStyledTextWidth(percent, fontSize, style, emphasized: false) + 36);
         }
 
         return widest;
@@ -359,15 +363,17 @@ public sealed partial class PngChartRenderer {
         var x = 0.0;
         var vertical = PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition);
         var maxX = Math.Max(48, width);
+        var style = chart.Options.LegendStyle;
+        var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < values.Count; i++) {
             var pointIndex = values[i].PointIndex;
             var percent = FormatPercent(values[i].Point.Y / Math.Max(0.000001, total));
-            var percentWidth = EstimatePngTextWidth(percent, PngLegendFontSize(chart));
+            var percentWidth = EstimatePngStyledTextWidth(percent, fontSize, style, emphasized: false);
             var labelMax = Math.Max(24, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 32);
             var rawLabel = SliceLabel(chart, values[i].Point, pointIndex);
-            var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, PngLegendFontSize(chart));
-            var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax);
-            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngEmphasizedTextWidth(label, labelFontSize) + percentWidth + 34);
+            var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, fontSize, style);
+            var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax, style);
+            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + percentWidth + 34);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngSliceLegendRow();
                 rows.Add(row);
@@ -391,7 +397,7 @@ public sealed partial class PngChartRenderer {
         return area.X;
     }
 
-    private static double PngSliceLegendRowHeight(Chart chart) => PngLegendFontSize(chart) + 10;
+    private static double PngSliceLegendRowHeight(Chart chart) => EstimatePngStyledTextBoundsHeight(PngLegendFontSize(chart), chart.Options.LegendStyle) + 10;
 
     private static bool PngIsTopOrBottomLegend(ChartLegendPosition position) => PngIsTopLegend(position) || PngIsBottomLegend(position);
 

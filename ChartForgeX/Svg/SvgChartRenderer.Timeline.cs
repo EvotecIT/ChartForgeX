@@ -15,6 +15,8 @@ public sealed partial class SvgChartRenderer {
         if (items.Count == 0) return;
 
         var t = chart.Options.Theme;
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
         var min = items.Min(item => item.Start);
         var max = items.Max(item => item.End);
         ApplyTimelineAxisBounds(chart, ref min, ref max);
@@ -50,20 +52,22 @@ public sealed partial class SvgChartRenderer {
 
             if (chart.Options.ShowAxes) {
                 var rawLabel = FormatTimelineTick(chart, tick);
-                var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelWidth, t.TickLabelFontSize);
-                var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, tickLabelWidth);
-                var anchor = EdgeAwareAnchor(label, x, plot, labelFontSize);
-                var labelX = EdgeAwareTextX(label, x, plot, labelFontSize);
+                var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, tickLabelWidth, tickFontSize, tickStyle);
+                var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, tickLabelWidth, tickStyle);
+                var anchor = EdgeAwareStyledAnchor(chart, label, x, plot, labelFontSize, tickStyle);
+                var labelX = EdgeAwareStyledTextX(chart, label, x, plot, labelFontSize, tickStyle);
                 writer
                     .StartElement("text")
                     .Attribute("data-cfx-role", "timeline-tick-label")
                     .Attribute("x", labelX)
                     .Attribute("y", plot.Bottom + 22)
                     .Attribute("text-anchor", anchor)
-                    .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+                    .Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss())
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
                     .Attribute("font-size", labelFontSize)
-                    .Text(label)
+                    .Attribute("font-weight", StyleWeight(tickStyle, "400"));
+                WriteSvgTextStyleAttributes(writer, tickStyle);
+                WriteSvgStyledTextContent(writer, tickStyle, label)
                     .EndElement()
                     .Line();
             }
@@ -93,8 +97,8 @@ public sealed partial class SvgChartRenderer {
             }
 
             if (chart.Options.ShowAxes) {
-                var rowLabelFontSize = TextFontSizeForSvgWidth(item.Name, rowLabelWidth, t.TickLabelFontSize);
-                var rowLabel = TrimSvgLabelToWidth(item.Name, rowLabelFontSize, rowLabelWidth);
+                var rowLabelFontSize = TextFontSizeForSvgWidth(chart, item.Name, rowLabelWidth, tickFontSize, tickStyle, emphasized: true);
+                var rowLabel = TrimSvgLabelToWidth(chart, item.Name, rowLabelFontSize, rowLabelWidth, tickStyle, emphasized: true);
                 writer
                     .StartElement("text")
                     .Attribute("data-cfx-role", "timeline-row-label")
@@ -102,17 +106,19 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y", y + rowHeight / 2)
                     .Attribute("text-anchor", "end")
                     .Attribute("dominant-baseline", "middle")
-                    .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
+                    .Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss())
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
                     .Attribute("font-size", rowLabelFontSize)
-                    .Attribute("font-weight", "650")
-                    .Text(rowLabel)
+                    .Attribute("font-weight", StyleWeight(tickStyle, "650"));
+                WriteSvgTextStyleAttributes(writer, tickStyle);
+                WriteSvgStyledTextContent(writer, tickStyle, rowLabel)
                     .EndElement()
                     .Line();
             }
             DrawTimelineRangeBar(writer, chart, item, id, i, left, y, width, rowHeight, duration, summary);
             if (item.ShowDataLabels && width >= 72) {
-                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), t.DataLabelFontSize, width - 6, "750");
+                var dataStyle = DataLabelStyle(chart, chart.Series[item.SeriesIndex], 0);
+                DrawSvgTextCenteredX(writer, chart, "data-label", duration, left + width / 2, y + rowHeight / 2, ChartColorMath.TextOnBackground(item.Color), StyleFontSize(dataStyle, t.DataLabelFontSize), width - 6, "750", style: dataStyle);
             }
         }
 
@@ -129,7 +135,7 @@ public sealed partial class SvgChartRenderer {
                 .Line();
             DrawTimelineSvgXAxisTitle(writer, chart, plot, plot.Bottom + 49, "timeline-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-                var widestLabel = items.Max(item => EstimateTextWidth(item.Name, t.TickLabelFontSize));
+                var widestLabel = items.Max(item => EstimateSvgStyledTextWidth(chart, item.Name, tickFontSize, tickStyle, emphasized: true));
                 var axisX = Math.Max(24, plot.Left - widestLabel - 46);
                 DrawTimelineSvgYAxisTitle(writer, chart, plot, axisX, "timeline-y-axis-title");
             }
@@ -234,7 +240,7 @@ public sealed partial class SvgChartRenderer {
 
     private static void DrawTimelineSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
         if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, chart.Options.Theme.AxisTitleFontSize, plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawTimelineSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
@@ -242,8 +248,8 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var text = TrimSvgLabelToWidth(chart.YAxisTitle, fontSize, maxWidth);
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize), style, emphasized: true);
+        var text = TrimSvgLabelToWidth(chart, chart.YAxisTitle, fontSize, maxWidth, style, emphasized: true);
         if (text.Length == 0) return;
 
         writer
@@ -256,15 +262,15 @@ public sealed partial class SvgChartRenderer {
             .Attribute("font-size", fontSize)
             .Attribute("font-weight", StyleWeight(style, "600"));
         WriteSvgTextStyleAttributes(writer, style);
-        writer
-            .Text(text)
+        WriteSvgStyledTextContent(writer, style, text)
             .EndElement()
             .Line();
     }
 
     private static ChartRect ApplyTimelineReserve(Chart chart, ChartRect plot, IReadOnlyList<TimelineItem> items) {
-        var t = chart.Options.Theme;
-        var widest = items.Max(item => EstimateTextWidth(item.Name, t.TickLabelFontSize));
+        var style = chart.Options.TickLabelStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.TickLabelFontSize);
+        var widest = items.Max(item => EstimateSvgStyledTextWidth(chart, item.Name, fontSize, style, emphasized: true));
         var yAxisReserve = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : 28;
         var desiredLeft = Math.Max(plot.Left, widest + yAxisReserve + 64);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 180);

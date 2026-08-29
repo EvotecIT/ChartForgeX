@@ -26,10 +26,11 @@ public sealed partial class PngChartRenderer {
             var y = startY + i * rowHeight + rowHeight / 2;
             var labelMaxWidth = Math.Max(8, labelWidth - 8);
             var rawLabel = FormatX(chart, point.X);
-            var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMaxWidth, t.TickLabelFontSize);
-            var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMaxWidth);
+            var tickStyle = chart.Options.TickLabelStyle;
+            var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMaxWidth, PngTickFontSize(chart), tickStyle);
+            var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMaxWidth, tickStyle);
             if (label.Length > 0) {
-                c.DrawTextEmphasized(plot.Left + labelWidth - 8 - EstimatePngEmphasizedTextWidth(label, labelFontSize), y - labelFontSize / 2.0, label, t.MutedText, labelFontSize);
+                DrawPngTextStyled(c, plot.Left + labelWidth - 8 - EstimatePngStyledTextWidth(label, labelFontSize, tickStyle, emphasized: true), y - EstimatePngStyledTextBoundsHeight(labelFontSize, tickStyle) / 2 - PngStyledTextTopExtent(labelFontSize, tickStyle), label, tickStyle, t.MutedText, labelFontSize, emphasized: true);
             }
             var color = PngProgressItemColor(series, t, i);
             var ratio = Clamp(point.Y / maximum, 0, 1);
@@ -44,10 +45,11 @@ public sealed partial class PngChartRenderer {
             if (showValues) {
                 var valueMaxWidth = Math.Max(8, valueWidth - 4);
                 var rawValue = FormatValue(chart, point.Y);
-                var valueFontSize = TextFontSizeForEmphasizedWidth(rawValue, valueMaxWidth, t.DataLabelFontSize);
-                var value = TrimReadablePngLabelToWidth(rawValue, valueFontSize, valueMaxWidth);
+                var dataStyle = DataLabelStyle(chart, series, i);
+                var valueFontSize = TextFontSizeForEmphasizedWidth(rawValue, valueMaxWidth, PngStyleFontSize(dataStyle, t.DataLabelFontSize), dataStyle);
+                var value = TrimReadablePngLabelToWidth(rawValue, valueFontSize, valueMaxWidth, dataStyle);
                 if (value.Length > 0) {
-                    c.DrawTextEmphasized(startX + barArea + 12, y - valueFontSize / 2.0, value, t.Text, valueFontSize);
+                    DrawPngTextStyled(c, startX + barArea + 12, y - EstimatePngStyledTextBoundsHeight(valueFontSize, dataStyle) / 2 - PngStyledTextTopExtent(valueFontSize, dataStyle), value, dataStyle, t.Text, valueFontSize, emphasized: true);
                 }
             }
         }

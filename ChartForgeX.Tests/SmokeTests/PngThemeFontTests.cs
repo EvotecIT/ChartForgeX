@@ -53,6 +53,11 @@ internal static partial class SmokeTests {
         TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out var genericMonoPath);
         if (explicitSerifPath != null && genericSerifPath != null) Assert(string.Equals(explicitSerifPath, genericSerifPath, StringComparison.OrdinalIgnoreCase), "Explicit serif family names should select the serif PNG font category.");
         if (explicitMonoPath != null && genericMonoPath != null) Assert(string.Equals(explicitMonoPath, genericMonoPath, StringComparison.OrdinalIgnoreCase), "Explicit monospace family names should select the monospace PNG font category.");
+        if (explicitSerifPath != null) {
+            var requestedFont = Chart.Create().WithSize(420, 240).WithTitle("Requested font wins").WithPngFont(explicitSerifPath).AddLine("Values", Points(10, 20, 30)).ToPng();
+            var requestedFontWithRoleFamily = Chart.Create().WithSize(420, 240).WithTitle("Requested font wins").WithPngFont(explicitSerifPath).WithTitleStyle(style => style.WithFontFamily(ChartFontStacks.Mono)).AddLine("Values", Points(10, 20, 30)).ToPng();
+            Assert(requestedFont.SequenceEqual(requestedFontWithRoleFamily), "An explicit PNG font file should retain precedence over role-specific family discovery.");
+        }
     }
 
     private static void PngCanvasMeasuresWithItsSelectedDrawingFont() {

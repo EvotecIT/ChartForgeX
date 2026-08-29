@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
-    private static double EdgeAwarePngLabelX(string label, double x, ChartRect plot, double fontSize) {
-        var width = EstimatePngTextWidth(label, fontSize);
+    private static double EdgeAwarePngLabelX(string label, double x, ChartRect plot, double fontSize, bool italic = false) {
+        var width = EstimatePngTextWidth(label, fontSize, italic);
+        return Clamp(x - width / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
+    }
+
+    private static double EdgeAwarePngLabelX(string label, double x, ChartRect plot, double fontSize, TextStyleOverride style, bool emphasized = false) {
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized);
         return Clamp(x - width / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
     }
 
@@ -17,22 +23,25 @@ public sealed partial class PngChartRenderer {
         var color = chart.Options.TryGetXAxisLabelHighlight(value, out var highlight) ? highlight : PngTickColor(chart);
         var angle = Clamp(chart.Options.XAxisLabelAngle, -80, 80);
         var maxWidth = PngAxisTickLabelMaxWidth(plot, axisLabels?.Count ?? 0, angle);
-        var fontSize = TextFontSizeForWidth(label, maxWidth, preferredFontSize);
-        label = TrimPngLabelToWidth(label, fontSize, maxWidth);
+        var style = chart.Options.TickLabelStyle;
+        var fontSize = TextFontSizeForWidth(label, maxWidth, preferredFontSize, style);
+        label = TrimPngLabelToWidth(label, fontSize, maxWidth, style);
         if (label.Length == 0) return;
         if (Math.Abs(angle) < 0.001) {
-            DrawPngTextStyled(c, EdgeAwarePngLabelX(label, x, plot, fontSize), plot.Bottom + PngXAxisLabelOffset(chart, axisLabels) - fontSize + 1, label, chart.Options.TickLabelStyle, color, fontSize, emphasized: false);
+            var unrotatedWidth = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: false);
+            var unrotatedHeight = EstimatePngStyledTextHeight(fontSize, style);
+            DrawPngTextStyled(c, Clamp(x - unrotatedWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - unrotatedWidth - ChartVisualPrimitives.DataLabelPlotInset), plot.Bottom + PngXAxisLabelOffset(chart, axisLabels) - unrotatedHeight + 1, label, style, color, fontSize, emphasized: false);
             return;
         }
 
-        var width = EstimatePngTextWidth(label, fontSize);
-        var height = EstimatePngTextHeight(fontSize);
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: false);
+        var height = EstimatePngStyledTextHeight(fontSize, style);
         var anchorX = Clamp(x, plot.Left + 4, plot.Right - 4);
         var anchorY = plot.Bottom + PngXAxisLabelOffset(chart, axisLabels);
         var originX = angle < 0 ? width : 0;
         if (x <= plot.Left + width * 0.4) originX = 0;
         if (x >= plot.Right - width * 0.4) originX = width;
-        c.DrawTextRotated(anchorX, anchorY, label, color, fontSize, angle, originX, height / 2.0);
+        DrawPngTextStyledRotated(c, anchorX, anchorY, label, style, color, fontSize, angle, originX, height / 2.0, emphasized: false);
     }
 
     private static double PngAxisTickLabelMaxWidth(ChartRect plot, int tickCount, double angle) {
@@ -57,55 +66,62 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale) {
         if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
-            DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 48, PngAxisTitleFontSize(chart));
+            var tickHeight = EstimatePngStyledTextBoundsHeight(PngTickFontSize(chart), chart.Options.TickLabelStyle);
+            DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 22 + tickHeight + 12, PngAxisTitleFontSize(chart));
         }
 
         if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
     private static void DrawPngXAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double baselineY, double preferredFontSize) {
-        var fontSize = TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, plot.Width - 4), preferredFontSize);
-        var label = TrimReadablePngLabelToWidth(chart.XAxisTitle, fontSize, Math.Max(48, plot.Width - 4));
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, plot.Width - 4), preferredFontSize, style);
+        var label = TrimReadablePngLabelToWidth(chart.XAxisTitle, fontSize, Math.Max(48, plot.Width - 4), style);
         if (label.Length == 0) return;
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-        DrawPngTextStyled(c, Clamp(plot.Left + plot.Width / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2), baselineY - fontSize + 1, label, chart.Options.AxisTitleStyle, chart.Options.Theme.MutedText, fontSize, emphasized: true);
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true);
+        var height = EstimatePngStyledTextHeight(fontSize, style);
+        DrawPngTextStyled(c, Clamp(plot.Left + plot.Width / 2 - width / 2.0, plot.Left + 2, plot.Right - width - 2), baselineY - height + 1, label, chart.Options.AxisTitleStyle, chart.Options.Theme.MutedText, fontSize, emphasized: true);
     }
 
     private static void DrawYAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double preferredFontSize) {
         if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
-        var fontSize = TextFontSizeForEmphasizedWidth(chart.YAxisTitle, Math.Max(40, plot.Height * 0.72), preferredFontSize);
-        var label = TrimReadablePngLabelToWidth(chart.YAxisTitle, fontSize, Math.Max(40, plot.Height * 0.72));
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForEmphasizedWidth(chart.YAxisTitle, Math.Max(40, plot.Height * 0.72), preferredFontSize, style);
+        var label = TrimReadablePngLabelToWidth(chart.YAxisTitle, fontSize, Math.Max(40, plot.Height * 0.72), style);
         if (label.Length == 0) return;
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize);
-        var height = EstimatePngTextHeight(fontSize);
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true);
+        var height = EstimatePngStyledTextHeight(fontSize, style);
         var axisX = Clamp(28, 18, Math.Max(18, plot.Left - height - 14));
-        c.DrawTextRotatedEmphasized(axisX, plot.Top + plot.Height / 2.0, label, PngStyleColor(chart.Options.AxisTitleStyle, chart.Options.Theme.MutedText), fontSize, -90, width / 2.0, height / 2.0);
+        DrawPngTextStyledRotated(c, axisX, plot.Top + plot.Height / 2.0, label, style, chart.Options.Theme.MutedText, fontSize, -90, width / 2.0, height / 2.0, emphasized: true);
     }
 
     private static void DrawSecondaryYAxis(RgbaCanvas c, Chart chart, ChartRect plot, ChartMapper map, IReadOnlyList<double> yTicks) {
         if (!ShowSecondaryYAxis(chart)) return;
         var theme = chart.Options.Theme;
         var preferredFontSize = PngTickFontSize(chart);
+        var preferredTextHeight = EstimatePngStyledTextHeight(preferredFontSize, chart.Options.TickLabelStyle);
         var labelMaxWidth = Math.Max(24, chart.Options.Size.Width - plot.Right - 12);
         if (ShowSecondaryYAxisLine(chart)) DrawPngGuideLine(c, plot.Right, plot.Top, plot.Right, plot.Bottom, theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         for (var tickIndex = 0; tickIndex < yTicks.Count; tickIndex++) {
             var tick = yTicks[tickIndex];
-            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredFontSize, chart.Options.SecondaryYAxis.LabelDensity)) continue;
+            if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredTextHeight, chart.Options.SecondaryYAxis.LabelDensity)) continue;
             var rawLabel = FormatSecondaryValue(chart, tick);
-            var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize);
-            var label = TrimPngLabelToWidth(rawLabel, fontSize, labelMaxWidth);
+            var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize, chart.Options.TickLabelStyle);
+            var label = TrimPngLabelToWidth(rawLabel, fontSize, labelMaxWidth, chart.Options.TickLabelStyle);
             if (label.Length == 0) continue;
-            DrawPngTextStyled(c, Math.Min(chart.Options.Size.Width - EstimatePngTextWidth(label, fontSize) - 2, plot.Right + 8), map.Y(tick) - fontSize + 4, label, chart.Options.TickLabelStyle, theme.MutedText, fontSize, emphasized: false);
+            var tickHeight = EstimatePngStyledTextHeight(fontSize, chart.Options.TickLabelStyle);
+            DrawPngTextStyled(c, Math.Min(chart.Options.Size.Width - EstimatePngStyledTextWidth(label, fontSize, chart.Options.TickLabelStyle, emphasized: false) - 2, plot.Right + 8), map.Y(tick) - tickHeight + 4, label, chart.Options.TickLabelStyle, theme.MutedText, fontSize, emphasized: false);
         }
 
         if (string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle)) return;
         var titleMaxWidth = Math.Max(40, plot.Height * 0.72);
-        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.SecondaryYAxisTitle, titleMaxWidth, PngAxisTitleFontSize(chart));
-        var title = TrimReadablePngLabelToWidth(chart.SecondaryYAxisTitle, titleFontSize, titleMaxWidth);
+        var titleFontSize = TextFontSizeForEmphasizedWidth(chart.SecondaryYAxisTitle, titleMaxWidth, PngAxisTitleFontSize(chart), chart.Options.AxisTitleStyle);
+        var title = TrimReadablePngLabelToWidth(chart.SecondaryYAxisTitle, titleFontSize, titleMaxWidth, chart.Options.AxisTitleStyle);
         if (title.Length == 0) return;
-        var width = EstimatePngEmphasizedTextWidth(title, titleFontSize);
-        var height = EstimatePngTextHeight(titleFontSize);
-        c.DrawTextRotatedEmphasized(Math.Min(chart.Options.Size.Width - 18, plot.Right + 54), plot.Top + plot.Height / 2.0, title, PngStyleColor(chart.Options.AxisTitleStyle, theme.MutedText), titleFontSize, 90, width / 2.0, height / 2.0);
+        var width = EstimatePngStyledTextWidth(title, titleFontSize, chart.Options.AxisTitleStyle, emphasized: true);
+        var height = EstimatePngStyledTextHeight(titleFontSize, chart.Options.AxisTitleStyle);
+        var titleStyle = chart.Options.AxisTitleStyle;
+        DrawPngTextStyledRotated(c, Math.Min(chart.Options.Size.Width - 18, plot.Right + 54), plot.Top + plot.Height / 2.0, title, titleStyle, theme.MutedText, titleFontSize, 90, width / 2.0, height / 2.0, emphasized: true);
     }
 
     private static ChartRect ApplyHorizontalBarReserve(Chart chart, ChartRect plot, IReadOnlyList<double> categories) {
@@ -115,7 +131,7 @@ public sealed partial class PngChartRenderer {
         if (ShowYAxis(chart)) {
             var widest = 0.0;
             var wrapWidth = HorizontalCategoryWrapWidth(chart);
-            foreach (var category in categories) widest = Math.Max(widest, WrappedLabelWidth(FormatX(chart, category), fontSize, wrapWidth));
+            foreach (var category in categories) widest = Math.Max(widest, WrappedLabelWidth(FormatX(chart, category), fontSize, wrapWidth, chart.Options.TickLabelStyle));
             var desiredLeft = Math.Max(plot.Left, widest + 70);
             var maxLeft = Math.Max(plot.Left, Math.Min(chart.Options.Size.Width * 0.42, chart.Options.Size.Width - chart.Options.Padding.Right - 160));
             var adjustedLeft = Math.Min(desiredLeft, maxLeft);
@@ -130,7 +146,7 @@ public sealed partial class PngChartRenderer {
         if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
-        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatYAxisValue(chart, tick), fontSize));
+        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatYAxisValue(chart, tick), fontSize, chart.Options.TickLabelStyle, emphasized: false));
         var desiredLeft = Math.Max(plot.Left, widest + 54);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);
@@ -143,8 +159,8 @@ public sealed partial class PngChartRenderer {
         if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
-        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngTextWidth(FormatSecondaryValue(chart, tick), fontSize));
-        var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : PngAxisTitleFontSize(chart) + 18;
+        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatSecondaryValue(chart, tick), fontSize, chart.Options.TickLabelStyle, emphasized: false));
+        var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : EstimatePngStyledTextHeight(PngAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 18;
         var reserve = Math.Min(150, widest + 30 + titleReserve);
         if (reserve <= 0) return plot;
         return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
@@ -156,7 +172,7 @@ public sealed partial class PngChartRenderer {
         var bottomReserve = 0.0;
         if (ShowXAxis(chart)) {
             var xLabels = XAxisTickLabels(chart, xTicks, valueAxisOnly);
-            bottomReserve += PngXAxisTitleOffset(chart, xLabels) + PngAxisTitleFontSize(chart) + 4;
+            bottomReserve += PngXAxisTitleOffset(chart, xLabels) + EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 4;
             if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) bottomReserve -= 16;
         }
 
@@ -186,7 +202,7 @@ public sealed partial class PngChartRenderer {
         var entries = BuildPngLegendEntries(chart);
         if (PngIsVerticalLegend(chart.Options.LegendPosition)) return entries.Count;
         for (var i = 0; i < entries.Count; i++) {
-            var itemWidth = symbolWidth + 10 + EstimatePngEmphasizedTextWidth(entries[i].Label, fontSize) + 18;
+            var itemWidth = symbolWidth + 10 + EstimatePngStyledTextWidth(entries[i].Label, fontSize, chart.Options.LegendStyle, emphasized: true) + 18;
             if (i > 0 && x + itemWidth > maxX) {
                 rows++;
                 x = 0;
@@ -200,38 +216,42 @@ public sealed partial class PngChartRenderer {
 
     private static double PngXAxisLabelOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var angle = Math.Abs(Clamp(chart.Options.XAxisLabelAngle, -80, 80)) * Math.PI / 180.0;
-        if (angle < 0.001) return 21;
-        if ((labels == null || labels.Count == 0) && chart.Options.XAxisLabels.Count == 0) return 21;
         var fontSize = PngTickFontSize(chart);
+        var textHeight = EstimatePngStyledTextHeight(fontSize, chart.Options.TickLabelStyle);
+        var baseOffset = Math.Max(21, textHeight + 8);
+        if (angle < 0.001) return baseOffset;
+        if ((labels == null || labels.Count == 0) && chart.Options.XAxisLabels.Count == 0) return baseOffset;
         var widest = 0.0;
         if (labels != null && labels.Count > 0) {
-            foreach (var label in labels) widest = Math.Max(widest, EstimatePngTextWidth(label, fontSize));
+            foreach (var label in labels) widest = Math.Max(widest, EstimatePngStyledTextWidth(label, fontSize, chart.Options.TickLabelStyle, emphasized: false));
         } else {
-            foreach (var label in chart.Options.XAxisLabels) widest = Math.Max(widest, EstimatePngTextWidth(label.Text, fontSize));
+            foreach (var label in chart.Options.XAxisLabels) widest = Math.Max(widest, EstimatePngStyledTextWidth(label.Text, fontSize, chart.Options.TickLabelStyle, emphasized: false));
         }
 
-        return 20 + Math.Sin(angle) * Math.Min(96, widest);
+        return Math.Max(baseOffset, textHeight + 7 + Math.Sin(angle) * Math.Min(96, widest));
     }
 
     private static double PngXAxisTitleOffset(Chart chart, IReadOnlyList<string>? labels = null) {
-        return PngXAxisLabelOffset(chart, labels) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? 23 : 48);
+        var labelHeight = EstimatePngStyledTextHeight(PngTickFontSize(chart), chart.Options.TickLabelStyle);
+        var gap = Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? labelHeight + 10 : Math.Max(48, labelHeight + 10);
+        return PngXAxisLabelOffset(chart, labels) + gap;
     }
 
-    private static double PngXAxisTitleFontSize(Chart chart) => TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right), PngAxisTitleFontSize(chart));
+    private static double PngXAxisTitleFontSize(Chart chart) => TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right), PngAxisTitleFontSize(chart), chart.Options.AxisTitleStyle);
 
     private static double HorizontalCategoryFontSize(Chart chart) => PngTickFontSize(chart);
 
     private static double HorizontalCategoryWrapWidth(Chart chart) => Math.Max(90, Math.Min(230, chart.Options.Size.Width * 0.28));
 
-    private static double WrappedLabelWidth(string label, double fontSize, double maxWidth) {
-        var lines = WrapHorizontalCategoryLabel(label, fontSize, maxWidth);
+    private static double WrappedLabelWidth(string label, double fontSize, double maxWidth, TextStyleOverride style) {
+        var lines = WrapHorizontalCategoryLabel(label, fontSize, maxWidth, style);
         var widest = 0.0;
-        foreach (var line in lines) widest = Math.Max(widest, EstimatePngTextWidth(line, fontSize));
+        foreach (var line in lines) widest = Math.Max(widest, EstimatePngStyledTextWidth(line, fontSize, style, emphasized: true));
         return widest;
     }
 
-    private static string[] WrapHorizontalCategoryLabel(string label, double fontSize, double maxWidth) {
-        if (EstimatePngTextWidth(label, fontSize) <= maxWidth) return new[] { label };
+    private static string[] WrapHorizontalCategoryLabel(string label, double fontSize, double maxWidth, TextStyleOverride style) {
+        if (EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true) <= maxWidth) return new[] { label };
         var words = label.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length < 2) return new[] { label };
 
@@ -240,8 +260,8 @@ public sealed partial class PngChartRenderer {
         for (var i = 1; i < words.Length; i++) {
             var first = string.Join(" ", words, 0, i);
             var second = string.Join(" ", words, i, words.Length - i);
-            var firstWidth = EstimatePngTextWidth(first, fontSize);
-            var secondWidth = EstimatePngTextWidth(second, fontSize);
+            var firstWidth = EstimatePngStyledTextWidth(first, fontSize, style, emphasized: true);
+            var secondWidth = EstimatePngStyledTextWidth(second, fontSize, style, emphasized: true);
             var score = Math.Max(firstWidth, secondWidth) + Math.Abs(firstWidth - secondWidth) * 0.18;
             if (score >= bestScore) continue;
             bestScore = score;
@@ -253,22 +273,24 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawHorizontalCategoryLabel(RgbaCanvas c, Chart chart, ChartRect plot, string label, double y) {
         var fontSize = HorizontalCategoryFontSize(chart);
-        var lines = WrapHorizontalCategoryLabel(label, fontSize, HorizontalCategoryWrapWidth(chart));
-        var lineHeight = EstimatePngTextHeight(fontSize) + 3;
-        var top = y - (lines.Length * lineHeight - (lineHeight - EstimatePngTextHeight(fontSize))) / 2.0;
+        var lines = WrapHorizontalCategoryLabel(label, fontSize, HorizontalCategoryWrapWidth(chart), chart.Options.TickLabelStyle);
+        var textHeight = EstimatePngStyledTextHeight(fontSize, chart.Options.TickLabelStyle);
+        var lineHeight = textHeight + 3;
+        var top = y - (lines.Length * lineHeight - (lineHeight - textHeight)) / 2.0;
         var maxWidth = Math.Max(8, plot.Left - 24);
         for (var i = 0; i < lines.Length; i++) {
-            var line = TrimReadablePngLabelToWidth(lines[i], fontSize, maxWidth);
+            var line = TrimReadablePngLabelToWidth(lines[i], fontSize, maxWidth, chart.Options.TickLabelStyle);
             if (line.Length == 0) continue;
-            DrawPngTextStyled(c, plot.Left - EstimatePngEmphasizedTextWidth(line, fontSize) - 10, top + i * lineHeight, line, chart.Options.TickLabelStyle, chart.Options.Theme.MutedText, fontSize, emphasized: true);
+            DrawPngTextStyled(c, plot.Left - EstimatePngStyledTextWidth(line, fontSize, chart.Options.TickLabelStyle, emphasized: true) - 10, top + i * lineHeight, line, chart.Options.TickLabelStyle, chart.Options.Theme.MutedText, fontSize, emphasized: true);
         }
     }
 
     private static double HorizontalValueLabelReserve(Chart chart) {
         if (!HasHorizontalBarDataLabels(chart) && !(chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals)) return 0;
         var widest = 0.0;
-        var fontSize = HorizontalValueLabelFontSize(chart);
         if (chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals) {
+            var style = chart.Options.DataLabelStyle;
+            var fontSize = PngStyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
             var positiveTotals = new Dictionary<double, double>();
             var negativeTotals = new Dictionary<double, double>();
             foreach (var series in chart.Series) {
@@ -276,19 +298,21 @@ public sealed partial class PngChartRenderer {
                 foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
             }
 
-            foreach (var value in positiveTotals.Values) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, value), fontSize));
-            foreach (var value in negativeTotals.Values) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, value), fontSize));
+            foreach (var value in positiveTotals.Values) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatValue(chart, value), fontSize, style, emphasized: true));
+            foreach (var value in negativeTotals.Values) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatValue(chart, value), fontSize, style, emphasized: true));
         } else {
             foreach (var series in chart.Series) {
                 if (series.Kind != ChartSeriesKind.HorizontalBar) continue;
-                foreach (var point in series.Points) widest = Math.Max(widest, EstimatePngTextWidth(FormatValue(chart, point.Y), fontSize));
+                for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                    var style = DataLabelStyle(chart, series, pointIndex);
+                    var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
+                    widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatDataLabel(chart, series, pointIndex, series.Points[pointIndex].Y), fontSize, style, emphasized: true));
+                }
             }
         }
 
         return widest == 0 ? 0 : Math.Min(104, widest + 20);
     }
-
-    private static double HorizontalValueLabelFontSize(Chart chart) => TextFontSizeForEmphasizedWidth("100%", 72, chart.Options.Theme.DataLabelFontSize);
 
     private static void ApplyHorizontalValueBounds(Chart chart, ChartRange range, IReadOnlyList<double> xTicks) {
         var min = xTicks[0];

@@ -27,8 +27,8 @@ public sealed partial class SvgChartRenderer {
             if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.SecondaryYAxis.LabelDensity)) continue;
             var y = map.Y(yv);
             var rawLabel = FormatSecondaryValue(chart, yv);
-            var labelFontSize = TextFontSizeForSvgWidth(rawLabel, tickLabelMaxWidth, tickFontSize);
-            var label = TrimSvgLabelToWidth(rawLabel, labelFontSize, tickLabelMaxWidth);
+            var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, tickLabelMaxWidth, tickFontSize, tickStyle);
+            var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, tickLabelMaxWidth, tickStyle);
             if (label.Length == 0) continue;
             WriteSecondaryYAxisTick(writer, chart, tickStyle, yv, plot.Right + 12, y + 4, StyleColor(tickStyle, t.MutedText).ToCss(), labelFontSize, label);
         }
@@ -41,8 +41,8 @@ public sealed partial class SvgChartRenderer {
 
         var style = chart.Options.AxisTitleStyle;
         var titleMaxWidth = Math.Max(40, plot.Height * 0.72);
-        var titleFontSize = TextFontSizeForSvgWidth(chart.SecondaryYAxisTitle, titleMaxWidth, StyleFontSize(style, t.AxisTitleFontSize));
-        var title = TrimSvgLabelToWidth(chart.SecondaryYAxisTitle, titleFontSize, titleMaxWidth);
+        var titleFontSize = TextFontSizeForSvgWidth(chart, chart.SecondaryYAxisTitle, titleMaxWidth, StyleFontSize(style, t.AxisTitleFontSize), style, emphasized: true);
+        var title = TrimSvgLabelToWidth(chart, chart.SecondaryYAxisTitle, titleFontSize, titleMaxWidth, style, emphasized: true);
         if (title.Length != 0) {
             WriteSecondaryYAxisTitle(
                 writer,
@@ -70,8 +70,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
             .Attribute("font-size", fontSize)
-            .Raw(SvgTextStyleAttributes(tickStyle))
-            .Text(label)
+            .Attribute("font-weight", StyleWeight(tickStyle, "400"));
+        WriteSvgTextStyleAttributes(writer, tickStyle);
+        WriteSvgStyledTextContent(writer, tickStyle, label)
             .EndElement()
             .Line();
     }
@@ -101,9 +102,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color)
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, "600"))
-            .Raw(SvgTextStyleAttributes(style))
-            .Text(title)
+            .Attribute("font-weight", StyleWeight(style, "600"));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, title)
             .EndElement()
             .Line();
     }
@@ -115,10 +116,19 @@ public sealed partial class SvgChartRenderer {
     private static ChartRect ApplySecondaryYAxisLabelReserve(Chart chart, ChartRect plot, IReadOnlyList<double> yTicks) {
         if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || IsPieLike(chart) || yTicks.Count == 0) return plot;
         var t = chart.Options.Theme;
-        var widest = yTicks.Max(tick => EstimateTextWidth(FormatSecondaryValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize)));
-        var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : t.AxisTitleFontSize + 18;
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
+        var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatSecondaryValue(chart, tick), tickFontSize, tickStyle));
+        var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : SvgSecondaryYAxisTitleHeight(chart, plot.Height) + 18;
         var reserve = Math.Min(150, widest + 30 + titleReserve);
         if (reserve <= 0) return plot;
         return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
+    }
+
+    private static double SvgSecondaryYAxisTitleHeight(Chart chart, double maxWidth) {
+        if (string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle)) return 0;
+        var style = chart.Options.AxisTitleStyle;
+        var fontSize = TextFontSizeForSvgWidth(chart, chart.SecondaryYAxisTitle, Math.Max(40, maxWidth * 0.72), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
+        return EstimateSvgStyledTextHeight(fontSize, style);
     }
 }

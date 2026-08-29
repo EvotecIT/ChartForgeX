@@ -12,12 +12,12 @@ public sealed partial class PngChartRenderer {
         if (model.Nodes.Count == 0 || model.Root < 0) return;
         var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Sunburst);
         var showLabels = series.ShowDataLabels != false;
-        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(c, chart, model, node, showLabels);
+        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(c, chart, series, model, node, showLabels);
     }
 
     private static bool IsSunburstChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Sunburst);
 
-    private static void DrawSunburstSegment(RgbaCanvas c, Chart chart, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
+    private static void DrawSunburstSegment(RgbaCanvas c, Chart chart, ChartSeries series, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
         var color = PngSunburstNodeColor(chart, node);
         var sweep = node.EndAngle - node.StartAngle;
         if (sweep <= 0 || node.OuterRadius <= node.InnerRadius) return;
@@ -26,19 +26,20 @@ public sealed partial class PngChartRenderer {
         if (!showLabels) return;
         var ringWidth = node.OuterRadius - node.InnerRadius;
         if (ringWidth < 18) return;
-        var fontSize = Math.Min(chart.Options.Theme.TickLabelFontSize, ringWidth * 0.42);
+        var dataStyle = DataLabelStyle(chart, series);
+        var fontSize = Math.Min(PngStyleFontSize(dataStyle, chart.Options.Theme.TickLabelFontSize), ringWidth * 0.42);
         var maxWidth = SunburstPngLabelSpace(node, sweep, ringWidth);
         if (maxWidth <= 0) return;
-        var labelFontSize = TextFontSizeForEmphasizedWidth(node.Label, maxWidth, fontSize);
-        var label = node.Depth == 0 ? node.Label : TrimReadablePngLabelToWidth(node.Label, labelFontSize, maxWidth);
+        var labelFontSize = TextFontSizeForEmphasizedWidth(node.Label, maxWidth, fontSize, dataStyle);
+        var label = node.Depth == 0 ? node.Label : TrimReadablePngLabelToWidth(node.Label, labelFontSize, maxWidth, dataStyle);
         if (node.Depth > 0 && label.EndsWith("...", StringComparison.Ordinal)) return;
         if (label.Length == 0) return;
         var angle = node.StartAngle + sweep / 2;
         var radius = node.Depth == 0 ? 0 : node.InnerRadius + ringWidth * 0.64;
-        var x = model.CenterX + Math.Cos(angle) * radius - EstimatePngEmphasizedTextWidth(label, labelFontSize) / 2.0;
-        var y = model.CenterY + Math.Sin(angle) * radius - labelFontSize / 2.0;
+        var x = model.CenterX + Math.Cos(angle) * radius - EstimatePngStyledTextWidth(label, labelFontSize, dataStyle, emphasized: true) / 2.0;
+        var y = model.CenterY + Math.Sin(angle) * radius - EstimatePngStyledTextHeight(labelFontSize, dataStyle) / 2.0;
         var labelColor = ChartColorMath.TextOnBackground(color);
-        DrawReadablePngLabel(c, x, y, label, labelColor, ChartColorMath.TextOnBackground(labelColor, 0.70), labelFontSize);
+        DrawReadablePngLabel(c, x, y, label, labelColor, ChartColorMath.TextOnBackground(labelColor, 0.70), labelFontSize, dataStyle);
     }
 
     private static double SunburstPngLabelSpace(ChartSunburstNode node, double sweep, double ringWidth) {

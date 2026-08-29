@@ -19,12 +19,12 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-role", "sunburst-chart")
             .EndStartElement()
             .Line();
-        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(writer, chart, model, node, showLabels);
+        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) DrawSunburstSegment(writer, chart, series, model, node, showLabels);
         writer.EndElement().Line();
         sb.Append(writer.Build());
     }
 
-    private static void DrawSunburstSegment(SvgMarkupWriter writer, Chart chart, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
+    private static void DrawSunburstSegment(SvgMarkupWriter writer, Chart chart, ChartSeries series, ChartSunburstModel model, ChartSunburstNode node, bool showLabels) {
         var t = chart.Options.Theme;
         var color = SunburstNodeColor(chart, node);
         var sweep = node.EndAngle - node.StartAngle;
@@ -52,9 +52,10 @@ public sealed partial class SvgChartRenderer {
         if (!showLabels) return;
         var ringWidth = node.OuterRadius - node.InnerRadius;
         if (ringWidth < 18) return;
+        var dataStyle = DataLabelStyle(chart, series);
         var labelSpace = SunburstSvgLabelSpace(node, sweep, ringWidth);
         if (labelSpace <= 0) return;
-        var preferredFontSize = Math.Min(t.TickLabelFontSize, ringWidth * 0.42);
+        var preferredFontSize = Math.Min(StyleFontSize(dataStyle, t.TickLabelFontSize), ringWidth * 0.42);
         var fontSize = TextFontSizeForSvgWidth(node.Label, labelSpace, preferredFontSize);
         if (node.Depth > 0 && fontSize < preferredFontSize * 0.92) return;
         var label = node.Depth == 0 ? node.Label : TrimSvgLabelToWidth(node.Label, fontSize, labelSpace);
@@ -66,7 +67,7 @@ public sealed partial class SvgChartRenderer {
         var y = model.CenterY + Math.Sin(angle) * radius + fontSize / 3.0;
         var labelColor = ChartColorMath.TextOnBackground(color);
         var halo = ChartColorMath.TextOnBackground(labelColor, 0.70);
-        DrawSvgTextCenteredX(writer, chart, "sunburst-label", label, x, y, labelColor, fontSize, labelSpace, "800", halo, 3);
+        DrawSvgTextCenteredX(writer, chart, "sunburst-label", label, x, y, labelColor, fontSize, labelSpace, "800", halo, 3, style: dataStyle);
     }
 
     private static double SunburstSvgLabelSpace(ChartSunburstNode node, double sweep, double ringWidth) {

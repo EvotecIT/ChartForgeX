@@ -41,7 +41,9 @@ public sealed partial class PngChartRenderer {
                     var pointIndex = RadarPointIndex(item.Series, categories[i]);
                     var style = DataLabelStyle(chart, item.Series, pointIndex);
                     var fontSize = PngDataLabelFontSize(chart, item.Series, pointIndex);
-                    DrawReadablePngLabel(c, plot, labelPoint.X - EstimatePngEmphasizedTextWidth(label, fontSize) / 2.0, labelPoint.Y - fontSize / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
+                    var labelWidth = EstimatePngStyledTextWidth(label, fontSize, style, true);
+                    var labelHeight = EstimatePngStyledTextHeight(fontSize, style);
+                    DrawReadablePngLabel(c, plot, labelPoint.X - labelWidth / 2.0, labelPoint.Y - labelHeight / 2.0, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
                 }
             }
         }
@@ -50,6 +52,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawRadarGrid(RgbaCanvas c, Chart chart, IReadOnlyList<double> categories, RadialValueScale scale, double cx, double cy, double radius, double tickFontSize) {
+        var tickStyle = chart.Options.TickLabelStyle;
         foreach (var tick in scale.Ticks) {
             if (tick <= scale.Minimum) continue;
             var ringRadius = radius * scale.Normalize(tick);
@@ -59,9 +62,9 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !isOuterTick) {
                 var ringLabelMaxWidth = Math.Max(28, chart.Options.Size.Width - chart.Options.Padding.Right - cx - 14);
                 var ringLabel = FormatYAxisValue(chart, tick);
-                var ringFontSize = TextFontSizeForWidth(ringLabel, ringLabelMaxWidth, tickFontSize);
-                ringLabel = TrimPngLabelToWidth(ringLabel, ringFontSize, ringLabelMaxWidth);
-                if (ringLabel.Length > 0) c.DrawText(cx + 7, cy - ringRadius + 14 - ringFontSize + 1, ringLabel, chart.Options.Theme.MutedText, ringFontSize);
+                var ringFontSize = TextFontSizeForWidth(ringLabel, ringLabelMaxWidth, tickFontSize, tickStyle);
+                ringLabel = TrimPngLabelToWidth(ringLabel, ringFontSize, ringLabelMaxWidth, tickStyle);
+                if (ringLabel.Length > 0) DrawPngTextStyled(c, cx + 7, cy - ringRadius + 14 - PngStyledTextBottomExtent(ringFontSize, tickStyle), ringLabel, tickStyle, chart.Options.Theme.MutedText, ringFontSize, emphasized: false);
             }
         }
 
@@ -73,13 +76,13 @@ public sealed partial class PngChartRenderer {
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var rawLabel = FormatX(chart, categories[i]);
             var maxWidth = Math.Max(44, RadarLabelWidth(chart, angle));
-            var fontSize = TextFontSizeForEmphasizedWidth(rawLabel, maxWidth, tickFontSize);
-            var label = TrimReadablePngLabelToWidth(rawLabel, fontSize, maxWidth);
+            var fontSize = TextFontSizeForEmphasizedWidth(rawLabel, maxWidth, tickFontSize, tickStyle);
+            var label = TrimReadablePngLabelToWidth(rawLabel, fontSize, maxWidth, tickStyle);
             if (label.Length == 0) continue;
-            var labelWidth = EstimatePngEmphasizedTextWidth(label, fontSize);
+            var labelWidth = EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: true);
             var labelX = Clamp(endX + Math.Cos(angle) * (18 + fontSize * 0.35) - labelWidth / 2.0, chart.Options.Padding.Left + 2, chart.Options.Size.Width - chart.Options.Padding.Right - labelWidth - 2);
             var labelY = Clamp(endY + Math.Sin(angle) * (18 + fontSize * 0.35) - fontSize / 2, chart.Options.Padding.Top + 12, chart.Options.Size.Height - chart.Options.Padding.Bottom - 18);
-            c.DrawTextEmphasized(labelX, labelY, label, chart.Options.Theme.MutedText, fontSize);
+            DrawPngTextStyled(c, labelX, labelY - PngStyledTextTopExtent(fontSize, tickStyle), label, tickStyle, chart.Options.Theme.MutedText, fontSize, emphasized: true);
         }
     }
 

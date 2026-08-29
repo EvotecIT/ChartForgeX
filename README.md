@@ -295,6 +295,37 @@ report.SavePpm("scorecards.ppm");
 report.SaveTiff("scorecards.tiff");
 ```
 
+## Typography
+
+Role styles use one shared contract in charts, chart grids, SVG, static HTML, and the dependency-free raster pipeline. That means the same color, family, size, weight, italic, decoration, baseline, and casing choices reach PNG, GIF, JPEG, BMP, PPM, and TIFF rather than being reinterpreted by each encoder.
+
+```csharp
+using ChartForgeX.Typography;
+
+var chart = Chart.Create()
+    .WithTitle("service health")
+    .WithXAxis("Environment")
+    .WithYAxis("Checks")
+    .WithXLabels("production", "staging", "development")
+    .WithTitleStyle(style => style
+        .WithColor("#7C3AED")
+        .WithFontFamily("Aptos, Segoe UI, sans-serif")
+        .WithFontSize(28)
+        .WithWeight("bold")
+        .WithItalic()
+        .WithUnderline(TextDecorationStyle.Wavy)
+        .WithTextCase(TextCaseTransform.TitleCase))
+    .WithTickLabelStyle(style => style
+        .WithColor("#2563EB")
+        .WithTextCase(TextCaseTransform.Uppercase))
+    .WithDataLabelStyle(style => style
+        .WithStrikethrough(TextDecorationStyle.Dotted)
+        .WithSuperscript())
+    .AddBar("Passing", Points(98, 94, 91));
+```
+
+`TextDecorationStyle` supports single, double, dotted, dashed, and wavy lines. `WithSubscript()` and `WithSuperscript()` select script placement. `TextCaseTransform` supports upper, lower, title, sentence, and toggle case; transforms are applied before measurement, fitting, wrapping, and rendering. SVG and HTML expose one native decoration-pattern value per text run, so when underline and strikethrough are combined with different patterns they use the underline pattern together; the raster owner can draw the two patterns independently.
+
 Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series.
 
 ```csharp
@@ -558,7 +589,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartSankeyLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
-| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
+| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
 

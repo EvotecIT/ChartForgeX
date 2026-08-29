@@ -70,8 +70,8 @@ public sealed partial class SvgChartRenderer {
             });
             if (chart.Options.ShowMapLabels) {
                 var label = region.HasLabel ? ProjectMapPoint(region.Label, sourceBounds, map) : new ChartPoint(regionBounds.Left + regionBounds.Width / 2, regionBounds.Top + regionBounds.Height / 2);
-                var fontSize = Math.Min(t.TickLabelFontSize, Math.Max(7, map.Height * 0.032));
-                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) DrawSvgTextCenteredX(sb, chart, rolePrefix + "-label", region.Code, label.X, label.Y + 3, ChartColorMath.TextOnBackground(color), fontSize, 34, "800");
+                var fontSize = Math.Min(StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), Math.Max(7, map.Height * 0.032));
+                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) DrawSvgTextCenteredX(sb, chart, rolePrefix + "-label", region.Code, label.X, label.Y + 3, ChartColorMath.TextOnBackground(color), fontSize, 34, "800", style: chart.Options.TickLabelStyle);
             }
         }
 
@@ -127,17 +127,17 @@ public sealed partial class SvgChartRenderer {
         var size = 11.0;
         var gap = 3.0;
         if (hasMissing) DrawMapSvgNoDataScale(sb, chart, rolePrefix, x, y, size, plot);
-        AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-label").Attribute("x", x - 8).Attribute("y", y + size / 2).Attribute("text-anchor", "end").Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(ChartHeatmapSurface.MapLowLabel(chart)).EndElement().Line());
+        WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapLowLabel(chart), x - 8, y + size / 2, "end", middleBaseline: true);
         for (var i = 0; i < 5; i++) {
             var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
             var ratio = ChartHeatmapSurface.MapRatio(chart, value, min, max);
             var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
             AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", "2").Attribute("fill", color.ToCss()).EndEmptyElement().Line());
         }
-        AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-label").Attribute("x", x + 5 * size + 4 * gap + 8).Attribute("y", y + size / 2).Attribute("text-anchor", "start").Attribute("dominant-baseline", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(ChartHeatmapSurface.MapHighLabel(chart)).EndElement().Line());
+        WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapHighLabel(chart), x + 5 * size + 4 * gap + 8, y + size / 2, "start", middleBaseline: true);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-midpoint-label").Attribute("data-cfx-value", ChartHeatmapSurface.MapScaleMidpoint(chart, min, max)).Attribute("x", x + 2 * (size + gap) + size / 2).Attribute("y", y + size + t.TickLabelFontSize + 2).Attribute("text-anchor", "middle").Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(midpointLabel).EndElement().Line());
+            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-midpoint-label", midpointLabel, x + 2 * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
         }
     }
 
@@ -149,7 +149,7 @@ public sealed partial class SvgChartRenderer {
         var stepHeight = height / steps;
         var titleLines = MapRightScaleTitleLines(series.Name);
         for (var i = 0; i < titleLines.Length; i++) {
-            AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-title").Attribute("x", x).Attribute("y", y - 34 + i * 17).Attribute("fill", t.Text.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize + 1).Attribute("font-weight", "750").Text(titleLines[i]).EndElement().Line());
+            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-title", titleLines[i], x, y - 34 + i * 17, "start", emphasized: true, fallbackColor: t.Text, fontSize: StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 1);
         }
         for (var i = 0; i < steps; i++) {
             var ratio = 1 - i / (double)(steps - 1);
@@ -159,20 +159,34 @@ public sealed partial class SvgChartRenderer {
         }
 
         AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-border").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height).Attribute("fill", "none").Attribute("stroke", t.PlotBorder.ToCss()).Attribute("stroke-width", "1").EndEmptyElement().Line());
-        AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-label").Attribute("x", x + width + 10).Attribute("y", y + 9).Attribute("fill", t.Text.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(ChartHeatmapSurface.MapHighLabel(chart)).EndElement().Line());
+        WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapHighLabel(chart), x + width + 10, y + 9, "start", fallbackColor: t.Text);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
             var midpoint = ChartHeatmapSurface.MapScaleMidpoint(chart, min, max);
             var midpointRatio = ChartHeatmapSurface.MapRatio(chart, midpoint, min, max);
-            AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-midpoint-label").Attribute("data-cfx-value", midpoint).Attribute("x", x + width + 10).Attribute("y", y + height * (1 - midpointRatio) + 4).Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(midpointLabel).EndElement().Line());
+            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-midpoint-label", midpointLabel, x + width + 10, y + height * (1 - midpointRatio) + 4, "start", value: midpoint);
         }
 
-        AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-label").Attribute("x", x + width + 10).Attribute("y", y + height).Attribute("fill", t.Text.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text(ChartHeatmapSurface.MapLowLabel(chart)).EndElement().Line());
+        WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapLowLabel(chart), x + width + 10, y + height, "start", fallbackColor: t.Text);
         if (hasMissing) {
             var missingY = y + height + 24;
             AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-no-data").Attribute("data-cfx-status", "empty").Attribute("x", x).Attribute("y", missingY - 9).Attribute("width", 11).Attribute("height", 11).Attribute("rx", "2").Attribute("fill", ChartHeatmapSurface.MapNoDataColor(chart).ToCss()).EndEmptyElement().Line());
-            AppendSvg(sb, 256, writer => writer.StartElement("text").Attribute("data-cfx-role", rolePrefix + "-scale-no-data-label").Attribute("x", x + 16).Attribute("y", missingY).Attribute("fill", t.MutedText.ToCss()).Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", t.TickLabelFontSize).Text("No data").EndElement().Line());
+            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-no-data-label", "No data", x + 16, missingY, "start");
         }
+    }
+
+    private static void WriteMapSvgTick(StringBuilder sb, Chart chart, string role, string text, double x, double y, string anchor, bool middleBaseline = false, bool emphasized = false, ChartColor? fallbackColor = null, double? fontSize = null, double? value = null) {
+        var style = chart.Options.TickLabelStyle;
+        var resolvedFontSize = fontSize ?? StyleFontSize(style, chart.Options.Theme.TickLabelFontSize);
+        AppendSvg(sb, 384, writer => {
+            writer.StartElement("text").Attribute("data-cfx-role", role);
+            if (value.HasValue) writer.Attribute("data-cfx-value", value.Value);
+            writer.Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor);
+            if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
+            writer.Attribute("fill", StyleColor(style, fallbackColor ?? chart.Options.Theme.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", resolvedFontSize).Attribute("font-weight", StyleWeight(style, emphasized ? "750" : "400"));
+            WriteSvgTextStyleAttributes(writer, style);
+            WriteSvgStyledTextContent(writer, style, StyleText(style, text)).EndElement().Line();
+        });
     }
 
     private static string[] MapRightScaleTitleLines(string title) {

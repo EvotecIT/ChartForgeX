@@ -84,18 +84,35 @@ public sealed partial class SvgChartRenderer {
             var centerY = segmentY + segmentDrawHeight / 2;
             var labelColor = ChartColorMath.TextOnBackground(color, 0.58);
             var labelStroke = FunnelTextHalo(labelColor, t.CardBackground);
-            var labelFontSize = FunnelLabelFontSize(t.LegendFontSize);
-            var valueFontSize = FunnelValueFontSize(t.DataLabelFontSize);
+            var dataStyle = DataLabelStyle(chart, series, i);
+            var labelFontSize = StyleFontSize(dataStyle, FunnelLabelFontSize(t.LegendFontSize));
+            var valueFontSize = StyleFontSize(dataStyle, FunnelValueFontSize(t.DataLabelFontSize));
             var labelWidth = FunnelLabelWidth(topWidth, bottomWidth);
+            labelFontSize = TextFontSizeForSvgWidth(chart, label, labelWidth, labelFontSize, dataStyle, emphasized: true);
+            valueFontSize = TextFontSizeForSvgWidth(chart, value, labelWidth, valueFontSize, dataStyle, emphasized: true);
+            var rowGap = Math.Max(2, Math.Min(6, segmentDrawHeight * 0.08));
+            var availableTextHeight = Math.Max(8, (values[i].Y <= 0 ? segmentHeight : segmentDrawHeight) - 6);
+            while (labelFontSize > 8 || valueFontSize > 8) {
+                var requiredHeight = EstimateSvgStyledTextHeight(labelFontSize, dataStyle) + rowGap + EstimateSvgStyledTextHeight(valueFontSize, dataStyle);
+                if (requiredHeight <= availableTextHeight) break;
+                if (labelFontSize >= valueFontSize && labelFontSize > 8) labelFontSize -= 0.5;
+                else if (valueFontSize > 8) valueFontSize -= 0.5;
+                else break;
+            }
+            var labelHeight = EstimateSvgStyledTextHeight(labelFontSize, dataStyle);
+            var valueHeight = EstimateSvgStyledTextHeight(valueFontSize, dataStyle);
+            var textTop = centerY - (labelHeight + rowGap + valueHeight) / 2.0;
+            var labelCenterY = textTop + labelHeight / 2.0;
+            var valueCenterY = textTop + labelHeight + rowGap + valueHeight / 2.0;
             if (showLabels) {
                 var labelWriter = new StringBuilder();
                 if (values[i].Y <= 0) {
                     var zeroLabelX = topRight + 18;
                     var zeroLabelMaxWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
-                    DrawSvgTextLeft(labelWriter, chart, "funnel-zero-label", label + ": " + value, zeroLabelX, centerY + 4, t.MutedText, Math.Min(12.5, labelFontSize), zeroLabelMaxWidth, "750");
+                    DrawSvgTextLeft(labelWriter, chart, "funnel-zero-label", label + ": " + value, zeroLabelX, centerY + 4, t.MutedText, Math.Min(12.5, labelFontSize), zeroLabelMaxWidth, "750", dataStyle);
                 } else {
-                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, centerY - 4, labelColor, labelFontSize, labelWidth, "800", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth);
-                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, centerY + 15, labelColor, valueFontSize, labelWidth, "750", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, labelCenterY, labelColor, labelFontSize, labelWidth, "800", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth, style: dataStyle);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, valueCenterY, labelColor, valueFontSize, labelWidth, "750", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth, style: dataStyle);
                 }
                 writer.Raw(labelWriter.ToString());
             }
@@ -121,8 +138,21 @@ public sealed partial class SvgChartRenderer {
                         .Line();
                 }
                 var metricsWriter = new StringBuilder();
-                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, centerY - 3, t.MutedText, t.TickLabelFontSize, metricMaxWidth, "700");
-                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, centerY + 14, t.Negative, t.TickLabelFontSize, metricMaxWidth, "650");
+                var retentionFontSize = TextFontSizeForSvgWidth(chart, retentionLabel, metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), dataStyle, emphasized: true);
+                var dropOffFontSize = TextFontSizeForSvgWidth(chart, dropOffLabel, metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), dataStyle, emphasized: true);
+                var metricGap = Math.Max(2, Math.Min(5, segmentDrawHeight * 0.07));
+                while (hasPreviousBaseline && (retentionFontSize > 8 || dropOffFontSize > 8)) {
+                    var requiredHeight = EstimateSvgStyledTextHeight(retentionFontSize, dataStyle) + metricGap + EstimateSvgStyledTextHeight(dropOffFontSize, dataStyle);
+                    if (requiredHeight <= Math.Max(8, segmentHeight - 6)) break;
+                    if (retentionFontSize >= dropOffFontSize && retentionFontSize > 8) retentionFontSize -= 0.5;
+                    else if (dropOffFontSize > 8) dropOffFontSize -= 0.5;
+                    else break;
+                }
+                var retentionHeight = EstimateSvgStyledTextHeight(retentionFontSize, dataStyle);
+                var dropOffHeight = hasPreviousBaseline ? EstimateSvgStyledTextHeight(dropOffFontSize, dataStyle) : 0;
+                var metricTop = centerY - (retentionHeight + (hasPreviousBaseline ? metricGap + dropOffHeight : 0)) / 2.0;
+                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, metricTop + retentionHeight / 2.0, t.MutedText, retentionFontSize, metricMaxWidth, "700", dataStyle);
+                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, metricTop + retentionHeight + metricGap + dropOffHeight / 2.0, t.Negative, dropOffFontSize, metricMaxWidth, "650", dataStyle);
                 writer.Raw(metricsWriter.ToString());
             }
 

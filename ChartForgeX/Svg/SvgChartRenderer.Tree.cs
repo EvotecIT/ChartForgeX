@@ -13,7 +13,8 @@ public sealed partial class SvgChartRenderer {
         var model = ChartTreeLayout.Build(chart, plot);
         if (model.Nodes.Count == 0 || model.Links.Count == 0) return;
         var t = chart.Options.Theme;
-        var showLabels = chart.Series.First(series => series.Kind == ChartSeriesKind.Tree).ShowDataLabels != false;
+        var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Tree);
+        var showLabels = series.ShowDataLabels != false;
         var writer = new SvgMarkupWriter(4096);
         writer
             .StartElement("g")
@@ -60,7 +61,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("vector-effect", "non-scaling-stroke")
                 .EndEmptyElement()
                 .Line();
-            if (showLabels) DrawTreeNodeLabel(writer, chart, node, model, t.Palette[fillIndex], labelColor);
+            if (showLabels) DrawTreeNodeLabel(writer, chart, series, node, model, t.Palette[fillIndex], labelColor);
         }
 
         writer.EndElement().Line();
@@ -129,18 +130,19 @@ public sealed partial class SvgChartRenderer {
 
     private static double TreeNodeLabelFontSize(double baseSize) => Math.Max(ChartVisualPrimitives.TreeNodeLabelMinFontSize, baseSize);
 
-    private static void DrawTreeNodeLabel(SvgMarkupWriter writer, Chart chart, ChartTreeNode node, ChartTreeModel model, ChartColor nodeColor, ChartColor labelColor) {
-        var fontSize = TreeNodeLabelFontSize(chart.Options.Theme.TickLabelFontSize);
+    private static void DrawTreeNodeLabel(SvgMarkupWriter writer, Chart chart, ChartSeries series, ChartTreeNode node, ChartTreeModel model, ChartColor nodeColor, ChartColor labelColor) {
+        var dataStyle = DataLabelStyle(chart, series);
+        var fontSize = TreeNodeLabelFontSize(StyleFontSize(dataStyle, chart.Options.Theme.TickLabelFontSize));
         var maxWidth = model.NodeWidth - ChartVisualPrimitives.TreeNodeLabelHorizontalPadding * 2;
-        var lines = ChartLabelWrapping.BalancedTwoLine(node.Label, fontSize, maxWidth, EstimateTextWidth);
+        var lines = ChartLabelWrapping.BalancedTwoLine(StyleText(dataStyle, node.Label), fontSize, maxWidth, EstimateTextWidth);
         var lineHeight = fontSize * ChartVisualPrimitives.TreeNodeLabelLineHeightFactor;
         var firstY = node.Y + model.NodeHeight / 2 - (lines.Length - 1) * lineHeight / 2;
         for (var i = 0; i < lines.Length; i++) {
-            DrawTreeNodeLabelLine(writer, chart, lines[i], node.X + model.NodeWidth / 2, firstY + i * lineHeight, nodeColor, labelColor, fontSize, maxWidth);
+            DrawTreeNodeLabelLine(writer, chart, dataStyle, lines[i], node.X + model.NodeWidth / 2, firstY + i * lineHeight, nodeColor, labelColor, fontSize, maxWidth);
         }
     }
 
-    private static void DrawTreeNodeLabelLine(SvgMarkupWriter writer, Chart chart, string text, double centerX, double y, ChartColor nodeColor, ChartColor labelColor, double fontSize, double maxWidth) {
+    private static void DrawTreeNodeLabelLine(SvgMarkupWriter writer, Chart chart, TextStyleOverride dataStyle, string text, double centerX, double y, ChartColor nodeColor, ChartColor labelColor, double fontSize, double maxWidth) {
         var fittedFontSize = TextFontSizeForSvgWidth(text, Math.Max(8, maxWidth), fontSize);
         var fittedText = TrimSvgLabelToWidth(text, fittedFontSize, Math.Max(8, maxWidth));
         if (fittedText.Length == 0) return;
@@ -152,16 +154,17 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", y)
             .Attribute("text-anchor", "middle")
             .Attribute("dominant-baseline", "middle")
-            .Attribute("fill", labelColor.ToCss())
+            .Attribute("fill", StyleColor(dataStyle, labelColor).ToCss())
             .Attribute("stroke", nodeColor.ToCss())
             .Attribute("stroke-opacity", ChartVisualPrimitives.TreeLabelHaloOpacity)
             .Attribute("stroke-width", ChartVisualPrimitives.TreeLabelHaloStrokeWidth)
             .Attribute("paint-order", "stroke fill")
             .Attribute("stroke-linejoin", "round")
-            .Attribute("font-family", SvgFontFamily(chart.Options.Theme.FontFamily))
+            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
             .Attribute("font-size", fittedFontSize)
-            .Attribute("font-weight", "800")
-            .Text(fittedText)
+            .Attribute("font-weight", StyleWeight(dataStyle, "800"));
+        WriteSvgTextStyleAttributes(writer, dataStyle);
+        WriteSvgStyledTextContent(writer, dataStyle, fittedText)
             .EndElement()
             .Line();
     }

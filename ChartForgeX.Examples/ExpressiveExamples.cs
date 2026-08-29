@@ -2,7 +2,7 @@ using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
-
+using ChartForgeX.Typography;
 internal static class ExpressiveExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         SaveGrid(CreateThemeShowcaseGrid(), output, "theme-font-showcase-grid", pngOutputScale);
@@ -121,7 +121,7 @@ internal static class ExpressiveExamples {
     private static Chart CreateTextStyleShowcase() {
         var chart = Chart.Create()
             .WithTitle("Styled Report Typography")
-            .WithSubtitle("Role-based color, italic, underline, weight, and font-family overrides")
+            .WithSubtitle("Color, family, size, weight, italic, decoration, baseline, and casing share one renderer contract")
             .WithTheme(ChartTheme.Editorial())
             .WithSize(860, 480)
             .WithXAxis("Audience cohort")
@@ -129,16 +129,17 @@ internal static class ExpressiveExamples {
             .WithLegendPosition(ChartLegendPosition.TopRight)
             .WithDataLabels()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Georgia, 'Times New Roman', serif").WithWeight("900").WithItalic().WithUnderline())
+            .WithTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Georgia, 'Times New Roman', serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.TitleCase))
             .WithSubtitleStyle(style => style.WithColor("#0e7490").WithItalic())
-            .WithAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline())
-            .WithTickLabelStyle(style => style.WithColor("#2563eb").WithItalic())
+            .WithAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline(TextDecorationStyle.Double))
+            .WithTickLabelStyle(style => style.WithColor("#2563eb").WithItalic().WithTextCase(TextCaseTransform.Uppercase))
             .WithLegendStyle(style => style.WithColor("#15803d").WithUnderline())
-            .WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800"))
+            .WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800").WithFontSize(15))
             .WithXLabels("Trial", "First value", "Power user", "Advocate")
             .AddBar("Activation share", Points(38, 54, 72, 84), ChartColor.FromHex("#f472b6"))
-            .AddSmoothLine("Referral lift", Points(24, 42, 61, 78), ChartColor.FromHex("#14b8a6"));
-        chart.Series[1].WithDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithUnderline());
+            .AddSmoothLine("Referral lift", Points(20, 36, 55, 69), ChartColor.FromHex("#14b8a6"));
+        chart.Series[0].WithPointDataLabelStyle(2, style => style.WithFontSize(15).WithSuperscript());
+        chart.Series[1].WithDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithFontSize(15).WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Single).WithSubscript());
         return chart;
     }
 
@@ -718,7 +719,6 @@ internal static class ExpressiveExamples {
             new ChartTreeLink("DNS hygiene", "DNSSEC rollout", 16),
             new ChartTreeLink("DNS hygiene", "Stale DNS", 12)
         });
-
     private static Chart CreateAudiencePictorial() => Chart.Create()
         .WithTitle("Audience Mix")
         .WithSubtitle("Pictorial stars turn proportions into a quick visual count")

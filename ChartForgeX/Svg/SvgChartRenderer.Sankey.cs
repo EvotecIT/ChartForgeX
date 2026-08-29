@@ -13,7 +13,9 @@ public sealed partial class SvgChartRenderer {
     private static void DrawSankey(StringBuilder sb, Chart chart, ChartRect plot, string id) {
         var model = BuildSankeyModel(chart, plot);
         if (model.Nodes.Count == 0 || model.Links.Count == 0) return;
-        var showDataLabels = chart.Series.First(series => series.Kind == ChartSeriesKind.Sankey).ShowDataLabels ?? chart.Options.ShowDataLabels;
+        var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Sankey);
+        var showDataLabels = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
+        var dataStyle = DataLabelStyle(chart, series);
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(4096);
         writer
@@ -27,8 +29,9 @@ public sealed partial class SvgChartRenderer {
             var labelMaxWidth = Math.Max(64, plot.Width / Math.Max(2, model.MaxLayer + 1) * 0.62);
             var anchor = node.Layer == model.MaxLayer ? "end" : "start";
             var labelX = node.Layer == model.MaxLayer ? node.X - 10 : node.X + model.NodeWidth + 10;
-            var labelFontSize = TextFontSizeForSvgWidth(node.Label, labelMaxWidth, t.TickLabelFontSize);
-            var label = TrimSvgLabelToWidth(node.Label, labelFontSize, labelMaxWidth);
+            var styledLabel = StyleText(dataStyle, node.Label);
+            var labelFontSize = TextFontSizeForSvgWidth(styledLabel, labelMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize));
+            var label = TrimSvgLabelToWidth(styledLabel, labelFontSize, labelMaxWidth);
             var summary = node.Label + ": " + FormatValue(chart, node.Value);
             var borderStroke = ChartVisualPrimitives.SankeyNodeBorderStrokeWidth;
             var borderInset = borderStroke / 2.0;
@@ -93,15 +96,16 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y", labelY)
                     .Attribute("text-anchor", anchor)
                     .Attribute("dominant-baseline", "middle")
-                    .Attribute("fill", t.MutedText.ToCss())
+                    .Attribute("fill", StyleColor(dataStyle, t.MutedText).ToCss())
                     .Attribute("stroke", t.CardBackground.ToCss())
                     .Attribute("stroke-width", ChartVisualPrimitives.SankeyLabelStrokeWidth)
                     .Attribute("paint-order", "stroke fill")
                     .Attribute("stroke-linejoin", "round")
-                    .Attribute("font-family", SvgFontFamily(t.FontFamily))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                     .Attribute("font-size", labelFontSize)
-                    .Attribute("font-weight", "700")
-                    .Text(label)
+                    .Attribute("font-weight", StyleWeight(dataStyle, "700"));
+                WriteSvgTextStyleAttributes(writer, dataStyle);
+                WriteSvgStyledTextContent(writer, dataStyle, label)
                     .EndElement()
                     .Line();
             }

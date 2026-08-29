@@ -28,9 +28,12 @@ public sealed partial class SvgChartRenderer {
         var sourceMax = max;
         if (Math.Abs(max - min) < 0.000001) max = min + 1;
 
-        var leftReserve = chart.Options.ShowAxes ? 34 : 6;
-        var topReserve = chart.Options.ShowAxes ? 24 : 6;
-        var bottomReserve = chart.Options.ShowHeatmapScale ? 38 : 8;
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
+        var tickHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
+        var leftReserve = chart.Options.ShowAxes ? Math.Max(34, EstimateSvgStyledTextWidth(chart, "Wed", tickFontSize, tickStyle) + 12) : 6;
+        var topReserve = chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6;
+        var bottomReserve = chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8;
         var plot = new ChartRect(basePlot.Left + leftReserve, basePlot.Top + topReserve, Math.Max(1, basePlot.Width - leftReserve - 8), Math.Max(1, basePlot.Height - topReserve - bottomReserve));
         var gap = columns > 32 ? 2.5 : 3.5;
         var cell = Math.Max(1, Math.Min((plot.Width - gap * (columns - 1)) / columns, (plot.Height - gap * 6) / 7));
@@ -121,19 +124,7 @@ public sealed partial class SvgChartRenderer {
         var rows = new[] { (1, "Mon"), (3, "Wed"), (5, "Fri") };
         foreach (var item in rows) {
             var y = y0 + item.Item1 * (cell + gap) + cell / 2;
-            writer
-                .StartElement("text")
-                .Attribute("data-cfx-role", "calendar-heatmap-weekday-label")
-                .Attribute("x", x0 - 8)
-                .Attribute("y", y)
-                .Attribute("text-anchor", "end")
-                .Attribute("dominant-baseline", "middle")
-                .Attribute("fill", t.MutedText.ToCss())
-                .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
-                .Attribute("font-size", t.TickLabelFontSize)
-                .Text(item.Item2)
-                .EndElement()
-                .Line();
+            WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-weekday-label", item.Item2, x0 - 8, y, "end", emphasized: false, middleBaseline: true);
         }
 
         var month = new DateTime(start.Year, start.Month, 1);
@@ -143,19 +134,7 @@ public sealed partial class SvgChartRenderer {
             var column = Math.Max(0, (month - start).Days / 7);
             var x = x0 + column * (cell + gap);
             if (x - lastX >= 28) {
-                writer
-                    .StartElement("text")
-                    .Attribute("data-cfx-role", "calendar-heatmap-month-label")
-                    .Attribute("x", x)
-                    .Attribute("y", y0 - 8)
-                    .Attribute("text-anchor", "start")
-                    .Attribute("fill", t.MutedText.ToCss())
-                    .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
-                    .Attribute("font-size", t.TickLabelFontSize)
-                    .Attribute("font-weight", "650")
-                    .Text(month.ToString("MMM", CultureInfo.InvariantCulture))
-                    .EndElement()
-                    .Line();
+                WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-month-label", month.ToString("MMM", CultureInfo.InvariantCulture), x, y0 - 8, "start", emphasized: true, middleBaseline: false);
                 lastX = x;
             }
 
@@ -169,7 +148,9 @@ public sealed partial class SvgChartRenderer {
         var gap = Math.Max(2, size * 0.28);
         var width = 5 * size + 4 * gap;
         var noDataWidth = showNoData ? size + gap : 0;
-        var x = right - noDataWidth - width - EstimateTextWidth("More", t.TickLabelFontSize) - 10;
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
+        var x = right - noDataWidth - width - EstimateSvgStyledTextWidth(chart, "More", tickFontSize, tickStyle) - 10;
         var lessLabelX = x - 8;
         if (showNoData) {
             var noData = ChartHeatmapSurface.CalendarEmptyColor(chart);
@@ -192,19 +173,7 @@ public sealed partial class SvgChartRenderer {
             x += size + gap;
         }
 
-        writer
-            .StartElement("text")
-            .Attribute("data-cfx-role", "calendar-heatmap-scale-label")
-            .Attribute("x", lessLabelX)
-            .Attribute("y", y + size / 2)
-            .Attribute("text-anchor", "end")
-            .Attribute("dominant-baseline", "middle")
-            .Attribute("fill", t.MutedText.ToCss())
-            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
-            .Attribute("font-size", t.TickLabelFontSize)
-            .Text("Less")
-            .EndElement()
-            .Line();
+        WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "Less", lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
         for (var i = 0; i < 5; i++) {
             var value = min + (max - min) * (i / 4.0);
             var ratio = ChartHeatmapSurface.CalendarRatio(value, min, max);
@@ -224,19 +193,17 @@ public sealed partial class SvgChartRenderer {
                 .EndEmptyElement()
                 .Line();
         }
-        writer
-            .StartElement("text")
-            .Attribute("data-cfx-role", "calendar-heatmap-scale-label")
-            .Attribute("x", x + width + 8)
-            .Attribute("y", y + size / 2)
-            .Attribute("text-anchor", "start")
-            .Attribute("dominant-baseline", "middle")
-            .Attribute("fill", t.MutedText.ToCss())
-            .Attribute("font-family", SvgFontFamilyAttributeValue(t.FontFamily))
-            .Attribute("font-size", t.TickLabelFontSize)
-            .Text("More")
-            .EndElement()
-            .Line();
+        WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "More", x + width + 8, y + size / 2, "start", emphasized: false, middleBaseline: true);
+    }
+
+    private static void WriteCalendarHeatmapSvgTick(SvgMarkupWriter writer, Chart chart, string role, string text, double x, double y, string anchor, bool emphasized, bool middleBaseline) {
+        var style = chart.Options.TickLabelStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.TickLabelFontSize);
+        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor);
+        if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
+        writer.Attribute("fill", StyleColor(style, chart.Options.Theme.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, emphasized ? "650" : "400"));
+        WriteSvgTextStyleAttributes(writer, style);
+        WriteSvgStyledTextContent(writer, style, StyleText(style, text)).EndElement().Line();
     }
 
     private static List<CalendarHeatmapCell> CalendarHeatmapCells(ChartSeries series) {

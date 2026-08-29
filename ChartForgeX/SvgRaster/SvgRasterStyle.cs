@@ -22,7 +22,15 @@ internal sealed class SvgRasterStyle {
         FillRule = "nonzero",
         ClipRule = "nonzero",
         FontSize = 16,
+        FontFamily = null,
         FontWeight = "normal",
+        FontStyle = "normal",
+        TextDecoration = "none",
+        TextDecorationStyle = "solid",
+        UnderlineDecorationStyle = "solid",
+        StrikethroughDecorationStyle = "solid",
+        BaselineShift = "baseline",
+        TextTransform = "none",
         TextAnchor = "start",
         DominantBaseline = "auto",
         WhiteSpace = "normal",
@@ -48,7 +56,15 @@ internal sealed class SvgRasterStyle {
     public string ClipRule { get; set; } = "nonzero";
     public string? ClipPath { get; set; }
     public double FontSize { get; set; }
+    public string? FontFamily { get; set; }
     public string FontWeight { get; set; } = "normal";
+    public string FontStyle { get; set; } = "normal";
+    public string TextDecoration { get; set; } = "none";
+    public string TextDecorationStyle { get; set; } = "solid";
+    public string UnderlineDecorationStyle { get; set; } = "solid";
+    public string StrikethroughDecorationStyle { get; set; } = "solid";
+    public string BaselineShift { get; set; } = "baseline";
+    public string TextTransform { get; set; } = "none";
     public string TextAnchor { get; set; } = "start";
     public string DominantBaseline { get; set; } = "auto";
     public string WhiteSpace { get; set; } = "normal";
@@ -77,7 +93,15 @@ internal sealed class SvgRasterStyle {
             FillRule = FillRule,
             ClipRule = ClipRule,
             FontSize = FontSize,
+            FontFamily = FontFamily,
             FontWeight = FontWeight,
+            FontStyle = FontStyle,
+            TextDecoration = TextDecoration,
+            TextDecorationStyle = TextDecorationStyle,
+            UnderlineDecorationStyle = UnderlineDecorationStyle,
+            StrikethroughDecorationStyle = StrikethroughDecorationStyle,
+            BaselineShift = BaselineShift,
+            TextTransform = TextTransform,
             TextAnchor = TextAnchor,
             DominantBaseline = DominantBaseline,
             WhiteSpace = WhiteSpace,
@@ -112,8 +136,28 @@ internal sealed class SvgRasterStyle {
             Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties));
         }
 
+        if (declarations.Any(declaration => string.Equals(declaration.Name, "text-decoration", StringComparison.OrdinalIgnoreCase))) {
+            var localDecoration = style.TextDecoration;
+            var localDecorationStyle = style.TextDecorationStyle;
+            style.TextDecoration = MergeTextDecorations(parent.TextDecoration, localDecoration);
+            if (ContainsDecoration(localDecoration, "underline")) style.UnderlineDecorationStyle = localDecorationStyle;
+            if (ContainsDecoration(localDecoration, "line-through")) style.StrikethroughDecorationStyle = localDecorationStyle;
+        }
+
         return style;
     }
+
+    private static string MergeTextDecorations(string inherited, string local) {
+        var underline = ContainsDecoration(inherited, "underline") || ContainsDecoration(local, "underline");
+        var strikethrough = ContainsDecoration(inherited, "line-through") || ContainsDecoration(local, "line-through");
+        if (underline && strikethrough) return "underline line-through";
+        if (underline) return "underline";
+        if (strikethrough) return "line-through";
+        return "none";
+    }
+
+    private static bool ContainsDecoration(string value, string decoration) =>
+        value.IndexOf(decoration, StringComparison.OrdinalIgnoreCase) >= 0;
 
     public static IReadOnlyDictionary<string, string> ResolveCustomProperties(SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterElement element) {
         var properties = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -151,7 +195,13 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "fill-opacity");
         AddAttribute(declarations, element, "stroke-opacity");
         AddAttribute(declarations, element, "font-size");
+        AddAttribute(declarations, element, "font-family");
         AddAttribute(declarations, element, "font-weight");
+        AddAttribute(declarations, element, "font-style");
+        AddAttribute(declarations, element, "text-decoration");
+        AddAttribute(declarations, element, "text-decoration-style");
+        AddAttribute(declarations, element, "baseline-shift");
+        AddAttribute(declarations, element, "text-transform");
         AddAttribute(declarations, element, "text-anchor");
         AddAttribute(declarations, element, "dominant-baseline");
         AddAttribute(declarations, element, "alignment-baseline");
@@ -237,8 +287,26 @@ internal sealed class SvgRasterStyle {
             case "font-size":
                 style.FontSize = Math.Max(1, ParseLength(value, style.FontSize));
                 break;
+            case "font-family":
+                style.FontFamily = value.Trim();
+                break;
             case "font-weight":
                 style.FontWeight = value.Trim();
+                break;
+            case "font-style":
+                style.FontStyle = value.Trim();
+                break;
+            case "text-decoration":
+                style.TextDecoration = value.Trim();
+                break;
+            case "text-decoration-style":
+                style.TextDecorationStyle = value.Trim();
+                break;
+            case "baseline-shift":
+                style.BaselineShift = value.Trim();
+                break;
+            case "text-transform":
+                style.TextTransform = value.Trim();
                 break;
             case "text-anchor":
                 style.TextAnchor = value.Trim();

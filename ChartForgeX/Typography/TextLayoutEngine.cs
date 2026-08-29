@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ChartForgeX.Raster;
 
 namespace ChartForgeX.Typography;
@@ -12,6 +13,7 @@ public static class TextLayoutEngine {
     public static TextMetrics Measure(string text, TextStyle style) {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (style == null) throw new ArgumentNullException(nameof(style));
+        text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
         var font = TypographyFontResolver.Resolve(style.Font);
         var lineHeight = ResolveLineHeight(style, font);
         var width = 0d;
@@ -32,6 +34,7 @@ public static class TextLayoutEngine {
         if (!Enum.IsDefined(typeof(TextWrapMode), wrapMode)) throw new ArgumentOutOfRangeException(nameof(wrapMode), wrapMode, "Unknown text wrap mode.");
         if (!Enum.IsDefined(typeof(TextTrimming), trimming)) throw new ArgumentOutOfRangeException(nameof(trimming), trimming, "Unknown text trimming mode.");
 
+        text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
         var font = TypographyFontResolver.Resolve(style.Font);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
@@ -70,12 +73,19 @@ public static class TextLayoutEngine {
     }
 
     internal static double MeasureWidth(string text, TextStyle style, TrueTypeFont? font) {
-        var width = RgbaCanvas.MeasureTextWidth(text, style.FontSize, font);
-        if (style.Font.Weight >= 600 && text.Length > 0) width += Math.Max(0.6, style.FontSize / 18.0);
+        var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, font, style.Font.Italic);
+        if (style.Font.Weight >= 600 && text.Length > 0) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
         return width;
     }
 
-    internal static double ResolveLineHeight(TextStyle style, TrueTypeFont? font) => Math.Max(1, RgbaCanvas.MeasureTextHeight(style.FontSize, font) * style.LineHeight);
+    internal static double ResolveLineHeight(TextStyle style, TrueTypeFont? font) {
+        var height = RgbaCanvas.MeasureTextHeight(style.EffectiveFontSize, font);
+        if (style.UnderlineStyle != TextDecorationStyle.None) {
+            var thickness = Math.Max(1, style.EffectiveFontSize / 13.0);
+            height = Math.Max(height, style.EffectiveFontSize + 2 + TextDecorationMetrics.OuterExtent(style.UnderlineStyle, thickness));
+        }
+        return Math.Max(1, height * style.LineHeight);
+    }
 
     private static List<TextLayoutLine> WrapParagraph(
         string paragraph,

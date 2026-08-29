@@ -15,21 +15,24 @@ internal static partial class SvgRasterRenderer {
         var textAncestors = new List<SvgRasterElement>(ancestors) { element };
         var whitespace = new TextWhitespaceState { LineStartX = cursorX };
         var measureWhitespace = whitespace;
-        cursorX += TextAnchorOffset(style.TextAnchor, MeasureTextChunkFrom(element, 0, style, definitions.StyleSheet, textAncestors, viewport, ref measureWhitespace, includeFirstPositionedSpan: false));
+        var measureTransform = new SvgRasterTextTransformer();
+        cursorX += TextAnchorOffset(style.TextAnchor, MeasureTextChunkFrom(element, 0, style, definitions.StyleSheet, textAncestors, viewport, ref measureWhitespace, ref measureTransform, includeFirstPositionedSpan: false));
         whitespace.LineStartX = cursorX;
         var paintBounds = new SvgRasterTextPaintBounds(matrix);
         var boundsCursorX = cursorX;
         var boundsCursorY = cursorY;
         var boundsWhitespace = whitespace;
-        RenderTextContent(null, element, style, matrix, definitions, width, height, textAncestors, viewport, paintBounds, measureOnly: true, ref boundsCursorX, ref boundsCursorY, ref boundsWhitespace);
-        RenderTextContent(canvas, element, style, matrix, definitions, width, height, textAncestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace);
+        var boundsTransform = new SvgRasterTextTransformer();
+        var paintTransform = new SvgRasterTextTransformer();
+        RenderTextContent(null, element, style, matrix, definitions, width, height, textAncestors, viewport, paintBounds, measureOnly: true, ref boundsCursorX, ref boundsCursorY, ref boundsWhitespace, ref boundsTransform);
+        RenderTextContent(canvas, element, style, matrix, definitions, width, height, textAncestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace, ref paintTransform);
     }
 
-    private static void RenderTextContent(RgbaCanvas? canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+    private static void RenderTextContent(RgbaCanvas? canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace, ref SvgRasterTextTransformer transform) {
         for (var contentIndex = 0; contentIndex < element.Content.Count; contentIndex++) {
             var content = element.Content[contentIndex];
             if (content.Text != null) {
-                RenderTextValue(canvas, content.Text, style, matrix, definitions, viewport, paintBounds, measureOnly, ref cursorX, ref cursorY, ref whitespace);
+                RenderTextValue(canvas, content.Text, style, matrix, definitions, viewport, paintBounds, measureOnly, ref cursorX, ref cursorY, ref whitespace, ref transform);
                 continue;
             }
 
@@ -47,31 +50,32 @@ internal static partial class SvgRasterRenderer {
             cursorY += VerticalLength(span, "dy", viewport);
             if (positioned) {
                 var measureWhitespace = whitespace;
-                cursorX += TextAnchorOffset(spanStyle.TextAnchor, MeasureTextChunkFrom(element, contentIndex, style, definitions.StyleSheet, ancestors, viewport, ref measureWhitespace, includeFirstPositionedSpan: true));
+                var measureTransform = transform;
+                cursorX += TextAnchorOffset(spanStyle.TextAnchor, MeasureTextChunkFrom(element, contentIndex, style, definitions.StyleSheet, ancestors, viewport, ref measureWhitespace, ref measureTransform, includeFirstPositionedSpan: true));
             }
             var spanMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(span.Get("transform")));
             ancestors.Add(span);
-            RenderTextSpan(canvas, span, spanStyle, spanMatrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly, ref cursorX, ref cursorY, ref whitespace);
+            RenderTextSpan(canvas, span, spanStyle, spanMatrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly, ref cursorX, ref cursorY, ref whitespace, ref transform);
             ancestors.RemoveAt(ancestors.Count - 1);
         }
     }
 
-    private static void RenderTextSpan(RgbaCanvas? canvas, SvgRasterElement span, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+    private static void RenderTextSpan(RgbaCanvas? canvas, SvgRasterElement span, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace, ref SvgRasterTextTransformer transform) {
         if (measureOnly) {
-            RenderTextContent(null, span, style, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: true, ref cursorX, ref cursorY, ref whitespace);
+            RenderTextContent(null, span, style, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: true, ref cursorX, ref cursorY, ref whitespace, ref transform);
             return;
         }
         var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(span, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(span, "mask"), out var maskDefinition);
         var compositeOpacity = style.Opacity < 0.999 && (span.Children.Count > 0 || HasVisibleTextFillAndStroke(style));
         if (!hasClipPath && !hasMask && !compositeOpacity) {
-            RenderTextContent(canvas, span, style, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace);
+            RenderTextContent(canvas, span, style, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace, ref transform);
             return;
         }
 
         var content = new RgbaCanvas(width, height, 1);
         var contentStyle = compositeOpacity ? style.Inherit() : style;
-        RenderTextContent(content, span, contentStyle, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace);
+        RenderTextContent(content, span, contentStyle, matrix, definitions, width, height, ancestors, viewport, paintBounds, measureOnly: false, ref cursorX, ref cursorY, ref whitespace, ref transform);
         if (hasClipPath) {
             var clipMask = new RgbaCanvas(width, height, 1);
             RenderClipPath(clipMask, clipPath, matrix, definitions, width, height, content.Pixels, viewport, span, style, ancestors);
@@ -89,8 +93,9 @@ internal static partial class SvgRasterRenderer {
         canvas!.DrawImage(0, 0, width, height, compositeOpacity ? ApplyOpacity(content.Pixels, style.Opacity) : content.Pixels);
     }
 
-    private static void RenderTextValue(RgbaCanvas? canvas, string value, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace) {
+    private static void RenderTextValue(RgbaCanvas? canvas, string value, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, ref double cursorX, ref double cursorY, ref TextWhitespaceState whitespace, ref SvgRasterTextTransformer transform) {
         var text = NormalizeTextWhitespace(value, style.WhiteSpace, ref whitespace);
+        text = transform.Transform(text, style.TextTransform);
         var start = 0;
         while (start <= text.Length) {
             var newline = text.IndexOf('\n', start);
@@ -103,12 +108,13 @@ internal static partial class SvgRasterRenderer {
         }
     }
 
-    private static double MeasureTextChunkFrom(SvgRasterElement element, int startIndex, SvgRasterStyle style, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterViewport viewport, ref TextWhitespaceState whitespace, bool includeFirstPositionedSpan) {
+    private static double MeasureTextChunkFrom(SvgRasterElement element, int startIndex, SvgRasterStyle style, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterViewport viewport, ref TextWhitespaceState whitespace, ref SvgRasterTextTransformer transform, bool includeFirstPositionedSpan) {
         var advance = 0.0;
         for (var contentIndex = startIndex; contentIndex < element.Content.Count; contentIndex++) {
             var content = element.Content[contentIndex];
             if (content.Text != null) {
                 var text = NormalizeTextWhitespace(content.Text, style.WhiteSpace, ref whitespace);
+                text = transform.Transform(text, style.TextTransform);
                 var newline = text.IndexOf('\n');
                 if (newline >= 0) text = text.Substring(0, newline);
                 advance += MeasureTextAdvance(text, style);
@@ -123,14 +129,26 @@ internal static partial class SvgRasterRenderer {
             if (!spanStyle.Displayed) continue;
             if (!(includeFirstPositionedSpan && contentIndex == startIndex)) advance += HorizontalLength(span, "dx", viewport);
             var spanAncestors = new List<SvgRasterElement>(ancestors) { span };
-            advance += MeasureTextChunkFrom(span, 0, spanStyle, styleSheet, spanAncestors, viewport, ref whitespace, includeFirstPositionedSpan: false);
+            advance += MeasureTextChunkFrom(span, 0, spanStyle, styleSheet, spanAncestors, viewport, ref whitespace, ref transform, includeFirstPositionedSpan: false);
         }
         return advance;
     }
 
     private static double MeasureTextAdvance(string text, SvgRasterStyle style) {
         if (text.Length == 0) return 0;
-        return IsBold(style.FontWeight) ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, null) : RgbaCanvas.MeasureTextWidth(text, style.FontSize, null);
+        var font = SvgTextFont(style);
+        return IsBold(style.FontWeight)
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, font, italic: false)
+            : RgbaCanvas.MeasureTextWidth(text, style.FontSize, font, italic: false);
+    }
+
+    private static double MeasureTextPaintWidth(string text, SvgRasterStyle style) {
+        if (text.Length == 0) return 0;
+        var font = SvgTextFont(style);
+        var italic = IsItalic(style.FontStyle);
+        return IsBold(style.FontWeight)
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, font, italic)
+            : RgbaCanvas.MeasureTextWidth(text, style.FontSize, font, italic);
     }
 
     private static double TextAnchorOffset(string anchor, double width) {
@@ -143,32 +161,45 @@ internal static partial class SvgRasterRenderer {
         if (text.Length == 0) return 0;
         if (measureOnly) {
             var measuredAdvance = MeasureTextAdvance(text, style);
-            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline), measuredAdvance, RgbaCanvas.MeasureTextHeight(style.FontSize, null), matrix);
+            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline) + BaselineShiftOffset(style), MeasureTextPaintWidth(text, style), SvgTextPaintHeight(style, SvgTextFont(style)), matrix);
             return measuredAdvance;
         }
         if (canvas == null) throw new InvalidOperationException("SVG text rendering requires a target canvas.");
         var renderScale = ResolveTextRenderScale(canvas, text, style, matrix.ScaleFactor);
         var fontSize = Math.Max(1, style.FontSize * renderScale);
+        var font = SvgTextFont(style);
         var emphasized = IsBold(style.FontWeight);
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null);
-        var advance = width / renderScale;
+        var italic = IsItalic(style.FontStyle);
+        var underline = HasUnderline(style.TextDecoration);
+        var strikethrough = HasLineThrough(style.TextDecoration);
+        var underlineStyle = DecorationStyle(style.UnderlineDecorationStyle);
+        var strikethroughStyle = DecorationStyle(style.StrikethroughDecorationStyle);
+        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic);
+        var advanceWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic: false) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic: false);
+        var advance = advanceWidth / renderScale;
         if (!style.VisibilityVisible) return advance;
         var fillColor = style.FillColor();
         var strokeColor = style.StrokeWidth > 0 ? ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions) : ChartColor.Transparent;
         if (style.Fill.IsNone && strokeColor.A == 0) return advance;
 
         var drawX = x;
-        var drawY = TextTop(y, style.FontSize, style.DominantBaseline);
+        var drawY = TextTop(y, style.FontSize, style.DominantBaseline) + BaselineShiftOffset(style);
         var strokeRadius = strokeColor.A == 0 ? 0 : Math.Max(1, (int)Math.Ceiling(style.StrokeWidth * renderScale / 2.0));
         var padding = Math.Max(2, (int)Math.Ceiling(fontSize * 0.2) + strokeRadius);
-        var textHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, null));
+        var textHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, font));
+        var underlineThickness = Math.Max(1, fontSize / 13.0);
+        var underlineY = padding + fontSize + 2;
+        var strikeY = padding + fontSize * 0.55;
+        var contentHeight = underline ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, underlineThickness)) : textHeight;
         var localWidth = Math.Max(1, (int)Math.Ceiling(width + padding * 2.0));
-        var localHeight = Math.Max(1, (int)Math.Ceiling(textHeight + padding * 2.0));
-        var buffer = new RgbaCanvas(localWidth, localHeight, 1);
+        var localHeight = Math.Max(1, (int)Math.Ceiling(contentHeight + padding * 2.0));
+        var buffer = new RgbaCanvas(localWidth, localHeight, 1, font);
         RgbaCanvas? glyphMask = null;
         if (style.Fill.IsReference || strokeColor.A > 0) {
-            glyphMask = new RgbaCanvas(localWidth, localHeight, 1);
-            DrawTextGlyphs(glyphMask, padding, padding, text, ChartColor.White, fontSize, emphasized);
+            glyphMask = new RgbaCanvas(localWidth, localHeight, 1, font);
+            DrawTextGlyphs(glyphMask, padding, padding, text, ChartColor.White, fontSize, emphasized, italic);
+            if (underline) RasterTextDecoration.Draw(glyphMask, padding, padding + width, underlineY, underlineStyle, ChartColor.White, underlineThickness);
+            if (strikethrough) RasterTextDecoration.Draw(glyphMask, padding, padding + width, strikeY, strikethroughStyle, ChartColor.White, underlineThickness);
         }
         if (style.Fill.IsReference && glyphMask != null) {
             var localToCanvas = matrix
@@ -179,7 +210,7 @@ internal static partial class SvgRasterRenderer {
                 SvgRasterObjectPaint? objectPaint = null;
                 var localPaintBounds = paintBounds.HasBounds
                     ? TransformRing(RectRing(paintBounds.Left, paintBounds.Top, paintBounds.Width, paintBounds.Height), inverseTextMatrix.Multiply(paintBounds.RootMatrix))
-                    : RectRing(padding, padding, width, textHeight);
+                    : RectRing(padding, padding, width, contentHeight);
                 if (paintBounds.HasBounds) {
                     objectPaint = new SvgRasterObjectPaint(
                         new SvgRasterGradientValues.GradientBounds(paintBounds.Left, paintBounds.Top, paintBounds.Width, paintBounds.Height),
@@ -189,7 +220,9 @@ internal static partial class SvgRasterRenderer {
                 buffer.DrawImageMasked(0, 0, localWidth, localHeight, paintCanvas.Pixels, glyphMask.Pixels, useAlphaMask: true);
             }
         } else if (fillColor.A > 0) {
-            DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized);
+            DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized, italic);
+            if (underline) RasterTextDecoration.Draw(buffer, padding, padding + width, underlineY, underlineStyle, fillColor, underlineThickness);
+            if (strikethrough) RasterTextDecoration.Draw(buffer, padding, padding + width, strikeY, strikethroughStyle, fillColor, underlineThickness);
         }
         if (strokeColor.A > 0) {
             PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
@@ -205,10 +238,16 @@ internal static partial class SvgRasterRenderer {
     private static double ResolveTextRenderScale(RgbaCanvas canvas, string text, SvgRasterStyle style, double requestedScale) {
         const double minimumScale = 0.000000000001;
         var scale = Math.Max(minimumScale, requestedScale);
+        var font = SvgTextFont(style);
+        var italic = IsItalic(style.FontStyle);
         for (var attempt = 0; attempt < 8; attempt++) {
             var fontSize = Math.Max(1, style.FontSize * scale);
-            var width = Math.Max(1, IsBold(style.FontWeight) ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, null) : RgbaCanvas.MeasureTextWidth(text, fontSize, null));
-            var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, null));
+            var width = Math.Max(1, IsBold(style.FontWeight) ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic));
+            var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, font));
+            if (HasUnderline(style.TextDecoration)) {
+                var thickness = Math.Max(1, fontSize / 13.0);
+                height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.UnderlineDecorationStyle), thickness));
+            }
             var padding = Math.Max(2, Math.Ceiling(fontSize * 0.2 + style.StrokeWidth * scale / 2.0));
             var pixels = (width + padding * 2) * (height + padding * 2);
             var axisLimit = Math.Max(1024, Math.Min(32768, Math.Max(canvas.Width, canvas.Height) * 2));
@@ -226,9 +265,42 @@ internal static partial class SvgRasterRenderer {
     private static bool HasVisibleTextFillAndStroke(SvgRasterStyle style) =>
         !style.Fill.IsNone && style.FillOpacity > 0 && !style.Stroke.IsNone && style.StrokeOpacity > 0 && style.StrokeWidth > 0;
 
-    private static void DrawTextGlyphs(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool emphasized) {
-        if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize);
-        else canvas.DrawText(x, y, text, color, fontSize);
+    private static TrueTypeFont? SvgTextFont(SvgRasterStyle style) =>
+        string.IsNullOrWhiteSpace(style.FontFamily) ? null : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _);
+
+    private static bool IsItalic(string value) =>
+        value.IndexOf("italic", StringComparison.OrdinalIgnoreCase) >= 0 || value.IndexOf("oblique", StringComparison.OrdinalIgnoreCase) >= 0;
+
+    private static bool HasUnderline(string value) =>
+        value.IndexOf("underline", StringComparison.OrdinalIgnoreCase) >= 0;
+
+    private static bool HasLineThrough(string value) =>
+        value.IndexOf("line-through", StringComparison.OrdinalIgnoreCase) >= 0;
+
+    private static TextDecorationStyle DecorationStyle(string value) {
+        if (value.IndexOf("double", StringComparison.OrdinalIgnoreCase) >= 0) return TextDecorationStyle.Double;
+        if (value.IndexOf("dotted", StringComparison.OrdinalIgnoreCase) >= 0) return TextDecorationStyle.Dotted;
+        if (value.IndexOf("dashed", StringComparison.OrdinalIgnoreCase) >= 0) return TextDecorationStyle.Dashed;
+        if (value.IndexOf("wavy", StringComparison.OrdinalIgnoreCase) >= 0) return TextDecorationStyle.Wavy;
+        return TextDecorationStyle.Single;
+    }
+
+    private static double BaselineShiftOffset(SvgRasterStyle style) {
+        if (string.Equals(style.BaselineShift, "super", StringComparison.OrdinalIgnoreCase)) return -style.FontSize * 0.45;
+        if (string.Equals(style.BaselineShift, "sub", StringComparison.OrdinalIgnoreCase)) return style.FontSize * 0.25;
+        return 0;
+    }
+
+    private static double SvgTextPaintHeight(SvgRasterStyle style, TrueTypeFont? font) {
+        var height = RgbaCanvas.MeasureTextHeight(style.FontSize, font);
+        if (!HasUnderline(style.TextDecoration)) return height;
+        var thickness = Math.Max(1, style.FontSize / 13.0);
+        return Math.Max(height, style.FontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.UnderlineDecorationStyle), thickness));
+    }
+
+    private static void DrawTextGlyphs(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool emphasized, bool italic) {
+        if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize, italic);
+        else canvas.DrawText(x, y, text, color, fontSize, italic);
     }
 
     private static void PaintDilatedTextStroke(byte[] destination, byte[] glyphPixels, int width, int height, int radius, ChartColor color) {

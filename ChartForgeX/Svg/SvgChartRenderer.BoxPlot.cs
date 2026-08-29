@@ -40,14 +40,14 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
                     var labelX = placement == ChartDataLabelPlacement.Left ? x - boxWidth / 2 - 8 : x + boxWidth / 2 + 8;
-                    if (ReserveSvgHorizontalLabel(label, labelX, yMedian, anchor, chart, plot, reservedLabels)) DrawHorizontalValueLabel(sb, chart, label, labelX, yMedian, anchor, plot, series, item);
+                    if (ReserveSvgHorizontalLabel(label, labelX, yMedian, anchor, chart, plot, reservedLabels, series, item)) DrawHorizontalValueLabel(sb, chart, label, labelX, yMedian, anchor, plot, series, item);
                 } else {
                     var labelY = placement == ChartDataLabelPlacement.Below
                         ? Math.Max(yQ1, yQ3) + 11
                         : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                             ? yMedian
                             : Math.Min(yQ1, yQ3) - 11;
-                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
+                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, item)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
                 }
             }
         }

@@ -41,23 +41,24 @@ public sealed partial class PngChartRenderer {
         c.DrawCircleOutline(cx, cy, centerRadius, ApplyOpacity(theme.Grid, ChartVisualPrimitives.CircleCenterStrokeOpacity), 1);
         var valueLabel = FormatValue(chart, value);
         var labelWidth = Math.Max(60, Math.Min(plot.Width - 24, radius * 1.65));
-        var valueFontSize = Math.Max(24, Math.Min(theme.TitleFontSize * 1.72, radius * 0.72));
-        var titleFontSize = Math.Max(9, Math.Min(theme.LegendFontSize, radius * 0.22));
+        var dataStyle = DataLabelStyle(chart, circle, 0);
+        var valueFontSize = PngStyleFontSize(dataStyle, Math.Max(24, Math.Min(theme.TitleFontSize * 1.72, radius * 0.72)));
+        var titleFontSize = PngStyleFontSize(dataStyle, Math.Max(9, Math.Min(theme.LegendFontSize, radius * 0.22)));
         if (circle.ShowDataLabels != false) {
             var centerLineGap = Math.Max(4, Math.Min(8, radius * 0.05));
-            var valueHeight = EstimatePngTextHeight(valueFontSize);
-            var titleHeight = EstimatePngTextHeight(titleFontSize);
-            var groupTop = cy - (valueHeight + centerLineGap + titleHeight) / 2.0;
-            DrawPngTextEmphasizedCenteredX(c, cx, groupTop, valueLabel, theme.Text, valueFontSize, labelWidth);
-            DrawPngTextEmphasizedCenteredX(c, cx, groupTop + valueHeight + centerLineGap, circle.Name, theme.MutedText, titleFontSize, labelWidth);
+            var valueFit = FitPngStyledText(valueLabel, dataStyle, valueFontSize, labelWidth, emphasized: true);
+            var titleFit = FitPngStyledText(circle.Name, dataStyle, titleFontSize, labelWidth, emphasized: true);
+            var groupTop = cy - (valueFit.Height + centerLineGap + titleFit.Height) / 2.0;
+            DrawPngFittedTextStyledCenteredX(c, cx, groupTop, valueFit, dataStyle, theme.Text, emphasized: true);
+            DrawPngFittedTextStyledCenteredX(c, cx, groupTop + valueFit.Height + centerLineGap, titleFit, dataStyle, theme.MutedText, emphasized: true);
             if (chart.Options.ShowCircleStatusLabel) {
                 var statusLabel = status.Replace("-", " ");
-                var statusFontSize = TextFontSizeForEmphasizedWidth(statusLabel, labelWidth, theme.TickLabelFontSize);
-                statusLabel = TrimReadablePngLabelToWidth(statusLabel, statusFontSize, labelWidth);
-                var statusLeft = cx - EstimatePngEmphasizedTextWidth(statusLabel, statusFontSize) / 2.0;
+                var statusFontSize = TextFontSizeForEmphasizedWidth(statusLabel, labelWidth, PngStyleFontSize(dataStyle, theme.TickLabelFontSize), dataStyle);
+                statusLabel = TrimReadablePngLabelToWidth(statusLabel, statusFontSize, labelWidth, dataStyle);
+                var statusLeft = cx - EstimatePngStyledTextWidth(statusLabel, statusFontSize, dataStyle, emphasized: true) / 2.0;
                 c.DrawCircle(statusLeft - 9, cy + radius + 36, ChartVisualPrimitives.PngStatusMarkerOutlineRadius, theme.CardBackground);
                 c.DrawCircle(statusLeft - 9, cy + radius + 36, ChartVisualPrimitives.StatusMarkerRadius, statusColor);
-                c.DrawTextEmphasized(statusLeft, cy + radius + 40 - statusFontSize + 1, statusLabel, theme.MutedText, statusFontSize);
+                DrawPngTextStyled(c, statusLeft, cy + radius + 40 - EstimatePngStyledTextHeight(statusFontSize, dataStyle) + 1, statusLabel, dataStyle, theme.MutedText, statusFontSize, emphasized: true);
             }
         }
     }

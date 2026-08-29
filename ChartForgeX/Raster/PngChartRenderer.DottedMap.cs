@@ -426,7 +426,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawDottedMapPngDataLabel(RgbaCanvas c, Chart chart, ChartSeries series, string label, int pointIndex, double x, double y, double dot, ChartRect map, List<ChartLabelBounds> reservedLabels) {
         var style = DataLabelStyle(chart, series, pointIndex);
         var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
-        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Min(132, Math.Max(8, map.Width - ChartVisualPrimitives.DataLabelPlotInset * 2)));
+        label = TrimReadablePngLabelToWidth(label, fontSize, Math.Min(132, Math.Max(8, map.Width - ChartVisualPrimitives.DataLabelPlotInset * 2)), style);
         if (label.Length == 0) return;
 
         var offset = Math.Max(16, dot * 5.6);
@@ -445,8 +445,8 @@ public sealed partial class PngChartRenderer {
             new DottedMapPngLabelCandidate(x - offset * 1.32, y - offset * 2.0, "left")
         };
 
-        var width = EstimatePngEmphasizedTextWidth(label, fontSize) + 8;
-        var height = fontSize + 6;
+        var width = EstimatePngStyledTextWidth(label, fontSize, style, true) + 8;
+        var height = EstimatePngStyledTextBoundsHeight(fontSize, style) + 6;
         DottedMapPngLabelPlacement? fallback = null;
         foreach (var candidate in candidates) {
             var placement = PlaceDottedMapPngLabel(candidate, map, width, height);
@@ -489,7 +489,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawDottedMapPngDataLabel(RgbaCanvas c, Chart chart, string label, double fontSize, TextStyleOverride style, DottedMapPngLabelPlacement placement, double pointX, double pointY, double dot) {
         DrawDottedMapPngLabelLeader(c, chart, placement.Bounds, pointX, pointY, dot);
         c.FillRoundedRect(placement.Bounds.X, placement.Bounds.Y, placement.Bounds.Width, placement.Bounds.Height, Math.Min(6, placement.Bounds.Height / 2), ApplyOpacity(ReadableLabelHalo(chart), 0.86));
-        DrawReadablePngLabel(c, placement.Bounds.X + 4, placement.Bounds.Y + 3, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
+        DrawReadablePngLabel(c, placement.Bounds.X + 4, placement.Bounds.Y + 3 - PngStyledTextTopExtent(fontSize, style), label, chart.Options.Theme.Text, ReadableLabelHalo(chart), fontSize, style);
     }
 
     private static void DrawDottedMapPngLabelLeader(RgbaCanvas c, Chart chart, ChartLabelBounds bounds, double pointX, double pointY, double dot) {

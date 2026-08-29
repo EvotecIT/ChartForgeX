@@ -4,8 +4,10 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
@@ -22,6 +24,15 @@ internal static partial class SmokeTests {
         AssertGifHeader(SampleChart().ToRasterImage(RasterImageFormat.Gif));
         var supportedFormats = RasterImageFormatExtensions.GetSupportedFormats();
         Assert(supportedFormats.SequenceEqual(new[] { RasterImageFormat.Png, RasterImageFormat.Gif, RasterImageFormat.Jpeg, RasterImageFormat.Bmp, RasterImageFormat.Ppm, RasterImageFormat.Tiff }), "Supported raster formats should be discoverable in stable order.");
+        var styledChart = Chart.Create()
+            .WithSize(320, 200)
+            .WithTitle("styled raster family")
+            .WithTitleStyle(style => style.WithColor("#7c3aed").WithWeight("bold").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Double).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
+            .AddBar("Values", Points(1, 3, 2));
+        foreach (var format in supportedFormats) {
+            var decoded = RasterImageDecoder.Decode(styledChart.ToRasterImage(format));
+            Assert(decoded.Width == 320 && decoded.Height == 200, "Every advertised raster encoder should receive the same fully styled chart surface: " + format + ".");
+        }
         Assert((int)RasterImageFormat.Jpeg == 4 && (int)RasterImageFormat.Gif == 5, "Adding GIF should not renumber existing raster image formats.");
         Assert(RasterImageFormat.Gif.IsSupported(), "GIF should be reported as a supported raster format.");
         Assert(RasterImageFormat.Bmp.IsSupported(), "BMP should be reported as a supported raster format.");

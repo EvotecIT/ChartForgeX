@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var tickFontSize = PngTickFontSize(chart);
         var bottomReserve = ShowXAxis(chart) ? (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 32.0 : 60.0) : 0.0;
-        if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += 18 + PngLegendRowCount(chart) * (PngLegendFontSize(chart) + 6);
+        if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += 18 + PngLegendRowCount(chart) * PngLegendRowHeight(chart);
         plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(1, plot.Height - bottomReserve));
         var slot = plot.Width / steps.Count;
         var barWidth = Math.Max(8, Math.Min(46, slot * 0.58));
@@ -53,27 +53,30 @@ public sealed partial class PngChartRenderer {
                     var placement = DataLabelPlacement(chart, series);
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
                     var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
-                    if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) && height < dataFontSize + 8) continue;
-                    var labelWidth = EstimatePngEmphasizedTextWidth(label, dataFontSize);
-                    var labelX = placement == ChartDataLabelPlacement.Left
-                        ? centerX - barWidth / 2 - labelWidth - 8
-                        : placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside
-                            ? centerX + barWidth / 2 + 8
-                            : centerX - labelWidth / 2.0;
-                    var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
-                        ? top + height / 2 - dataFontSize / 2.0
-                        : placement == ChartDataLabelPlacement.Above
-                            ? top - 11 - dataFontSize
-                            : placement == ChartDataLabelPlacement.Below
-                                ? top + height + 13 - dataFontSize
-                                : step.Delta >= 0 || step.IsTotal ? top - 11 - dataFontSize : top + height + 13 - dataFontSize;
-                    if (!ReservePngLabel(label, labelX, labelY, chart, plot, dataFontSize, reservedLabels)) continue;
-                    DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
+                    var dataTextHeight = EstimatePngStyledTextHeight(dataFontSize, dataStyle);
+                    var labelFits = (placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) || height >= dataTextHeight + 8;
+                    if (labelFits) {
+                        var labelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, true);
+                        var labelX = placement == ChartDataLabelPlacement.Left
+                            ? centerX - barWidth / 2 - labelWidth - 8
+                            : placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside
+                                ? centerX + barWidth / 2 + 8
+                                : centerX - labelWidth / 2.0;
+                        var labelY = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center
+                            ? top + height / 2 - dataTextHeight / 2.0
+                            : placement == ChartDataLabelPlacement.Above
+                                ? top - 11 - dataTextHeight
+                                : placement == ChartDataLabelPlacement.Below
+                                    ? top + height + 13 - dataTextHeight
+                                    : step.Delta >= 0 || step.IsTotal ? top - 11 - dataTextHeight : top + height + 13 - dataTextHeight;
+                        if (ReservePngLabel(label, labelX, labelY, chart, plot, dataFontSize, reservedLabels, dataStyle)) DrawReadablePngLabel(c, plot, labelX, labelY, label, chart.Options.Theme.Text, ReadableLabelHalo(chart), dataFontSize, dataStyle);
+                    }
             }
 
             if (ShowXAxis(chart)) {
                 var categoryLabel = step.IsTotal ? "Total" : FormatX(chart, step.XValue);
-                c.DrawText(EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize), plot.Bottom + PngXAxisLabelOffset(chart) - tickFontSize + 1, categoryLabel, chart.Options.Theme.MutedText, tickFontSize);
+                var tickStyle = chart.Options.TickLabelStyle;
+                DrawPngTextStyled(c, EdgeAwarePngLabelX(categoryLabel, centerX, plot, tickFontSize, tickStyle), plot.Bottom + PngXAxisLabelOffset(chart) - EstimatePngStyledTextHeight(tickFontSize, tickStyle) + 1, categoryLabel, tickStyle, chart.Options.Theme.MutedText, tickFontSize, emphasized: false);
             }
         }
 
@@ -87,7 +90,9 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
             if (ShowYAxis(chart)) {
                 var label = FormatYAxisValue(chart, tick);
-                c.DrawText(Math.Max(2, plot.Left - EstimatePngTextWidth(label, fontSize) - 8), y - fontSize / 2.0, label, chart.Options.Theme.MutedText, fontSize);
+                var tickStyle = chart.Options.TickLabelStyle;
+                var labelHeight = EstimatePngStyledTextHeight(fontSize, tickStyle);
+                DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: false) - 8), y - labelHeight / 2.0, label, tickStyle, chart.Options.Theme.MutedText, fontSize, emphasized: false);
             }
         }
 

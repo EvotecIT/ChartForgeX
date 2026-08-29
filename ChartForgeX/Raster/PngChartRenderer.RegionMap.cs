@@ -55,7 +55,11 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowMapLabels) {
                 var label = region.HasLabel ? ProjectMapPoint(region.Label, sourceBounds, map) : new ChartPoint(regionBounds.Left + regionBounds.Width / 2, regionBounds.Top + regionBounds.Height / 2);
                 var fontSize = Math.Min(PngTickFontSize(chart), Math.Max(7, map.Height * 0.032));
-                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) c.DrawTextEmphasized(label.X - EstimatePngEmphasizedTextWidth(region.Code, fontSize) / 2, label.Y - fontSize / 2, region.Code, ChartColorMath.TextOnBackground(color), fontSize);
+                if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) {
+                    var style = chart.Options.TickLabelStyle;
+                    var width = EstimatePngStyledTextWidth(region.Code, fontSize, style, emphasized: true);
+                    DrawPngTextStyled(c, label.X - width / 2, label.Y - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), region.Code, style, ChartColorMath.TextOnBackground(color), fontSize, emphasized: true);
+                }
             }
         }
 
@@ -95,17 +99,17 @@ public sealed partial class PngChartRenderer {
         var fontSize = PngTickFontSize(chart);
         if (hasMissing) DrawMapPngNoDataScale(c, chart, x, y, size, fontSize, plot);
         var lowLabel = ChartHeatmapSurface.MapLowLabel(chart);
-        c.DrawText(x - EstimatePngTextWidth(lowLabel, fontSize) - 8, y + size / 2 - fontSize / 2, lowLabel, t.MutedText, fontSize);
+        DrawMapPngTick(c, chart, x - EstimatePngStyledTextWidth(lowLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) - 8, y + size / 2, lowLabel, emphasized: false);
         for (var i = 0; i < 5; i++) {
             var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
             var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, 2, color);
         }
         var highLabel = ChartHeatmapSurface.MapHighLabel(chart);
-        c.DrawText(x + 5 * size + 4 * gap + 8, y + size / 2 - fontSize / 2, highLabel, t.MutedText, fontSize);
+        DrawMapPngTick(c, chart, x + 5 * size + 4 * gap + 8, y + size / 2, highLabel, emphasized: false);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            c.DrawText(x + 2 * (size + gap) + size / 2 - EstimatePngTextWidth(midpointLabel, fontSize) / 2, y + size + 2, midpointLabel, t.MutedText, fontSize);
+            DrawMapPngTick(c, chart, x + 2 * (size + gap) + size / 2 - EstimatePngStyledTextWidth(midpointLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) / 2, y + size + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, midpointLabel, emphasized: false);
         }
     }
 
@@ -117,7 +121,7 @@ public sealed partial class PngChartRenderer {
         var stepHeight = height / steps;
         var fontSize = PngTickFontSize(chart);
         var titleLines = MapRightScaleTitleLines(series.Name);
-        for (var i = 0; i < titleLines.Length; i++) c.DrawText(x, y - 34 + i * 17, titleLines[i], t.Text, fontSize + 1);
+        for (var i = 0; i < titleLines.Length; i++) DrawMapPngTick(c, chart, x, y - 34 + i * 17 + EstimatePngStyledTextBoundsHeight(fontSize + 1, chart.Options.TickLabelStyle) / 2, titleLines[i], emphasized: true, fallbackColor: t.Text, fontSize: fontSize + 1);
         for (var i = 0; i < steps; i++) {
             var ratio = 1 - i / (double)(steps - 1);
             var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, ratio);
@@ -126,20 +130,27 @@ public sealed partial class PngChartRenderer {
         }
 
         c.StrokeRect(x, y, width, height, t.PlotBorder, 1);
-        c.DrawText(x + width + 10, y + 2, ChartHeatmapSurface.MapHighLabel(chart), t.Text, fontSize);
+        DrawMapPngTick(c, chart, x + width + 10, y + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, ChartHeatmapSurface.MapHighLabel(chart), emphasized: false, fallbackColor: t.Text);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
             var midpoint = ChartHeatmapSurface.MapScaleMidpoint(chart, min, max);
             var midpointRatio = ChartHeatmapSurface.MapRatio(chart, midpoint, min, max);
-            c.DrawText(x + width + 10, y + height * (1 - midpointRatio) - fontSize / 2, midpointLabel, t.MutedText, fontSize);
+            DrawMapPngTick(c, chart, x + width + 10, y + height * (1 - midpointRatio), midpointLabel, emphasized: false);
         }
 
-        c.DrawText(x + width + 10, y + height - fontSize, ChartHeatmapSurface.MapLowLabel(chart), t.Text, fontSize);
+        DrawMapPngTick(c, chart, x + width + 10, y + height - EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, ChartHeatmapSurface.MapLowLabel(chart), emphasized: false, fallbackColor: t.Text);
         if (hasMissing) {
             var missingY = y + height + 24;
             c.FillRoundedRect(x, missingY - 9, 11, 11, 2, ChartHeatmapSurface.MapNoDataColor(chart));
-            c.DrawText(x + 16, missingY - fontSize / 2, "No data", t.MutedText, fontSize);
+            DrawMapPngTick(c, chart, x + 16, missingY, "No data", emphasized: false);
         }
+    }
+
+    private static void DrawMapPngTick(RgbaCanvas c, Chart chart, double x, double middleY, string text, bool emphasized, ChartColor? fallbackColor = null, double? fontSize = null) {
+        var style = chart.Options.TickLabelStyle;
+        var resolvedFontSize = fontSize ?? PngTickFontSize(chart);
+        var y = middleY - EstimatePngStyledTextBoundsHeight(resolvedFontSize, style) / 2 - PngStyledTextTopExtent(resolvedFontSize, style);
+        DrawPngTextStyled(c, x, y, text, style, fallbackColor ?? chart.Options.Theme.MutedText, resolvedFontSize, emphasized);
     }
 
     private static string[] MapRightScaleTitleLines(string title) {
