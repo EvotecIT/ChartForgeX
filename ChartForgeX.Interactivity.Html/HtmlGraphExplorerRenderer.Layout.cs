@@ -518,6 +518,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static double PreparedNodeHalfWidth(GraphSceneNode node, bool includeLabels = true) {
         var mark = PreparedNodeRadius(node);
+        if (IsCardNode(node)) return mark;
         if (!includeLabels) return mark;
         var label = Math.Max(24, Math.Min(132, node.Label.Length * 3.5 + 10));
         if (!string.IsNullOrWhiteSpace(node.SecondaryLabel)) label = Math.Max(label, Math.Min(132, node.SecondaryLabel!.Length * 2.8 + 8));
@@ -527,6 +528,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static double PreparedNodeHalfHeight(GraphSceneNode node, bool includeLabels = true) {
         var size = SafeNodeSize(node);
         var mark = PreparedNodeRadius(node);
+        if (IsCardNode(node)) return mark;
         if (!includeLabels) return mark;
         var labelBottom = node.Shape == GraphNodeShape.Text ? 9 : size + 24;
         if (!string.IsNullOrWhiteSpace(node.SecondaryLabel)) labelBottom += 15;

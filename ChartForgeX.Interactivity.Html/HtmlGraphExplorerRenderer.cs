@@ -32,6 +32,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(BuildFragmentStyle());
         writer.Append("</style></head><body class=\"cfx-graph-shell");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
+        if (options.FillAvailableHeight) writer.Append(" cfx-graph-shell-embedded");
         writer.Append("\">");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
@@ -90,8 +91,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var writer = new StringBuilder();
         writer.Append("<section class=\"cfx-graph-explorer");
         if (ConsumesTouchMovement(scene)) writer.Append(" cfx-graph-interactive-touch");
+        if (options.FillAvailableHeight) writer.Append(" cfx-graph-fill-available");
         writer.Append('"');
-        Attribute(writer, "aria-labelledby", domId + "-heading");
+        if (options.IncludeHeader) Attribute(writer, "aria-labelledby", domId + "-heading");
+        else Attribute(writer, "aria-label", scene.Title);
         Attribute(writer, "data-cfx-graph-id", scene.Id);
         Attribute(writer, "data-cfx-graph-title", scene.Title);
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
@@ -123,7 +126,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteScalabilityAttributes(writer, scene);
         WriteHierarchyAttributes(writer, scene);
         writer.Append('>');
-        WriteHeader(writer, scene, options, effectiveClusters, domId);
+        if (options.IncludeHeader) WriteHeader(writer, scene, options, effectiveClusters, domId);
         WriteStage(writer, scene, options, positions, domId, effectiveClusters, acceleratedMarkup);
         writer.Append("<output class=\"cfx-graph-tooltip\" hidden></output>");
         writer.Append("</section>");
@@ -207,6 +210,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cluster-parent", cluster.ParentClusterId);
             Attribute(writer, "data-cluster-node-ids", string.Join(",", memberIds));
             Attribute(writer, "data-cluster-collapsed", collapsed ? "true" : "false");
+            Attribute(writer, "data-cfx-status", ClusterStatus(cluster));
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
@@ -220,6 +224,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static double CollapsedClusterRadius(int memberCount) {
         return Math.Max(34, Math.Min(54, 20 + Math.Sqrt(memberCount) * 7));
+    }
+
+    private static string? ClusterStatus(GraphSceneCluster cluster) {
+        return cluster.Metadata.TryGetValue("topology.status", out var status) && !string.IsNullOrWhiteSpace(status)
+            ? status.ToLowerInvariant()
+            : null;
     }
 
     private static HashSet<string> BuildCollapsedNodeIds(GraphScene scene, IReadOnlyList<GraphSceneCluster> clusters, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad) {
@@ -342,15 +352,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteNodeMark(StringBuilder writer, GraphSceneNode node) {
         var size = SafeNodeSize(node);
         if (node.Shape == GraphNodeShape.Box) {
+            var halfWidth = BoxHalfWidth(size);
+            var halfHeight = BoxHalfHeight(size);
             writer.Append("<rect x=\"");
-            writer.Append(Number(-size * 1.45));
+            writer.Append(Number(-halfWidth));
             writer.Append("\" y=\"");
-            writer.Append(Number(-size * 1.05));
+            writer.Append(Number(-halfHeight));
             writer.Append("\" width=\"");
-            writer.Append(Number(size * 2.9));
+            writer.Append(Number(halfWidth * 2));
             writer.Append("\" height=\"");
-            writer.Append(Number(size * 2.1));
-            writer.Append("\" rx=\"6\"");
+            writer.Append(Number(halfHeight * 2));
+            writer.Append("\" rx=\"10\"");
             WriteNodeMarkStyle(writer, node);
             writer.Append("></rect>");
         } else if (node.Shape == GraphNodeShape.Square) {
@@ -400,7 +412,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (!string.IsNullOrWhiteSpace(node.IconText) && string.IsNullOrWhiteSpace(node.ImageUrl)) {
-            writer.Append("<text class=\"cfx-graph-node-icon\" y=\"4\">");
+            writer.Append("<text class=\"cfx-graph-node-icon");
+            if (IsCardNode(node)) writer.Append(" cfx-graph-node-card-icon");
+            writer.Append("\"");
+            if (IsCardNode(node)) Attribute(writer, "x", Number(-BoxHalfWidth(size) + 28));
+            Attribute(writer, "y", "4");
+            writer.Append('>');
             writer.Append(Text(node.IconText!));
             writer.Append("</text>");
         }

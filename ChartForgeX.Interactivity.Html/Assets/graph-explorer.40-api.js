@@ -60,7 +60,7 @@
     if (shape === 'box' || shape === 'square' || shape === 'imageRect') {
       mark = svgElement(root, 'rect');
       const width = shape === 'square' ? size * 2 : shape === 'imageRect' ? size * 2.6 : size * 2.9;
-      const height = shape === 'square' ? size * 2 : shape === 'imageRect' ? size * 1.8 : size * 2.1;
+      const height = shape === 'square' ? size * 2 : shape === 'imageRect' ? size * 1.8 : Math.min(size * 2.1, 72);
       setGraphAttribute(mark, 'x', -width / 2); setGraphAttribute(mark, 'y', -height / 2); setGraphAttribute(mark, 'width', width); setGraphAttribute(mark, 'height', height); setGraphAttribute(mark, 'rx', Math.min(8, size * .4));
     } else if (shape === 'ellipse') {
       mark = svgElement(root, 'ellipse'); setGraphAttribute(mark, 'rx', size * 1.55); setGraphAttribute(mark, 'ry', size);
@@ -85,7 +85,9 @@
       if (shape === 'imageRect') image.classList.add('cfx-graph-node-image-rect');
       element.appendChild(image);
     } else if (node.icon) {
-      const icon = svgElement(root, 'text'); icon.classList.add('cfx-graph-node-icon'); icon.setAttribute('y', '4'); icon.textContent = node.icon; element.appendChild(icon);
+      const icon = svgElement(root, 'text'); icon.classList.add('cfx-graph-node-icon');
+      if (shape === 'box' && size >= 34) { icon.classList.add('cfx-graph-node-card-icon'); icon.setAttribute('x', String(-size * 1.45 + 28)); }
+      icon.setAttribute('y', '4'); icon.textContent = node.icon; element.appendChild(icon);
     }
   };
   const graphPatchNodeDetails = (root, element, node, x, y) => {
@@ -99,25 +101,30 @@
     if (!details) { details = svgElement(root, 'g'); details.classList.add('cfx-graph-node-details'); details.setAttribute('data-cfx-role', 'graph-node-details'); layer?.appendChild(details); }
     while (details.firstChild) details.removeChild(details.firstChild);
     const size = Math.max(4, Number(node.size) || 8); const shape = node.shape || 'circle';
+    const card = shape === 'box' && size >= 34; const cardX = -size * 1.45 + 52; const cardHalfHeight = Math.min(size * 1.05, 36);
     details.setAttribute('data-node-details-for', node.id); details.setAttribute('data-cfx-status', node.status || ''); details.setAttribute('transform', `translate(${x} ${y})`);
     const labelText = node.label || node.id;
-    if (node.style?.labelBackgroundColor) {
+    if (node.style?.labelBackgroundColor && !card) {
       const background = svgElement(root, 'rect'); background.classList.add('cfx-graph-node-label-bg'); background.setAttribute('x', String(-Math.max(24, labelText.length * 3.8))); background.setAttribute('y', String(shape === 'text' ? -9 : size + 7)); background.setAttribute('width', String(Math.max(48, labelText.length * 7.6))); background.setAttribute('height', '18'); background.setAttribute('rx', '5'); background.setAttribute('style', `fill:${node.style.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`); details.appendChild(background);
     }
-    const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label'); label.setAttribute('y', shape === 'text' ? '4' : String(size + 18)); label.textContent = labelText;
+    const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label');
+    if (card) { label.classList.add('cfx-graph-node-card-label'); label.setAttribute('x', String(cardX)); }
+    label.setAttribute('y', card ? '-5' : shape === 'text' ? '4' : String(size + 18)); label.textContent = card ? graphCardText(labelText, size) : labelText;
     if (node.style?.labelColor) label.setAttribute('style', `--cfx-node-label-explicit:${node.style.labelColor}`);
     details.appendChild(label);
     if (node.secondaryLabel) {
-      const secondary = svgElement(root, 'text'); secondary.classList.add('cfx-graph-node-secondary'); secondary.setAttribute('y', String(shape === 'text' ? 18 : size + 32)); secondary.textContent = node.secondaryLabel; details.appendChild(secondary);
+      const secondary = svgElement(root, 'text'); secondary.classList.add('cfx-graph-node-secondary');
+      if (card) { secondary.classList.add('cfx-graph-node-card-secondary'); secondary.setAttribute('x', String(cardX)); }
+      secondary.setAttribute('y', String(card ? 14 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
     }
     if (node.badge) {
-      const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', `translate(${(size * .82).toFixed(3)} ${(-size * .82).toFixed(3)})`);
+      const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', card ? `translate(${(size * 1.45 - 18).toFixed(3)} ${(-cardHalfHeight + 18).toFixed(3)})` : `translate(${(size * .82).toFixed(3)} ${(-size * .82).toFixed(3)})`);
       const circle = svgElement(root, 'circle'); circle.setAttribute('r', '8'); circle.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(circle);
       const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = String(node.badge).slice(0, 5); badge.appendChild(text); details.appendChild(badge);
     }
     const status = String(node.status || '').toLowerCase();
     if (status && status !== 'unknown') {
-      const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(-size * .8)); indicator.setAttribute('cy', String(-size * .8)); indicator.setAttribute('r', String(Math.min(4.5, Math.max(1.35, size * .28)))); indicator.setAttribute('style', `fill:${graphPatchStatusColor(status)};stroke:var(--cfx-color-paper);stroke-width:2`); details.appendChild(indicator);
+      const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(card ? size * 1.45 - 15 : -size * .8)); indicator.setAttribute('cy', String(card ? cardHalfHeight - 14 : -size * .8)); indicator.setAttribute('r', String(Math.min(4.5, Math.max(1.35, size * .28)))); indicator.setAttribute('style', `fill:${graphPatchStatusColor(status)};stroke:var(--cfx-color-paper);stroke-width:2`); details.appendChild(indicator);
     }
   };
   const graphPatchVirtualElement = (root, role, className) => {

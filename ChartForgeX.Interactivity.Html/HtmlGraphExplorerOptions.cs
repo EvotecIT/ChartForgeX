@@ -19,6 +19,12 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets whether large SVG scenes may switch to the dependency-free Canvas runtime.</summary>
     public bool AllowCanvasFallback { get; set; } = true;
 
+    /// <summary>Gets or sets whether the explorer title and query toolbar are rendered above the graph stage.</summary>
+    public bool IncludeHeader { get; set; } = true;
+
+    /// <summary>Gets or sets whether the explorer should fill the available host viewport instead of reserving a standalone page aspect ratio.</summary>
+    public bool FillAvailableHeight { get; set; }
+
     /// <summary>Gets or sets whether the built-in search field should be rendered.</summary>
     public bool IncludeSearch { get; set; } = true;
 

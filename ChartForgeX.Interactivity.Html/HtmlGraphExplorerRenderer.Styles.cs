@@ -51,8 +51,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static bool TryNodeBoundaryExtents(GraphNodeShape shape, double size, out double halfWidth, out double halfHeight) {
         switch (shape) {
             case GraphNodeShape.Box:
-                halfWidth = size * 1.45;
-                halfHeight = size * 1.05;
+                halfWidth = BoxHalfWidth(size);
+                halfHeight = BoxHalfHeight(size);
                 return true;
             case GraphNodeShape.RectangularImage:
                 halfWidth = size * 1.3;

@@ -37,7 +37,7 @@ internal static partial class SmokeTests {
         Assert(scene.Nodes[0].Metadata["topology.meta.owner"] == "identity" && scene.Nodes[1].Metadata["topology.metric.latency"] == "32", "Topology graph nodes should carry source metadata and metrics for inspectors.");
         Assert(scene.Edges[0].Shape == GraphEdgeShape.Curve && scene.Edges[0].Directed, "Topology graph edges should preserve curved directed relationship hints.");
         Assert(scene.Edges[1].Shape == GraphEdgeShape.Polyline && scene.Edges[1].RoutePoints.Count >= 4, "Topology graph bridge should preserve orthogonal route geometry as reusable graph route points.");
-        Assert(scene.Edges[1].RoutePoints[0].X > topology.Nodes[0].X + topology.Nodes[0].Width / 2 && scene.Edges[1].RoutePoints[0].X < topology.Nodes[0].X + topology.Nodes[0].Width, "Topology graph bridge should align prepared route endpoints to compact graph node boundaries instead of original topology card edges.");
+        Assert(Math.Abs(scene.Edges[1].RoutePoints[0].X - (topology.Nodes[0].X + topology.Nodes[0].Width)) < 0.01, "Topology graph bridge should align prepared route endpoints to the visible card boundary.");
         Assert(scene.Nodes[0].Style.BackgroundColor == "#CCFBF1" && scene.Nodes[0].Style.BorderColor == "#0F766E" && scene.Nodes[1].Style.BorderColor == "#F97316" && scene.Edges[0].Style.Color == "#7C3AED" && scene.Edges[0].Style.Width.HasValue, "Topology graph bridge should map explicit, status-derived, and emphasis topology styles into reusable GraphScene styling, not only metadata.");
         Assert(scene.Edges[1].Metadata["topology.metric.transport"] == "tcp" && scene.Edges[1].Metadata["topology.secondaryLabel"] == "32 ms" && scene.Edges[1].Metadata["topology.routePointCount"] == scene.Edges[1].RoutePoints.Count.ToString(), "Topology graph edges should carry topology metrics, secondary labels, and route diagnostics.");
         Assert(scene.Nodes[0].HasExplicitPosition && scene.Nodes[0].Fixed, "Manual topology coordinates should seed fixed graph positions for deterministic opening layouts.");
@@ -93,7 +93,9 @@ internal static partial class SmokeTests {
         var dashedScene = dashedTopology.ToGraphScene();
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == "#F97316" && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == "#CBD5E1", "Topology graph bridge should preserve status-derived edge colors, including muted fallback colors.");
-        Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph bridge should keep muted auto-dash edges solid while preserving secondary and tertiary label facts.");
+        Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted", "Topology graph bridge should keep muted auto-dash edges solid while keeping dense edge labels focused on their primary relationship.");
+        var detailedLabels = dashedTopology.ToGraphScene(options => options.IncludeEdgeDetailInLabels = true);
+        Assert(detailedLabels.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph consumers should be able to opt into secondary and tertiary edge facts when their surface has room for detailed labels.");
         var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
         Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
 
@@ -152,5 +154,55 @@ internal static partial class SmokeTests {
 
         var emptyGroupScene = TopologyChart.Create().AddGroup("empty", "Empty", 0, 0, 120, 80, TopologyHealthStatus.Unknown).ToGraphScene();
         Assert(emptyGroupScene.Clusters.Count == 0, "Topology graph bridge should skip empty topology groups instead of rendering unrelated memberless cluster badges.");
+        TopologyGraphExplorerScalesFromCardsToClusteredOverviews();
+    }
+
+    private static void TopologyGraphExplorerScalesFromCardsToClusteredOverviews() {
+        var small = TopologyChart.Create()
+            .WithId("relationship-overview")
+            .WithTitle("Relationship overview")
+            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .AddAutoNode("a", "alpha.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
+            .AddAutoNode("b", "beta.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Warning, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
+            .AddAutoNode("c", "gamma.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Critical, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
+            .AddAutoNode("d", "delta.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Unknown, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
+            .AddEdge("a-b", "a", "b", "Forest · Bidirectional", TopologyEdgeKind.Trust, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
+            .AddEdge("a-c", "a", "c", "External · Outbound", TopologyEdgeKind.Trust, TopologyHealthStatus.Critical, VisualLinkDirection.Forward);
+
+        var smallScene = small.ToGraphScene();
+        Assert(smallScene.Nodes.All(node => node.HasExplicitPosition && !node.Fixed), "Prepared topology layouts should seed stable opening coordinates while keeping interactive nodes movable.");
+        Assert(smallScene.Nodes.All(node => node.Shape == GraphNodeShape.Box && node.Size > 60), "Card topology nodes should preserve their requested width instead of collapsing to tiny blank rectangles.");
+        Assert(smallScene.Metadata["topology.preparedLayoutSeeded"] == "true", "Topology graph projection should expose when deterministic source layout seeded the explorer.");
+        var embedded = small.ToGraphExplorerHtmlPage(
+            configureHtml: options => {
+                options.IncludeHeader = false;
+                options.IncludeSearch = false;
+                options.IncludeFilters = false;
+                options.FillAvailableHeight = true;
+            });
+        Assert(embedded.Contains("cfx-graph-shell-embedded", StringComparison.Ordinal) && embedded.Contains("cfx-graph-fill-available", StringComparison.Ordinal), "Embedded graph pages should fill the host viewport without internal page padding or scrollbars.");
+        Assert(!embedded.Contains("data-cfx-role=\"graph-header\"", StringComparison.Ordinal) && !embedded.Contains("data-cfx-role=\"graph-search\"", StringComparison.Ordinal), "Embedded graph pages should allow the host to own the title, search, and filters without duplicate controls.");
+        Assert(embedded.Contains("height=\"72\" rx=\"10\"", StringComparison.Ordinal) && embedded.Contains("cfx-graph-node-card-label", StringComparison.Ordinal), "Large box nodes should render as readable cards with internal labels across the explorer surface.");
+        Assert(embedded.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal) && embedded.Contains("data-edge-target-arrow=\"true\"", StringComparison.Ordinal), "Bidirectional relationships should preserve both arrowheads in the explorer contract.");
+
+        var medium = BuildScaleTopology("medium", 40).ToGraphScene();
+        var large = BuildScaleTopology("large", 120).ToGraphScene();
+        Assert(medium.Nodes.Count == 40 && medium.Nodes.All(node => node.HasExplicitPosition), "Medium topologies should open from deterministic prepared coordinates.");
+        Assert(medium.Options.Cluster.CollapseOnLoad && medium.GetEffectiveClusters().Count == 5 && medium.GetEffectiveClusters().All(cluster => cluster.Collapsed), "Medium grouped topologies should open as readable site summaries that users can expand for controller details.");
+        Assert(medium.Options.LevelOfDetail.HideEdgeLabelsThreshold == 32, "Dense topology overviews should hide repetitive relationship labels while preserving them for focus, selection, and inspection.");
+        Assert(BuildScaleTopology("medium-html", 40).ToGraphExplorerHtmlFragment().Contains("data-cfx-status=\"healthy\"", StringComparison.Ordinal), "Collapsed topology group summaries should expose health for status-aware rendering.");
+        Assert(large.Nodes.Count == 120 && large.Options.LevelOfDetail.ClusterNodeThreshold <= 120 && large.Options.LevelOfDetail.HideEdgeLabelsThreshold <= 120, "Large topologies should activate reusable clustering and semantic label reduction at 100-plus objects.");
+        Assert(large.Options.Cluster.CollapseOnLoad && large.GetEffectiveClusters().Count == 5, "Large grouped topologies should start from aggregate summaries instead of a wall of unlabeled cards.");
+        Assert(large.Options.LevelOfDetail.CanvasPreferredNodeThreshold > large.Nodes.Count, "Hundred-node topology views should retain rich SVG interaction until the shared Canvas threshold is reached.");
+    }
+
+    private static TopologyChart BuildScaleTopology(string id, int nodeCount) {
+        var chart = TopologyChart.Create().WithId(id).WithLayout(TopologyLayoutMode.ForceDirected);
+        for (var site = 0; site < 5; site++) chart.AddGroup("site-" + site, "Site " + site, 0, 0, 320, 220, TopologyHealthStatus.Healthy);
+        for (var index = 0; index < nodeCount; index++) {
+            chart.AddAutoNode("node-" + index, "Node " + index, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "site-" + index % 5, subtitle: "Site " + index % 5, width: 164, height: 72);
+            if (index > 0) chart.AddEdge("edge-" + index, "node-" + (index - 1), "node-" + index, "Replication", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
+        }
+        return chart;
     }
 }

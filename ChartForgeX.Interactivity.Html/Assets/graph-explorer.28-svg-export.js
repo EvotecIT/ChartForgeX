@@ -34,8 +34,8 @@
       group.appendChild(image);
     } else if (node.shape === 'box' || node.shape === 'square') {
       const wide = node.shape === 'box' ? 1.45 : 1;
-      const high = node.shape === 'box' ? 1.05 : 1;
-      group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -size * high, width: size * wide * 2, height: size * high * 2, rx: node.shape === 'square' ? 4 : 6, style }));
+      const high = node.shape === 'box' ? Math.min(size * 1.05, 36) : size;
+      group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -high, width: size * wide * 2, height: high * 2, rx: node.shape === 'square' ? 4 : 10, style }));
     } else if (node.shape === 'ellipse') {
       group.appendChild(svgNode(document, 'ellipse', { rx: size * 1.55, ry: size, style }));
     } else if (node.shape === 'database') {
@@ -48,14 +48,18 @@
       group.appendChild(svgNode(document, 'circle', { r: size, style }));
     }
     if (node.icon && node.shape !== 'image' && node.shape !== 'imageRect') {
-      const icon = svgNode(document, 'text', { class: 'cfx-graph-node-icon', y: 4 });
+      const card = node.shape === 'box' && node.size >= 34;
+      const icon = svgNode(document, 'text', { class: card ? 'cfx-graph-node-icon cfx-graph-node-card-icon' : 'cfx-graph-node-icon', x: card ? -node.size * 1.45 + 28 : 0, y: 4 });
       icon.textContent = node.icon;
       group.appendChild(icon);
     }
   };
   const appendExportedNodeDetails = (document, group, node) => {
     const textShape = node.shape === 'text';
-    if (node.labelBackgroundColor) {
+    const card = node.shape === 'box' && node.size >= 34;
+    const cardX = -node.size * 1.45 + 52;
+    const cardHalfHeight = Math.min(node.size * 1.05, 36);
+    if (node.labelBackgroundColor && !card) {
       group.appendChild(svgNode(document, 'rect', {
         class: 'cfx-graph-node-label-bg',
         x: -Math.max(24, node.label.length * 3.8),
@@ -66,17 +70,17 @@
         style: `fill:${node.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`
       }));
     }
-    const label = svgNode(document, 'text', { class: 'cfx-graph-node-label', y: textShape ? 4 : node.size + 18 });
+    const label = svgNode(document, 'text', { class: card ? 'cfx-graph-node-label cfx-graph-node-card-label' : 'cfx-graph-node-label', x: card ? cardX : 0, y: card ? -5 : textShape ? 4 : node.size + 18 });
     if (node.labelColor) label.setAttribute('style', `fill:${node.labelColor}`);
-    label.textContent = node.label;
+    label.textContent = card ? graphCardText(node.label, node.size) : node.label;
     group.appendChild(label);
     if (node.secondaryLabel) {
-      const secondary = svgNode(document, 'text', { class: 'cfx-graph-node-secondary', y: textShape ? 18 : node.size + 32 });
-      secondary.textContent = node.secondaryLabel;
+      const secondary = svgNode(document, 'text', { class: card ? 'cfx-graph-node-secondary cfx-graph-node-card-secondary' : 'cfx-graph-node-secondary', x: card ? cardX : 0, y: card ? 14 : textShape ? 18 : node.size + 32 });
+      secondary.textContent = card ? graphCardText(node.secondaryLabel, node.size, true) : node.secondaryLabel;
       group.appendChild(secondary);
     }
     if (node.badge) {
-      const badge = svgNode(document, 'g', { class: 'cfx-graph-node-badge', transform: `translate(${node.size * 0.82} ${-node.size * 0.82})` });
+      const badge = svgNode(document, 'g', { class: 'cfx-graph-node-badge', transform: card ? `translate(${node.size * 1.45 - 18} ${-cardHalfHeight + 18})` : `translate(${node.size * 0.82} ${-node.size * 0.82})` });
       badge.appendChild(svgNode(document, 'circle', { r: 8 }));
       const text = svgNode(document, 'text', { y: 3.5 });
       text.textContent = node.badge.slice(0, 5);
@@ -84,7 +88,7 @@
       group.appendChild(badge);
     }
     const status = attr(node.el, 'data-cfx-status');
-    if (status && status !== 'unknown') group.appendChild(svgNode(document, 'circle', { class: 'cfx-graph-node-status', cx: -node.size * 0.8, cy: -node.size * 0.8, r: 4.5 }));
+    if (status && status !== 'unknown') group.appendChild(svgNode(document, 'circle', { class: 'cfx-graph-node-status', cx: card ? node.size * 1.45 - 15 : -node.size * 0.8, cy: card ? cardHalfHeight - 14 : -node.size * 0.8, r: 4.5 }));
   };
   const appendExportedEdgeLabel = (document, group, edge, rendered) => {
     if (!edge.label || !edge.showLabel) return null;

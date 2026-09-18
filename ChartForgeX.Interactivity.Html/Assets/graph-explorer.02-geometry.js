@@ -1,6 +1,6 @@
   const nodeShapeExtents = (node) => {
     const size = Math.max(4, node?.size || 8);
-    if (node?.shape === 'box') return { x: size * 1.45, y: size * 1.05 };
+    if (node?.shape === 'box') return { x: size * 1.45, y: Math.min(size * 1.05, 36) };
     if (node?.shape === 'imageRect') return { x: size * 1.3, y: size * .9 };
     if (node?.shape === 'ellipse') return { x: size * 1.55, y: size };
     if (node?.shape === 'square') return { x: size, y: size };
@@ -10,6 +10,16 @@
     if (node?.shape === 'database') return { x: size * 1.25, y: size * .9 };
     if (node?.shape === 'text') return { x: Math.max(size, ((attr(node.el, 'data-node-label') || node.id || '').length * 6) / 2), y: Math.max(size * .75, 8) };
     return { x: size, y: size };
+  };
+  const graphCardText = (value, size, secondary = false) => {
+    const text = String(value || '');
+    const availableWidth = Math.max(28, size * 2.9 - 74);
+    const maximumCharacters = Math.max(6, Math.floor(availableWidth / (secondary ? 5.4 : 6.8)));
+    if (text.length <= maximumCharacters) return text;
+    const retained = maximumCharacters - 1;
+    const head = Math.ceil(retained * .58);
+    const tail = retained - head;
+    return `${text.slice(0, head)}…${text.slice(text.length - tail)}`;
   };
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
   const nodePolygonPoints = (shape, size) => {
@@ -26,6 +36,7 @@
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
   const nodeLayoutExtents = (node) => {
     const mark = nodeShapeExtents(node);
+    if (node.shape === 'box' && node.size >= 34) return { x: mark.x + 7, y: mark.y + 7 };
     const label = attr(node.el, 'data-node-label') || node.label || node.id || '';
     const secondary = attr(node.el, 'data-node-secondary-label') || node.secondaryLabel || '';
     const labelHalfWidth = Math.max(24, Math.min(132, label.length * 3.5 + 10), secondary ? Math.min(132, secondary.length * 2.8 + 8) : 0);
