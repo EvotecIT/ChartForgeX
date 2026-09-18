@@ -512,7 +512,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var size = SafeNodeSize(node);
         var shape = EffectiveNodeShape(node);
         var legacyRadius = size + (shape == GraphNodeShape.Box ? 16 : shape == GraphNodeShape.Image || shape == GraphNodeShape.RectangularImage ? 14 : 12);
-        if (TryNodeBoundaryExtents(shape, size, out var halfWidth, out var halfHeight)) return Math.Max(14, Math.Max(legacyRadius, Math.Max(halfWidth, halfHeight) + 7));
+        if (TryNodeBoundaryExtents(node, shape, size, out var halfWidth, out var halfHeight)) return Math.Max(14, Math.Max(legacyRadius, Math.Max(halfWidth, halfHeight) + 7));
         return Math.Max(14, legacyRadius);
     }
 

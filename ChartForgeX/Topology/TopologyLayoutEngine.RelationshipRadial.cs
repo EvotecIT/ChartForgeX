@@ -46,7 +46,7 @@ internal static partial class TopologyLayoutEngine {
         var bottom = Math.Max(top + 80, chart.Viewport.Height - pad - legendOffset);
         var centerX = (left + right) / 2;
         var centerY = (top + bottom) / 2;
-        var ringGap = Math.Max(88, Math.Min(right - left, bottom - top) / (maxDepth + 2.15));
+        var ringGap = RelationshipRingGap(chart, states, left, top, right, bottom, maxDepth);
         var overflowRing = ringGap * (maxDepth + 1);
 
         foreach (var node in chart.Nodes) {
@@ -182,6 +182,21 @@ internal static partial class TopologyLayoutEngine {
             group.Height = Math.Min(bottom - group.Y, Math.Max(92, maxY - minY + 76));
             group.Metadata["layout.radial.nodeCount"] = groupNodes.Count.ToString(CultureInfo.InvariantCulture);
         }
+    }
+
+    private static double RelationshipRingGap(TopologyChart chart, IReadOnlyDictionary<string, RadialNodeState> states, double left, double top, double right, double bottom, int maxDepth) {
+        var availableWidth = Math.Max(80, right - left);
+        var availableHeight = Math.Max(80, bottom - top);
+        var layoutDepth = Math.Max(1, states.Values.Where(state => !state.Overflow && state.Depth < int.MaxValue).Select(state => state.Depth).DefaultIfEmpty(1).Max());
+        var maximumHalfWidth = chart.Nodes.Max(node => Math.Max(1, node.Width) / 2);
+        var maximumHalfHeight = chart.Nodes.Max(node => Math.Max(1, node.Height) / 2);
+        var maximumHalfDiagonal = chart.Nodes.Max(node => Math.Sqrt(node.Width * node.Width + node.Height * node.Height) / 2);
+        var densityGap = Math.Max(88, Math.Min(availableWidth, availableHeight) / (maxDepth + 2.15));
+        var dimensionGap = Math.Max(88, maximumHalfDiagonal * 2 + 32);
+        var boundedGap = Math.Min(
+            Math.Max(88, availableWidth / 2 - maximumHalfWidth),
+            Math.Max(88, availableHeight / 2 - maximumHalfHeight)) / layoutDepth;
+        return Math.Max(88, Math.Min(boundedGap, Math.Max(densityGap, dimensionGap)));
     }
 
     private static int RadialStatusPriority(TopologyHealthStatus status) => status switch {

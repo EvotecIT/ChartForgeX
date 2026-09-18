@@ -26,6 +26,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             if (cardNode) writer.Append(" cfx-graph-node-card-label");
             writer.Append("\"");
             if (cardNode) Attribute(writer, "x", Number(cardTextX));
+            if (cardNode) Attribute(writer, "data-cfx-full-label", node.Label);
             Attribute(writer, "y", Number(cardNode ? -5 : textShape ? 4 : size + 18));
             var labelStyle = NodeLabelStyle(node);
             if (!string.IsNullOrWhiteSpace(labelStyle)) Attribute(writer, "style", labelStyle);
@@ -39,6 +40,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             if (cardNode) writer.Append(" cfx-graph-node-card-secondary");
             writer.Append("\"");
             if (cardNode) Attribute(writer, "x", Number(cardTextX));
+            if (cardNode) Attribute(writer, "data-cfx-full-label", node.SecondaryLabel);
             Attribute(writer, "y", Number(cardNode ? 14 : textShape ? 18 : size + 32));
             writer.Append('>');
             writer.Append(Text(cardNode ? CardText(node.SecondaryLabel!, size, true) : node.SecondaryLabel!));

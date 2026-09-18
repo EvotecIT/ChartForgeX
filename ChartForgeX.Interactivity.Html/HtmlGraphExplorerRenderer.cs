@@ -287,6 +287,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var point = positions[node.Id];
             var size = SafeNodeSize(node);
             writer.Append("<g class=\"cfx-graph-node");
+            if (node.Style.Shadow) writer.Append(" cfx-graph-node-shadow");
             if (collapsedNodeIds.Contains(node.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             if (node.Hidden) writer.Append(" cfx-graph-hidden");
             writer.Append("\" tabindex=\"");
@@ -304,6 +305,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-parent", node.ParentId);
             Attribute(writer, "data-cfx-status", node.Status);
             Attribute(writer, "data-node-size", Number(size));
+            Attribute(writer, "data-node-card", IsCardNode(node) ? "true" : "false");
             Attribute(writer, "data-node-fixed", node.Fixed ? "true" : "false");
             Attribute(writer, "data-node-hidden", node.Hidden ? "true" : "false");
             Attribute(writer, "data-node-level", node.Level.HasValue ? node.Level.Value.ToString(CultureInfo.InvariantCulture) : null);
@@ -353,7 +355,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var size = SafeNodeSize(node);
         if (node.Shape == GraphNodeShape.Box) {
             var halfWidth = BoxHalfWidth(size);
-            var halfHeight = BoxHalfHeight(size);
+            var halfHeight = BoxHalfHeight(node, size);
             writer.Append("<rect x=\"");
             writer.Append(Number(-halfWidth));
             writer.Append("\" y=\"");
@@ -362,7 +364,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append(Number(halfWidth * 2));
             writer.Append("\" height=\"");
             writer.Append(Number(halfHeight * 2));
-            writer.Append("\" rx=\"10\"");
+            writer.Append(IsCardNode(node) ? "\" rx=\"10\"" : "\" rx=\"6\"");
             WriteNodeMarkStyle(writer, node);
             writer.Append("></rect>");
         } else if (node.Shape == GraphNodeShape.Square) {
@@ -528,13 +530,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
-        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylineMidpoint(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
+        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) {
+            var routedPoint = PolylineMidpoint(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
+            return AvoidEdgeLabelNodeCollisions(routedPoint, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset);
+        }
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
         var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
-        return control.HasValue
+        var point = control.HasValue
             ? new Point((renderSource.X + 2 * control.Value.X + renderTarget.X) / 4, (renderSource.Y + 2 * control.Value.Y + renderTarget.Y) / 4 - 7)
             : new Point((renderSource.X + renderTarget.X) / 2, (renderSource.Y + renderTarget.Y) / 2 - 7);
+        return AvoidEdgeLabelNodeCollisions(point, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset);
     }
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {
@@ -594,7 +600,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (node?.Hidden == true) return 0;
         var size = Math.Max(4, node?.Size ?? 8);
         var shape = EffectiveNodeShape(node);
-        if (TryNodeBoundaryExtents(shape, size, out var halfWidth, out var halfHeight)) {
+        if (TryNodeBoundaryExtents(node, shape, size, out var halfWidth, out var halfHeight)) {
             if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
             var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
             var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);

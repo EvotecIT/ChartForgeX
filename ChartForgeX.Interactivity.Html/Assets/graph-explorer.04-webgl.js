@@ -170,8 +170,9 @@
       if (!visible(cluster.el) || attr(cluster.el, 'data-cluster-collapsed') !== 'true') return;
       const metrics = clusterMetrics(cluster, state.byId);
       if (!metrics) return;
+      const clusterColors = graphClusterColors(root, cluster, palette);
       pointPositions.push(metrics.x, metrics.y);
-      pointColors.push(...webGlColor(cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : palette.clusterStroke, .9));
+      pointColors.push(...webGlColor(cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : clusterColors.stroke, .9));
       pointSizes.push(Math.max(16, metrics.radius * 1.5));
     });
     state.nodes.forEach(node => {

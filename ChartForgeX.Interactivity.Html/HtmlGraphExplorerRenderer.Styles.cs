@@ -48,11 +48,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         _ => "line"
     };
 
-    private static bool TryNodeBoundaryExtents(GraphNodeShape shape, double size, out double halfWidth, out double halfHeight) {
+    private static bool TryNodeBoundaryExtents(GraphSceneNode? node, GraphNodeShape shape, double size, out double halfWidth, out double halfHeight) {
         switch (shape) {
             case GraphNodeShape.Box:
                 halfWidth = BoxHalfWidth(size);
-                halfHeight = BoxHalfHeight(size);
+                halfHeight = BoxHalfHeight(node, size);
                 return true;
             case GraphNodeShape.RectangularImage:
                 halfWidth = size * 1.3;
@@ -99,7 +99,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(node.Style.BackgroundColor)) parts.Add("--cfx-node-fill:" + node.Style.BackgroundColor);
         if (!string.IsNullOrWhiteSpace(node.Style.BorderColor)) parts.Add("--cfx-node-stroke:" + node.Style.BorderColor);
-        if (node.Style.Shadow) parts.Add("filter:drop-shadow(0 5px 10px rgba(15,23,42,.18))");
         return string.Join(";", parts);
     }
 

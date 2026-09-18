@@ -93,9 +93,9 @@ internal static partial class SmokeTests {
         var dashedScene = dashedTopology.ToGraphScene();
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == "#F97316" && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == "#CBD5E1", "Topology graph bridge should preserve status-derived edge colors, including muted fallback colors.");
-        Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted", "Topology graph bridge should keep muted auto-dash edges solid while keeping dense edge labels focused on their primary relationship.");
-        var detailedLabels = dashedTopology.ToGraphScene(options => options.IncludeEdgeDetailInLabels = true);
-        Assert(detailedLabels.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph consumers should be able to opt into secondary and tertiary edge facts when their surface has room for detailed labels.");
+        Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph bridge should keep muted auto-dash edges solid while preserving secondary and tertiary edge facts by default.");
+        var compactLabels = dashedTopology.ToGraphScene(options => options.IncludeEdgeDetailInLabels = false);
+        Assert(compactLabels.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted", "Topology graph consumers should be able to opt into compact primary-only edge labels when their surface keeps detail in an inspector.");
         var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
         Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
 
@@ -165,13 +165,18 @@ internal static partial class SmokeTests {
             .AddAutoNode("a", "alpha.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddAutoNode("b", "beta.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Warning, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddAutoNode("c", "gamma.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Critical, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
-            .AddAutoNode("d", "delta.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Unknown, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
+            .AddAutoNode("d", "KERBEROS.MICROSOFTONLINE.COM😀", TopologyNodeKind.Namespace, TopologyHealthStatus.Unknown, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddEdge("a-b", "a", "b", "Forest · Bidirectional", TopologyEdgeKind.Trust, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
             .AddEdge("a-c", "a", "c", "External · Outbound", TopologyEdgeKind.Trust, TopologyHealthStatus.Critical, VisualLinkDirection.Forward);
 
         var smallScene = small.ToGraphScene();
         Assert(smallScene.Nodes.All(node => node.HasExplicitPosition && !node.Fixed), "Prepared topology layouts should seed stable opening coordinates while keeping interactive nodes movable.");
-        Assert(smallScene.Nodes.All(node => node.Shape == GraphNodeShape.Box && node.Size > 60), "Card topology nodes should preserve their requested width instead of collapsing to tiny blank rectangles.");
+        Assert(!smallScene.Options.Physics.Stabilization.Enabled, "Prepared topology layouts should remain stable on load until the user explicitly starts browser stabilization.");
+        Assert(small.ToGraphScene(options => options.StabilizePreparedLayoutOnLoad = true).Options.Physics.Stabilization.Enabled, "Topology callers should be able to opt into immediate browser stabilization for prepared layouts.");
+        Assert(smallScene.Options.LevelOfDetail.DetailScaleThreshold <= 0.72, "Small relationship maps should preserve card subtitles at fitted overview scales instead of hiding the context that explains each object.");
+        var radialRoot = smallScene.Nodes.Single(node => node.Id == "a");
+        Assert(smallScene.Nodes.Where(node => node.Id != radialRoot.Id).All(node => !CardBoundsOverlap(radialRoot, node, 12)), "Relationship-radial layouts should use card dimensions to leave inspectable space between the root and first-hop relationships.");
+        Assert(smallScene.Nodes.All(node => node.Shape == GraphNodeShape.Box && node.Size > 60 && node.Metadata["topology.card"] == "true"), "Card topology nodes should preserve their requested width and explicit card semantics instead of collapsing to tiny blank rectangles.");
         Assert(smallScene.Metadata["topology.preparedLayoutSeeded"] == "true", "Topology graph projection should expose when deterministic source layout seeded the explorer.");
         var embedded = small.ToGraphExplorerHtmlPage(
             configureHtml: options => {
@@ -182,18 +187,29 @@ internal static partial class SmokeTests {
             });
         Assert(embedded.Contains("cfx-graph-shell-embedded", StringComparison.Ordinal) && embedded.Contains("cfx-graph-fill-available", StringComparison.Ordinal), "Embedded graph pages should fill the host viewport without internal page padding or scrollbars.");
         Assert(!embedded.Contains("data-cfx-role=\"graph-header\"", StringComparison.Ordinal) && !embedded.Contains("data-cfx-role=\"graph-search\"", StringComparison.Ordinal), "Embedded graph pages should allow the host to own the title, search, and filters without duplicate controls.");
-        Assert(embedded.Contains("height=\"72\" rx=\"10\"", StringComparison.Ordinal) && embedded.Contains("cfx-graph-node-card-label", StringComparison.Ordinal), "Large box nodes should render as readable cards with internal labels across the explorer surface.");
+        Assert(embedded.Contains("height=\"72\" rx=\"10\"", StringComparison.Ordinal) && embedded.Contains("data-node-card=\"true\"", StringComparison.Ordinal) && embedded.Contains("cfx-graph-node-card-label", StringComparison.Ordinal), "Explicit topology cards should render as readable cards with internal labels across the explorer surface.");
+        Assert(embedded.Contains("data-cfx-full-label=\"KERBEROS.MICROSOFTONLINE.COM&#128512;\"", StringComparison.Ordinal) && embedded.Contains("…", StringComparison.Ordinal) && embedded.Contains("COM&#128512;</text>", StringComparison.Ordinal) && !embedded.Contains("�", StringComparison.Ordinal), "Topology cards should retain the full label as metadata while fitting a Unicode-safe visible label inside the card.");
         Assert(embedded.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal) && embedded.Contains("data-edge-target-arrow=\"true\"", StringComparison.Ordinal), "Bidirectional relationships should preserve both arrowheads in the explorer contract.");
+        var externalLabel = ExtractGraphEdgeLabelPoint(embedded, "a-c");
+        Assert(!EdgeLabelBoundsOverlapCard(externalLabel, "External · Outbound", smallScene.Nodes.Single(node => node.Id == "a")) && !EdgeLabelBoundsOverlapCard(externalLabel, "External · Outbound", smallScene.Nodes.Single(node => node.Id == "c")), "Relationship labels should move away from endpoint cards when their readable bounds would overlap a node.");
+        Assert(embedded.Contains("graphReadableNodeColors", StringComparison.Ordinal) && embedded.Contains("--cfx-node-label-halo", StringComparison.Ordinal) && embedded.Contains("--cfx-node-secondary-adaptive", StringComparison.Ordinal), "Node card typography should derive readable primary, secondary, and halo colors from each node surface across light and dark themes.");
+        Assert(embedded.Contains("graphOverviewMinimumItems", StringComparison.Ordinal) && embedded.Contains("cfx-graph-overview-unneeded", StringComparison.Ordinal), "Compact relationship maps should suppress an unnecessary overview overlay while dense expanded graphs retain it.");
 
         var medium = BuildScaleTopology("medium", 40).ToGraphScene();
         var large = BuildScaleTopology("large", 120).ToGraphScene();
         Assert(medium.Nodes.Count == 40 && medium.Nodes.All(node => node.HasExplicitPosition), "Medium topologies should open from deterministic prepared coordinates.");
         Assert(medium.Options.Cluster.CollapseOnLoad && medium.GetEffectiveClusters().Count == 5 && medium.GetEffectiveClusters().All(cluster => cluster.Collapsed), "Medium grouped topologies should open as readable site summaries that users can expand for controller details.");
         Assert(medium.Options.LevelOfDetail.HideEdgeLabelsThreshold == 32, "Dense topology overviews should hide repetitive relationship labels while preserving them for focus, selection, and inspection.");
-        Assert(BuildScaleTopology("medium-html", 40).ToGraphExplorerHtmlFragment().Contains("data-cfx-status=\"healthy\"", StringComparison.Ordinal), "Collapsed topology group summaries should expose health for status-aware rendering.");
+        var mediumHtml = BuildScaleTopology("medium-html", 40).ToGraphExplorerHtmlFragment();
+        Assert(mediumHtml.Contains("data-cfx-status=\"healthy\"", StringComparison.Ordinal) && mediumHtml.Contains("graphClusterColors", StringComparison.Ordinal) && mediumHtml.Contains("graphPatchClusterStatus", StringComparison.Ordinal), "Collapsed topology group summaries should carry health through SVG, Canvas, WebGL, overview, export, and runtime patch rendering.");
         Assert(large.Nodes.Count == 120 && large.Options.LevelOfDetail.ClusterNodeThreshold <= 120 && large.Options.LevelOfDetail.HideEdgeLabelsThreshold <= 120, "Large topologies should activate reusable clustering and semantic label reduction at 100-plus objects.");
         Assert(large.Options.Cluster.CollapseOnLoad && large.GetEffectiveClusters().Count == 5, "Large grouped topologies should start from aggregate summaries instead of a wall of unlabeled cards.");
         Assert(large.Options.LevelOfDetail.CanvasPreferredNodeThreshold > large.Nodes.Count, "Hundred-node topology views should retain rich SVG interaction until the shared Canvas threshold is reached.");
+
+        var genericBox = GraphScene.Create("generic-box", "Generic box");
+        genericBox.Nodes.Add(new GraphSceneNode { Id = "box", Label = "Large generic box", Shape = GraphNodeShape.Box, Size = 60 });
+        var genericBoxHtml = genericBox.ToGraphExplorerHtmlFragment();
+        Assert(genericBoxHtml.Contains("height=\"126\" rx=\"6\"", StringComparison.Ordinal) && genericBoxHtml.Contains("data-node-card=\"false\"", StringComparison.Ordinal), "Generic large box nodes should retain their public half-size geometry instead of implicitly becoming topology cards.");
     }
 
     private static TopologyChart BuildScaleTopology(string id, int nodeCount) {
@@ -204,5 +220,22 @@ internal static partial class SmokeTests {
             if (index > 0) chart.AddEdge("edge-" + index, "node-" + (index - 1), "node-" + index, "Replication", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
         }
         return chart;
+    }
+
+    private static bool CardBoundsOverlap(GraphSceneNode first, GraphSceneNode second, double gap) {
+        var firstHalfWidth = first.Size * 1.45;
+        var secondHalfWidth = second.Size * 1.45;
+        var firstHalfHeight = Math.Min(first.Size * 1.05, 36);
+        var secondHalfHeight = Math.Min(second.Size * 1.05, 36);
+        return Math.Abs(first.X - second.X) < firstHalfWidth + secondHalfWidth + gap
+            && Math.Abs(first.Y - second.Y) < firstHalfHeight + secondHalfHeight + gap;
+    }
+
+    private static bool EdgeLabelBoundsOverlapCard((double X, double Y) labelPoint, string label, GraphSceneNode node) {
+        var labelHalfWidth = Math.Max(14, label.Length * 6.1 / 2 + 4);
+        var nodeHalfWidth = node.Size * 1.45;
+        var nodeHalfHeight = Math.Min(node.Size * 1.05, 36);
+        return Math.Abs(labelPoint.X - node.X) < labelHalfWidth + nodeHalfWidth + 6
+            && Math.Abs(labelPoint.Y - 4 - node.Y) < 10 + nodeHalfHeight + 6;
     }
 }

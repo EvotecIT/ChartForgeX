@@ -4,9 +4,10 @@
     const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
     const primary = node.el.classList.contains('cfx-graph-neighborhood-primary');
     const selected = node.el.classList.contains('cfx-graph-selected');
-    const card = node.shape === 'box' && node.size >= 34;
+    const card = node.card === true;
     const cardHalfWidth = node.size * 1.45;
     const cardHalfHeight = Math.min(node.size * 1.05, 36);
+    const nodeColors = graphReadableNodeColors(root, node.el, palette);
     context.save();
     context.globalAlpha = dimmed ? .18 : 1;
     const status = attr(node.el, 'data-cfx-status').toLowerCase();
@@ -16,7 +17,7 @@
       context.arc(card ? node.x + cardHalfWidth - 15 : node.x - node.size * .8, card ? node.y + cardHalfHeight - 14 : node.y - node.size * .8, 4.5, 0, Math.PI * 2);
       context.fillStyle = statusColor;
       context.fill();
-      context.strokeStyle = palette.halo;
+      context.strokeStyle = nodeColors.halo;
       context.lineWidth = 2;
       context.stroke();
     }
@@ -42,12 +43,12 @@
       context.stroke();
     }
     if ((!compact && !moving) || node.shape === 'text' || selected || primary) {
-      context.font = '12px Inter, Segoe UI, Arial, sans-serif';
+      context.font = card ? '700 12.5px Inter, Segoe UI, Arial, sans-serif' : '12px Inter, Segoe UI, Arial, sans-serif';
       context.textAlign = card ? 'left' : 'center';
       context.textBaseline = node.shape === 'text' ? 'middle' : card ? 'alphabetic' : 'top';
       context.lineWidth = 4;
-      context.strokeStyle = palette.halo;
-      context.fillStyle = graphAdaptiveTextColor(root, node.labelColor, palette.text);
+      context.strokeStyle = nodeColors.halo;
+      context.fillStyle = nodeColors.label;
       const fullLabel = node.label || attr(node.el, 'data-node-label');
       const label = card ? graphCardText(fullLabel, node.size) : fullLabel;
       const labelX = card ? node.x - cardHalfWidth + 52 : node.x;
@@ -70,8 +71,8 @@
       context.strokeText(label, labelX, labelY);
       context.fillText(label, labelX, labelY);
       if (node.secondaryLabel && root.classList.contains('cfx-graph-semantic-detail')) {
-        context.font = '9.5px Inter, Segoe UI, Arial, sans-serif';
-        context.fillStyle = palette.muted;
+        context.font = card ? '10px Inter, Segoe UI, Arial, sans-serif' : '9.5px Inter, Segoe UI, Arial, sans-serif';
+        context.fillStyle = nodeColors.secondary;
         context.lineWidth = 3;
         const secondaryLabel = card ? graphCardText(node.secondaryLabel, node.size, true) : node.secondaryLabel;
         context.strokeText(secondaryLabel, labelX, card ? labelY + 19 : labelY + 15);

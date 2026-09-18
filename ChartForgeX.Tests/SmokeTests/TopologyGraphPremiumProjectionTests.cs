@@ -20,14 +20,14 @@ internal static partial class SmokeTests {
             new TopologyHierarchyItem("platform", "Platform") { Kind = TopologyNodeKind.Namespace },
             new TopologyHierarchyItem("identity", "Identity", "platform") { Kind = TopologyNodeKind.Service, IconId = "custom:identity", Subtitle = "Authentication", Symbol = null }
         };
-        var topology = TopologyChart.Create().WithId("premium-hierarchy").AddHierarchy(items);
+        var topology = TopologyChart.Create().WithId("premium-hierarchy").AddHierarchy(items, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Card });
         topology.Nodes.Single(node => node.Id == "identity").Badge = "7";
 
         var scene = topology.ToGraphScene(options => options.IconCatalog = catalog);
         var identity = scene.Nodes.Single(node => node.Id == "identity");
         Assert(identity.ParentId == "platform" && identity.Level == 1, "Topology hierarchy metadata should become native graph parent and level fields.");
         Assert(identity.SecondaryLabel == "Authentication" && identity.BadgeText == "7", "Topology subtitles and badges should reach detailed graph node visuals.");
-        Assert(identity.Shape == GraphNodeShape.Image && identity.ImageUrl != null && identity.ImageUrl.StartsWith("data:image/svg+xml;base64,", StringComparison.Ordinal), "Safe topology catalog artwork should become a self-contained graph image node.");
+        Assert(identity.Shape == GraphNodeShape.Image && identity.ImageUrl != null && identity.ImageUrl.StartsWith("data:image/svg+xml;base64,", StringComparison.Ordinal), "Safe topology catalog artwork should remain a self-contained graph image node even when the source explicitly requests a card display mode.");
         Assert(identity.IconText == "ID" && identity.Style.BorderColor == "#7C3AED" && scene.Options.HasFeature(GraphSceneFeatures.HierarchyNavigation), "Topology icon symbols, colors, and hierarchy capability should survive the projection bridge.");
     }
 }

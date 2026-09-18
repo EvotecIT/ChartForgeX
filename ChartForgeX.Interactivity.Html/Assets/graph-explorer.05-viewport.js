@@ -62,6 +62,11 @@
       const padding = Number.isFinite(pad) ? pad : 0;
       bounds.push({ minX: point.x - padding, minY: point.y - padding, maxX: point.x + padding, maxY: point.y + padding });
     };
+    const pushEdgeLabel = (edge, point, pad) => {
+      if (!point || !edge.showLabel || !edge.label) return;
+      const halfWidth = Math.max(14, graphEstimatedEdgeLabelWidth(edge.label) / 2);
+      bounds.push({ minX: point.x - halfWidth - pad, minY: point.y - 16 - pad, maxX: point.x + halfWidth + pad, maxY: point.y + 8 + pad });
+    };
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
       const pad = 30;
@@ -77,7 +82,7 @@
         pushPoint(loop.c1, pad);
         pushPoint(loop.c2, pad);
         pushPoint(loop.end, pad);
-        pushPoint(loop.label, pad + 10);
+        pushEdgeLabel(rendered, loop.label, pad);
         return;
       }
 
@@ -86,7 +91,7 @@
       pushPoint(rendered.target, pad);
       if (edgeHasRoute(rendered)) routeRenderPoints(rendered).forEach(point => pushPoint(point, pad));
       pushPoint(control, pad);
-      pushPoint(edgeLabelPoint(rendered, control), pad + 10);
+      pushEdgeLabel(rendered, edgeLabelPoint(rendered, control), pad);
     });
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;

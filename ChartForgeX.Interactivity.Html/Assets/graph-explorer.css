@@ -721,6 +721,10 @@
   transition: opacity .18s ease, filter .18s ease;
 }
 
+g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
+  filter: drop-shadow(0 5px 10px rgba(15, 23, 42, .18));
+}
+
 .cfx-graph-node[data-node-has-children="true"] {
   cursor: zoom-in;
 }
@@ -755,7 +759,7 @@
 .cfx-graph-node text,
 .cfx-graph-node-details text {
   fill: var(--cfx-node-label-adaptive, var(--cfx-node-label-explicit, var(--cfx-color-graph-text)));
-  stroke: var(--cfx-color-graph-halo);
+  stroke: var(--cfx-node-label-halo, var(--cfx-color-graph-halo));
   stroke-width: 4;
   font-size: 12px;
   paint-order: stroke;
@@ -777,7 +781,7 @@
 
 .cfx-graph-node .cfx-graph-node-secondary,
 .cfx-graph-node-details .cfx-graph-node-secondary {
-  fill: var(--cfx-color-graph-muted);
+  fill: var(--cfx-node-secondary-adaptive, var(--cfx-color-graph-muted));
   stroke-width: 3;
   font-size: 9.5px;
 }
@@ -995,7 +999,7 @@
   backdrop-filter: blur(12px);
 }
 
-.cfx-graph-has-overview .cfx-graph-overview {
+.cfx-graph-has-overview:not(.cfx-graph-overview-unneeded) .cfx-graph-overview {
   display: block;
 }
 

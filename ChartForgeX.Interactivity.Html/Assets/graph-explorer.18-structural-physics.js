@@ -1,6 +1,6 @@
   const physicsCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
   const physicsNodeRadius = (node, includeLabels) => {
-    const mark = Math.max(4, Number(node.size) || 8) * (node.shape === 'box' || node.shape === 'database' ? 1.3 : node.shape === 'image' ? 1.18 : 1);
+    const mark = Math.max(4, Number(node.size) || 8) * (node.card ? 1.55 : node.shape === 'box' || node.shape === 'database' ? 1.3 : node.shape === 'image' ? 1.18 : 1);
     const label = includeLabels ? Math.min(90, Math.max(0, String(node.label || '').length * 3.2)) : 0;
     return Math.max(mark, label);
   };

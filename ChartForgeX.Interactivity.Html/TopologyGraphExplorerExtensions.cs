@@ -32,6 +32,8 @@ public static class TopologyGraphExplorerExtensions {
         var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(source));
         scene.Subtitle = source.Subtitle;
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
+        if (seededLayout) scene.Options.Physics.Stabilization.Enabled = options.StabilizePreparedLayoutOnLoad;
+        if (source.Nodes.Count <= 20) scene.Options.LevelOfDetail.DetailScaleThreshold = Math.Min(scene.Options.LevelOfDetail.DetailScaleThreshold, 0.72);
         ApplyLayoutOptions(scene, source);
         ApplyManipulationOptions(scene, options);
         if (options.DenseEdgeLabelThreshold > 0) scene.Options.LevelOfDetail.HideEdgeLabelsThreshold = Math.Min(scene.Options.LevelOfDetail.HideEdgeLabelsThreshold, options.DenseEdgeLabelThreshold);
@@ -119,8 +121,8 @@ public static class TopologyGraphExplorerExtensions {
         var display = EffectiveDisplayMode(node, icon, imageUrl);
         var shape = display == TopologyNodeDisplayMode.Hidden
             ? GraphNodeShape.Text
-            : !node.DisplayMode.HasValue && !string.IsNullOrWhiteSpace(imageUrl)
-                ? GraphNodeShape.Image
+            : !string.IsNullOrWhiteSpace(imageUrl)
+                ? display == TopologyNodeDisplayMode.Artwork ? GraphNodeShape.RectangularImage : GraphNodeShape.Image
                 : NodeShape(display, icon, imageUrl);
         var graphNode = new GraphSceneNode {
             Id = ids.NodeId(node.Id),
@@ -157,6 +159,7 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.subtitle", node.Subtitle);
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
+        if (shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill) graphNode.Metadata["topology.card"] = "true";
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
         AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
         AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);

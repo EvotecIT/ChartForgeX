@@ -34,7 +34,7 @@
       group.appendChild(image);
     } else if (node.shape === 'box' || node.shape === 'square') {
       const wide = node.shape === 'box' ? 1.45 : 1;
-      const high = node.shape === 'box' ? Math.min(size * 1.05, 36) : size;
+      const high = node.shape === 'box' ? (node.card ? Math.min(size * 1.05, 36) : size * 1.05) : size;
       group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -high, width: size * wide * 2, height: high * 2, rx: node.shape === 'square' ? 4 : 10, style }));
     } else if (node.shape === 'ellipse') {
       group.appendChild(svgNode(document, 'ellipse', { rx: size * 1.55, ry: size, style }));
@@ -48,7 +48,7 @@
       group.appendChild(svgNode(document, 'circle', { r: size, style }));
     }
     if (node.icon && node.shape !== 'image' && node.shape !== 'imageRect') {
-      const card = node.shape === 'box' && node.size >= 34;
+      const card = node.card === true;
       const icon = svgNode(document, 'text', { class: card ? 'cfx-graph-node-icon cfx-graph-node-card-icon' : 'cfx-graph-node-icon', x: card ? -node.size * 1.45 + 28 : 0, y: 4 });
       icon.textContent = node.icon;
       group.appendChild(icon);
@@ -56,7 +56,7 @@
   };
   const appendExportedNodeDetails = (document, group, node) => {
     const textShape = node.shape === 'text';
-    const card = node.shape === 'box' && node.size >= 34;
+    const card = node.card === true;
     const cardX = -node.size * 1.45 + 52;
     const cardHalfHeight = Math.min(node.size * 1.05, 36);
     if (node.labelBackgroundColor && !card) {
@@ -70,12 +70,12 @@
         style: `fill:${node.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`
       }));
     }
-    const label = svgNode(document, 'text', { class: card ? 'cfx-graph-node-label cfx-graph-node-card-label' : 'cfx-graph-node-label', x: card ? cardX : 0, y: card ? -5 : textShape ? 4 : node.size + 18 });
+    const label = svgNode(document, 'text', { class: card ? 'cfx-graph-node-label cfx-graph-node-card-label' : 'cfx-graph-node-label', x: card ? cardX : 0, y: card ? -5 : textShape ? 4 : node.size + 18, ...(card ? { 'data-cfx-full-label': node.label } : {}) });
     if (node.labelColor) label.setAttribute('style', `fill:${node.labelColor}`);
     label.textContent = card ? graphCardText(node.label, node.size) : node.label;
     group.appendChild(label);
     if (node.secondaryLabel) {
-      const secondary = svgNode(document, 'text', { class: card ? 'cfx-graph-node-secondary cfx-graph-node-card-secondary' : 'cfx-graph-node-secondary', x: card ? cardX : 0, y: card ? 14 : textShape ? 18 : node.size + 32 });
+      const secondary = svgNode(document, 'text', { class: card ? 'cfx-graph-node-secondary cfx-graph-node-card-secondary' : 'cfx-graph-node-secondary', x: card ? cardX : 0, y: card ? 14 : textShape ? 18 : node.size + 32, ...(card ? { 'data-cfx-full-label': node.secondaryLabel } : {}) });
       secondary.textContent = card ? graphCardText(node.secondaryLabel, node.size, true) : node.secondaryLabel;
       group.appendChild(secondary);
     }

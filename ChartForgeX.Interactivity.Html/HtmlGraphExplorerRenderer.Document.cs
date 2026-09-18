@@ -18,7 +18,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append('[');
             writer.Append(JsonString(node.Id)); Value(writer, node.Label); Value(writer, node.Kind); Value(writer, node.GroupId); Value(writer, NodeClusterId(node, clusterMembership)); Value(writer, node.ParentId); Value(writer, node.Status);
             NumberValue(writer, SafeNodeSize(node)); BooleanValue(writer, node.Fixed); BooleanValue(writer, node.Hidden); NullableNumberValue(writer, node.Level); Value(writer, NodeShape(node)); Value(writer, node.ImageUrl); Value(writer, node.ImageAlt); Value(writer, node.IconText); Value(writer, node.SecondaryLabel); Value(writer, node.BadgeText);
-            Value(writer, node.Style.BackgroundColor); Value(writer, node.Style.BorderColor); Value(writer, node.Style.LabelColor); Value(writer, node.Style.LabelBackgroundColor); BooleanValue(writer, node.Style.Shadow); Value(writer, SearchText(node.Metadata)); Value(writer, MetadataJson(node.Metadata)); NumberValue(writer, point.X); NumberValue(writer, point.Y); BooleanValue(writer, collapsedNodeIds.Contains(node.Id));
+            Value(writer, node.Style.BackgroundColor); Value(writer, node.Style.BorderColor); Value(writer, node.Style.LabelColor); Value(writer, node.Style.LabelBackgroundColor); BooleanValue(writer, node.Style.Shadow); Value(writer, SearchText(node.Metadata)); Value(writer, MetadataJson(node.Metadata)); NumberValue(writer, point.X); NumberValue(writer, point.Y); BooleanValue(writer, collapsedNodeIds.Contains(node.Id)); BooleanValue(writer, IsCardNode(node));
             writer.Append(']');
         }
 
