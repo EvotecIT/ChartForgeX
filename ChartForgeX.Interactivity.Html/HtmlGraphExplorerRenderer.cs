@@ -538,8 +538,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
         if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) {
-            var routedPoint = PolylineMidpoint(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
-            return AvoidEdgeLabelNodeCollisions(routedPoint, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset);
+            var route = PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset);
+            var routedPoint = PolylineMidpoint(route, -7);
+            return AvoidEdgeLabelNodeCollisions(routedPoint, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset, route);
         }
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
