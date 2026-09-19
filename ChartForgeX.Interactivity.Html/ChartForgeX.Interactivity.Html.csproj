@@ -84,6 +84,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.30-bindings.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js" />
     <EmbeddedResource Include="Assets\graph-explorer.31-physics-configurator.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js" />
     <EmbeddedResource Include="Assets\graph-explorer.32-manipulation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.39-patch-validation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.40-api.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js" />
   </ItemGroup>
 </Project>

@@ -4,10 +4,10 @@ const path = require('node:path');
 const test = require('node:test');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '09-edge-bundles', '10-layout', '11-state-sync', '30-bindings'];
+const names = ['00-core', '01-document', '02-geometry', '05-viewport', '09-edge-bundles', '10-layout', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-const loadRuntime = new Function('document', 'window', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, attr };');
-const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {});
+const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, attr };');
+const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
 
 function scene(siteCount, edgeSpecs, renderer = 'canvas') {
   const physicalLabels = [];
@@ -15,6 +15,7 @@ function scene(siteCount, edgeSpecs, renderer = 'canvas') {
   const stage = { appendChild(note) { root.note = note; } };
   const root = runtime.graphVirtualElement('root', { 'data-cfx-graph-id': 'bundle-test', 'data-cfx-graph-features': 'Selection,Clustering' }, []);
   root.dataset = { cfxGraphRendererActive: renderer };
+  root.dispatchEvent = () => true;
   root.ownerDocument = {
     createElementNS() { return runtime.graphVirtualElement('graph-edge-label', {}, []); },
     createElement() { return { setAttribute() {}, remove() { root.note = null; } }; }
@@ -111,4 +112,92 @@ test('new SVG bundle labels have geometry immediately after filter restoration',
   runtime.applyCollapsedEdgeBundles(root);
   assert.equal(physicalLabels.filter(label => !label.__cfxRemoved).length, 1);
   assert.notEqual(runtime.attr(physicalLabels[1], 'x'), '');
+});
+
+test('a bundled route honors a hidden-label request without losing its accessible summary', () => {
+  const { root, edges, physicalLabels } = scene(2, [
+    [0, 1, 'First', 'healthy'], [0, 1, 'Second', 'warning']
+  ], 'svg');
+  edges[1].setAttribute('data-edge-show-label', 'false');
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(physicalLabels.length, 0);
+  assert.equal(runtime.attr(edges[1], 'data-cfx-bundle-count'), '2');
+  assert.match(runtime.attr(edges[1], 'aria-label'), /2 relationships/);
+});
+
+test('keyboard navigation reaches a bundled route before Enter activates it', () => {
+  const { root, edges } = scene(2, [
+    [0, 1, 'First', 'healthy'], [0, 1, 'Second', 'warning']
+  ], 'svg');
+  root.setAttribute('data-cfx-graph-accelerated-markup', 'true');
+  runtime.applyCollapsedEdgeBundles(root);
+  root.__cfxGraphState = runtime.graphState(root);
+  const candidates = runtime.acceleratedGraphCandidates(root);
+  assert.ok(candidates.some(candidate => candidate.el === edges[1]));
+  assert.ok(!candidates.some(candidate => candidate.el === edges[0]));
+  const surface = { setAttribute(name, value) { this[name] = value; } };
+  for (let index = 0; index < candidates.length; index++) {
+    const event = { key: 'ArrowRight', currentTarget: surface, preventDefault() {} };
+    assert.equal(runtime.moveAcceleratedGraphSelection(root, event), true);
+    if (root.dataset.cfxGraphSelectionPrimary === 'edge-1') break;
+  }
+  assert.equal(root.dataset.cfxGraphSelectionPrimary, 'edge-1');
+  assert.equal(runtime.attr(root.__cfxGraphVirtualItems.at(-1), 'data-cluster-collapsed'), 'true');
+  assert.match(surface['aria-label'], /2 relationships/);
+  const expandedCluster = root.__cfxGraphVirtualItems.at(-1);
+  expandedCluster.setAttribute('data-cluster-collapsed', 'false');
+  expandedCluster.setAttribute('aria-hidden', 'true');
+  assert.ok(!runtime.acceleratedGraphCandidates(root).some(candidate => candidate.el === expandedCluster));
+  for (let index = 0; index < candidates.length + 2; index++) {
+    runtime.moveAcceleratedGraphSelection(root, { key: 'ArrowRight', currentTarget: surface, preventDefault() {} });
+    assert.notEqual(root.dataset.cfxGraphSelectionPrimary, runtime.attr(expandedCluster, 'data-cluster-id'));
+  }
+});
+
+test('patching a bundled route replaces stale accessible and SVG label text', () => {
+  const { root, edges, physicalLabels } = scene(2, [
+    [0, 1, 'Old first', 'healthy'], [0, 1, 'Old second', 'warning']
+  ], 'svg');
+  root.__cfxGraphState = runtime.graphState(root);
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(physicalLabels.length, 1);
+  runtime.upsertGraphEdge(root, {
+    id: 'edge-1', label: 'New second', kind: 'Trust', status: 'warning',
+    sourceNodeId: 'node-0', targetNodeId: 'node-1', showLabel: true
+  });
+  assert.equal(physicalLabels[0].textContent, 'New second');
+  assert.equal(runtime.attr(edges[1], 'aria-label'), 'New second');
+  runtime.applyCollapsedEdgeBundles(root);
+  root.search = { value: 'Old' };
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(physicalLabels[0].textContent, 'New second');
+  assert.equal(runtime.attr(edges[1], 'aria-label'), 'New second');
+});
+
+test('activating a bundled route reheats the expanded graph once and falls back to fit', () => {
+  const layout = fs.readFileSync(path.join(assets, 'graph-explorer.10-layout.js'), 'utf8');
+  const start = layout.indexOf('  const select = (root, node, options) => {');
+  const end = layout.indexOf('  const selectedGraphNodeId = (root) => {', start);
+  assert.ok(start >= 0 && end > start);
+  const calls = [];
+  let reducedMotion = false;
+  const activate = new Function('hasFeature', 'attr', 'num', 'applyClusterState', 'graphPrefersReducedMotion', 'reheatPhysics', 'fitViewport',
+    layout.slice(start, end) + '\nreturn select;')(
+    (_, feature) => ['Selection', 'Clustering', 'RuntimePhysics', 'Viewport'].includes(feature),
+    runtime.attr, (element, name, fallback) => Number(runtime.attr(element, name)) || fallback,
+    (_, expanded, clusterId) => calls.push(`expand:${clusterId}:${expanded}`),
+    () => reducedMotion,
+    (_, reason) => { calls.push(`reheat:${reason}`); return true; },
+    () => calls.push('fit')
+  );
+  const edge = runtime.graphVirtualElement('graph-edge', {
+    'data-cfx-bundle-count': '3', 'data-source-cluster-id': 'site-a', 'data-target-cluster-id': 'site-b'
+  }, []);
+  const root = runtime.graphVirtualElement('root', {}, []);
+  activate(root, edge);
+  assert.deepEqual(calls, ['expand:site-a:false', 'expand:site-b:false', 'reheat:bundle-expand']);
+  calls.length = 0;
+  reducedMotion = true;
+  activate(root, edge);
+  assert.deepEqual(calls, ['expand:site-a:false', 'expand:site-b:false', 'fit']);
 });

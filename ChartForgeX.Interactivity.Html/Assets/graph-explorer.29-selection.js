@@ -50,16 +50,30 @@
     focusGraphItem(root, best);
     return true;
   };
+  const acceleratedGraphCandidates = (root) => {
+    const state = root.__cfxGraphState || graphState(root);
+    return [
+      ...state.clusters.filter(cluster => graphItemAccessible(root, cluster.el)),
+      ...state.edges.filter(edge => graphItemAccessible(root, edge.el) && num(edge.el, 'data-cfx-bundle-count', 0) > 1),
+      ...state.nodes.filter(node => graphItemAccessible(root, node.el)),
+      ...state.edges.filter(edge => graphItemAccessible(root, edge.el) && num(edge.el, 'data-cfx-bundle-count', 0) <= 1)
+    ];
+  };
+  const acceleratedGraphSelectedItem = (root) => {
+    const candidates = acceleratedGraphCandidates(root);
+    return candidates.find(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected')) || candidates[0];
+  };
   const moveAcceleratedGraphSelection = (root, event) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return false;
-    const nodes = (root.__cfxGraphState || graphState(root)).nodes.filter(node => visible(node.el));
-    if (!nodes.length) return false;
-    const current = nodes.findIndex(node => node.id === root.dataset.cfxGraphSelectionPrimary);
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (current <= 0 ? nodes.length - 1 : current - 1) : (current + 1) % nodes.length;
+    const candidates = acceleratedGraphCandidates(root);
+    if (!candidates.length) return false;
+    const current = candidates.findIndex(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected'));
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? candidates.length - 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (current <= 0 ? candidates.length - 1 : current - 1) : (current + 1) % candidates.length;
     event.preventDefault();
-    select(root, nodes[next].el);
+    select(root, candidates[next].el, { activateBundle: false });
     const surface = event.currentTarget;
-    surface?.setAttribute('aria-label', `${attr(root, 'data-cfx-graph-title') || 'Graph'}. Current item: ${nodes[next].label || nodes[next].id}. Use arrow keys to move and Enter or Space to select.`);
+    const label = attr(candidates[next].el, 'data-cfx-bundle-label') || candidates[next].label || candidates[next].id;
+    surface?.setAttribute('aria-label', `${attr(root, 'data-cfx-graph-title') || 'Graph'}. Current item: ${label}. Use arrow keys to move and Enter or Space to activate.`);
     return true;
   };
   const bindGraphItemSelection = (root, item) => {

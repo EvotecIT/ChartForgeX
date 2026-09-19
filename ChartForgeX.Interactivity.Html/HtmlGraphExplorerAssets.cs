@@ -38,6 +38,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js"
     };

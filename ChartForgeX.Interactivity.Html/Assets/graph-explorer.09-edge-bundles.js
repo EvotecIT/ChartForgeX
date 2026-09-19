@@ -65,7 +65,7 @@
       lead.setAttribute('aria-label', summary);
       lead.setAttribute('data-cfx-bundle-label', `${count} relationships`);
       let label = labels.get(attr(lead, 'data-edge-id'));
-      if (!label && root.dataset.cfxGraphRendererActive === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
+      if (!label && attr(lead, 'data-edge-show-label') !== 'false' && root.dataset.cfxGraphRendererActive === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
         const viewport = root.querySelector('[data-cfx-role="graph-viewport"]');
         if (viewport) {
           label = root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', 'text');
@@ -84,7 +84,7 @@
           }
         }
       }
-      if (label) {
+      if (label && attr(lead, 'data-edge-show-label') !== 'false') {
         if (!attr(label, 'data-cfx-bundle-generated')) label.setAttribute('data-cfx-bundle-original-text', label.textContent || '');
         label.textContent = `${count} links`;
       }
@@ -115,7 +115,7 @@
       const note = root.ownerDocument.createElement('div');
       note.className = 'cfx-graph-overview-note';
       note.setAttribute('data-cfx-role', 'graph-overview-note');
-      note.textContent = `Showing ${shown.size} priority routes from ${items(root, '[data-cfx-role="graph-edge"]').length} relationships. Colors show the worst status. Select a route, expand a site, or filter to inspect all.`;
+      note.textContent = `Showing ${shown.size} priority routes from ${items(root, '[data-cfx-role="graph-edge"]').length} relationships. Select a route, expand a site, or filter to inspect all.`;
       stage.appendChild(note);
     }
   };

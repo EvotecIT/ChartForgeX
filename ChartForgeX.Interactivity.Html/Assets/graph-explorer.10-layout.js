@@ -162,12 +162,13 @@
   };
   const select = (root, node, options) => {
     if (!hasFeature(root, 'Selection')) return;
-    if (attr(node, 'data-cfx-role') === 'graph-edge' && num(node, 'data-cfx-bundle-count', 0) > 1 && hasFeature(root, 'Clustering')) {
+    if (options?.activateBundle !== false && attr(node, 'data-cfx-role') === 'graph-edge' && num(node, 'data-cfx-bundle-count', 0) > 1 && hasFeature(root, 'Clustering')) {
       const source = attr(node, 'data-source-cluster-id');
       const target = attr(node, 'data-target-cluster-id');
       if (source && target && source !== target) {
         applyClusterState(root, false, source, { reheat: false });
         applyClusterState(root, false, target, { reheat: false });
+        if (!graphPrefersReducedMotion(root) && attr(root, 'data-cfx-graph-reheat-cluster') !== 'false' && hasFeature(root, 'RuntimePhysics') && reheatPhysics(root, 'bundle-expand', { rebuild: true, fit: true })) return;
         if (hasFeature(root, 'Viewport')) fitViewport(root);
         return;
       }

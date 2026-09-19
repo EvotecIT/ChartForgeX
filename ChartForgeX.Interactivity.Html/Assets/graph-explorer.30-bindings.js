@@ -25,8 +25,7 @@
       if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection')) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      const state = (root.__cfxGraphState || graphState(root));
-      const best = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el)) || state.clusters.find(cluster => visible(cluster.el)) || state.edges.find(edge => visible(edge.el));
+      const best = acceleratedGraphSelectedItem(root);
       if (!best) return;
       event.preventDefault(); select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
@@ -38,8 +37,7 @@
       if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !hasFeature(root, 'Selection')) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      const state = root.__cfxGraphState || graphState(root);
-      const selected = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el));
+      const selected = acceleratedGraphSelectedItem(root);
       if (!selected) return;
       event.preventDefault();
       select(root, selected.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
