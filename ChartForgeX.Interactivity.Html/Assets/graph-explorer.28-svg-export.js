@@ -94,7 +94,8 @@
     if (!edge.label || !edge.showLabel) return null;
     const point = edgeLabelPoint(rendered, edgeControl(rendered));
     const classes = ['cfx-graph-edge-label'];
-    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden'].forEach(name => {
+    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden',
+      'cfx-graph-bundle-member', 'cfx-graph-overview-member'].forEach(name => {
       if (edge.el.classList.contains(name)) classes.push(name);
     });
     const label = svgNode(document, 'text', {
@@ -179,7 +180,7 @@
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       viewport.appendChild(path);
-      if (!edgeLabels.has(edge.id)) appendExportedEdgeLabel(document, viewport, edge, rendered);
+      if (!edgeLabels.has(edge.id) && visible(edge.el)) appendExportedEdgeLabel(document, viewport, edge, rendered);
     });
     const groups = new Map(Array.from(viewport.querySelectorAll('[data-cfx-role="graph-node"]')).map(group => [attr(group, 'data-node-id'), group]));
     let detailsLayer = viewport.querySelector('[data-cfx-role="graph-node-details-layer"]');

@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '09-edge-bundles', '10-layout', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
+const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '10-layout', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, attr };');
 const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
@@ -17,7 +17,11 @@ function scene(siteCount, edgeSpecs, renderer = 'canvas') {
   root.dataset = { cfxGraphRendererActive: renderer };
   root.dispatchEvent = () => true;
   root.ownerDocument = {
-    createElementNS() { return runtime.graphVirtualElement('graph-edge-label', {}, []); },
+    createElementNS() {
+      const label = runtime.graphVirtualElement('graph-edge-label', {}, []);
+      label.style = { setProperty(name, value) { label.setAttribute(name, value); } };
+      return label;
+    },
     createElement() { return { setAttribute() {}, remove() { root.note = null; } }; }
   };
   root.querySelector = selector => selector.includes('graph-overview-note') ? root.note || null
@@ -98,12 +102,18 @@ test('dense priority route disclosure carries the hidden relationship count', ()
 });
 
 test('new SVG bundle labels have geometry immediately after filter restoration', () => {
-  const { root, physicalLabels } = scene(2, [
-    [0, 1, 'Original one', 'healthy'], [0, 1, 'Original two', 'warning']
+  const { root, edges, physicalLabels } = scene(2, [
+    [0, 1, 'Original one', 'healthy'], [0, 1, 'Original two', 'Warning']
   ], 'svg');
+  edges[1].setAttribute('data-edge-label-color', '#123456');
+  root.setAttribute('data-cfx-graph-theme-active', 'dark');
   root.__cfxGraphState = runtime.graphState(root);
   runtime.applyCollapsedEdgeBundles(root);
   assert.equal(physicalLabels.length, 1);
+  assert.equal(runtime.attr(edges[1], 'data-cfx-bundle-count'), '2');
+  assert.equal(physicalLabels[0].textContent, '2 relationships');
+  assert.equal(runtime.attr(physicalLabels[0], '--cfx-edge-label-explicit'), '#123456');
+  assert.equal(runtime.attr(physicalLabels[0], '--cfx-edge-label-adaptive'), '#d2dbea');
   assert.notEqual(runtime.attr(physicalLabels[0], 'x'), '');
   assert.ok(Number.isFinite(Number(runtime.attr(physicalLabels[0], 'y'))));
   root.search = { value: 'Original' };
@@ -112,6 +122,24 @@ test('new SVG bundle labels have geometry immediately after filter restoration',
   runtime.applyCollapsedEdgeBundles(root);
   assert.equal(physicalLabels.filter(label => !label.__cfxRemoved).length, 1);
   assert.notEqual(runtime.attr(physicalLabels[1], 'x'), '');
+});
+
+test('existing labels for collapsed relationships follow the visibility of their edges', () => {
+  const { root, edges, physicalLabels } = scene(2, [
+    [0, 1, 'Healthy', 'healthy'], [0, 1, 'Critical', 'Critical']
+  ], 'svg');
+  for (const edge of edges) {
+    const label = root.ownerDocument.createElementNS();
+    label.setAttribute('data-edge-label-for', runtime.attr(edge, 'data-edge-id'));
+    physicalLabels.push(label);
+  }
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(edges[1].classList.contains('cfx-graph-bundle-member'), false);
+  assert.equal(physicalLabels[0].classList.contains('cfx-graph-bundle-member'), true);
+  assert.equal(physicalLabels[1].textContent, '2 relationships');
+  root.search = { value: 'Critical' };
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(physicalLabels[0].classList.contains('cfx-graph-bundle-member'), false);
 });
 
 test('a bundled route honors a hidden-label request without losing its accessible summary', () => {

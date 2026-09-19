@@ -25,6 +25,8 @@
       }
     });
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => {
+      label.classList.remove('cfx-graph-bundle-member');
+      label.classList.remove('cfx-graph-overview-member');
       if (attr(label, 'data-cfx-bundle-generated')) label.remove();
       else if (label.getAttribute('data-cfx-bundle-original-text') !== null) {
         label.textContent = attr(label, 'data-cfx-bundle-original-text');
@@ -49,7 +51,7 @@
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(edge);
     });
-    const severity = edge => ({ critical: 3, warning: 2, healthy: 1 })[attr(edge, 'data-cfx-status')] || 0;
+    const severity = edge => ({ critical: 3, warning: 2, healthy: 1 })[attr(edge, 'data-cfx-status').toLowerCase()] || 0;
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const leads = [];
     let positionedState;
@@ -57,7 +59,12 @@
       const lead = edges.reduce((best, edge) => severity(edge) > severity(best) ? edge : best, edges[0]);
       leads.push(lead);
       if (edges.length < 2) return;
-      edges.forEach(edge => { if (edge !== lead) edge.classList.add('cfx-graph-bundle-member'); });
+      edges.forEach(edge => {
+        if (edge !== lead) {
+          edge.classList.add('cfx-graph-bundle-member');
+          labels.get(attr(edge, 'data-edge-id'))?.classList.add('cfx-graph-bundle-member');
+        }
+      });
       const count = edges.length;
       const summary = `${count} relationships. Select this route to expand both sites and inspect individual relationships.`;
       lead.setAttribute('data-cfx-bundle-count', String(count));
@@ -73,6 +80,10 @@
           label.setAttribute('data-cfx-role', 'graph-edge-label');
           label.setAttribute('data-edge-label-for', attr(lead, 'data-edge-id'));
           label.setAttribute('data-cfx-bundle-generated', 'true');
+          const labelColor = attr(lead, 'data-edge-label-color');
+          if (labelColor) label.style.setProperty('--cfx-edge-label-explicit', labelColor);
+          label.style.setProperty('--cfx-edge-label-adaptive',
+            graphAdaptiveTextColor(root, labelColor, graphThemePalette(root).edgeLabel));
           viewport.appendChild(label);
           positionedState ||= root.__cfxGraphState || graphState(root);
           const edge = positionedState.edges.find(item => item.el === lead);
@@ -86,7 +97,7 @@
       }
       if (label && attr(lead, 'data-edge-show-label') !== 'false') {
         if (!attr(label, 'data-cfx-bundle-generated')) label.setAttribute('data-cfx-bundle-original-text', label.textContent || '');
-        label.textContent = `${count} links`;
+        label.textContent = `${count} relationships`;
       }
     });
     if (collapsed.size < 6 || leads.length <= collapsed.size * 2.5) return;
@@ -106,7 +117,12 @@
     priority.forEach(connect);
     const shown = new Set(priority);
     leads.filter(edge => !shown.has(edge)).forEach(edge => { if (connect(edge)) shown.add(edge); });
-    leads.forEach(edge => { if (!shown.has(edge)) edge.classList.add('cfx-graph-overview-member'); });
+    leads.forEach(edge => {
+      if (!shown.has(edge)) {
+        edge.classList.add('cfx-graph-overview-member');
+        labels.get(attr(edge, 'data-edge-id'))?.classList.add('cfx-graph-overview-member');
+      }
+    });
     const stage = root.querySelector('.cfx-graph-stage');
     if (stage && shown.size < leads.length) {
       root.classList.add('cfx-graph-priority-overview');
