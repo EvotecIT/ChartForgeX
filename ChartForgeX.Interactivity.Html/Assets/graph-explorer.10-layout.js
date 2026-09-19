@@ -112,7 +112,7 @@
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
     syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), clusterId: clusterId || '', collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
-    applyFilters(root); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
+    applyFilters(root); syncBundledEdgePresentation(root, state); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
     if (options?.reheat !== false && attr(root, 'data-cfx-graph-reheat-cluster') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'cluster-change', { rebuild: true, fit: false });
   };
   const metadataDetail = (node) => {
@@ -260,6 +260,7 @@
   };
   const applyFilters = (root) => {
     applyCollapsedEdgeBundles(root);
+    syncBundledEdgePresentation(root, root.__cfxGraphState);
     const query = (root.querySelector('[data-cfx-graph-search]')?.value || '').trim().toLowerCase();
     const filters = {};
     items(root, '[data-cfx-graph-filter]').forEach(filter => { filters[attr(filter, 'data-cfx-graph-filter')] = filter.value || ''; });
@@ -333,6 +334,7 @@
     const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
     if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode);
     else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
+    syncGraphItemTabStops(root);
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: actualVisibleNodes.length });
   };
 

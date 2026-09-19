@@ -1,10 +1,9 @@
-  const graphItemAccessible = (root, item, collapsedNodeIds) => {
+  const graphItemAccessible = (root, item) => {
     if (!visible(item)) return false;
     const role = attr(item, 'data-cfx-role');
     if (role === 'graph-cluster') return attr(item, 'data-cluster-collapsed') === 'true';
-    if (role !== 'graph-edge') return true;
-    const collapsed = collapsedNodeIds || new Set(items(root, '[data-cfx-role="graph-node"].cfx-graph-cluster-collapsed-member').map(node => attr(node, 'data-node-id')));
-    return !collapsed.has(attr(item, 'data-source-node-id')) && !collapsed.has(attr(item, 'data-target-node-id'));
+    // Every visible route is actionable, including leads between collapsed sites.
+    return true;
   };
   const syncGraphItemTabStops = (root) => {
     const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'svg';
@@ -28,8 +27,7 @@
       else scene.removeAttribute('aria-keyshortcuts');
     }
     const graphItems = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]');
-    const collapsedNodeIds = new Set(items(root, '[data-cfx-role="graph-node"].cfx-graph-cluster-collapsed-member').map(node => attr(node, 'data-node-id')));
-    const accessible = item => graphItemAccessible(root, item, collapsedNodeIds);
+    const accessible = item => graphItemAccessible(root, item);
     const focusableItems = graphItems.filter(accessible);
     const itemKey = item => `${attr(item, 'data-cfx-role')}:${attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id')}`;
     const preferred = root.dataset.cfxGraphKeyboardItem || '';
