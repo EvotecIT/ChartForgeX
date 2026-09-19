@@ -88,17 +88,32 @@ test('hidden hierarchy edges never replace an in-scope bundle route', () => {
   assert.equal(runtime.attr(edges[2], 'data-cfx-bundle-count'), '');
 });
 
+test('bundle accessibility identifies each route and retains unknown status ahead of healthy', () => {
+  const { root, edges } = scene(3, [
+    [0, 1, 'Healthy route', 'healthy'], [0, 1, 'Unknown route', 'unknown'],
+    [1, 2, 'Healthy second', 'healthy'], [1, 2, 'Warning second', 'warning']
+  ]);
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[1], 'data-cfx-bundle-count'), '2');
+  assert.equal(runtime.attr(edges[0], 'data-cfx-bundle-count'), '');
+  assert.match(runtime.attr(edges[1], 'aria-label'), /Site 0 and Site 1, Trust/);
+  assert.match(runtime.attr(edges[3], 'aria-label'), /Site 1 and Site 2, Trust/);
+  assert.notEqual(runtime.attr(edges[1], 'aria-label'), runtime.attr(edges[3], 'aria-label'));
+});
+
 test('dense priority route disclosure carries the hidden relationship count', () => {
   const edges = [];
   for (let source = 0; source < 7; source++) {
     for (let target = source + 1; target < 7; target++) edges.push([source, target, `Route ${source}-${target}`, 'healthy']);
   }
   edges[0][3] = 'critical';
-  const { root } = scene(7, edges);
+  edges.push([0, 2, 'Unknown link', 'unknown']);
+  const { root, edges: renderedEdges } = scene(7, edges);
   runtime.applyCollapsedEdgeBundles(root);
   assert.equal(root.classList.contains('cfx-graph-priority-overview'), true);
-  assert.equal(root.dataset.cfxGraphOverviewTotal, '21');
-  assert.match(runtime.graphOverviewDisclosure(root), /^Priority overview: \d+ routes from 21 relationships$/);
+  assert.equal(root.dataset.cfxGraphOverviewTotal, '22');
+  assert.match(runtime.graphOverviewDisclosure(root), /^Priority overview: \d+ routes from 22 relationships$/);
+  assert.equal(renderedEdges.at(-1).classList.contains('cfx-graph-overview-member'), false);
 });
 
 test('new SVG bundle labels have geometry immediately after filter restoration', () => {
@@ -182,6 +197,19 @@ test('keyboard navigation reaches a bundled route before Enter activates it', ()
   }
 });
 
+test('read-only clustering still exposes and activates bundled routes', () => {
+  const { root, edges } = scene(2, [[0, 1, 'First', 'healthy'], [0, 1, 'Second', 'warning']]);
+  root.setAttribute('data-cfx-graph-features', 'Clustering');
+  root.__cfxGraphState = runtime.graphState(root);
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.graphItemAccessible(root, edges[1]), true);
+  assert.equal(runtime.graphItemAccessible(root, edges[0]), false);
+  const surface = { setAttribute(name, value) { this[name] = value; } };
+  for (let index = 0; index < 3; index++)
+    assert.equal(runtime.moveAcceleratedGraphSelection(root, { key: 'ArrowRight', currentTarget: surface, preventDefault() {} }), true);
+  assert.match(surface['aria-label'], /Site 0 and Site 1/);
+});
+
 test('patching a bundled route replaces stale accessible and SVG label text', () => {
   const { root, edges, physicalLabels } = scene(2, [
     [0, 1, 'Old first', 'healthy'], [0, 1, 'Old second', 'warning']
@@ -228,4 +256,31 @@ test('activating a bundled route reheats the expanded graph once and falls back 
   reducedMotion = true;
   activate(root, edge);
   assert.deepEqual(calls, ['expand:site-a:false', 'expand:site-b:false', 'fit']);
+  calls.length = 0;
+  const activateWithoutSelection = new Function('hasFeature', 'attr', 'num', 'applyClusterState', 'graphPrefersReducedMotion', 'reheatPhysics', 'fitViewport',
+    layout.slice(start, end) + '\nreturn select;')(
+    (_, feature) => ['Clustering', 'Viewport'].includes(feature),
+    runtime.attr, (element, name, fallback) => Number(runtime.attr(element, name)) || fallback,
+    (_, expanded, clusterId) => calls.push(`expand:${clusterId}:${expanded}`),
+    () => true, () => false, () => calls.push('fit')
+  );
+  activateWithoutSelection(root, edge);
+  assert.deepEqual(calls, ['expand:site-a:false', 'expand:site-b:false', 'fit']);
+});
+
+test('accelerated SVG materialization preserves a selected route label', () => {
+  const source = fs.readFileSync(path.join(assets, 'graph-explorer.28-svg-export.js'), 'utf8');
+  const start = source.indexOf('  const appendExportedEdgeLabel = (document, group, edge, rendered) => {');
+  const end = source.indexOf('  const drawAcceleratedSvgRuntime = (root, state) => {', start);
+  assert.ok(start >= 0 && end > start);
+  const append = new Function('svgNode', 'edgeLabelPoint', 'edgeControl',
+    source.slice(start, end) + '\nreturn appendExportedEdgeLabel;')(
+    (_, tag, properties) => ({ ...properties, style: { setProperty() {} } }),
+    () => ({ x: 100, y: 50 }), () => null
+  );
+  const edgeElement = runtime.graphVirtualElement('graph-edge', {}, ['cfx-graph-selected']);
+  const edge = { id: 'route', label: '2 relationships', showLabel: true, el: edgeElement };
+  const group = { appendChild(label) { this.label = label; } };
+  append({}, group, edge, {});
+  assert.match(group.label.class, /cfx-graph-label-selected/);
 });

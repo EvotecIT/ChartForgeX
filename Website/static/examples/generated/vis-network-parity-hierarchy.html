@@ -3600,11 +3600,15 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       groups.get(key).push(edge);
     });
     const severity = edge => ({ critical: 3, warning: 2, healthy: 1 })[attr(edge, 'data-cfx-status').toLowerCase()] || 0;
+    const bundlePriority = edge => severity(edge) === 0 ? 2 : severity(edge);
+    const clusterNames = new Map(items(root, '[data-cfx-role="graph-cluster"]').map(cluster => [
+      attr(cluster, 'data-cluster-id'), attr(cluster, 'data-cluster-label') || attr(cluster, 'data-cluster-id')
+    ]));
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const leads = [];
     let positionedState;
     groups.forEach(edges => {
-      const lead = edges.reduce((best, edge) => severity(edge) > severity(best) ? edge : best, edges[0]);
+      const lead = edges.reduce((best, edge) => bundlePriority(edge) > bundlePriority(best) ? edge : best, edges[0]);
       leads.push(lead);
       if (edges.length < 2) return;
       edges.forEach(edge => {
@@ -3614,7 +3618,15 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
         }
       });
       const count = edges.length;
-      const summary = `${count} relationships. Select this route to expand both sites and inspect individual relationships.`;
+      const sourceId = attr(lead, 'data-source-cluster-id');
+      const targetId = attr(lead, 'data-target-cluster-id');
+      const sourceName = clusterNames.get(sourceId) || sourceId;
+      const targetName = clusterNames.get(targetId) || targetId;
+      const sourceArrow = attr(lead, 'data-edge-source-arrow') === 'true';
+      const targetArrow = attr(lead, 'data-edge-target-arrow') === 'true';
+      const direction = sourceArrow && targetArrow ? 'both directions with' : sourceArrow ? 'from' : targetArrow ? 'to' : 'and';
+      const kind = attr(lead, 'data-edge-kind');
+      const summary = `${count} relationships: ${sourceName} ${direction} ${targetName}${kind ? `, ${kind}` : ''}. Activate this route to expand both sites and inspect individual relationships.`;
       lead.setAttribute('data-cfx-bundle-count', String(count));
       lead.setAttribute('data-cfx-bundle-original-aria', attr(lead, 'aria-label'));
       lead.setAttribute('aria-label', summary);
@@ -3846,7 +3858,6 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     }
   };
   const select = (root, node, options) => {
-    if (!hasFeature(root, 'Selection')) return;
     if (options?.activateBundle !== false && attr(node, 'data-cfx-role') === 'graph-edge' && num(node, 'data-cfx-bundle-count', 0) > 1 && hasFeature(root, 'Clustering')) {
       const source = attr(node, 'data-source-cluster-id');
       const target = attr(node, 'data-target-cluster-id');
@@ -3858,6 +3869,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
         return;
       }
     }
+    if (!hasFeature(root, 'Selection')) return;
     const additive = hasFeature(root, 'MultiSelection') && !!options?.additive;
     const toggle = additive && !!options?.toggle;
     const selected = node.classList.contains('cfx-graph-selected');
@@ -4026,23 +4038,27 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   const graphItemAccessible = (root, item) => {
     if (!visible(item)) return false;
     const role = attr(item, 'data-cfx-role');
+    if (!hasFeature(root, 'Selection')) return hasFeature(root, 'Clustering') &&
+      (role === 'graph-edge' && num(item, 'data-cfx-bundle-count', 0) > 1 ||
+        role === 'graph-cluster' && attr(item, 'data-cluster-collapsed') === 'true');
     if (role === 'graph-cluster') return attr(item, 'data-cluster-collapsed') === 'true';
     // Every visible route is actionable, including leads between collapsed sites.
     return true;
   };
   const syncGraphItemTabStops = (root) => {
-    const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'svg';
+    const interactive = hasFeature(root, 'Selection') || hasFeature(root, 'Clustering');
+    const focusableSvg = interactive && root.dataset.cfxGraphRendererActive === 'svg';
     const acceleratedSvg = focusableSvg && attr(root, 'data-cfx-graph-accelerated-markup') === 'true';
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
     const webgl = root.querySelector('[data-cfx-role="graph-webgl"]');
     const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (canvas) {
-      canvas.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
+      canvas.setAttribute('tabindex', interactive && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
       canvas.setAttribute('role', 'img');
       canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph canvas');
     }
     if (webgl) {
-      webgl.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'webgl' ? '0' : '-1');
+      webgl.setAttribute('tabindex', interactive && root.dataset.cfxGraphRendererActive === 'webgl' ? '0' : '-1');
       webgl.setAttribute('role', 'img');
       webgl.setAttribute('aria-label', webgl.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph WebGL canvas');
     }
@@ -5913,6 +5929,7 @@ self.onmessage = event => {
     if (!edge.label || !edge.showLabel) return null;
     const point = edgeLabelPoint(rendered, edgeControl(rendered));
     const classes = ['cfx-graph-edge-label'];
+    if (edge.el.classList.contains('cfx-graph-selected')) classes.push('cfx-graph-label-selected');
     ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden',
       'cfx-graph-bundle-member', 'cfx-graph-overview-member'].forEach(name => {
       if (edge.el.classList.contains(name)) classes.push(name);
@@ -5953,7 +5970,8 @@ self.onmessage = event => {
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       edges.appendChild(path);
-      if (!root.classList.contains('cfx-graph-lod-hide-edge-labels')) appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
+      if (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected'))
+        appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
     });
     state.nodes.filter(node => visible(node.el)).forEach(node => {
       const transform = `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`;
@@ -6040,7 +6058,8 @@ self.onmessage = event => {
     });
     root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
     item.focus();
-    const label = attr(item, 'data-node-label') || attr(item, 'data-edge-label') || attr(item, 'data-cluster-label') || 'Graph item';
+    const label = attr(item, 'data-cfx-bundle-count') ? attr(item, 'aria-label')
+      : attr(item, 'data-node-label') || attr(item, 'data-edge-label') || attr(item, 'data-cluster-label') || 'Graph item';
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
     if (announcer) announcer.textContent = label;
   };
@@ -6083,18 +6102,24 @@ self.onmessage = event => {
   };
   const acceleratedGraphSelectedItem = (root) => {
     const candidates = acceleratedGraphCandidates(root);
-    return candidates.find(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected')) || candidates[0];
+    return candidates.find(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected'))
+      || candidates.find(item => graphKeyboardItemKey(item.el) === root.dataset.cfxGraphKeyboardItem)
+      || candidates[0];
   };
   const moveAcceleratedGraphSelection = (root, event) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return false;
     const candidates = acceleratedGraphCandidates(root);
     if (!candidates.length) return false;
-    const current = candidates.findIndex(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected'));
+    const current = candidates.findIndex(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected')
+      || graphKeyboardItemKey(item.el) === root.dataset.cfxGraphKeyboardItem);
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? candidates.length - 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (current <= 0 ? candidates.length - 1 : current - 1) : (current + 1) % candidates.length;
     event.preventDefault();
-    select(root, candidates[next].el, { activateBundle: false });
+    if (hasFeature(root, 'Selection')) select(root, candidates[next].el, { activateBundle: false });
+    else root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(candidates[next].el);
     const surface = event.currentTarget;
-    const label = attr(candidates[next].el, 'data-cfx-bundle-label') || candidates[next].label || candidates[next].id;
+    const label = attr(candidates[next].el, 'data-cfx-bundle-count')
+      ? attr(candidates[next].el, 'aria-label')
+      : candidates[next].label || candidates[next].id;
     surface?.setAttribute('aria-label', `${attr(root, 'data-cfx-graph-title') || 'Graph'}. Current item: ${label}. Use arrow keys to move and Enter or Space to activate.`);
     return true;
   };
@@ -6702,7 +6727,7 @@ self.onmessage = event => {
       selectCanvasNode(event, best);
     });
     canvas.addEventListener('keydown', event => {
-      if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection')) return;
+      if (!root.classList.contains('cfx-graph-render-canvas') || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
       const best = acceleratedGraphSelectedItem(root);
@@ -6714,7 +6739,7 @@ self.onmessage = event => {
     const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!scene) return;
     scene.addEventListener('keydown', event => {
-      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !hasFeature(root, 'Selection')) return;
+      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
       const selected = acceleratedGraphSelectedItem(root);

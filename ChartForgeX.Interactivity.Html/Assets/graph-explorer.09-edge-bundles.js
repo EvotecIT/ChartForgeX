@@ -52,11 +52,15 @@
       groups.get(key).push(edge);
     });
     const severity = edge => ({ critical: 3, warning: 2, healthy: 1 })[attr(edge, 'data-cfx-status').toLowerCase()] || 0;
+    const bundlePriority = edge => severity(edge) === 0 ? 2 : severity(edge);
+    const clusterNames = new Map(items(root, '[data-cfx-role="graph-cluster"]').map(cluster => [
+      attr(cluster, 'data-cluster-id'), attr(cluster, 'data-cluster-label') || attr(cluster, 'data-cluster-id')
+    ]));
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const leads = [];
     let positionedState;
     groups.forEach(edges => {
-      const lead = edges.reduce((best, edge) => severity(edge) > severity(best) ? edge : best, edges[0]);
+      const lead = edges.reduce((best, edge) => bundlePriority(edge) > bundlePriority(best) ? edge : best, edges[0]);
       leads.push(lead);
       if (edges.length < 2) return;
       edges.forEach(edge => {
@@ -66,7 +70,15 @@
         }
       });
       const count = edges.length;
-      const summary = `${count} relationships. Select this route to expand both sites and inspect individual relationships.`;
+      const sourceId = attr(lead, 'data-source-cluster-id');
+      const targetId = attr(lead, 'data-target-cluster-id');
+      const sourceName = clusterNames.get(sourceId) || sourceId;
+      const targetName = clusterNames.get(targetId) || targetId;
+      const sourceArrow = attr(lead, 'data-edge-source-arrow') === 'true';
+      const targetArrow = attr(lead, 'data-edge-target-arrow') === 'true';
+      const direction = sourceArrow && targetArrow ? 'both directions with' : sourceArrow ? 'from' : targetArrow ? 'to' : 'and';
+      const kind = attr(lead, 'data-edge-kind');
+      const summary = `${count} relationships: ${sourceName} ${direction} ${targetName}${kind ? `, ${kind}` : ''}. Activate this route to expand both sites and inspect individual relationships.`;
       lead.setAttribute('data-cfx-bundle-count', String(count));
       lead.setAttribute('data-cfx-bundle-original-aria', attr(lead, 'aria-label'));
       lead.setAttribute('aria-label', summary);

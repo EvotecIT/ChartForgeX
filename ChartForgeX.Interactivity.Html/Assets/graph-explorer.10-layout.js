@@ -161,7 +161,6 @@
     }
   };
   const select = (root, node, options) => {
-    if (!hasFeature(root, 'Selection')) return;
     if (options?.activateBundle !== false && attr(node, 'data-cfx-role') === 'graph-edge' && num(node, 'data-cfx-bundle-count', 0) > 1 && hasFeature(root, 'Clustering')) {
       const source = attr(node, 'data-source-cluster-id');
       const target = attr(node, 'data-target-cluster-id');
@@ -173,6 +172,7 @@
         return;
       }
     }
+    if (!hasFeature(root, 'Selection')) return;
     const additive = hasFeature(root, 'MultiSelection') && !!options?.additive;
     const toggle = additive && !!options?.toggle;
     const selected = node.classList.contains('cfx-graph-selected');

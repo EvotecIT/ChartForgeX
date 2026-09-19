@@ -1,23 +1,27 @@
   const graphItemAccessible = (root, item) => {
     if (!visible(item)) return false;
     const role = attr(item, 'data-cfx-role');
+    if (!hasFeature(root, 'Selection')) return hasFeature(root, 'Clustering') &&
+      (role === 'graph-edge' && num(item, 'data-cfx-bundle-count', 0) > 1 ||
+        role === 'graph-cluster' && attr(item, 'data-cluster-collapsed') === 'true');
     if (role === 'graph-cluster') return attr(item, 'data-cluster-collapsed') === 'true';
     // Every visible route is actionable, including leads between collapsed sites.
     return true;
   };
   const syncGraphItemTabStops = (root) => {
-    const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'svg';
+    const interactive = hasFeature(root, 'Selection') || hasFeature(root, 'Clustering');
+    const focusableSvg = interactive && root.dataset.cfxGraphRendererActive === 'svg';
     const acceleratedSvg = focusableSvg && attr(root, 'data-cfx-graph-accelerated-markup') === 'true';
     const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
     const webgl = root.querySelector('[data-cfx-role="graph-webgl"]');
     const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (canvas) {
-      canvas.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
+      canvas.setAttribute('tabindex', interactive && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
       canvas.setAttribute('role', 'img');
       canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph canvas');
     }
     if (webgl) {
-      webgl.setAttribute('tabindex', hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'webgl' ? '0' : '-1');
+      webgl.setAttribute('tabindex', interactive && root.dataset.cfxGraphRendererActive === 'webgl' ? '0' : '-1');
       webgl.setAttribute('role', 'img');
       webgl.setAttribute('aria-label', webgl.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph WebGL canvas');
     }

@@ -22,7 +22,7 @@
       selectCanvasNode(event, best);
     });
     canvas.addEventListener('keydown', event => {
-      if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection')) return;
+      if (!root.classList.contains('cfx-graph-render-canvas') || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
       const best = acceleratedGraphSelectedItem(root);
@@ -34,7 +34,7 @@
     const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!scene) return;
     scene.addEventListener('keydown', event => {
-      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !hasFeature(root, 'Selection')) return;
+      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
       const selected = acceleratedGraphSelectedItem(root);

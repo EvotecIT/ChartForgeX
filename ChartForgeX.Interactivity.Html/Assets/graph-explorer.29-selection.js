@@ -18,7 +18,8 @@
     });
     root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
     item.focus();
-    const label = attr(item, 'data-node-label') || attr(item, 'data-edge-label') || attr(item, 'data-cluster-label') || 'Graph item';
+    const label = attr(item, 'data-cfx-bundle-count') ? attr(item, 'aria-label')
+      : attr(item, 'data-node-label') || attr(item, 'data-edge-label') || attr(item, 'data-cluster-label') || 'Graph item';
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
     if (announcer) announcer.textContent = label;
   };
@@ -61,18 +62,24 @@
   };
   const acceleratedGraphSelectedItem = (root) => {
     const candidates = acceleratedGraphCandidates(root);
-    return candidates.find(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected')) || candidates[0];
+    return candidates.find(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected'))
+      || candidates.find(item => graphKeyboardItemKey(item.el) === root.dataset.cfxGraphKeyboardItem)
+      || candidates[0];
   };
   const moveAcceleratedGraphSelection = (root, event) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return false;
     const candidates = acceleratedGraphCandidates(root);
     if (!candidates.length) return false;
-    const current = candidates.findIndex(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected'));
+    const current = candidates.findIndex(item => item.id === root.dataset.cfxGraphSelectionPrimary && item.el.classList.contains('cfx-graph-selected')
+      || graphKeyboardItemKey(item.el) === root.dataset.cfxGraphKeyboardItem);
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? candidates.length - 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (current <= 0 ? candidates.length - 1 : current - 1) : (current + 1) % candidates.length;
     event.preventDefault();
-    select(root, candidates[next].el, { activateBundle: false });
+    if (hasFeature(root, 'Selection')) select(root, candidates[next].el, { activateBundle: false });
+    else root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(candidates[next].el);
     const surface = event.currentTarget;
-    const label = attr(candidates[next].el, 'data-cfx-bundle-label') || candidates[next].label || candidates[next].id;
+    const label = attr(candidates[next].el, 'data-cfx-bundle-count')
+      ? attr(candidates[next].el, 'aria-label')
+      : candidates[next].label || candidates[next].id;
     surface?.setAttribute('aria-label', `${attr(root, 'data-cfx-graph-title') || 'Graph'}. Current item: ${label}. Use arrow keys to move and Enter or Space to activate.`);
     return true;
   };
