@@ -714,6 +714,7 @@
 
 .cfx-graph-node-card-icon {
   font-size: 15px !important;
+  fill: var(--cfx-node-stroke, var(--cfx-color-graph-text)) !important;
 }
 
 .cfx-graph-node {
@@ -853,6 +854,13 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   paint-order: stroke;
   stroke-linejoin: round;
   text-anchor: middle;
+}
+
+.cfx-graph-cluster .cfx-graph-cluster-count {
+  fill: var(--cfx-color-graph-muted);
+  font-size: 9.5px;
+  font-weight: 650;
+  letter-spacing: .02em;
 }
 
 .cfx-graph-cluster.cfx-graph-cluster-expanded {

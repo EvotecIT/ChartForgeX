@@ -194,6 +194,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var x = members.Length == 0 ? Width / 2 : members.Average(point => point.X);
             var y = members.Length == 0 ? Height / 2 : members.Average(point => point.Y);
             var radius = CollapsedClusterRadius(members.Length);
+            var memberLabel = memberIds.Length == 1 ? "1 object" : memberIds.Length + " objects";
+            var status = ClusterStatus(cluster);
             writer.Append("<g class=\"cfx-graph-cluster");
             if (!collapsed) writer.Append(" cfx-graph-cluster-expanded");
             writer.Append("\" data-cfx-role=\"graph-cluster\"");
@@ -202,22 +204,25 @@ public sealed partial class HtmlGraphExplorerRenderer {
             if (focusableGraphItems) {
                 Attribute(writer, "role", "button");
                 Attribute(writer, "aria-pressed", "false");
-                if (collapsed) Attribute(writer, "aria-label", cluster.Label);
+                if (collapsed) Attribute(writer, "aria-label", cluster.Label + ", " + memberLabel + (status == null ? string.Empty : ", " + status));
             }
             Attribute(writer, "data-cluster-id", cluster.Id);
             Attribute(writer, "data-cluster-label", cluster.Label);
             Attribute(writer, "data-cluster-kind", cluster.Kind);
             Attribute(writer, "data-cluster-parent", cluster.ParentClusterId);
             Attribute(writer, "data-cluster-node-ids", string.Join(",", memberIds));
+            Attribute(writer, "data-cluster-node-count", memberIds.Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
             Attribute(writer, "data-cluster-collapsed", collapsed ? "true" : "false");
-            Attribute(writer, "data-cfx-status", ClusterStatus(cluster));
+            Attribute(writer, "data-cfx-status", status);
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
             writer.Append("><circle r=\"");
             writer.Append(Number(radius));
-            writer.Append("\"></circle><text y=\"5\">");
+            writer.Append("\"></circle><text class=\"cfx-graph-cluster-label\" y=\"-2\">");
             writer.Append(Text(cluster.Label));
+            writer.Append("</text><text class=\"cfx-graph-cluster-count\" y=\"14\">");
+            writer.Append(Text(memberLabel));
             writer.Append("</text></g>");
         }
     }

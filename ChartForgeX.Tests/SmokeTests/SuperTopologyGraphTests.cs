@@ -162,15 +162,18 @@ internal static partial class SmokeTests {
             .WithId("relationship-overview")
             .WithTitle("Relationship overview")
             .WithLayout(TopologyLayoutMode.RelationshipRadial)
-            .AddAutoNode("a", "alpha.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
-            .AddAutoNode("b", "beta.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Warning, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
+            .AddAutoIconNode("a", "alpha.example", "microsoft-ad:domain", TopologyHealthStatus.Healthy, subtitle: "Domain", width: 180, height: 72)
+            .AddAutoIconNode("b", "beta.example", "microsoft-ad:domain", TopologyHealthStatus.Warning, subtitle: "Domain", width: 180, height: 72)
             .AddAutoNode("c", "gamma.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Critical, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddAutoNode("d", "KERBEROS.MICROSOFTONLINE.COM😀", TopologyNodeKind.Namespace, TopologyHealthStatus.Unknown, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddEdge("a-b", "a", "b", "Forest · Bidirectional", TopologyEdgeKind.Trust, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
             .AddEdge("a-c", "a", "c", "External · Outbound", TopologyEdgeKind.Trust, TopologyHealthStatus.Critical, VisualLinkDirection.Forward);
+        small.WithNodeDisplay("a", TopologyNodeDisplayMode.Card)
+            .WithNodeDisplay("b", TopologyNodeDisplayMode.Card);
 
         var smallScene = small.ToGraphScene();
         Assert(smallScene.Nodes.All(node => node.HasExplicitPosition && !node.Fixed), "Prepared topology layouts should seed stable opening coordinates while keeping interactive nodes movable.");
+        Assert(smallScene.Nodes.All(node => node.Style.LabelColor == null), "Card topology titles should follow the active explorer theme instead of pinning an accent color that may become unreadable after a theme change.");
         Assert(!smallScene.Options.Physics.Stabilization.Enabled, "Prepared topology layouts should remain stable on load until the user explicitly starts browser stabilization.");
         Assert(small.ToGraphScene(options => options.StabilizePreparedLayoutOnLoad = true).Options.Physics.Stabilization.Enabled, "Topology callers should be able to opt into immediate browser stabilization for prepared layouts.");
         Assert(smallScene.Options.LevelOfDetail.DetailScaleThreshold <= 0.72, "Small relationship maps should preserve card subtitles at fitted overview scales instead of hiding the context that explains each object.");
@@ -202,6 +205,8 @@ internal static partial class SmokeTests {
         Assert(medium.Options.LevelOfDetail.HideEdgeLabelsThreshold == 32, "Dense topology overviews should hide repetitive relationship labels while preserving them for focus, selection, and inspection.");
         var mediumHtml = BuildScaleTopology("medium-html", 40).ToGraphExplorerHtmlFragment();
         Assert(mediumHtml.Contains("data-cfx-status=\"healthy\"", StringComparison.Ordinal) && mediumHtml.Contains("graphClusterColors", StringComparison.Ordinal) && mediumHtml.Contains("graphPatchClusterStatus", StringComparison.Ordinal), "Collapsed topology group summaries should carry health through SVG, Canvas, WebGL, overview, export, and runtime patch rendering.");
+        Assert(mediumHtml.Contains("data-cluster-node-count=\"8\"", StringComparison.Ordinal) && mediumHtml.Contains(">8 objects</text>", StringComparison.Ordinal) && mediumHtml.Contains("graphItemAccessible(root, item, collapsedNodeIds)", StringComparison.Ordinal) && mediumHtml.Contains("!collapsed.has(attr(item, 'data-source-node-id'))", StringComparison.Ordinal), "Collapsed topology groups should show their object counts and keep summarized member relationships out of the keyboard and screen-reader navigation surface until expanded.");
+        Assert(mediumHtml.Contains("role === 'graph-cluster' && attr(item, 'data-cluster-collapsed') === 'true'", StringComparison.Ordinal) && mediumHtml.Contains("toggleGraphCluster(root, attr(item, 'data-cluster-id'))", StringComparison.Ordinal) && mediumHtml.Contains("reheatPhysics(root, 'cluster-drill', { rebuild: true, fit: true })", StringComparison.Ordinal) && mediumHtml.Contains("fitViewport(root);", StringComparison.Ordinal), "Cluster summaries should support keyboard drill-down, resolve visible-card collisions, and refit the investigation scope after stabilization.");
         Assert(large.Nodes.Count == 120 && large.Options.LevelOfDetail.ClusterNodeThreshold <= 120 && large.Options.LevelOfDetail.HideEdgeLabelsThreshold <= 120, "Large topologies should activate reusable clustering and semantic label reduction at 100-plus objects.");
         Assert(large.Options.Cluster.CollapseOnLoad && large.GetEffectiveClusters().Count == 5, "Large grouped topologies should start from aggregate summaries instead of a wall of unlabeled cards.");
         Assert(large.Options.LevelOfDetail.CanvasPreferredNodeThreshold > large.Nodes.Count, "Hundred-node topology views should retain rich SVG interaction until the shared Canvas threshold is reached.");

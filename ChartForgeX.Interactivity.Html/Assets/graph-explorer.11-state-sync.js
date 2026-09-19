@@ -1,3 +1,11 @@
+  const graphItemAccessible = (root, item, collapsedNodeIds) => {
+    if (!visible(item)) return false;
+    const role = attr(item, 'data-cfx-role');
+    if (role === 'graph-cluster') return attr(item, 'data-cluster-collapsed') === 'true';
+    if (role !== 'graph-edge') return true;
+    const collapsed = collapsedNodeIds || new Set(items(root, '[data-cfx-role="graph-node"].cfx-graph-cluster-collapsed-member').map(node => attr(node, 'data-node-id')));
+    return !collapsed.has(attr(item, 'data-source-node-id')) && !collapsed.has(attr(item, 'data-target-node-id'));
+  };
   const syncGraphItemTabStops = (root) => {
     const focusableSvg = hasFeature(root, 'Selection') && root.dataset.cfxGraphRendererActive === 'svg';
     const acceleratedSvg = focusableSvg && attr(root, 'data-cfx-graph-accelerated-markup') === 'true';
@@ -20,22 +28,33 @@
       else scene.removeAttribute('aria-keyshortcuts');
     }
     const graphItems = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]');
-    const focusableItems = graphItems.filter(item => visible(item) && (attr(item, 'data-cfx-role') !== 'graph-cluster' || attr(item, 'data-cluster-collapsed') === 'true'));
+    const collapsedNodeIds = new Set(items(root, '[data-cfx-role="graph-node"].cfx-graph-cluster-collapsed-member').map(node => attr(node, 'data-node-id')));
+    const accessible = item => graphItemAccessible(root, item, collapsedNodeIds);
+    const focusableItems = graphItems.filter(accessible);
     const itemKey = item => `${attr(item, 'data-cfx-role')}:${attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id')}`;
     const preferred = root.dataset.cfxGraphKeyboardItem || '';
     const active = focusableItems.find(item => itemKey(item) === preferred)
       || focusableItems.find(item => item.classList.contains('cfx-graph-selected'))
       || focusableItems[0];
+    const focusedElement = root.ownerDocument.activeElement;
+    const focusedItem = focusedElement?.closest?.('[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]');
+    if (focusedItem && root.contains(focusedItem) && (!focusableSvg || !accessible(focusedItem))) {
+      const focusedClusterId = attr(focusedItem, 'data-node-cluster') || attr(focusedItem, 'data-cluster-id');
+      const clusterFallback = focusedClusterId
+        ? focusableItems.find(item => attr(item, 'data-cfx-role') === 'graph-cluster' && attr(item, 'data-cluster-id') === focusedClusterId)
+        : null;
+      const memberFallback = focusedClusterId
+        ? focusableItems.find(item => attr(item, 'data-cfx-role') === 'graph-node' && attr(item, 'data-node-cluster') === focusedClusterId)
+        : null;
+      (clusterFallback || memberFallback || active || scene)?.focus?.({ preventScroll: true });
+    }
     graphItems.forEach(item => {
+      item.setAttribute('aria-hidden', focusableSvg && accessible(item) ? 'false' : 'true');
       item.setAttribute('tabindex', focusableSvg && !acceleratedSvg && item === active ? '0' : '-1');
       if (focusableSvg && !acceleratedSvg && item === active) item.setAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space');
       else item.removeAttribute('aria-keyshortcuts');
     });
     if (focusableSvg && active) root.dataset.cfxGraphKeyboardItem = itemKey(active);
-    items(root, '[data-cfx-role="graph-cluster"]').forEach(cluster => {
-      const collapsed = attr(cluster, 'data-cluster-collapsed') === 'true';
-      cluster.setAttribute('aria-hidden', root.dataset.cfxGraphRendererActive === 'canvas' || !collapsed ? 'true' : 'false');
-    });
   };
   const syncSelectedEdgeLabels = (root) => { const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label])); labels.forEach(label => label.classList.remove('cfx-graph-label-selected')); items(root, '[data-cfx-role="graph-edge"].cfx-graph-selected').forEach(edge => labels.get(attr(edge, 'data-edge-id'))?.classList.add('cfx-graph-label-selected')); };
   const clearHiddenSelections = (root) => {

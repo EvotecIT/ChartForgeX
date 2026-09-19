@@ -238,6 +238,8 @@
       context.stroke();
       context.setLineDash([]);
       if ((!moving && !metrics.expanded) || selected) {
+        const memberCount = cluster.nodeIds.length;
+        const memberLabel = `${memberCount} ${memberCount === 1 ? 'object' : 'objects'}`;
         context.globalAlpha = metrics.expanded ? .55 : 1;
         context.font = '700 12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
@@ -245,8 +247,12 @@
         context.lineWidth = 4;
         context.strokeStyle = palette.halo;
         context.fillStyle = palette.clusterText;
-        context.strokeText(label, metrics.x, metrics.y);
-        context.fillText(label, metrics.x, metrics.y);
+        context.strokeText(label, metrics.x, metrics.y - 6);
+        context.fillText(label, metrics.x, metrics.y - 6);
+        context.font = '600 9.5px Segoe UI, Arial, sans-serif';
+        context.fillStyle = palette.muted;
+        context.strokeText(memberLabel, metrics.x, metrics.y + 10);
+        context.fillText(memberLabel, metrics.x, metrics.y + 10);
       }
       context.globalAlpha = 1;
     });

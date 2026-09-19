@@ -26,6 +26,7 @@
       dark,
       paper: graphCssColor(root, '--cfx-color-paper', dark ? '#0b1220' : '#ffffff'),
       paperSoft: graphCssColor(root, '--cfx-color-paper-soft', dark ? '#0d1728' : '#f8fbff'),
+      card: graphCssColor(root, '--cfx-color-surface-solid', dark ? '#0f172a' : '#ffffff'),
       halo: graphCssColor(root, '--cfx-color-graph-halo', dark ? '#0b1220' : '#ffffff'),
       text: graphCssColor(root, '--cfx-color-graph-text', dark ? '#e5edf8' : '#334155'),
       muted: graphCssColor(root, '--cfx-color-graph-muted', dark ? '#a9b7ca' : '#64748b'),
@@ -92,6 +93,12 @@
     const physical = (selector) => Array.from(root.querySelectorAll(selector));
     const nodeDetails = new Map(physical('[data-cfx-role="graph-node-details"]').map(details => [attr(details, 'data-node-details-for'), details]));
     physical('[data-cfx-role="graph-node"]').forEach(node => {
+      const metadata = metadataDetail(node);
+      if (attr(node, 'data-node-card') === 'true' && !Object.prototype.hasOwnProperty.call(metadata, 'topology.backgroundColor')) {
+        node.setAttribute('data-node-background-color', palette.card);
+        node.style.setProperty('--cfx-node-fill', palette.card);
+        node.firstElementChild?.style.setProperty('--cfx-node-fill', palette.card);
+      }
       const colors = graphReadableNodeColors(root, node, palette);
       node.style.setProperty('--cfx-node-label-adaptive', colors.label);
       node.style.setProperty('--cfx-node-secondary-adaptive', colors.secondary);

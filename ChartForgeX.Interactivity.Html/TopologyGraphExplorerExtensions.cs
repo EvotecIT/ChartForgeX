@@ -151,7 +151,9 @@ public static class TopologyGraphExplorerExtensions {
         var accentColor = FirstText(node.Color, icon?.Color, theme.StatusColor(node.Status))!;
         graphNode.Style.BackgroundColor = TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
         graphNode.Style.BorderColor = accentColor;
-        graphNode.Style.LabelColor = accentColor;
+        graphNode.Style.LabelColor = display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard
+            ? null
+            : accentColor;
         graphNode.Style.Shadow = node.DisplayMode is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.Artwork;
 
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
