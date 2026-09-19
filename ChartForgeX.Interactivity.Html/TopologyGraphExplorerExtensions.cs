@@ -36,7 +36,7 @@ public static class TopologyGraphExplorerExtensions {
         if (source.Nodes.Count <= 20) scene.Options.LevelOfDetail.DetailScaleThreshold = Math.Min(scene.Options.LevelOfDetail.DetailScaleThreshold, 0.72);
         ApplyLayoutOptions(scene, source);
         ApplyManipulationOptions(scene, options);
-        if (options.DenseEdgeLabelThreshold > 0) scene.Options.LevelOfDetail.HideEdgeLabelsThreshold = Math.Min(scene.Options.LevelOfDetail.HideEdgeLabelsThreshold, options.DenseEdgeLabelThreshold);
+        if (options.DenseEdgeLabelThreshold > 0) scene.Options.LevelOfDetail.HideEdgeLabelsThreshold = options.DenseEdgeLabelThreshold;
         scene.Options.Cluster.Mode = options.IncludeGroupsAsClusters ? GraphClusterMode.Hybrid : GraphClusterMode.Explicit;
         if (!options.IncludeGroupsAsClusters) scene.Options.Cluster.Adaptive = false;
         var collapseGroupsOnLoad = options.IncludeGroupsAsClusters
@@ -138,7 +138,7 @@ public static class TopologyGraphExplorerExtensions {
             ImageUrl = shape is GraphNodeShape.Image or GraphNodeShape.RectangularImage ? imageUrl : null,
             ImageAlt = node.Label,
             Fixed = ShouldPreserveCoordinates(chart, node, options) || seededLayout && options.FixPreparedLayout,
-            Hidden = node.DisplayMode == TopologyNodeDisplayMode.Hidden
+            Hidden = display == TopologyNodeDisplayMode.Hidden
         };
         ApplyHierarchy(node, graphNode, options, ids);
         if (options.IncludeGroupsAsClusters && options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(groupId) && groupIds.Contains(groupId!)) graphNode.ClusterId = groupId;
@@ -374,7 +374,9 @@ public static class TopologyGraphExplorerExtensions {
     private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options, bool seededLayout) {
         if (graphEdge.Shape != GraphEdgeShape.Polyline) return;
         if (!topologyNodes.TryGetValue(edge.SourceNodeId, out var source) || !topologyNodes.TryGetValue(edge.TargetNodeId, out var target)) return;
-        if (!seededLayout && (!ShouldPreserveCoordinates(chart, source, options) || !ShouldPreserveCoordinates(chart, target, options))) return;
+        var sourceFixed = ShouldPreserveCoordinates(chart, source, options) || seededLayout && options.FixPreparedLayout;
+        var targetFixed = ShouldPreserveCoordinates(chart, target, options) || seededLayout && options.FixPreparedLayout;
+        if (!sourceFixed || !targetFixed) return;
         var points = TopologyRenderPrimitives.EdgePoints(chart, edge, topologyNodes);
         if (edge.Direction == VisualLinkDirection.Backward) points.Reverse();
         AlignRouteEndpointsToGraphNodes(points, edge.Direction == VisualLinkDirection.Backward ? target : source, edge.Direction == VisualLinkDirection.Backward ? source : target);

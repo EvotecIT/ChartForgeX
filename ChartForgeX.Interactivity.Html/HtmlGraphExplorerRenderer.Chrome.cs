@@ -29,7 +29,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
         writer.Append("</div>");
         WritePhysicsConfigurator(writer, scene, options);
-        writer.Append("<output class=\"cfx-visually-hidden\" data-cfx-role=\"graph-announcer\" aria-live=\"polite\" aria-atomic=\"true\"></output></header>");
+        writer.Append("</header>");
+    }
+
+    private static void WriteAnnouncer(StringBuilder writer) {
+        writer.Append("<output class=\"cfx-visually-hidden\" data-cfx-role=\"graph-announcer\" aria-live=\"polite\" aria-atomic=\"true\"></output>");
     }
 
     private static void WriteStageControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters) {

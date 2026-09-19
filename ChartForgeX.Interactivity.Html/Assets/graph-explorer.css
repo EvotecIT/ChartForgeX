@@ -124,6 +124,10 @@
   min-height: 0;
 }
 
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage {
   height: 100%;
   min-height: 0;

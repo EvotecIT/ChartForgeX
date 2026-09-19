@@ -92,6 +92,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<section class=\"cfx-graph-explorer");
         if (ConsumesTouchMovement(scene)) writer.Append(" cfx-graph-interactive-touch");
         if (options.FillAvailableHeight) writer.Append(" cfx-graph-fill-available");
+        if (options.IncludeHeader) writer.Append(" cfx-graph-has-header");
         writer.Append('"');
         if (options.IncludeHeader) Attribute(writer, "aria-labelledby", domId + "-heading");
         else Attribute(writer, "aria-label", scene.Title);
@@ -127,6 +128,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteHierarchyAttributes(writer, scene);
         writer.Append('>');
         if (options.IncludeHeader) WriteHeader(writer, scene, options, effectiveClusters, domId);
+        WriteAnnouncer(writer);
         WriteStage(writer, scene, options, positions, domId, effectiveClusters, acceleratedMarkup);
         writer.Append("<output class=\"cfx-graph-tooltip\" hidden></output>");
         writer.Append("</section>");

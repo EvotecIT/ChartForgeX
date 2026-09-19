@@ -35,7 +35,7 @@
     } else if (node.shape === 'box' || node.shape === 'square') {
       const wide = node.shape === 'box' ? 1.45 : 1;
       const high = node.shape === 'box' ? (node.card ? Math.min(size * 1.05, 36) : size * 1.05) : size;
-      group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -high, width: size * wide * 2, height: high * 2, rx: node.shape === 'square' ? 4 : 10, style }));
+      group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -high, width: size * wide * 2, height: high * 2, rx: node.shape === 'square' ? 4 : node.card ? 10 : 6, style }));
     } else if (node.shape === 'ellipse') {
       group.appendChild(svgNode(document, 'ellipse', { rx: size * 1.55, ry: size, style }));
     } else if (node.shape === 'database') {

@@ -190,6 +190,7 @@ internal static partial class SmokeTests {
             });
         Assert(embedded.Contains("cfx-graph-shell-embedded", StringComparison.Ordinal) && embedded.Contains("cfx-graph-fill-available", StringComparison.Ordinal), "Embedded graph pages should fill the host viewport without internal page padding or scrollbars.");
         Assert(!embedded.Contains("data-cfx-role=\"graph-header\"", StringComparison.Ordinal) && !embedded.Contains("data-cfx-role=\"graph-search\"", StringComparison.Ordinal), "Embedded graph pages should allow the host to own the title, search, and filters without duplicate controls.");
+        Assert(embedded.Contains("data-cfx-role=\"graph-announcer\"", StringComparison.Ordinal), "Embedded graph pages should retain accessible navigation announcements when the host owns the visible header.");
         Assert(embedded.Contains("height=\"72\" rx=\"10\"", StringComparison.Ordinal) && embedded.Contains("data-node-card=\"true\"", StringComparison.Ordinal) && embedded.Contains("cfx-graph-node-card-label", StringComparison.Ordinal), "Explicit topology cards should render as readable cards with internal labels across the explorer surface.");
         Assert(embedded.Contains("data-cfx-full-label=\"KERBEROS.MICROSOFTONLINE.COM&#128512;\"", StringComparison.Ordinal) && embedded.Contains("…", StringComparison.Ordinal) && embedded.Contains("COM&#128512;</text>", StringComparison.Ordinal) && !embedded.Contains("�", StringComparison.Ordinal), "Topology cards should retain the full label as metadata while fitting a Unicode-safe visible label inside the card.");
         Assert(embedded.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal) && embedded.Contains("data-edge-target-arrow=\"true\"", StringComparison.Ordinal), "Bidirectional relationships should preserve both arrowheads in the explorer contract.");
@@ -210,11 +211,32 @@ internal static partial class SmokeTests {
         Assert(large.Nodes.Count == 120 && large.Options.LevelOfDetail.ClusterNodeThreshold <= 120 && large.Options.LevelOfDetail.HideEdgeLabelsThreshold <= 120, "Large topologies should activate reusable clustering and semantic label reduction at 100-plus objects.");
         Assert(large.Options.Cluster.CollapseOnLoad && large.GetEffectiveClusters().Count == 5, "Large grouped topologies should start from aggregate summaries instead of a wall of unlabeled cards.");
         Assert(large.Options.LevelOfDetail.CanvasPreferredNodeThreshold > large.Nodes.Count, "Hundred-node topology views should retain rich SVG interaction until the shared Canvas threshold is reached.");
+        var callerThreshold = BuildScaleTopology("caller-threshold", 40).ToGraphScene(options => options.DenseEdgeLabelThreshold = 500);
+        Assert(callerThreshold.Options.LevelOfDetail.HideEdgeLabelsThreshold == 500, "An explicit dense-edge threshold should replace the preset so callers can retain labels beyond the topology default.");
+
+        var movablePrepared = TopologyChart.Create()
+            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .AddAutoNode("left", "Left", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
+            .AddAutoNode("right", "Right", TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
+            .AddEdge("route", "left", "right", "route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
+        movablePrepared.WithEdgeWaypoints("route", new ChartForgeX.Primitives.ChartPoint(150, 60), new ChartForgeX.Primitives.ChartPoint(210, 140));
+        Assert(movablePrepared.ToGraphScene().Edges.Single().RoutePoints.Count == 0, "Movable prepared nodes should not retain absolute intermediate route bends that become stale after dragging or stabilization.");
+        Assert(movablePrepared.ToGraphScene(options => options.FixPreparedLayout = true).Edges.Single().RoutePoints.Count >= 2, "Fixed prepared layouts should retain deterministic route geometry.");
+
+        var hiddenPack = new TopologyIconPack("hidden", "Hidden")
+            .AddIcon(new TopologyIconDefinition("hidden", "marker", "Marker", TopologyNodeKind.Service) { DisplayMode = TopologyNodeDisplayMode.Hidden });
+        var hiddenCatalog = new TopologyIconCatalog().AddPack(hiddenPack);
+        var hiddenTopology = TopologyChart.Create()
+            .AddAutoNode("hidden", "Hidden", TopologyNodeKind.Service, TopologyHealthStatus.Unknown);
+        hiddenTopology.Nodes.Single().IconId = "hidden:marker";
+        var hiddenScene = hiddenTopology.ToGraphScene(options => options.IconCatalog = hiddenCatalog);
+        Assert(hiddenScene.Nodes.Single().Hidden, "A catalog icon's effective hidden display mode should hide the projected graph node even when the source node has no display override.");
 
         var genericBox = GraphScene.Create("generic-box", "Generic box");
         genericBox.Nodes.Add(new GraphSceneNode { Id = "box", Label = "Large generic box", Shape = GraphNodeShape.Box, Size = 60 });
         var genericBoxHtml = genericBox.ToGraphExplorerHtmlFragment();
         Assert(genericBoxHtml.Contains("height=\"126\" rx=\"6\"", StringComparison.Ordinal) && genericBoxHtml.Contains("data-node-card=\"false\"", StringComparison.Ordinal), "Generic large box nodes should retain their public half-size geometry instead of implicitly becoming topology cards.");
+        Assert(genericBoxHtml.Contains("rx: node.shape === 'square' ? 4 : node.card ? 10 : 6", StringComparison.Ordinal), "Accelerated and exported SVG should preserve the ordinary box radius while reserving the larger radius for cards.");
     }
 
     private static TopologyChart BuildScaleTopology(string id, int nodeCount) {

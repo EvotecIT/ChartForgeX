@@ -45,12 +45,30 @@
     if (status === 'critical') return { stroke: '#ef4444', fill: palette.dark ? 'rgba(239,68,68,.20)' : 'rgba(239,68,68,.16)' };
     return { stroke: palette.clusterStroke, fill: palette.clusterFill };
   };
-  const graphColorRgb = (value) => {
+  const graphLiteralColorRgb = (value) => {
     const source = String(value || '').trim();
     if (/^#[0-9a-f]{3}$/i.test(source)) return source.slice(1).split('').map(part => parseInt(part + part, 16));
     if (/^#[0-9a-f]{6}$/i.test(source)) return [parseInt(source.slice(1, 3), 16), parseInt(source.slice(3, 5), 16), parseInt(source.slice(5, 7), 16)];
     const match = source.match(/^rgba?\(\s*([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)/i);
     return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
+  };
+  let graphColorContext = null;
+  const graphColorRgb = (value) => {
+    const source = String(value || '').trim();
+    const literal = graphLiteralColorRgb(source);
+    if (literal) return literal;
+    if (!source || typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
+    try {
+      graphColorContext ||= document.createElement('canvas').getContext('2d');
+      if (!graphColorContext) return null;
+      graphColorContext.fillStyle = '#010203';
+      graphColorContext.fillStyle = source;
+      const resolved = String(graphColorContext.fillStyle || '');
+      if (resolved === '#010203') return null;
+      return graphLiteralColorRgb(resolved);
+    } catch {
+      return null;
+    }
   };
   const graphColorLuminance = (rgb) => {
     const linear = rgb.map(channel => {
