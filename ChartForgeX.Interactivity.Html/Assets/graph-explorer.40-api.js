@@ -185,7 +185,9 @@
     let label = items(root, '[data-cfx-role="graph-edge-label"]').find(item => attr(item, 'data-edge-label-for') === edge.id);
     label?.removeAttribute('data-cfx-bundle-generated');
     label?.removeAttribute('data-cfx-bundle-original-text');
-    if (edge.label && edge.showLabel !== false) {
+    // Accelerated SVG materializes labels from the virtual edge state. A physical
+    // label here would sit outside its runtime layer and can target a nested overlay.
+    if (edge.label && edge.showLabel !== false && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
       if (!label) { label = svgElement(root, 'text'); label.classList.add('cfx-graph-edge-label'); label.setAttribute('data-cfx-role', 'graph-edge-label'); viewportGroup?.insertBefore(label, viewportGroup.querySelector('[data-cfx-role="graph-node"]')); }
       label.setAttribute('data-edge-label-for', edge.id); label.textContent = edge.label; label.classList.toggle('cfx-graph-hidden', style.hidden === true || edge.hidden === true); setGraphAttribute(label, 'style', graphPatchEdgeLabelStyle(edge, style));
     } else label?.remove();

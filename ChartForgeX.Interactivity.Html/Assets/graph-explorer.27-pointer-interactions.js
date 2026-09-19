@@ -17,10 +17,13 @@
         : overlayRole === 'graph-edge' ? state.edges.find(item => item.id === overlayId)
         : overlayRole === 'graph-cluster' ? state.clusters.find(item => item.id === overlayId)
         : null;
-      const node = targetNode ? state.nodes.find(item => item.el === targetNode) || (overlayHit && state.nodes.find(item => item === overlayHit)) : hitNodeAt(root, point);
-      const hitItem = node || overlayHit || (runtimeOverlay ? hitGraphItemAt(root, point) : graphItem) || hitGraphItemAt(root, point);
+      const node = runtimeOverlay && overlayRole !== 'graph-node' ? null
+        : targetNode ? state.nodes.find(item => item.el === targetNode) || (overlayHit && state.nodes.find(item => item === overlayHit))
+        : hitNodeAt(root, point);
+      const hitItem = overlayHit || node || (runtimeOverlay ? hitGraphItemAt(root, point) : graphItem) || hitGraphItemAt(root, point);
       const hitCanSelect = hasFeature(root, 'Selection') && !!hitItem;
-      const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect;
+      const hitCanExpandBundle = hasFeature(root, 'Clustering') && attr(hitItem?.el || hitItem, 'data-cfx-role') === 'graph-edge' && Number(attr(hitItem?.el || hitItem, 'data-cfx-bundle-count')) > 1;
+      const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect || hitCanExpandBundle;
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3); root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
       root.dataset.cfxGraphLastPointerHit = node?.id || ''; root.__cfxGraphLastPointerHitTick = Date.now();
       if (root.dataset.cfxGraphPointerMode === 'box-select' && hasFeature(root, 'BoxSelection') && hasFeature(root, 'Selection')) {
@@ -39,7 +42,7 @@
         active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, lastX: point.x, lastY: point.y, lastAt: performanceClock(), vx: 0, vy: 0, fixed: attr(node.el, 'data-node-fixed'), movingFixed: node.fixed, moved: false, snapshot: hasFeature(root, 'History') ? captureGraphInteractionState(root, 'drag-start') : null };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = node.id; root.__cfxGraphSuppressClickId = node.id;
-      } else if (runtimeOverlay && hitCanSelect && hitItem.el) {
+      } else if (runtimeOverlay && (hitCanSelect || hitCanExpandBundle) && hitItem.el) {
         event.preventDefault();
         select(root, hitItem.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = hitItem.id || '';

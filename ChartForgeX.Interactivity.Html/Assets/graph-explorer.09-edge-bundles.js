@@ -4,10 +4,14 @@
     if (!state) return;
     state.edges.forEach(edge => { edge.label = attr(edge.el, 'data-cfx-bundle-label') || attr(edge.el, 'data-edge-label'); });
   };
+  const bundleArrows = edge => ({
+    source: attr(edge, 'data-edge-source-arrow') === 'true',
+    target: attr(edge, 'data-edge-target-arrow') === 'true' || attr(edge, 'data-edge-directed') === 'true'
+  });
   const graphOverviewDisclosure = root => {
     const shown = root.dataset.cfxGraphOverviewShown;
     const total = root.dataset.cfxGraphOverviewTotal;
-    return shown && total ? `Priority overview: ${shown} routes from ${total} relationships` : '';
+    return shown && total ? `Priority overview: ${shown} routes from ${total} inspectable relationships` : '';
   };
   const applyCollapsedEdgeBundles = (root) => {
     root.querySelector('[data-cfx-role="graph-overview-note"]')?.remove();
@@ -45,9 +49,10 @@
       const source = attr(edge, 'data-source-cluster-id');
       const target = attr(edge, 'data-target-cluster-id');
       if (!source || !target || source === target || !collapsed.has(source) || !collapsed.has(target) || attr(edge, 'data-edge-hidden') === 'true' || edge.classList.contains('cfx-graph-hierarchy-hidden')) return;
-      const directed = attr(edge, 'data-edge-source-arrow') === 'true' || attr(edge, 'data-edge-target-arrow') === 'true';
-      const pair = directed ? `${source}>${target}` : [source, target].sort().join('~');
-      const key = JSON.stringify([pair, attr(edge, 'data-edge-kind'), attr(edge, 'data-edge-source-arrow'), attr(edge, 'data-edge-target-arrow')]);
+      const { source: sourceArrow, target: targetArrow } = bundleArrows(edge);
+      const pair = sourceArrow === targetArrow ? [source, target].sort() : targetArrow ? [source, target] : [target, source];
+      const direction = sourceArrow && targetArrow ? 'both' : sourceArrow || targetArrow ? 'directed' : 'undirected';
+      const key = JSON.stringify([pair, attr(edge, 'data-edge-kind'), direction]);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(edge);
     });
@@ -74,8 +79,7 @@
       const targetId = attr(lead, 'data-target-cluster-id');
       const sourceName = clusterNames.get(sourceId) || sourceId;
       const targetName = clusterNames.get(targetId) || targetId;
-      const sourceArrow = attr(lead, 'data-edge-source-arrow') === 'true';
-      const targetArrow = attr(lead, 'data-edge-target-arrow') === 'true';
+      const { source: sourceArrow, target: targetArrow } = bundleArrows(lead);
       const direction = sourceArrow && targetArrow ? 'both directions with' : sourceArrow ? 'from' : targetArrow ? 'to' : 'and';
       const kind = attr(lead, 'data-edge-kind');
       const summary = `${count} relationships: ${sourceName} ${direction} ${targetName}${kind ? `, ${kind}` : ''}. Activate this route to expand both sites and inspect individual relationships.`;
@@ -139,11 +143,13 @@
     if (stage && shown.size < leads.length) {
       root.classList.add('cfx-graph-priority-overview');
       root.dataset.cfxGraphOverviewShown = String(shown.size);
-      root.dataset.cfxGraphOverviewTotal = String(items(root, '[data-cfx-role="graph-edge"]').length);
+      const eligibleTotal = items(root, '[data-cfx-role="graph-edge"]').filter(edge =>
+        attr(edge, 'data-edge-hidden') !== 'true' && !edge.classList.contains('cfx-graph-hierarchy-hidden')).length;
+      root.dataset.cfxGraphOverviewTotal = String(eligibleTotal);
       const note = root.ownerDocument.createElement('div');
       note.className = 'cfx-graph-overview-note';
       note.setAttribute('data-cfx-role', 'graph-overview-note');
-      note.textContent = `Showing ${shown.size} priority routes from ${items(root, '[data-cfx-role="graph-edge"]').length} relationships. Select a route, expand a site, or filter to inspect all.`;
+      note.textContent = `Showing ${shown.size} priority routes from ${eligibleTotal} inspectable relationships. Select a route, expand a site, or filter to inspect all.`;
       stage.appendChild(note);
     }
   };

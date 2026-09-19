@@ -718,7 +718,7 @@
   text-anchor: middle;
 }
 
-.cfx-graph-priority-overview .cfx-graph-edge-label:not(.cfx-graph-label-selected) {
+.cfx-graph-priority-overview .cfx-graph-edge-label:not(.cfx-graph-label-selected):not(.cfx-graph-neighborhood-related) {
   display: none;
 }
 

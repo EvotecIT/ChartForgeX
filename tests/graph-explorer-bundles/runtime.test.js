@@ -88,6 +88,29 @@ test('hidden hierarchy edges never replace an in-scope bundle route', () => {
   assert.equal(runtime.attr(edges[2], 'data-cfx-bundle-count'), '');
 });
 
+test('reversed endpoint data for the same directed route is bundled together', () => {
+  const { root, edges } = scene(2, [
+    [0, 1, 'A to B', 'healthy'], [1, 0, 'B receives from A', 'warning'], [1, 0, 'B to A', 'critical']
+  ]);
+  edges[0].setAttribute('data-edge-target-arrow', 'true');
+  edges[1].setAttribute('data-edge-source-arrow', 'true');
+  edges[2].setAttribute('data-edge-target-arrow', 'true');
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[1], 'data-cfx-bundle-count'), '2');
+  assert.equal(runtime.attr(edges[2], 'data-cfx-bundle-count'), '');
+  assert.equal(edges[0].classList.contains('cfx-graph-bundle-member'), true);
+});
+
+test('directed edges without an explicit target arrow keep their direction', () => {
+  const { root, edges } = scene(2, [
+    [0, 1, 'A to B', 'healthy'], [1, 0, 'B to A', 'warning'], [0, 1, 'Another A to B', 'critical']
+  ]);
+  edges.forEach(edge => edge.setAttribute('data-edge-directed', 'true'));
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[2], 'data-cfx-bundle-count'), '2');
+  assert.equal(runtime.attr(edges[1], 'data-cfx-bundle-count'), '');
+});
+
 test('bundle accessibility identifies each route and retains unknown status ahead of healthy', () => {
   const { root, edges } = scene(3, [
     [0, 1, 'Healthy route', 'healthy'], [0, 1, 'Unknown route', 'unknown'],
@@ -112,8 +135,12 @@ test('dense priority route disclosure carries the hidden relationship count', ()
   runtime.applyCollapsedEdgeBundles(root);
   assert.equal(root.classList.contains('cfx-graph-priority-overview'), true);
   assert.equal(root.dataset.cfxGraphOverviewTotal, '22');
-  assert.match(runtime.graphOverviewDisclosure(root), /^Priority overview: \d+ routes from 22 relationships$/);
+  assert.match(runtime.graphOverviewDisclosure(root), /^Priority overview: \d+ routes from 22 inspectable relationships$/);
   assert.equal(renderedEdges.at(-1).classList.contains('cfx-graph-overview-member'), false);
+  renderedEdges[1].setAttribute('data-edge-hidden', 'true');
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(root.dataset.cfxGraphOverviewTotal, '21');
+  assert.match(root.note.textContent, /from 21 inspectable relationships/);
 });
 
 test('new SVG bundle labels have geometry immediately after filter restoration', () => {
@@ -210,6 +237,31 @@ test('read-only clustering still exposes and activates bundled routes', () => {
   assert.match(surface['aria-label'], /Site 0 and Site 1/);
 });
 
+test('accelerated pointer activation expands a bundle without Selection enabled', () => {
+  const source = fs.readFileSync(path.join(assets, 'graph-explorer.27-pointer-interactions.js'), 'utf8');
+  const handlers = {};
+  const stage = { addEventListener(name, handler) { handlers[name] = handler; } };
+  const canonical = runtime.graphVirtualElement('graph-edge', { 'data-cfx-role': 'graph-edge', 'data-cfx-bundle-count': '2' }, []);
+  const overlay = runtime.graphVirtualElement('graph-edge', {
+    'data-cfx-role': 'graph-edge', 'data-cfx-runtime-overlay': 'true', 'data-edge-id': 'route'
+  }, []);
+  overlay.closest = selector => selector.includes('graph-edge') ? overlay : null;
+  const nearbyNode = { id: 'nearby', el: runtime.graphVirtualElement('graph-node', {}, []) };
+  const root = { dataset: {}, querySelector: () => stage, __cfxGraphState: { nodes: [nearbyNode], edges: [{ id: 'route', el: canonical }], clusters: [] } };
+  const selected = [];
+  const bind = new Function('attr', 'scenePoint', 'hasFeature', 'hitNodeAt', 'hitGraphItemAt', 'select',
+    source + '\nreturn bindPointerInteractions;')(
+    runtime.attr, () => ({ x: 1, y: 2 }), (_, feature) => feature === 'Clustering' || feature === 'Viewport',
+    () => nearbyNode, () => null, (_, item) => selected.push(item)
+  );
+  bind(root);
+  let prevented = false;
+  handlers.pointerdown({ button: 0, target: overlay, preventDefault() { prevented = true; }, pointerId: 1 });
+  assert.equal(prevented, true);
+  assert.deepEqual(selected, [canonical]);
+  assert.notEqual(root.dataset.cfxGraphLastPointerMode, 'pan');
+});
+
 test('patching a bundled route replaces stale accessible and SVG label text', () => {
   const { root, edges, physicalLabels } = scene(2, [
     [0, 1, 'Old first', 'healthy'], [0, 1, 'Old second', 'warning']
@@ -268,7 +320,7 @@ test('activating a bundled route reheats the expanded graph once and falls back 
   assert.deepEqual(calls, ['expand:site-a:false', 'expand:site-b:false', 'fit']);
 });
 
-test('accelerated SVG materialization preserves a selected route label', () => {
+test('accelerated SVG materialization preserves selected and focused route labels', () => {
   const source = fs.readFileSync(path.join(assets, 'graph-explorer.28-svg-export.js'), 'utf8');
   const start = source.indexOf('  const appendExportedEdgeLabel = (document, group, edge, rendered) => {');
   const end = source.indexOf('  const drawAcceleratedSvgRuntime = (root, state) => {', start);
@@ -283,4 +335,8 @@ test('accelerated SVG materialization preserves a selected route label', () => {
   const group = { appendChild(label) { this.label = label; } };
   append({}, group, edge, {});
   assert.match(group.label.class, /cfx-graph-label-selected/);
+  edgeElement.classList.remove('cfx-graph-selected');
+  edgeElement.classList.add('cfx-graph-neighborhood-related');
+  append({}, group, edge, {});
+  assert.match(group.label.class, /cfx-graph-neighborhood-related/);
 });

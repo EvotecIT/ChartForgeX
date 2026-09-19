@@ -718,7 +718,7 @@
   text-anchor: middle;
 }
 
-.cfx-graph-priority-overview .cfx-graph-edge-label:not(.cfx-graph-label-selected) {
+.cfx-graph-priority-overview .cfx-graph-edge-label:not(.cfx-graph-label-selected):not(.cfx-graph-neighborhood-related) {
   display: none;
 }
 
@@ -3552,10 +3552,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     if (!state) return;
     state.edges.forEach(edge => { edge.label = attr(edge.el, 'data-cfx-bundle-label') || attr(edge.el, 'data-edge-label'); });
   };
+  const bundleArrows = edge => ({
+    source: attr(edge, 'data-edge-source-arrow') === 'true',
+    target: attr(edge, 'data-edge-target-arrow') === 'true' || attr(edge, 'data-edge-directed') === 'true'
+  });
   const graphOverviewDisclosure = root => {
     const shown = root.dataset.cfxGraphOverviewShown;
     const total = root.dataset.cfxGraphOverviewTotal;
-    return shown && total ? `Priority overview: ${shown} routes from ${total} relationships` : '';
+    return shown && total ? `Priority overview: ${shown} routes from ${total} inspectable relationships` : '';
   };
   const applyCollapsedEdgeBundles = (root) => {
     root.querySelector('[data-cfx-role="graph-overview-note"]')?.remove();
@@ -3593,9 +3597,10 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       const source = attr(edge, 'data-source-cluster-id');
       const target = attr(edge, 'data-target-cluster-id');
       if (!source || !target || source === target || !collapsed.has(source) || !collapsed.has(target) || attr(edge, 'data-edge-hidden') === 'true' || edge.classList.contains('cfx-graph-hierarchy-hidden')) return;
-      const directed = attr(edge, 'data-edge-source-arrow') === 'true' || attr(edge, 'data-edge-target-arrow') === 'true';
-      const pair = directed ? `${source}>${target}` : [source, target].sort().join('~');
-      const key = JSON.stringify([pair, attr(edge, 'data-edge-kind'), attr(edge, 'data-edge-source-arrow'), attr(edge, 'data-edge-target-arrow')]);
+      const { source: sourceArrow, target: targetArrow } = bundleArrows(edge);
+      const pair = sourceArrow === targetArrow ? [source, target].sort() : targetArrow ? [source, target] : [target, source];
+      const direction = sourceArrow && targetArrow ? 'both' : sourceArrow || targetArrow ? 'directed' : 'undirected';
+      const key = JSON.stringify([pair, attr(edge, 'data-edge-kind'), direction]);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(edge);
     });
@@ -3622,8 +3627,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       const targetId = attr(lead, 'data-target-cluster-id');
       const sourceName = clusterNames.get(sourceId) || sourceId;
       const targetName = clusterNames.get(targetId) || targetId;
-      const sourceArrow = attr(lead, 'data-edge-source-arrow') === 'true';
-      const targetArrow = attr(lead, 'data-edge-target-arrow') === 'true';
+      const { source: sourceArrow, target: targetArrow } = bundleArrows(lead);
       const direction = sourceArrow && targetArrow ? 'both directions with' : sourceArrow ? 'from' : targetArrow ? 'to' : 'and';
       const kind = attr(lead, 'data-edge-kind');
       const summary = `${count} relationships: ${sourceName} ${direction} ${targetName}${kind ? `, ${kind}` : ''}. Activate this route to expand both sites and inspect individual relationships.`;
@@ -3687,11 +3691,13 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     if (stage && shown.size < leads.length) {
       root.classList.add('cfx-graph-priority-overview');
       root.dataset.cfxGraphOverviewShown = String(shown.size);
-      root.dataset.cfxGraphOverviewTotal = String(items(root, '[data-cfx-role="graph-edge"]').length);
+      const eligibleTotal = items(root, '[data-cfx-role="graph-edge"]').filter(edge =>
+        attr(edge, 'data-edge-hidden') !== 'true' && !edge.classList.contains('cfx-graph-hierarchy-hidden')).length;
+      root.dataset.cfxGraphOverviewTotal = String(eligibleTotal);
       const note = root.ownerDocument.createElement('div');
       note.className = 'cfx-graph-overview-note';
       note.setAttribute('data-cfx-role', 'graph-overview-note');
-      note.textContent = `Showing ${shown.size} priority routes from ${items(root, '[data-cfx-role="graph-edge"]').length} relationships. Select a route, expand a site, or filter to inspect all.`;
+      note.textContent = `Showing ${shown.size} priority routes from ${eligibleTotal} inspectable relationships. Select a route, expand a site, or filter to inspect all.`;
       stage.appendChild(note);
     }
   };
@@ -5728,10 +5734,13 @@ self.onmessage = event => {
         : overlayRole === 'graph-edge' ? state.edges.find(item => item.id === overlayId)
         : overlayRole === 'graph-cluster' ? state.clusters.find(item => item.id === overlayId)
         : null;
-      const node = targetNode ? state.nodes.find(item => item.el === targetNode) || (overlayHit && state.nodes.find(item => item === overlayHit)) : hitNodeAt(root, point);
-      const hitItem = node || overlayHit || (runtimeOverlay ? hitGraphItemAt(root, point) : graphItem) || hitGraphItemAt(root, point);
+      const node = runtimeOverlay && overlayRole !== 'graph-node' ? null
+        : targetNode ? state.nodes.find(item => item.el === targetNode) || (overlayHit && state.nodes.find(item => item === overlayHit))
+        : hitNodeAt(root, point);
+      const hitItem = overlayHit || node || (runtimeOverlay ? hitGraphItemAt(root, point) : graphItem) || hitGraphItemAt(root, point);
       const hitCanSelect = hasFeature(root, 'Selection') && !!hitItem;
-      const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect;
+      const hitCanExpandBundle = hasFeature(root, 'Clustering') && attr(hitItem?.el || hitItem, 'data-cfx-role') === 'graph-edge' && Number(attr(hitItem?.el || hitItem, 'data-cfx-bundle-count')) > 1;
+      const hitBlocksPan = (node && hasFeature(root, 'DragNodes')) || hitCanSelect || hitCanExpandBundle;
       root.dataset.cfxGraphLastPointerX = point.x.toFixed(3); root.dataset.cfxGraphLastPointerY = point.y.toFixed(3);
       root.dataset.cfxGraphLastPointerHit = node?.id || ''; root.__cfxGraphLastPointerHitTick = Date.now();
       if (root.dataset.cfxGraphPointerMode === 'box-select' && hasFeature(root, 'BoxSelection') && hasFeature(root, 'Selection')) {
@@ -5750,7 +5759,7 @@ self.onmessage = event => {
         active = { mode: 'node', pointerId: event.pointerId, nodeId: node.id, startX: point.x, startY: point.y, lastX: point.x, lastY: point.y, lastAt: performanceClock(), vx: 0, vy: 0, fixed: attr(node.el, 'data-node-fixed'), movingFixed: node.fixed, moved: false, snapshot: hasFeature(root, 'History') ? captureGraphInteractionState(root, 'drag-start') : null };
         select(root, node.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = node.id; root.__cfxGraphSuppressClickId = node.id;
-      } else if (runtimeOverlay && hitCanSelect && hitItem.el) {
+      } else if (runtimeOverlay && (hitCanSelect || hitCanExpandBundle) && hitItem.el) {
         event.preventDefault();
         select(root, hitItem.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
         root.__cfxGraphPointerSelectionTick = Date.now(); root.__cfxGraphPointerSelectionId = hitItem.id || '';
@@ -5930,6 +5939,7 @@ self.onmessage = event => {
     const point = edgeLabelPoint(rendered, edgeControl(rendered));
     const classes = ['cfx-graph-edge-label'];
     if (edge.el.classList.contains('cfx-graph-selected')) classes.push('cfx-graph-label-selected');
+    if (edge.el.classList.contains('cfx-graph-neighborhood-related')) classes.push('cfx-graph-neighborhood-related');
     ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden',
       'cfx-graph-bundle-member', 'cfx-graph-overview-member'].forEach(name => {
       if (edge.el.classList.contains(name)) classes.push(name);
@@ -5970,7 +5980,7 @@ self.onmessage = event => {
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       edges.appendChild(path);
-      if (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected'))
+      if (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-neighborhood-related'))
         appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
     });
     state.nodes.filter(node => visible(node.el)).forEach(node => {
@@ -6625,7 +6635,9 @@ self.onmessage = event => {
     let label = items(root, '[data-cfx-role="graph-edge-label"]').find(item => attr(item, 'data-edge-label-for') === edge.id);
     label?.removeAttribute('data-cfx-bundle-generated');
     label?.removeAttribute('data-cfx-bundle-original-text');
-    if (edge.label && edge.showLabel !== false) {
+    // Accelerated SVG materializes labels from the virtual edge state. A physical
+    // label here would sit outside its runtime layer and can target a nested overlay.
+    if (edge.label && edge.showLabel !== false && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
       if (!label) { label = svgElement(root, 'text'); label.classList.add('cfx-graph-edge-label'); label.setAttribute('data-cfx-role', 'graph-edge-label'); viewportGroup?.insertBefore(label, viewportGroup.querySelector('[data-cfx-role="graph-node"]')); }
       label.setAttribute('data-edge-label-for', edge.id); label.textContent = edge.label; label.classList.toggle('cfx-graph-hidden', style.hidden === true || edge.hidden === true); setGraphAttribute(label, 'style', graphPatchEdgeLabelStyle(edge, style));
     } else label?.remove();

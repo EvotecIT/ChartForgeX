@@ -55,7 +55,7 @@ internal static partial class SmokeTests {
         Assert(hierarchy.Contains("applyLayout(root, state);", StringComparison.Ordinal), "Hierarchy updates should run the shared layout synchronization path so newly patched SVG edges receive visible path geometry.");
         Assert(hierarchy.Contains("if (event.defaultPrevented ||", StringComparison.Ordinal), "Hierarchy shortcuts should not reinterpret arrow keys already handled by graph-item or accelerated-surface keyboard navigation.");
         var pointers = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.27-pointer-interactions.js"));
-        Assert(pointers.Contains("overlayRole === 'graph-node' ? state.nodes.find(item => item.id === overlayId)", StringComparison.Ordinal) && pointers.Contains("runtimeOverlay && hitCanSelect && hitItem.el", StringComparison.Ordinal), "Accelerated SVG overlays should resolve stable virtual graph ids before deciding selection, dragging, or viewport panning.");
+        Assert(pointers.Contains("overlayRole === 'graph-node' ? state.nodes.find(item => item.id === overlayId)", StringComparison.Ordinal) && pointers.Contains("runtimeOverlay && (hitCanSelect || hitCanExpandBundle) && hitItem.el", StringComparison.Ordinal), "Accelerated SVG overlays should resolve stable virtual graph ids before deciding selection, bundle expansion, dragging, or viewport panning.");
         var bindings = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.30-bindings.js"));
         var stateSync = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.11-state-sync.js"));
         var svgExport = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.28-svg-export.js"));
