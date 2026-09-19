@@ -250,12 +250,14 @@
   const avoidEdgeLabelNodeCollisions = (edge, candidate) => {
     const label = edge.label || attr(edge.el, 'data-edge-label');
     if (!label || (!edgeLabelIntersectsNode(candidate, label, edge.source) && !edgeLabelIntersectsNode(candidate, label, edge.target))) return candidate;
+    const center = { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
+    if (!edgeLabelIntersectsNode(center, label, edge.source) && !edgeLabelIntersectsNode(center, label, edge.target)) return center;
     const dx = edge.target.x - edge.source.x;
     const dy = edge.target.y - edge.source.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     const normal = distance < .001 ? { x: 0, y: -1 } : { x: -dy / distance, y: dx / distance };
     const preferredSign = normal.y > 0 ? -1 : 1;
-    const offsets = [16, 28, 42, 58, 76];
+    const offsets = [20, 36, 54, 76, 102, 136, 176, 220, 280];
     for (const offset of offsets) {
       const preferred = { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
       if (!edgeLabelIntersectsNode(preferred, label, edge.source) && !edgeLabelIntersectsNode(preferred, label, edge.target)) return preferred;

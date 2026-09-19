@@ -4,10 +4,16 @@ using ChartForgeX.Interactivity;
 namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
-    private static readonly double[] EdgeLabelCollisionOffsets = { 16, 28, 42, 58, 76 };
+    private static readonly double[] EdgeLabelCollisionOffsets = { 20, 36, 54, 76, 102, 136, 176, 220, 280 };
 
     private static Point AvoidEdgeLabelNodeCollisions(Point candidate, string? label, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? sourceBoundaryInset, double? targetBoundaryInset) {
         if (string.IsNullOrWhiteSpace(label) || !EdgeLabelIntersectsEndpoint(candidate, label!, source, sourceNode, sourceBoundaryInset) && !EdgeLabelIntersectsEndpoint(candidate, label!, target, targetNode, targetBoundaryInset)) return candidate;
+
+        // A short curved route can pull its control-point midpoint under a card.
+        // The geometric midpoint often has enough room between the endpoints.
+        var center = new Point((source.X + target.X) / 2, (source.Y + target.Y) / 2 - 7);
+        if (!EdgeLabelIntersectsEndpoint(center, label!, source, sourceNode, sourceBoundaryInset) &&
+            !EdgeLabelIntersectsEndpoint(center, label!, target, targetNode, targetBoundaryInset)) return center;
 
         var dx = target.X - source.X;
         var dy = target.Y - source.Y;

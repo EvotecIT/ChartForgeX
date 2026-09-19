@@ -162,6 +162,16 @@
   };
   const select = (root, node, options) => {
     if (!hasFeature(root, 'Selection')) return;
+    if (attr(node, 'data-cfx-role') === 'graph-edge' && num(node, 'data-cfx-bundle-count', 0) > 1 && hasFeature(root, 'Clustering')) {
+      const source = attr(node, 'data-source-cluster-id');
+      const target = attr(node, 'data-target-cluster-id');
+      if (source && target && source !== target) {
+        applyClusterState(root, false, source, { reheat: false });
+        applyClusterState(root, false, target, { reheat: false });
+        if (hasFeature(root, 'Viewport')) fitViewport(root);
+        return;
+      }
+    }
     const additive = hasFeature(root, 'MultiSelection') && !!options?.additive;
     const toggle = additive && !!options?.toggle;
     const selected = node.classList.contains('cfx-graph-selected');
@@ -249,6 +259,7 @@
     applyNeighborhoodFocus(root, nodeId);
   };
   const applyFilters = (root) => {
+    applyCollapsedEdgeBundles(root);
     const query = (root.querySelector('[data-cfx-graph-search]')?.value || '').trim().toLowerCase();
     const filters = {};
     items(root, '[data-cfx-graph-filter]').forEach(filter => { filters[attr(filter, 'data-cfx-graph-filter')] = filter.value || ''; });
@@ -271,7 +282,7 @@
       const edgeQueryOk = !query || searchable(edge).includes(query);
       const edgeStatusOk = !filters.status || attr(edge, 'data-cfx-status') === filters.status;
       const edgeKindOk = !filters.kind || attr(edge, 'data-edge-kind') === filters.kind;
-      const collapsedMember = edge.classList.contains('cfx-graph-cluster-collapsed-member');
+      const collapsedMember = edge.classList.contains('cfx-graph-cluster-collapsed-member') || edge.classList.contains('cfx-graph-bundle-member') || edge.classList.contains('cfx-graph-overview-member');
       const intrinsicHidden = attr(edge, 'data-edge-hidden') === 'true';
       const edgeMatchesFacet = edgeQueryOk && edgeStatusOk && edgeKindOk;
       const matches = edgeMatchesFacet && !collapsedMember && !intrinsicHidden;
