@@ -11,7 +11,7 @@ const runtime = new Function(`
   const items = (root, selector) => root.elements.filter(item => selector.split(',').some(part => part[0] === '.' ? item.classList.contains(part.slice(1)) : false));
   const viewport = root => root.viewport, setViewport = (root, value) => { root.viewport = { ...value }; };
   const selectedItems = root => root.selection.map(id => ({id})), restoreGraphSelection = (root, ids) => { root.selection = [...ids]; };
-  const clearHiddenSelections = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = root => { root.paintedSelection = [...root.selection]; };
+  const clearHiddenSelections = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = (root, state) => { root.paintedState = state; root.paintedSelection = [...root.selection]; };
   const pausePhysics = root => { root.paused = true; }, fitViewport = root => { root.viewport = {x:10,y:20,scale:2}; };
   const emit = (root, name, detail) => root.events.push({name, detail});
   ${source}
@@ -93,4 +93,16 @@ test('Back paints restored selection after leaving a drilled neighbor', () => {
   runtime.backGraphNeighborhood(root);
   assert.deepEqual(root.selection, ['n00']);
   assert.deepEqual(root.paintedSelection, ['n00']);
+});
+
+test('neighborhood presentation preserves live accelerated coordinates across navigation', () => {
+  const root = hub();
+  root.__cfxGraphState = {...root.state, nodes:root.state.nodes.map(node=>({...node,x:node.x+500}))};
+  runtime.applyNeighborhoodFocus(root,'n00');
+  assert.equal(root.paintedState,root.__cfxGraphState);
+  runtime.applyNeighborhoodFocus(root,'n01');
+  runtime.backGraphNeighborhood(root);
+  assert.equal(root.paintedState,root.__cfxGraphState);
+  runtime.clearNeighborhoodFocus(root);
+  assert.equal(root.paintedState,root.__cfxGraphState);
 });

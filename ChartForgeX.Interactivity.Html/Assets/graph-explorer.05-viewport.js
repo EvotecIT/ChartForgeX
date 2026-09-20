@@ -108,7 +108,7 @@
     };
   };
   const fitViewport = (root) => {
-    const bounds = contentBounds(root, graphState(root));
+    const bounds = contentBounds(root, root.__cfxGraphState || graphState(root));
     const size = sceneSize(root);
     if (!bounds) {
       setViewport(root, { x: 0, y: 0, scale: 1 });
@@ -140,7 +140,7 @@
         frame = 0;
         if (root.isConnected === false) { observer.disconnect(); return; }
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
-        else drawCanvas(root, graphState(root));
+        else drawCanvas(root, root.__cfxGraphState || graphState(root));
       });
     });
     observer.observe(stage);

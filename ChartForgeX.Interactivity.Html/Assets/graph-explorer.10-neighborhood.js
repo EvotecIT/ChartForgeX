@@ -9,7 +9,7 @@
   const neighborhoodBaseVisible = element => !['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-bundle-member', 'cfx-graph-overview-member', 'cfx-graph-hierarchy-hidden'].some(name => element.classList.contains(name));
   const refreshNeighborhoodPresentation = root => {
     root.__cfxGraphHitGrid = null; root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
-    const state = graphState(root);
+    const state = root.__cfxGraphState || graphState(root);
     syncNodeDetailLayers(state);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
@@ -43,14 +43,14 @@
     }
     const summary = navigation.querySelector('[data-cfx-role="graph-neighborhood-summary"]');
     if (summary) {
-      const state = graphState(root), label = id => state.byId.get(id)?.label || id;
+      const state = root.__cfxGraphState || graphState(root), label = id => state.byId.get(id)?.label || id;
       const path = [...history.slice(-3).map(entry => label(entry.nodeId)), label(view.rootNodeId)].join(' / ');
       summary.textContent = `${path}: ${view.nodeIds.size} of ${view.scopeNodeCount} neighborhood nodes · ${view.edgeIds.size} relationships · ${view.hiddenNodeCount} nodes and ${view.hiddenEdgeCount} relationships omitted`;
     }
   };
   const applyNeighborhoodFocus = (root, nodeId, configuration, navigation) => {
     if (!hasFeature(root, 'NeighborhoodFocus')) return false;
-    const state = graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
+    const state = root.__cfxGraphState || graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
     const plannedNodes = state.nodes.map(node => ({ id: node.id, visible: neighborhoodBaseVisible(node.el) && attr(node.el, 'data-node-hidden') !== 'true' }));
     const plannedEdges = state.edges.map(edge => ({ id: edge.id || attr(edge.el, 'data-edge-id'), sourceId: edge.source.id, targetId: edge.target.id,
         visible: neighborhoodBaseVisible(edge.el) && attr(edge.el, 'data-edge-hidden') !== 'true' }));

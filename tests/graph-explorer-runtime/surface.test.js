@@ -46,8 +46,8 @@ test('resizing a touched or fixed viewport redraws without resetting it and coal
   const viewportSource = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/graph-explorer.05-viewport.js'), 'utf8');
   const bind = new Function('ResizeObserver','requestAnimationFrame','cancelAnimationFrame','drawCanvas','graphState','hasFeature', viewportSource+'\nreturn bindGraphSurfaceResize;')(
     class { constructor(action) { callback=action; } observe(value) { assert.equal(value,stage); } disconnect() { disconnected=true; } },
-    action=>{frames.set(++next,action);return next;}, id=>frames.delete(id), root=>painted.push(root), ()=>state, root=>root.viewportEnabled);
-  const root={querySelector:()=>stage,__cfxGraphViewportTouched:true,viewportEnabled:true};
+    action=>{frames.set(++next,action);return next;}, id=>frames.delete(id), (root, actual)=>{assert.equal(actual,state);painted.push(root);}, ()=>{throw new Error('Rebuilt stale attributes');}, root=>root.viewportEnabled);
+  const root={__cfxGraphState:state,querySelector:()=>stage,__cfxGraphViewportTouched:true,viewportEnabled:true};
   bind(root); callback(); callback(); assert.equal(frames.size,1);
   const flush=()=>{const pending=[...frames.values()];frames.clear();pending.forEach(action=>action());};
   flush(); assert.deepEqual(painted,[root]);
