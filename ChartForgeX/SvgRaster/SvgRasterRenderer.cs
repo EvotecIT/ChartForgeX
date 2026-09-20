@@ -321,8 +321,9 @@ internal static partial class SvgRasterRenderer {
             if (contour.Count >= 3) fillContours.Add(contour);
             strokeContours.Add(subpath.IsClosed ? contour : transformed);
         }
+        if (style.StrokeBeforeFill) foreach (var strokeContour in strokeContours) Stroke(canvas, strokeContour, style, matrix.ScaleFactor, definitions);
         Fill(canvas, fillContours, style, matrix, definitions, viewport);
-        foreach (var strokeContour in strokeContours) Stroke(canvas, strokeContour, style, matrix.ScaleFactor, definitions);
+        if (!style.StrokeBeforeFill) foreach (var strokeContour in strokeContours) Stroke(canvas, strokeContour, style, matrix.ScaleFactor, definitions);
         RenderMarkers(canvas, element, style, matrix, definitions, sourceRings, width, height, referenceDepth, ancestors);
     }
 
@@ -370,8 +371,9 @@ internal static partial class SvgRasterRenderer {
             strokeRings.Add(closeStroke ? contour : new List<ChartPoint>(ring));
         }
 
+        if (style.StrokeBeforeFill) foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
         Fill(canvas, contours, style, matrix, definitions, viewport);
-        foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
+        if (!style.StrokeBeforeFill) foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
     }
 
     private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterObjectPaint? objectPaint = null) {
