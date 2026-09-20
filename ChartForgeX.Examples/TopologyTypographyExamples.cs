@@ -1,4 +1,6 @@
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.Interactivity.Html;
 
 internal static class TopologyTypographyExamples {
     public static void Write(string output) {
@@ -18,12 +20,14 @@ internal static class TopologyTypographyExamples {
             chart.Nodes[1].DisplayMode = TopologyNodeDisplayMode.CompactCard;
             chart.Nodes[2].DisplayMode = TopologyNodeDisplayMode.Tile;
             var options = new TopologyRenderOptions {
+                TextMeasurementMode = TextMeasurementMode.InstalledFonts,
                 HeaderStyle = TopologyHeaderStyle.CenterBanner,
                 IncludeLegend = false,
                 IncludeTileSubtitles = true,
                 CardSubtitleMode = TopologyCardSubtitleMode.Chip
             };
             var path = Path.Combine(output, "topology-measured-typography-" + name);
+            File.WriteAllText(path + ".html", chart.ToInteractiveHtmlPage(options));
             File.WriteAllText(path + ".svg", chart.ToSvg(options));
             File.WriteAllBytes(path + ".png", chart.ToPng(options));
             Console.WriteLine($"{name}: {chart.GetPngFontInfo().ResolvedFaceName}");

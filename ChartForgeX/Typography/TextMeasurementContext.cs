@@ -9,18 +9,26 @@ internal sealed class TextMeasurementContext {
     private readonly TrueTypeFont? _font;
     private readonly TrueTypeFont? _boldFont;
     private readonly string _family;
+    private readonly TextMeasurementMode _mode;
     private readonly Dictionary<(string Text, double Size, bool Bold), double> _widths = new();
     private readonly object _gate = new();
     private const int MaximumCachedWidths = 4096;
 
-    internal TextMeasurementContext(string family) {
+    internal TextMeasurementContext(string family, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
+        if (mode != TextMeasurementMode.PortableEstimate && mode != TextMeasurementMode.InstalledFonts)
+            throw new ArgumentOutOfRangeException(nameof(mode));
         _family = family;
+        _mode = mode;
+        if (mode == TextMeasurementMode.PortableEstimate) return;
         _font = TypographyFontResolver.Resolve(new FontSpec { Family = family });
         _boldFont = TypographyFontResolver.ResolveBoldMeasurementFace(family);
     }
 
     internal double Measure(string value, double size, bool bold) {
         if (value.Length == 0) return 0;
+        // Preserve portable layout's historical estimate unless font-dependent
+        // geometry is explicitly requested. Do not probe the host in this mode.
+        if (_mode == TextMeasurementMode.PortableEstimate) return value.Length * size * (bold ? 0.62 : 0.56);
         var key = (value, size, bold);
         lock (_gate) {
             if (_widths.TryGetValue(key, out var cached)) return cached;

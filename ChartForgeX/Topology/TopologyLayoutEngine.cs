@@ -11,7 +11,7 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var copy = Clone(chart);
-        copy.TextMeasurement = new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily);
+        copy.TextMeasurement = new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
         if (options != null) options.TextMeasurement = copy.TextMeasurement;
         ApplyNamedPortSides(copy);
         if (options != null) {

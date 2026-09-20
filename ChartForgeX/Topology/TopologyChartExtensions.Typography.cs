@@ -6,7 +6,7 @@ namespace ChartForgeX.Topology;
 
 public static partial class TopologyChartExtensions {
     /// <summary>
-    /// Resolves the host font used for topology layout measurement and PNG text.
+    /// Resolves the host font used for PNG text and opt-in installed-font layout measurement.
     /// SVG viewers resolve the theme font family independently and may choose a different face.
     /// </summary>
     /// <param name="chart">The topology whose theme supplies the font family.</param>
