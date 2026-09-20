@@ -23,7 +23,7 @@
     if (announcer) announcer.textContent = label;
   };
   const moveGraphItemFocus = (root, item, key) => {
-    const candidates = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').filter(candidate => visible(candidate) && (attr(candidate, 'data-cfx-role') !== 'graph-cluster' || attr(candidate, 'data-cluster-collapsed') === 'true'));
+    const candidates = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').filter(candidate => graphItemAccessible(root, candidate));
     if (!candidates.length) return false;
     if (key === 'Home' || key === 'End') {
       focusGraphItem(root, key === 'Home' ? candidates[0] : candidates[candidates.length - 1]);
@@ -84,6 +84,7 @@
       select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
     item.addEventListener('keydown', event => {
+      if (event.defaultPrevented) return;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
         event.preventDefault();
         moveGraphItemFocus(root, item, event.key);

@@ -3,12 +3,12 @@
   "RootPath": "..",
   "ExpectedVersion": null,
   "ExpectedVersionMap": {
-    "ChartForgeX": "1.7.X",
-    "ChartForgeX.Interactivity": "1.7.X",
-    "ChartForgeX.Interactivity.Html": "1.7.X",
-    "ChartForgeX.Markup": "1.7.X",
-    "ChartForgeX.Mermaid": "1.7.X",
-    "ChartForgeX.Markup.Mermaid": "1.7.X"
+    "ChartForgeX": "1.8.X",
+    "ChartForgeX.Interactivity": "1.8.X",
+    "ChartForgeX.Interactivity.Html": "1.8.X",
+    "ChartForgeX.Markup": "1.8.X",
+    "ChartForgeX.Mermaid": "1.8.X",
+    "ChartForgeX.Markup.Mermaid": "1.8.X"
   },
   "ExpectedVersionMapAsInclude": true,
   "ExpectedVersionMapUseWildcards": false,

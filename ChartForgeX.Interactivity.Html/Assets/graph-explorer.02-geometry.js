@@ -1,6 +1,6 @@
   const nodeShapeExtents = (node) => {
     const size = Math.max(4, node?.size || 8);
-    if (node?.shape === 'box') return { x: size * 1.45, y: size * 1.05 };
+    if (node?.shape === 'box') return { x: size * 1.45, y: node.card ? Math.min(size * 1.05, 36) : size * 1.05 };
     if (node?.shape === 'imageRect') return { x: size * 1.3, y: size * .9 };
     if (node?.shape === 'ellipse') return { x: size * 1.55, y: size };
     if (node?.shape === 'square') return { x: size, y: size };
@@ -11,6 +11,38 @@
     if (node?.shape === 'text') return { x: Math.max(size, ((attr(node.el, 'data-node-label') || node.id || '').length * 6) / 2), y: Math.max(size * .75, 8) };
     return { x: size, y: size };
   };
+  const graphCardTextAvailableWidth = size => Math.max(28, size * 2.9 - 78);
+  const graphEstimatedCardTextWidth = (value, secondary = false) => {
+    let width = 0;
+    Array.from(String(value || '')).forEach(character => {
+      width += character.length > 1 ? 12
+        : character === ' ' ? 3.5
+        : '.,:;!|'.includes(character) ? 4
+          : '-_/\\()[]'.includes(character) ? 5
+            : 'IJLTfijlt1'.includes(character) ? 5.4
+              : 'MWQO@%&…'.includes(character) ? 10
+                : /[A-Z]/.test(character) ? 8.2
+                  : /[0-9]/.test(character) ? 7.2
+                    : 6.8;
+    });
+    return width * (secondary ? .8 : 1);
+  };
+  const graphMiddleEllipsis = (value, maximumWidth, measure) => {
+    const text = String(value || '');
+    if (!text || measure(text) <= maximumWidth) return text;
+    for (let retained = Array.from(text).length - 1; retained > 1; retained--) {
+      const characters = Array.from(text);
+      const head = Math.ceil(retained * .58);
+      const tail = retained - head;
+      const candidate = `${characters.slice(0, head).join('')}…${characters.slice(characters.length - tail).join('')}`;
+      if (measure(candidate) <= maximumWidth) return candidate;
+    }
+    return '…';
+  };
+  const graphCardText = (value, size, secondary = false) => graphMiddleEllipsis(
+    value,
+    graphCardTextAvailableWidth(size),
+    text => graphEstimatedCardTextWidth(text, secondary));
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
   const nodePolygonPoints = (shape, size) => {
     if (shape === 'diamond') return `0,${-size * 1.35} ${size * 1.35},0 0,${size * 1.35} ${-size * 1.35},0`;
@@ -26,6 +58,7 @@
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
   const nodeLayoutExtents = (node) => {
     const mark = nodeShapeExtents(node);
+    if (node.card) return { x: mark.x + 7, y: mark.y + 7 };
     const label = attr(node.el, 'data-node-label') || node.label || node.id || '';
     const secondary = attr(node.el, 'data-node-secondary-label') || node.secondaryLabel || '';
     const labelHalfWidth = Math.max(24, Math.min(132, label.length * 3.5 + 10), secondary ? Math.min(132, secondary.length * 2.8 + 8) : 0);
@@ -195,13 +228,51 @@
     const loop = selfLoopGeometry(node);
     return `M ${loop.start.x.toFixed(3)} ${loop.start.y.toFixed(3)} C ${loop.c1.x.toFixed(3)} ${loop.c1.y.toFixed(3)} ${loop.c2.x.toFixed(3)} ${loop.c2.y.toFixed(3)} ${loop.end.x.toFixed(3)} ${loop.end.y.toFixed(3)}`;
   };
+  const graphEstimatedEdgeLabelWidth = value => {
+    let width = 8;
+    Array.from(String(value || '')).forEach(character => {
+      width += character === ' ' ? 3.2
+        : '.,:;!|'.includes(character) ? 3.6
+          : 'MW@%&'.includes(character) ? 9
+            : /[A-Z]/.test(character) ? 7.2
+              : /[0-9]/.test(character) ? 6.2
+                : 5.8;
+    });
+    return width;
+  };
+  const edgeLabelIntersectsNode = (point, label, node) => {
+    if (!node) return false;
+    const extents = nodeShapeExtents(node);
+    const labelHalfWidth = Math.max(14, graphEstimatedEdgeLabelWidth(label) / 2);
+    return Math.abs(point.x - node.x) < labelHalfWidth + extents.x + 6
+      && Math.abs(point.y - 4 - node.y) < 10 + extents.y + 6;
+  };
+  const avoidEdgeLabelNodeCollisions = (edge, candidate) => {
+    const label = edge.label || attr(edge.el, 'data-edge-label');
+    if (!label || (!edgeLabelIntersectsNode(candidate, label, edge.source) && !edgeLabelIntersectsNode(candidate, label, edge.target))) return candidate;
+    const dx = edge.target.x - edge.source.x;
+    const dy = edge.target.y - edge.source.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const normal = distance < .001 ? { x: 0, y: -1 } : { x: -dy / distance, y: dx / distance };
+    const preferredSign = normal.y > 0 ? -1 : 1;
+    const offsets = [16, 28, 42, 58, 76];
+    for (const offset of offsets) {
+      const preferred = { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
+      if (!edgeLabelIntersectsNode(preferred, label, edge.source) && !edgeLabelIntersectsNode(preferred, label, edge.target)) return preferred;
+      const alternate = { x: candidate.x - normal.x * offset * preferredSign, y: candidate.y - normal.y * offset * preferredSign };
+      if (!edgeLabelIntersectsNode(alternate, label, edge.source) && !edgeLabelIntersectsNode(alternate, label, edge.target)) return alternate;
+    }
+    const offset = offsets[offsets.length - 1];
+    return { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
+  };
   const edgeLabelPoint = (edge, control) => {
     if (edge.source === edge.target) return selfLoopGeometry(edge.source).label;
-    if (edgeHasRoute(edge)) return routeMidpoint(routeRenderPoints(edge), -7);
+    if (edgeHasRoute(edge)) return avoidEdgeLabelNodeCollisions(edge, routeMidpoint(routeRenderPoints(edge), -7));
     const endpoints = edgeRenderEndpoints(edge, control);
-    return control
+    const point = control
       ? { x: (endpoints.source.x + 2 * control.x + endpoints.target.x) / 4, y: (endpoints.source.y + 2 * control.y + endpoints.target.y) / 4 - 7 }
       : { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 - 7 };
+    return avoidEdgeLabelNodeCollisions(edge, point);
   };
   const edgeArrowGeometry = (edge, control, side, size = 8) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;

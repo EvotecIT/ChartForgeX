@@ -54,7 +54,7 @@ internal static partial class SmokeTests {
         Assert(ExtractGraphEdgePath(hiddenAnchorHtml, "source-anchor").Contains("L 300 100", StringComparison.Ordinal), "Graph explorer SVG should trim arrowed hidden-anchor endpoints to the anchor coordinate instead of a phantom node boundary.");
 
         var layoutSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.Layout.cs"));
-        Assert(layoutSource.Contains("TryNodeBoundaryExtents(shape, size", StringComparison.Ordinal) && layoutSource.Contains("Math.Max(halfWidth, halfHeight)", StringComparison.Ordinal), "Graph explorer prepared layout spacing should use rich node shape extents before the runtime opens.");
+        Assert(layoutSource.Contains("TryNodeBoundaryExtents(node, shape, size", StringComparison.Ordinal) && layoutSource.Contains("Math.Max(halfWidth, halfHeight)", StringComparison.Ordinal), "Graph explorer prepared layout spacing should use rich node shape extents before the runtime opens.");
         Assert(HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("context.lineWidth = edge.strokeWidth > 0", StringComparison.Ordinal) && HtmlGraphExplorerRenderer.BuildInteractionScript().Contains("Math.max(.65, edge.strokeWidth +", StringComparison.Ordinal), "Graph explorer Canvas and PNG output should honor explicit edge stroke widths without the lightweight default cap.");
     }
 

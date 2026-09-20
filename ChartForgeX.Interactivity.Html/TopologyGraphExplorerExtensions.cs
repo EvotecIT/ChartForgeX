@@ -23,39 +23,52 @@ public static class TopologyGraphExplorerExtensions {
         var options = new TopologyGraphSceneOptions();
         configure?.Invoke(options);
 
-        var ids = TopologyGraphIdMap.Create(chart);
+        var seededLayout = options.SeedPreparedLayout && chart.LayoutMode != TopologyLayoutMode.Manual;
+        var source = seededLayout
+            ? TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false })
+            : chart;
+        var ids = TopologyGraphIdMap.Create(source);
         var iconCatalog = options.IconCatalog ?? TopologyIconCatalog.Default();
-        var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(chart));
-        scene.Subtitle = chart.Subtitle;
+        var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(source));
+        scene.Subtitle = source.Subtitle;
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
+        if (seededLayout) scene.Options.Physics.Stabilization.Enabled = options.StabilizePreparedLayoutOnLoad;
+        if (source.Nodes.Count <= 20) scene.Options.LevelOfDetail.DetailScaleThreshold = Math.Min(scene.Options.LevelOfDetail.DetailScaleThreshold, 0.72);
+        ApplyLayoutOptions(scene, source);
         ApplyManipulationOptions(scene, options);
+        if (options.DenseEdgeLabelThreshold > 0) scene.Options.LevelOfDetail.HideEdgeLabelsThreshold = options.DenseEdgeLabelThreshold;
         scene.Options.Cluster.Mode = options.IncludeGroupsAsClusters ? GraphClusterMode.Hybrid : GraphClusterMode.Explicit;
         if (!options.IncludeGroupsAsClusters) scene.Options.Cluster.Adaptive = false;
-        scene.Options.Cluster.CollapseOnLoad = scene.Options.LevelOfDetail.CollapseClustersOnLoad;
+        var collapseGroupsOnLoad = options.IncludeGroupsAsClusters
+            && source.Groups.Count > 0
+            && options.CollapseGroupsOnLoadThreshold > 0
+            && source.Nodes.Count >= options.CollapseGroupsOnLoadThreshold;
+        scene.Options.Cluster.CollapseOnLoad = collapseGroupsOnLoad || scene.Options.LevelOfDetail.CollapseClustersOnLoad;
         scene.Metadata["source.model"] = nameof(TopologyChart);
-        AddMetadata(scene.Metadata, "topology.id", chart.Id);
-        scene.Metadata["topology.layout"] = chart.LayoutMode.ToString();
-        scene.Metadata["topology.direction"] = chart.LayoutDirection.ToString();
-        scene.Metadata["topology.nodeCount"] = chart.Nodes.Count.ToString(CultureInfo.InvariantCulture);
-        scene.Metadata["topology.edgeCount"] = chart.Edges.Count.ToString(CultureInfo.InvariantCulture);
-        scene.Metadata["topology.groupCount"] = chart.Groups.Count.ToString(CultureInfo.InvariantCulture);
+        AddMetadata(scene.Metadata, "topology.id", source.Id);
+        scene.Metadata["topology.layout"] = source.LayoutMode.ToString();
+        scene.Metadata["topology.direction"] = source.LayoutDirection.ToString();
+        scene.Metadata["topology.nodeCount"] = source.Nodes.Count.ToString(CultureInfo.InvariantCulture);
+        scene.Metadata["topology.edgeCount"] = source.Edges.Count.ToString(CultureInfo.InvariantCulture);
+        scene.Metadata["topology.groupCount"] = source.Groups.Count.ToString(CultureInfo.InvariantCulture);
+        scene.Metadata["topology.preparedLayoutSeeded"] = seededLayout ? "true" : "false";
 
-        var groupIds = new HashSet<string>(chart.Groups.Select(group => ids.GroupId(group.Id)), StringComparer.Ordinal);
-        foreach (var node in chart.Nodes) {
-            scene.Nodes.Add(ToGraphNode(chart, node, groupIds, options, ids, iconCatalog));
+        var groupIds = new HashSet<string>(source.Groups.Select(group => ids.GroupId(group.Id)), StringComparer.Ordinal);
+        foreach (var node in source.Nodes) {
+            scene.Nodes.Add(ToGraphNode(source, node, groupIds, options, ids, iconCatalog, seededLayout));
         }
 
         if (scene.Nodes.Any(node => !string.IsNullOrWhiteSpace(node.ParentId))) scene.Options.Enable(GraphSceneFeatures.HierarchyNavigation);
 
-        var topologyNodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        for (var index = 0; index < chart.Edges.Count; index++) {
-            scene.Edges.Add(ToGraphEdge(chart, chart.Edges[index], ids, topologyNodes, options, index));
+        var topologyNodes = source.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        for (var index = 0; index < source.Edges.Count; index++) {
+            scene.Edges.Add(ToGraphEdge(source, source.Edges[index], ids, topologyNodes, options, index, seededLayout));
         }
 
         if (options.IncludeGroupsAsClusters) {
-            foreach (var group in chart.Groups) {
+            foreach (var group in source.Groups) {
                 var groupId = ids.GroupId(group.Id);
-                var memberIds = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).Select(node => ids.NodeId(node.Id)).ToArray();
+                var memberIds = source.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).Select(node => ids.NodeId(node.Id)).ToArray();
                 if (memberIds.Length == 0) continue;
                 var cluster = new GraphSceneCluster {
                     Id = groupId,
@@ -100,11 +113,17 @@ public static class TopologyGraphExplorerExtensions {
         return chart.ToGraphScene(configureScene).ToGraphExplorerHtmlFragment(configureHtml);
     }
 
-    private static GraphSceneNode ToGraphNode(TopologyChart chart, TopologyNode node, ISet<string> groupIds, TopologyGraphSceneOptions options, TopologyGraphIdMap ids, TopologyIconCatalog iconCatalog) {
+    private static GraphSceneNode ToGraphNode(TopologyChart chart, TopologyNode node, ISet<string> groupIds, TopologyGraphSceneOptions options, TopologyGraphIdMap ids, TopologyIconCatalog iconCatalog, bool seededLayout) {
         var groupId = string.IsNullOrWhiteSpace(node.GroupId) ? null : ids.GroupId(node.GroupId!);
         var icon = string.IsNullOrWhiteSpace(node.IconId) ? null : iconCatalog.Resolve(node.IconId);
         var artwork = ResolveArtwork(node, icon, options);
         var imageUrl = ArtworkImageUrl(artwork);
+        var display = EffectiveDisplayMode(node, icon, imageUrl);
+        var shape = display == TopologyNodeDisplayMode.Hidden
+            ? GraphNodeShape.Text
+            : !string.IsNullOrWhiteSpace(imageUrl)
+                ? display == TopologyNodeDisplayMode.Artwork ? GraphNodeShape.RectangularImage : GraphNodeShape.Image
+                : NodeShape(display, icon, imageUrl);
         var graphNode = new GraphSceneNode {
             Id = ids.NodeId(node.Id),
             Label = node.Label,
@@ -113,17 +132,17 @@ public static class TopologyGraphExplorerExtensions {
             Kind = Token(node.Kind),
             GroupId = groupId,
             Status = Token(node.Status),
-            Shape = node.DisplayMode == TopologyNodeDisplayMode.Hidden ? GraphNodeShape.Text : NodeShape(node, icon, imageUrl),
-            Size = NodeSize(node),
+            Shape = shape,
+            Size = NodeSize(node, display),
             IconText = FirstText(node.Symbol, icon?.Symbol),
-            ImageUrl = imageUrl,
+            ImageUrl = shape is GraphNodeShape.Image or GraphNodeShape.RectangularImage ? imageUrl : null,
             ImageAlt = node.Label,
-            Fixed = ShouldPreserveCoordinates(chart, node, options),
-            Hidden = node.DisplayMode == TopologyNodeDisplayMode.Hidden
+            Fixed = ShouldPreserveCoordinates(chart, node, options) || seededLayout && options.FixPreparedLayout,
+            Hidden = display == TopologyNodeDisplayMode.Hidden
         };
         ApplyHierarchy(node, graphNode, options, ids);
         if (options.IncludeGroupsAsClusters && options.UseGroupsAsClusterIds && !string.IsNullOrWhiteSpace(groupId) && groupIds.Contains(groupId!)) graphNode.ClusterId = groupId;
-        if (ShouldPreserveCoordinates(chart, node, options)) {
+        if (seededLayout || ShouldPreserveCoordinates(chart, node, options)) {
             graphNode.X = node.X + node.Width / 2;
             graphNode.Y = node.Y + node.Height / 2;
         }
@@ -132,7 +151,9 @@ public static class TopologyGraphExplorerExtensions {
         var accentColor = FirstText(node.Color, icon?.Color, theme.StatusColor(node.Status))!;
         graphNode.Style.BackgroundColor = TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
         graphNode.Style.BorderColor = accentColor;
-        graphNode.Style.LabelColor = accentColor;
+        graphNode.Style.LabelColor = display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard
+            ? null
+            : accentColor;
         graphNode.Style.Shadow = node.DisplayMode is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.Artwork;
 
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
@@ -140,6 +161,7 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.subtitle", node.Subtitle);
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
+        if (shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill) graphNode.Metadata["topology.card"] = "true";
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
         AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
         AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);
@@ -153,7 +175,7 @@ public static class TopologyGraphExplorerExtensions {
         return graphNode;
     }
 
-    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options, int index) {
+    private static GraphSceneEdge ToGraphEdge(TopologyChart chart, TopologyEdge edge, TopologyGraphIdMap ids, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options, int index, bool seededLayout) {
         var sourceNodeId = ids.NodeId(edge.SourceNodeId);
         var targetNodeId = ids.NodeId(edge.TargetNodeId);
         var directed = edge.Direction == VisualLinkDirection.Forward || edge.Direction == VisualLinkDirection.Backward || edge.Direction == VisualLinkDirection.Bidirectional;
@@ -164,7 +186,7 @@ public static class TopologyGraphExplorerExtensions {
             targetNodeId = ids.NodeId(edge.SourceNodeId);
         }
 
-        var label = EdgeLabel(edge);
+        var label = EdgeLabel(edge, options.IncludeEdgeDetailInLabels);
         var dashPattern = edge.IsMuted ? "none" : TopologyRenderPrimitives.EdgeDash(edge);
         var graphEdge = new GraphSceneEdge {
             Id = ids.EdgeId(index),
@@ -185,7 +207,7 @@ public static class TopologyGraphExplorerExtensions {
         graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.Theme ?? TopologyTheme.Light(), new TopologyRenderOptions());
         graphEdge.Style.Width = EdgeStyleWidth(edge);
         if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
-        AddRoutePoints(graphEdge, chart, edge, topologyNodes, options);
+        AddRoutePoints(graphEdge, chart, edge, topologyNodes, options, seededLayout);
         AddMetadata(graphEdge.Metadata, "topology.id", edge.Id);
         AddMetadata(graphEdge.Metadata, "topology.sourceNodeId", edge.SourceNodeId);
         AddMetadata(graphEdge.Metadata, "topology.targetNodeId", edge.TargetNodeId);
@@ -224,8 +246,19 @@ public static class TopologyGraphExplorerExtensions {
         scene.Options.Manipulation.EnableEditing();
     }
 
-    private static GraphNodeShape NodeShape(TopologyNode node, TopologyIconDefinition? icon, string? imageUrl) {
-        if (!string.IsNullOrWhiteSpace(imageUrl)) return node.DisplayMode == TopologyNodeDisplayMode.Artwork ? GraphNodeShape.RectangularImage : GraphNodeShape.Image;
+    private static void ApplyLayoutOptions(GraphScene scene, TopologyChart chart) {
+        if (chart.LayoutMode == TopologyLayoutMode.Layered) scene.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
+        scene.Options.Layout.Direction = chart.LayoutDirection switch {
+            TopologyLayoutDirection.BottomToTop => GraphLayoutDirection.BottomToTop,
+            TopologyLayoutDirection.LeftToRight => GraphLayoutDirection.LeftToRight,
+            TopologyLayoutDirection.RightToLeft => GraphLayoutDirection.RightToLeft,
+            _ => GraphLayoutDirection.TopToBottom
+        };
+    }
+
+    private static GraphNodeShape NodeShape(TopologyNodeDisplayMode display, TopologyIconDefinition? icon, string? imageUrl) {
+        if (display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill) return GraphNodeShape.Box;
+        if (!string.IsNullOrWhiteSpace(imageUrl)) return display == TopologyNodeDisplayMode.Artwork ? GraphNodeShape.RectangularImage : GraphNodeShape.Image;
         if (icon != null) {
             switch (icon.Shape) {
                 case TopologyIconShape.Database:
@@ -258,11 +291,19 @@ public static class TopologyGraphExplorerExtensions {
             }
         }
 
-        var display = node.DisplayMode ?? TopologyNodeDisplayMode.Card;
         return display == TopologyNodeDisplayMode.Dot || display == TopologyNodeDisplayMode.Icon ? GraphNodeShape.Circle : GraphNodeShape.Box;
     }
 
-    private static GraphNodeShape NodeShape(TopologyNode node) => NodeShape(node, null, null);
+    private static GraphNodeShape NodeShape(TopologyNode node) {
+        var display = node.DisplayMode ?? (node.Artwork != null && node.Artwork.IsSafe ? TopologyNodeDisplayMode.Artwork : TopologyNodeDisplayMode.Card);
+        return NodeShape(display, null, ArtworkImageUrl(node.Artwork));
+    }
+
+    private static TopologyNodeDisplayMode EffectiveDisplayMode(TopologyNode node, TopologyIconDefinition? icon, string? imageUrl) {
+        if (node.DisplayMode.HasValue) return node.DisplayMode.Value;
+        if (!string.IsNullOrWhiteSpace(imageUrl)) return TopologyNodeDisplayMode.Artwork;
+        return icon?.DisplayMode ?? TopologyNodeDisplayMode.Card;
+    }
 
     private static void ApplyHierarchy(TopologyNode source, GraphSceneNode target, TopologyGraphSceneOptions options, TopologyGraphIdMap ids) {
         if (!options.PreserveHierarchyMetadata) return;
@@ -304,7 +345,10 @@ public static class TopologyGraphExplorerExtensions {
         return string.Join(" ", numbers.Select(number => number.ToString("0.###", CultureInfo.InvariantCulture)));
     }
 
-    private static double NodeSize(TopologyNode node) {
+    private static double NodeSize(TopologyNode node, TopologyNodeDisplayMode display) {
+        if (display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill) {
+            return Math.Max(34, Math.Min(90, node.Width / 2.9));
+        }
         var visualSize = Math.Sqrt(Math.Max(1, node.Width * node.Height)) / 7.5;
         return Math.Max(7, Math.Min(28, visualSize));
     }
@@ -327,10 +371,12 @@ public static class TopologyGraphExplorerExtensions {
         return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal ? GraphEdgeShape.Polyline : GraphEdgeShape.Line;
     }
 
-    private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options) {
+    private static void AddRoutePoints(GraphSceneEdge graphEdge, TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> topologyNodes, TopologyGraphSceneOptions options, bool seededLayout) {
         if (graphEdge.Shape != GraphEdgeShape.Polyline) return;
         if (!topologyNodes.TryGetValue(edge.SourceNodeId, out var source) || !topologyNodes.TryGetValue(edge.TargetNodeId, out var target)) return;
-        if (!ShouldPreserveCoordinates(chart, source, options) || !ShouldPreserveCoordinates(chart, target, options)) return;
+        var sourceFixed = ShouldPreserveCoordinates(chart, source, options) || seededLayout && options.FixPreparedLayout;
+        var targetFixed = ShouldPreserveCoordinates(chart, target, options) || seededLayout && options.FixPreparedLayout;
+        if (!sourceFixed || !targetFixed) return;
         var points = TopologyRenderPrimitives.EdgePoints(chart, edge, topologyNodes);
         if (edge.Direction == VisualLinkDirection.Backward) points.Reverse();
         AlignRouteEndpointsToGraphNodes(points, edge.Direction == VisualLinkDirection.Backward ? target : source, edge.Direction == VisualLinkDirection.Backward ? source : target);
@@ -353,9 +399,10 @@ public static class TopologyGraphExplorerExtensions {
         var length = Math.Max(1, Math.Sqrt(dx * dx + dy * dy));
         var unitX = dx / length;
         var unitY = dy / length;
-        var size = NodeSize(node);
+        var display = node.DisplayMode ?? (node.Artwork != null && node.Artwork.IsSafe ? TopologyNodeDisplayMode.Artwork : TopologyNodeDisplayMode.Card);
+        var size = NodeSize(node, display);
         var halfWidth = NodeShape(node) == GraphNodeShape.Box ? size * 1.45 : size;
-        var halfHeight = NodeShape(node) == GraphNodeShape.Box ? size * 1.05 : size;
+        var halfHeight = NodeShape(node) == GraphNodeShape.Box ? Math.Min(size * 1.05, 36) : size;
         var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
         var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);
         var inset = Math.Min(xInset, yInset);
@@ -363,7 +410,8 @@ public static class TopologyGraphExplorerExtensions {
         return new ChartPoint(centerX + unitX * inset, centerY + unitY * inset);
     }
 
-    private static string? EdgeLabel(TopologyEdge edge) {
+    private static string? EdgeLabel(TopologyEdge edge, bool includeDetails) {
+        if (!includeDetails) return FirstText(edge.Label, edge.SecondaryLabel, edge.TertiaryLabel)?.Trim();
         var parts = new[] { edge.Label, edge.SecondaryLabel, edge.TertiaryLabel }
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => value!.Trim())

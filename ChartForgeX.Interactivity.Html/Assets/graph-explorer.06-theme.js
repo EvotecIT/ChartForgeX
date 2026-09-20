@@ -26,6 +26,7 @@
       dark,
       paper: graphCssColor(root, '--cfx-color-paper', dark ? '#0b1220' : '#ffffff'),
       paperSoft: graphCssColor(root, '--cfx-color-paper-soft', dark ? '#0d1728' : '#f8fbff'),
+      card: graphCssColor(root, '--cfx-color-surface-solid', dark ? '#0f172a' : '#ffffff'),
       halo: graphCssColor(root, '--cfx-color-graph-halo', dark ? '#0b1220' : '#ffffff'),
       text: graphCssColor(root, '--cfx-color-graph-text', dark ? '#e5edf8' : '#334155'),
       muted: graphCssColor(root, '--cfx-color-graph-muted', dark ? '#a9b7ca' : '#64748b'),
@@ -37,12 +38,37 @@
       selected: graphCssColor(root, '--cfx-color-selected', dark ? '#fbbf24' : '#d97706')
     };
   };
-  const graphColorRgb = (value) => {
+  const graphClusterColors = (root, cluster, palette) => {
+    const status = attr(cluster.el, 'data-cfx-status').toLowerCase();
+    if (status === 'healthy') return { stroke: '#22c55e', fill: palette.dark ? 'rgba(34,197,94,.18)' : 'rgba(34,197,94,.14)' };
+    if (status === 'warning') return { stroke: '#f59e0b', fill: palette.dark ? 'rgba(245,158,11,.20)' : 'rgba(245,158,11,.16)' };
+    if (status === 'critical') return { stroke: '#ef4444', fill: palette.dark ? 'rgba(239,68,68,.20)' : 'rgba(239,68,68,.16)' };
+    return { stroke: palette.clusterStroke, fill: palette.clusterFill };
+  };
+  const graphLiteralColorRgb = (value) => {
     const source = String(value || '').trim();
     if (/^#[0-9a-f]{3}$/i.test(source)) return source.slice(1).split('').map(part => parseInt(part + part, 16));
     if (/^#[0-9a-f]{6}$/i.test(source)) return [parseInt(source.slice(1, 3), 16), parseInt(source.slice(3, 5), 16), parseInt(source.slice(5, 7), 16)];
     const match = source.match(/^rgba?\(\s*([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)/i);
     return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
+  };
+  let graphColorContext = null;
+  const graphColorRgb = (value) => {
+    const source = String(value || '').trim();
+    const literal = graphLiteralColorRgb(source);
+    if (literal) return literal;
+    if (!source || typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
+    try {
+      graphColorContext ||= document.createElement('canvas').getContext('2d');
+      if (!graphColorContext) return null;
+      graphColorContext.fillStyle = '#010203';
+      graphColorContext.fillStyle = source;
+      const resolved = String(graphColorContext.fillStyle || '');
+      if (resolved === '#010203') return null;
+      return graphLiteralColorRgb(resolved);
+    } catch {
+      return null;
+    }
   };
   const graphColorLuminance = (rgb) => {
     const linear = rgb.map(channel => {
@@ -62,14 +88,43 @@
     if (!value) return fallback;
     return graphColorContrast(value, graphThemePalette(root).paper) >= 4.5 ? value : fallback;
   };
+  const graphReadableNodeColors = (root, node, palette) => {
+    const requestedBackground = attr(node, 'data-node-background-color');
+    const background = graphColorRgb(requestedBackground) ? requestedBackground : '#2563eb';
+    const preferred = attr(node, 'data-node-label-color');
+    const choose = (requested, fallback) => {
+      const candidates = [requested, fallback, '#f8fafc', '#0f172a']
+        .map(value => String(value || '').trim())
+        .filter((value, index, values) => value && graphColorRgb(value) && values.indexOf(value) === index);
+      if (candidates.length === 0) return fallback;
+      if (candidates[0] === String(requested || '').trim() && graphColorContrast(candidates[0], background) >= 4.5) return candidates[0];
+      return candidates.sort((left, right) => graphColorContrast(right, background) - graphColorContrast(left, background))[0];
+    };
+    return {
+      label: choose(preferred, palette.text),
+      secondary: choose(palette.muted, palette.muted),
+      halo: background
+    };
+  };
   const syncSvgThemeColors = (root) => {
     const palette = graphThemePalette(root);
     const physical = (selector) => Array.from(root.querySelectorAll(selector));
     const nodeDetails = new Map(physical('[data-cfx-role="graph-node-details"]').map(details => [attr(details, 'data-node-details-for'), details]));
     physical('[data-cfx-role="graph-node"]').forEach(node => {
-      const color = graphAdaptiveTextColor(root, attr(node, 'data-node-label-color'), palette.text);
-      node.style.setProperty('--cfx-node-label-adaptive', color);
-      nodeDetails.get(attr(node, 'data-node-id'))?.style.setProperty('--cfx-node-label-adaptive', color);
+      const metadata = metadataDetail(node);
+      if (attr(node, 'data-node-card') === 'true' && !Object.prototype.hasOwnProperty.call(metadata, 'topology.backgroundColor')) {
+        node.setAttribute('data-node-background-color', palette.card);
+        node.style.setProperty('--cfx-node-fill', palette.card);
+        node.firstElementChild?.style.setProperty('--cfx-node-fill', palette.card);
+      }
+      const colors = graphReadableNodeColors(root, node, palette);
+      node.style.setProperty('--cfx-node-label-adaptive', colors.label);
+      node.style.setProperty('--cfx-node-secondary-adaptive', colors.secondary);
+      node.style.setProperty('--cfx-node-label-halo', colors.halo);
+      const details = nodeDetails.get(attr(node, 'data-node-id'));
+      details?.style.setProperty('--cfx-node-label-adaptive', colors.label);
+      details?.style.setProperty('--cfx-node-secondary-adaptive', colors.secondary);
+      details?.style.setProperty('--cfx-node-label-halo', colors.halo);
     });
     const edgeLabels = new Map(physical('[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     physical('[data-cfx-role="graph-edge"]').forEach(edge => edgeLabels.get(attr(edge, 'data-edge-id'))?.style.setProperty('--cfx-edge-label-adaptive', graphAdaptiveTextColor(root, attr(edge, 'data-edge-label-color'), palette.edgeLabel)));

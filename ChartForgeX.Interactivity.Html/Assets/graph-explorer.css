@@ -19,6 +19,13 @@
   color: #f8fafc;
 }
 
+.cfx-graph-shell.cfx-graph-shell-embedded {
+  height: 100vh;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .cfx-graph-shell *,
 .cfx-graph-shell *::before,
 .cfx-graph-shell *::after,
@@ -108,6 +115,27 @@
   --cfx-shadow-shell: 0 24px 64px rgba(0, 0, 0, .36);
   --cfx-shadow-stage: 0 30px 80px rgba(0, 0, 0, .44);
   color-scheme: dark;
+}
+
+.cfx-graph-explorer.cfx-graph-fill-available {
+  grid-template-rows: minmax(0, 1fr);
+  max-width: none;
+  height: 100vh;
+  min-height: 0;
+}
+
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage {
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-svg {
+  aspect-ratio: auto;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -665,17 +693,41 @@
 .cfx-graph-edge-label {
   fill: var(--cfx-edge-label-adaptive, var(--cfx-edge-label-explicit, var(--cfx-color-edge-label)));
   stroke: var(--cfx-color-graph-halo);
-  stroke-width: 4;
+  stroke-width: 8;
   font-size: 11px;
+  font-weight: 650;
   paint-order: stroke;
   pointer-events: none;
   stroke-linejoin: round;
   text-anchor: middle;
 }
 
+.cfx-graph-node-card-label,
+.cfx-graph-node-card-secondary {
+  text-anchor: start !important;
+}
+
+.cfx-graph-node-card-label {
+  font-size: 12.5px !important;
+  font-weight: 720;
+}
+
+.cfx-graph-node-card-secondary {
+  font-size: 10px !important;
+}
+
+.cfx-graph-node-card-icon {
+  font-size: 15px !important;
+  fill: var(--cfx-node-stroke, var(--cfx-color-graph-text)) !important;
+}
+
 .cfx-graph-node {
   cursor: grab;
   transition: opacity .18s ease, filter .18s ease;
+}
+
+g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
+  filter: drop-shadow(0 5px 10px rgba(15, 23, 42, .18));
 }
 
 .cfx-graph-node[data-node-has-children="true"] {
@@ -712,7 +764,7 @@
 .cfx-graph-node text,
 .cfx-graph-node-details text {
   fill: var(--cfx-node-label-adaptive, var(--cfx-node-label-explicit, var(--cfx-color-graph-text)));
-  stroke: var(--cfx-color-graph-halo);
+  stroke: var(--cfx-node-label-halo, var(--cfx-color-graph-halo));
   stroke-width: 4;
   font-size: 12px;
   paint-order: stroke;
@@ -734,7 +786,7 @@
 
 .cfx-graph-node .cfx-graph-node-secondary,
 .cfx-graph-node-details .cfx-graph-node-secondary {
-  fill: var(--cfx-color-graph-muted);
+  fill: var(--cfx-node-secondary-adaptive, var(--cfx-color-graph-muted));
   stroke-width: 3;
   font-size: 9.5px;
 }
@@ -782,6 +834,21 @@
   filter: drop-shadow(0 9px 14px color-mix(in srgb, var(--cfx-color-cluster-stroke) 18%, transparent));
 }
 
+.cfx-graph-cluster[data-cfx-status="healthy"] circle {
+  fill: color-mix(in srgb, #22c55e 18%, var(--cfx-color-paper));
+  stroke: #22c55e;
+}
+
+.cfx-graph-cluster[data-cfx-status="warning"] circle {
+  fill: color-mix(in srgb, #f59e0b 20%, var(--cfx-color-paper));
+  stroke: #f59e0b;
+}
+
+.cfx-graph-cluster[data-cfx-status="critical"] circle {
+  fill: color-mix(in srgb, #ef4444 20%, var(--cfx-color-paper));
+  stroke: #ef4444;
+}
+
 .cfx-graph-cluster text {
   fill: var(--cfx-color-cluster-text);
   stroke: var(--cfx-color-graph-halo);
@@ -791,6 +858,13 @@
   paint-order: stroke;
   stroke-linejoin: round;
   text-anchor: middle;
+}
+
+.cfx-graph-cluster .cfx-graph-cluster-count {
+  fill: var(--cfx-color-graph-muted);
+  font-size: 9.5px;
+  font-weight: 650;
+  letter-spacing: .02em;
 }
 
 .cfx-graph-cluster.cfx-graph-cluster-expanded {
@@ -937,7 +1011,7 @@
   backdrop-filter: blur(12px);
 }
 
-.cfx-graph-has-overview .cfx-graph-overview {
+.cfx-graph-has-overview:not(.cfx-graph-overview-unneeded) .cfx-graph-overview {
   display: block;
 }
 

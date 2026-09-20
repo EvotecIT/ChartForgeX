@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>Aligns self-contained HTML interaction and package compatibility with the ChartForgeX 1.7.0 typography runtime.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 1.8.0 adds mature graph exploration with bounded labels, readable theme-aware node cards, scalable layouts, navigation, filtering, and consistent exports.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

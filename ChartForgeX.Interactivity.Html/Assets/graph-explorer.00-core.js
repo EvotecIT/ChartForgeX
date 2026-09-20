@@ -71,6 +71,7 @@
       labelColor: attr(el, 'data-node-label-color'),
       labelBackgroundColor: attr(el, 'data-node-label-background-color'),
       shadow: attr(el, 'data-node-shadow') === 'true',
+      card: attr(el, 'data-node-card') === 'true',
       size: Math.max(4, num(el, 'data-node-size', 8)),
       level: attr(el, 'data-node-level') === '' ? null : num(el, 'data-node-level', 0),
       degree: 0,
@@ -225,17 +226,20 @@
       if (!metrics) return;
       const label = attr(cluster.el, 'data-cluster-label') || cluster.id;
       const selected = cluster.el.classList.contains('cfx-graph-selected');
+      const clusterColors = graphClusterColors(root, cluster, palette);
       context.beginPath();
       context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
       context.globalAlpha = metrics.expanded ? .1 : .86;
-      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : palette.clusterFill;
-      context.strokeStyle = cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : palette.clusterStroke;
+      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : clusterColors.fill;
+      context.strokeStyle = selected ? palette.selected : clusterColors.stroke;
       context.lineWidth = selected ? 4 : metrics.expanded ? 1.2 : 2;
       context.setLineDash([6, 4]);
       if (!metrics.expanded) context.fill();
       context.stroke();
       context.setLineDash([]);
       if ((!moving && !metrics.expanded) || selected) {
+        const memberCount = cluster.nodeIds.length;
+        const memberLabel = `${memberCount} ${memberCount === 1 ? 'object' : 'objects'}`;
         context.globalAlpha = metrics.expanded ? .55 : 1;
         context.font = '700 12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
@@ -243,8 +247,12 @@
         context.lineWidth = 4;
         context.strokeStyle = palette.halo;
         context.fillStyle = palette.clusterText;
-        context.strokeText(label, metrics.x, metrics.y);
-        context.fillText(label, metrics.x, metrics.y);
+        context.strokeText(label, metrics.x, metrics.y - 6);
+        context.fillText(label, metrics.x, metrics.y - 6);
+        context.font = '600 9.5px Segoe UI, Arial, sans-serif';
+        context.fillStyle = palette.muted;
+        context.strokeText(memberLabel, metrics.x, metrics.y + 10);
+        context.fillText(memberLabel, metrics.x, metrics.y + 10);
       }
       context.globalAlpha = 1;
     });

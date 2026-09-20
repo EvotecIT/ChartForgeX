@@ -32,6 +32,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(BuildFragmentStyle());
         writer.Append("</style></head><body class=\"cfx-graph-shell");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
+        if (options.FillAvailableHeight) writer.Append(" cfx-graph-shell-embedded");
         writer.Append("\">");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
@@ -90,8 +91,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var writer = new StringBuilder();
         writer.Append("<section class=\"cfx-graph-explorer");
         if (ConsumesTouchMovement(scene)) writer.Append(" cfx-graph-interactive-touch");
+        if (options.FillAvailableHeight) writer.Append(" cfx-graph-fill-available");
+        if (options.IncludeHeader) writer.Append(" cfx-graph-has-header");
         writer.Append('"');
-        Attribute(writer, "aria-labelledby", domId + "-heading");
+        if (options.IncludeHeader) Attribute(writer, "aria-labelledby", domId + "-heading");
+        else Attribute(writer, "aria-label", scene.Title);
         Attribute(writer, "data-cfx-graph-id", scene.Id);
         Attribute(writer, "data-cfx-graph-title", scene.Title);
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
@@ -123,7 +127,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteScalabilityAttributes(writer, scene);
         WriteHierarchyAttributes(writer, scene);
         writer.Append('>');
-        WriteHeader(writer, scene, options, effectiveClusters, domId);
+        if (options.IncludeHeader) WriteHeader(writer, scene, options, effectiveClusters, domId);
+        WriteAnnouncer(writer);
         WriteStage(writer, scene, options, positions, domId, effectiveClusters, acceleratedMarkup);
         writer.Append("<output class=\"cfx-graph-tooltip\" hidden></output>");
         writer.Append("</section>");
@@ -191,6 +196,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var x = members.Length == 0 ? Width / 2 : members.Average(point => point.X);
             var y = members.Length == 0 ? Height / 2 : members.Average(point => point.Y);
             var radius = CollapsedClusterRadius(members.Length);
+            var memberLabel = memberIds.Length == 1 ? "1 object" : memberIds.Length + " objects";
+            var status = ClusterStatus(cluster);
             writer.Append("<g class=\"cfx-graph-cluster");
             if (!collapsed) writer.Append(" cfx-graph-cluster-expanded");
             writer.Append("\" data-cfx-role=\"graph-cluster\"");
@@ -199,27 +206,37 @@ public sealed partial class HtmlGraphExplorerRenderer {
             if (focusableGraphItems) {
                 Attribute(writer, "role", "button");
                 Attribute(writer, "aria-pressed", "false");
-                if (collapsed) Attribute(writer, "aria-label", cluster.Label);
+                if (collapsed) Attribute(writer, "aria-label", cluster.Label + ", " + memberLabel + (status == null ? string.Empty : ", " + status));
             }
             Attribute(writer, "data-cluster-id", cluster.Id);
             Attribute(writer, "data-cluster-label", cluster.Label);
             Attribute(writer, "data-cluster-kind", cluster.Kind);
             Attribute(writer, "data-cluster-parent", cluster.ParentClusterId);
             Attribute(writer, "data-cluster-node-ids", string.Join(",", memberIds));
+            Attribute(writer, "data-cluster-node-count", memberIds.Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
             Attribute(writer, "data-cluster-collapsed", collapsed ? "true" : "false");
+            Attribute(writer, "data-cfx-status", status);
             Attribute(writer, "data-cfx-search", SearchText(cluster.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(cluster.Metadata));
             Attribute(writer, "transform", "translate(" + Number(x) + " " + Number(y) + ")");
             writer.Append("><circle r=\"");
             writer.Append(Number(radius));
-            writer.Append("\"></circle><text y=\"5\">");
+            writer.Append("\"></circle><text class=\"cfx-graph-cluster-label\" y=\"-2\">");
             writer.Append(Text(cluster.Label));
+            writer.Append("</text><text class=\"cfx-graph-cluster-count\" y=\"14\">");
+            writer.Append(Text(memberLabel));
             writer.Append("</text></g>");
         }
     }
 
     private static double CollapsedClusterRadius(int memberCount) {
         return Math.Max(34, Math.Min(54, 20 + Math.Sqrt(memberCount) * 7));
+    }
+
+    private static string? ClusterStatus(GraphSceneCluster cluster) {
+        return cluster.Metadata.TryGetValue("topology.status", out var status) && !string.IsNullOrWhiteSpace(status)
+            ? status.ToLowerInvariant()
+            : null;
     }
 
     private static HashSet<string> BuildCollapsedNodeIds(GraphScene scene, IReadOnlyList<GraphSceneCluster> clusters, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad) {
@@ -277,6 +294,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var point = positions[node.Id];
             var size = SafeNodeSize(node);
             writer.Append("<g class=\"cfx-graph-node");
+            if (node.Style.Shadow) writer.Append(" cfx-graph-node-shadow");
             if (collapsedNodeIds.Contains(node.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             if (node.Hidden) writer.Append(" cfx-graph-hidden");
             writer.Append("\" tabindex=\"");
@@ -294,6 +312,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-parent", node.ParentId);
             Attribute(writer, "data-cfx-status", node.Status);
             Attribute(writer, "data-node-size", Number(size));
+            Attribute(writer, "data-node-card", IsCardNode(node) ? "true" : "false");
             Attribute(writer, "data-node-fixed", node.Fixed ? "true" : "false");
             Attribute(writer, "data-node-hidden", node.Hidden ? "true" : "false");
             Attribute(writer, "data-node-level", node.Level.HasValue ? node.Level.Value.ToString(CultureInfo.InvariantCulture) : null);
@@ -342,15 +361,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteNodeMark(StringBuilder writer, GraphSceneNode node) {
         var size = SafeNodeSize(node);
         if (node.Shape == GraphNodeShape.Box) {
+            var halfWidth = BoxHalfWidth(size);
+            var halfHeight = BoxHalfHeight(node, size);
             writer.Append("<rect x=\"");
-            writer.Append(Number(-size * 1.45));
+            writer.Append(Number(-halfWidth));
             writer.Append("\" y=\"");
-            writer.Append(Number(-size * 1.05));
+            writer.Append(Number(-halfHeight));
             writer.Append("\" width=\"");
-            writer.Append(Number(size * 2.9));
+            writer.Append(Number(halfWidth * 2));
             writer.Append("\" height=\"");
-            writer.Append(Number(size * 2.1));
-            writer.Append("\" rx=\"6\"");
+            writer.Append(Number(halfHeight * 2));
+            writer.Append(IsCardNode(node) ? "\" rx=\"10\"" : "\" rx=\"6\"");
             WriteNodeMarkStyle(writer, node);
             writer.Append("></rect>");
         } else if (node.Shape == GraphNodeShape.Square) {
@@ -400,7 +421,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (!string.IsNullOrWhiteSpace(node.IconText) && string.IsNullOrWhiteSpace(node.ImageUrl)) {
-            writer.Append("<text class=\"cfx-graph-node-icon\" y=\"4\">");
+            writer.Append("<text class=\"cfx-graph-node-icon");
+            if (IsCardNode(node)) writer.Append(" cfx-graph-node-card-icon");
+            writer.Append("\"");
+            if (IsCardNode(node)) Attribute(writer, "x", Number(-BoxHalfWidth(size) + 28));
+            Attribute(writer, "y", "4");
+            writer.Append('>');
             writer.Append(Text(node.IconText!));
             writer.Append("</text>");
         }
@@ -511,13 +537,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
-        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) return PolylineMidpoint(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
+        if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) {
+            var routedPoint = PolylineMidpoint(PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset), -7);
+            return AvoidEdgeLabelNodeCollisions(routedPoint, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset);
+        }
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
         var renderTarget = TargetBoundaryPoint(edge, source, target, control, targetNode, targetBoundaryInset);
-        return control.HasValue
+        var point = control.HasValue
             ? new Point((renderSource.X + 2 * control.Value.X + renderTarget.X) / 4, (renderSource.Y + 2 * control.Value.Y + renderTarget.Y) / 4 - 7)
             : new Point((renderSource.X + renderTarget.X) / 2, (renderSource.Y + renderTarget.Y) / 2 - 7);
+        return AvoidEdgeLabelNodeCollisions(point, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset);
     }
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {
@@ -577,7 +607,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (node?.Hidden == true) return 0;
         var size = Math.Max(4, node?.Size ?? 8);
         var shape = EffectiveNodeShape(node);
-        if (TryNodeBoundaryExtents(shape, size, out var halfWidth, out var halfHeight)) {
+        if (TryNodeBoundaryExtents(node, shape, size, out var halfWidth, out var halfHeight)) {
             if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
             var xInset = Math.Abs(unitX) < 0.001 ? double.PositiveInfinity : halfWidth / Math.Abs(unitX);
             var yInset = Math.Abs(unitY) < 0.001 ? double.PositiveInfinity : halfHeight / Math.Abs(unitY);

@@ -27,7 +27,8 @@
   const persistGraphInteractionState = (root, source) => {
     const state = captureGraphInteractionState(root, source || 'persistence');
     if (attr(root, 'data-cfx-graph-state-persist') === 'true') {
-      try { localStorage.setItem(graphStateStorage(root), JSON.stringify(state)); root.dataset.cfxGraphStatePersisted = 'true'; }
+      const persisted = { ...state, document: null };
+      try { localStorage.setItem(graphStateStorage(root), JSON.stringify(persisted)); root.dataset.cfxGraphStatePersisted = 'true'; }
       catch (error) { root.dataset.cfxGraphStatePersisted = 'false'; root.dataset.cfxGraphStateError = error?.name || 'storage-error'; }
     }
     emit(root, 'cfxgraphstate', { graphId: attr(root, 'data-cfx-graph-id'), source: source || 'persistence', state });
@@ -63,7 +64,7 @@
     if (!root || !snapshot || Number(snapshot.version) !== 1) return false;
     const history = graphHistory(root); history.applying = true;
     try {
-      if (snapshot.document && hasFeature(root, 'IncrementalUpdates')) applyGraphRuntimePatch(root, graphSnapshotPatch(root, snapshot), { reheat: false, reason: 'state-restore' });
+      if (snapshot.document && options?.source !== 'storage' && hasFeature(root, 'IncrementalUpdates')) applyGraphRuntimePatch(root, graphSnapshotPatch(root, snapshot), { reheat: false, reason: 'state-restore' });
       const byId = new Map((root.__cfxGraphState || graphState(root)).nodes.map(node => [node.id, node]));
       (snapshot.positions || []).forEach(position => {
         const node = byId.get(String(position.id));

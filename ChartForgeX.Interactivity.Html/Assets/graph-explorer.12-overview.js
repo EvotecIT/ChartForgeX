@@ -1,4 +1,5 @@
   const overviewCanvas = (root) => root.querySelector('[data-cfx-role="graph-overview"]');
+  const graphOverviewMinimumItems = 20;
   const overviewScale = (root, state) => {
     const bounds = contentBounds(root, state);
     if (!bounds) return null;
@@ -24,6 +25,15 @@
     const context = canvas.getContext('2d');
     if (!context) return;
     const currentState = state || graphState(root);
+    const visibleNodeCount = currentState.nodes.filter(node => visible(node.el)).length;
+    const visibleClusterCount = currentState.clusters.filter(cluster => visible(cluster.el) && !cluster.el.classList.contains('cfx-graph-cluster-expanded')).length;
+    const overviewUseful = visibleNodeCount + visibleClusterCount > graphOverviewMinimumItems;
+    root.classList.toggle('cfx-graph-overview-unneeded', !overviewUseful);
+    if (!overviewUseful) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      root.dataset.cfxGraphOverview = 'unneeded';
+      return;
+    }
     const metrics = overviewScale(root, currentState);
     const palette = graphThemePalette(root);
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -58,10 +68,11 @@
       if (!visible(cluster.el) || cluster.el.classList.contains('cfx-graph-cluster-expanded')) return;
       const clusterInfo = clusterMetrics(cluster, currentState.byId);
       if (!clusterInfo) return;
+      const clusterColors = graphClusterColors(root, cluster, palette);
       const point = overviewPoint(metrics, clusterInfo.x, clusterInfo.y);
       context.beginPath();
       context.arc(point.x, point.y, Math.max(2.4, Math.min(6.5, clusterInfo.radius * metrics.scale)), 0, Math.PI * 2);
-      context.fillStyle = cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : palette.clusterStroke;
+      context.fillStyle = cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : clusterColors.stroke;
       context.fill();
     });
     currentState.nodes.forEach(node => {

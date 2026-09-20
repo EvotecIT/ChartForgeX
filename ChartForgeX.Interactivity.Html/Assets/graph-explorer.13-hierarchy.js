@@ -109,14 +109,19 @@
   };
   const navigateHierarchyUp = (root) => {
     const currentId = root.dataset.cfxGraphHierarchyRoot || '';
-    if (!currentId) return applyHierarchyView(root, '', undefined);
+    if (!currentId) return false;
     const state = root.__cfxGraphState || graphState(root);
     return applyHierarchyView(root, state.byId.get(currentId)?.parentId || '', Number(root.dataset.cfxGraphHierarchyDepth || num(root, 'data-cfx-graph-hierarchy-depth', 2)));
   };
   const toggleGraphCluster = (root, clusterId) => {
     const cluster = items(root, '[data-cfx-role="graph-cluster"]').find(item => attr(item, 'data-cluster-id') === clusterId);
     if (!cluster) return false;
-    applyClusterState(root, attr(cluster, 'data-cluster-collapsed') !== 'true', clusterId);
+    applyClusterState(root, attr(cluster, 'data-cluster-collapsed') !== 'true', clusterId, { reheat: false });
+    if (hasFeature(root, 'Viewport')) {
+      root.__cfxGraphViewportTouched = false;
+      if (!graphPrefersReducedMotion(root) && reheatPhysics(root, 'cluster-drill', { rebuild: true, fit: true })) return true;
+      fitViewport(root);
+    }
     return true;
   };
   const applySemanticZoom = (root, scale) => {
@@ -160,7 +165,18 @@
     stage.addEventListener('keydown', event => {
       if (event.defaultPrevented || event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs')) return;
       const item = event.target.closest?.('[data-cfx-role="graph-node"],[data-cfx-role="graph-cluster"]');
-      if (event.key === 'ArrowRight' && item && attr(item, 'data-cfx-role') === 'graph-node' && drillHierarchyNode(root, attr(item, 'data-node-id'))) event.preventDefault();
-      if ((event.key === 'ArrowLeft' || event.key === 'Escape' || event.key === 'Backspace') && navigateHierarchyUp(root)) event.preventDefault();
-    });
+      const role = item ? attr(item, 'data-cfx-role') : '';
+      if (event.key === 'ArrowRight' && role === 'graph-node' && drillHierarchyNode(root, attr(item, 'data-node-id'))) event.preventDefault();
+      if (event.key === 'ArrowRight' && role === 'graph-cluster' && attr(item, 'data-cluster-collapsed') === 'true' && toggleGraphCluster(root, attr(item, 'data-cluster-id'))) event.preventDefault();
+      if (event.key === 'ArrowLeft' && role === 'graph-cluster' && attr(item, 'data-cluster-collapsed') !== 'true' && toggleGraphCluster(root, attr(item, 'data-cluster-id'))) event.preventDefault();
+      if (event.key === 'ArrowLeft' && role === 'graph-node') {
+        const clusterId = attr(item, 'data-node-cluster');
+        const cluster = items(root, '[data-cfx-role="graph-cluster"]').find(candidate => attr(candidate, 'data-cluster-id') === clusterId);
+        if (cluster && attr(cluster, 'data-cluster-collapsed') !== 'true' && toggleGraphCluster(root, clusterId)) {
+          event.preventDefault();
+          return;
+        }
+      }
+      if ((event.key === 'ArrowLeft' || event.key === 'Escape' || event.key === 'Backspace') && role !== 'graph-cluster' && navigateHierarchyUp(root)) event.preventDefault();
+    }, true);
   };

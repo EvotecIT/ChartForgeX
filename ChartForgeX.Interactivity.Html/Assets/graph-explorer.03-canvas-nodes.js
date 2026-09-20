@@ -9,7 +9,7 @@
     }
     if (node.shape === 'box') {
       const width = node.size * 2.9;
-      const height = node.size * 2.1;
+      const height = node.card ? Math.min(node.size * 2.1, 72) : node.size * 2.1;
       context.beginPath();
       if (context.roundRect) context.roundRect(node.x - width / 2, node.y - height / 2, width, height, Math.min(8, node.size * .45));
       else context.rect(node.x - width / 2, node.y - height / 2, width, height);
@@ -57,6 +57,6 @@
     if (node.icon && !moving) {
       context.font = 'bold 12px Segoe UI, Arial, sans-serif';
       context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = '#ffffff';
-      context.fillText(node.icon, node.x, node.y + 1);
+      context.fillText(node.icon, node.card ? node.x - node.size * 1.45 + 28 : node.x, node.y + 1);
     }
   };
