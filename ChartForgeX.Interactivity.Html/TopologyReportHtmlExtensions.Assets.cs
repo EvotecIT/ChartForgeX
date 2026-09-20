@@ -32,6 +32,7 @@ public static partial class TopologyReportHtmlExtensions {
         h2{font-size:17px}
         .links{display:flex;gap:8px;flex-wrap:wrap}
         .links button{text-align:left;font-size:13px}
+        .relationship-pages{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap;font-size:13px}
         @media(max-width:640px){main{padding:16px}
         h1{font-size:25px}
         .fit{margin-left:0}
@@ -56,8 +57,22 @@ public static partial class TopologyReportHtmlExtensions {
             const search = document.getElementById('search');
             const results = document.getElementById('results');
             const status = document.getElementById('search-status');
-            const entries = Array.from(document.getElementById('objects').content.querySelectorAll('button'));
+            const entries = JSON.parse(document.getElementById('objects').textContent);
             let current = 0;
+            function makeButton(record) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.dataset.page = record[0];
+                button.lang = record[3];
+                button.textContent = record[1];
+                if (record[2]) {
+                    const suffix = document.createElement('span');
+                    suffix.lang = 'en';
+                    suffix.textContent = record[2];
+                    button.append(suffix);
+                }
+                return button;
+            }
             function show(value) {
                 const page = Number(value);
                 const template = document.getElementById('page-' + page);
@@ -66,21 +81,26 @@ public static partial class TopologyReportHtmlExtensions {
                 picker.value = String(page);
                 content.replaceChildren(template.content.cloneNode(true));
                 const links = content.querySelector('.links');
-                const linkItems = Array.from(links.children);
-                if (linkItems.length > 20) {
-                    links.replaceChildren();
-                    let shown = 0;
-                    const more = document.createElement('button');
-                    more.type = 'button';
-                    const reveal = () => {
-                        for (const item of linkItems.slice(shown, shown + 20)) links.append(item);
-                        shown = Math.min(linkItems.length, shown + 20);
-                        more.textContent = 'Show more (' + (linkItems.length - shown) + ' remaining)';
-                        if (shown < linkItems.length) links.append(more); else more.remove();
-                    };
-                    more.addEventListener('click', reveal);
-                    reveal();
+                const linkItems = JSON.parse(document.getElementById('links-' + page).textContent);
+                const controls = content.querySelector('.relationship-pages');
+                let offset = 0;
+                const previous = document.createElement('button');
+                const next = document.createElement('button');
+                const count = document.createElement('span');
+                previous.type = next.type = 'button';
+                previous.textContent = 'Previous relationships';
+                next.textContent = 'Next relationships';
+                count.setAttribute('role', 'status');
+                function renderLinks() {
+                    links.replaceChildren(...linkItems.slice(offset, offset + 20).map(makeButton));
+                    previous.disabled = offset === 0;
+                    next.disabled = offset + 20 >= linkItems.length;
+                    count.textContent = (offset + 1) + '–' + Math.min(offset + 20, linkItems.length) + ' of ' + linkItems.length;
                 }
+                if (linkItems.length > 20) controls.append(previous, count, next);
+                previous.addEventListener('click', () => { offset = Math.max(0, offset - 20); renderLinks(); });
+                next.addEventListener('click', () => { offset = Math.min(Math.floor((linkItems.length - 1) / 20) * 20, offset + 20); renderLinks(); });
+                renderLinks();
                 content.querySelector('.diagram').classList.toggle('fitted', fit.checked);
                 document.getElementById('previous').disabled = page === 0;
                 document.getElementById('next').disabled = page === picker.options.length - 1;
@@ -104,8 +124,8 @@ public static partial class TopologyReportHtmlExtensions {
                 const query = search.value.trim().toLocaleLowerCase();
                 results.replaceChildren();
                 if (!query) { status.textContent = ''; return; }
-                const matches = entries.filter(entry => entry.textContent.toLocaleLowerCase().includes(query));
-                for (const entry of matches.slice(0, 20)) results.append(entry.cloneNode(true));
+                const matches = entries.filter(entry => entry[1].toLocaleLowerCase().includes(query));
+                for (const entry of matches.slice(0, 20)) results.append(makeButton(entry));
                 status.textContent = matches.length + (matches.length === 1 ? ' match' : ' matches')
                     + (matches.length > 20 ? ' · showing first 20; refine your search' : '');
             });

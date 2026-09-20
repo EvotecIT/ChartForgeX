@@ -6,6 +6,46 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedTopologyTests {
+    private static string[][] ReportRecords(string html, string id) {
+        string marker = "<script type=\"application/json\" id=\"" + id + "\">";
+        int start = html.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
+        int end = html.IndexOf("</script>", start, StringComparison.Ordinal);
+        return System.Text.Json.JsonSerializer.Deserialize<string[][]>(html.Substring(start, end - start))!;
+    }
+
+    [Fact]
+    public void ReportNavigationDataRoundTripsHtmlSensitiveLabels() {
+        const string label = "</script><script>alert(1)</script>\n\"&";
+        string html = TopologyChart.Create().AddAutoNode("node", label).PrepareReport().ToInteractiveHtmlPage();
+        Assert.Equal(label + " — node", Assert.Single(ReportRecords(html, "objects"))[1]);
+        Assert.DoesNotContain(label, html);
+    }
+
+    [Fact]
+    public void OverviewCardsFollowNumericPageOrder() {
+        var chart = TopologyChart.Create();
+        for (int i = 0; i < 12; i++) chart.AddAutoNode("n" + i, "Node " + i);
+        var overview = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 }).Overview.ToInterchangeEnvelope();
+        var labels = overview.Nodes.OrderBy(node => node.Y).ThenBy(node => node.X).Select(node => node.Label);
+        Assert.Equal(Enumerable.Range(1, 12).Select(number => "Page " + number), labels);
+    }
+
+    [Fact]
+    public void ReportPreservesAndSnapshotsCustomIconCatalog() {
+        var icon = new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service)
+            .WithArtwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/>", "0 0 24 24"));
+        var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor").AddIcon(icon));
+        var chart = TopologyChart.Create().AddIconNode("a", "Service", "vendor:service", 100, 100, catalog: catalog);
+        var report = chart.PrepareReport(new TopologyReportOptions { IconCatalog = catalog, RequireResolvedIcons = true });
+        string svg = report.Pages[0].ToSvg();
+        icon.Artwork!.SvgBody = "<circle cx='12' cy='12' r='4'/>";
+        catalog.RemovePack("vendor");
+        Assert.Contains("M0 0h24v24H0z", svg);
+        Assert.Equal(svg, report.Pages[0].ToSvg());
+        Assert.NotEmpty(report.Pages[0].ToPng());
+        Assert.Throws<TopologyValidationException>(() => chart.PrepareReport(new TopologyReportOptions { RequireResolvedIcons = true }));
+    }
+
     [Fact]
     public void ReportSmallRequestedGapStillRespectsPageWidth() {
         var chart = TopologyChart.Create();
@@ -105,8 +145,11 @@ public sealed class PreparedTopologyTests {
         Assert.Contains("<html lang=\"pl\">", html);
         Assert.Contains("<main lang=\"en\">", html);
         Assert.Contains("<h1 lang=\"pl\">", html);
-        Assert.Contains("<button type=\"button\" lang=\"pl\" data-page=\"1\">", html);
-        Assert.Contains("<span lang=\"en\"> · page 2</span>", html);
+        var objects = ReportRecords(html, "objects");
+        Assert.All(objects, record => Assert.Equal("pl", record[3]));
+        var link = Assert.Single(ReportRecords(html, "links-1"));
+        Assert.Equal("pl", link[3]);
+        Assert.Equal(" · page 2", link[2]);
     }
 
     [Fact]

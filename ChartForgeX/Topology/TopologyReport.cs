@@ -24,6 +24,11 @@ public sealed class TopologyReportOptions {
     /// <summary>Gets or sets the minimum card height; larger source dimensions are retained.</summary>
     public double MinimumNodeHeight { get; set; } = 72;
 
+    /// <summary>Gets or sets the custom icon catalog to snapshot for every report export.</summary>
+    public TopologyIconCatalog? IconCatalog { get; set; }
+    /// <summary>Gets or sets whether unresolved icon identifiers must fail report preparation.</summary>
+    public bool RequireResolvedIcons { get; set; }
+
     internal void Validate() {
         foreach (var item in new[] { PageWidth, PageHeight, Gap, MinimumNodeWidth, MinimumNodeHeight }) {
             if (double.IsNaN(item) || double.IsInfinity(item) || item <= 0) throw new ArgumentOutOfRangeException(nameof(TopologyReportOptions), "Page dimensions, spacing, and node dimensions must be positive and finite.");
@@ -84,8 +89,10 @@ public static partial class TopologyChartExtensions {
         options ??= new TopologyReportOptions();
         options.Validate();
         var gap = Math.Max(options.Gap, TopologyLayoutNormalizer.NodeGap);
-        var preparedSource = chart.Prepare();
-        var pageOptions = new TopologyRenderOptions { IncludeLegend = false };
+        var renderOptions = new TopologyRenderOptions { IconCatalog = options.IconCatalog?.Clone(), RequireResolvedIcons = options.RequireResolvedIcons };
+        var preparedSource = chart.Prepare(renderOptions);
+        var pageOptions = renderOptions.Clone();
+        pageOptions.IncludeLegend = false;
         var source = TopologyLayoutEngine.Clone(chart);
         source.Title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
         var pages = new List<TopologyChart>();
@@ -150,7 +157,7 @@ public static partial class TopologyChartExtensions {
             pages[from - 1].Edges.Add(edge);
         }
         var preparedPages = pages.Select(item => item.Prepare(pageOptions)).ToList();
-        var overview = BuildReportOverview(source, pages, links, options).Prepare();
+        var overview = BuildReportOverview(source, pages, links, options).Prepare(renderOptions);
         return new TopologyReport(preparedSource, overview, preparedPages, nodePages, source.Nodes.ToDictionary(node => node.Id, node => node.Label, StringComparer.Ordinal), links);
     }
 
@@ -167,15 +174,17 @@ public static partial class TopologyChartExtensions {
         overview.Accessibility.Language = source.Accessibility.Language;
         overview.Accessibility.IsDecorative = source.Accessibility.IsDecorative;
         for (int i = 0; i < pages.Count; i++) {
-            overview.AddAutoNode("page-" + (i + 1).ToString(CultureInfo.InvariantCulture), "Page " + (i + 1).ToString(CultureInfo.InvariantCulture),
+            overview.AddAutoNode(ReportPageNodeId(i + 1, pages.Count), "Page " + (i + 1).ToString(CultureInfo.InvariantCulture),
                 subtitle: pages[i].Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects", width: 160, height: 72);
         }
         foreach (var group in links.GroupBy(link => (SourcePage: Math.Min(link.SourcePage, link.TargetPage), TargetPage: Math.Max(link.SourcePage, link.TargetPage)))) {
-            string from = "page-" + group.Key.SourcePage.ToString(CultureInfo.InvariantCulture);
-            string to = "page-" + group.Key.TargetPage.ToString(CultureInfo.InvariantCulture);
+            string from = ReportPageNodeId(group.Key.SourcePage, pages.Count);
+            string to = ReportPageNodeId(group.Key.TargetPage, pages.Count);
             overview.AddEdge(from + "-" + to, from, to, group.Count().ToString(CultureInfo.InvariantCulture) + " relationships");
         }
         return overview;
     }
+
+    private static string ReportPageNodeId(int number, int count) => "page-" + number.ToString("D" + count.ToString(CultureInfo.InvariantCulture).Length, CultureInfo.InvariantCulture);
 
 }
