@@ -21,6 +21,20 @@ public sealed class GraphNeighborhoodTests {
         Assert.Throws<ArgumentException>(() => scene.CreateNeighborhood("root"));
     }
 
+    [Fact]
+    public void DiscoveryCanTraverseHiddenIntermediateObjects() {
+        var scene = GraphScene.Create("hidden-bridge", "Hidden bridge traversal").AddNode("root", "Root")
+            .AddNode("bridge", "Hidden bridge", node => node.Hidden = true).AddNode("leaf", "Visible leaf")
+            .AddEdge("first", "root", "bridge", configure: edge => edge.Style.Hidden = true)
+            .AddEdge("second", "bridge", "leaf");
+        var stage = scene.CreateNeighborhood("root", options => { options.Hops = 2; options.MaximumNodes = 2; });
+        Assert.Equal(new[] { "leaf", "root" }, stage.VisibleNodeIds);
+        Assert.Empty(stage.VisibleEdgeIds);
+        Assert.Equal(2, stage.ScopeNodeCount);
+        Assert.Equal(1, stage.HiddenNodeCount);
+        Assert.Equal(2, stage.HiddenEdgeCount);
+    }
+
     [Theory]
     [InlineData(300)]
     [InlineData(1000)]
