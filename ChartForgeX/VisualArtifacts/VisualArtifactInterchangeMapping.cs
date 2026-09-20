@@ -425,6 +425,9 @@ public static partial class VisualArtifactInterchangeMapping {
             Topology = MapNodePresentation(node, displayMode, showStatusBadge)
         };
         Copy(node.Metadata, mapped.Extensions);
+        if (!string.Equals(node.Id, id, StringComparison.Ordinal)) {
+            mapped.Extensions["chartforgex.sourceId"] = node.Id;
+        }
         CopyMetrics(node.Metrics, mapped.Metrics);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side, Offset = port.Offset, Label = port.Label };

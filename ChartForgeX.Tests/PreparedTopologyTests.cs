@@ -106,6 +106,19 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void ReportInterchangeRetainsSourceIdWhenProjectionBoundsTheNodeId() {
+        string sourceId = new string('n', 720);
+        var chart = TopologyChart.Create().AddAutoNode(sourceId, "Bounded identifier");
+        var report = chart.PrepareReport();
+
+        var node = Assert.Single(report.Pages).ToInterchangeEnvelope().Nodes.Single();
+
+        Assert.NotEqual(sourceId, node.Id);
+        Assert.Equal(sourceId, node.Extensions["chartforgex.sourceId"]);
+        Assert.Equal(1, report.NodePages[sourceId]);
+    }
+
+    [Fact]
     public void ReportHtmlDoesNotApplyInterchangeMetricBudgets() {
         var chart = TopologyChart.Create().AddAutoNode("a", "Source");
         for (int i = 0; i < 1025; i++) chart.Nodes[0].Metrics.Add("metric" + i, "1");
