@@ -165,6 +165,11 @@
     performance: {
       state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
       samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
+      nodeHitCandidates: Number(root.dataset.cfxGraphNodeHitCandidates || 0),
+      edgeHitCandidates: Number(root.dataset.cfxGraphEdgeHitCandidates || 0),
+      edgeHitIndexBuilds: Number(root.dataset.cfxGraphEdgeHitBuilds || 0),
+      edgeHitIndexRefits: Number(root.dataset.cfxGraphEdgeHitRefits || 0),
+      edgeHitIndexLastMs: Number(root.dataset.cfxGraphEdgeHitIndexMs || 0),
       workerTransferBytes: Number(root.dataset.cfxGraphPerformanceWorkerTransferBytes || 0),
       staleWorkerUpdates: Number(root.dataset.cfxGraphPerformanceStaleWorkerUpdates || 0),
       frameSamples: Number(root.dataset.cfxGraphPerformanceFrameSamples || 0), maxFrameMs: Number(root.dataset.cfxGraphPerformanceMaxFrameMs || 0), maxRenderMs: Number(root.dataset.cfxGraphPerformanceMaxRenderMs || 0),

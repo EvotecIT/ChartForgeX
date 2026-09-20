@@ -341,11 +341,17 @@ test('accelerated SVG materialization preserves selected and focused route label
   assert.match(group.label.class, /cfx-graph-neighborhood-related/);
 });
 
-test('host export includes numeric worker transport counters', () => {
+test('host export includes numeric worker and picking counters', () => {
   const { root } = scene(2, [[0, 1, 'Link', 'healthy']]);
   root.dataset.cfxGraphPerformanceWorkerTransferBytes = '14400';
   root.dataset.cfxGraphPerformanceStaleWorkerUpdates = '3';
+  Object.assign(root.dataset, { cfxGraphNodeHitCandidates: '9', cfxGraphEdgeHitCandidates: '2', cfxGraphEdgeHitBuilds: '1', cfxGraphEdgeHitRefits: '4', cfxGraphEdgeHitIndexMs: '0.75' });
   const performance = runtime.exportGraphJson(root).performance;
   assert.equal(performance.workerTransferBytes, 14400);
   assert.equal(performance.staleWorkerUpdates, 3);
+  assert.equal(performance.nodeHitCandidates, 9);
+  assert.equal(performance.edgeHitCandidates, 2);
+  assert.equal(performance.edgeHitIndexBuilds, 1);
+  assert.equal(performance.edgeHitIndexRefits, 4);
+  assert.equal(performance.edgeHitIndexLastMs, .75);
 });

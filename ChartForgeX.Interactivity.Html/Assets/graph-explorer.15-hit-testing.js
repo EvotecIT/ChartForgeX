@@ -1,6 +1,7 @@
   const indexHitTesting = (root, state) => {
     const cellSize = 48;
     const grid = new Map();
+    state = state.fullState || state;
     state.nodes.forEach(node => {
       const slack = 10;
       const minX = Math.floor((node.x - nodeHalfWidth(node) - slack) / cellSize);
@@ -15,13 +16,14 @@
       }
     });
     root.__cfxGraphState = state.fullState || state;
-    root.__cfxGraphHitGrid = { cellSize, grid };
+    root.__cfxGraphHitGrid = { cellSize, grid, state };
+    root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
     root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
   };
   const hitTestNodes = (root, point) => {
     const state = root.__cfxGraphState || graphState(root);
-    if (state.nodes.length < 160) return state.nodes;
-    const index = root.__cfxGraphHitGrid || (indexHitTesting(root, state), root.__cfxGraphHitGrid);
+    if (state.nodes.length < 160) { root.dataset.cfxGraphNodeHitCandidates = String(state.nodes.length); return state.nodes; }
+    const index = root.__cfxGraphHitGrid?.state === state ? root.__cfxGraphHitGrid : (indexHitTesting(root, state), root.__cfxGraphHitGrid);
     const cx = Math.floor(point.x / index.cellSize);
     const cy = Math.floor(point.y / index.cellSize);
     const candidates = [];
@@ -33,25 +35,8 @@
         candidates.push(node);
       });
     }
-    return candidates.length ? candidates : state.nodes;
-  };
-  const domHitNodeAt = (root, point) => {
-    let best = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    items(root, '[data-cfx-role="graph-node"]').forEach(el => {
-      if (!visible(el)) return;
-      const size = Math.max(4, num(el, 'data-node-size', 8));
-      const x = num(el, 'data-node-x', 0);
-      const y = num(el, 'data-node-y', 0);
-      const candidate = { el, id: attr(el, 'data-node-id'), x, y, size, shape: attr(el, 'data-node-shape') || 'circle' };
-      const distance = nodeHitDistance(candidate, point, 10);
-      if (distance < bestDistance) {
-        best = candidate;
-        bestDistance = distance;
-      }
-    });
-    if (!best) return null;
-    return root.__cfxGraphState?.byId?.get(best.id) || best;
+    root.dataset.cfxGraphNodeHitCandidates = String(candidates.length);
+    return candidates;
   };
   const hitNodeAt = (root, point) => {
     let best = null;
@@ -64,7 +49,7 @@
         bestDistance = distance;
       }
     });
-    return best || domHitNodeAt(root, point);
+    return best;
   };
   const distanceToSegment = (point, a, b) => {
     const dx = b.x - a.x;
@@ -120,23 +105,24 @@
     let best = null;
     let bestDistance = Number.POSITIVE_INFINITY;
     const state = root.__cfxGraphState || graphState(root);
-    state.edges.forEach(edge => {
-      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)) return;
-      const rendered = visualEdge(edge, state.byId);
-      const control = edgeControl(rendered), endpoints = edgeRenderEndpoints(rendered, control);
-      const distance = rendered.source === rendered.target
+    const candidates = edgeHitCandidates(root, state, point);
+    root.dataset.cfxGraphEdgeHitCandidates = String(candidates.length);
+    candidates.forEach(entry => {
+      const { edge, rendered, control, endpoints, route, loop } = entry;
+      if (!visible(edge.el) || !endpointVisible(rendered.source) || !endpointVisible(rendered.target)) return;
+      const distance = loop
         ? distanceToSelfLoop(point, rendered.source)
-        : edgeHasRoute(rendered)
-        ? distanceToRoute(point, routeRenderPoints(rendered))
+        : route
+        ? distanceToRoute(point, route)
         : control
         ? distanceToQuadratic(point, endpoints.source, control, endpoints.target)
         : distanceToSegment(point, endpoints.source, endpoints.target);
-      if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
-        best = edge;
+      if (distance <= entry.tolerance && (distance < bestDistance || distance === bestDistance && entry.order < best.order)) {
+        best = entry;
         bestDistance = distance;
       }
     });
-    return best;
+    return best?.edge || null;
   };
   const hitClusterAt = (root, point) => {
     let best = null;

@@ -260,6 +260,7 @@
     applyNeighborhoodFocus(root, nodeId);
   };
   const applyFilters = (root) => {
+    root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
     applyCollapsedEdgeBundles(root);
     syncBundledEdgePresentation(root, root.__cfxGraphState);
     const query = (root.querySelector('[data-cfx-graph-search]')?.value || '').trim().toLowerCase();

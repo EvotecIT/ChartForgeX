@@ -314,6 +314,8 @@ Performance telemetry deliberately separates renderer work from browser cadence.
 
 The same values are available through `ChartForgeXGraph.get(id).performance` and root attributes such as `data-cfx-graph-performance-budget-misses` and `data-cfx-graph-performance-cadence-budget-misses`.
 
+Pointer picking uses the node grid without full-scene or DOM fallbacks on empty cells. Edge picking caches rendered route bounds in a spatial tree, refits it after layout changes, and rebuilds its membership after filtering or graph updates. Exact checks still use the route geometry and picking tolerance. The first edge query after a change pays the index update cost; dense crossings can still produce many candidates. `performance.nodeHitCandidates`, `edgeHitCandidates`, `edgeHitIndexBuilds`, `edgeHitIndexRefits`, and `edgeHitIndexLastMs` expose that work for host diagnostics.
+
 Exactly one rendering surface is exposed to assistive technology. SVG uses a single roving graph-item tab stop; the labeled Canvas or WebGL surface becomes the keyboard target in accelerated modes.
 
 ## Scale review fixtures

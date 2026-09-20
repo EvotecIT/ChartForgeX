@@ -3975,6 +3975,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     applyNeighborhoodFocus(root, nodeId);
   };
   const applyFilters = (root) => {
+    root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
     applyCollapsedEdgeBundles(root);
     syncBundledEdgePresentation(root, root.__cfxGraphState);
     const query = (root.querySelector('[data-cfx-graph-search]')?.value || '').trim().toLowerCase();
@@ -4602,9 +4603,93 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     };
     ['cfxgraphselection', 'cfxgraphviewport', 'cfxgraphcluster', 'cfxgraphfocus', 'cfxgraphhierarchy'].forEach(name => root.addEventListener(name, schedule));
   };
+  // Bounds use the control hull, so curved routes and self loops cannot escape
+  // the broad phase. Exact distance checks retain the existing picking tolerance.
+  const updateEdgeHitEntry = (entry, byId) => {
+    const rendered = visualEdge(entry.edge, byId);
+    const control = edgeControl(rendered);
+    const endpoints = edgeRenderEndpoints(rendered, control);
+    const loop = rendered.source === rendered.target ? selfLoopGeometry(rendered.source) : null;
+    const route = !loop && edgeHasRoute(rendered) ? routeRenderPoints(rendered) : null;
+    const points = loop ? [loop.start, loop.c1, loop.c2, loop.end]
+      : route || (control ? [endpoints.source, control, endpoints.target] : [endpoints.source, endpoints.target]);
+    const tolerance = Math.max(8, entry.edge.weight + 6);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    points.forEach(point => {
+      minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
+    });
+    Object.assign(entry, { rendered, control, endpoints, loop, route, tolerance,
+      minX: minX - tolerance, minY: minY - tolerance, maxX: maxX + tolerance, maxY: maxY + tolerance });
+  };
+  const refitEdgeHitTree = (tree) => {
+    if (!tree) return;
+    const children = tree.entries || tree.children;
+    if (!tree.entries) tree.children.forEach(refitEdgeHitTree);
+    tree.minX = Infinity; tree.minY = Infinity; tree.maxX = -Infinity; tree.maxY = -Infinity;
+    children.forEach(child => {
+      tree.minX = Math.min(tree.minX, child.minX); tree.minY = Math.min(tree.minY, child.minY);
+      tree.maxX = Math.max(tree.maxX, child.maxX); tree.maxY = Math.max(tree.maxY, child.maxY);
+    });
+  };
+  // Bulk-pack an eight-way tree with spatial tiles. Sorting each level once
+  // avoids recursively sorting the same geometry at every binary split.
+  const buildEdgeHitTree = (entries) => {
+    if (!entries.length) return null;
+    let level = entries, leaves = true;
+    do {
+      const sliceSize = Math.ceil(Math.sqrt(Math.ceil(level.length / 8))) * 8;
+      level.sort((a, b) => a.minX + a.maxX - b.minX - b.maxX);
+      const parents = [];
+      for (let start = 0; start < level.length; start += sliceSize) {
+        const slice = level.slice(start, start + sliceSize).sort((a, b) => a.minY + a.maxY - b.minY - b.maxY);
+        for (let offset = 0; offset < slice.length; offset += 8) {
+          const children = slice.slice(offset, offset + 8);
+          const parent = leaves ? { entries: children } : { children };
+          parent.minX = Infinity; parent.minY = Infinity; parent.maxX = -Infinity; parent.maxY = -Infinity;
+          children.forEach(child => {
+            parent.minX = Math.min(parent.minX, child.minX); parent.minY = Math.min(parent.minY, child.minY);
+            parent.maxX = Math.max(parent.maxX, child.maxX); parent.maxY = Math.max(parent.maxY, child.maxY);
+          });
+          parents.push(parent);
+        }
+      }
+      level = parents; leaves = false;
+    } while (level.length > 1);
+    return level[0];
+  };
+  const edgeHitCandidates = (root, state, point) => {
+    const version = root.__cfxGraphHitVersion || 0;
+    let cache = root.__cfxGraphEdgeHitIndex;
+    if (!cache || cache.state !== state || cache.version !== version) {
+      const started = performance.now();
+      const edges = state.edges.filter(edge => visible(edge.el) && edgeHasVisibleEndpoints(edge, state.byId));
+      const reuse = cache?.state === state && cache.entries.length === edges.length && cache.entries.every((entry, index) => entry.edge === edges[index]);
+      const entries = reuse ? cache.entries : edges.map((edge, order) => ({ edge, order }));
+      entries.forEach(entry => updateEdgeHitEntry(entry, state.byId));
+      const tree = reuse ? cache.tree : buildEdgeHitTree(entries.slice());
+      if (reuse) refitEdgeHitTree(tree);
+      cache = { state, version, entries, tree };
+      root.__cfxGraphEdgeHitIndex = cache;
+      root.dataset.cfxGraphEdgeHitIndex = reuse ? 'refit' : 'built';
+      const counter = reuse ? 'cfxGraphEdgeHitRefits' : 'cfxGraphEdgeHitBuilds';
+      root.dataset[counter] = String(Number(root.dataset[counter] || 0) + 1);
+      root.dataset.cfxGraphEdgeHitIndexMs = String(performance.now() - started);
+    }
+    const candidates = [], pending = cache.tree ? [cache.tree] : [];
+    const contains = item => point.x >= item.minX && point.x <= item.maxX && point.y >= item.minY && point.y <= item.maxY;
+    while (pending.length) {
+      const tree = pending.pop();
+      if (!contains(tree)) continue;
+      if (tree.entries) tree.entries.forEach(entry => { if (contains(entry)) candidates.push(entry); });
+      else pending.push(...tree.children);
+    }
+    return candidates;
+  };
   const indexHitTesting = (root, state) => {
     const cellSize = 48;
     const grid = new Map();
+    state = state.fullState || state;
     state.nodes.forEach(node => {
       const slack = 10;
       const minX = Math.floor((node.x - nodeHalfWidth(node) - slack) / cellSize);
@@ -4619,13 +4704,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       }
     });
     root.__cfxGraphState = state.fullState || state;
-    root.__cfxGraphHitGrid = { cellSize, grid };
+    root.__cfxGraphHitGrid = { cellSize, grid, state };
+    root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
     root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
   };
   const hitTestNodes = (root, point) => {
     const state = root.__cfxGraphState || graphState(root);
-    if (state.nodes.length < 160) return state.nodes;
-    const index = root.__cfxGraphHitGrid || (indexHitTesting(root, state), root.__cfxGraphHitGrid);
+    if (state.nodes.length < 160) { root.dataset.cfxGraphNodeHitCandidates = String(state.nodes.length); return state.nodes; }
+    const index = root.__cfxGraphHitGrid?.state === state ? root.__cfxGraphHitGrid : (indexHitTesting(root, state), root.__cfxGraphHitGrid);
     const cx = Math.floor(point.x / index.cellSize);
     const cy = Math.floor(point.y / index.cellSize);
     const candidates = [];
@@ -4637,25 +4723,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
         candidates.push(node);
       });
     }
-    return candidates.length ? candidates : state.nodes;
-  };
-  const domHitNodeAt = (root, point) => {
-    let best = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    items(root, '[data-cfx-role="graph-node"]').forEach(el => {
-      if (!visible(el)) return;
-      const size = Math.max(4, num(el, 'data-node-size', 8));
-      const x = num(el, 'data-node-x', 0);
-      const y = num(el, 'data-node-y', 0);
-      const candidate = { el, id: attr(el, 'data-node-id'), x, y, size, shape: attr(el, 'data-node-shape') || 'circle' };
-      const distance = nodeHitDistance(candidate, point, 10);
-      if (distance < bestDistance) {
-        best = candidate;
-        bestDistance = distance;
-      }
-    });
-    if (!best) return null;
-    return root.__cfxGraphState?.byId?.get(best.id) || best;
+    root.dataset.cfxGraphNodeHitCandidates = String(candidates.length);
+    return candidates;
   };
   const hitNodeAt = (root, point) => {
     let best = null;
@@ -4668,7 +4737,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
         bestDistance = distance;
       }
     });
-    return best || domHitNodeAt(root, point);
+    return best;
   };
   const distanceToSegment = (point, a, b) => {
     const dx = b.x - a.x;
@@ -4724,23 +4793,24 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     let best = null;
     let bestDistance = Number.POSITIVE_INFINITY;
     const state = root.__cfxGraphState || graphState(root);
-    state.edges.forEach(edge => {
-      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)) return;
-      const rendered = visualEdge(edge, state.byId);
-      const control = edgeControl(rendered), endpoints = edgeRenderEndpoints(rendered, control);
-      const distance = rendered.source === rendered.target
+    const candidates = edgeHitCandidates(root, state, point);
+    root.dataset.cfxGraphEdgeHitCandidates = String(candidates.length);
+    candidates.forEach(entry => {
+      const { edge, rendered, control, endpoints, route, loop } = entry;
+      if (!visible(edge.el) || !endpointVisible(rendered.source) || !endpointVisible(rendered.target)) return;
+      const distance = loop
         ? distanceToSelfLoop(point, rendered.source)
-        : edgeHasRoute(rendered)
-        ? distanceToRoute(point, routeRenderPoints(rendered))
+        : route
+        ? distanceToRoute(point, route)
         : control
         ? distanceToQuadratic(point, endpoints.source, control, endpoints.target)
         : distanceToSegment(point, endpoints.source, endpoints.target);
-      if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
-        best = edge;
+      if (distance <= entry.tolerance && (distance < bestDistance || distance === bestDistance && entry.order < best.order)) {
+        best = entry;
         bestDistance = distance;
       }
     });
-    return best;
+    return best?.edge || null;
   };
   const hitClusterAt = (root, point) => {
     let best = null;
@@ -6935,6 +7005,11 @@ self.onmessage = event => {
     performance: {
       state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
       samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
+      nodeHitCandidates: Number(root.dataset.cfxGraphNodeHitCandidates || 0),
+      edgeHitCandidates: Number(root.dataset.cfxGraphEdgeHitCandidates || 0),
+      edgeHitIndexBuilds: Number(root.dataset.cfxGraphEdgeHitBuilds || 0),
+      edgeHitIndexRefits: Number(root.dataset.cfxGraphEdgeHitRefits || 0),
+      edgeHitIndexLastMs: Number(root.dataset.cfxGraphEdgeHitIndexMs || 0),
       workerTransferBytes: Number(root.dataset.cfxGraphPerformanceWorkerTransferBytes || 0),
       staleWorkerUpdates: Number(root.dataset.cfxGraphPerformanceStaleWorkerUpdates || 0),
       frameSamples: Number(root.dataset.cfxGraphPerformanceFrameSamples || 0), maxFrameMs: Number(root.dataset.cfxGraphPerformanceMaxFrameMs || 0), maxRenderMs: Number(root.dataset.cfxGraphPerformanceMaxRenderMs || 0),
