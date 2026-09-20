@@ -124,3 +124,26 @@
     if (gated) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'gated', renderer: root.dataset.cfxGraphRendererActive, nodeCount, edgeCount, totalNodeCount, totalEdgeCount, nodeLimit, edgeLimit });
     return gated;
   };
+
+  const exportGraphPerformance = (root) => ({
+      state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
+      samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
+      nodeHitCandidates: Number(root.dataset.cfxGraphNodeHitCandidates || 0),
+      edgeHitCandidates: Number(root.dataset.cfxGraphEdgeHitCandidates || 0),
+      edgeHitIndexBuilds: Number(root.dataset.cfxGraphEdgeHitBuilds || 0),
+      edgeHitIndexRefits: Number(root.dataset.cfxGraphEdgeHitRefits || 0),
+      edgeHitIndexLastMs: Number(root.dataset.cfxGraphEdgeHitIndexMs || 0),
+      workerTransferBytes: Number(root.dataset.cfxGraphPerformanceWorkerTransferBytes || 0),
+      staleWorkerUpdates: Number(root.dataset.cfxGraphPerformanceStaleWorkerUpdates || 0),
+      frameSamples: Number(root.dataset.cfxGraphPerformanceFrameSamples || 0), maxFrameMs: Number(root.dataset.cfxGraphPerformanceMaxFrameMs || 0), maxRenderMs: Number(root.dataset.cfxGraphPerformanceMaxRenderMs || 0),
+      warmupFrameSamples: Number(root.dataset.cfxGraphPerformanceWarmupFrameSamples || 0), maxWarmupFrameMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupFrameMs || 0), maxWarmupRenderMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupRenderMs || 0),
+      physicsSamples: Number(root.dataset.cfxGraphPerformancePhysicsSamples || 0), physicsBudgetMisses: Number(root.dataset.cfxGraphPerformancePhysicsBudgetMisses || 0),
+      budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0), budgetMissRate: Number(root.dataset.cfxGraphPerformanceBudgetMissRate || 0),
+      cadenceBudgetMisses: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMisses || 0), cadenceBudgetMissRate: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMissRate || 0),
+      maxSampleMs: Number(root.dataset.cfxGraphPerformanceMaxSampleMs || 0),
+      lastSampleMs: Number(root.dataset.cfxGraphPerformanceLastSampleMs || 0),
+      overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0), communityPackingEvents: Number(root.dataset.cfxGraphPerformanceCommunityPackingEvents || 0),
+      sampleTicks: Number(root.dataset.cfxGraphPerformanceSampleTicks || 0),
+      sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
+      thread: root.dataset.cfxGraphPerformanceThread || '', acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
+    });

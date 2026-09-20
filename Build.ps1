@@ -635,6 +635,13 @@ try {
         throw 'Visual baseline updates require examples to run. Remove -SkipExamples.'
     }
 
+    # Source structure is a repository quality gate, not a product unit-test contract.
+    foreach ($fragment in Get-ChildItem -LiteralPath (Join-Path $root 'ChartForgeX.Interactivity.Html/Assets') -Filter 'graph-explorer*.js' -File) {
+        if ([System.IO.File]::ReadAllLines($fragment.FullName).Length -gt 350) {
+            throw "Graph runtime source exceeds the 350-line budget: $($fragment.Name)"
+        }
+    }
+
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore') -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds

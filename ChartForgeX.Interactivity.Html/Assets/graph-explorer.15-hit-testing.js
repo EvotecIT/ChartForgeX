@@ -1,8 +1,8 @@
   const indexHitTesting = (root, state) => {
     const cellSize = 48;
     const grid = new Map();
-    state = state.fullState || state;
     state.nodes.forEach(node => {
+      if (!visible(node.el)) return;
       const slack = 10;
       const minX = Math.floor((node.x - nodeHalfWidth(node) - slack) / cellSize);
       const maxX = Math.floor((node.x + nodeHalfWidth(node) + slack) / cellSize);
@@ -16,7 +16,7 @@
       }
     });
     root.__cfxGraphState = state.fullState || state;
-    root.__cfxGraphHitGrid = { cellSize, grid, state };
+    root.__cfxGraphHitGrid = { cellSize, grid, state: state.fullState || state };
     root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
     root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
   };

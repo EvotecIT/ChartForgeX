@@ -73,7 +73,7 @@ test('drag updates received while a batch is outstanding survive acknowledgement
 
 test('stale completion cannot overwrite a dragged node or stop the active simulation', () => {
   const host = runtime();
-  const node = { id: 'a', x: 90, y: 80, vx: 0, vy: 0, fixed: true };
+  const node = { el: host.api.graphVirtualElement('graph-node', {}, []), id: 'a', x: 90, y: 80, vx: 0, vy: 0, fixed: true };
   const state = { nodes: [node], edges: [] };
   host.api.startWorkerPhysics(host.root, state, host.api.profile(host.root));
   host.api.updateDraggedPhysicsNode(host.root, node);
@@ -139,8 +139,8 @@ test('WebGL reuses capacity and uploads only live values when the visible scene 
 
 test('continuous dragging presents neighbors while protecting newly edited and released nodes', () => {
   const host = runtime();
-  const dragged = { id: 'a', x: 90, y: 80, vx: 0, vy: 0, fixed: true };
-  const neighbor = { id: 'b', x: 0, y: 0, vx: 0, vy: 0, fixed: false };
+  const dragged = { el: host.api.graphVirtualElement('graph-node', {}, []), id: 'a', x: 90, y: 80, vx: 0, vy: 0, fixed: true };
+  const neighbor = { el: host.api.graphVirtualElement('graph-node', {}, []), id: 'b', x: 0, y: 0, vx: 0, vy: 0, fixed: false };
   const state = { nodes: [dragged, neighbor], edges: [] };
   host.api.startWorkerPhysics(host.root, state, host.api.profile(host.root));
   const worker = host.workers[0];

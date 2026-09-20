@@ -48,6 +48,21 @@ test('physics subsets retain picking for nodes revealed by a later filter', () =
   runtime.applyFilters(root);
   assert.equal(runtime.hitNodeAt(root, node).id, node.id);
 });
+test('filtered physics indexes active nodes without reading hidden geometry', () => {
+  const { root, state } = scene(20000);
+  let hiddenReads = 0;
+  for (const node of state.nodes.slice(160)) {
+    node.el.classList.add('cfx-graph-hidden');
+    const x = node.x;
+    Object.defineProperty(node, 'x', { get() { hiddenReads++; return x; } });
+  }
+  runtime.applyLayout(root, { ...state, nodes: state.nodes.slice(0, 160), fullState: state });
+  assert.equal(hiddenReads, 0);
+  assert.equal(root.__cfxGraphState, state);
+  assert.equal(runtime.hitNodeAt(root, state.nodes[159]).id, 'n159');
+  runtime.applyFilters(root);
+  assert.equal(runtime.hitNodeAt(root, state.nodes[19999]).id, 'n19999');
+});
 test('layout updates discard old node cells after dragging', () => {
   const { root, state } = scene(200);
   const node = state.nodes[0];
