@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
+const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, attr };');
 const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });

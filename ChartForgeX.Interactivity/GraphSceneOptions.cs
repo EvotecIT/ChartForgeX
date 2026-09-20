@@ -28,6 +28,9 @@ public sealed class GraphSceneOptions {
     /// <summary>Gets opt-in graph editing and manipulation capabilities for adapters that support authoring workflows.</summary>
     public GraphManipulationOptions Manipulation { get; } = new();
 
+    /// <summary>Gets bounded neighborhood focus settings shared by interactive adapters.</summary>
+    public GraphSceneNeighborhoodOptions Neighborhood { get; } = new();
+
     /// <summary>Gets hierarchy navigation settings for adapters that support top-level and drill-down graph views.</summary>
     public GraphHierarchyOptions Hierarchy { get; } = new();
 

@@ -36,6 +36,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<output class=\"cfx-visually-hidden\" data-cfx-role=\"graph-announcer\" aria-live=\"polite\" aria-atomic=\"true\"></output>");
     }
 
+    private static void WriteNeighborhoodNavigation(StringBuilder writer, GraphScene scene) {
+        if (scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) {
+            writer.Append("<nav class=\"cfx-graph-neighborhood-navigation\" data-cfx-role=\"graph-neighborhood-navigation\" aria-label=\"Neighborhood navigation\" hidden>");
+            WriteButton(writer, "focus-home", "Overview", false, true);
+            WriteButton(writer, "focus-back", "Back", false, true);
+            WriteButton(writer, "focus-previous", "Previous neighbors", false, true);
+            WriteButton(writer, "focus-next", "Next neighbors", false, true);
+            writer.Append("<span data-cfx-role=\"graph-neighborhood-summary\" aria-live=\"polite\"></span></nav>");
+        }
+    }
+
     private static void WriteStageControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters) {
         WriteHierarchyNavigation(writer, scene);
         writer.Append("<div class=\"cfx-graph-command-rail\" role=\"toolbar\" aria-label=\"Graph commands\">");
@@ -215,7 +226,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
             case "export-svg": return new[] { "M8 7l-5 5 5 5", "M16 7l5 5-5 5", "M14 4 10 20" };
             case "export-png": return new[] { "M4 5h16v14H4z", "m5 14 4-5 3 3 2-2 2 4", "M9 9h.01" };
             case "export-json": return new[] { "M8 4H6a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2", "M16 4h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-2" };
+            case "focus-home":
             case "hierarchy-home": return new[] { "M3 11.5 12 4l9 7.5", "M5 10v10h14V10", "M9 20v-6h6v6" };
+            case "focus-back": return new[] { "M9 7 4 12l5 5", "M5 12h14" };
+            case "focus-previous": return new[] { "M14 6 8 12l6 6" };
+            case "focus-next": return new[] { "M10 6l6 6-6 6" };
             case "hierarchy-up": return new[] { "M5 12l7-7 7 7", "M12 5v14" };
             case "theme": return new[] { "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z", "M12 2v2", "M12 20v2", "M2 12h2", "M20 12h2", "M4.93 4.93l1.42 1.42", "M17.65 17.65l1.42 1.42", "M19.07 4.93l-1.42 1.42", "M6.35 17.65l-1.42 1.42" };
             default: return new[] { "M5 12h14" };

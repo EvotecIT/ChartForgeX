@@ -223,6 +223,7 @@ public static partial class GalleryWriter {
             "Host-side HTML adapter demos for interactive chart review and synchronized dashboard exploration.",
             "domain-security-interactive",
             "executive-interactive-dashboard",
+            "graph-neighborhood-explorer",
             "identity-risk-graph-explorer",
             "vis-network-parity-hierarchy",
             "enterprise-access-graph-benchmark",

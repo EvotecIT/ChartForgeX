@@ -7,7 +7,7 @@
   };
   const syncNodeDetailLayers = (state) => state.nodes.forEach(node => {
     if (!node.detailsEl) return;
-    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden', 'cfx-graph-neighborhood-dim', 'cfx-graph-neighborhood-related', 'cfx-graph-neighborhood-primary', 'cfx-graph-selected'].forEach(name => node.detailsEl.classList.toggle(name, node.el.classList.contains(name)));
+    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden', 'cfx-graph-neighborhood-hidden', 'cfx-graph-neighborhood-dim', 'cfx-graph-neighborhood-related', 'cfx-graph-neighborhood-primary', 'cfx-graph-selected'].forEach(name => node.detailsEl.classList.toggle(name, node.el.classList.contains(name)));
     node.detailsEl.setAttribute('data-cfx-status', attr(node.el, 'data-cfx-status'));
     setNodePosition(node);
   });
@@ -153,7 +153,7 @@
     updateSelectionState(root);
     const tip = root.querySelector('.cfx-graph-tooltip');
     if (tip) tip.hidden = true;
-    if (root.dataset.cfxGraphFocus === 'active') clearNeighborhoodFocus(root);
+    if (root.dataset.cfxGraphFocus === 'active') clearNeighborhoodFocus(root, { restoreSelection: false });
     else {
       const state = graphState(root);
       drawCanvas(root, state);
@@ -185,7 +185,7 @@
     if (hasFeature(root, 'NeighborhoodFocus') && root.dataset.cfxGraphFocus === 'active') {
       const primary = details.find(item => item.role === 'graph-node');
       if (primary) applyNeighborhoodFocus(root, primary.id);
-      else clearNeighborhoodFocus(root);
+      else clearNeighborhoodFocus(root, { restoreSelection: false });
     }
     const state = graphState(root);
     drawCanvas(root, state);
@@ -197,67 +197,6 @@
   const selectedGraphNodeId = (root) => {
     const selected = selectedItems(root).find(item => item.role === 'graph-node');
     return selected ? selected.id : '';
-  };
-  const clearNeighborhoodFocus = (root) => {
-    root.classList.remove('cfx-graph-neighborhood-active');
-    root.dataset.cfxGraphFocus = 'none';
-    root.dataset.cfxGraphFocusNode = '';
-    items(root, '.cfx-graph-neighborhood-dim,.cfx-graph-neighborhood-related,.cfx-graph-neighborhood-primary').forEach(item => {
-      item.classList.remove('cfx-graph-neighborhood-dim', 'cfx-graph-neighborhood-related', 'cfx-graph-neighborhood-primary');
-    });
-    const state = graphState(root);
-    drawCanvas(root, state);
-    if (typeof updateOverview === 'function') updateOverview(root, state);
-    if (typeof syncFocusControls === 'function') syncFocusControls(root);
-    emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
-  };
-  const applyNeighborhoodFocus = (root, nodeId) => {
-    const state = graphState(root);
-    const relatedNodes = new Set([nodeId]);
-    const relatedEdges = new Set();
-    state.edges.forEach(edge => {
-      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId) || (edge.source.id !== nodeId && edge.target.id !== nodeId)) return;
-      relatedNodes.add(edge.source.id);
-      relatedNodes.add(edge.target.id);
-      relatedEdges.add(attr(edge.el, 'data-edge-id'));
-    });
-    state.nodes.forEach(node => {
-      const related = relatedNodes.has(node.id);
-      node.el.classList.toggle('cfx-graph-neighborhood-primary', node.id === nodeId);
-      node.el.classList.toggle('cfx-graph-neighborhood-related', related && node.id !== nodeId);
-      node.el.classList.toggle('cfx-graph-neighborhood-dim', !related);
-    });
-    state.edges.forEach(edge => {
-      const related = relatedEdges.has(attr(edge.el, 'data-edge-id'));
-      edge.el.classList.toggle('cfx-graph-neighborhood-related', related);
-      edge.el.classList.toggle('cfx-graph-neighborhood-dim', !related);
-    });
-    items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => {
-      const related = relatedEdges.has(attr(label, 'data-edge-label-for'));
-      label.classList.toggle('cfx-graph-neighborhood-related', related);
-      label.classList.toggle('cfx-graph-neighborhood-dim', !related);
-    });
-    state.clusters.forEach(cluster => {
-      const related = cluster.nodeIds.some(id => relatedNodes.has(id));
-      cluster.el.classList.toggle('cfx-graph-neighborhood-related', related);
-      cluster.el.classList.toggle('cfx-graph-neighborhood-dim', !related);
-    });
-    root.classList.add('cfx-graph-neighborhood-active');
-    root.dataset.cfxGraphFocus = 'active';
-    root.dataset.cfxGraphFocusNode = nodeId;
-    drawCanvas(root, state);
-    if (typeof updateOverview === 'function') updateOverview(root, state);
-    if (typeof syncFocusControls === 'function') syncFocusControls(root);
-    emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: true, nodeId, neighborNodeCount: relatedNodes.size - 1, edgeCount: relatedEdges.size });
-  };
-  const toggleNeighborhoodFocus = (root) => {
-    if (!hasFeature(root, 'NeighborhoodFocus')) return;
-    const nodeId = selectedGraphNodeId(root);
-    if (!nodeId || root.dataset.cfxGraphFocusNode === nodeId) {
-      clearNeighborhoodFocus(root);
-      return;
-    }
-    applyNeighborhoodFocus(root, nodeId);
   };
   const applyFilters = (root) => {
     root.__cfxGraphHitGrid = null;
@@ -330,13 +269,13 @@
       cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !hiddenMemberHit);
     });
     clearHiddenSelections(root);
+    const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
+    if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
+    else { if (focusNode) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false }); const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
     const actualVisibleNodes = items(root, '[data-cfx-role="graph-node"]').filter(node => visible(node));
     const searchStatus = root.querySelector('[data-cfx-role="graph-search-status"]');
     root.dataset.cfxGraphSearchMatches = String(actualVisibleNodes.length);
     if (searchStatus) searchStatus.textContent = query ? `${actualVisibleNodes.length} match${actualVisibleNodes.length === 1 ? '' : 'es'}` : '';
-    const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
-    if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode);
-    else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
     syncGraphItemTabStops(root);
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: actualVisibleNodes.length });
   };

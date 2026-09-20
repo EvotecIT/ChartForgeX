@@ -129,6 +129,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append('>');
         if (options.IncludeHeader) WriteHeader(writer, scene, options, effectiveClusters, domId);
         WriteAnnouncer(writer);
+        WriteNeighborhoodNavigation(writer, scene);
         WriteStage(writer, scene, options, positions, domId, effectiveClusters, acceleratedMarkup);
         writer.Append("<output class=\"cfx-graph-tooltip\" hidden></output>");
         writer.Append("</section>");

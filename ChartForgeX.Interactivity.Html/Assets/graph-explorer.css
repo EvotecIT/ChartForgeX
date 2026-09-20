@@ -1243,3 +1243,11 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     stroke: Highlight;
   }
 }
+
+.cfx-graph-neighborhood-hidden { display: none !important; }
+.cfx-graph-breadcrumbs[hidden] { display: none; }
+
+.cfx-graph-neighborhood-active .cfx-graph-node.cfx-graph-neighborhood-related .cfx-graph-node-label,
+.cfx-graph-neighborhood-active .cfx-graph-node.cfx-graph-neighborhood-primary .cfx-graph-node-label,
+.cfx-graph-neighborhood-active .cfx-graph-node-details.cfx-graph-neighborhood-related .cfx-graph-node-label,
+.cfx-graph-neighborhood-active .cfx-graph-node-details.cfx-graph-neighborhood-primary .cfx-graph-node-label { display: block; }

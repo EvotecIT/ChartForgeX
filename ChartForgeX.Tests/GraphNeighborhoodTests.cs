@@ -20,6 +20,21 @@ public sealed class GraphNeighborhoodTests {
     }
 
     [Fact]
+    public void InteractiveNeighborhoodOptionsAreValidatedAndRendered() {
+        var scene = Hub(30);
+        scene.Options.Neighborhood.MaximumNodes = 7;
+        scene.Options.Neighborhood.MaximumEdges = 9;
+        scene.Options.Neighborhood.Hops = 2;
+        var html = scene.ToGraphExplorerHtmlPage();
+        Assert.Contains("data-cfx-neighborhood-max-nodes=\"7\"", html);
+        Assert.Contains("data-cfx-neighborhood-max-edges=\"9\"", html);
+        Assert.Contains("data-cfx-neighborhood-hops=\"2\"", html);
+        Assert.Contains("aria-label=\"Neighborhood navigation\"", html);
+        scene.Options.Neighborhood.MaximumNodes = 1;
+        Assert.Throws<ArgumentOutOfRangeException>(() => scene.ToGraphExplorerHtmlPage());
+    }
+
+    [Fact]
     public void HiddenObjectsDoNotConsumeVisibleBudgets() {
         var scene = Hub(5);
         scene.Nodes.Single(node => node.Id == "n0000").Hidden = true;

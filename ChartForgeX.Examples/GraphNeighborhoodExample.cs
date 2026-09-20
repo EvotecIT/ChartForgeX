@@ -10,6 +10,8 @@ internal static class GraphNeighborhoodExample {
             graph.AddNode(id, "Service " + (index + 1), node => { node.ParentId = "gateway"; node.Kind = "service"; })
                 .AddEdge("route-" + id, "gateway", id, configure: edge => { edge.Directed = true; edge.ShowLabel = false; });
         }
+        graph.Subtitle = "Select a node and choose Focus to explore at most 13 nodes at a time. Page through neighbors, drill into a visible node, and return to the overview without changing source positions.";
+        File.WriteAllText(Path.Combine(output, "graph-neighborhood-explorer.html"), graph.ToGraphExplorerHtmlPage());
         for (var page = 0; page < 2; page++) {
             var stage = graph.CreateNeighborhood("gateway", options => {
                 options.MaximumNodes = 13;
