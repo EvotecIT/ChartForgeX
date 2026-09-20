@@ -106,7 +106,9 @@ public static partial class TopologyChartExtensions {
         const double header = margin + TopologyRenderPrimitives.HeaderReservedHeight;
         TopologyChart? page = null;
         double x = margin, y = header, rowHeight = 0;
-        foreach (var node in source.Nodes.OrderBy(node => node.GroupId ?? string.Empty, StringComparer.Ordinal)) {
+        var groupOrder = source.Groups.Select((group, index) => (group.Id, Rank: index + 1))
+            .ToDictionary(group => group.Id, group => group.Rank, StringComparer.Ordinal);
+        foreach (var node in source.Nodes.OrderBy(node => node.GroupId != null && groupOrder.TryGetValue(node.GroupId, out var rank) ? rank : 0)) {
             // Report cards always expose their labels; small dot/icon geometry is an overview concern.
             node.DisplayMode = TopologyNodeDisplayMode.Card;
             node.PreserveDisplayModeSize = true;

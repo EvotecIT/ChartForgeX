@@ -14,6 +14,17 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void ReportRetainsDeclaredGroupOrderAndNodeOrderWithinGroups() {
+        var chart = TopologyChart.Create().AddAutoGroup("z-first", "First group").AddAutoGroup("a-second", "Second group")
+            .AddAutoNode("second", "Second", groupId: "a-second")
+            .AddAutoNode("first-b", "B", groupId: "z-first")
+            .AddAutoNode("ungrouped", "Ungrouped")
+            .AddAutoNode("first-a", "A", groupId: "z-first");
+        var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
+        Assert.Equal(new[] { "ungrouped", "first-b", "first-a", "second" }, report.Pages.Select(page => Assert.Single(page.ToInterchangeEnvelope().Nodes).Id));
+    }
+
+    [Fact]
     public void ReportNavigationDataRoundTripsHtmlSensitiveLabels() {
         const string label = "</script><script>alert(1)</script>\n\"&";
         string html = TopologyChart.Create().AddAutoNode("node", label).PrepareReport().ToInteractiveHtmlPage();

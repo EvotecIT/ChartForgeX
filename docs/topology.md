@@ -430,7 +430,7 @@ var readability = prepared.AssessReadability(1200, 800);
 
 ## Split dense topologies into report pages
 
-`PrepareReport()` creates a page summary, detail pages, and indexes without dropping source objects or relationships. The defaults use at most 12 cards and 24 internal relationships per page, with cards at least 240 pixels wide and additional limits from the page dimensions. `MaximumEdgesPerPage` bounds relationship density; self relationships attached to one indivisible node can exceed that budget. Nodes stay in stable group/input order. Detail pages reflow cards and retain their internal edges; cross-page edges appear in `CrossPageLinks`, with one-based source and target page numbers. `NodePages` maps every source node id to its detail page.
+`PrepareReport()` creates a page summary, detail pages, and indexes without dropping source objects or relationships. The defaults use at most 12 cards and 24 internal relationships per page, with cards at least 240 pixels wide and additional limits from the page dimensions. `MaximumEdgesPerPage` bounds relationship density; self relationships attached to one indivisible node can exceed that budget. Ungrouped nodes come first, followed by groups in their declared order; nodes within each group retain source order. Detail pages reflow cards and retain their internal edges; cross-page edges appear in `CrossPageLinks`, with one-based source and target page numbers. `NodePages` maps every source node id to its detail page.
 
 ```csharp
 var report = topology.PrepareReport(new TopologyReportOptions {

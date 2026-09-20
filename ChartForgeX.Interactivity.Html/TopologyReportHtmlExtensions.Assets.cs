@@ -88,8 +88,8 @@ public static partial class TopologyReportHtmlExtensions {
                 const next = document.createElement('button');
                 const count = document.createElement('span');
                 previous.type = next.type = 'button';
-                previous.textContent = 'Previous relationships';
-                next.textContent = 'Next relationships';
+                previous.textContent = page === 0 ? 'Previous detail pages' : 'Previous relationships';
+                next.textContent = page === 0 ? 'Next detail pages' : 'Next relationships';
                 count.setAttribute('role', 'status');
                 function renderLinks() {
                     links.replaceChildren(...linkItems.slice(offset, offset + 20).map(makeButton));

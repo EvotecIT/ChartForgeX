@@ -48,6 +48,8 @@ test('relationship paging allocates only one bounded batch, including detached D
   assert.equal(view.links()[0].children[0].lang, 'en');
   const [previous, status, next] = view.controls();
   assert.equal(previous.disabled, true);
+  assert.equal(previous.textContent, 'Previous detail pages');
+  assert.equal(next.textContent, 'Next detail pages');
   next.click();
   assert.equal(view.allocated(), 42);
   assert.equal(view.links().length, 20);
@@ -76,4 +78,12 @@ test('search creates only twenty matching buttons and clears the previous result
   view.ids.search.value = '';
   view.ids.search.events.input();
   assert.equal(view.ids.results.children.length, 0);
+});
+
+test('detail pages describe relationship pagination', () => {
+  const view = report(25);
+  view.ids.page.value = '1';
+  view.ids.page.events.change();
+  assert.equal(view.controls()[0].textContent, 'Previous relationships');
+  assert.equal(view.controls()[2].textContent, 'Next relationships');
 });

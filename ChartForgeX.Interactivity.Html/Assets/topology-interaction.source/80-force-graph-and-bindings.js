@@ -244,8 +244,7 @@
           // Query changes reveal results; appearance toggles preserve the reader's viewport.
           if (control.matches('[data-cfx-force-search],[data-cfx-force-status],[data-cfx-force-group]')) fitVisibleTopology();
         };
-        control.addEventListener('input', filterAndReveal);
-        control.addEventListener('change', filterAndReveal);
+        control.addEventListener(control.tagName === 'SELECT' ? 'change' : 'input', filterAndReveal);
       });
       wrapper.addEventListener('cfx-topology-force-filter-set', event => {
         const detail = event.detail || {};
