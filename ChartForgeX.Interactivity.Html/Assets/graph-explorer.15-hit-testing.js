@@ -1,24 +1,38 @@
   const indexHitTesting = (root, state) => {
-    const cellSize = 48;
-    const grid = new Map();
-    state.nodes.forEach(node => {
+    const fullState = state.fullState || state;
+    const previous = root.__cfxGraphHitGrid;
+    const incremental = !!state.fullState && previous?.state === fullState;
+    const index = incremental ? previous : { cellSize: 48, grid: new Map(), nodeCells: new Map(), state: fullState };
+    // Rebuild membership once after filtering. Later physics frames update only
+    // their moving subset, retaining nodes revealed while that session was running.
+    const nodes = incremental ? state.nodes : fullState.nodes;
+    nodes.forEach(node => {
+      for (const key of index.nodeCells.get(node.id) || []) {
+        const bucket = index.grid.get(key);
+        bucket.delete(node);
+        if (!bucket.size) index.grid.delete(key);
+      }
+      index.nodeCells.delete(node.id);
       if (!visible(node.el)) return;
-      const slack = 10;
+      const slack = 10, cellSize = index.cellSize;
       const minX = Math.floor((node.x - nodeHalfWidth(node) - slack) / cellSize);
       const maxX = Math.floor((node.x + nodeHalfWidth(node) + slack) / cellSize);
       const minY = Math.floor((node.y - nodeHalfHeight(node) - slack) / cellSize);
       const maxY = Math.floor((node.y + nodeHalfHeight(node) + slack) / cellSize);
+      const cells = [];
       for (let x = minX; x <= maxX; x++) for (let y = minY; y <= maxY; y++) {
         const key = `${x}:${y}`;
-        const bucket = grid.get(key) || [];
-        bucket.push(node);
-        grid.set(key, bucket);
+        const bucket = index.grid.get(key) || new Set();
+        bucket.add(node);
+        index.grid.set(key, bucket);
+        cells.push(key);
       }
+      index.nodeCells.set(node.id, cells);
     });
-    root.__cfxGraphState = state.fullState || state;
-    root.__cfxGraphHitGrid = { cellSize, grid, state: state.fullState || state };
+    root.__cfxGraphState = fullState;
+    root.__cfxGraphHitGrid = index;
     root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
-    root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
+    root.dataset.cfxGraphHitTest = fullState.nodes.length >= 160 ? 'grid' : 'linear';
   };
   const hitTestNodes = (root, point) => {
     const state = root.__cfxGraphState || graphState(root);

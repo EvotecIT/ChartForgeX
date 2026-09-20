@@ -56,11 +56,20 @@ test('filtered physics indexes active nodes without reading hidden geometry', ()
     const x = node.x;
     Object.defineProperty(node, 'x', { get() { hiddenReads++; return x; } });
   }
-  runtime.applyLayout(root, { ...state, nodes: state.nodes.slice(0, 160), fullState: state });
+  const active = { ...state, nodes: state.nodes.slice(0, 160), fullState: state };
+  runtime.applyLayout(root, active);
   assert.equal(hiddenReads, 0);
   assert.equal(root.__cfxGraphState, state);
   assert.equal(runtime.hitNodeAt(root, state.nodes[159]).id, 'n159');
   runtime.applyFilters(root);
+  runtime.applyLayout(root, active);
+  assert.equal(runtime.hitNodeAt(root, state.nodes[19999]).id, 'n19999');
+  hiddenReads = 0;
+  active.nodes[0].x = -1000;
+  runtime.applyLayout(root, active);
+  assert.equal(hiddenReads, 0);
+  assert.equal(runtime.hitNodeAt(root, {x: -1000, y: 0}).id, 'n0');
+  assert.equal(runtime.hitNodeAt(root, {x: 0, y: 0}), null);
   assert.equal(runtime.hitNodeAt(root, state.nodes[19999]).id, 'n19999');
 });
 test('layout updates discard old node cells after dragging', () => {
