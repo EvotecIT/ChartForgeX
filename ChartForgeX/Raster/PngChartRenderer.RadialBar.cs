@@ -73,6 +73,11 @@ public sealed partial class PngChartRenderer {
         var y = PngRadialBarLegendStartY(chart, area, rows.Count);
         foreach (var row in rows) {
             if (y > area.Bottom) break;
+            if (row.Omitted > 0) {
+                DrawLegendOverflow(c, chart, area, y, row.Omitted);
+                y += PngRadialBarLegendRowHeight(chart);
+                continue;
+            }
             var x = PngRadialBarLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
@@ -153,7 +158,7 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return rows;
+        return LegendRowBudget.Apply(rows, chart, PngRadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new PngRadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
     }
 
     private static double PngRadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>
@@ -175,6 +180,7 @@ public sealed partial class PngChartRenderer {
     private static bool IsRadialBarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.RadialBar);
 
     private sealed class PngRadialBarLegendRow {
+        public int Omitted { get; set; }
         public List<PngRadialBarLegendItem> Items { get; } = new();
         public double Width { get; set; }
     }

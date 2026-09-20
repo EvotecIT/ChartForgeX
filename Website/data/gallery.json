@@ -458,6 +458,36 @@
     },
     {
       "category": "charts",
+      "title": "Dense pie legend",
+      "body": "A bounded legend with an explicit count of additional entries.",
+      "tags": [
+        "Legend",
+        "Density"
+      ],
+      "image": "/examples/generated/dense-legend-pie.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Dense radial legend",
+      "body": "A bounded legend with an explicit count of additional entries.",
+      "tags": [
+        "Legend",
+        "Density"
+      ],
+      "image": "/examples/generated/dense-legend-radial.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Dense series legend",
+      "body": "A bounded legend with an explicit count of additional entries.",
+      "tags": [
+        "Legend",
+        "Density"
+      ],
+      "image": "/examples/generated/dense-legend-series.svg"
+    },
+    {
+      "category": "charts",
       "title": "Detection Confidence Errorbar Dark",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],

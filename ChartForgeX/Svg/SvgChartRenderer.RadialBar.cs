@@ -129,6 +129,11 @@ public sealed partial class SvgChartRenderer {
             .Line();
         foreach (var row in rows) {
             if (y > area.Bottom - 4) break;
+            if (row.Omitted > 0) {
+                DrawLegendOverflow(writer, chart, area, y, row.Omitted);
+                y += RadialBarLegendRowHeight(chart);
+                continue;
+            }
             var x = RadialBarLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
@@ -248,7 +253,7 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return rows;
+        return LegendRowBudget.Apply(rows, chart, RadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new RadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
     }
 
     private static double RadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>
@@ -298,6 +303,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private sealed class RadialBarLegendRow {
+        public int Omitted { get; set; }
         public List<RadialBarLegendItem> Items { get; } = new();
         public double Width { get; set; }
     }

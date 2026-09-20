@@ -17,6 +17,11 @@ public sealed partial class PngChartRenderer {
 
         foreach (var row in rows) {
             if (y > area.Bottom) break;
+            if (row.Omitted > 0) {
+                DrawLegendOverflow(c, chart, area, y, row.Omitted);
+                y += PngLegendRowHeight(chart);
+                continue;
+            }
             var x = PngLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
@@ -54,7 +59,7 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return rows;
+        return LegendRowBudget.Apply(rows, chart, PngLegendRowHeight(chart), row => row.Items.Count, omitted => new PngLegendRow { Omitted = omitted, Width = System.Math.Min(width, 140) });
     }
 
     private static string PngLegendLabel(Chart chart, int index) =>
@@ -210,6 +215,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private sealed class PngLegendRow {
+        public int Omitted { get; set; }
         public System.Collections.Generic.List<PngLegendItem> Items { get; } = new();
         public double Width { get; set; }
     }

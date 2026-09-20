@@ -15,7 +15,6 @@ namespace ChartForgeX.Svg;
 /// </summary>
 public sealed partial class SvgChartRenderer {
     private const double LegendStartX = 40;
-    private const double LegendRowHeight = 20;
 
     private static void AppendSvg(StringBuilder sb, Action<SvgMarkupWriter> write) {
         var writer = new SvgMarkupWriter(512);

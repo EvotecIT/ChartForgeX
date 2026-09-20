@@ -147,6 +147,11 @@ public sealed partial class SvgChartRenderer {
             .Line();
         foreach (var row in rows) {
             if (y > area.Bottom - 4) break;
+            if (row.Omitted > 0) {
+                DrawLegendOverflow(writer, chart, area, y, row.Omitted);
+                y += SliceLegendRowHeight(chart);
+                continue;
+            }
             var x = SliceLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
@@ -291,7 +296,7 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return rows;
+        return LegendRowBudget.Apply(rows, chart, SliceLegendRowHeight(chart), row => row.Items.Count, omitted => new SliceLegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
     }
 
     private static double SliceLegendStartY(Chart chart, ChartRect area, int rows) =>
@@ -461,6 +466,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private sealed class SliceLegendRow {
+        public int Omitted { get; set; }
         public List<SliceLegendItem> Items { get; } = new();
         public double Width { get; set; }
     }

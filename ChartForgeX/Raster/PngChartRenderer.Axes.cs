@@ -193,26 +193,7 @@ public sealed partial class PngChartRenderer {
         return plot;
     }
 
-    private static int PngLegendRowCount(Chart chart) {
-        var fontSize = PngLegendFontSize(chart);
-        var symbolWidth = 18;
-        var x = 0.0;
-        var rows = 1;
-        var maxX = Math.Max(80, chart.Options.Size.Width - 80);
-        var entries = BuildPngLegendEntries(chart);
-        if (PngIsVerticalLegend(chart.Options.LegendPosition)) return entries.Count;
-        for (var i = 0; i < entries.Count; i++) {
-            var itemWidth = symbolWidth + 10 + EstimatePngStyledTextWidth(entries[i].Label, fontSize, chart.Options.LegendStyle, emphasized: true) + 18;
-            if (i > 0 && x + itemWidth > maxX) {
-                rows++;
-                x = 0;
-            }
-
-            x += itemWidth;
-        }
-
-        return rows;
-    }
+    private static int PngLegendRowCount(Chart chart) => BuildPngLegendRows(chart, Math.Max(80, chart.Options.Size.Width - 80)).Count;
 
     private static double PngXAxisLabelOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var angle = Math.Abs(Clamp(chart.Options.XAxisLabelAngle, -80, 80)) * Math.PI / 180.0;

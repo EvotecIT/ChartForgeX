@@ -231,6 +231,8 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
+Legends reserve at most 35% of the chart height by default, retaining at least one row to disclose overflow. Additional entries are summarized as `+ N more entries`; all data remains plotted. This applies to series, point, pie, and radial-bar legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes the summary as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
+
 `ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
 
 ## Project Status
