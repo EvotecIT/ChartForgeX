@@ -163,3 +163,22 @@ test('continuous dragging presents neighbors while protecting newly edited and r
   assert.equal(host.root.dataset.cfxGraphPhysicsState, 'running');
   host.api.stopWorkerPhysics(host.root);
 });
+
+test('reduced motion hides intermediate worker positions but presents the final state', () => {
+  const host = runtime();
+  host.root.setAttribute('data-cfx-graph-reduced-motion', 'true');
+  const node = { el: host.api.graphVirtualElement('node', {}, []), id: 'a', x: 1, y: 2, homeX: 1, homeY: 2, vx: 0, vy: 0, fixed: true, size: 8 };
+  const state = { nodes: [node], edges: [], clusters: [], byId: new Map([['a', node]]) };
+  host.api.startWorkerPhysics(host.root, state, host.api.profile(host.root));
+  const worker = host.workers[0];
+  worker.onmessage({ data: { type: 'progress', generation: 0, positions: new Float64Array([90, 80, 0, 0, 1]) } });
+  host.flush();
+  assert.equal(node.x, 1);
+  assert.equal(worker.messages.at(-1).type, 'continue');
+  worker.onmessage({ data: { type: 'done', generation: 0, positions: new Float64Array([100, 200, 0, 0, 1]) } });
+  host.flush();
+  assert.equal(node.x, 100);
+  assert.equal(node.y, 200);
+  assert.equal(host.root.dataset.cfxGraphPhysicsState, 'stabilized');
+  assert.equal(worker.stopped, true);
+});
