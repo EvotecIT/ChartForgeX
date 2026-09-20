@@ -1821,6 +1821,57 @@
       }
     },
     {
+      "name": "paged-facets-1",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 203,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1735,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "paged-facets-2",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 203,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1650,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "paged-facets-3",
+      "width": 946,
+      "height": 404,
+      "svg": {
+        "minVisualNodes": 35,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 764368,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1339,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "palette-swatch-showcase-grid",
       "width": 914,
       "height": 948,
