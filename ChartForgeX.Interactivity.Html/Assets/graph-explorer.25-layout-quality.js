@@ -117,7 +117,8 @@
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return 0;
     const includeLabels = state.nodes.length < 500;
-    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, nodeRadius(node, includeLabels) * 2 + 10), 0)));
+    const radii = new Map(movable.map(node => [node, nodeRadius(node, includeLabels)]));
+    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, radii.get(node) * 2 + 10), 0)));
     const maxPairs = state.nodes.length >= 3000 ? 120000 : state.nodes.length >= 1000 ? 180000 : 220000;
     let totalResolved = 0;
     for (let pass = 0; pass < passes; pass++) {
@@ -144,7 +145,7 @@
               if (other === node || other.id < node.id) continue;
               pairs += 1;
               if (pairs > maxPairs) { exhausted = true; break; }
-              const minDistance = nodeRadius(node, includeLabels) + nodeRadius(other, includeLabels);
+              const minDistance = radii.get(node) + radii.get(other);
               let dx = other.x - node.x;
               let dy = other.y - node.y;
               let distance = Math.hypot(dx, dy);
@@ -174,18 +175,25 @@
     return totalResolved;
   };
 
-  const countOverlaps = (nodes) => {
-    const probe = nodes.slice(0, Math.min(nodes.length, 900));
-    const includeLabels = nodes.length < 500;
-    let overlaps = 0;
-    for (let i = 0; i < probe.length; i++) {
-      for (let j = i + 1; j < probe.length; j++) {
-        const minDistance = nodeRadius(probe[i], includeLabels) + nodeRadius(probe[j], includeLabels);
-        if (Math.hypot(probe[j].x - probe[i].x, probe[j].y - probe[i].y) < minDistance) overlaps += 1;
+  const assessOverlaps = (nodes, includeLabels = nodes.length < 500, maximumComparisons = 250000) => {
+    // Cache each radius once. Sweep bounds rather than sampling the first nodes.
+    const items = nodes.map(node => ({ x: node.x, y: node.y, radius: nodeRadius(node, includeLabels) }))
+      .map(item => ({ ...item, left: item.x - item.radius, right: item.x + item.radius }))
+      .sort((a, b) => a.left - b.left);
+    let overlaps = 0, comparisons = 0;
+    for (let i = 0; i < items.length; i++) {
+      const a = items[i];
+      for (let j = i + 1; j < items.length && items[j].left < a.right; j++) {
+        if (comparisons >= maximumComparisons) return { overlaps, comparisons, complete: false, nodeCount: nodes.length, includeLabels };
+        comparisons++;
+        const b = items[j], radius = a.radius + b.radius;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        if (dx * dx + dy * dy < radius * radius) overlaps++;
       }
     }
-    return overlaps;
+    return { overlaps, comparisons, complete: true, nodeCount: nodes.length, includeLabels };
   };
+  const countOverlaps = nodes => assessOverlaps(nodes).overlaps;
 
   const layoutQualityMetrics = (root, state) => {
     const nodes = state.nodes;
@@ -198,15 +206,20 @@
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
     const drift = Math.hypot(centerX - size.centerX, centerY - size.centerY);
-    const overlapProbe = countOverlaps(nodes);
+    const assessment = assessOverlaps(nodes);
+    const overlapProbe = assessment.overlaps;
     const driftPenalty = Math.min(1, drift / Math.max(1, Math.min(size.width, size.height) * 0.5));
     const overlapTolerance = nodes.length >= 300 ? nodes.length * 24 : nodes.length * 10;
     const score = Math.max(0, 1 - driftPenalty - Math.min(0.35, overlapProbe / Math.max(1, overlapTolerance)));
     root.dataset.cfxGraphLayoutBounds = `${(maxX - minX).toFixed(1)}x${(maxY - minY).toFixed(1)}`;
     root.dataset.cfxGraphLayoutCenterDrift = drift.toFixed(2);
     root.dataset.cfxGraphLayoutOverlapCount = String(overlapProbe);
+    root.dataset.cfxGraphLayoutOverlapCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    root.dataset.cfxGraphLayoutOverlapComparisons = String(assessment.comparisons);
+    root.dataset.cfxGraphLayoutOverlapNodeCount = String(assessment.nodeCount);
+    root.dataset.cfxGraphLayoutOverlapGeometry = assessment.includeLabels ? 'estimated-label-radius' : 'node-radius';
     root.dataset.cfxGraphLayoutQualityScore = score.toFixed(3);
-    root.dataset.cfxGraphLayoutQuality = score >= 0.82 ? 'centered-structured' : 'needs-review';
+    root.dataset.cfxGraphLayoutQuality = assessment.complete && overlapProbe === 0 && score >= 0.82 ? 'centered-structured' : 'needs-review';
   };
 
   const centerLayout = (root, state) => {
@@ -245,8 +258,9 @@
     const maxY = Math.max(...movable.map(node => node.y));
     const width = Math.max(1, maxX - minX);
     const height = Math.max(1, maxY - minY);
-    const overlaps = countOverlaps(movable);
-    if (overlaps > movable.length * 0.45) {
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
+    if (!assessment.complete || overlaps > movable.length * 0.45) {
       root.dataset.cfxGraphLayoutCompactionSkipped = String(overlaps);
       return;
     }

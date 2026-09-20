@@ -347,3 +347,9 @@ The 10k browser run also applied a node-and-edge patch, searched the result to o
 - `identity-risk-graph-explorer.html` demonstrates a product-shaped relationship graph with images, filters, selection, focus, clusters, live ForceAtlas2 dragging, and the opt-in physics configurator.
 - `enterprise-access-graph-benchmark.html` demonstrates accelerated compact-document rendering with 360 nodes and 720 directed edges.
 - `vis-network-parity-hierarchy.html` demonstrates the typed vis-style compatibility surface with opt-in editing, undo/redo, position publishing, box selection, and persisted interaction state.
+
+### Layout assessment coverage
+
+Layout overlap diagnostics consider the full active node set using a spatial sweep. The check caches geometry once and stops after 250,000 candidate comparisons in a dense case. `data-cfx-graph-layout-overlap-coverage` is `complete` or `budget-limited`; a budget-limited overlap count is a lower bound. Incomplete coverage or any remaining estimated overlap produces `needs-review`, even when the graph is centered. Node count and comparison count are exposed alongside the result.
+
+`data-cfx-graph-layout-overlap-geometry` identifies `estimated-label-radius` for fewer than 500 nodes or `node-radius` for larger scenes. These are conservative circular layout estimates, not measurements of rendered glyphs, connector crossings, contrast, or overall readability. Check the coverage and geometry fields before using the numeric quality score.

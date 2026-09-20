@@ -141,7 +141,7 @@ jobs:
         run: ./Build.ps1 -Configuration Release
 
       - name: Exercise bundled graph runtime
-        run: node --test tests/graph-explorer-bundles/runtime.test.js
+        run: node --test tests/graph-explorer-bundles/runtime.test.js tests/graph-quality/overlaps.test.js
 
       - name: Upload packages
         uses: actions/upload-artifact@v7
