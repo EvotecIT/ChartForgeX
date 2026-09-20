@@ -66,8 +66,8 @@
         history.push({ nodeId: root.dataset.cfxGraphFocusNode, options: root.__cfxGraphNeighborhood, viewport: { ...viewport(root) } });
         if (history.length > 50) history.shift();
       }
-      if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
     }
+    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
     state.nodes.forEach(node => {
       node.el.classList.toggle('cfx-graph-neighborhood-hidden', !view.nodeIds.has(node.id));
       node.el.classList.toggle('cfx-graph-neighborhood-primary', node.id === nodeId);
@@ -106,6 +106,7 @@
     if (!applied) return clearNeighborhoodFocus(root);
     if (hasFeature(root, 'Viewport')) setViewport(root, previous.viewport);
     restoreGraphSelection(root, [previous.nodeId]);
+    refreshNeighborhoodPresentation(root);
     return true;
   };
   const toggleNeighborhoodFocus = root => {

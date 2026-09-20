@@ -11,7 +11,7 @@ const runtime = new Function(`
   const items = (root, selector) => root.elements.filter(item => selector.split(',').some(part => part[0] === '.' ? item.classList.contains(part.slice(1)) : false));
   const viewport = root => root.viewport, setViewport = (root, value) => { root.viewport = { ...value }; };
   const selectedItems = root => root.selection.map(id => ({id})), restoreGraphSelection = (root, ids) => { root.selection = [...ids]; };
-  const clearHiddenSelections = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = () => {};
+  const clearHiddenSelections = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = root => { root.paintedSelection = [...root.selection]; };
   const pausePhysics = root => { root.paused = true; }, fitViewport = root => { root.viewport = {x:10,y:20,scale:2}; };
   const emit = (root, name, detail) => root.events.push({name, detail});
   ${source}
@@ -77,4 +77,20 @@ test('bounded focus labels survive compact rendering but omitted nodes draw no l
   draw(context,root,node,true,false); assert.deepEqual(text,['Neighbor']);
   node.el.classList.add('cfx-graph-neighborhood-hidden');
   draw(context,root,node,true,false); assert.deepEqual(text,['Neighbor']);
+});
+
+test('restored focus pauses active physics even when navigation history is retained', () => {
+  const root = hub();
+  root.paused = false;
+  runtime.applyNeighborhoodFocus(root, 'n00', {}, {refresh:true, fit:false});
+  assert.equal(root.paused, true);
+});
+test('Back paints restored selection after leaving a drilled neighbor', () => {
+  const root = hub();
+  runtime.applyNeighborhoodFocus(root, 'n00');
+  root.selection = ['n01'];
+  runtime.applyNeighborhoodFocus(root, 'n01');
+  runtime.backGraphNeighborhood(root);
+  assert.deepEqual(root.selection, ['n00']);
+  assert.deepEqual(root.paintedSelection, ['n00']);
 });
