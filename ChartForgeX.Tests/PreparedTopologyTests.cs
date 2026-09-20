@@ -64,6 +64,22 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void ReportNavigationUsesOriginalIdsWhenInterchangeRenamesThem() {
+        string longId = new string('x', 300);
+        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Matrix)
+            .AddAutoGroup("shared", "Group")
+            .AddAutoNode("shared", "Shared node", groupId: "shared")
+            .AddAutoNode(longId, "Long ID node")
+            .AddEdge("edge", "shared", longId);
+        var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
+        Assert.Equal("Shared node", report.NodeLabels["shared"]);
+        Assert.Equal("Long ID node", report.NodeLabels[longId]);
+        Assert.DoesNotContain(report.Source.ToInterchangeEnvelope().Nodes, node => node.Id == "shared");
+        Assert.Contains("Shared node → Long ID node", report.ToInteractiveHtmlPage());
+        Assert.Equal("shared", Assert.Single(report.CrossPageLinks).SourceNodeId);
+    }
+
+    [Fact]
     public void ReadabilityExplainsFittingLossAndRejectsInvalidTargets() {
         var prepared = TopologyChart.Create().WithViewport(3000, 800).AddNode("a", "A", 80, 100).Prepare();
         Assert.True(prepared.AssessReadability(600, 400).NeedsDetailViews);

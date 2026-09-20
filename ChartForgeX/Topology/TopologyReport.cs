@@ -52,8 +52,9 @@ public sealed class TopologyReportLink {
 
 /// <summary>A topology overview, bounded detail pages, and a complete node and cross-page relationship index.</summary>
 public sealed class TopologyReport {
-    internal TopologyReport(PreparedTopology source, PreparedTopology overview, List<PreparedTopology> pages, Dictionary<string, int> nodePages, List<TopologyReportLink> links) {
+    internal TopologyReport(PreparedTopology source, PreparedTopology overview, List<PreparedTopology> pages, Dictionary<string, int> nodePages, Dictionary<string, string> nodeLabels, List<TopologyReportLink> links) {
         Source = source; Overview = overview; Pages = pages.AsReadOnly(); NodePages = new ReadOnlyDictionary<string, int>(nodePages); CrossPageLinks = links.AsReadOnly();
+        NodeLabels = new ReadOnlyDictionary<string, string>(nodeLabels);
     }
     /// <summary>Gets the original topology for exploration and source readability diagnostics.</summary>
     public PreparedTopology Source { get; }
@@ -63,6 +64,8 @@ public sealed class TopologyReport {
     public IReadOnlyList<PreparedTopology> Pages { get; }
     /// <summary>Gets the one-based detail page for each stable source node id.</summary>
     public IReadOnlyDictionary<string, int> NodePages { get; }
+    /// <summary>Gets labels keyed by original source node ids, in the same namespace as NodePages and CrossPageLinks.</summary>
+    public IReadOnlyDictionary<string, string> NodeLabels { get; }
     /// <summary>Gets relationships omitted from individual drawings because their endpoints are on different pages.</summary>
     public IReadOnlyList<TopologyReportLink> CrossPageLinks { get; }
 }
@@ -141,7 +144,7 @@ public static partial class TopologyChartExtensions {
         }
         var preparedPages = pages.Select(item => item.Prepare(new TopologyRenderOptions { IncludeLegend = false })).ToList();
         var overview = BuildReportOverview(source, pages, links, options).Prepare();
-        return new TopologyReport(preparedSource, overview, preparedPages, nodePages, links);
+        return new TopologyReport(preparedSource, overview, preparedPages, nodePages, source.Nodes.ToDictionary(node => node.Id, node => node.Label, StringComparer.Ordinal), links);
     }
 
     private static TopologyChart BuildReportOverview(TopologyChart source, List<TopologyChart> pages,
