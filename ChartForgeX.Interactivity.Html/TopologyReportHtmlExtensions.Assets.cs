@@ -124,11 +124,17 @@ public static partial class TopologyReportHtmlExtensions {
                 try { return value.toLocaleLowerCase(language || 'en'); }
                 catch { return value.toLowerCase(); }
             }
+            function normalizeIdentifier(value) {
+                return value.toLowerCase();
+            }
             search.addEventListener('input', () => {
                 const query = search.value.trim();
                 results.replaceChildren();
                 if (!query) { status.textContent = ''; return; }
-                const matches = entries.filter(entry => normalize(entry[1], entry[3]).includes(normalize(query, entry[3])));
+                const identifierQuery = normalizeIdentifier(query);
+                const matches = entries.filter(entry =>
+                    normalize(entry[4], entry[3]).includes(normalize(query, entry[3]))
+                    || normalizeIdentifier(entry[5]).includes(identifierQuery));
                 for (const entry of matches.slice(0, 20)) results.append(makeButton(entry));
                 status.textContent = matches.length + (matches.length === 1 ? ' match' : ' matches')
                     + (matches.length > 20 ? ' · showing first 20; refine your search' : '');

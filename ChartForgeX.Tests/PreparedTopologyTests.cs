@@ -34,6 +34,21 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void ReportSearchKeepsStableIdsIndependentOfTheLabelLocale() {
+        var chart = TopologyChart.Create().AddAutoNode("SERVICE-ID", "HİZMET");
+        chart.Accessibility.Language = "tr";
+
+        string html = chart.PrepareReport().ToInteractiveHtmlPage();
+        var record = Assert.Single(ReportRecords(html, "objects"));
+
+        Assert.Equal("tr", record[3]);
+        Assert.Equal("HİZMET", record[4]);
+        Assert.Equal("SERVICE-ID", record[5]);
+        Assert.Contains("normalize(entry[4], entry[3])", html);
+        Assert.Contains("normalizeIdentifier(entry[5])", html);
+    }
+
+    [Fact]
     public void OverviewCardsFollowNumericPageOrder() {
         var chart = TopologyChart.Create();
         for (int i = 0; i < 12; i++) chart.AddAutoNode("n" + i, "Node " + i);

@@ -26,7 +26,14 @@ public static partial class TopologyReportHtmlExtensions {
         html.Append("<div class=\"search\"><label for=\"search\">Find an object</label><input id=\"search\" type=\"search\" placeholder=\"Name or stable ID\" autocomplete=\"off\"><p id=\"search-status\" role=\"status\"></p><div id=\"results\"></div></div>");
         html.Append("<p id=\"page-status\" role=\"status\"></p><div id=\"content\"></div><noscript>Enable JavaScript to navigate this report, or use the separately exported SVG pages.</noscript>");
         html.Append("<script type=\"application/json\" id=\"objects\">[");
-        var objects = labels.Select(node => new[] { report.NodePages[node.Key].ToString(System.Globalization.CultureInfo.InvariantCulture), node.Value + " — " + node.Key, "", string.IsNullOrWhiteSpace(source.Language) ? "en" : source.Language! });
+        var objects = labels.Select(node => new[] {
+            report.NodePages[node.Key].ToString(System.Globalization.CultureInfo.InvariantCulture),
+            node.Value + " — " + node.Key,
+            "",
+            string.IsNullOrWhiteSpace(source.Language) ? "en" : source.Language!,
+            node.Value,
+            node.Key
+        });
         WriteRecords(html, objects);
         html.Append("]</script>");
         var linksByPage = report.CrossPageLinks.SelectMany(link => new[] { (Page: link.SourcePage, Link: link), (Page: link.TargetPage, Link: link) }).ToLookup(item => item.Page, item => item.Link);
