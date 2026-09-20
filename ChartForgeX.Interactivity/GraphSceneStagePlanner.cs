@@ -42,7 +42,7 @@ public static class GraphSceneStagePlanner {
             var frontier = visibleNodes.Where(id => children[id].Any(child => !visibleSet.Contains(child))).ToArray();
             var full = depth >= maximumDepth;
             var name = full ? "full" : depth == 0 ? "overview" : "depth-" + depth;
-            stages.Add(new GraphSceneStage(index + 1, depth, name, full, options.RootNodeId, visibleNodes, visibleEdges, frontier, scene.Nodes.Count));
+            stages.Add(new GraphSceneStage(index + 1, depth, name, full, options.RootNodeId, visibleNodes, visibleEdges, frontier, scene.Nodes.Count, scene.Edges.Count, scene.Edges.Count(edge => visibleSet.Contains(edge.SourceNodeId) != visibleSet.Contains(edge.TargetNodeId)), depths.Count));
         }
 
         return stages;

@@ -75,8 +75,11 @@ public static class GraphSceneClusterExtensions {
         var unassigned = new HashSet<string>(candidates.Keys, StringComparer.Ordinal);
         var deferred = new List<string>();
         var clusterNumber = 1;
-        while (unassigned.Count > 0) {
-            var seed = unassigned.OrderByDescending(id => adjacency[id].Count).ThenBy(id => id, StringComparer.Ordinal).First();
+        // Degrees do not change while communities are assigned. Rank once, retaining
+        // exactly the same seed order without repeatedly sorting all remaining nodes.
+        var seeds = candidates.Keys.OrderByDescending(id => adjacency[id].Count).ThenBy(id => id, StringComparer.Ordinal).ToArray();
+        foreach (var seed in seeds) {
+            if (!unassigned.Contains(seed)) continue;
             var members = GrowCommunity(seed, adjacency, unassigned, scene.Options.Cluster.TargetClusterSize);
             if (members.Count < scene.Options.Cluster.MinimumClusterSize) {
                 deferred.AddRange(members);
