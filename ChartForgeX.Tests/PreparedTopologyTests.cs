@@ -88,7 +88,25 @@ public sealed class PreparedTopologyTests {
         }
         string html = report.ToInteractiveHtmlPage();
         Assert.Contains("<title>Topology report</title>", html);
-        Assert.Contains("<h1>Topology report</h1>", html);
+        Assert.Contains("<h1 lang=\"pl\">Topology report</h1>", html);
+        Assert.Equal("Topology report", report.Overview.Title);
+        Assert.Equal("Topology report — 1", report.Pages[0].Title);
+    }
+
+    [Fact]
+    public void ReportHtmlRetainsUserLanguageAndEnglishNavigation() {
+        var chart = TopologyChart.Create().WithTitle("Usługi")
+            .AddAutoNode("a", "Źródło").AddAutoNode("b", "Cel").AddEdge("ab", "a", "b");
+        chart.Accessibility.Language = "pl";
+        var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
+        chart.Accessibility.Language = "de";
+        string html = report.ToInteractiveHtmlPage();
+        Assert.Equal("pl", report.Source.Language);
+        Assert.Contains("<html lang=\"pl\">", html);
+        Assert.Contains("<main lang=\"en\">", html);
+        Assert.Contains("<h1 lang=\"pl\">", html);
+        Assert.Contains("<button type=\"button\" lang=\"pl\" data-page=\"1\">", html);
+        Assert.Contains("<span lang=\"en\"> · page 2</span>", html);
     }
 
     [Fact]

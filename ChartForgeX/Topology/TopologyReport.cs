@@ -87,6 +87,7 @@ public static partial class TopologyChartExtensions {
         var preparedSource = chart.Prepare();
         var pageOptions = new TopologyRenderOptions { IncludeLegend = false };
         var source = TopologyLayoutEngine.Clone(chart);
+        source.Title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
         var pages = new List<TopologyChart>();
         var nodePages = new Dictionary<string, int>(StringComparer.Ordinal);
         var incidentEdges = source.Edges.SelectMany(edge => edge.SourceNodeId == edge.TargetNodeId
@@ -113,7 +114,7 @@ public static partial class TopologyChartExtensions {
             if (page == null || page.Nodes.Count >= options.MaximumNodesPerPage ||
                 (page.Nodes.Count > 0 && pageEdgeCount + addedEdges > options.MaximumEdgesPerPage) || (y + node.Height > options.PageHeight - margin && page.Nodes.Count > 0)) {
                 page = TopologyChart.Create().WithId((chart.Id ?? "topology") + "-page-" + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
-                    .WithTitle((chart.Title ?? "Topology") + " — " + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
+                    .WithTitle(source.Title + " — " + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
                     .WithViewport(options.PageWidth, options.PageHeight, margin);
                 page.Theme = source.Theme;
                 page.Accessibility.Name = source.Accessibility.Name;

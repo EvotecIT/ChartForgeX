@@ -32,6 +32,8 @@ public sealed class PreparedTopology {
     public int EdgeCount => _chart.Edges.Count;
     /// <summary>Gets the source title without requiring interchange serialization.</summary>
     public string? Title => _chart.Title;
+    /// <summary>Gets the source language for accessible labels and surrounding document content.</summary>
+    public string? Language => _chart.Accessibility.Language;
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
     public string ToSvg() => new TopologySvgRenderer().RenderPrepared(_chart, _options, _requestedWidth, _requestedHeight);

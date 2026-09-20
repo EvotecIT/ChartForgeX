@@ -14,10 +14,11 @@ public static partial class TopologyReportHtmlExtensions {
         if (report == null) throw new ArgumentNullException(nameof(report));
         var source = report.Source;
         var labels = report.NodeLabels;
-        string title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title!;
-        var html = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>");
-        html.Append(Text(title)).Append("</title><style>").Append(ReportStyles).Append("</style></head><body><main>");
-        html.Append("<header><p class=\"eyebrow\">TOPOLOGY REPORT</p><h1>").Append(Text(title)).Append("</h1><p>")
+        string title = report.Overview.Title!;
+        string language = Text(string.IsNullOrWhiteSpace(source.Language) ? "en" : source.Language!);
+        var html = new StringBuilder("<!doctype html><html lang=\"").Append(language).Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>");
+        html.Append(Text(title)).Append("</title><style>").Append(ReportStyles).Append("</style></head><body><main lang=\"en\">");
+        html.Append("<header><p class=\"eyebrow\">TOPOLOGY REPORT</p><h1 lang=\"").Append(language).Append("\">").Append(Text(title)).Append("</h1><p>")
             .Append(source.NodeCount).Append(" objects · ").Append(report.Pages.Count).Append(" detail pages · ").Append(source.EdgeCount).Append(" relationships</p></header>");
         html.Append("<nav aria-label=\"Report pages\"><button id=\"previous\" type=\"button\">Previous</button><label>Page <select id=\"page\"><option value=\"0\">Overview</option>");
         for (int i = 0; i < report.Pages.Count; i++) html.Append("<option value=\"").Append(i + 1).Append("\">Page ").Append(i + 1).Append("</option>");
@@ -25,7 +26,7 @@ public static partial class TopologyReportHtmlExtensions {
         html.Append("<div class=\"search\"><label for=\"search\">Find an object</label><input id=\"search\" type=\"search\" placeholder=\"Name or stable ID\" autocomplete=\"off\"><p id=\"search-status\" role=\"status\"></p><div id=\"results\"></div></div>");
         html.Append("<p id=\"page-status\" role=\"status\"></p><div id=\"content\"></div><noscript>Enable JavaScript to navigate this report, or use the separately exported SVG pages.</noscript>");
         html.Append("<template id=\"objects\">");
-        foreach (var node in labels) html.Append("<button type=\"button\" data-page=\"").Append(report.NodePages[node.Key]).Append("\">").Append(Text(node.Value)).Append(" — ").Append(Text(node.Key)).Append("</button>");
+        foreach (var node in labels) html.Append("<button type=\"button\" lang=\"").Append(language).Append("\" data-page=\"").Append(report.NodePages[node.Key]).Append("\">").Append(Text(node.Value)).Append(" — ").Append(Text(node.Key)).Append("</button>");
         html.Append("</template>");
         WritePage(html, report, 0, report.Overview, labels);
         for (int i = 0; i < report.Pages.Count; i++) WritePage(html, report, i + 1, report.Pages[i], labels);
@@ -41,8 +42,8 @@ public static partial class TopologyReportHtmlExtensions {
         } else {
             foreach (var link in report.CrossPageLinks.Where(link => link.SourcePage == number || link.TargetPage == number)) {
                 int target = link.SourcePage == number ? link.TargetPage : link.SourcePage;
-                html.Append("<button type=\"button\" data-page=\"").Append(target).Append("\">").Append(Text(labels[link.SourceNodeId])).Append(link.Direction switch { VisualLinkDirection.Forward => " → ", VisualLinkDirection.Backward => " ← ", VisualLinkDirection.Bidirectional => " ↔ ", _ => " — " }).Append(Text(labels[link.TargetNodeId]))
-                    .Append(" · ").Append(Text(link.EdgeId)).Append(" · page ").Append(target).Append("</button>");
+                html.Append("<button type=\"button\" lang=\"").Append(Text(string.IsNullOrWhiteSpace(report.Source.Language) ? "en" : report.Source.Language!)).Append("\" data-page=\"").Append(target).Append("\">").Append(Text(labels[link.SourceNodeId])).Append(link.Direction switch { VisualLinkDirection.Forward => " → ", VisualLinkDirection.Backward => " ← ", VisualLinkDirection.Bidirectional => " ↔ ", _ => " — " }).Append(Text(labels[link.TargetNodeId]))
+                    .Append(" · ").Append(Text(link.EdgeId)).Append("<span lang=\"en\"> · page ").Append(target).Append("</span></button>");
             }
         }
         html.Append("</div></section></template>");
