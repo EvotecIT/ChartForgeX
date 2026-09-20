@@ -21,7 +21,7 @@ function runtime() {
     cancelAnimationFrame: id => frames.delete(id), performance: { now: () => 0 },
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }
   });
-  vm.runInContext(code + '\nthis.api = { workerPhysicsSource, profile, startWorkerPhysics, stopWorkerPhysics, updatePhysicsNodes, updateDraggedPhysicsNode, graphVirtualElement, webGlUpload };', context);
+  vm.runInContext(code + '\nthis.api = { workerPhysicsSource, profile, startWorkerPhysics, stopWorkerPhysics, updatePhysicsNodes, updateDraggedPhysicsNode, releaseDraggedPhysicsNode, graphVirtualElement, webGlUpload };', context);
   const root = context.api.graphVirtualElement('root', {}, []);
   root.dataset = { cfxGraphPhysicsState: 'running', cfxGraphRendererActive: 'canvas' };
   root.isConnected = true;
@@ -135,4 +135,31 @@ test('WebGL reuses capacity and uploads only live values when the visible scene 
   host.api.webGlUpload(renderer, Array(130).fill(2), Array(260).fill(1), Array(65).fill(3), true);
   assert.equal(allocations.length, 6);
   assert.ok(renderer.uploads.position.data.length >= 130);
+});
+
+test('continuous dragging presents neighbors while protecting newly edited and released nodes', () => {
+  const host = runtime();
+  const dragged = { id: 'a', x: 90, y: 80, vx: 0, vy: 0, fixed: true };
+  const neighbor = { id: 'b', x: 0, y: 0, vx: 0, vy: 0, fixed: false };
+  const state = { nodes: [dragged, neighbor], edges: [] };
+  host.api.startWorkerPhysics(host.root, state, host.api.profile(host.root));
+  const worker = host.workers[0];
+  for (let generation = 0; generation < 3; generation++) {
+    worker.onmessage({ data: { type: 'progress', generation,
+      positions: new Float64Array([1, 2, 0, 0, 1, generation + 10, generation + 20, 0, 0, 0]) } });
+    host.api.updateDraggedPhysicsNode(host.root, dragged);
+    host.flush();
+    assert.equal(dragged.x, 90);
+    assert.equal(neighbor.x, generation + 10);
+  }
+  dragged.fixed = false;
+  host.api.releaseDraggedPhysicsNode(host.root, dragged);
+  worker.onmessage({ data: { type: 'done', generation: 3,
+    positions: new Float64Array([1, 2, 0, 0, 1, 40, 50, 0, 0, 0]) } });
+  host.flush();
+  assert.equal(dragged.x, 90);
+  assert.equal(dragged.fixed, false);
+  assert.equal(neighbor.x, 40);
+  assert.equal(host.root.dataset.cfxGraphPhysicsState, 'running');
+  host.api.stopWorkerPhysics(host.root);
 });

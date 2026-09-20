@@ -7,10 +7,10 @@
     };
   };
   // The worker uses the immutable start-order; positions are transferred, not cloned node records.
-  const updatePhysicsNodes = (root, state, positions) => {
+  const updatePhysicsNodes = (root, state, positions, editedNodes, generation) => {
     if (!positions || positions.length !== state.nodes.length * 5) return;
     state.nodes.forEach((node, index) => {
-      if (root.__cfxGraphDragNodeId === node.id) return;
+      if (root.__cfxGraphDragNodeId === node.id || (editedNodes?.get(node.id) || 0) > generation) return;
       const offset = index * 5;
       node.x = positions[offset]; node.y = positions[offset + 1];
       node.vx = positions[offset + 2]; node.vy = positions[offset + 3]; node.fixed = positions[offset + 4] === 1;
@@ -126,7 +126,7 @@ self.onmessage = event => {
     try {
       const blob = new Blob([workerPhysicsSource()], { type: 'application/javascript' });
       url = URL.createObjectURL(blob);
-      const worker = new Worker(url), active = { worker, url, state, settings, frame: 0, generation: 0 };
+      const worker = new Worker(url), active = { worker, url, state, settings, frame: 0, generation: 0, editedNodes: new Map() };
       root.__cfxGraphPerformanceFrameTimestamp = undefined;
       root.__cfxGraphPerformanceFrameCount = 0;
       root.__cfxGraphWorker = active; root.dataset.cfxGraphPhysicsThread = 'worker'; root.dataset.cfxGraphPhysicsAcceleration = physicsAcceleration(state, settings);
@@ -140,9 +140,9 @@ self.onmessage = event => {
           if (root.__cfxGraphWorker !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
           if (root.isConnected === false) { pausePhysics(root); return; }
           const current = message.generation === active.generation;
-          const present = current && (message.type === 'done' || !graphPrefersReducedMotion(root));
+          const present = (current && message.type === 'done') || !graphPrefersReducedMotion(root);
           const renderStarted = performanceClock();
-          if (present) updatePhysicsNodes(root, state, message.positions);
+          if (present) updatePhysicsNodes(root, state, message.positions, active.editedNodes, message.generation);
           if (current && message.type === 'done') {
             stopWorkerPhysics(root, true);
             completePhysics(root, state, message.tick, message.maxVelocity, 'worker');
@@ -219,9 +219,13 @@ self.onmessage = event => {
   };
   const updateDraggedPhysicsNode = (root, node) => {
     const active = root.__cfxGraphWorker;
-    active?.worker.postMessage({ type: 'pin', generation: ++active.generation, nodeId: node.id, x: node.x, y: node.y });
+    if (!active) return;
+    active.editedNodes.set(node.id, ++active.generation);
+    active.worker.postMessage({ type: 'pin', generation: active.generation, nodeId: node.id, x: node.x, y: node.y });
   };
   const releaseDraggedPhysicsNode = (root, node) => {
     const active = root.__cfxGraphWorker;
-    active?.worker.postMessage({ type: 'release', generation: ++active.generation, nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
+    if (!active) return;
+    active.editedNodes.set(node.id, ++active.generation);
+    active.worker.postMessage({ type: 'release', generation: active.generation, nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
   };
