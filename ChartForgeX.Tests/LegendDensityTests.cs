@@ -2,6 +2,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Svg;
 using ChartForgeX.Raster;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -32,6 +33,10 @@ public sealed class LegendDensityTests {
         Assert.InRange((double)summary.Attribute("y")!, 1, 559);
         Assert.Equal(kind == "line" ? 100 : 1, chart.Series.Count);
         Assert.Equal(kind == "line" ? 200 : 100, chart.Series.Sum(series => series.Points.Count));
+        if (kind == "radial") {
+            Assert.Equal(100, svg.Descendants().Count(e => (string?)e.Attribute("data-cfx-role") == "radial-bar-track"));
+            Assert.Equal(100, svg.Descendants().Count(e => (string?)e.Attribute("data-cfx-role") == "radial-bar-ring"));
+        }
         Assert.NotEmpty(new PngChartRenderer().Render(chart));
     }
 
@@ -110,6 +115,93 @@ public sealed class LegendDensityTests {
     public void HorizontalLegendWidthsNeverExceedTheirDrawableLane() {
         Assert.Equal(48, Rendering.LegendRowBudget.HorizontalItemWidth(new string('W', 200), 12, 48, 52));
         Assert.Equal(7, Rendering.LegendRowBudget.HorizontalItemWidth("Value", 12, 7, 52));
+    }
+
+    [Fact]
+    public void HorizontalLegendReserveHonorsHeightBudgetIncludingPlotGap() {
+        var chart = Chart.Create().WithSize(900, 480).WithLegendBudget(0.35);
+        for (var index = 0; index < 100; index++) chart.AddLine("Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
+
+        var rows = Rendering.LegendRowBudget.MaximumRows(chart);
+        Assert.True(Rendering.LegendRowBudget.HorizontalReserve(chart, rows) <= chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction);
+
+        chart.WithLegendBudget(0.05);
+        rows = Rendering.LegendRowBudget.MaximumRows(chart);
+        Assert.True(Rendering.LegendRowBudget.HorizontalReserve(chart, rows) <= chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction);
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+
+        chart.WithLegendBudget(0.01);
+        Assert.Equal(0, Rendering.LegendRowBudget.MaximumRows(chart));
+        Assert.DoesNotContain(XDocument.Parse(new SvgChartRenderer().Render(chart)).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-row");
+    }
+
+    [Fact]
+    public void OverflowSummaryUsesLegendTextCaseInSvg() {
+        var chart = Chart.Create().WithSize(900, 560).WithLegendBudget(maximumRows: 2)
+            .WithLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
+        for (var index = 0; index < 40; index++) chart.AddLine("Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
+
+        var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+        var summary = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-overflow");
+        Assert.Contains("MORE ENTRIES", summary.Value);
+        Assert.DoesNotContain("more entries", summary.Value);
+    }
+
+    [Theory]
+    [InlineData(500)]
+    [InlineData(1000)]
+    public void DenseRadialRingLayoutKeepsEveryRingOutsideTheCenterDisk(int count) {
+        var layout = Rendering.RadialBarRingLayout.Create(28, count, 1, 18);
+
+        Assert.True(layout.StrokeWidth > 0);
+        Assert.True(layout.StrokeWidth <= (layout.OuterRadius - layout.CenterRadius - 2) / count);
+        for (var index = 0; index < count; index++) {
+            var radius = layout.RadiusAt(index);
+            Assert.True(radius > 0);
+            Assert.True(radius - layout.StrokeWidth / 2 >= layout.CenterRadius + 2 - 0.000001);
+        }
+
+        var chart = Chart.Create().WithSize(900, 560).WithLegend(false);
+        chart.AddRadialBar("Dense radial", Enumerable.Range(0, count).Select(index => new ChartPoint(index, 35 + index % 61)));
+        var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+        Assert.Equal(count, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-track"));
+        Assert.Equal(count, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-ring"));
+    }
+
+    [Theory]
+    [InlineData("line")]
+    [InlineData("pie")]
+    [InlineData("radial")]
+    [InlineData("gauge")]
+    public void ImpossibleSideLegendBudgetDoesNotReserveAPlotLane(string kind) {
+        static Chart Create(string chartKind, bool showLegend) {
+            var chart = Chart.Create().WithSize(900, 560).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(0.01).WithLegend(showLegend);
+            var points = Enumerable.Range(0, 40).Select(index => new ChartPoint(index, 35 + index % 61)).ToArray();
+            if (chartKind == "gauge") chart.AddGauge("Value", 73);
+            else if (chartKind == "pie") chart.AddPie("Values", points);
+            else if (chartKind == "radial") chart.AddRadialBar("Values", points);
+            else foreach (var point in points) chart.AddLine("Service " + point.X, new[] { new ChartPoint(0, point.Y), new ChartPoint(1, point.Y + 1) });
+            return chart;
+        }
+
+        static string PlotSignature(string chartKind, Chart chart) {
+            var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+            Assert.DoesNotContain(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-row");
+            if (chartKind == "line") {
+                var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath" && ((string?)element.Attribute("id"))?.EndsWith("-plotClip", StringComparison.Ordinal) == true);
+                var rect = clip.Elements().Single(element => element.Name.LocalName == "rect");
+                return string.Join("|", rect.Attributes().Where(attribute => attribute.Name.LocalName is "x" or "y" or "width" or "height").Select(attribute => attribute.Value));
+            }
+            if (chartKind == "pie") return (string)svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "pie-slice").Attribute("d")!;
+            if (chartKind == "gauge") return (string)svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "gauge-track").Attribute("d")!;
+            var center = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-center");
+            return string.Join("|", new[] { (string)center.Attribute("cx")!, (string)center.Attribute("cy")!, (string)center.Attribute("r")! });
+        }
+
+        var withLegend = Create(kind, showLegend: true);
+        var withoutLegend = Create(kind, showLegend: false);
+        Assert.Equal(PlotSignature(kind, withoutLegend), PlotSignature(kind, withLegend));
+        Assert.Equal(new PngChartRenderer().Render(withoutLegend), new PngChartRenderer().Render(withLegend));
     }
 
     [Fact]

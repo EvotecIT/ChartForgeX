@@ -21,18 +21,22 @@ public sealed partial class SvgChartRenderer {
         var baseOuterRadius = Math.Min(chartPlot.Width * 0.36, chartPlot.Height * 0.38);
         var maxOuterRadius = Math.Min(chartPlot.Width * 0.44, chartPlot.Height * 0.44);
         var outerRadius = Math.Max(28, Math.Min(maxOuterRadius, baseOuterRadius * chart.Options.RadialBarRadiusScale));
-        var gap = Math.Max(5, outerRadius * 0.035);
-        var stroke = Math.Max(5, Math.Min(24, ((outerRadius - 18) / Math.Max(1, count) - gap) * chart.Options.RadialBarStrokeScale));
-        if (stroke * count + gap * Math.Max(0, count - 1) > outerRadius - 12) {
-            stroke = Math.Max(6, (outerRadius - 12 - gap * Math.Max(0, count - 1)) / Math.Max(1, count));
-        }
-
-        var start = -Math.PI / 2;
         var average = series.Points.Average(point => point.Y);
         var centerLabel = FormatValue(chart, average);
-        var labelWidth = Math.Max(54, Math.Min(chartPlot.Width * 0.32, outerRadius * 1.25));
-        var centerDiskRadius = Math.Max(26, outerRadius - count * (stroke + gap) - 2);
+        var dataStyle = DataLabelStyle(chart, series);
+        var valueFontSize = StyleFontSize(dataStyle, Math.Max(26, t.TitleFontSize * 1.32));
+        var nameFontSize = StyleFontSize(dataStyle, Math.Max(9, t.LegendFontSize - 1));
+        var requestedCenterRadius = chart.Options.ShowRadialBarCenterLabel && series.ShowDataLabels != false
+            ? Math.Max(
+                Math.Max(EstimateSvgStyledTextWidth(chart, centerLabel, valueFontSize, dataStyle, emphasized: true), EstimateSvgStyledTextWidth(chart, series.Name, nameFontSize, dataStyle, emphasized: true)) / 2.0 + 10,
+                (valueFontSize + Math.Max(4, Math.Min(8, outerRadius * 0.10)) + nameFontSize) / 2.0 + 8)
+            : 0;
+        var ringLayout = RadialBarRingLayout.Create(outerRadius, count, chart.Options.RadialBarStrokeScale, requestedCenterRadius);
+        var stroke = ringLayout.StrokeWidth;
+        var labelWidth = Math.Max(8, Math.Min(chartPlot.Width * 0.32, ringLayout.CenterRadius * 2 - 16));
+        var centerDiskRadius = ringLayout.CenterRadius;
         var showLabels = series.ShowDataLabels != false;
+        var start = -Math.PI / 2;
 
         var writer = new SvgMarkupWriter(4096);
         writer
@@ -45,8 +49,7 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < count; i++) {
             var point = series.Points[i];
             var ratio = Clamp(point.Y / 100.0, 0, 1);
-            var radius = outerRadius - i * (stroke + gap) - stroke / 2;
-            if (radius <= stroke / 2) continue;
+            var radius = ringLayout.RadiusAt(i);
             var color = RadialBarColor(series, t, i);
             var label = SliceLabel(chart, point, i);
             var valueLabel = FormatValue(chart, point.Y);
@@ -99,9 +102,6 @@ public sealed partial class SvgChartRenderer {
             .EndEmptyElement()
             .Line();
         if (showLabels && chart.Options.ShowRadialBarCenterLabel) {
-            var dataStyle = DataLabelStyle(chart, series);
-            var valueFontSize = StyleFontSize(dataStyle, Math.Max(26, t.TitleFontSize * 1.32));
-            var nameFontSize = StyleFontSize(dataStyle, Math.Max(9, t.LegendFontSize - 1));
             var lineGap = Math.Max(4, Math.Min(8, centerDiskRadius * 0.10));
             var groupHeight = valueFontSize + lineGap + nameFontSize;
             var valueY = cy - groupHeight / 2.0 + valueFontSize / 2.0;
@@ -202,10 +202,11 @@ public sealed partial class SvgChartRenderer {
     private static double RadialBarLegendReserve(Chart chart, ChartSeries series, ChartRect plot) {
         if (IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition)) {
             var availableHeight = Math.Max(1, plot.Height - LegendSideInset(plot.Height) * 2);
+            if (LegendRowBudget.MaximumRows(chart, availableHeight) == 0) return 0;
             var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, series.Points.Count, availableHeight);
             return Math.Min(230, Math.Max(142, RadialBarLegendWidestItem(chart, series, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
         }
-        return 18 + BuildRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80)).Count * RadialBarLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
+        return LegendRowBudget.HorizontalReserve(chart, BuildRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80)).Count);
     }
 
     private static double RadialBarLegendWidestItem(Chart chart, ChartSeries series, int visible) {
@@ -264,8 +265,12 @@ public sealed partial class SvgChartRenderer {
         return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new RadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
-    private static double RadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>
-        IsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * RadialBarLegendRowHeight(chart) : Math.Min(area.Top + 16, area.Bottom - 4);
+    private static double RadialBarLegendStartY(Chart chart, ChartRect area, int rows) {
+        if (!IsBottomLegend(chart.Options.LegendPosition)) return Math.Min(area.Top + 16, area.Bottom - 4);
+        var precedingRowsHeight = Math.Max(0, rows - 1) * RadialBarLegendRowHeight(chart);
+        var bottomInset = Math.Min(18, Math.Max(4, area.Height - 16 - precedingRowsHeight));
+        return area.Bottom - bottomInset - precedingRowsHeight;
+    }
 
     private static double RadialBarLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         if (chart.Options.LegendPosition == ChartLegendPosition.TopRight || chart.Options.LegendPosition == ChartLegendPosition.BottomRight || IsRightLegend(chart.Options.LegendPosition)) return area.Right - Math.Min(area.Width, rowWidth);

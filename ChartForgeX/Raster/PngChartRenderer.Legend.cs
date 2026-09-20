@@ -115,12 +115,14 @@ public sealed partial class PngChartRenderer {
         }
 
         if (PngIsLeftLegend(chart.Options.LegendPosition)) {
-            var reserve = PngLegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = PngLegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             return new ChartRect(plot.X + reserve, plot.Y, System.Math.Max(1, plot.Width - reserve), plot.Height);
         }
 
         if (PngIsRightLegend(chart.Options.LegendPosition)) {
-            var reserve = PngLegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = PngLegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             return new ChartRect(plot.X, plot.Y, System.Math.Max(1, plot.Width - reserve), plot.Height);
         }
 
@@ -153,8 +155,12 @@ public sealed partial class PngChartRenderer {
         return new ChartRect(40, y, System.Math.Max(1, chart.Options.Size.Width - 80), reserve);
     }
 
-    private static double PngLegendStartY(Chart chart, ChartRect area, int rows) =>
-        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 24 - System.Math.Max(0, rows - 1) * PngLegendRowHeight(chart) : System.Math.Min(area.Top + 14, area.Bottom - 4);
+    private static double PngLegendStartY(Chart chart, ChartRect area, int rows) {
+        if (!PngIsBottomLegend(chart.Options.LegendPosition)) return System.Math.Min(area.Top + 14, area.Bottom - 4);
+        var precedingRowsHeight = System.Math.Max(0, rows - 1) * PngLegendRowHeight(chart);
+        var bottomInset = System.Math.Min(24, System.Math.Max(4, area.Height - 14 - precedingRowsHeight));
+        return area.Bottom - bottomInset - precedingRowsHeight;
+    }
 
     private static double PngLegendSideInset(double availableHeight) => System.Math.Min(20, System.Math.Max(0, (availableHeight - 20) / 2.0));
 
@@ -167,13 +173,14 @@ public sealed partial class PngChartRenderer {
 
     private static double PngLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
-    private static double PngLegendBottomReserve(Chart chart) => 18 + PngLegendRowCount(chart) * PngLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
+    private static double PngLegendBottomReserve(Chart chart) => LegendRowBudget.HorizontalReserve(chart, PngLegendRowCount(chart));
 
     private static double PngLegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;
         var fontSize = PngLegendFontSize(chart);
         var entries = BuildPngLegendEntries(chart);
         var availableHeight = System.Math.Max(1, chart.Options.Size.Height - (chart.Options.ShowHeader ? 130 : 78));
+        if (LegendRowBudget.MaximumRows(chart, availableHeight) == 0) return 0;
         var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, entries.Count, availableHeight);
         var widest = 0.0;
         for (var index = 0; index < visible; index++) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(entries[index].Label, fontSize, chart.Options.LegendStyle, emphasized: true));

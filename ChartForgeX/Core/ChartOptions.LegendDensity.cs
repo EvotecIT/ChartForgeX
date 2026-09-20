@@ -7,7 +7,7 @@ public sealed partial class ChartOptions {
     private int? _legendMaximumRows;
 
     /// <summary>Gets or sets the fraction of chart height available to a legend, including its spacing.</summary>
-    /// <remarks>Defaults to 35 percent. At least one row is retained to disclose overflow; plotted data is unchanged.</remarks>
+    /// <remarks>Defaults to 35 percent. At least one row is retained when the budget can fit a readable row; smaller budgets omit the legend while leaving plotted data unchanged.</remarks>
     public double LegendMaximumHeightFraction {
         get => _legendMaximumHeightFraction;
         set {

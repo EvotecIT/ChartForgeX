@@ -183,10 +183,12 @@ public sealed partial class PngChartRenderer {
             var reserve = PngLegendBottomReserve(chart);
             plot = new ChartRect(plot.X, plot.Y + reserve, plot.Width, Math.Max(1, plot.Height - reserve));
         } else if (ShouldDrawLegend(chart) && PngIsLeftLegend(chart.Options.LegendPosition)) {
-            var reserve = PngLegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = PngLegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             plot = new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         } else if (ShouldDrawLegend(chart) && PngIsRightLegend(chart.Options.LegendPosition)) {
-            var reserve = PngLegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = PngLegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             plot = new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         }
 

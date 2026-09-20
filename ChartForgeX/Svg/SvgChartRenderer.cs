@@ -672,10 +672,12 @@ public sealed partial class SvgChartRenderer {
             var reserve = LegendBottomReserve(chart);
             plot = new ChartRect(plot.X, plot.Y + reserve, plot.Width, Math.Max(1, plot.Height - reserve));
         } else if (ShouldDrawLegend(chart) && IsLeftLegend(chart.Options.LegendPosition)) {
-            var reserve = LegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = LegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             plot = new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         } else if (ShouldDrawLegend(chart) && IsRightLegend(chart.Options.LegendPosition)) {
-            var reserve = LegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = LegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             plot = new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         }
 

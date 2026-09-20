@@ -161,7 +161,11 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double LegendStartY(Chart chart, ChartRect area, int rowCount) {
-        if (IsBottomLegend(chart.Options.LegendPosition)) return area.Bottom - 24 - Math.Max(0, rowCount - 1) * LegendRowHeight(chart);
+        if (IsBottomLegend(chart.Options.LegendPosition)) {
+            var precedingRowsHeight = Math.Max(0, rowCount - 1) * LegendRowHeight(chart);
+            var bottomInset = Math.Min(24, Math.Max(4, area.Height - 14 - precedingRowsHeight));
+            return area.Bottom - bottomInset - precedingRowsHeight;
+        }
         return Math.Min(area.Top + 14, area.Bottom - 4);
     }
 
@@ -175,7 +179,7 @@ public sealed partial class SvgChartRenderer {
 
     private static double LegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
-    private static double LegendBottomReserve(Chart chart) => 18 + BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80)).Count * LegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
+    private static double LegendBottomReserve(Chart chart) => LegendRowBudget.HorizontalReserve(chart, BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80)).Count);
 
     private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Any(series => series.ShowInLegend) && !IsMapChart(chart);
 
@@ -186,6 +190,7 @@ public sealed partial class SvgChartRenderer {
         var fontSize = StyleFontSize(style, t.LegendFontSize);
         var entries = BuildLegendEntries(chart, LegendSideReserveMaximumWidth);
         var availableHeight = Math.Max(1, chart.Options.Size.Height - (chart.Options.ShowHeader ? 130 : 78));
+        if (LegendRowBudget.MaximumRows(chart, availableHeight) == 0) return 0;
         var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, entries.Count, availableHeight);
         var widest = entries.Take(visible)
             .Select(item => EstimateTextWidth(StyleText(style, item.Label), fontSize))

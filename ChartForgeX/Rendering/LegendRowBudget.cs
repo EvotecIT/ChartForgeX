@@ -8,6 +8,10 @@ namespace ChartForgeX.Rendering;
 internal static class LegendRowBudget {
     internal static List<T> Apply<T>(List<T> rows, Chart chart, Func<T, int> count, Func<int, T> summary, double? availableHeight = null) {
         var maximumRows = MaximumRows(chart, availableHeight);
+        if (maximumRows <= 0) {
+            rows.Clear();
+            return rows;
+        }
         if (rows.Count <= maximumRows) return rows;
         var omitted = 0;
         for (var i = maximumRows - 1; i < rows.Count; i++) omitted += count(rows[i]);
@@ -19,14 +23,27 @@ internal static class LegendRowBudget {
     internal static int MaximumRows(Chart chart, double? availableHeight = null) {
         var height = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
         if (availableHeight.HasValue) height = Math.Min(height, Math.Max(0, availableHeight.Value));
-        var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - 18) / RowHeight(chart)));
+        var rowHeight = RowHeight(chart);
+        if (height < rowHeight) return 0;
+        var fixedSpacing = IsHorizontal(chart.Options.LegendPosition)
+            ? Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
+            : Math.Min(18, Math.Max(0, height - rowHeight));
+        var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - fixedSpacing) / rowHeight));
         if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);
         return maximumRows;
     }
 
     internal static double RowHeight(Chart chart) {
         var fontSize = chart.Options.LegendStyle?.FontSize ?? chart.Options.Theme.LegendFontSize;
-        return Math.Max(20, fontSize * 1.2 + 10);
+        return Math.Max(20, fontSize * 1.2 + 6);
+    }
+
+    internal static double HorizontalReserve(Chart chart, int rowCount) {
+        if (rowCount <= 0) return 0;
+        var maximumHeight = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
+        var rowHeight = RowHeight(chart);
+        var fixedSpacing = Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, maximumHeight - rowHeight));
+        return Math.Min(maximumHeight, fixedSpacing + rowCount * rowHeight);
     }
 
     internal static double HorizontalItemWidth(string text, double fontSize, double availableWidth, double overhead) {
@@ -46,4 +63,7 @@ internal static class LegendRowBudget {
     }
 
     internal static string Summary(int omitted) => "+ " + omitted.ToString(CultureInfo.InvariantCulture) + " more entries";
+
+    private static bool IsHorizontal(ChartLegendPosition position) =>
+        position != ChartLegendPosition.Left && position != ChartLegendPosition.Right;
 }
