@@ -7,6 +7,19 @@ namespace ChartForgeX.Tests;
 
 public sealed class GraphNeighborhoodTests {
     [Fact]
+    public void HierarchyFooterCountsRenderedObjectsInsteadOfHiddenMembers() {
+        var scene = GraphScene.Create("hidden-hierarchy", "Hidden hierarchy")
+            .AddNode("root", "Root").AddNode("visible", "Visible", node => node.ParentId = "root")
+            .AddNode("hidden", "Hidden", node => { node.ParentId = "root"; node.Hidden = true; })
+            .AddEdge("visible-edge", "root", "visible")
+            .AddEdge("hidden-edge", "root", "hidden", configure: edge => edge.Style.Hidden = true);
+        var stage = scene.CreateStages(options => options.Depths.Add(1)).Last();
+        var svg = XDocument.Parse(scene.ToGraphSvg(stage));
+        Assert.Contains(svg.Descendants().Where(element => element.Name.LocalName == "text"),
+            element => element.Value.Contains("2 nodes · 1 relationships shown; 1 nodes · 1 relationships omitted"));
+    }
+
+    [Fact]
     public void HiddenObjectsDoNotConsumeVisibleBudgets() {
         var scene = Hub(5);
         scene.Nodes.Single(node => node.Id == "n0000").Hidden = true;
