@@ -1078,28 +1078,38 @@
         const edgeStatusOk = !status || attr(edge, 'data-cfx-status') === status || (source && attr(source, 'data-cfx-status') === status) || (target && attr(target, 'data-cfx-status') === status);
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)'));
+      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
       setTopologyFilterHidden('[data-cfx-role="topology-group"]', groupElement => {
         const groupId = attr(groupElement, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)');
+        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden)');
         return !showGroups || !hasVisibleNodes || (group && groupId !== group);
       });
-      const detail = {
-        chartId: attr(wrapper, 'data-chart-id'),
-        nodes: visibleNodes.size,
-        edges: wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)').length,
-        query: topologyFilterState.query || '',
-        status,
-        group,
-        kind,
-        active
-      };
-      setTopologyFilterAttributes(detail);
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
-      if (active && visibleNodes.size) fitVisibleTopology(false);
+      const detail = publishTopologyFilterSummary();
+      if (active && detail.nodes) fitVisibleTopology(false);
       restoreForceFocusLabels();
     };
     const clearTopologyFilter = () => applyTopologyFilter({ query: '', status: '', group: '', kind: '', edges: true, labels: true, groups: true });
+    // Each filter owns its hidden class. Report their intersection without
+    // copying one filter's transient visibility into the other's state.
+    const publishTopologyFilterSummary = () => {
+      const force = forceGraphControls && forceGraphPanel ? forceGraphState() : null;
+      const active = state => !!(state && (String(state.query || '').trim() || state.status || state.group || state.kind || state.edges === false || state.labels === false || state.groups === false));
+      const count = role => Array.from(wrapper.querySelectorAll('[data-cfx-role="' + role + '"]')).filter(isViewportVisible).length;
+      const detail = {
+        chartId: attr(wrapper, 'data-chart-id'), nodes: count('topology-node'), edges: count('topology-edge'),
+        query: topologyFilterState.query || force?.query || '',
+        status: topologyFilterState.status || force?.status || '',
+        group: topologyFilterState.group || force?.group || '',
+        kind: topologyFilterState.kind || '',
+        active: active(topologyFilterState) || active(force),
+        filters: { topology: { ...topologyFilterState }, force: force ? { ...force } : null }
+      };
+      setTopologyFilterAttributes(detail);
+      const summary = forceGraphPanel?.querySelector('[data-cfx-force-summary]');
+      if (summary) summary.textContent = detail.nodes + ' nodes / ' + detail.edges + ' edges visible';
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
+      return detail;
+    };
     const forceSearchText = element => [
       attr(element, 'data-node-id'), attr(element, 'data-node-label'), attr(element, 'data-node-kind'), attr(element, 'data-group-id'),
       attr(element, 'data-edge-id'), attr(element, 'data-edge-label'), attr(element, 'data-edge-secondary-label'), attr(element, 'data-edge-tertiary-label'), attr(element, 'data-edge-kind'), attr(element, 'data-source-node-id'), attr(element, 'data-target-node-id'),
@@ -1176,13 +1186,7 @@
         const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + cssEscape(groupId) + '"]:not(.cfx-topology-html-force-hidden)');
         return !state.groups || !hasVisibleNodes || (state.group && groupId !== state.group);
       });
-      const nodeCount = visibleNodes.size;
-      const edgeCount = wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-force-hidden)').length;
-      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary) summary.textContent = nodeCount + ' nodes / ' + edgeCount + ' edges visible';
-      const detail = { chartId: attr(wrapper, 'data-chart-id'), nodes: nodeCount, edges: edgeCount, query: state.query, status: state.status, group: state.group, kind: '', active: !!(state.query || state.status || state.group || !state.edges || !state.labels || !state.groups) };
-      setTopologyFilterAttributes(detail);
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
+      const detail = publishTopologyFilterSummary();
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail }));
       restoreForceFocusLabels();
     };
@@ -1223,8 +1227,6 @@
         if (active) label.classList.remove('cfx-topology-html-force-hidden');
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
-      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary && detail.kind === 'node' && !state.query && !state.status && !state.group) summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');

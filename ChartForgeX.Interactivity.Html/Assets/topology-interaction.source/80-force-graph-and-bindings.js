@@ -74,13 +74,7 @@
         const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + cssEscape(groupId) + '"]:not(.cfx-topology-html-force-hidden)');
         return !state.groups || !hasVisibleNodes || (state.group && groupId !== state.group);
       });
-      const nodeCount = visibleNodes.size;
-      const edgeCount = wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-force-hidden)').length;
-      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary) summary.textContent = nodeCount + ' nodes / ' + edgeCount + ' edges visible';
-      const detail = { chartId: attr(wrapper, 'data-chart-id'), nodes: nodeCount, edges: edgeCount, query: state.query, status: state.status, group: state.group, kind: '', active: !!(state.query || state.status || state.group || !state.edges || !state.labels || !state.groups) };
-      setTopologyFilterAttributes(detail);
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
+      const detail = publishTopologyFilterSummary();
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail }));
       restoreForceFocusLabels();
     };
@@ -121,8 +115,6 @@
         if (active) label.classList.remove('cfx-topology-html-force-hidden');
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
-      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary && detail.kind === 'node' && !state.query && !state.status && !state.group) summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');

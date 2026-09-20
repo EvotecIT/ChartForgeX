@@ -71,25 +71,14 @@
         const edgeStatusOk = !status || attr(edge, 'data-cfx-status') === status || (source && attr(source, 'data-cfx-status') === status) || (target && attr(target, 'data-cfx-status') === status);
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)'));
+      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
       setTopologyFilterHidden('[data-cfx-role="topology-group"]', groupElement => {
         const groupId = attr(groupElement, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)');
+        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden)');
         return !showGroups || !hasVisibleNodes || (group && groupId !== group);
       });
-      const detail = {
-        chartId: attr(wrapper, 'data-chart-id'),
-        nodes: visibleNodes.size,
-        edges: wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)').length,
-        query: topologyFilterState.query || '',
-        status,
-        group,
-        kind,
-        active
-      };
-      setTopologyFilterAttributes(detail);
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
-      if (active && visibleNodes.size) fitVisibleTopology(false);
+      const detail = publishTopologyFilterSummary();
+      if (active && detail.nodes) fitVisibleTopology(false);
       restoreForceFocusLabels();
     };
     const clearTopologyFilter = () => applyTopologyFilter({ query: '', status: '', group: '', kind: '', edges: true, labels: true, groups: true });
