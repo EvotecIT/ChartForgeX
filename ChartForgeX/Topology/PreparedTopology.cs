@@ -50,7 +50,7 @@ public sealed class PreparedTopology {
 
     /// <summary>Evaluates collisions, viewport expansion, and readability at a target display size.</summary>
     public TopologyReadabilityReport AssessReadability(double targetWidth, double targetHeight, double minimumScale = 0.65) =>
-        TopologyReadabilityReport.Create(Analyze(), targetWidth, targetHeight, minimumScale);
+        TopologyReadabilityReport.Create(Analyze(), _chart, _options, targetWidth, targetHeight, minimumScale);
 }
 
 public static partial class TopologyChartExtensions {

@@ -134,7 +134,7 @@ public static partial class TopologyChartExtensions {
                 pageNodeIds.Clear(); pageEdgeCount = 0;
                 addedEdges = incidentEdges[node.Id].Count(edge => edge.SourceNodeId == node.Id && edge.TargetNodeId == node.Id);
             }
-            if (!string.IsNullOrWhiteSpace(node.GroupId)) node.Metadata["report.sourceGroupId"] = node.GroupId!;
+            if (!string.IsNullOrWhiteSpace(node.GroupId)) SetGeneratedReportMetadata(node.Metadata, "report.sourceGroupId", node.GroupId!);
             node.GroupId = null;
             node.X = x; node.Y = y;
             page.Nodes.Add(node);
@@ -188,5 +188,18 @@ public static partial class TopologyChartExtensions {
     }
 
     private static string ReportPageNodeId(int number, int count) => "page-" + number.ToString("D" + count.ToString(CultureInfo.InvariantCulture).Length, CultureInfo.InvariantCulture);
+
+    private static void SetGeneratedReportMetadata(IDictionary<string, string> metadata, string key, string value) {
+        if (metadata.TryGetValue(key, out var existing)) {
+            var relocatedKey = key + ".source";
+            var ordinal = 2;
+            while (metadata.ContainsKey(relocatedKey)) {
+                relocatedKey = key + ".source-" + ordinal.ToString(CultureInfo.InvariantCulture);
+                ordinal++;
+            }
+            metadata[relocatedKey] = existing;
+        }
+        metadata[key] = value;
+    }
 
 }

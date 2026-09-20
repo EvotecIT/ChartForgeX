@@ -24,22 +24,31 @@ public sealed class TopologyReadabilityReport {
     /// <remarks>This is a geometry check, not a guarantee of text, contrast, or semantic clarity.</remarks>
     public bool NeedsDetailViews => Recommendations.Count != 0;
 
-    internal static TopologyReadabilityReport Create(TopologyLayoutDiagnosticReport layout, double width, double height, double minimumScale) {
+    internal static TopologyReadabilityReport Create(TopologyLayoutDiagnosticReport layout, TopologyChart chart, TopologyRenderOptions options, double width, double height, double minimumScale) {
         Positive(width, nameof(width));
         Positive(height, nameof(height));
         Positive(minimumScale, nameof(minimumScale));
         if (minimumScale > 1) throw new ArgumentOutOfRangeException(nameof(minimumScale), "Minimum scale must be at most one.");
         double scale = Math.Min(width / layout.Width, height / layout.Height);
+        var visibleNodeIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var node in chart.Nodes) {
+            if (TopologyRenderPrimitives.EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden) visibleNodeIds.Add(node.Id);
+        }
         int outside = 0;
         foreach (var node in layout.Nodes) {
+            if (!visibleNodeIds.Contains(node.Id)) continue;
             var bounds = node.Bounds;
             if (bounds.Left < 0 || bounds.Top < 0 || bounds.Right > layout.Width || bounds.Bottom > layout.Height) outside++;
         }
+        int collisions = 0;
+        foreach (var collision in layout.Collisions) {
+            if (visibleNodeIds.Contains(collision.FirstId) && visibleNodeIds.Contains(collision.SecondId)) collisions++;
+        }
         var recommendations = new List<string>();
-        if (layout.HasCollisions) recommendations.Add("Node bounds overlap. Use bounded report pages or a less dense layout.");
+        if (collisions > 0) recommendations.Add("Node bounds overlap. Use bounded report pages or a less dense layout.");
         if (outside > 0) recommendations.Add("Nodes extend outside the viewport. Expand the page or correct explicit coordinates.");
         if (scale < minimumScale) recommendations.Add("Fitting this diagram would reduce its contents below the requested minimum scale. Use an overview with detail pages.");
-        return new TopologyReadabilityReport(scale, layout.Collisions.Count, outside, recommendations.AsReadOnly());
+        return new TopologyReadabilityReport(scale, collisions, outside, recommendations.AsReadOnly());
     }
 
     private static void Positive(double value, string name) {

@@ -146,6 +146,22 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void ReportRelocatesCallerMetadataThatUsesTheGeneratedGroupKey() {
+        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Manual)
+            .AddGroup("group", "Group", 0, 0, 500, 260)
+            .AddNode("node", "Node", 40, 90, groupId: "group");
+        chart.Nodes[0].Metadata["report.sourceGroupId"] = "caller-owned";
+        chart.Nodes[0].Metadata["report.sourceGroupId.source"] = "caller-owned-existing";
+
+        var extensions = chart.PrepareReport().Pages.Single().ToInterchangeEnvelope().Nodes.Single().Extensions;
+
+        Assert.Equal("group", extensions["report.sourceGroupId"]);
+        Assert.Equal("caller-owned-existing", extensions["report.sourceGroupId.source"]);
+        Assert.Contains("caller-owned", extensions.Values);
+        Assert.Equal(3, extensions.Count);
+    }
+
+    [Fact]
     public void ReportHtmlDoesNotApplyInterchangeMetricBudgets() {
         var chart = TopologyChart.Create().AddAutoNode("a", "Source");
         for (int i = 0; i < 1025; i++) chart.Nodes[0].Metrics.Add("metric" + i, "1");
@@ -292,5 +308,19 @@ public sealed class PreparedTopologyTests {
         Assert.Equal(0.2, prepared.AssessReadability(600, 400).FitScale, 3);
         Assert.Throws<ArgumentOutOfRangeException>(() => prepared.AssessReadability(double.NaN, 400));
         Assert.Throws<ArgumentOutOfRangeException>(() => prepared.AssessReadability(600, 400, 2));
+    }
+
+    [Fact]
+    public void ReadabilityIgnoresHiddenAnchorsOutsideTheVisibleViewport() {
+        var chart = TopologyChart.Create().WithViewport(600, 400).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("visible", "Visible", 80, 140)
+            .AddNode("anchor", "Anchor", 900, 900)
+            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+
+        var readability = chart.Prepare().AssessReadability(600, 400);
+
+        Assert.Equal(0, readability.OutOfBoundsNodeCount);
+        Assert.Equal(0, readability.NodeCollisionCount);
+        Assert.False(readability.NeedsDetailViews);
     }
 }
