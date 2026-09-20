@@ -61,8 +61,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("</g>");
         if (stage != null) {
             writer.Append("<text x=\"480\" y=\"542\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">");
-            writer.Append(stage.VisibleNodeIds.Count).Append(" nodes · ").Append(stage.VisibleEdgeIds.Count).Append(" relationships shown; ");
-            writer.Append(stage.HiddenNodeCount).Append(" nodes · ").Append(stage.HiddenEdgeCount).Append(" relationships omitted (");
+            var shownNodes = scene.Nodes.Count(node => !node.Hidden);
+            var shownEdges = scene.Edges.Count(edge => !edge.Style.Hidden);
+            writer.Append(shownNodes).Append(" nodes · ").Append(shownEdges).Append(" relationships shown; ");
+            writer.Append(stage.HiddenNodeCount + stage.VisibleNodeIds.Count - shownNodes).Append(" nodes · ")
+                .Append(stage.HiddenEdgeCount + stage.VisibleEdgeIds.Count - shownEdges).Append(" relationships omitted (");
             writer.Append(stage.BoundaryEdgeCount).Append(" cross the view boundary).</text>");
         }
         writer.Append("</g>");
