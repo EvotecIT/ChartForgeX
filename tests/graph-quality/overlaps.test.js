@@ -50,13 +50,37 @@ test('a centered scene with unresolved collisions is still marked for review', (
   assert.equal(root.dataset.cfxGraphLayoutQuality, 'needs-review');
 });
 
-test('incomplete assessment does not classify an unvisited dense region as sparse', () => {
+test('adaptive sweep reaches dense regions after a tall sparse prefix', () => {
   const nodes = Array.from({ length: 1000 }, (_, i) => ({ ...node(String(i), 0, i < 900 ? i * 100 : 100000), vx: 0, vy: 0 }));
   const root = { dataset: {} };
   const assessment = context.assess(nodes);
-  assert.equal(assessment.complete, false);
-  assert.equal(assessment.overlaps, 0);
+  assert.equal(assessment.complete, true);
+  assert.equal(assessment.overlaps, 4950);
+  context.expand(root, { nodes });
+  assert.equal(root.dataset.cfxGraphLayoutDensityCoverage, 'complete');
+  assert.ok(Number(root.dataset.cfxGraphLayoutDensityExpansion) > 1);
+});
+
+test('a tall collision-free chain is neither marked dense nor expanded', () => {
+  const nodes = Array.from({ length: 1000 }, (_, i) => ({ ...node(String(i), 0, i * 100), vx: 0, vy: 0 }));
+  const root = { dataset: {} };
+  const before = nodes.map(node => [node.x, node.y]);
+  context.expand(root, { nodes });
+  assert.equal(root.dataset.cfxGraphLayoutDensityCoverage, 'complete');
+  assert.equal(root.dataset.cfxGraphLayoutDensityDecision, 'sparse');
+  assert.equal(root.dataset.cfxGraphLayoutDensityExpansion, undefined);
+  assert.deepEqual(nodes.map(node => [node.x, node.y]), before);
+});
+
+test('unresolved sparse coverage does not invent density or move coordinates', () => {
+  const nodes = Array.from({ length: 2000 }, (_, i) => ({
+    ...node(String(i), i < 1000 ? 0 : (i - 999) * 100, i < 1000 ? (i + 1) * 100 : 0), vx: 0, vy: 0
+  }));
+  const root = { dataset: {} };
+  const before = nodes.map(node => [node.x, node.y]);
   context.expand(root, { nodes });
   assert.equal(root.dataset.cfxGraphLayoutDensityCoverage, 'budget-limited');
-  assert.ok(Number(root.dataset.cfxGraphLayoutDensityExpansion) > 1);
+  assert.equal(root.dataset.cfxGraphLayoutDensityDecision, 'unresolved');
+  assert.equal(root.dataset.cfxGraphLayoutDensityExpansion, undefined);
+  assert.deepEqual(nodes.map(node => [node.x, node.y]), before);
 });
