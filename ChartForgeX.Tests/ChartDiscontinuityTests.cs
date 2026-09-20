@@ -13,6 +13,37 @@ public sealed class ChartDiscontinuityTests {
     [InlineData(ChartSeriesKind.Area, false)]
     [InlineData(ChartSeriesKind.Area, true)]
     [InlineData(ChartSeriesKind.StepArea, false)]
+    public void IsolatedSegmentsRemainVisibleWithoutMarkers(ChartSeriesKind kind, bool smooth) {
+        var chart = Chart.Create().WithSize(600, 300).WithPadding(20, 20, 20, 20)
+            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        chart.Series.Add(new ChartSeries("Observed", kind, new[] { new ChartPoint(0, 5), new ChartPoint(5, 5, true), new ChartPoint(10, 5, true) }) { Color = ChartColor.FromRgb(255, 0, 0) });
+        chart.Series[0].WithSmooth(smooth).WithMarkerRadius(0);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var role = kind == ChartSeriesKind.Line ? "line" : kind == ChartSeriesKind.StepLine ? "step-line" : kind == ChartSeriesKind.Area ? "area-line" : "step-area-line";
+        var paths = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
+        Assert.NotEmpty(paths);
+        Assert.All(paths, element => {
+            Assert.Equal(3, ((string)element.Attribute("d")!).Count(character => character == 'L'));
+            Assert.Equal("round", (string?)element.Attribute("stroke-linecap"));
+        });
+        var image = PngReader.Decode(chart.ToPng());
+        var red = 0;
+        for (var y = 0; y < image.Height; y++) {
+            for (var x = 290; x <= 310; x++) {
+                var offset = (y * image.Width + x) * 4;
+                if (image.Pixels[offset] > image.Pixels[offset + 1] + 10 && image.Pixels[offset] > image.Pixels[offset + 2] + 10) red++;
+            }
+        }
+        Assert.True(red > 0, "An isolated observation must paint a stroke cap even when markers are disabled.");
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Line, false)]
+    [InlineData(ChartSeriesKind.Line, true)]
+    [InlineData(ChartSeriesKind.StepLine, false)]
+    [InlineData(ChartSeriesKind.Area, false)]
+    [InlineData(ChartSeriesKind.Area, true)]
+    [InlineData(ChartSeriesKind.StepArea, false)]
     public void SvgAndPngLeaveDisconnectedIntervalsEmpty(ChartSeriesKind kind, bool smooth) {
         Chart Create(bool disconnected) {
             var chart = Chart.Create().WithSize(600, 300).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);

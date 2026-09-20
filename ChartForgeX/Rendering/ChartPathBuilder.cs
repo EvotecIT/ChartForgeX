@@ -13,7 +13,10 @@ internal static class ChartPathBuilder {
 
         foreach (var segment in ChartPointSegments.Split(points)) {
             commands.Add(ChartPathCommand.MoveTo(segment[0].X, segment[0].Y));
-            if (kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea) AddStepSegments(commands, segment);
+            if (segment.Count == 1) {
+                // A round-capped zero-length segment keeps an isolated observation visible.
+                commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
+            } else if (kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea) AddStepSegments(commands, segment);
             else if (smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
             else AddStraightSegments(commands, segment);
         }

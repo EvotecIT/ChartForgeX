@@ -458,6 +458,16 @@
     },
     {
       "category": "charts",
+      "title": "Signal with collection gaps",
+      "body": "Missing-data intervals stay empty after min/max reduction and SVG/PNG rendering.",
+      "tags": [
+        "Area",
+        "Decimation"
+      ],
+      "image": "/examples/generated/dense-signal-gaps-light.svg"
+    },
+    {
+      "category": "charts",
       "title": "Detection Confidence Errorbar Dark",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
