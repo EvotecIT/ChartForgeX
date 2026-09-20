@@ -83,10 +83,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var contentWidth = Math.Max(1, maxX - minX);
         var contentHeight = Math.Max(1, maxY - minY);
         var scale = Math.Min((Width - 120) / contentWidth, (Height - 100) / contentHeight);
-        scale = Math.Max(0.05, Math.Min(scene.Nodes.Count <= 20 ? 3 : scene.Nodes.Count <= 100 ? 1.8 : 1.15, scale));
+        scale = Math.Min(scene.Nodes.Count <= 20 ? 3 : scene.Nodes.Count <= 100 ? 1.8 : 1.15, scale);
         var centerX = (minX + maxX) / 2;
         var centerY = (minY + maxY) / 2;
-        return "translate(" + Number(Width / 2 - centerX * scale) + " " + Number(Height / 2 - centerY * scale) + ") scale(" + Number(scale) + ")";
+        return "translate(" + Number(Width / 2 - centerX * scale) + " " + Number(Height / 2 - centerY * scale) + ") scale(" + scale.ToString("G17", System.Globalization.CultureInfo.InvariantCulture) + ")";
     }
 
     private static ISet<string> SelectStaticNodeLabels(GraphScene scene, int maximumLabels) {

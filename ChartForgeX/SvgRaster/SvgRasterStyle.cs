@@ -48,7 +48,10 @@ internal sealed class SvgRasterStyle {
     public double FillOpacity { get; set; }
     public double StrokeOpacity { get; set; }
     public double StrokeWidth { get; set; }
-    public bool StrokeBeforeFill { get; set; }
+    public int FillOrder { get; set; }
+    public int StrokeOrder { get; set; } = 1;
+    public int MarkerOrder { get; set; } = 2;
+    public bool StrokeBeforeFill => StrokeOrder < FillOrder;
     public string StrokeLineCap { get; set; } = "butt";
     public string StrokeLineJoin { get; set; } = "miter";
     public double StrokeMiterLimit { get; set; } = 4;
@@ -87,7 +90,9 @@ internal sealed class SvgRasterStyle {
             FillOpacity = FillOpacity,
             StrokeOpacity = StrokeOpacity,
             StrokeWidth = StrokeWidth,
-            StrokeBeforeFill = StrokeBeforeFill,
+            FillOrder = FillOrder,
+            StrokeOrder = StrokeOrder,
+            MarkerOrder = MarkerOrder,
             StrokeLineCap = StrokeLineCap,
             StrokeLineJoin = StrokeLineJoin,
             StrokeMiterLimit = StrokeMiterLimit,
@@ -265,10 +270,12 @@ internal sealed class SvgRasterStyle {
                 break;
             case "paint-order":
                 var order = value.Trim().ToLowerInvariant().Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                if (order.Length == 1 && order[0] == "normal") style.StrokeBeforeFill = false;
+                if (order.Length == 1 && order[0] == "normal") { style.FillOrder = 0; style.StrokeOrder = 1; style.MarkerOrder = 2; }
                 else if (order.Length > 0 && order.Distinct().Count() == order.Length && order.All(item => item == "fill" || item == "stroke" || item == "markers")) {
                     var completeOrder = order.Concat(new[] { "fill", "stroke", "markers" }.Where(item => !order.Contains(item))).ToArray();
-                    style.StrokeBeforeFill = Array.IndexOf(completeOrder, "stroke") < Array.IndexOf(completeOrder, "fill");
+                    style.FillOrder = Array.IndexOf(completeOrder, "fill");
+                    style.StrokeOrder = Array.IndexOf(completeOrder, "stroke");
+                    style.MarkerOrder = Array.IndexOf(completeOrder, "markers");
                 }
                 break;
             case "stroke-width":
