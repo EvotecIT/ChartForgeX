@@ -5,6 +5,26 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedTopologyTests {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void DecorativeReportsRetainAccessibilityAndUntitledHtmlHasAName(string? title) {
+        var chart = TopologyChart.Create().AddAutoNode("a", "Service");
+        chart.Title = title;
+        chart.Accessibility.IsDecorative = true;
+        chart.Accessibility.Language = "pl";
+        var report = chart.PrepareReport();
+        foreach (var page in report.Pages.Append(report.Overview)) {
+            Assert.Contains("aria-hidden=\"true\"", page.ToSvg());
+            Assert.True(page.ToInterchangeEnvelope().IsDecorative);
+            Assert.Equal("pl", page.ToInterchangeEnvelope().Language);
+        }
+        string html = report.ToInteractiveHtmlPage();
+        Assert.Contains("<title>Topology report</title>", html);
+        Assert.Contains("<h1>Topology report</h1>", html);
+    }
+
     [Fact]
     public void PreparedExportsAreDetachedFromSourceAndReturnedEnvelope() {
         var chart = TopologyChart.Create().WithViewport(600, 400).WithTheme(TopologyTheme.Light())

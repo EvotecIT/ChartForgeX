@@ -114,6 +114,7 @@ public static partial class TopologyChartExtensions {
                 page.Accessibility.Name = source.Accessibility.Name;
                 page.Accessibility.Description = source.Accessibility.Description;
                 page.Accessibility.Language = source.Accessibility.Language;
+                page.Accessibility.IsDecorative = source.Accessibility.IsDecorative;
                 pages.Add(page); x = margin; y = header; rowHeight = 0;
                 pageNodeIds.Clear(); pageEdgeCount = 0;
                 addedEdges = incidentEdges[node.Id].Count(edge => edge.SourceNodeId == node.Id && edge.TargetNodeId == node.Id);
@@ -155,6 +156,10 @@ public static partial class TopologyChartExtensions {
             .WithViewport(options.PageWidth, options.PageHeight)
             .WithLayout(TopologyLayoutMode.Matrix);
         overview.Theme = source.Theme;
+        overview.Accessibility.Name = source.Accessibility.Name;
+        overview.Accessibility.Description = source.Accessibility.Description;
+        overview.Accessibility.Language = source.Accessibility.Language;
+        overview.Accessibility.IsDecorative = source.Accessibility.IsDecorative;
         for (int i = 0; i < pages.Count; i++) {
             overview.AddAutoNode("page-" + (i + 1).ToString(CultureInfo.InvariantCulture), "Page " + (i + 1).ToString(CultureInfo.InvariantCulture),
                 subtitle: pages[i].Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects", width: 160, height: 72);

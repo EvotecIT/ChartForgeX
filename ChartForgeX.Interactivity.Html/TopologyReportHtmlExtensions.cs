@@ -13,9 +13,10 @@ public static partial class TopologyReportHtmlExtensions {
         if (report == null) throw new ArgumentNullException(nameof(report));
         var source = report.Source.ToInterchangeEnvelope();
         var labels = report.NodeLabels;
+        string title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
         var html = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>");
-        html.Append(Text(source.Title ?? "Topology report")).Append("</title><style>").Append(ReportStyles).Append("</style></head><body><main>");
-        html.Append("<header><p class=\"eyebrow\">TOPOLOGY REPORT</p><h1>").Append(Text(source.Title ?? "Topology report")).Append("</h1><p>")
+        html.Append(Text(title)).Append("</title><style>").Append(ReportStyles).Append("</style></head><body><main>");
+        html.Append("<header><p class=\"eyebrow\">TOPOLOGY REPORT</p><h1>").Append(Text(title)).Append("</h1><p>")
             .Append(source.Nodes.Count).Append(" objects · ").Append(report.Pages.Count).Append(" detail pages · ").Append(source.Edges.Count).Append(" relationships</p></header>");
         html.Append("<nav aria-label=\"Report pages\"><button id=\"previous\" type=\"button\">Previous</button><label>Page <select id=\"page\"><option value=\"0\">Overview</option>");
         for (int i = 0; i < report.Pages.Count; i++) html.Append("<option value=\"").Append(i + 1).Append("\">Page ").Append(i + 1).Append("</option>");
