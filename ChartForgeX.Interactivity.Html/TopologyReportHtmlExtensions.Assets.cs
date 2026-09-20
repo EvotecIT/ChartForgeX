@@ -96,7 +96,9 @@ public static partial class TopologyReportHtmlExtensions {
                 const button = event.target.closest('button[data-page]');
                 if (!button) return;
                 show(button.dataset.page);
-                content.querySelector('.diagram').focus({ preventScroll: true });
+                const diagram = content.querySelector('.diagram');
+                diagram.scrollIntoView({ block: 'start' });
+                diagram.focus({ preventScroll: true });
             });
             search.addEventListener('input', () => {
                 const query = search.value.trim().toLocaleLowerCase();
