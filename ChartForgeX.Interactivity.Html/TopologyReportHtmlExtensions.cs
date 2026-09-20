@@ -14,7 +14,7 @@ public static partial class TopologyReportHtmlExtensions {
         if (report == null) throw new ArgumentNullException(nameof(report));
         var source = report.Source;
         var labels = report.NodeLabels;
-        string title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
+        string title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title!;
         var html = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>");
         html.Append(Text(title)).Append("</title><style>").Append(ReportStyles).Append("</style></head><body><main>");
         html.Append("<header><p class=\"eyebrow\">TOPOLOGY REPORT</p><h1>").Append(Text(title)).Append("</h1><p>")

@@ -63,12 +63,7 @@ public static partial class TopologyChartExtensions {
         var sourceValidation = validator.ValidateScenarioReferences(chart);
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
         var prepared = TopologyLayoutEngine.Prepare(chart, effective.View, effective);
-        // A filtered view may omit its original group while retaining an explicitly selected node.
-        var groupIds = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
-        foreach (var group in prepared.Groups) groupIds.Add(group.Id);
-        if (effective.View != null) foreach (var node in prepared.Nodes) {
-            if (node.GroupId != null && !groupIds.Contains(node.GroupId)) node.GroupId = null;
-        }
+        if (effective.View != null) TopologyLayoutEngine.DetachOmittedSourceGroups(chart, prepared);
         var validation = validator.Validate(prepared, validateScenarioReferences: false, effective);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
         return new PreparedTopology(prepared, effective, chart.Viewport.Width, chart.Viewport.Height);

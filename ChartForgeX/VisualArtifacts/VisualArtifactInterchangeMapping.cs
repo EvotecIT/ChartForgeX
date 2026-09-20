@@ -390,22 +390,10 @@ public static partial class VisualArtifactInterchangeMapping {
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
 
         var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
-        if (detachOmittedSourceGroups) DetachOmittedSourceGroups(topology, prepared);
+        if (detachOmittedSourceGroups) TopologyLayoutEngine.DetachOmittedSourceGroups(topology, prepared);
         var preparedValidation = validator.Validate(prepared, validateScenarioReferences: false, options);
         if (!preparedValidation.IsValid) throw new TopologyValidationException(preparedValidation);
         return prepared;
-    }
-
-    private static void DetachOmittedSourceGroups(TopologyChart source, TopologyChart prepared) {
-        var sourceGroupIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var group in source.Groups) sourceGroupIds.Add(group.Id);
-        var preparedGroupIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var group in prepared.Groups) preparedGroupIds.Add(group.Id);
-        foreach (var node in prepared.Nodes) {
-            if (!string.IsNullOrWhiteSpace(node.GroupId) && sourceGroupIds.Contains(node.GroupId!) && !preparedGroupIds.Contains(node.GroupId!)) {
-                node.GroupId = null;
-            }
-        }
     }
 
     private static VisualArtifactInterchangeNode MapNode(

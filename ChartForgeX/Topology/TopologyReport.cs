@@ -17,7 +17,7 @@ public sealed class TopologyReportOptions {
     public int MaximumNodesPerPage { get; set; } = 12;
     /// <summary>Gets or sets the maximum internal relationships per page, except indivisible self relationships.</summary>
     public int MaximumEdgesPerPage { get; set; } = 24;
-    /// <summary>Gets or sets the space between cards in pixels.</summary>
+    /// <summary>Gets or sets the requested space between cards in pixels. The layout's minimum card separation also applies.</summary>
     public double Gap { get; set; } = 28;
     /// <summary>Gets or sets the minimum card width; larger source dimensions are retained.</summary>
     public double MinimumNodeWidth { get; set; } = 240;
@@ -83,6 +83,7 @@ public static partial class TopologyChartExtensions {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= new TopologyReportOptions();
         options.Validate();
+        var gap = Math.Max(options.Gap, TopologyLayoutNormalizer.NodeGap);
         var preparedSource = chart.Prepare();
         var pageOptions = new TopologyRenderOptions { IncludeLegend = false };
         var source = TopologyLayoutEngine.Clone(chart);
@@ -94,7 +95,7 @@ public static partial class TopologyChartExtensions {
         var pageNodeIds = new HashSet<string>(StringComparer.Ordinal);
         int pageEdgeCount = 0;
         const double margin = 40;
-        const double header = 100;
+        const double header = margin + TopologyRenderPrimitives.HeaderReservedHeight;
         TopologyChart? page = null;
         double x = margin, y = header, rowHeight = 0;
         foreach (var node in source.Nodes.OrderBy(node => node.GroupId ?? string.Empty, StringComparer.Ordinal)) {
@@ -104,7 +105,7 @@ public static partial class TopologyChartExtensions {
             node.Width = Math.Max(options.MinimumNodeWidth, node.Width);
             node.Height = Math.Max(options.MinimumNodeHeight, Math.Max(node.Height, TopologyRenderPrimitives.NodeDetailStartOffset(node, pageOptions) + node.Details.Count * 18 + 1));
             if (page != null && x + node.Width > options.PageWidth - margin && x > margin) {
-                x = margin; y += rowHeight + options.Gap; rowHeight = 0;
+                x = margin; y += rowHeight + gap; rowHeight = 0;
             }
             int addedEdges = incidentEdges[node.Id].Count(edge =>
                 (edge.SourceNodeId == node.Id || pageNodeIds.Contains(edge.SourceNodeId)) &&
@@ -130,7 +131,7 @@ public static partial class TopologyChartExtensions {
             pageNodeIds.Add(node.Id);
             pageEdgeCount += addedEdges;
             nodePages.Add(node.Id, pages.Count);
-            x += node.Width + options.Gap;
+            x += node.Width + gap;
             rowHeight = Math.Max(rowHeight, node.Height);
         }
         var links = new List<TopologyReportLink>();
@@ -168,7 +169,7 @@ public static partial class TopologyChartExtensions {
             overview.AddAutoNode("page-" + (i + 1).ToString(CultureInfo.InvariantCulture), "Page " + (i + 1).ToString(CultureInfo.InvariantCulture),
                 subtitle: pages[i].Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects", width: 160, height: 72);
         }
-        foreach (var group in links.GroupBy(link => (link.SourcePage, link.TargetPage))) {
+        foreach (var group in links.GroupBy(link => (SourcePage: Math.Min(link.SourcePage, link.TargetPage), TargetPage: Math.Max(link.SourcePage, link.TargetPage)))) {
             string from = "page-" + group.Key.SourcePage.ToString(CultureInfo.InvariantCulture);
             string to = "page-" + group.Key.TargetPage.ToString(CultureInfo.InvariantCulture);
             overview.AddEdge(from + "-" + to, from, to, group.Count().ToString(CultureInfo.InvariantCulture) + " relationships");

@@ -6,6 +6,41 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedTopologyTests {
+    [Fact]
+    public void ReportSmallRequestedGapStillRespectsPageWidth() {
+        var chart = TopologyChart.Create();
+        for (int i = 0; i < 4; i++) chart.AddAutoNode("n" + i, "Node " + i);
+        var report = chart.PrepareReport(new TopologyReportOptions { Gap = 1, PageWidth = 1043 });
+        Assert.All(report.Pages, page => Assert.InRange(page.Width, 0, 1043));
+        Assert.Equal(4, report.Pages.Sum(page => page.NodeCount));
+    }
+
+    [Fact]
+    public void ViewDoesNotHideInvalidSourceGroupReferences() {
+        var chart = TopologyChart.Create().AddAutoNode("a", "A");
+        chart.Nodes[0].GroupId = "missing";
+        Assert.Throws<TopologyValidationException>(() => chart.Prepare(new TopologyRenderOptions { View = new TopologyView() }));
+    }
+
+    [Fact]
+    public void ReportPaginationReservesRenderedHeader() {
+        var chart = TopologyChart.Create();
+        for (int i = 0; i < 12; i++) chart.AddAutoNode("n" + i, "Node " + i);
+        var report = chart.PrepareReport(new TopologyReportOptions { MinimumNodeHeight = 200 });
+        Assert.All(report.Pages, page => Assert.InRange(page.Height, 0, 800));
+        Assert.Equal(12, report.Pages.Sum(page => page.NodeCount));
+    }
+
+    [Fact]
+    public void OverviewCombinesBothEndpointOrders() {
+        var chart = TopologyChart.Create().AddAutoNode("a", "A").AddAutoNode("b", "B")
+            .AddEdge("ab", "a", "b").AddEdge("ba", "b", "a");
+        var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
+        var edge = Assert.Single(report.Overview.ToInterchangeEnvelope().Edges);
+        Assert.Equal("2 relationships", edge.Label);
+        Assert.Equal(2, report.CrossPageLinks.Count);
+    }
+
     [Theory]
     [InlineData(VisualLinkDirection.None, " — ")]
     [InlineData(VisualLinkDirection.Forward, " → ")]
