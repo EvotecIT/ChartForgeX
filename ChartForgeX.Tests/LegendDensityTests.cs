@@ -168,6 +168,21 @@ public sealed class LegendDensityTests {
         Assert.Equal(count, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-ring"));
     }
 
+    [Fact]
+    public void LongRadialCenterLabelsCannotConsumeTheRingBand() {
+        var layout = Rendering.RadialBarRingLayout.Create(100, 40, 1, 10_000);
+        Assert.Equal(55, layout.CenterRadius, 6);
+        Assert.True(layout.StrokeWidth > 0);
+        Assert.True(layout.RadiusAt(39) - layout.StrokeWidth / 2 >= layout.CenterRadius + 2 - 0.000001);
+
+        var chart = Chart.Create().WithSize(900, 560).WithLegend(false).WithPngOutputScale(2)
+            .AddRadialBar(new string('W', 100), Enumerable.Range(0, 500).Select(index => new ChartPoint(index, 35 + index % 61)));
+        var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+        var firstRing = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-ring");
+        Assert.InRange((double)firstRing.Attribute("stroke-width")!, 0.000001, 0.999999);
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+    }
+
     [Theory]
     [InlineData("line")]
     [InlineData("pie")]
@@ -201,6 +216,29 @@ public sealed class LegendDensityTests {
         var withLegend = Create(kind, showLegend: true);
         var withoutLegend = Create(kind, showLegend: false);
         Assert.Equal(PlotSignature(kind, withoutLegend), PlotSignature(kind, withLegend));
+        Assert.Equal(new PngChartRenderer().Render(withoutLegend), new PngChartRenderer().Render(withLegend));
+    }
+
+    [Theory]
+    [InlineData(ChartLegendPosition.Top)]
+    [InlineData(ChartLegendPosition.Bottom)]
+    public void ImpossibleHorizontalPieLegendBudgetPreservesPieGeometry(ChartLegendPosition position) {
+        static Chart Create(ChartLegendPosition legendPosition, bool showLegend) => Chart.Create()
+            .WithSize(900, 560)
+            .WithLegendPosition(legendPosition)
+            .WithLegendBudget(0.01)
+            .WithLegend(showLegend)
+            .AddPie("Values", Enumerable.Range(0, 40).Select(index => new ChartPoint(index, 35 + index % 61)));
+
+        static string FirstSlicePath(Chart chart) {
+            var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+            Assert.DoesNotContain(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-row");
+            return (string)svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "pie-slice").Attribute("d")!;
+        }
+
+        var withLegend = Create(position, showLegend: true);
+        var withoutLegend = Create(position, showLegend: false);
+        Assert.Equal(FirstSlicePath(withoutLegend), FirstSlicePath(withLegend));
         Assert.Equal(new PngChartRenderer().Render(withoutLegend), new PngChartRenderer().Render(withLegend));
     }
 

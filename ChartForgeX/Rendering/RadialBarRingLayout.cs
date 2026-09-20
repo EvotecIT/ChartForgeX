@@ -23,7 +23,9 @@ internal readonly struct RadialBarRingLayout {
         var preferredGap = Math.Max(5, outerRadius * 0.035);
         var preferredStroke = Math.Max(5, Math.Min(24, ((outerRadius - 18) / count - preferredGap) * strokeScale));
         var defaultCenterRadius = Math.Min(outerRadius * 0.40, Math.Max(26, outerRadius * 0.24));
-        var minimumCenterRadius = Math.Min(Math.Max(0, outerRadius - 2.5), Math.Max(defaultCenterRadius, requestedCenterRadius));
+        var maximumRequestedCenterRadius = Math.Max(0, outerRadius * 0.55);
+        var boundedRequestedCenterRadius = Math.Min(maximumRequestedCenterRadius, Math.Max(0, requestedCenterRadius));
+        var minimumCenterRadius = Math.Min(Math.Max(0, outerRadius - 2.5), Math.Max(defaultCenterRadius, boundedRequestedCenterRadius));
         var availableBand = Math.Max(0.5, outerRadius - minimumCenterRadius - 2);
         var preferredBand = preferredStroke * count + preferredGap * Math.Max(0, count - 1);
 

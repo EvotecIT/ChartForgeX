@@ -21,7 +21,10 @@ public sealed partial class PngChartRenderer {
         var total = 0d;
         foreach (var value in values) total += value.Point.Y;
         var chartPlot = PngPieChartPlot(chart, plot, legendValues);
-        var radiusFactor = chart.Options.ShowLegend && PngIsTopOrBottomLegend(chart.Options.LegendPosition) ? 0.40 : 0.44;
+        var hasHorizontalLegendLane = chart.Options.ShowLegend
+            && PngIsTopOrBottomLegend(chart.Options.LegendPosition)
+            && PngSliceLegendReserve(chart, legendValues, plot) > 0;
+        var radiusFactor = hasHorizontalLegendLane ? 0.40 : 0.44;
         var radius = Math.Max(1, Math.Min(chartPlot.Width, chartPlot.Height) * radiusFactor);
         var cx = chartPlot.Left + chartPlot.Width / 2;
         var cy = chartPlot.Top + chartPlot.Height / 2;

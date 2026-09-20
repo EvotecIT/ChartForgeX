@@ -23,7 +23,10 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var total = values.Sum(item => item.Point.Y);
         var chartPlot = PieChartPlot(chart, plot, legendValues);
-        var radiusFactor = chart.Options.ShowLegend && IsTopOrBottomLegend(chart.Options.LegendPosition) ? 0.40 : 0.44;
+        var hasHorizontalLegendLane = chart.Options.ShowLegend
+            && IsTopOrBottomLegend(chart.Options.LegendPosition)
+            && SliceLegendReserve(chart, legendValues, plot) > 0;
+        var radiusFactor = hasHorizontalLegendLane ? 0.40 : 0.44;
         var radius = Math.Max(1, Math.Min(chartPlot.Width, chartPlot.Height) * radiusFactor);
         var cx = chartPlot.Left + chartPlot.Width / 2;
         var cy = chartPlot.Top + chartPlot.Height / 2;

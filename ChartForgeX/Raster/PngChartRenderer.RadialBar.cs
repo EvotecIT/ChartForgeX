@@ -47,10 +47,10 @@ public sealed partial class PngChartRenderer {
             var ratio = Clamp(point.Y / 100.0, 0, 1);
             var radius = ringLayout.RadiusAt(i);
             var color = PngRadialBarColor(series, theme, i);
-            c.DrawArc(cx, cy, radius, start, start + Math.PI * 2, ApplyOpacity(theme.Grid, ChartVisualPrimitives.RadialTrackOpacity), Math.Max(1, stroke));
+            c.DrawArc(cx, cy, radius, start, start + Math.PI * 2, ApplyOpacity(theme.Grid, ChartVisualPrimitives.RadialTrackOpacity), stroke);
             if (ratio <= 0) continue;
             var end = start + Math.PI * 2 * ratio;
-            c.DrawArc(cx, cy, radius, start, end, color, Math.Max(1, stroke));
+            c.DrawArc(cx, cy, radius, start, end, color, stroke);
         }
 
         var labelWidth = Math.Max(8, Math.Min(chartPlot.Width * 0.32, ringLayout.CenterRadius * 2 - 16));
