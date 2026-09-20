@@ -162,18 +162,16 @@
       y: point.y - (point.y - current.y) * scale / current.scale
     });
   };
+  const graphSurfaceFit = (size, width, height) => {
+    const scale = Math.min(width / size.width, height / size.height);
+    return { scale: scale > 0 ? scale : 1, offsetX: (width - size.width * scale) / 2, offsetY: (height - size.height * scale) / 2 };
+  };
   const scenePoint = (root, event) => {
-    const stage = root.querySelector('.cfx-graph-stage');
-    const rect = (stage || root).getBoundingClientRect();
-    const size = sceneSize(root);
     const renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
-    const uniformScale = renderer === 'svg' ? Math.min(rect.width / size.width, rect.height / size.height) : 0;
-    const contentWidth = uniformScale > 0 ? size.width * uniformScale : rect.width;
-    const contentHeight = uniformScale > 0 ? size.height * uniformScale : rect.height;
-    const offsetX = (rect.width - contentWidth) / 2;
-    const offsetY = (rect.height - contentHeight) / 2;
-    const sx = (event.clientX - rect.left - offsetX) * size.width / Math.max(1, contentWidth);
-    const sy = (event.clientY - rect.top - offsetY) * size.height / Math.max(1, contentHeight);
+    const surface = root.querySelector(`[data-cfx-role="graph-${renderer === 'svg' ? 'scene' : renderer}"]`) || root.querySelector('.cfx-graph-stage') || root;
+    const rect = surface.getBoundingClientRect(), fit = graphSurfaceFit(sceneSize(root), rect.width, rect.height);
+    const sx = (event.clientX - rect.left - fit.offsetX) / fit.scale;
+    const sy = (event.clientY - rect.top - fit.offsetY) / fit.scale;
     const current = viewport(root);
     return { x: (sx - current.x) / current.scale, y: (sy - current.y) / current.scale, screenX: sx, screenY: sy };
   };
@@ -184,16 +182,17 @@
     const ratio = Math.max(1, window.devicePixelRatio || 1);
     const size = sceneSize(root);
     const hasLayoutBox = rect.width > 0 && rect.height > 0;
-    const width = Math.max(1, Math.round(hasLayoutBox ? rect.width : size.width));
-    const height = Math.max(1, Math.round(hasLayoutBox ? rect.height : size.height));
+    const width = Math.max(1, hasLayoutBox ? rect.width : size.width);
+    const height = Math.max(1, hasLayoutBox ? rect.height : size.height);
     if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
     }
     const context = canvas.getContext('2d');
     if (!context) return null;
-    context.setTransform(ratio * width / size.width, 0, 0, ratio * height / size.height, 0, 0);
-    return { canvas, context };
+    const fit = graphSurfaceFit(size, width, height), pixelX = canvas.width / width, pixelY = canvas.height / height;
+    context.setTransform(pixelX * fit.scale, 0, 0, pixelY * fit.scale, pixelX * fit.offsetX, pixelY * fit.offsetY);
+    return { canvas, context, bounds: { x: -fit.offsetX / fit.scale, y: -fit.offsetY / fit.scale, width: width / fit.scale, height: height / fit.scale } };
   };
   const drawCanvas = (root, state, options) => {
     if (typeof syncNodeDetailLayers === 'function') syncNodeDetailLayers(state);
@@ -206,12 +205,12 @@
     if (!root.classList.contains('cfx-graph-render-canvas') && !options?.force) return;
     const surface = canvasContext(root);
     if (!surface) return;
-    const { context } = surface;
+    const { context, bounds } = surface;
     const size = sceneSize(root);
     const palette = graphThemePalette(root);
-    context.clearRect(0, 0, size.width, size.height);
+    context.clearRect(bounds.x, bounds.y, bounds.width, bounds.height);
     context.fillStyle = palette.paper;
-    context.fillRect(0, 0, size.width, size.height);
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
     const view = viewport(root);
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     context.save();

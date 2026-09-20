@@ -230,23 +230,8 @@
     syncClusterControls(root);
     syncFocusControls(root);
     if (hasFeature(root, 'HierarchyNavigation')) applyHierarchyView(root, attr(root, 'data-cfx-graph-hierarchy-root'), num(root, 'data-cfx-graph-hierarchy-depth', 2), { fit: false, restartPhysics: false });
-    if (hasFeature(root, 'Viewport')) {
-      fitViewport(root);
-      const stage = root.querySelector('.cfx-graph-stage');
-      if (stage && typeof ResizeObserver !== 'undefined') {
-        let frame = 0;
-        const observer = new ResizeObserver(() => {
-          if (root.__cfxGraphViewportTouched) return;
-          if (frame) cancelAnimationFrame(frame);
-          frame = requestAnimationFrame(() => {
-            frame = 0;
-            fitViewport(root);
-          });
-        });
-        observer.observe(stage);
-        root.__cfxGraphResizeObserver = observer;
-      }
-    }
+    if (hasFeature(root, 'Viewport')) fitViewport(root);
+    bindGraphSurfaceResize(root);
     bindCanvasHitTesting(root);
     bindWebGlHitTesting(root);
     bindAcceleratedSvgKeyboard(root);

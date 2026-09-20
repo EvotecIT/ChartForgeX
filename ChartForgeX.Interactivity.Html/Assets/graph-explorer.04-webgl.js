@@ -22,12 +22,13 @@
       in float a_size;
       uniform vec2 u_sceneSize;
       uniform vec3 u_view;
+      uniform vec3 u_surface;
       out vec4 v_color;
       void main() {
-        vec2 screen = a_position * u_view.z + u_view.xy;
+        vec2 screen = (a_position * u_view.z + u_view.xy) * u_surface.x + u_surface.yz;
         vec2 clip = screen / u_sceneSize * 2.0 - 1.0;
         gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
-        gl_PointSize = clamp(a_size * max(0.72, u_view.z), 3.0, 72.0);
+        gl_PointSize = clamp(a_size * max(0.72, u_view.z), 3.0, 72.0) * u_surface.x;
         v_color = a_color;
       }`);
     const fragment = webGlShader(gl, gl.FRAGMENT_SHADER, `#version 300 es
@@ -66,6 +67,7 @@
       size: gl.getAttribLocation(program, 'a_size'),
       sceneSize: gl.getUniformLocation(program, 'u_sceneSize'),
       view: gl.getUniformLocation(program, 'u_view'),
+      surface: gl.getUniformLocation(program, 'u_surface'),
       points: gl.getUniformLocation(program, 'u_points'),
       positionBuffer: gl.createBuffer(), colorBuffer: gl.createBuffer(), sizeBuffer: gl.createBuffer()
     };
@@ -137,7 +139,9 @@
     gl.clearColor(clear[0], clear[1], clear[2], 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(runtime.program);
-    gl.uniform2f(runtime.sceneSize, size.width, size.height);
+    const fit = graphSurfaceFit(size, runtime.canvas.width, runtime.canvas.height);
+    gl.uniform2f(runtime.sceneSize, runtime.canvas.width, runtime.canvas.height);
+    gl.uniform3f(runtime.surface, fit.scale, fit.offsetX, fit.offsetY);
     gl.uniform3f(runtime.view, view.x, view.y, view.scale);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

@@ -129,3 +129,20 @@
       y: size.centerY - centerY * scale
     });
   };
+
+  const bindGraphSurfaceResize = root => {
+    const stage = root.querySelector('.cfx-graph-stage');
+    if (!stage || typeof ResizeObserver === 'undefined') return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (root.isConnected === false) { observer.disconnect(); return; }
+        if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
+        else drawCanvas(root, graphState(root));
+      });
+    });
+    observer.observe(stage);
+    root.__cfxGraphResizeObserver = observer;
+  };
