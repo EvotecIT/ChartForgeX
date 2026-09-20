@@ -8,6 +8,7 @@ public static partial class GalleryWriter {
             "Core chart types for operational reports, trend panels, and executive summaries.",
             "domain-security-dark",
             "dense-signal-decimated-light",
+            "dense-signal-gaps-light",
             "ct-volume-light",
             "ct-regional-light",
             "monthly-posture-dark",
