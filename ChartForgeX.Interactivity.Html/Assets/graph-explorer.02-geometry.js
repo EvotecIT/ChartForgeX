@@ -132,21 +132,22 @@
     return { x: (edge.source.x + edge.target.x) / 2 - dy / length * offset, y: (edge.source.y + edge.target.y) / 2 + dx / length * offset };
   };
   const edgeHasRoute = (edge) => Array.isArray(edge.routePoints) && edge.routePoints.length > 1 && !edge.sourceCollapsed && !edge.targetCollapsed;
-  const routeMidpoint = (points, yOffset) => {
+  const routePointAt = (points, fraction, yOffset) => {
     let total = 0;
     for (let i = 1; i < points.length; i++) total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
     if (total <= 0) return { x: points[0].x, y: points[0].y + yOffset };
     let walked = 0;
     for (let i = 1; i < points.length; i++) {
       const length = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
-      if (walked + length >= total / 2) {
-        const ratio = length <= 0 ? 0 : (total / 2 - walked) / length;
+      if (walked + length >= total * fraction) {
+        const ratio = length <= 0 ? 0 : (total * fraction - walked) / length;
         return { x: points[i - 1].x + (points[i].x - points[i - 1].x) * ratio, y: points[i - 1].y + (points[i].y - points[i - 1].y) * ratio + yOffset };
       }
       walked += length;
     }
     return { x: points[points.length - 1].x, y: points[points.length - 1].y + yOffset };
   };
+  const routeMidpoint = (points, yOffset) => routePointAt(points, .5, yOffset);
   const edgeRenderSource = (edge, control) => {
     if (!edge.sourceCollapsed && !edge.sourceArrow) return edge.source;
     const to = control || edge.target;
@@ -250,12 +251,22 @@
   const avoidEdgeLabelNodeCollisions = (edge, candidate) => {
     const label = edge.label || attr(edge.el, 'data-edge-label');
     if (!label || (!edgeLabelIntersectsNode(candidate, label, edge.source) && !edgeLabelIntersectsNode(candidate, label, edge.target))) return candidate;
+    if (edgeHasRoute(edge)) {
+      const points = routeRenderPoints(edge);
+      for (const fraction of [.45, .55, .35, .65, .25, .75]) {
+        const point = routePointAt(points, fraction, -7);
+        if (!edgeLabelIntersectsNode(point, label, edge.source) && !edgeLabelIntersectsNode(point, label, edge.target)) return point;
+      }
+      return candidate;
+    }
+    const center = { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
+    if (!edgeLabelIntersectsNode(center, label, edge.source) && !edgeLabelIntersectsNode(center, label, edge.target)) return center;
     const dx = edge.target.x - edge.source.x;
     const dy = edge.target.y - edge.source.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     const normal = distance < .001 ? { x: 0, y: -1 } : { x: -dy / distance, y: dx / distance };
     const preferredSign = normal.y > 0 ? -1 : 1;
-    const offsets = [16, 28, 42, 58, 76];
+    const offsets = [20, 36, 54, 76, 102, 136, 176, 220, 280];
     for (const offset of offsets) {
       const preferred = { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
       if (!edgeLabelIntersectsNode(preferred, label, edge.source) && !edgeLabelIntersectsNode(preferred, label, edge.target)) return preferred;

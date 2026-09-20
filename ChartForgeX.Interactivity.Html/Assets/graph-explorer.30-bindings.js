@@ -22,11 +22,10 @@
       selectCanvasNode(event, best);
     });
     canvas.addEventListener('keydown', event => {
-      if (!root.classList.contains('cfx-graph-render-canvas') || !hasFeature(root, 'Selection')) return;
+      if (!root.classList.contains('cfx-graph-render-canvas') || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      const state = (root.__cfxGraphState || graphState(root));
-      const best = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el)) || state.clusters.find(cluster => visible(cluster.el)) || state.edges.find(edge => visible(edge.el));
+      const best = acceleratedGraphSelectedItem(root);
       if (!best) return;
       event.preventDefault(); select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
@@ -35,11 +34,10 @@
     const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!scene) return;
     scene.addEventListener('keydown', event => {
-      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !hasFeature(root, 'Selection')) return;
+      if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      const state = root.__cfxGraphState || graphState(root);
-      const selected = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el));
+      const selected = acceleratedGraphSelectedItem(root);
       if (!selected) return;
       event.preventDefault();
       select(root, selected.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
@@ -59,13 +57,15 @@
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
       const state = (root.__cfxGraphState || graphState(root));
       await preloadCanvasImages(root, state);
-      drawCanvas(root, state, { force: true });
+      drawCanvas(root, state, { force: true, exportDisclosure: true });
       try {
         content = canvas ? canvas.toDataURL('image/png') : '';
       } catch (error) {
         root.dataset.cfxGraphLastExportError = error?.name || 'export-error';
         emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
         return;
+      } finally {
+        if (root.classList.contains('cfx-graph-render-canvas')) drawCanvas(root, state);
       }
       mime = 'image/png';
     }
@@ -96,6 +96,28 @@
     const state = (root.__cfxGraphState || graphState(root));
     syncSvgLayout(root, state); const clone = svg.cloneNode(true);
     materializeAcceleratedSvg(root, clone, state);
+    const disclosure = graphOverviewDisclosure(root);
+    if (disclosure) {
+      const document = clone.ownerDocument;
+      const width = sceneSize(root).width;
+      const group = document.createElementNS('http:' + '//www.w3.org/2000/svg', 'g');
+      group.setAttribute('data-cfx-role', 'graph-export-overview-disclosure');
+      const background = document.createElementNS('http:' + '//www.w3.org/2000/svg', 'rect');
+      background.setAttribute('x', '12'); background.setAttribute('y', '12');
+      background.setAttribute('width', String(Math.max(1, width - 24))); background.setAttribute('height', '48');
+      background.setAttribute('style', 'fill:#102334');
+      group.appendChild(background);
+      [disclosure, width < 480 ? 'Reduced view; expand or filter.' : 'Other relationships are hidden. Expand a site or filter to inspect all.'].forEach((line, index) => {
+        const label = document.createElementNS('http:' + '//www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', '22'); label.setAttribute('y', index ? '48' : '30');
+        label.setAttribute('textLength', String(Math.min(Math.max(1, width - 44), line.length * (index ? 6 : 7))));
+        label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        label.setAttribute('style', `fill:#fff;font:${index ? '11' : '600 13'}px Segoe UI,Arial,sans-serif`);
+        label.textContent = line;
+        group.appendChild(label);
+      });
+      clone.appendChild(group);
+    }
     const computed = root.ownerDocument.defaultView?.getComputedStyle(root);
     if (computed) {
       for (let index = 0; index < computed.length; index++) {
@@ -103,7 +125,7 @@
         if (name.startsWith('--cfx-')) clone.style.setProperty(name, computed.getPropertyValue(name));
       }
     }
-    ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated'].forEach(name => {
+    ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated', 'cfx-graph-priority-overview'].forEach(name => {
       if (root.classList.contains(name)) clone.classList.add(name);
     });
     const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]')

@@ -211,8 +211,7 @@
       if (root.dataset.cfxGraphRendererActive !== 'webgl') return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      const state = root.__cfxGraphState || graphState(root);
-      const selected = state.byId.get(root.dataset.cfxGraphSelectionPrimary || '') || state.nodes.find(node => visible(node.el));
+        const selected = acceleratedGraphSelectedItem(root);
       if (!selected) return;
       event.preventDefault();
       select(root, selected.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });

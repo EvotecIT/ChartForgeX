@@ -630,6 +630,22 @@
   touch-action: none;
 }
 
+.cfx-graph-overview-note {
+  position: absolute;
+  z-index: 3;
+  left: 18px;
+  bottom: 18px;
+  max-width: min(560px, calc(100% - 36px));
+  padding: 8px 12px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 10px;
+  background: var(--cfx-color-surface-raised);
+  color: var(--cfx-color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
 .cfx-graph-interactive-touch .cfx-graph-stage:active,
 .cfx-graph-panning .cfx-graph-stage {
   cursor: grabbing;
@@ -700,6 +716,10 @@
   pointer-events: none;
   stroke-linejoin: round;
   text-anchor: middle;
+}
+
+.cfx-graph-priority-overview .cfx-graph-edge-label:not(.cfx-graph-label-selected):not(.cfx-graph-neighborhood-related) {
+  display: none;
 }
 
 .cfx-graph-node-card-label,
@@ -939,6 +959,10 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-node.cfx-graph-cluster-collapsed-member,
 .cfx-graph-edge.cfx-graph-cluster-collapsed-member,
 .cfx-graph-edge-label.cfx-graph-cluster-collapsed-member,
+.cfx-graph-edge.cfx-graph-bundle-member,
+.cfx-graph-edge-label.cfx-graph-bundle-member,
+.cfx-graph-edge.cfx-graph-overview-member,
+.cfx-graph-edge-label.cfx-graph-overview-member,
 .cfx-graph-node.cfx-graph-hierarchy-hidden,
 .cfx-graph-edge.cfx-graph-hierarchy-hidden,
 .cfx-graph-edge-label.cfx-graph-hierarchy-hidden,
@@ -1068,7 +1092,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     flex-basis: 180px;
   }
 
-  .cfx-graph-stage {
+.cfx-graph-stage {
     height: clamp(340px, 52vh, 460px);
     min-height: 340px;
     aspect-ratio: auto;

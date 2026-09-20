@@ -112,7 +112,7 @@
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
     syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), clusterId: clusterId || '', collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
-    applyFilters(root); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
+    applyFilters(root); syncBundledEdgePresentation(root, state); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
     if (options?.reheat !== false && attr(root, 'data-cfx-graph-reheat-cluster') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'cluster-change', { rebuild: true, fit: false });
   };
   const metadataDetail = (node) => {
@@ -161,6 +161,17 @@
     }
   };
   const select = (root, node, options) => {
+    if (options?.activateBundle !== false && attr(node, 'data-cfx-role') === 'graph-edge' && num(node, 'data-cfx-bundle-count', 0) > 1 && hasFeature(root, 'Clustering')) {
+      const source = attr(node, 'data-source-cluster-id');
+      const target = attr(node, 'data-target-cluster-id');
+      if (source && target && source !== target) {
+        applyClusterState(root, false, source, { reheat: false });
+        applyClusterState(root, false, target, { reheat: false });
+        if (!graphPrefersReducedMotion(root) && attr(root, 'data-cfx-graph-reheat-cluster') !== 'false' && hasFeature(root, 'RuntimePhysics') && reheatPhysics(root, 'bundle-expand', { rebuild: true, fit: true })) return;
+        if (hasFeature(root, 'Viewport')) fitViewport(root);
+        return;
+      }
+    }
     if (!hasFeature(root, 'Selection')) return;
     const additive = hasFeature(root, 'MultiSelection') && !!options?.additive;
     const toggle = additive && !!options?.toggle;
@@ -249,6 +260,8 @@
     applyNeighborhoodFocus(root, nodeId);
   };
   const applyFilters = (root) => {
+    applyCollapsedEdgeBundles(root);
+    syncBundledEdgePresentation(root, root.__cfxGraphState);
     const query = (root.querySelector('[data-cfx-graph-search]')?.value || '').trim().toLowerCase();
     const filters = {};
     items(root, '[data-cfx-graph-filter]').forEach(filter => { filters[attr(filter, 'data-cfx-graph-filter')] = filter.value || ''; });
@@ -271,7 +284,7 @@
       const edgeQueryOk = !query || searchable(edge).includes(query);
       const edgeStatusOk = !filters.status || attr(edge, 'data-cfx-status') === filters.status;
       const edgeKindOk = !filters.kind || attr(edge, 'data-edge-kind') === filters.kind;
-      const collapsedMember = edge.classList.contains('cfx-graph-cluster-collapsed-member');
+      const collapsedMember = edge.classList.contains('cfx-graph-cluster-collapsed-member') || edge.classList.contains('cfx-graph-bundle-member') || edge.classList.contains('cfx-graph-overview-member');
       const intrinsicHidden = attr(edge, 'data-edge-hidden') === 'true';
       const edgeMatchesFacet = edgeQueryOk && edgeStatusOk && edgeKindOk;
       const matches = edgeMatchesFacet && !collapsedMember && !intrinsicHidden;
@@ -322,6 +335,7 @@
     const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
     if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode);
     else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
+    syncGraphItemTabStops(root);
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: actualVisibleNodes.length });
   };
 

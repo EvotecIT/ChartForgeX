@@ -105,7 +105,7 @@
         targetCluster: clusterById.get(attr(el, 'data-target-cluster-id') || target?.cluster || ''),
         weight: Math.max(0.1, num(el, 'data-edge-weight', 1)),
         length: Math.max(0, num(el, 'data-edge-length', 0)),
-        label: attr(el, 'data-edge-label'),
+        label: attr(el, 'data-cfx-bundle-label') || attr(el, 'data-edge-label'),
         directed: attr(el, 'data-edge-directed') === 'true',
         sourceArrow: attr(el, 'data-edge-source-arrow') === 'true',
         targetArrow: attr(el, 'data-edge-target-arrow') === 'true',
@@ -127,7 +127,7 @@
     });
     return { nodes, edges, clusters, byId, clusterById };
   };
-  const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member') && !el.classList.contains('cfx-graph-hierarchy-hidden');
+  const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member') && !el.classList.contains('cfx-graph-bundle-member') && !el.classList.contains('cfx-graph-overview-member') && !el.classList.contains('cfx-graph-hierarchy-hidden');
   const viewport = (root) => ({
     x: num(root, 'data-cfx-viewport-x', 0),
     y: num(root, 'data-cfx-viewport-y', 0),
@@ -282,7 +282,9 @@
         if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edgeColor);
         context.globalAlpha = 1;
       }
-      if ((!moving || selected || related) && edge.label && edge.showLabel && (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related)) {
+      if ((!moving || selected || related) && edge.label && edge.showLabel &&
+          (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related) &&
+          (!root.classList.contains('cfx-graph-priority-overview') || selected || related)) {
         const label = edgeLabelPoint(rendered, control);
         context.font = '11px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
@@ -298,4 +300,16 @@
     });
     drawCanvasNodes(context, root, state.nodes, compact, moving);
     context.restore();
+    const disclosure = options?.exportDisclosure && graphOverviewDisclosure(root);
+    if (disclosure) {
+      context.fillStyle = '#102334';
+      context.fillRect(12, 12, Math.max(1, size.width - 24), 48);
+      context.fillStyle = '#ffffff';
+      context.font = '600 13px Segoe UI, Arial, sans-serif';
+      context.textAlign = 'left';
+      context.textBaseline = 'middle';
+      context.fillText(disclosure, 22, 29, Math.max(1, size.width - 44));
+      context.font = '11px Segoe UI, Arial, sans-serif';
+      context.fillText(size.width < 480 ? 'Reduced view; expand or filter.' : 'Other relationships are hidden. Expand a site or filter to inspect all.', 22, 47, Math.max(1, size.width - 44));
+    }
   };

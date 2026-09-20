@@ -1,8 +1,7 @@
-using System;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
-    internal static (string Name, Action Run)[] Tests { get; } = {
+    internal static (string Name, System.Action Run)[] Tests { get; } = {
         ("Source files stay under architecture line budget", SourceFilesStayUnderArchitectureLineBudget),
         ("Project files keep strict build settings", ProjectFilesKeepStrictBuildSettings),
         ("Public API keeps one type per reusable concept", PublicApiKeepsOneTypePerReusableConcept),
@@ -225,6 +224,7 @@ internal static partial class SmokeTests {
         ("Topology graph projection carries hierarchy and artwork", TopologyGraphProjectionCarriesHierarchyAndArtwork),
         ("Vis-network compatibility maps options to graph scene", VisNetworkCompatMapsOptionsToGraphScene),
         ("Vis-network compatibility renders hierarchical styled HTML", VisNetworkCompatRendersHierarchicalStyledHtml),
+        ("Graph explorer edge labels clear short card routes", GraphExplorerEdgeLabelsClearShortCardRoutes),
         ("Graph explorer edge geometry keeps bidirectional arrow labels aligned", GraphExplorerEdgeGeometryKeepsBidirectionalArrowLabelsAligned),
         ("Graph explorer HTML adapter renders self-contained scene", GraphExplorerHtmlAdapterRendersSelfContainedScene),
         ("Graph explorer editing state and box selection stay opt in", GraphExplorerEditingStateAndBoxSelectionStayOptIn),

@@ -47,16 +47,18 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return new GraphScenePoint(nodePoint.X - dx / length * inset, nodePoint.Y - dy / length * inset);
     }
 
-    private static Point PolylineMidpoint(IReadOnlyList<GraphScenePoint> points, double yOffset) {
+    private static Point PolylineMidpoint(IReadOnlyList<GraphScenePoint> points, double yOffset) => PolylinePointAt(points, 0.5, yOffset);
+
+    private static Point PolylinePointAt(IReadOnlyList<GraphScenePoint> points, double fraction, double yOffset) {
         var total = 0d;
         for (var i = 1; i < points.Count; i++) total += Distance(points[i - 1], points[i]);
         if (total <= 0) return new Point(points[0].X, points[0].Y + yOffset);
-        var halfway = total / 2;
+        var distanceFromStart = total * fraction;
         var traversed = 0d;
         for (var i = 1; i < points.Count; i++) {
             var length = Distance(points[i - 1], points[i]);
-            if (traversed + length >= halfway) {
-                var ratio = length <= 0 ? 0 : (halfway - traversed) / length;
+            if (traversed + length >= distanceFromStart) {
+                var ratio = length <= 0 ? 0 : (distanceFromStart - traversed) / length;
                 return new Point(points[i - 1].X + (points[i].X - points[i - 1].X) * ratio, points[i - 1].Y + (points[i].Y - points[i - 1].Y) * ratio + yOffset);
             }
 

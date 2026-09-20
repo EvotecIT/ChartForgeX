@@ -4,6 +4,34 @@ using ChartForgeX.Interactivity.Html;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static void GraphExplorerEdgeLabelsClearShortCardRoutes() {
+        var html = GraphScene.Create("short-card-route", "Short card route")
+            .AddNode("source", "Source", node => {
+                node.X = 600;
+                node.Y = 386;
+                node.Size = 90;
+                node.Shape = GraphNodeShape.Box;
+                node.Metadata["topology.card"] = "true";
+            })
+            .AddNode("target", "Target", node => {
+                node.X = 380;
+                node.Y = 513;
+                node.Size = 90;
+                node.Shape = GraphNodeShape.Box;
+                node.Metadata["topology.card"] = "true";
+            })
+            .AddEdge("relationship", "source", "target", "Forest / Bidirectional", edge => {
+                edge.Shape = GraphEdgeShape.Curve;
+                edge.Directed = true;
+                edge.SourceArrow = true;
+            })
+            .ToGraphExplorerHtmlFragment();
+
+        var label = ExtractGraphEdgeLabelPoint(html, "relationship");
+        Assert(Math.Abs(label.X - 490) < 14 && label.Y > 430 && label.Y < 475,
+            "Short curved relationships should use the readable gap between card nodes before moving labels away from their route.");
+    }
+
     private static void GraphExplorerEdgeGeometryKeepsBidirectionalArrowLabelsAligned() {
         var bidirectionalHtml = GraphScene.Create("bidirectional-edge", "Bidirectional edge")
             .AddNode("source", "Source", node => {
