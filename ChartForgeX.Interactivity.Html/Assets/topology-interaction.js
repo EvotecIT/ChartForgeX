@@ -1079,11 +1079,7 @@
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
       setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
-      setTopologyFilterHidden('[data-cfx-role="topology-group"]', groupElement => {
-        const groupId = attr(groupElement, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden)');
-        return !showGroups || !hasVisibleNodes || (group && groupId !== group);
-      });
+      syncTopologyGroupVisibility();
       const detail = publishTopologyFilterSummary();
       if (active && detail.nodes) fitVisibleTopology(false);
       restoreForceFocusLabels();
@@ -1091,6 +1087,17 @@
     const clearTopologyFilter = () => applyTopologyFilter({ query: '', status: '', group: '', kind: '', edges: true, labels: true, groups: true });
     // Each filter owns its hidden class. Report their intersection without
     // copying one filter's transient visibility into the other's state.
+    const syncTopologyGroupVisibility = () => {
+      const force = forceGraphControls && forceGraphPanel ? forceGraphState() : null;
+      wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(groupElement => {
+        const groupId = attr(groupElement, 'data-group-id');
+        const hostAllowsGroup = topologyFilterState.groups !== false && (!topologyFilterState.group || topologyFilterState.group === groupId);
+        const forceAllowsGroup = !force || (force.groups && (!force.group || force.group === groupId));
+        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)');
+        groupElement.classList.toggle('cfx-topology-html-filter-hidden', !hostAllowsGroup || !forceAllowsGroup || !hasVisibleNodes);
+        groupElement.classList.remove('cfx-topology-html-force-hidden');
+      });
+    };
     const publishTopologyFilterSummary = () => {
       const force = forceGraphControls && forceGraphPanel ? forceGraphState() : null;
       const active = state => !!(state && (String(state.query || '').trim() || state.status || state.group || state.kind || state.edges === false || state.labels === false || state.groups === false));
@@ -1181,11 +1188,7 @@
         return !state.edges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
       setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
-      setForceHidden('[data-cfx-role="topology-group"]', group => {
-        const groupId = attr(group, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + cssEscape(groupId) + '"]:not(.cfx-topology-html-force-hidden)');
-        return !state.groups || !hasVisibleNodes || (state.group && groupId !== state.group);
-      });
+      syncTopologyGroupVisibility();
       const detail = publishTopologyFilterSummary();
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
       restoreForceFocusLabels();

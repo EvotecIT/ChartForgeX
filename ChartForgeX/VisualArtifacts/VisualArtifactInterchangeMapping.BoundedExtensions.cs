@@ -9,6 +9,7 @@ public static partial class VisualArtifactInterchangeMapping {
         string baseJson = VisualArtifactInterchangeJson.Serialize(envelope);
         int remainingCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters - baseJson.Length;
         int remainingUtf8Bytes = VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes - Encoding.UTF8.GetByteCount(baseJson);
+        long remainingValues = VisualArtifactInterchangeValueBudget.Remaining(envelope);
         foreach (var candidate in candidates) {
             IDictionary<string, string> extensions = candidate.Extensions;
             string sourceId = candidate.SourceId;
@@ -32,10 +33,11 @@ public static partial class VisualArtifactInterchangeMapping {
                 addedSize = new JsonStringSize(keySize.Characters + 1 + sourceSize.Characters + separator,
                     keySize.Utf8Bytes + 1 + sourceSize.Utf8Bytes + separator);
             }
-            if (addedSize.Characters > remainingCharacters || addedSize.Utf8Bytes > remainingUtf8Bytes) continue;
+            if (addedSize.Characters > remainingCharacters || addedSize.Utf8Bytes > remainingUtf8Bytes || remainingValues < 1) continue;
             if (!TrySetBoundedExtension(extensions, ProjectedSourceIdExtension, sourceId)) continue;
             remainingCharacters -= addedSize.Characters;
             remainingUtf8Bytes -= addedSize.Utf8Bytes;
+            remainingValues--;
         }
     }
 

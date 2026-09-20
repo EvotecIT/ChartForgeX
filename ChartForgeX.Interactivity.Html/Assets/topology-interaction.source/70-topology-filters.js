@@ -72,11 +72,7 @@
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
       setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
-      setTopologyFilterHidden('[data-cfx-role="topology-group"]', groupElement => {
-        const groupId = attr(groupElement, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden)');
-        return !showGroups || !hasVisibleNodes || (group && groupId !== group);
-      });
+      syncTopologyGroupVisibility();
       const detail = publishTopologyFilterSummary();
       if (active && detail.nodes) fitVisibleTopology(false);
       restoreForceFocusLabels();
