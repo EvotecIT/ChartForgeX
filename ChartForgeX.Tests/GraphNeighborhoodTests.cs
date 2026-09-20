@@ -7,6 +7,41 @@ namespace ChartForgeX.Tests;
 
 public sealed class GraphNeighborhoodTests {
     [Fact]
+    public void HiddenObjectsDoNotConsumeVisibleBudgets() {
+        var scene = Hub(5);
+        scene.Nodes.Single(node => node.Id == "n0000").Hidden = true;
+        scene.Edges.Single(edge => edge.TargetNodeId == "n0001").Style.Hidden = true;
+        var stage = scene.CreateNeighborhood("root", options => { options.MaximumNodes = 3; options.MaximumEdges = 1; });
+        Assert.Equal(new[] { "n0001", "n0002", "root" }, stage.VisibleNodeIds);
+        Assert.Equal(new[] { "en0002" }, stage.VisibleEdgeIds);
+        Assert.Equal(5, stage.ScopeNodeCount);
+        var next = scene.CreateNeighborhood("root", options => { options.MaximumNodes = 3; options.NeighborOffset = 2; });
+        Assert.Equal(new[] { "n0003", "n0004", "root" }, next.VisibleNodeIds);
+        scene.Nodes.Single(node => node.Id == "root").Hidden = true;
+        Assert.Throws<ArgumentException>(() => scene.CreateNeighborhood("root"));
+    }
+
+    [Theory]
+    [InlineData(300)]
+    [InlineData(1000)]
+    public void LargeExplicitNeighborhoodBudgetFitsAllNodeCenters(int neighbors) {
+        var scene = Hub(neighbors);
+        var stage = scene.CreateNeighborhood("root", options => { options.MaximumNodes = neighbors + 1; options.MaximumEdges = 0; });
+        var document = XDocument.Parse(scene.ToGraphSvg(stage));
+        var viewport = document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "graph-viewport");
+        var transform = System.Text.RegularExpressions.Regex.Match((string)viewport.Attribute("transform")!, @"translate\(([^ ]+) ([^)]+)\) scale\(([^)]+)\)");
+        double Parse(string value) => double.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+        double x = Parse(transform.Groups[1].Value), y = Parse(transform.Groups[2].Value), scale = Parse(transform.Groups[3].Value);
+        Assert.InRange(scale, double.Epsilon, 0.05);
+        var nodes = viewport.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "graph-node").ToArray();
+        Assert.Equal(neighbors + 1, nodes.Length);
+        foreach (var node in nodes) {
+            Assert.InRange(x + Parse((string)node.Attribute("data-node-x")!) * scale, 0, 960);
+            Assert.InRange(y + Parse((string)node.Attribute("data-node-y")!) * scale, 0, 560);
+        }
+    }
+
+    [Fact]
     public void LargeStarSpokesDoNotPassThroughOtherNodes() {
         var scene = Hub(1000);
         var stage = scene.CreateNeighborhood("root", options => { options.MaximumNodes = 40; options.MaximumEdges = 80; });

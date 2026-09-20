@@ -56,7 +56,7 @@ public sealed class GraphSceneStage {
     /// <summary>Gets the number of source relationships with exactly one endpoint in this view.</summary>
     public int BoundaryEdgeCount { get; }
 
-    /// <summary>Gets the number of nodes in the selected hierarchy or neighborhood before applying depth and page budgets.</summary>
+    /// <summary>Gets the eligible node count before paging. Neighborhoods exclude hidden nodes and honor the hop limit; hierarchy stages report the selected subtree.</summary>
     public int ScopeNodeCount { get; }
 }
 

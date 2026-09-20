@@ -321,10 +321,8 @@ internal static partial class SvgRasterRenderer {
             if (contour.Count >= 3) fillContours.Add(contour);
             strokeContours.Add(subpath.IsClosed ? contour : transformed);
         }
-        if (style.StrokeBeforeFill) foreach (var strokeContour in strokeContours) Stroke(canvas, strokeContour, style, matrix.ScaleFactor, definitions);
-        Fill(canvas, fillContours, style, matrix, definitions, viewport);
-        if (!style.StrokeBeforeFill) foreach (var strokeContour in strokeContours) Stroke(canvas, strokeContour, style, matrix.ScaleFactor, definitions);
-        RenderMarkers(canvas, element, style, matrix, definitions, sourceRings, width, height, referenceDepth, ancestors);
+        PaintLayers(canvas, fillContours, strokeContours, style, matrix, definitions, viewport,
+            () => RenderMarkers(canvas, element, style, matrix, definitions, sourceRings, width, height, referenceDepth, ancestors));
     }
 
     private static void RenderRect(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
@@ -349,19 +347,19 @@ internal static partial class SvgRasterRenderer {
             new ChartPoint(HorizontalLength(element, "x2", viewport), VerticalLength(element, "y2", viewport))
         };
         var points = new[] { matrix.Transform(sourcePoints[0]), matrix.Transform(sourcePoints[1]) };
-        Stroke(canvas, points, style, matrix.ScaleFactor, definitions);
-        RenderMarkers(canvas, element, style, matrix, definitions, new[] { new List<ChartPoint>(sourcePoints) }, width, height, referenceDepth, ancestors);
+        PaintLayers(canvas, Array.Empty<List<ChartPoint>>(), new[] { new List<ChartPoint>(points) }, style, matrix, definitions, viewport,
+            () => RenderMarkers(canvas, element, style, matrix, definitions, new[] { new List<ChartPoint>(sourcePoints) }, width, height, referenceDepth, ancestors));
     }
 
     private static void RenderPointList(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport, bool close) {
         var points = ReadPointList(element.Get("points"));
         if (points.Count == 0) return;
         var transformed = TransformRing(points, matrix);
-        FillAndStroke(canvas, new[] { transformed }, style, close, matrix, definitions, viewport);
-        RenderMarkers(canvas, element, style, matrix, definitions, new[] { points }, width, height, referenceDepth, ancestors);
+        FillAndStroke(canvas, new[] { transformed }, style, close, matrix, definitions, viewport,
+            () => RenderMarkers(canvas, element, style, matrix, definitions, new[] { points }, width, height, referenceDepth, ancestors));
     }
 
-    private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool closeStroke, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
+    private static void FillAndStroke(RgbaCanvas canvas, IEnumerable<List<ChartPoint>> rings, SvgRasterStyle style, bool closeStroke, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, Action? renderMarkers = null) {
         var contours = new List<List<ChartPoint>>();
         var strokeRings = new List<List<ChartPoint>>();
         foreach (var ring in rings) {
@@ -371,9 +369,7 @@ internal static partial class SvgRasterRenderer {
             strokeRings.Add(closeStroke ? contour : new List<ChartPoint>(ring));
         }
 
-        if (style.StrokeBeforeFill) foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
-        Fill(canvas, contours, style, matrix, definitions, viewport);
-        if (!style.StrokeBeforeFill) foreach (var ring in strokeRings) Stroke(canvas, ring, style, matrix.ScaleFactor, definitions);
+        PaintLayers(canvas, contours, strokeRings, style, matrix, definitions, viewport, renderMarkers);
     }
 
     private static void Fill(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterObjectPaint? objectPaint = null) {
