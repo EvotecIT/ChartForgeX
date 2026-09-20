@@ -340,3 +340,12 @@ test('accelerated SVG materialization preserves selected and focused route label
   append({}, group, edge, {});
   assert.match(group.label.class, /cfx-graph-neighborhood-related/);
 });
+
+test('host export includes numeric worker transport counters', () => {
+  const { root } = scene(2, [[0, 1, 'Link', 'healthy']]);
+  root.dataset.cfxGraphPerformanceWorkerTransferBytes = '14400';
+  root.dataset.cfxGraphPerformanceStaleWorkerUpdates = '3';
+  const performance = runtime.exportGraphJson(root).performance;
+  assert.equal(performance.workerTransferBytes, 14400);
+  assert.equal(performance.staleWorkerUpdates, 3);
+});
