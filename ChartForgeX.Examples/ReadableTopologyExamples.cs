@@ -16,6 +16,7 @@ internal static class ReadableTopologyExamples {
         var page = report.Pages[0];
         File.WriteAllText(Path.Combine(output, "readable-topology-detail.svg"), page.ToSvg());
         File.WriteAllBytes(Path.Combine(output, "readable-topology-detail.png"), page.ToPng());
+        File.WriteAllText(Path.Combine(output, "readable-topology-detail.static-only"), string.Empty);
         File.WriteAllText(Path.Combine(output, "readable-topology-detail.json"), page.ToInterchangeEnvelope().ToJson());
         File.WriteAllLines(Path.Combine(output, "readable-topology-index.txt"),
             report.NodePages.Select(pair => pair.Key + ": page " + pair.Value)

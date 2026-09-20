@@ -2,6 +2,7 @@ using ChartForgeX.Topology;
 using ChartForgeX.Interactivity.Html;
 using Xunit;
 using ChartForgeX.Primitives;
+using ChartForgeX.VisualArtifacts;
 
 namespace ChartForgeX.Tests;
 
@@ -116,6 +117,32 @@ public sealed class PreparedTopologyTests {
         Assert.NotEqual(sourceId, node.Id);
         Assert.Equal(sourceId, node.Extensions["chartforgex.sourceId"]);
         Assert.Equal(1, report.NodePages[sourceId]);
+    }
+
+    [Fact]
+    public void ReportInterchangeOmitsSourceIdWhenItExceedsTheInterchangeTextBudget() {
+        string sourceId = new string('n', 65_537);
+        var report = TopologyChart.Create().AddAutoNode(sourceId, "Oversized identifier").PrepareReport();
+
+        var node = Assert.Single(report.Pages).ToInterchangeEnvelope().Nodes.Single();
+
+        Assert.NotEqual(sourceId, node.Id);
+        Assert.DoesNotContain("chartforgex.sourceId", node.Extensions.Keys);
+        Assert.Equal(1, report.NodePages[sourceId]);
+    }
+
+    [Fact]
+    public void ReportInterchangeRelocatesCollidingSourceIdMetadata() {
+        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Manual)
+            .AddGroup("shared", "Group", 0, 0, 400, 200)
+            .AddNode("shared", "Bounded identifier", 30, 70, groupId: "shared");
+        chart.Nodes[0].Metadata["chartforgex.sourceId"] = "caller-owned";
+
+        var node = chart.ToVisualArtifact().ToInterchangeEnvelope().Nodes.Single();
+
+        Assert.Equal("shared", node.Extensions["chartforgex.sourceId"]);
+        Assert.Contains("caller-owned", node.Extensions.Values);
+        Assert.Equal(2, node.Extensions.Count);
     }
 
     [Fact]

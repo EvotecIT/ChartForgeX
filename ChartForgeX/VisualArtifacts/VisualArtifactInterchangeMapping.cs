@@ -8,6 +8,8 @@ namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Creates portable semantic interchange envelopes from ChartForgeX visual artifacts.</summary>
 public static partial class VisualArtifactInterchangeMapping {
+    private const string ProjectedSourceIdExtension = "chartforgex.sourceId";
+
     /// <summary>
     /// Creates a versioned semantic interchange envelope for an artifact.
     /// </summary>
@@ -425,9 +427,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Topology = MapNodePresentation(node, displayMode, showStatusBadge)
         };
         Copy(node.Metadata, mapped.Extensions);
-        if (!string.Equals(node.Id, id, StringComparison.Ordinal)) {
-            mapped.Extensions["chartforgex.sourceId"] = node.Id;
-        }
+        AddProjectedSourceId(mapped.Extensions, node.Id, id);
         CopyMetrics(node.Metrics, mapped.Metrics);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side, Offset = port.Offset, Label = port.Label };
@@ -446,6 +446,21 @@ public static partial class VisualArtifactInterchangeMapping {
             mapped.Details.Add(mappedDetail);
         }
         return mapped;
+    }
+
+    private static void AddProjectedSourceId(IDictionary<string, string> extensions, string sourceId, string projectedId) {
+        if (string.Equals(sourceId, projectedId, StringComparison.Ordinal) ||
+            sourceId.Length > VisualArtifactInterchangeValidation.MaximumTextCharacters ||
+            extensions.Count >= VisualArtifactInterchangeValidation.MaximumExtensionEntries) {
+            return;
+        }
+
+        if (extensions.TryGetValue(ProjectedSourceIdExtension, out string? existingValue)) {
+            extensions[ProjectedSourceIdExtension] = sourceId;
+            extensions[AllocateMetadataKey(extensions, ProjectedSourceIdExtension)] = existingValue;
+            return;
+        }
+        extensions[ProjectedSourceIdExtension] = sourceId;
     }
 
     private static VisualArtifactInterchangeEdge MapEdge(
