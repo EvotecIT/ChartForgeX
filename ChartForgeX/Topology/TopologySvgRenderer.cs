@@ -394,10 +394,10 @@ public sealed partial class TopologySvgRenderer {
                 var renderSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol) || iconDefinition != null;
                 var neutralSurface = IsMonitoringDashboardStyle(options) && UseNeutralGroupSurface(options);
                 var groupLabelWidth = GroupHeaderLabelWidth(group, options, renderSymbol);
-                var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true);
-                var groupLabel = TrimToEstimatedWidth(group.Label, groupLabelWidth, groupLabelSize, true);
+                var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true, options.TextMeasurement);
+                var groupLabel = TrimToEstimatedWidth(group.Label, groupLabelWidth, groupLabelSize, true, options.TextMeasurement);
                 if (renderSymbol && !neutralSurface) {
-                    var textWidth = EstimateTextWidth(groupLabel, groupLabelSize, true);
+                    var textWidth = EstimateTextWidth(groupLabel, groupLabelSize, true, options.TextMeasurement);
                     var symbolCx = cx - (textWidth + 30) / 2 + 10;
                     groupElement.Element("circle", circle => circle
                         .Attribute("cx", symbolCx)
@@ -424,8 +424,8 @@ public sealed partial class TopologySvgRenderer {
                         labelWidth = GroupHeaderLabelWidth(group, options, true);
                     }
 
-                    var neutralLabelSize = FitFontSize(group.Label, labelWidth, 15, 12, true);
-                    var neutralLabel = TrimToEstimatedWidth(group.Label, labelWidth, neutralLabelSize, true);
+                    var neutralLabelSize = FitFontSize(group.Label, labelWidth, 15, 12, true, options.TextMeasurement);
+                    var neutralLabel = TrimToEstimatedWidth(group.Label, labelWidth, neutralLabelSize, true, options.TextMeasurement);
                     groupElement.Element("text", text => text
                         .Attribute("x", labelX)
                         .Attribute("y", group.Y + 30)
@@ -435,7 +435,7 @@ public sealed partial class TopologySvgRenderer {
                         .Text(neutralLabel));
                     AddGroupStatusDot(groupElement, group, group.X + group.Width - 22, group.Y + 26, theme, options);
                     if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
-                        var neutralSubtitle = TrimToEstimatedWidth(group.Subtitle!, labelWidth, 11, false);
+                        var neutralSubtitle = TrimToEstimatedWidth(group.Subtitle!, labelWidth, 11, false, options.TextMeasurement);
                         groupElement.Element("text", text => text
                             .Attribute("x", labelX)
                             .Attribute("y", group.Y + 48)
@@ -448,7 +448,7 @@ public sealed partial class TopologySvgRenderer {
                 }
 
                 groupElement.Element("text", text => text
-                    .Attribute("x", renderSymbol ? cx - (EstimateTextWidth(groupLabel, groupLabelSize, true) + 30) / 2 + 30 : cx)
+                    .Attribute("x", renderSymbol ? cx - (EstimateTextWidth(groupLabel, groupLabelSize, true, options.TextMeasurement) + 30) / 2 + 30 : cx)
                     .Attribute("y", group.Y + 30)
                     .Attribute("text-anchor", renderSymbol ? "start" : "middle")
                     .Attribute("fill", accent)
@@ -457,7 +457,7 @@ public sealed partial class TopologySvgRenderer {
                     .Text(groupLabel));
                 AddGroupStatusDot(groupElement, group, group.X + group.Width - 22, group.Y + 26, theme, options);
                 if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
-                    var subtitle = TrimToEstimatedWidth(group.Subtitle!, group.Width - 44, 12, false);
+                    var subtitle = TrimToEstimatedWidth(group.Subtitle!, group.Width - 44, 12, false, options.TextMeasurement);
                     groupElement.Element("text", text => text
                         .Attribute("x", cx)
                         .Attribute("y", group.Y + 50)

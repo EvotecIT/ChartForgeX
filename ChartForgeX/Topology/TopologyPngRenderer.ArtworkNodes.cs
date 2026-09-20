@@ -20,7 +20,7 @@ public sealed partial class TopologyPngRenderer {
         }
 
         if (!isHighlighted && highlight.IsActive) canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, 16, WithAlpha(Color(theme.Background), 185));
-        DrawNodeBadge(canvas, node, theme, accent, TopologyNodeDisplayMode.Artwork);
+        DrawNodeBadge(canvas, node, theme, accent, TopologyNodeDisplayMode.Artwork, options);
     }
 
     private static bool TryDrawArtworkNode(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, bool isSelected, bool isHighlighted, TopologyHighlightState highlight, TopologyRenderOptions options) {
@@ -37,7 +37,7 @@ public sealed partial class TopologyPngRenderer {
         canvas.DrawImageScaled((int)Math.Round(node.X), (int)Math.Round(node.Y), destinationWidth, destinationHeight, sourceWidth, sourceHeight, rgba);
         if (isSelected) canvas.StrokeRoundedRect(node.X, node.Y, node.Width, node.Height, Math.Min(18, Math.Min(node.Width, node.Height) / 5.0), WithAlpha(accent, 190), 1.8);
         if (!isHighlighted && highlight.IsActive) canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, 16, WithAlpha(Color(theme.Background), 185));
-        DrawNodeBadge(canvas, node, theme, accent, TopologyNodeDisplayMode.Artwork);
+        DrawNodeBadge(canvas, node, theme, accent, TopologyNodeDisplayMode.Artwork, options);
         return true;
     }
 

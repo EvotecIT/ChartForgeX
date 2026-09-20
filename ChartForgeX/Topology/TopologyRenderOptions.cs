@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ChartForgeX.Core;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Topology;
 
@@ -7,6 +8,7 @@ namespace ChartForgeX.Topology;
 /// Defines topology rendering options.
 /// </summary>
 public sealed class TopologyRenderOptions {
+    internal TextMeasurementContext? TextMeasurement { get; set; }
     private ChartLineVisualStyle? _edgeVisualStyle;
     private TopologyLayoutPreset _layoutPreset;
     private TopologyViewPreset _preset;

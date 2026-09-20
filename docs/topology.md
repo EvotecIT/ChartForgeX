@@ -4,6 +4,14 @@
 
 Use it for static or embeddable diagrams such as service maps, SQL/server dependency views, people/team relationship diagrams, network connectivity maps, replication meshes, geographic-style location views, and product-specific topology views supplied by host applications.
 
+## Text measurement and fonts
+
+Topology layout measures labels using the host font resolved from `TopologyTheme.FontFamily`. Node wrapping, edge-label backplates and routing clearance share that measurement. Subtitle chips and badges use the same geometry in SVG and PNG; long center-banner titles are shortened to the available width. Trimming respects text-element boundaries rather than cutting UTF-16 code units.
+
+Use `chart.GetPngFontInfo()` to inspect the selected face and fallback before generating output. Measurements are cached within each render with a bounded cache; changing a source theme takes effect on the next render.
+
+For installed Arial and recognized DejaVu or Liberation bold companions, layout reserves the larger of native bold advances and the raster renderer's synthetic bold advances. Other faces retain the resolved regular-face measurement with synthetic bold spacing. SVG keeps the theme's font-family stack. A browser or document viewer may resolve it differently from the generating machine, so matching layout does not guarantee identical glyphs across hosts. Fonts are not embedded, and this measurement path does not add complex-script shaping or per-glyph fallback.
+
 ## Model
 
 - `TopologyChart` contains viewport, layout mode, layout direction, groups, nodes, edges, legend, and theme.

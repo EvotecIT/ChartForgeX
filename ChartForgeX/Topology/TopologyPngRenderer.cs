@@ -153,13 +153,12 @@ public sealed partial class TopologyPngRenderer {
         if (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle)) return;
         if (options.HeaderStyle == TopologyHeaderStyle.CenterBanner && !string.IsNullOrWhiteSpace(chart.Title)) {
             var fontSize = 34.0;
-            var availableWidth = Math.Max(0, chart.Viewport.Width - chart.Viewport.Padding * 2);
-            var bannerWidth = Math.Min(availableWidth, Math.Max(360, canvas.MeasureTextEmphasizedWidth(chart.Title!, fontSize) + 72));
+            var (title, bannerWidth) = BannerTitle(chart, options);
             var bannerHeight = 58.0;
             var bannerX = (chart.Viewport.Width - bannerWidth) / 2;
             var bannerY = chart.Viewport.Padding + 2;
             canvas.FillRoundedRect(bannerX, bannerY, bannerWidth, bannerHeight, 5, ChartColor.Black);
-            DrawCentered(canvas, chart.Viewport.Width / 2, bannerY + 12, chart.Title!, ChartColor.White, fontSize, true);
+            DrawCentered(canvas, chart.Viewport.Width / 2, bannerY + 12, title, ChartColor.White, fontSize, true);
             return;
         }
 
@@ -186,8 +185,8 @@ public sealed partial class TopologyPngRenderer {
                 var renderSymbol = !monitoring || !string.IsNullOrWhiteSpace(group.Symbol) || groupIcon != null;
                 var neutralSurface = monitoring && UseNeutralGroupSurface(options);
                 var groupLabelWidth = GroupHeaderLabelWidth(group, options, renderSymbol);
-                var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true);
-                var groupLabel = TrimToEstimatedWidth(group.Label, groupLabelWidth, groupLabelSize, true);
+                var groupLabelSize = FitFontSize(group.Label, groupLabelWidth, 16, 12, true, options.TextMeasurement);
+                var groupLabel = TrimToEstimatedWidth(group.Label, groupLabelWidth, groupLabelSize, true, options.TextMeasurement);
                 var textWidth = canvas.MeasureTextEmphasizedWidth(groupLabel, groupLabelSize);
                 if (renderSymbol && !neutralSurface) {
                     var symbolCx = cx - (textWidth + 30) / 2 + 10;
@@ -208,17 +207,17 @@ public sealed partial class TopologyPngRenderer {
                         labelWidth = GroupHeaderLabelWidth(group, options, true);
                     }
 
-                    var neutralLabelSize = FitFontSize(group.Label, labelWidth, 15, 12, true);
-                    canvas.DrawTextEmphasized(labelX, group.Y + 17, TrimToEstimatedWidth(group.Label, labelWidth, neutralLabelSize, true), accent, neutralLabelSize);
+                    var neutralLabelSize = FitFontSize(group.Label, labelWidth, 15, 12, true, options.TextMeasurement);
+                    canvas.DrawTextEmphasized(labelX, group.Y + 17, TrimToEstimatedWidth(group.Label, labelWidth, neutralLabelSize, true, options.TextMeasurement), accent, neutralLabelSize);
                     DrawGroupStatusDot(canvas, group, group.X + group.Width - 22, group.Y + 26, theme, options);
-                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) canvas.DrawText(labelX, group.Y + 36, TrimToEstimatedWidth(group.Subtitle!, labelWidth, 11, false), Color(theme.MutedForeground), 11);
+                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) canvas.DrawText(labelX, group.Y + 36, TrimToEstimatedWidth(group.Subtitle!, labelWidth, 11, false, options.TextMeasurement), Color(theme.MutedForeground), 11);
                     continue;
                 }
 
                 if (renderSymbol) canvas.DrawTextEmphasized(cx - (textWidth + 30) / 2 + 30, group.Y + 16, groupLabel, accent, groupLabelSize);
                 else DrawCentered(canvas, cx, group.Y + 16, groupLabel, accent, groupLabelSize, true);
                 DrawGroupStatusDot(canvas, group, group.X + group.Width - 22, group.Y + 26, theme, options);
-                if (!string.IsNullOrWhiteSpace(group.Subtitle)) DrawCentered(canvas, cx, group.Y + 38, TrimToEstimatedWidth(group.Subtitle!, group.Width - 44, 12, false), Color(theme.MutedForeground), 12, false);
+                if (!string.IsNullOrWhiteSpace(group.Subtitle)) DrawCentered(canvas, cx, group.Y + 38, TrimToEstimatedWidth(group.Subtitle!, group.Width - 44, 12, false, options.TextMeasurement), Color(theme.MutedForeground), 12, false);
             }
         }
     }
@@ -340,7 +339,7 @@ public sealed partial class TopologyPngRenderer {
                 canvas.DrawCircle(CenterX(node), CenterY(node), radius + 2, Color(theme.Background));
                 canvas.DrawCircle(CenterX(node), CenterY(node), radius, accent);
                 DrawDotNodeSymbol(canvas, node, options);
-                DrawNodeBadge(canvas, node, theme, accent, displayMode);
+                DrawNodeBadge(canvas, node, theme, accent, displayMode, options);
                 continue;
             }
 
@@ -356,7 +355,7 @@ public sealed partial class TopologyPngRenderer {
                 canvas.DrawCircle(CenterX(node), CenterY(node), radius, accent);
                 if (!isHighlighted && highlight.IsActive) canvas.DrawCircle(CenterX(node), CenterY(node), radius, WithAlpha(Color(theme.Background), 185));
                 DrawNodeIcon(canvas, node, theme, accent, displayMode, options);
-                DrawNodeBadge(canvas, node, theme, accent, displayMode);
+                DrawNodeBadge(canvas, node, theme, accent, displayMode, options);
                 continue;
             }
 
@@ -370,8 +369,8 @@ public sealed partial class TopologyPngRenderer {
             if (!isHighlighted && highlight.IsActive) canvas.FillRoundedRect(node.X, node.Y, node.Width, node.Height, radiusRect, WithAlpha(Color(theme.Background), 185));
             DrawNodeIcon(canvas, node, theme, accent, displayMode, options);
             if (options.IncludeNodeLabels && displayMode == TopologyNodeDisplayMode.Icon && options.IncludeIconLabels) {
-                var label = IconLabelText(node);
-                var plateWidth = IconLabelPlateWidth(node);
+                var label = IconLabelText(node, options.TextMeasurement);
+                var plateWidth = IconLabelPlateWidth(node, options.TextMeasurement);
                 var plateX = CenterX(node) - plateWidth / 2;
                 var plateY = IconLabelPlateY(node);
                 canvas.FillRoundedRect(plateX, plateY, plateWidth, 15, 7.5, Color(theme.Background));
@@ -379,9 +378,9 @@ public sealed partial class TopologyPngRenderer {
                 DrawCentered(canvas, CenterX(node), plateY + 3, label, Color(theme.Foreground), 10.5, true);
             } else if (options.IncludeNodeLabels && displayMode != TopologyNodeDisplayMode.Icon) {
                 if (displayMode == TopologyNodeDisplayMode.Tile) {
-                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, displayMode)), Color(theme.Foreground), 10.5, true, 13);
+                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, displayMode)), Color(theme.Foreground), 11, true, 14);
                     if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) DrawTileSubtitle(canvas, node, theme, accent, options);
-                    DrawNodeBadge(canvas, node, theme, accent, displayMode);
+                    DrawNodeBadge(canvas, node, theme, accent, displayMode, options);
                     continue;
                 }
 
@@ -392,9 +391,9 @@ public sealed partial class TopologyPngRenderer {
                 var textWidth = Math.Max(24, node.Width - (textX - node.X) - textRightPadding);
                 var titleCharacterLimit = NodeTitleMaxLength(node, displayMode);
                 var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? titleCharacterLimit * Math.Max(1, options.MaxNodeLabelLines) : titleCharacterLimit);
-                titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options), textWidth, titleSize, 10, true);
+                titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options), textWidth, titleSize, 10, true, options.TextMeasurement);
                 var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleCharacterLimit);
-                DrawTextLines(canvas, textX, titleY, titleLines, Color(theme.Foreground), titleSize, true, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 13);
+                DrawTextLines(canvas, textX, titleY, titleLines, Color(theme.Foreground), titleSize, true, displayMode == TopologyNodeDisplayMode.CompactCard ? 13 : 14);
                 if (displayMode != TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle)) {
                     if (options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) DrawCardSubtitleChip(canvas, node, theme, accent, displayMode, options);
                     else {
@@ -405,7 +404,7 @@ public sealed partial class TopologyPngRenderer {
                 if (displayMode == TopologyNodeDisplayMode.Card && node.Details.Count > 0) DrawNodeDetails(canvas, node, theme, options);
             }
 
-            DrawNodeBadge(canvas, node, theme, accent, displayMode);
+            DrawNodeBadge(canvas, node, theme, accent, displayMode, options);
         }
     }
 
@@ -427,14 +426,13 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawCardSubtitleChip(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
-        var subtitle = TrimTo(node.Subtitle!, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 16);
-        var width = Math.Min(Math.Max(48, canvas.MeasureTextEmphasizedWidth(subtitle, 8.5) + 18), Math.Max(48, node.Width - 50));
+        var (subtitle, width) = SubtitleChip(node, displayMode, options);
         var height = 17.0;
         var x = node.X + 42;
         var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, options));
         canvas.FillRoundedRect(x, y, width, height, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
         canvas.StrokeRoundedRect(x, y, width, height, 8.5, WithAlpha(accent, 115), 1);
-        DrawCentered(canvas, x + width / 2, y + 3.8, subtitle, accent, 8.5, true);
+        DrawCentered(canvas, x + width / 2, y + 3.8, subtitle, accent, 9.5, true);
     }
 
     private static string NodeAccentColor(TopologyNode node, TopologyTheme theme, TopologyRenderOptions options) {
@@ -452,26 +450,25 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawTileSubtitle(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyRenderOptions options) {
-        var subtitle = TrimTo(node.Subtitle!, 16);
-        var width = Math.Min(Math.Max(46, canvas.MeasureTextEmphasizedWidth(subtitle, 8.5) + 18), Math.Max(46, node.Width + 28));
-        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 10.5, true, options.MaxNodeLabelLines, options).Count;
+        var (subtitle, width) = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options);
+        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options).Count;
         var x = CenterX(node) - width / 2;
-        var y = node.Y + node.Height + 1 + labelLineCount * 13;
+        var y = node.Y + node.Height + 7 + labelLineCount * 14;
         canvas.FillRoundedRect(x, y, width, 17, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
         canvas.StrokeRoundedRect(x, y, width, 17, 8.5, WithAlpha(accent, 115), 1);
-        DrawCentered(canvas, CenterX(node), y + 3.8, subtitle, Color(theme.MutedForeground), 8.5, true);
+        DrawCentered(canvas, CenterX(node), y + 3.8, subtitle, Color(theme.MutedForeground), 9.5, true);
     }
 
-    private static void DrawNodeBadge(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor color, TopologyNodeDisplayMode displayMode) {
+    private static void DrawNodeBadge(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor color, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
         var badge = NodeBadge(node);
         if (string.IsNullOrWhiteSpace(badge)) return;
-        var width = Math.Max(18, canvas.MeasureTextEmphasizedWidth(badge, 8.5) + 12);
+        var width = NodeBadgeWidth(node, options);
         var height = 18.0;
         var x = displayMode == TopologyNodeDisplayMode.Dot ? CenterX(node) + 8 : displayMode == TopologyNodeDisplayMode.Icon ? CenterX(node) - width / 2 : node.X + node.Width - width - 6;
         var y = displayMode == TopologyNodeDisplayMode.Dot ? CenterY(node) - 21 : displayMode == TopologyNodeDisplayMode.Icon ? node.Y + node.Height + 4 : displayMode == TopologyNodeDisplayMode.Tile ? node.Y - 8 : node.Y + node.Height - height - 6;
         canvas.FillRoundedRect(x, y, width, height, 9, Color(StatusFill(theme.StatusColor(node.Status), theme.Background)));
         canvas.StrokeRoundedRect(x, y, width, height, 9, color, 1);
-        DrawCentered(canvas, x + width / 2, y + 4, badge, color, 8.5, true);
+        DrawCentered(canvas, x + width / 2, y + 4, badge, color, 9, true);
     }
 
     private static void DrawDotNodeSymbol(RgbaCanvas canvas, TopologyNode node, TopologyRenderOptions options) {

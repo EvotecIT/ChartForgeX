@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -10,6 +11,8 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var copy = Clone(chart);
+        copy.TextMeasurement = new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily);
+        if (options != null) options.TextMeasurement = copy.TextMeasurement;
         ApplyNamedPortSides(copy);
         if (options != null) {
             ApplyNodeDisplayMode(copy, options, copy.LayoutMode == TopologyLayoutMode.MindMap);

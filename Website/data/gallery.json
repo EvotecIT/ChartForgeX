@@ -1200,6 +1200,20 @@
       "image": "/examples/generated/theme-font-showcase-grid.svg"
     },
     {
+      "category": "topology",
+      "title": "Topology Measured Typography Mono",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/topology-measured-typography-mono.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Topology Measured Typography Sans",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/topology-measured-typography-sans.svg"
+    },
+    {
       "category": "dashboards",
       "title": "Transparent Report Summary Metric Strip",
       "body": "Generated ChartForgeX visual output.",

@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Svg;
+using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
@@ -41,8 +42,7 @@ public sealed partial class TopologySvgRenderer {
 
     private static void AddCenterBannerHeader(SvgElement root, TopologyChart chart, string prefix, TopologyRenderOptions options) {
         var fontSize = 34.0;
-        var availableWidth = Math.Max(0, chart.Viewport.Width - chart.Viewport.Padding * 2);
-        var bannerWidth = Math.Min(availableWidth, Math.Max(360, chart.Title!.Length * 18.5 + 72));
+        var (title, bannerWidth) = BannerTitle(chart, options);
         var bannerHeight = 58.0;
         var bannerX = (chart.Viewport.Width - bannerWidth) / 2;
         var bannerY = chart.Viewport.Padding + 2;
@@ -64,7 +64,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("fill", "#FFFFFF")
             .Attribute("font-size", fontSize)
             .Attribute("font-weight", "700")
-            .Text(chart.Title!));
+            .Text(title));
         root.AddElement(bannerHeader);
     }
 }
