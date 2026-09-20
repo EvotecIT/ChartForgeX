@@ -319,8 +319,9 @@
       const paddingBottom = styles ? Number.parseFloat(styles.paddingBottom || '0') || 0 : 0;
       const width = Math.max(1, rect.width - paddingLeft - paddingRight);
       const availableHeight = Math.max(1, rect.height - paddingTop - paddingBottom);
-      const svgWidth = Math.max(1, width);
-      const svgHeight = viewBox && viewBox.width > 0 && viewBox.height > 0 ? svgWidth * (viewBox.height / viewBox.width) : Math.max(1, svg ? svg.getBoundingClientRect().height : availableHeight);
+      const svgStyles = svg && window.getComputedStyle ? window.getComputedStyle(svg) : null;
+      const svgWidth = Math.max(1, svgStyles ? Number.parseFloat(svgStyles.width) || svg.clientWidth : width);
+      const svgHeight = Math.max(1, svgStyles ? Number.parseFloat(svgStyles.height) || svg.clientHeight : availableHeight);
       return { rect, paddingTop, paddingLeft, width, availableHeight, svgWidth, svgHeight };
     };
     const emitViewport = () => {
@@ -378,14 +379,20 @@
         bottom: Math.max(current.bottom, box.y + box.height)
       }), { x: boxes[0].x, y: boxes[0].y, right: boxes[0].x + boxes[0].width, bottom: boxes[0].y + boxes[0].height });
       const metrics = viewportMetrics();
-      const unitX = metrics.svgWidth / viewBox.width;
-      const unitY = metrics.svgHeight / viewBox.height;
+      const aspect = svg.getAttribute('preserveAspectRatio') || 'xMidYMid meet';
+      const uniform = aspect.includes('slice')
+        ? Math.max(metrics.svgWidth / viewBox.width, metrics.svgHeight / viewBox.height)
+        : Math.min(metrics.svgWidth / viewBox.width, metrics.svgHeight / viewBox.height);
+      const unitX = aspect.trim() === 'none' ? metrics.svgWidth / viewBox.width : uniform;
+      const unitY = aspect.trim() === 'none' ? metrics.svgHeight / viewBox.height : uniform;
+      const offsetX = (metrics.svgWidth - viewBox.width * unitX) * (aspect.includes('xMin') ? 0 : aspect.includes('xMax') ? 1 : 0.5);
+      const offsetY = (metrics.svgHeight - viewBox.height * unitY) * (aspect.includes('YMin') ? 0 : aspect.includes('YMax') ? 1 : 0.5);
       const boundsWidth = Math.max(1, (bounds.right - bounds.x) * unitX);
       const boundsHeight = Math.max(1, (bounds.bottom - bounds.y) * unitY);
       const padding = 44;
       const zoom = clamp(Math.min(metrics.width / (boundsWidth + padding * 2), metrics.availableHeight / (boundsHeight + padding * 2)), 0.5, 3.2);
-      const centerX = (bounds.x + (bounds.right - bounds.x) / 2 - viewBox.x) * unitX;
-      const centerY = (bounds.y + (bounds.bottom - bounds.y) / 2 - viewBox.y) * unitY;
+      const centerX = (bounds.x + (bounds.right - bounds.x) / 2 - viewBox.x) * unitX + offsetX;
+      const centerY = (bounds.y + (bounds.bottom - bounds.y) / 2 - viewBox.y) * unitY + offsetY;
       const originX = metrics.svgWidth / 2;
       const originY = metrics.svgHeight / 2;
       const targetX = metrics.width / 2;
@@ -1195,7 +1202,7 @@
     const restoreForceFocusLabels = () => {
       if (!forceGraphControls || !forceGraphPanel) return;
       const selected = selectedFocusElement();
-      if (selected) applyForceFocusLabels(identity(selected));
+      if (selected && isViewportVisible(selected)) applyForceFocusLabels(identity(selected));
       else clearForceFocusLabels();
     };
     const applyForceFocusLabels = detail => {
@@ -1217,7 +1224,7 @@
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
       const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary && detail.kind === 'node') summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
+      if (summary && detail.kind === 'node' && !state.query && !state.status && !state.group) summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
@@ -1334,8 +1341,13 @@
     }
     if (forceGraphControls && forceGraphPanel) {
       forceGraphPanel.querySelectorAll('input,select').forEach(control => {
-        control.addEventListener('input', applyForceGraphFilters);
-        control.addEventListener('change', applyForceGraphFilters);
+        const filterAndReveal = () => {
+          applyForceGraphFilters();
+          // Query changes reveal results; appearance toggles preserve the reader's viewport.
+          if (control.matches('[data-cfx-force-search],[data-cfx-force-status],[data-cfx-force-group]')) fitVisibleTopology();
+        };
+        control.addEventListener('input', filterAndReveal);
+        control.addEventListener('change', filterAndReveal);
       });
       wrapper.addEventListener('cfx-topology-force-filter-set', event => {
         const detail = event.detail || {};

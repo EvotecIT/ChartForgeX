@@ -100,7 +100,7 @@
     const restoreForceFocusLabels = () => {
       if (!forceGraphControls || !forceGraphPanel) return;
       const selected = selectedFocusElement();
-      if (selected) applyForceFocusLabels(identity(selected));
+      if (selected && isViewportVisible(selected)) applyForceFocusLabels(identity(selected));
       else clearForceFocusLabels();
     };
     const applyForceFocusLabels = detail => {
@@ -122,7 +122,7 @@
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
       const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary && detail.kind === 'node') summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
+      if (summary && detail.kind === 'node' && !state.query && !state.status && !state.group) summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
@@ -239,8 +239,13 @@
     }
     if (forceGraphControls && forceGraphPanel) {
       forceGraphPanel.querySelectorAll('input,select').forEach(control => {
-        control.addEventListener('input', applyForceGraphFilters);
-        control.addEventListener('change', applyForceGraphFilters);
+        const filterAndReveal = () => {
+          applyForceGraphFilters();
+          // Query changes reveal results; appearance toggles preserve the reader's viewport.
+          if (control.matches('[data-cfx-force-search],[data-cfx-force-status],[data-cfx-force-group]')) fitVisibleTopology();
+        };
+        control.addEventListener('input', filterAndReveal);
+        control.addEventListener('change', filterAndReveal);
       });
       wrapper.addEventListener('cfx-topology-force-filter-set', event => {
         const detail = event.detail || {};

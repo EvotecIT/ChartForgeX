@@ -70,6 +70,22 @@ public static partial class VisualArtifactInterchangeMapping {
         TopologyRenderOptions? renderOptions) {
         var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
         var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
+        MapPreparedTopology(envelope, artifact, prepared, options);
+    }
+
+    internal static VisualArtifactInterchangeEnvelope FromPreparedTopology(TopologyChart prepared, TopologyRenderOptions options) {
+        var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!, VisualArtifactKind.Topology, prepared);
+        artifact.Accessibility.Name = prepared.Accessibility.Name;
+        artifact.Accessibility.Description = prepared.Accessibility.Description;
+        artifact.Accessibility.Language = prepared.Accessibility.Language;
+        artifact.Accessibility.IsDecorative = prepared.Accessibility.IsDecorative;
+        var envelope = Common(artifact, out _);
+        MapPreparedTopology(envelope, artifact, prepared, options);
+        envelope.Validate();
+        return envelope;
+    }
+
+    private static void MapPreparedTopology(VisualArtifactInterchangeEnvelope envelope, VisualArtifact artifact, TopologyChart prepared, TopologyRenderOptions options) {
         RefreshTopologyAccessibility(envelope, artifact, prepared);
         var ids = new InterchangeIdScope();
         foreach (var group in prepared.Groups) ids.AddGroup(group.Id);

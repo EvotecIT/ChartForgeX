@@ -144,7 +144,7 @@ public sealed class TopologyLegend {
         return enriched;
     }
 
-    private static TopologyLegend Clone(TopologyLegend legend) {
+    internal static TopologyLegend Clone(TopologyLegend legend) {
         var copy = Create(legend.Title);
         foreach (var item in legend.Items) copy.Items.Add(Clone(item));
         return copy;
