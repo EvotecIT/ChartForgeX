@@ -28,6 +28,10 @@ public sealed class PreparedTopology {
     public double Height => _chart.Viewport.Height;
     /// <summary>Gets the number of nodes retained by the selected view.</summary>
     public int NodeCount => _chart.Nodes.Count;
+    /// <summary>Gets the number of retained relationships.</summary>
+    public int EdgeCount => _chart.Edges.Count;
+    /// <summary>Gets the source title without requiring interchange serialization.</summary>
+    public string? Title => _chart.Title;
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
     public string ToSvg() => new TopologySvgRenderer().RenderPrepared(_chart, _options, _requestedWidth, _requestedHeight);

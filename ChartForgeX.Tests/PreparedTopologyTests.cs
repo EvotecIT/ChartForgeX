@@ -1,10 +1,41 @@
 using ChartForgeX.Topology;
 using ChartForgeX.Interactivity.Html;
 using Xunit;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedTopologyTests {
+    [Theory]
+    [InlineData(VisualLinkDirection.None, " — ")]
+    [InlineData(VisualLinkDirection.Forward, " → ")]
+    [InlineData(VisualLinkDirection.Backward, " ← ")]
+    [InlineData(VisualLinkDirection.Bidirectional, " ↔ ")]
+    public void CrossPageNavigationRetainsDirection(VisualLinkDirection direction, string separator) {
+        var chart = TopologyChart.Create().AddAutoNode("a", "Source").AddAutoNode("b", "Target")
+            .AddEdge("ab", "a", "b", direction: direction);
+        var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
+        Assert.Equal(direction, Assert.Single(report.CrossPageLinks).Direction);
+        Assert.Contains("Source" + separator + "Target", report.ToInteractiveHtmlPage());
+    }
+
+    [Fact]
+    public void ReportHtmlDoesNotApplyInterchangeMetricBudgets() {
+        var chart = TopologyChart.Create().AddAutoNode("a", "Source");
+        for (int i = 0; i < 1025; i++) chart.Nodes[0].Metrics.Add("metric" + i, "1");
+        var report = chart.PrepareReport();
+        Assert.Contains("1 objects", report.ToInteractiveHtmlPage());
+    }
+
+    [Fact]
+    public void ReportCardsReserveMultilineHeadersAndDetails() {
+        var chart = TopologyChart.Create().AddAutoNode("a", "First line\nSecond line", subtitle: "First subtitle\nSecond subtitle");
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = "Owner", Value = "Operations" });
+        var report = chart.PrepareReport();
+        var node = report.Pages[0].ToInterchangeEnvelope().Nodes[0];
+        Assert.True(node.Height >= 102, "Both header lines and the detail row must fit inside the card.");
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -95,7 +126,7 @@ public sealed class PreparedTopologyTests {
         Assert.Equal("Shared node", report.NodeLabels["shared"]);
         Assert.Equal("Long ID node", report.NodeLabels[longId]);
         Assert.DoesNotContain(report.Source.ToInterchangeEnvelope().Nodes, node => node.Id == "shared");
-        Assert.Contains("Shared node → Long ID node", report.ToInteractiveHtmlPage());
+        Assert.Contains("Shared node — Long ID node", report.ToInteractiveHtmlPage());
         Assert.Equal("shared", Assert.Single(report.CrossPageLinks).SourceNodeId);
     }
 

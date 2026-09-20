@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Topology;
 
@@ -35,11 +36,13 @@ public sealed class TopologyReportOptions {
 
 /// <summary>A relationship crossing two detail pages. No source edge is silently discarded by pagination.</summary>
 public sealed class TopologyReportLink {
-    internal TopologyReportLink(string edgeId, string sourceNodeId, string targetNodeId, int sourcePage, int targetPage) {
-        EdgeId = edgeId; SourceNodeId = sourceNodeId; TargetNodeId = targetNodeId; SourcePage = sourcePage; TargetPage = targetPage;
+    internal TopologyReportLink(string edgeId, string sourceNodeId, string targetNodeId, int sourcePage, int targetPage, VisualLinkDirection direction) {
+        EdgeId = edgeId; SourceNodeId = sourceNodeId; TargetNodeId = targetNodeId; SourcePage = sourcePage; TargetPage = targetPage; Direction = direction;
     }
     /// <summary>Gets the source relationship id.</summary>
     public string EdgeId { get; }
+    /// <summary>Gets the relationship direction in source-to-target order.</summary>
+    public VisualLinkDirection Direction { get; }
     /// <summary>Gets the source node id.</summary>
     public string SourceNodeId { get; }
     /// <summary>Gets the target node id.</summary>
@@ -81,6 +84,7 @@ public static partial class TopologyChartExtensions {
         options ??= new TopologyReportOptions();
         options.Validate();
         var preparedSource = chart.Prepare();
+        var pageOptions = new TopologyRenderOptions { IncludeLegend = false };
         var source = TopologyLayoutEngine.Clone(chart);
         var pages = new List<TopologyChart>();
         var nodePages = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -98,7 +102,7 @@ public static partial class TopologyChartExtensions {
             node.DisplayMode = TopologyNodeDisplayMode.Card;
             node.PreserveDisplayModeSize = true;
             node.Width = Math.Max(options.MinimumNodeWidth, node.Width);
-            node.Height = Math.Max(options.MinimumNodeHeight, Math.Max(node.Height, 64 + node.Details.Count * 18));
+            node.Height = Math.Max(options.MinimumNodeHeight, Math.Max(node.Height, TopologyRenderPrimitives.NodeDetailStartOffset(node, pageOptions) + node.Details.Count * 18 + 1));
             if (page != null && x + node.Width > options.PageWidth - margin && x > margin) {
                 x = margin; y += rowHeight + options.Gap; rowHeight = 0;
             }
@@ -133,7 +137,7 @@ public static partial class TopologyChartExtensions {
         foreach (var edge in source.Edges) {
             int from = nodePages[edge.SourceNodeId], to = nodePages[edge.TargetNodeId];
             if (from != to) {
-                links.Add(new TopologyReportLink(edge.Id, edge.SourceNodeId, edge.TargetNodeId, from, to));
+                links.Add(new TopologyReportLink(edge.Id, edge.SourceNodeId, edge.TargetNodeId, from, to, edge.Direction));
                 continue;
             }
             edge.Waypoints.Clear();
@@ -143,7 +147,7 @@ public static partial class TopologyChartExtensions {
             edge.LabelOffsetX = edge.LabelOffsetY = 0;
             pages[from - 1].Edges.Add(edge);
         }
-        var preparedPages = pages.Select(item => item.Prepare(new TopologyRenderOptions { IncludeLegend = false })).ToList();
+        var preparedPages = pages.Select(item => item.Prepare(pageOptions)).ToList();
         var overview = BuildReportOverview(source, pages, links, options).Prepare();
         return new TopologyReport(preparedSource, overview, preparedPages, nodePages, source.Nodes.ToDictionary(node => node.Id, node => node.Label, StringComparer.Ordinal), links);
     }

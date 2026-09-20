@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using ChartForgeX.Topology;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -11,13 +12,13 @@ public static partial class TopologyReportHtmlExtensions {
     /// <summary>Renders page navigation, bounded object search, and cross-page relationship links. Only the active SVG is mounted.</summary>
     public static string ToInteractiveHtmlPage(this TopologyReport report) {
         if (report == null) throw new ArgumentNullException(nameof(report));
-        var source = report.Source.ToInterchangeEnvelope();
+        var source = report.Source;
         var labels = report.NodeLabels;
         string title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
         var html = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>");
         html.Append(Text(title)).Append("</title><style>").Append(ReportStyles).Append("</style></head><body><main>");
         html.Append("<header><p class=\"eyebrow\">TOPOLOGY REPORT</p><h1>").Append(Text(title)).Append("</h1><p>")
-            .Append(source.Nodes.Count).Append(" objects · ").Append(report.Pages.Count).Append(" detail pages · ").Append(source.Edges.Count).Append(" relationships</p></header>");
+            .Append(source.NodeCount).Append(" objects · ").Append(report.Pages.Count).Append(" detail pages · ").Append(source.EdgeCount).Append(" relationships</p></header>");
         html.Append("<nav aria-label=\"Report pages\"><button id=\"previous\" type=\"button\">Previous</button><label>Page <select id=\"page\"><option value=\"0\">Overview</option>");
         for (int i = 0; i < report.Pages.Count; i++) html.Append("<option value=\"").Append(i + 1).Append("\">Page ").Append(i + 1).Append("</option>");
         html.Append("</select></label><button id=\"next\" type=\"button\">Next</button><label class=\"fit\"><input id=\"fit\" type=\"checkbox\"> Fit page</label></nav>");
@@ -40,7 +41,7 @@ public static partial class TopologyReportHtmlExtensions {
         } else {
             foreach (var link in report.CrossPageLinks.Where(link => link.SourcePage == number || link.TargetPage == number)) {
                 int target = link.SourcePage == number ? link.TargetPage : link.SourcePage;
-                html.Append("<button type=\"button\" data-page=\"").Append(target).Append("\">").Append(Text(labels[link.SourceNodeId])).Append(" → ").Append(Text(labels[link.TargetNodeId]))
+                html.Append("<button type=\"button\" data-page=\"").Append(target).Append("\">").Append(Text(labels[link.SourceNodeId])).Append(link.Direction switch { VisualLinkDirection.Forward => " → ", VisualLinkDirection.Backward => " ← ", VisualLinkDirection.Bidirectional => " ↔ ", _ => " — " }).Append(Text(labels[link.TargetNodeId]))
                     .Append(" · ").Append(Text(link.EdgeId)).Append(" · page ").Append(target).Append("</button>");
             }
         }
