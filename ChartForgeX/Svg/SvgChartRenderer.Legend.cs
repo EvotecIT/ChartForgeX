@@ -77,7 +77,9 @@ public sealed partial class SvgChartRenderer {
         foreach (var entry in BuildLegendEntries(chart, width)) {
             var transformedLabel = StyleText(style, entry.Label);
             var label = TrimSvgLabelToWidth(transformedLabel, preferredFontSize, labelWidthLimit);
-            var itemWidth = Math.Min(maxX, 34 + EstimateTextWidth(label, preferredFontSize) + 18);
+            var itemWidth = vertical
+                ? Math.Min(maxX, 34 + EstimateTextWidth(label, preferredFontSize) + 18)
+                : LegendRowBudget.HorizontalItemWidth(transformedLabel, preferredFontSize, maxX, 52);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new LegendRow();
                 rows.Add(row);
@@ -89,7 +91,7 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, LegendRowHeight(chart), row => row.Items.Count, omitted => new LegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
+        return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new LegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static string SeriesInteractionKey(ChartSeries series) => series.InteractionIdentityKey;
@@ -182,8 +184,14 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, t.LegendFontSize);
-        var widest = BuildLegendEntries(chart, LegendSideReserveMaximumWidth)
-            .Max(item => EstimateTextWidth(StyleText(style, item.Label), fontSize));
+        var entries = BuildLegendEntries(chart, LegendSideReserveMaximumWidth);
+        var availableHeight = Math.Max(1, chart.Options.Size.Height - (chart.Options.ShowHeader ? 130 : 78));
+        var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, entries.Count, availableHeight);
+        var widest = entries.Take(visible)
+            .Select(item => EstimateTextWidth(StyleText(style, item.Label), fontSize))
+            .DefaultIfEmpty(0)
+            .Max();
+        if (visible < entries.Count) widest = Math.Max(widest, EstimateTextWidth(LegendRowBudget.Summary(entries.Count - visible), fontSize));
         return Math.Min(240, Math.Max(124, widest + 54));
     }
 

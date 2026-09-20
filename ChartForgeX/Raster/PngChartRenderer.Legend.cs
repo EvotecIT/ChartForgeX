@@ -47,7 +47,9 @@ public sealed partial class PngChartRenderer {
         rows.Add(row);
         var x = 0.0;
         foreach (var entry in BuildPngLegendEntries(chart)) {
-            var itemWidth = System.Math.Min(maxX, 46 + EstimatePngStyledTextWidth(entry.Label, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: true) + 18);
+            var itemWidth = vertical
+                ? System.Math.Min(maxX, 46 + EstimatePngStyledTextWidth(entry.Label, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: true) + 18)
+                : LegendRowBudget.HorizontalItemWidth(chart.Options.LegendStyle.TransformText(entry.Label, System.Globalization.CultureInfo.InvariantCulture), PngLegendFontSize(chart), maxX, 52);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngLegendRow();
                 rows.Add(row);
@@ -59,7 +61,7 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, PngLegendRowHeight(chart), row => row.Items.Count, omitted => new PngLegendRow { Omitted = omitted, Width = System.Math.Min(width, 140) }, availableHeight);
+        return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new PngLegendRow { Omitted = omitted, Width = System.Math.Min(width, 140) }, availableHeight);
     }
 
     private static string PngLegendLabel(Chart chart, int index) =>
@@ -170,8 +172,12 @@ public sealed partial class PngChartRenderer {
     private static double PngLegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;
         var fontSize = PngLegendFontSize(chart);
+        var entries = BuildPngLegendEntries(chart);
+        var availableHeight = System.Math.Max(1, chart.Options.Size.Height - (chart.Options.ShowHeader ? 130 : 78));
+        var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, entries.Count, availableHeight);
         var widest = 0.0;
-        foreach (var entry in BuildPngLegendEntries(chart)) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(entry.Label, fontSize, chart.Options.LegendStyle, emphasized: true));
+        for (var index = 0; index < visible; index++) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(entries[index].Label, fontSize, chart.Options.LegendStyle, emphasized: true));
+        if (visible < entries.Count) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(LegendRowBudget.Summary(entries.Count - visible), fontSize, chart.Options.LegendStyle, emphasized: true));
         return System.Math.Min(240, System.Math.Max(124, widest + 54));
     }
 

@@ -335,20 +335,25 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double PngSliceLegendReserve(Chart chart, IReadOnlyList<PngIndexedPieValue> values, ChartRect plot) {
-        if (PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition)) return Math.Min(230, Math.Max(142, PngSliceLegendWidestItem(chart, values) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        if (PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition)) {
+            var availableHeight = Math.Max(1, plot.Height - PngLegendSideInset(plot.Height) * 2);
+            var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, values.Count, availableHeight);
+            return Math.Min(230, Math.Max(142, PngSliceLegendWidestItem(chart, values, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        }
         return 18 + BuildPngSliceLegendRows(chart, chart.Series[0], values, PngSliceLegendTotal(values), Math.Max(80, plot.Width - 80)).Count * PngSliceLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
     }
 
-    private static double PngSliceLegendWidestItem(Chart chart, IReadOnlyList<PngIndexedPieValue> values) {
+    private static double PngSliceLegendWidestItem(Chart chart, IReadOnlyList<PngIndexedPieValue> values, int visible) {
         var widest = 0.0;
         var total = Math.Max(0.000001, PngSliceLegendTotal(values));
         var style = chart.Options.LegendStyle;
         var fontSize = PngLegendFontSize(chart);
-        for (var i = 0; i < values.Count; i++) {
+        for (var i = 0; i < visible; i++) {
             var label = SliceLabel(chart, values[i].Point, values[i].PointIndex);
             var percent = FormatPercent(values[i].Point.Y / total);
             widest = Math.Max(widest, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true) + EstimatePngStyledTextWidth(percent, fontSize, style, emphasized: false) + 36);
         }
+        if (visible < values.Count) widest = Math.Max(widest, EstimatePngStyledTextWidth(LegendRowBudget.Summary(values.Count - visible), fontSize, style, emphasized: true));
 
         return widest;
     }
@@ -379,7 +384,9 @@ public sealed partial class PngChartRenderer {
             var rawLabel = SliceLabel(chart, values[i].Point, pointIndex);
             var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, fontSize, style);
             var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax, style);
-            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + percentWidth + 34);
+            var itemWidth = vertical
+                ? Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + percentWidth + 34)
+                : LegendRowBudget.HorizontalItemWidth(style.TransformText(rawLabel, System.Globalization.CultureInfo.InvariantCulture) + " " + style.TransformText(percent, System.Globalization.CultureInfo.InvariantCulture), fontSize, maxX, ChartVisualPrimitives.SliceLegendSwatchSize + 34);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngSliceLegendRow();
                 rows.Add(row);
@@ -391,7 +398,7 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, PngSliceLegendRowHeight(chart), row => row.Items.Count, omitted => new PngSliceLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
+        return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new PngSliceLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static double PngSliceLegendStartY(Chart chart, ChartRect area, int rows) =>

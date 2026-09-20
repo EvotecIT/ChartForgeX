@@ -105,19 +105,24 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double PngRadialBarLegendReserve(Chart chart, ChartSeries series, ChartRect plot) {
-        if (PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition)) return Math.Min(230, Math.Max(142, PngRadialBarLegendWidestItem(chart, series) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        if (PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition)) {
+            var availableHeight = Math.Max(1, plot.Height - PngLegendSideInset(plot.Height) * 2);
+            var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, series.Points.Count, availableHeight);
+            return Math.Min(230, Math.Max(142, PngRadialBarLegendWidestItem(chart, series, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        }
         return 18 + BuildPngRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80)).Count * PngRadialBarLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
     }
 
-    private static double PngRadialBarLegendWidestItem(Chart chart, ChartSeries series) {
+    private static double PngRadialBarLegendWidestItem(Chart chart, ChartSeries series, int visible) {
         var widest = 0.0;
         var style = chart.Options.LegendStyle;
         var fontSize = PngLegendFontSize(chart);
-        for (var i = 0; i < series.Points.Count; i++) {
+        for (var i = 0; i < visible; i++) {
             var label = SliceLabel(chart, series.Points[i], i);
             var value = FormatValue(chart, series.Points[i].Y);
             widest = Math.Max(widest, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true) + EstimatePngStyledTextWidth(value, fontSize, style, emphasized: true) + 34);
         }
+        if (visible < series.Points.Count) widest = Math.Max(widest, EstimatePngStyledTextWidth(LegendRowBudget.Summary(series.Points.Count - visible), fontSize, style, emphasized: true));
 
         return widest;
     }
@@ -147,7 +152,9 @@ public sealed partial class PngChartRenderer {
             var rawLabel = SliceLabel(chart, series.Points[i], i);
             var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, fontSize, style);
             var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax, style);
-            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + valueWidth + 34);
+            var itemWidth = vertical
+                ? Math.Min(maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + valueWidth + 34)
+                : LegendRowBudget.HorizontalItemWidth(style.TransformText(rawLabel, System.Globalization.CultureInfo.InvariantCulture) + " " + style.TransformText(value, System.Globalization.CultureInfo.InvariantCulture), fontSize, maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + 34);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngRadialBarLegendRow();
                 rows.Add(row);
@@ -159,7 +166,7 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, PngRadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new PngRadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
+        return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new PngRadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static double PngRadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>

@@ -10,6 +10,8 @@ public sealed partial class PngChartRenderer {
         var style = chart.Options.LegendStyle;
         var label = LegendRowBudget.Summary(omitted);
         var fontSize = TextFontSizeForEmphasizedWidth(label, Math.Max(8, area.Width), PngLegendFontSize(chart), style);
-        DrawPngTextStyled(canvas, area.X, y - EstimatePngStyledTextHeight(fontSize, style) + 3, label, style, chart.Options.Theme.MutedText, fontSize, emphasized: true);
+        var rowWidth = Math.Min(area.Width, EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true));
+        var x = PngLegendRowX(chart, area, rowWidth);
+        DrawPngTextStyled(canvas, x, y - EstimatePngStyledTextHeight(fontSize, style) + 3, label, style, chart.Options.Theme.MutedText, fontSize, emphasized: true);
     }
 }

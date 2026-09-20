@@ -200,19 +200,24 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double RadialBarLegendReserve(Chart chart, ChartSeries series, ChartRect plot) {
-        if (IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition)) return Math.Min(230, Math.Max(142, RadialBarLegendWidestItem(chart, series) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        if (IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition)) {
+            var availableHeight = Math.Max(1, plot.Height - LegendSideInset(plot.Height) * 2);
+            var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, series.Points.Count, availableHeight);
+            return Math.Min(230, Math.Max(142, RadialBarLegendWidestItem(chart, series, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        }
         return 18 + BuildRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80)).Count * RadialBarLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
     }
 
-    private static double RadialBarLegendWidestItem(Chart chart, ChartSeries series) {
+    private static double RadialBarLegendWidestItem(Chart chart, ChartSeries series, int visible) {
         var widest = 0.0;
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
-        for (var i = 0; i < series.Points.Count; i++) {
+        for (var i = 0; i < visible; i++) {
             var label = SliceLabel(chart, series.Points[i], i);
             var value = FormatValue(chart, series.Points[i].Y);
             widest = Math.Max(widest, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + EstimateSvgStyledTextWidth(chart, label, fontSize, style, emphasized: true) + EstimateSvgStyledTextWidth(chart, value, fontSize, style, emphasized: true) + 34);
         }
+        if (visible < series.Points.Count) widest = Math.Max(widest, EstimateSvgStyledTextWidth(chart, LegendRowBudget.Summary(series.Points.Count - visible), fontSize, style, emphasized: true));
 
         return widest;
     }
@@ -242,7 +247,9 @@ public sealed partial class SvgChartRenderer {
             var rawLabel = SliceLabel(chart, series.Points[i], i);
             var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
             var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
-            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style, emphasized: true) + valueWidth + 34);
+            var itemWidth = vertical
+                ? Math.Min(maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style, emphasized: true) + valueWidth + 34)
+                : LegendRowBudget.HorizontalItemWidth(StyleText(style, rawLabel) + " " + value, fontSize, maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + 34);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new RadialBarLegendRow();
                 rows.Add(row);
@@ -254,7 +261,7 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, RadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new RadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
+        return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new RadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static double RadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>

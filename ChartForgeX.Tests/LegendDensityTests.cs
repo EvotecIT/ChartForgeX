@@ -64,6 +64,45 @@ public sealed class LegendDensityTests {
         Assert.NotEmpty(new PngChartRenderer().Render(chart));
     }
 
+    [Theory]
+    [InlineData(ChartLegendPosition.TopLeft, 40, 180)]
+    [InlineData(ChartLegendPosition.Top, 300, 600)]
+    [InlineData(ChartLegendPosition.TopRight, 680, 860)]
+    public void HorizontalOverflowSummaryHonorsLegendAlignment(ChartLegendPosition position, double minimumX, double maximumX) {
+        var chart = Chart.Create().WithSize(900, 560).WithLegendPosition(position).WithLegendBudget(maximumRows: 2);
+        for (var index = 0; index < 40; index++) {
+            chart.AddLine("Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
+        }
+
+        var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+        var summary = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-overflow");
+
+        Assert.InRange((double)summary.Attribute("x")!, minimumX, maximumX);
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+    }
+
+    [Fact]
+    public void OmittedWideSideLabelDoesNotShrinkThePlot() {
+        static Chart Create(string finalLabel) {
+            var chart = Chart.Create().WithSize(700, 400).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(maximumRows: 3);
+            for (var index = 0; index < 8; index++) {
+                chart.AddLine(index == 7 ? finalLabel : "Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
+            }
+            return chart;
+        }
+        static double PlotWidth(Chart chart) {
+            var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+            var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath" && ((string?)element.Attribute("id"))?.EndsWith("-plotClip", StringComparison.Ordinal) == true);
+            return (double)clip.Elements().Single(element => element.Name.LocalName == "rect").Attribute("width")!;
+        }
+
+        double ordinary = PlotWidth(Create("Ordinary omitted label"));
+        double extreme = PlotWidth(Create(new string('W', 400)));
+
+        Assert.Equal(ordinary, extreme, 6);
+        Assert.NotEmpty(new PngChartRenderer().Render(Create(new string('W', 400))));
+    }
+
     [Fact]
     public void SmallLegendsStayCompleteAndInvalidBudgetIsAtomic() {
         var chart = Chart.Create().WithSize(900, 560).AddLine("Value", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
