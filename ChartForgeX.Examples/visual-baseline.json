@@ -988,6 +988,23 @@
       }
     },
     {
+      "name": "dense-signal-gaps-light",
+      "width": 1180,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1427029,
+        "minTransparentPixels": 83371,
+        "minDistinctColors": 1906,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "detection-confidence-errorbar-dark",
       "width": 760,
       "height": 460,
