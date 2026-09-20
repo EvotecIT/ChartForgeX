@@ -37,8 +37,11 @@ public static partial class TopologyReportHtmlExtensions {
 
     private static void WritePage(StringBuilder html, TopologyReport report, int number, PreparedTopology page,
         System.Collections.Generic.IReadOnlyDictionary<string, string> labels, System.Collections.Generic.IEnumerable<TopologyReportLink> links) {
-        html.Append("<template id=\"page-").Append(number).Append("\"><section aria-label=\"Diagram\" class=\"diagram\" tabindex=\"0\">").Append(page.ToSvg()).Append("</section>");
-        html.Append("<section class=\"connections\"><h2>").Append(number == 0 ? "Detail pages" : "Relationships to other pages").Append("</h2><div class=\"links\"></div><div class=\"relationship-pages\"></div></section></template>");
+        string body = "<section aria-label=\"Diagram\" class=\"diagram\" tabindex=\"0\">" + page.ToSvg() + "</section>"
+            + "<section class=\"connections\"><h2>" + (number == 0 ? "Detail pages" : "Relationships to other pages")
+            + "</h2><div class=\"links\"></div><div class=\"relationship-pages\"></div></section>";
+        html.Append("<script type=\"application/json\" id=\"page-").Append(number).Append("\">")
+            .Append(HtmlJsonString.Encode(body)).Append("</script>");
         html.Append("<script type=\"application/json\" id=\"links-").Append(number).Append("\">[");
         var records = number == 0
             ? report.Pages.Select((detail, index) => new[] { (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), "Page " + (index + 1) + " · " + detail.NodeCount + " objects", "", "en" })

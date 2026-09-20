@@ -212,13 +212,21 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
-    public void HtmlReportEncodesUserTextOutsideInertTemplates() {
+    public void HtmlReportEncodesUserTextAndStoresInactivePagesAsText() {
         const string label = "</template><script>alert(1)</script>";
         var report = TopologyChart.Create().WithTitle(label).AddAutoNode("node", label).PrepareReport();
         string html = report.ToInteractiveHtmlPage();
         Assert.DoesNotContain(label, html);
         Assert.Contains("&lt;/template&gt;", html);
         Assert.Contains("page-1", html);
+        Assert.DoesNotContain("<template", html);
+        Assert.DoesNotContain("<svg", html);
+        string marker = "<script type=\"application/json\" id=\"page-1\">";
+        int start = html.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
+        int end = html.IndexOf("</script>", start, StringComparison.Ordinal);
+        string page = System.Text.Json.JsonSerializer.Deserialize<string>(html.Substring(start, end - start))!;
+        Assert.Contains("<svg", page);
+        Assert.Contains("&lt;/template&gt;", page);
     }
 
     [Fact]

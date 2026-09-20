@@ -75,7 +75,7 @@
         return !state.groups || !hasVisibleNodes || (state.group && groupId !== state.group);
       });
       const detail = publishTopologyFilterSummary();
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
       restoreForceFocusLabels();
     };
     const clearForceFocusLabels = () => {

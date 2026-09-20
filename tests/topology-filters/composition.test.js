@@ -38,7 +38,8 @@ test('clearing host filters during force filtering does not retain hidden labels
   } finally { view.close(); }
 });
 test('both filter entry points publish effective counts and retain the other filter state', () => {
-  const view = fixture(); let latest;
+  const view = fixture(); let latest, forceDetail;
+  view.wrapper.addEventListener('cfx-topology-force-filter', event => { forceDetail = event.detail; });
   view.wrapper.addEventListener('cfx-topology-filter', event => { latest = event.detail; });
   try {
     view.api.applyTopologyFilter({ group: 'b' }); view.force('');
@@ -46,6 +47,7 @@ test('both filter entry points publish effective counts and retain the other fil
     assert.equal(latest.group, 'b');
     assert.equal(view.wrapper.querySelector('output').textContent, '2 nodes / 1 edges visible');
     view.force('a');
+    assert.equal(forceDetail.group, 'a'); assert.equal(forceDetail.filters.topology.group, 'b');
     assert.equal(latest.nodes, 0); assert.equal(latest.edges, 0);
     view.api.clearTopologyFilter();
     assert.equal(latest.nodes, 2); assert.equal(latest.edges, 1); assert.equal(latest.group, 'a');

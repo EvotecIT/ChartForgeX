@@ -75,11 +75,11 @@ public static partial class TopologyReportHtmlExtensions {
             }
             function show(value) {
                 const page = Number(value);
-                const template = document.getElementById('page-' + page);
-                if (!Number.isInteger(page) || !template) return;
+                const pageData = document.getElementById('page-' + page);
+                if (!Number.isInteger(page) || !pageData) return;
                 current = page;
                 picker.value = String(page);
-                content.replaceChildren(template.content.cloneNode(true));
+                content.innerHTML = JSON.parse(pageData.textContent);
                 const links = content.querySelector('.links');
                 const linkItems = JSON.parse(document.getElementById('links-' + page).textContent);
                 const controls = content.querySelector('.relationship-pages');
@@ -120,11 +120,15 @@ public static partial class TopologyReportHtmlExtensions {
                 diagram.scrollIntoView({ block: 'start' });
                 diagram.focus({ preventScroll: true });
             });
+            function normalize(value, language) {
+                try { return value.toLocaleLowerCase(language || 'en'); }
+                catch { return value.toLowerCase(); }
+            }
             search.addEventListener('input', () => {
-                const query = search.value.trim().toLocaleLowerCase();
+                const query = search.value.trim();
                 results.replaceChildren();
                 if (!query) { status.textContent = ''; return; }
-                const matches = entries.filter(entry => entry[1].toLocaleLowerCase().includes(query));
+                const matches = entries.filter(entry => normalize(entry[1], entry[3]).includes(normalize(query, entry[3])));
                 for (const entry of matches.slice(0, 20)) results.append(makeButton(entry));
                 status.textContent = matches.length + (matches.length === 1 ? ' match' : ' matches')
                     + (matches.length > 20 ? ' · showing first 20; refine your search' : '');
