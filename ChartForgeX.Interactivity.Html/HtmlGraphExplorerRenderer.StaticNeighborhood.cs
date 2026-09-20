@@ -14,15 +14,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         root.Y = Height / 2;
         var neighbors = scene.Nodes.Where(node => node.Id != rootNodeId).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
         var spacing = Math.Max(140, neighbors.Select(node => PreparedNodeHalfWidth(node, true) * 2 + 24).DefaultIfEmpty(140).Max());
-        for (var offset = 0; offset < neighbors.Length; offset += 12) {
-            var count = Math.Min(12, neighbors.Length - offset);
-            var ring = offset / 12 + 1;
-            var radius = spacing * ring * 2;
-            for (var index = 0; index < count; index++) {
-                var angle = -Math.PI / 2 + index * Math.PI * 2 / count;
-                neighbors[offset + index].X = root.X + Math.Cos(angle) * radius;
-                neighbors[offset + index].Y = root.Y + Math.Sin(angle) * radius;
-            }
+        var radius = Math.Max(spacing * 2, spacing * neighbors.Length / (2 * Math.PI));
+        for (var index = 0; index < neighbors.Length; index++) {
+            var angle = -Math.PI / 2 + index * Math.PI * 2 / neighbors.Length;
+            neighbors[index].X = root.X + Math.Cos(angle) * radius;
+            neighbors[index].Y = root.Y + Math.Sin(angle) * radius;
         }
     }
 }

@@ -7,10 +7,32 @@ namespace ChartForgeX.Tests;
 
 public sealed class GraphNeighborhoodTests {
     [Fact]
+    public void LargeStarSpokesDoNotPassThroughOtherNodes() {
+        var scene = Hub(1000);
+        var stage = scene.CreateNeighborhood("root", options => { options.MaximumNodes = 40; options.MaximumEdges = 80; });
+        var document = XDocument.Parse(scene.ToGraphSvg(stage));
+        var nodes = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "graph-node")
+            .ToDictionary(element => (string)element.Attribute("data-node-id")!, element => (
+                X: double.Parse((string)element.Attribute("data-node-x")!, System.Globalization.CultureInfo.InvariantCulture),
+                Y: double.Parse((string)element.Attribute("data-node-y")!, System.Globalization.CultureInfo.InvariantCulture)));
+        var root = nodes["root"];
+        foreach (var target in nodes.Where(pair => pair.Key != "root")) {
+            var dx = target.Value.X - root.X; var dy = target.Value.Y - root.Y;
+            foreach (var other in nodes.Where(pair => pair.Key != "root" && pair.Key != target.Key)) {
+                var t = Math.Clamp(((other.Value.X - root.X) * dx + (other.Value.Y - root.Y) * dy) / (dx * dx + dy * dy), 0, 1);
+                var distance = Math.Sqrt(Math.Pow(other.Value.X - root.X - t * dx, 2) + Math.Pow(other.Value.Y - root.Y - t * dy, 2));
+                Assert.True(distance > 16, "A spoke must not imply a connection through another service node.");
+            }
+        }
+        Assert.All(scene.Nodes, node => Assert.False(node.HasExplicitPosition));
+    }
+
+    [Fact]
     public void HubPagesRetainRootAndAccountForEveryRelationship() {
         var scene = Hub(1000);
-        var first = scene.CreateNeighborhood("root");
-        var second = scene.CreateNeighborhood("root", options => options.NeighborOffset = 39);
+        Assert.Equal(13, scene.CreateNeighborhood("root").VisibleNodeIds.Count);
+        var first = scene.CreateNeighborhood("root", options => { options.MaximumNodes = 40; options.MaximumEdges = 80; });
+        var second = scene.CreateNeighborhood("root", options => { options.NeighborOffset = 39; options.MaximumNodes = 40; options.MaximumEdges = 80; });
         Assert.Equal(40, first.VisibleNodeIds.Count);
         Assert.Equal(39, first.VisibleEdgeIds.Count);
         Assert.Equal(961, first.HiddenNodeCount);
@@ -21,7 +43,7 @@ public sealed class GraphNeighborhoodTests {
         Assert.False(first.IsFullScene);
         var visited = new HashSet<string>();
         for (var offset = 0; offset < first.ScopeNodeCount - 1; offset += 39)
-            visited.UnionWith(scene.CreateNeighborhood("root", options => options.NeighborOffset = offset).VisibleNodeIds);
+            visited.UnionWith(scene.CreateNeighborhood("root", options => { options.NeighborOffset = offset; options.MaximumNodes = 40; }).VisibleNodeIds);
         Assert.Equal(1001, visited.Count);
         Assert.Equal(1001, scene.Nodes.Count);
         Assert.Equal(1000, scene.Edges.Count);
