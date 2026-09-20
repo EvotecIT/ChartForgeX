@@ -8,7 +8,7 @@ const context = vm.createContext({ sceneSize: () => ({ width: 600, height: 400, 
 vm.runInContext("const attr = (element, key) => element?.[key] || '';\n" +
   fs.readFileSync(path.join(assets, 'graph-explorer.02-geometry.js'), 'utf8') + '\n' +
   fs.readFileSync(path.join(assets, 'graph-explorer.25-layout-quality.js'), 'utf8') +
-  '\nthis.assess = assessOverlaps; this.radius = nodeRadius; this.metrics = layoutQualityMetrics;', context);
+  '\nthis.assess = assessOverlaps; this.radius = nodeRadius; this.metrics = layoutQualityMetrics; this.expand = expandDenseLayout;', context);
 const node = (id, x, y, size = 8) => ({ id, x, y, size });
 test('assessment includes collisions after the first 900 nodes', () => {
   const nodes = Array.from({ length: 1000 }, (_, i) => node(String(i), i * 100, 0));
@@ -48,4 +48,15 @@ test('a centered scene with unresolved collisions is still marked for review', (
   assert.equal(root.dataset.cfxGraphLayoutOverlapCoverage, 'complete');
   assert.equal(root.dataset.cfxGraphLayoutOverlapCount, '1');
   assert.equal(root.dataset.cfxGraphLayoutQuality, 'needs-review');
+});
+
+test('incomplete assessment does not classify an unvisited dense region as sparse', () => {
+  const nodes = Array.from({ length: 1000 }, (_, i) => ({ ...node(String(i), 0, i < 900 ? i * 100 : 100000), vx: 0, vy: 0 }));
+  const root = { dataset: {} };
+  const assessment = context.assess(nodes);
+  assert.equal(assessment.complete, false);
+  assert.equal(assessment.overlaps, 0);
+  context.expand(root, { nodes });
+  assert.equal(root.dataset.cfxGraphLayoutDensityCoverage, 'budget-limited');
+  assert.ok(Number(root.dataset.cfxGraphLayoutDensityExpansion) > 1);
 });

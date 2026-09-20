@@ -193,7 +193,6 @@
     }
     return { overlaps, comparisons, complete: true, nodeCount: nodes.length, includeLabels };
   };
-  const countOverlaps = nodes => assessOverlaps(nodes).overlaps;
 
   const layoutQualityMetrics = (root, state) => {
     const nodes = state.nodes;
@@ -283,9 +282,11 @@
   const expandDenseLayout = (root, state) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 24) return;
-    const overlaps = countOverlaps(movable);
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
     const threshold = movable.length >= 300 ? movable.length * 0.65 : movable.length * 0.35;
-    if (overlaps <= threshold) return;
+    root.dataset.cfxGraphLayoutDensityCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    if (assessment.complete && overlaps <= threshold) return;
     const size = sceneSize(root);
     const minX = Math.min(...movable.map(node => node.x));
     const maxX = Math.max(...movable.map(node => node.x));
@@ -295,7 +296,7 @@
     const height = Math.max(1, maxY - minY);
     const viewportScale = Math.min(size.width * 0.92 / width, size.height * 0.88 / height);
     const spatialHeadroom = movable.length >= 300 ? Math.min(1.62, Math.sqrt(movable.length / 180)) : Math.max(1, viewportScale);
-    const factor = Math.min(spatialHeadroom, 1 + Math.min(0.55, overlaps / Math.max(1, movable.length * 8)));
+    const factor = Math.min(spatialHeadroom, Math.max(assessment.complete ? 1 : 1.08, 1 + Math.min(0.55, overlaps / Math.max(1, movable.length * 8))));
     if (factor <= 1.01) return;
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
