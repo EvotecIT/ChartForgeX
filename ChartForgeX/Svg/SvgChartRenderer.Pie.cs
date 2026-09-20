@@ -279,14 +279,14 @@ public sealed partial class SvgChartRenderer {
         rows.Add(row);
         var x = 0.0;
         var vertical = IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition);
-        var maxX = Math.Max(48, width);
+        var maxX = Math.Max(1, width);
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
         for (var i = 0; i < values.Count; i++) {
             var pointIndex = values[i].PointIndex;
             var percent = StyleText(style, FormatPercent(values[i].Point.Y / Math.Max(0.000001, total)));
             var percentWidth = MeasureSvgStyledTextWidth(chart, percent, fontSize, style);
-            var labelMax = Math.Max(24, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 30);
+            var labelMax = Math.Max(1, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 30);
             var rawLabel = SliceLabel(chart, values[i].Point, pointIndex);
             var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
             var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
@@ -318,7 +318,7 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsTopOrBottomLegend(ChartLegendPosition position) => IsTopLegend(position) || IsBottomLegend(position);
 
-    private static double SliceLegendRowHeight(Chart chart) => EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.LegendStyle, chart.Options.Theme.LegendFontSize), chart.Options.LegendStyle) + 10;
+    private static double SliceLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static double PieLabelRadius(double inner, double radius, ChartDataLabelPlacement placement) {
         if (placement == ChartDataLabelPlacement.Outside || placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Above || placement == ChartDataLabelPlacement.Below) return radius * 1.10;

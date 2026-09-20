@@ -237,13 +237,13 @@ public sealed partial class SvgChartRenderer {
         rows.Add(row);
         var x = 0.0;
         var vertical = IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition);
-        var maxX = Math.Max(48, width);
+        var maxX = Math.Max(1, width);
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
         for (var i = 0; i < series.Points.Count; i++) {
             var value = StyleText(style, FormatValue(chart, series.Points[i].Y));
             var valueWidth = MeasureSvgStyledTextWidth(chart, value, fontSize, style, emphasized: true);
-            var labelMax = Math.Max(24, maxX - valueWidth - ChartVisualPrimitives.RadialLegendMarkerRadius * 2 - 28);
+            var labelMax = Math.Max(1, maxX - valueWidth - ChartVisualPrimitives.RadialLegendMarkerRadius * 2 - 28);
             var rawLabel = SliceLabel(chart, series.Points[i], i);
             var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
             var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
@@ -273,7 +273,7 @@ public sealed partial class SvgChartRenderer {
         return area.X;
     }
 
-    private static double RadialBarLegendRowHeight(Chart chart) => EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.LegendStyle, chart.Options.Theme.LegendFontSize), chart.Options.LegendStyle) + 10;
+    private static double RadialBarLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static ChartColor RadialBarColor(ChartSeries series, ChartForgeX.Themes.ChartTheme theme, int pointIndex) {
         if (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue) return series.PointColors[pointIndex]!.Value;

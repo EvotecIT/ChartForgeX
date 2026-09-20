@@ -142,13 +142,13 @@ public sealed partial class PngChartRenderer {
         rows.Add(row);
         var x = 0.0;
         var vertical = PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition);
-        var maxX = Math.Max(48, width);
+        var maxX = Math.Max(1, width);
         var style = chart.Options.LegendStyle;
         var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < series.Points.Count; i++) {
             var value = FormatValue(chart, series.Points[i].Y);
             var valueWidth = EstimatePngStyledTextWidth(value, fontSize, style, emphasized: true);
-            var labelMax = Math.Max(24, maxX - valueWidth - ChartVisualPrimitives.RadialLegendMarkerRadius * 2 - 28);
+            var labelMax = Math.Max(1, maxX - valueWidth - ChartVisualPrimitives.RadialLegendMarkerRadius * 2 - 28);
             var rawLabel = SliceLabel(chart, series.Points[i], i);
             var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, fontSize, style);
             var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax, style);
@@ -178,7 +178,7 @@ public sealed partial class PngChartRenderer {
         return area.X;
     }
 
-    private static double PngRadialBarLegendRowHeight(Chart chart) => EstimatePngStyledTextBoundsHeight(PngLegendFontSize(chart), chart.Options.LegendStyle) + 10;
+    private static double PngRadialBarLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static ChartColor PngRadialBarColor(ChartSeries series, ChartForgeX.Themes.ChartTheme theme, int pointIndex) {
         if (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue) return series.PointColors[pointIndex]!.Value;

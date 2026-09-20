@@ -39,6 +39,9 @@ public sealed class LegendDensityTests {
     [InlineData("line", 560, 1.0)]
     [InlineData("pie", 560, 1.0)]
     [InlineData("radial", 560, 1.0)]
+    [InlineData("line", 1000, 1.0)]
+    [InlineData("pie", 1000, 1.0)]
+    [InlineData("radial", 1000, 1.0)]
     [InlineData("line", 240, 0.35)]
     [InlineData("pie", 240, 0.35)]
     [InlineData("radial", 240, 0.35)]
@@ -101,6 +104,12 @@ public sealed class LegendDensityTests {
 
         Assert.Equal(ordinary, extreme, 6);
         Assert.NotEmpty(new PngChartRenderer().Render(Create(new string('W', 400))));
+    }
+
+    [Fact]
+    public void HorizontalLegendWidthsNeverExceedTheirDrawableLane() {
+        Assert.Equal(48, Rendering.LegendRowBudget.HorizontalItemWidth(new string('W', 200), 12, 48, 52));
+        Assert.Equal(7, Rendering.LegendRowBudget.HorizontalItemWidth("Value", 12, 7, 52));
     }
 
     [Fact]

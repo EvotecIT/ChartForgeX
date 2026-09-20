@@ -19,11 +19,14 @@ internal static class LegendRowBudget {
     internal static int MaximumRows(Chart chart, double? availableHeight = null) {
         var height = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
         if (availableHeight.HasValue) height = Math.Min(height, Math.Max(0, availableHeight.Value));
-        var fontSize = chart.Options.LegendStyle?.FontSize ?? chart.Options.Theme.LegendFontSize;
-        var rowHeight = Math.Max(20, fontSize * 1.1 + 6);
-        var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - 36) / rowHeight));
+        var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - 18) / RowHeight(chart)));
         if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);
         return maximumRows;
+    }
+
+    internal static double RowHeight(Chart chart) {
+        var fontSize = chart.Options.LegendStyle?.FontSize ?? chart.Options.Theme.LegendFontSize;
+        return Math.Max(20, fontSize * 1.2 + 10);
     }
 
     internal static double HorizontalItemWidth(string text, double fontSize, double availableWidth, double overhead) {
@@ -34,7 +37,7 @@ internal static class LegendRowBudget {
             else if (character == 'W' || character == 'M' || character == 'w' || character == 'm') estimated += fontSize * 0.9;
             else estimated += fontSize * 0.58;
         }
-        return Math.Min(Math.Max(64, availableWidth), Math.Max(64, overhead + estimated));
+        return Math.Min(Math.Max(0, availableWidth), Math.Max(64, overhead + estimated));
     }
 
     internal static int VisibleVerticalEntryCount(Chart chart, int entryCount, double availableHeight) {

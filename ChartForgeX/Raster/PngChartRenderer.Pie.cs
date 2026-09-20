@@ -373,14 +373,14 @@ public sealed partial class PngChartRenderer {
         rows.Add(row);
         var x = 0.0;
         var vertical = PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition);
-        var maxX = Math.Max(48, width);
+        var maxX = Math.Max(1, width);
         var style = chart.Options.LegendStyle;
         var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < values.Count; i++) {
             var pointIndex = values[i].PointIndex;
             var percent = FormatPercent(values[i].Point.Y / Math.Max(0.000001, total));
             var percentWidth = EstimatePngStyledTextWidth(percent, fontSize, style, emphasized: false);
-            var labelMax = Math.Max(24, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 32);
+            var labelMax = Math.Max(1, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 32);
             var rawLabel = SliceLabel(chart, values[i].Point, pointIndex);
             var labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, fontSize, style);
             var label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax, style);
@@ -410,7 +410,7 @@ public sealed partial class PngChartRenderer {
         return area.X;
     }
 
-    private static double PngSliceLegendRowHeight(Chart chart) => EstimatePngStyledTextBoundsHeight(PngLegendFontSize(chart), chart.Options.LegendStyle) + 10;
+    private static double PngSliceLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static bool PngIsTopOrBottomLegend(ChartLegendPosition position) => PngIsTopLegend(position) || PngIsBottomLegend(position);
 

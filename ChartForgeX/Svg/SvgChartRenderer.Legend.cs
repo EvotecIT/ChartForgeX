@@ -66,7 +66,7 @@ public sealed partial class SvgChartRenderer {
         var rows = new List<LegendRow>();
         if (chart.Series.Count == 0) return rows;
 
-        var maxX = Math.Max(64, width);
+        var maxX = Math.Max(1, width);
         var vertical = IsVerticalLegend(chart.Options.LegendPosition);
         var row = new LegendRow();
         rows.Add(row);
@@ -173,7 +173,7 @@ public sealed partial class SvgChartRenderer {
         return 0;
     }
 
-    private static double LegendRowHeight(Chart chart) => Math.Max(20, EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.LegendStyle, chart.Options.Theme.LegendFontSize), chart.Options.LegendStyle) + 6);
+    private static double LegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static double LegendBottomReserve(Chart chart) => 18 + BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80)).Count * LegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
 

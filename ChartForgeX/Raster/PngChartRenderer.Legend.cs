@@ -41,7 +41,7 @@ public sealed partial class PngChartRenderer {
         var rows = new System.Collections.Generic.List<PngLegendRow>();
         if (chart.Series.Count == 0) return rows;
 
-        var maxX = System.Math.Max(64, width);
+        var maxX = System.Math.Max(1, width);
         var vertical = PngIsVerticalLegend(chart.Options.LegendPosition);
         var row = new PngLegendRow();
         rows.Add(row);
@@ -49,7 +49,7 @@ public sealed partial class PngChartRenderer {
         foreach (var entry in BuildPngLegendEntries(chart)) {
             var itemWidth = vertical
                 ? System.Math.Min(maxX, 46 + EstimatePngStyledTextWidth(entry.Label, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: true) + 18)
-                : LegendRowBudget.HorizontalItemWidth(chart.Options.LegendStyle.TransformText(entry.Label, System.Globalization.CultureInfo.InvariantCulture), PngLegendFontSize(chart), maxX, 52);
+                : LegendRowBudget.HorizontalItemWidth(chart.Options.LegendStyle.TransformText(entry.RawLabel, System.Globalization.CultureInfo.InvariantCulture), PngLegendFontSize(chart), maxX, 52);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngLegendRow();
                 rows.Add(row);
@@ -71,7 +71,7 @@ public sealed partial class PngChartRenderer {
         if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !chart.Series[0].ShowInLegend || !CanUsePointLegend(chart.Series[0])) {
             var entries = new System.Collections.Generic.List<PngLegendEntry>();
             for (var i = 0; i < chart.Series.Count; i++) {
-                if (chart.Series[i].ShowInLegend) entries.Add(new PngLegendEntry(i, -1, PngLegendLabel(chart, i), SeriesColor(chart, i)));
+                if (chart.Series[i].ShowInLegend) entries.Add(new PngLegendEntry(i, -1, chart.Series[i].Name, PngLegendLabel(chart, i), SeriesColor(chart, i)));
             }
 
             return entries;
@@ -85,10 +85,10 @@ public sealed partial class PngChartRenderer {
             if (rawIndex < 0 || rawIndex >= series.Points.Count) continue;
             var label = LegendPointLabel(chart, series.Points[rawIndex], i);
             label = TrimReadablePngLabelToWidth(label, PngLegendFontSize(chart), PngLegendLabelMaxWidth(chart), chart.Options.LegendStyle);
-            pointEntries.Add(new PngLegendEntry(0, i, label, PngLegendPointColor(chart, series, 0, i)));
+            pointEntries.Add(new PngLegendEntry(0, i, LegendPointLabel(chart, series.Points[rawIndex], i), label, PngLegendPointColor(chart, series, 0, i)));
         }
 
-        if (pointEntries.Count == 0) pointEntries.Add(new PngLegendEntry(0, -1, PngLegendLabel(chart, 0), SeriesColor(chart, 0)));
+        if (pointEntries.Count == 0) pointEntries.Add(new PngLegendEntry(0, -1, chart.Series[0].Name, PngLegendLabel(chart, 0), SeriesColor(chart, 0)));
         return pointEntries;
     }
 
@@ -165,7 +165,7 @@ public sealed partial class PngChartRenderer {
         return area.X;
     }
 
-    private static double PngLegendRowHeight(Chart chart) => EstimatePngStyledTextHeight(PngLegendFontSize(chart), chart.Options.LegendStyle) + 6;
+    private static double PngLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static double PngLegendBottomReserve(Chart chart) => 18 + PngLegendRowCount(chart) * PngLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
 
@@ -247,15 +247,17 @@ public sealed partial class PngChartRenderer {
     }
 
     private readonly struct PngLegendEntry {
-        public PngLegendEntry(int seriesIndex, int pointIndex, string label, ChartColor color) {
+        public PngLegendEntry(int seriesIndex, int pointIndex, string rawLabel, string label, ChartColor color) {
             SeriesIndex = seriesIndex;
             PointIndex = pointIndex;
+            RawLabel = rawLabel;
             Label = label;
             Color = color;
         }
 
         public int SeriesIndex { get; }
         public int PointIndex { get; }
+        public string RawLabel { get; }
         public string Label { get; }
         public ChartColor Color { get; }
     }
