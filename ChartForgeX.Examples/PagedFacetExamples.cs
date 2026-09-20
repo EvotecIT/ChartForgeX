@@ -11,6 +11,8 @@ internal static class PagedFacetExamples {
                 .WithTitle("Site " + site.ToString("00"))
                 .WithSize(440, 280)
                 .WithTheme(ChartTheme.ReportLight())
+                .WithDashboardTrendPanelStyle(showLegend: false, showYAxis: true)
+                .WithTitleStyle(style => style.WithFontSize(20))
                 .WithXAxis("Hour")
                 .WithYAxis("CPU (%)")
                 .AddLine("CPU", rows, sample => sample.Hour, sample => sample.Cpu), columns: 2)
