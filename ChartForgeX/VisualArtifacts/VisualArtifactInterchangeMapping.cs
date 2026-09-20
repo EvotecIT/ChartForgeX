@@ -125,10 +125,16 @@ public static partial class VisualArtifactInterchangeMapping {
         }
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
+        var projectedSourceIds = new List<ProjectedSourceId>();
         foreach (var node in prepared.Nodes) {
             TopologyNodeDisplayMode displayMode = EffectiveNodeDisplayMode(node, options);
-            envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids, displayMode,
-                options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options)));
+            string projectedId = ids.Node(node.Id);
+            var mappedNode = MapNode(node, projectedId, ids.OptionalGroup(node.GroupId), ids, displayMode,
+                options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options));
+            envelope.Nodes.Add(mappedNode);
+            if (!string.Equals(node.Id, projectedId, StringComparison.Ordinal)) {
+                projectedSourceIds.Add(new ProjectedSourceId(mappedNode.Extensions, node.Id));
+            }
         }
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
@@ -147,6 +153,7 @@ public static partial class VisualArtifactInterchangeMapping {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
             if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
         }
+        if (projectedSourceIds.Count > 0) AddProjectedSourceIds(envelope, projectedSourceIds);
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
@@ -427,7 +434,6 @@ public static partial class VisualArtifactInterchangeMapping {
             Topology = MapNodePresentation(node, displayMode, showStatusBadge)
         };
         Copy(node.Metadata, mapped.Extensions);
-        AddProjectedSourceId(mapped.Extensions, node.Id, id);
         CopyMetrics(node.Metrics, mapped.Metrics);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side, Offset = port.Offset, Label = port.Label };
@@ -446,21 +452,6 @@ public static partial class VisualArtifactInterchangeMapping {
             mapped.Details.Add(mappedDetail);
         }
         return mapped;
-    }
-
-    private static void AddProjectedSourceId(IDictionary<string, string> extensions, string sourceId, string projectedId) {
-        if (string.Equals(sourceId, projectedId, StringComparison.Ordinal) ||
-            sourceId.Length > VisualArtifactInterchangeValidation.MaximumTextCharacters ||
-            extensions.Count >= VisualArtifactInterchangeValidation.MaximumExtensionEntries) {
-            return;
-        }
-
-        if (extensions.TryGetValue(ProjectedSourceIdExtension, out string? existingValue)) {
-            extensions[ProjectedSourceIdExtension] = sourceId;
-            extensions[AllocateMetadataKey(extensions, ProjectedSourceIdExtension)] = existingValue;
-            return;
-        }
-        extensions[ProjectedSourceIdExtension] = sourceId;
     }
 
     private static VisualArtifactInterchangeEdge MapEdge(

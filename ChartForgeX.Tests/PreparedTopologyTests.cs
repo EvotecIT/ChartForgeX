@@ -147,6 +147,23 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void InterchangeRetainsOnlySourceIdsThatFitTheAggregateJsonBudget() {
+        var chart = TopologyChart.Create();
+        for (var index = 0; index < 132; index++) {
+            string prefix = index.ToString("D3") + "-";
+            chart.AddAutoNode(prefix + new string('n', 65_536 - prefix.Length), "Node " + index);
+        }
+
+        VisualArtifactInterchangeEnvelope envelope = chart.ToVisualArtifact().ToInterchangeEnvelope();
+        string json = envelope.ToJson();
+        int retainedSourceIds = envelope.Nodes.Count(node => node.Extensions.ContainsKey("chartforgex.sourceId"));
+
+        Assert.InRange(retainedSourceIds, 1, chart.Nodes.Count - 1);
+        Assert.True(json.Length <= VisualArtifactInterchangeEnvelope.MaximumJsonCharacters);
+        Assert.True(System.Text.Encoding.UTF8.GetByteCount(json) <= VisualArtifactInterchangeEnvelope.MaximumJsonUtf8Bytes);
+    }
+
+    [Fact]
     public void ReportInterchangeRelocatesCollidingSourceIdMetadata() {
         var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Manual)
             .AddGroup("shared", "Group", 0, 0, 400, 200)
@@ -174,6 +191,28 @@ public sealed class PreparedTopologyTests {
         Assert.Equal("caller-owned-existing", extensions["report.sourceGroupId.source"]);
         Assert.Contains("caller-owned", extensions.Values);
         Assert.Equal(3, extensions.Count);
+    }
+
+    [Fact]
+    public void ReportOmitsGeneratedGroupMetadataWhenTheExtensionBagIsFull() {
+        var chart = TopologyChart.Create().AddAutoGroup("group", "Group").AddAutoNode("node", "Node", groupId: "group");
+        for (var index = 0; index < 543; index++) chart.Nodes[0].Metadata["metadata-" + index] = "value";
+        chart.Nodes[0].Metadata["report.sourceGroupId"] = "caller-owned";
+
+        var extensions = chart.PrepareReport().Pages.Single().ToInterchangeEnvelope().Nodes.Single().Extensions;
+
+        Assert.Equal(544, extensions.Count);
+        Assert.Equal("caller-owned", extensions["report.sourceGroupId"]);
+    }
+
+    [Fact]
+    public void ReportOmitsGeneratedGroupMetadataWhenTheGroupIdExceedsTheTextBudget() {
+        string groupId = new string('g', 65_537);
+        var chart = TopologyChart.Create().AddAutoGroup(groupId, "Group").AddAutoNode("node", "Node", groupId: groupId);
+
+        var extensions = chart.PrepareReport().Pages.Single().ToInterchangeEnvelope().Nodes.Single().Extensions;
+
+        Assert.DoesNotContain("report.sourceGroupId", extensions.Keys);
     }
 
     [Fact]

@@ -23,7 +23,7 @@ function report(count, customRecords) {
   }
   const ids = Object.fromEntries(['page', 'content', 'fit', 'search', 'results', 'search-status', 'previous', 'next', 'page-status'].map(id => [id, element()]));
   ids.page.options = [0, 1];
-  const records = customRecords || Array.from({ length: count }, (_, index) => ['1', 'Źródło </script> ' + index, ' · page 1', 'pl']);
+  const records = customRecords || Array.from({ length: count }, (_, index) => ['1', 'Źródło </script> ' + index, ' · page 1', 'pl', 'Źródło </script> ' + index, 'node-' + index]);
   ids.objects = { textContent: JSON.stringify(records) };
   for (const page of [0, 1]) {
     ids['links-' + page] = { textContent: JSON.stringify(records) };
@@ -90,7 +90,7 @@ test('detail pages describe relationship pagination', () => {
 });
 
 test('search uses each record language and falls back for invalid language tags', () => {
-  const view = report(0, [['1','İSTANBUL','','tr'],['1','Other','','invalid_language_tag']]);
+  const view = report(0, [['1','İSTANBUL','','tr','İSTANBUL','istanbul-id'],['1','Other','','invalid_language_tag','Other','other-id']]);
   view.ids.search.value = 'istanbul'; view.ids.search.events.input();
   assert.equal(view.ids.results.children.length,1);
   assert.equal(view.ids.results.children[0].textContent,'İSTANBUL');
