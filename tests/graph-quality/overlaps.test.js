@@ -7,6 +7,7 @@ const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Ass
 const context = vm.createContext({ sceneSize: () => ({ width: 600, height: 400, centerX: 300, centerY: 200 }) });
 vm.runInContext("const attr = (element, key) => element?.[key] || '';\n" +
   fs.readFileSync(path.join(assets, 'graph-explorer.02-geometry.js'), 'utf8') + '\n' +
+  fs.readFileSync(path.join(assets, 'graph-explorer.25-layout-metrics.js'), 'utf8') + '\n' +
   fs.readFileSync(path.join(assets, 'graph-explorer.25-layout-quality.js'), 'utf8') +
   '\nthis.assess = assessOverlaps; this.radius = nodeRadius; this.metrics = layoutQualityMetrics; this.expand = expandDenseLayout;', context);
 const node = (id, x, y, size = 8) => ({ id, x, y, size });
