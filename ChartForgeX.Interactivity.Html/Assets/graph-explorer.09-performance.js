@@ -7,6 +7,8 @@
       cadenceBudgetMisses: 0,
       cadenceBudgetMissRate: 0,
       physicsSamples: 0,
+      workerTransferBytes: 0,
+      discardedWorkerUpdates: 0,
       physicsBudgetMisses: 0,
       frameSamples: 0,
       warmupFrameSamples: 0,
@@ -33,6 +35,8 @@
     summary.frameSamples += frameSample ? 1 : 0;
     summary.warmupFrameSamples += warmupSample ? 1 : 0;
     summary.physicsSamples += physicsSample ? 1 : 0;
+    summary.workerTransferBytes += physicsSample ? Math.max(0, Number(detail.transferBytes) || 0) : 0;
+    summary.discardedWorkerUpdates += physicsSample && detail.stale ? 1 : 0;
     summary.lastTick = Number.isFinite(detail.tick) ? detail.tick : summary.lastTick;
     summary.maxVelocity = Math.max(summary.maxVelocity, Number.isFinite(detail.maxVelocity) ? detail.maxVelocity : 0);
     summary.overlapPressureEvents += Math.max(0, Number.isFinite(detail.overlaps) ? detail.overlaps : 0);
@@ -65,6 +69,8 @@
     root.dataset.cfxGraphPerformanceMaxWarmupFrameMs = summary.maxWarmupFrameMs.toFixed(3);
     root.dataset.cfxGraphPerformanceMaxWarmupRenderMs = summary.maxWarmupRenderMs.toFixed(3);
     root.dataset.cfxGraphPerformancePhysicsSamples = String(summary.physicsSamples);
+    root.dataset.cfxGraphPerformanceWorkerTransferBytes = String(summary.workerTransferBytes);
+    root.dataset.cfxGraphPerformanceDiscardedWorkerUpdates = String(summary.discardedWorkerUpdates);
     root.dataset.cfxGraphPerformancePhysicsBudgetMisses = String(summary.physicsBudgetMisses);
     root.dataset.cfxGraphPerformanceOverlapPressureEvents = String(summary.overlapPressureEvents);
     root.dataset.cfxGraphPerformanceCommunityPackingEvents = String(summary.communityPackingEvents);

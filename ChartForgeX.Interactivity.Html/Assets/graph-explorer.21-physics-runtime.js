@@ -6,12 +6,14 @@
       edges: state.edges.filter(edge => edge.physics !== false).map(edge => ({ sourceIndex: nodeIndex.get(edge.source.id), targetIndex: nodeIndex.get(edge.target.id), length: edge.length, weight: edge.weight })).filter(edge => Number.isInteger(edge.sourceIndex) && Number.isInteger(edge.targetIndex))
     };
   };
-  const updatePhysicsNodes = (root, state, nodes) => {
-    const byId = new Map(state.nodes.map(node => [node.id, node]));
-    nodes.forEach(source => {
-      const node = byId.get(source.id);
-      if (!node || root.__cfxGraphDragNodeId === node.id) return;
-      node.x = source.x; node.y = source.y; node.vx = source.vx; node.vy = source.vy; node.fixed = source.fixed;
+  // The worker uses the immutable start-order; positions are transferred, not cloned node records.
+  const updatePhysicsNodes = (root, state, positions) => {
+    if (!positions || positions.length !== state.nodes.length * 5) return;
+    state.nodes.forEach((node, index) => {
+      if (root.__cfxGraphDragNodeId === node.id) return;
+      const offset = index * 5;
+      node.x = positions[offset]; node.y = positions[offset + 1];
+      node.vx = positions[offset + 2]; node.vy = positions[offset + 3]; node.fixed = positions[offset + 4] === 1;
     });
   };
   const workerPhysicsSource = () => `
@@ -41,7 +43,7 @@ const updateAdaptiveTimestep = ${updateAdaptiveTimestep.toString()};
 const simulatePhysicsStep = ${simulatePhysicsStep.toString()};
 let runtime = null;
 let timer = 0;
-const schedule = () => { if (!timer && runtime?.running) timer = setTimeout(runBatch, 0); };
+const schedule = () => { if (!timer && runtime?.running && !runtime.waiting) timer = setTimeout(runBatch, 0); };
 const runBatch = () => {
   timer = 0;
   if (!runtime?.running) return;
@@ -54,18 +56,27 @@ const runBatch = () => {
     if (!runtime.dragging && (runtime.tick >= runtime.settings.iterations || result.maxVelocity <= runtime.settings.minVelocity)) break;
   }
   const done = !runtime.dragging && (runtime.tick >= runtime.settings.iterations || result.maxVelocity <= runtime.settings.minVelocity);
-  self.postMessage({ type: done ? 'done' : 'progress', tick: runtime.tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, sampleMs: Date.now() - started, sampleTicks, nodes: runtime.state.nodes });
-  runtime.running = !done;
-  if (runtime.running) schedule();
+  const positions = runtime.positions || new Float64Array(runtime.state.nodes.length * 5);
+  runtime.state.nodes.forEach((node, index) => {
+    const offset = index * 5;
+    positions[offset] = node.x; positions[offset + 1] = node.y;
+    positions[offset + 2] = node.vx; positions[offset + 3] = node.vy; positions[offset + 4] = node.fixed ? 1 : 0;
+  });
+  runtime.waiting = true; runtime.positions = null; runtime.running = !done;
+  self.postMessage({ type: done ? 'done' : 'progress', generation: runtime.generation, tick: runtime.tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, sampleMs: Date.now() - started, sampleTicks, positions }, [positions.buffer]);
 };
 self.onmessage = event => {
   const data = event.data || {};
   if (data.type === 'start') {
     const nodes = data.nodes || [];
-    runtime = { state: { nodes, edges: (data.edges || []).map(edge => ({ ...edge, source: nodes[edge.sourceIndex], target: nodes[edge.targetIndex] })).filter(edge => edge.source && edge.target) }, settings: data.settings, interval: Math.max(1, data.interval || 12), tick: 0, dragging: '', running: true };
+    runtime = { state: { nodes, edges: (data.edges || []).map(edge => ({ ...edge, source: nodes[edge.sourceIndex], target: nodes[edge.targetIndex] })).filter(edge => edge.source && edge.target) }, settings: data.settings, interval: Math.max(1, data.interval || 12), tick: 0, dragging: '', running: true, waiting: false, generation: 0, positions: null };
     schedule(); return;
   }
   if (!runtime) return;
+  if (data.type === 'continue') {
+    runtime.positions = data.positions; runtime.waiting = false; schedule(); return;
+  }
+  if (Number.isInteger(data.generation)) runtime.generation = data.generation;
   if (data.type === 'pin') {
     const node = runtime.state.nodes.find(item => item.id === data.nodeId);
     if (node) { node.x = data.x; node.y = data.y; node.vx = 0; node.vy = 0; node.fixed = true; }
@@ -82,6 +93,7 @@ self.onmessage = event => {
   const stopWorkerPhysics = (root, preserveThread) => {
     const active = root.__cfxGraphWorker;
     if (!active) return;
+    if (active.frame) cancelAnimationFrame(active.frame);
     active.worker.terminate(); URL.revokeObjectURL(active.url); root.__cfxGraphWorker = null;
     if (!preserveThread) root.dataset.cfxGraphPhysicsThread = 'stopped';
   };
@@ -100,7 +112,9 @@ self.onmessage = event => {
   };
   const completePhysics = (root, state, ticks, velocity, thread) => {
     root.dataset.cfxGraphPhysicsState = 'stabilized';
-    runLayoutQualityPass(root, state); applyLayout(root, state); syncSvgLayout(root, state); drawCanvas(root, state);
+    runLayoutQualityPass(root, state);
+    if (root.dataset.cfxGraphRendererActive !== 'svg') syncSvgLayout(root, state);
+    applyLayout(root, state);
     if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
     root.__cfxGraphAutoFitOnStabilize = false;
     if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root);
@@ -108,33 +122,54 @@ self.onmessage = event => {
     emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks, maxVelocity: velocity, thread });
   };
   const startWorkerPhysics = (root, state, settings) => {
+    let url;
     try {
       const blob = new Blob([workerPhysicsSource()], { type: 'application/javascript' });
-      const url = URL.createObjectURL(blob), worker = new Worker(url), active = { worker, url, state, settings };
+      url = URL.createObjectURL(blob);
+      const worker = new Worker(url), active = { worker, url, state, settings, frame: 0, generation: 0 };
+      root.__cfxGraphPerformanceFrameTimestamp = undefined;
+      root.__cfxGraphPerformanceFrameCount = 0;
       root.__cfxGraphWorker = active; root.dataset.cfxGraphPhysicsThread = 'worker'; root.dataset.cfxGraphPhysicsAcceleration = physicsAcceleration(state, settings);
       worker.onmessage = event => {
         if (root.__cfxGraphWorker !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
+        if (root.isConnected === false) { pausePhysics(root); return; }
         const message = event.data || {};
-        const present = message.type === 'done' || !graphPrefersReducedMotion(root);
-        if (present) updatePhysicsNodes(root, state, message.nodes || []);
-        const renderStarted = performanceClock(); if (present) applyLayout(root, state); const renderedAt = performanceClock();
-        recordFramePerformance(root, renderedAt, renderedAt - renderStarted, 'worker');
-        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
-        if (message.type === 'done') { stopWorkerPhysics(root, true); completePhysics(root, state, message.tick, message.maxVelocity, 'worker'); }
+        // One outstanding batch bounds queue growth, even in a throttled/hidden tab.
+        active.frame = requestAnimationFrame(timestamp => {
+          active.frame = 0;
+          if (root.__cfxGraphWorker !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
+          if (root.isConnected === false) { pausePhysics(root); return; }
+          const current = message.generation === active.generation;
+          const present = current && (message.type === 'done' || !graphPrefersReducedMotion(root));
+          const renderStarted = performanceClock();
+          if (present) updatePhysicsNodes(root, state, message.positions);
+          if (current && message.type === 'done') {
+            stopWorkerPhysics(root, true);
+            completePhysics(root, state, message.tick, message.maxVelocity, 'worker');
+          } else if (present) applyLayout(root, state);
+          const renderedAt = performanceClock();
+          recordFramePerformance(root, timestamp, renderedAt - renderStarted, 'worker');
+          publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks, transferBytes: message.positions?.byteLength || 0, stale: !current });
+          if (root.__cfxGraphWorker === active) worker.postMessage({ type: 'continue', positions: message.positions }, [message.positions.buffer]);
+        });
       };
       worker.onerror = () => { root.__cfxGraphWorkerFailed = true; stopWorkerPhysics(root); if (root.dataset.cfxGraphPhysicsState === 'running') startMainPhysics(root, state, settings); };
       worker.postMessage({ type: 'start', ...serializePhysicsState(state), settings, interval: Math.max(settings.progressInterval, num(root, 'data-cfx-performance-worker-progress-interval', 4)) });
       return true;
     } catch {
+      if (!root.__cfxGraphWorker && url) URL.revokeObjectURL(url);
       root.__cfxGraphWorkerFailed = true; stopWorkerPhysics(root); return false;
     }
   };
   const startMainPhysics = (root, state, settings) => {
     stopMainPhysics(root, true);
+    root.__cfxGraphPerformanceFrameTimestamp = undefined;
+    root.__cfxGraphPerformanceFrameCount = 0;
     const active = { tick: 0, frame: 0, state, settings };
     root.__cfxGraphMainPhysics = active; root.dataset.cfxGraphPhysicsThread = 'main'; root.dataset.cfxGraphPhysicsAcceleration = physicsAcceleration(state, settings);
     const step = (timestamp) => {
       if (root.__cfxGraphMainPhysics !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
+      if (root.isConnected === false) { pausePhysics(root); return; }
       active.tick += 1;
       const frame = physicsTick(root, state, settings, active.tick);
       const renderedAt = performanceClock(); recordFramePerformance(root, Number.isFinite(timestamp) ? timestamp : renderedAt, frame.renderMs, 'main');
@@ -173,7 +208,7 @@ self.onmessage = event => {
     root.dataset.cfxGraphPhysicsReason = reason || 'reheat';
     if (options?.rebuild) return startPhysics(root, { reason, fit: options.fit });
     if (root.__cfxGraphWorker) {
-      root.dataset.cfxGraphPhysicsState = 'running'; root.__cfxGraphWorker.worker.postMessage({ type: 'reheat' });
+      root.dataset.cfxGraphPhysicsState = 'running'; root.__cfxGraphWorker.worker.postMessage({ type: 'reheat', generation: ++root.__cfxGraphWorker.generation });
       if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root); return true;
     }
     if (root.__cfxGraphMainPhysics) {
@@ -183,8 +218,10 @@ self.onmessage = event => {
     return startPhysics(root, { reason, fit: options?.fit });
   };
   const updateDraggedPhysicsNode = (root, node) => {
-    root.__cfxGraphWorker?.worker.postMessage({ type: 'pin', nodeId: node.id, x: node.x, y: node.y });
+    const active = root.__cfxGraphWorker;
+    active?.worker.postMessage({ type: 'pin', generation: ++active.generation, nodeId: node.id, x: node.x, y: node.y });
   };
   const releaseDraggedPhysicsNode = (root, node) => {
-    root.__cfxGraphWorker?.worker.postMessage({ type: 'release', nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
+    const active = root.__cfxGraphWorker;
+    active?.worker.postMessage({ type: 'release', generation: ++active.generation, nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
   };
