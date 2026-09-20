@@ -69,7 +69,7 @@ public sealed partial class PngChartRenderer {
         var fontSize = PngLegendFontSize(chart);
         var style = chart.Options.LegendStyle;
         var area = PngRadialBarLegendArea(chart, plot, series);
-        var rows = BuildPngRadialBarLegendRows(chart, series, area.Width);
+        var rows = BuildPngRadialBarLegendRows(chart, series, area.Width, PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
         var y = PngRadialBarLegendStartY(chart, area, rows.Count);
         foreach (var row in rows) {
             if (y > area.Bottom) break;
@@ -124,13 +124,14 @@ public sealed partial class PngChartRenderer {
 
     private static ChartRect PngRadialBarLegendArea(Chart chart, ChartRect plot, ChartSeries series) {
         var reserve = PngRadialBarLegendReserve(chart, series, plot);
-        if (PngIsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
-        if (PngIsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
+        var sideInset = PngLegendSideInset(plot.Height);
+        if (PngIsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
+        if (PngIsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
         var y = PngIsTopLegend(chart.Options.LegendPosition) ? plot.Top + 14 : plot.Bottom - reserve - 4;
         return new ChartRect(plot.Left + 36, y, Math.Max(1, plot.Width - 72), reserve);
     }
 
-    private static List<PngRadialBarLegendRow> BuildPngRadialBarLegendRows(Chart chart, ChartSeries series, double width) {
+    private static List<PngRadialBarLegendRow> BuildPngRadialBarLegendRows(Chart chart, ChartSeries series, double width, double? availableHeight = null) {
         var rows = new List<PngRadialBarLegendRow>();
         var row = new PngRadialBarLegendRow();
         rows.Add(row);
@@ -158,11 +159,11 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, PngRadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new PngRadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
+        return LegendRowBudget.Apply(rows, chart, PngRadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new PngRadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static double PngRadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>
-        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * PngRadialBarLegendRowHeight(chart) : area.Top + 16;
+        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * PngRadialBarLegendRowHeight(chart) : Math.Min(area.Top + 16, area.Bottom - 4);
 
     private static double PngRadialBarLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         if (chart.Options.LegendPosition == ChartLegendPosition.TopRight || chart.Options.LegendPosition == ChartLegendPosition.BottomRight || PngIsRightLegend(chart.Options.LegendPosition)) return area.Right - Math.Min(area.Width, rowWidth);

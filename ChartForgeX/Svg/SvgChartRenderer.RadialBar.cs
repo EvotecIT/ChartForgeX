@@ -119,7 +119,7 @@ public sealed partial class SvgChartRenderer {
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, t.LegendFontSize);
         var area = RadialBarLegendArea(chart, plot, series);
-        var rows = BuildRadialBarLegendRows(chart, series, area.Width);
+        var rows = BuildRadialBarLegendRows(chart, series, area.Width, IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
         var y = RadialBarLegendStartY(chart, area, rows.Count);
         writer
             .StartElement("g")
@@ -219,13 +219,14 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect RadialBarLegendArea(Chart chart, ChartRect plot, ChartSeries series) {
         var reserve = RadialBarLegendReserve(chart, series, plot);
-        if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
-        if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
+        var sideInset = LegendSideInset(plot.Height);
+        if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
+        if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
         var y = IsTopLegend(chart.Options.LegendPosition) ? plot.Top + 14 : plot.Bottom - reserve - 4;
         return new ChartRect(plot.Left + 36, y, Math.Max(1, plot.Width - 72), reserve);
     }
 
-    private static List<RadialBarLegendRow> BuildRadialBarLegendRows(Chart chart, ChartSeries series, double width) {
+    private static List<RadialBarLegendRow> BuildRadialBarLegendRows(Chart chart, ChartSeries series, double width, double? availableHeight = null) {
         var rows = new List<RadialBarLegendRow>();
         var row = new RadialBarLegendRow();
         rows.Add(row);
@@ -253,11 +254,11 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, RadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new RadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
+        return LegendRowBudget.Apply(rows, chart, RadialBarLegendRowHeight(chart), row => row.Items.Count, omitted => new RadialBarLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static double RadialBarLegendStartY(Chart chart, ChartRect area, int rows) =>
-        IsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * RadialBarLegendRowHeight(chart) : area.Top + 16;
+        IsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * RadialBarLegendRowHeight(chart) : Math.Min(area.Top + 16, area.Bottom - 4);
 
     private static double RadialBarLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         if (chart.Options.LegendPosition == ChartLegendPosition.TopRight || chart.Options.LegendPosition == ChartLegendPosition.BottomRight || IsRightLegend(chart.Options.LegendPosition)) return area.Right - Math.Min(area.Width, rowWidth);

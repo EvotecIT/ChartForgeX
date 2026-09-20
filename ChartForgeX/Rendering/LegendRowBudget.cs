@@ -6,8 +6,9 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal static class LegendRowBudget {
-    internal static List<T> Apply<T>(List<T> rows, Chart chart, double rowHeight, Func<T, int> count, Func<int, T> summary) {
+    internal static List<T> Apply<T>(List<T> rows, Chart chart, double rowHeight, Func<T, int> count, Func<int, T> summary, double? availableHeight = null) {
         var height = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
+        if (availableHeight.HasValue) height = Math.Min(height, Math.Max(0, availableHeight.Value));
         var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - 36) / Math.Max(1, rowHeight)));
         if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);
         if (rows.Count <= maximumRows) return rows;

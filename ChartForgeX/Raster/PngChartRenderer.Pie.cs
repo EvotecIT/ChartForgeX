@@ -293,7 +293,7 @@ public sealed partial class PngChartRenderer {
         var style = chart.Options.LegendStyle;
         const double swatchSize = ChartVisualPrimitives.SliceLegendSwatchSize;
         var area = PngSliceLegendArea(chart, plot, values);
-        var rows = BuildPngSliceLegendRows(chart, series, values, total, area.Width);
+        var rows = BuildPngSliceLegendRows(chart, series, values, total, area.Width, PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
         var y = PngSliceLegendStartY(chart, area, rows.Count);
         foreach (var row in rows) {
             if (y > area.Bottom) break;
@@ -355,13 +355,14 @@ public sealed partial class PngChartRenderer {
 
     private static ChartRect PngSliceLegendArea(Chart chart, ChartRect plot, IReadOnlyList<PngIndexedPieValue> values) {
         var reserve = PngSliceLegendReserve(chart, values, plot);
-        if (PngIsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
-        if (PngIsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
+        var sideInset = PngLegendSideInset(plot.Height);
+        if (PngIsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
+        if (PngIsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
         var y = PngIsTopLegend(chart.Options.LegendPosition) ? plot.Top + 14 : plot.Bottom - reserve - 4;
         return new ChartRect(plot.Left + 36, y, Math.Max(1, plot.Width - 72), reserve);
     }
 
-    private static List<PngSliceLegendRow> BuildPngSliceLegendRows(Chart chart, ChartSeries series, IReadOnlyList<PngIndexedPieValue> values, double total, double width) {
+    private static List<PngSliceLegendRow> BuildPngSliceLegendRows(Chart chart, ChartSeries series, IReadOnlyList<PngIndexedPieValue> values, double total, double width, double? availableHeight = null) {
         var rows = new List<PngSliceLegendRow>();
         var row = new PngSliceLegendRow();
         rows.Add(row);
@@ -390,11 +391,11 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, PngSliceLegendRowHeight(chart), row => row.Items.Count, omitted => new PngSliceLegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
+        return LegendRowBudget.Apply(rows, chart, PngSliceLegendRowHeight(chart), row => row.Items.Count, omitted => new PngSliceLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static double PngSliceLegendStartY(Chart chart, ChartRect area, int rows) =>
-        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * PngSliceLegendRowHeight(chart) : area.Top + 16;
+        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * PngSliceLegendRowHeight(chart) : Math.Min(area.Top + 16, area.Bottom - 4);
 
     private static double PngSliceLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         if (chart.Options.LegendPosition == ChartLegendPosition.TopRight || chart.Options.LegendPosition == ChartLegendPosition.BottomRight || PngIsRightLegend(chart.Options.LegendPosition)) return area.Right - Math.Min(area.Width, rowWidth);

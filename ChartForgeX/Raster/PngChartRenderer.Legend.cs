@@ -12,7 +12,7 @@ public sealed partial class PngChartRenderer {
         var symbolWidth = 18;
         var rowHeight = PngLegendRowHeight(chart);
         var area = PngLegendArea(chart);
-        var rows = BuildPngLegendRows(chart, area.Width);
+        var rows = BuildPngLegendRows(chart, area.Width, PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
         var y = PngLegendStartY(chart, area, rows.Count);
 
         foreach (var row in rows) {
@@ -37,7 +37,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static System.Collections.Generic.List<PngLegendRow> BuildPngLegendRows(Chart chart, double width) {
+    private static System.Collections.Generic.List<PngLegendRow> BuildPngLegendRows(Chart chart, double width, double? availableHeight = null) {
         var rows = new System.Collections.Generic.List<PngLegendRow>();
         if (chart.Series.Count == 0) return rows;
 
@@ -59,7 +59,7 @@ public sealed partial class PngChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, PngLegendRowHeight(chart), row => row.Items.Count, omitted => new PngLegendRow { Omitted = omitted, Width = System.Math.Min(width, 140) });
+        return LegendRowBudget.Apply(rows, chart, PngLegendRowHeight(chart), row => row.Items.Count, omitted => new PngLegendRow { Omitted = omitted, Width = System.Math.Min(width, 140) }, availableHeight);
     }
 
     private static string PngLegendLabel(Chart chart, int index) =>
@@ -152,7 +152,9 @@ public sealed partial class PngChartRenderer {
     }
 
     private static double PngLegendStartY(Chart chart, ChartRect area, int rows) =>
-        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 24 - System.Math.Max(0, rows - 1) * PngLegendRowHeight(chart) : area.Top + 14;
+        PngIsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 24 - System.Math.Max(0, rows - 1) * PngLegendRowHeight(chart) : System.Math.Min(area.Top + 14, area.Bottom - 4);
+
+    private static double PngLegendSideInset(double availableHeight) => System.Math.Min(20, System.Math.Max(0, (availableHeight - 20) / 2.0));
 
     private static double PngLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         var position = chart.Options.LegendPosition;

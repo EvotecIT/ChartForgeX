@@ -14,7 +14,7 @@ public sealed partial class SvgChartRenderer {
         if (!ShouldDrawLegend(chart)) return;
         var t = chart.Options.Theme;
         var area = LegendArea(chart, w, h);
-        var rows = BuildLegendRows(chart, area.Width);
+        var rows = BuildLegendRows(chart, area.Width, IsVerticalLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
         var y = LegendStartY(chart, area, rows.Count);
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("g").Attribute("data-cfx-role", "legend").Attribute("data-cfx-position", chart.Options.LegendPosition.ToString()).EndStartElement().Line();
@@ -62,7 +62,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static List<LegendRow> BuildLegendRows(Chart chart, double width) {
+    private static List<LegendRow> BuildLegendRows(Chart chart, double width, double? availableHeight = null) {
         var rows = new List<LegendRow>();
         if (chart.Series.Count == 0) return rows;
 
@@ -89,7 +89,7 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return LegendRowBudget.Apply(rows, chart, LegendRowHeight(chart), row => row.Items.Count, omitted => new LegendRow { Omitted = omitted, Width = Math.Min(width, 140) });
+        return LegendRowBudget.Apply(rows, chart, LegendRowHeight(chart), row => row.Items.Count, omitted => new LegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
     private static string SeriesInteractionKey(ChartSeries series) => series.InteractionIdentityKey;
@@ -160,8 +160,10 @@ public sealed partial class SvgChartRenderer {
 
     private static double LegendStartY(Chart chart, ChartRect area, int rowCount) {
         if (IsBottomLegend(chart.Options.LegendPosition)) return area.Bottom - 24 - Math.Max(0, rowCount - 1) * LegendRowHeight(chart);
-        return area.Top + 14;
+        return Math.Min(area.Top + 14, area.Bottom - 4);
     }
+
+    private static double LegendSideInset(double availableHeight) => Math.Min(20, Math.Max(0, (availableHeight - 20) / 2.0));
 
     private static double LegendRowX(ChartLegendPosition position, ChartRect area, double rowWidth) {
         if (position == ChartLegendPosition.TopRight || position == ChartLegendPosition.BottomRight || position == ChartLegendPosition.Right) return area.Width - Math.Min(area.Width, rowWidth);
