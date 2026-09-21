@@ -7,7 +7,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static class TopologyLayoutNormalizer {
-    private const double NodeGap = 16;
+    internal const double NodeGap = 16;
     private const double GroupPadding = 24;
     private const double GroupHeaderTopPadding = 14;
     private const double GroupHeaderBottomGap = 12;
@@ -173,7 +173,7 @@ internal static class TopologyLayoutNormalizer {
 
         var surfaceInset = CanvasSurfaceInset(chart, options);
         var targetLeft = chart.Viewport.Padding + surfaceInset;
-        var targetTop = chart.Viewport.Padding + surfaceInset + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
+        var targetTop = chart.Viewport.Padding + surfaceInset + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : HeaderReservedHeight);
         var dx = bounds.Left < targetLeft ? targetLeft - bounds.Left : 0;
         var dy = bounds.Top < targetTop ? targetTop - bounds.Top : 0;
         if (Math.Abs(dx) > 0.0001 || Math.Abs(dy) > 0.0001) {

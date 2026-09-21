@@ -8,6 +8,8 @@ namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Creates portable semantic interchange envelopes from ChartForgeX visual artifacts.</summary>
 public static partial class VisualArtifactInterchangeMapping {
+    private const string ProjectedSourceIdExtension = "chartforgex.sourceId";
+
     /// <summary>
     /// Creates a versioned semantic interchange envelope for an artifact.
     /// </summary>
@@ -70,6 +72,22 @@ public static partial class VisualArtifactInterchangeMapping {
         TopologyRenderOptions? renderOptions) {
         var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
         var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
+        MapPreparedTopology(envelope, artifact, prepared, options);
+    }
+
+    internal static VisualArtifactInterchangeEnvelope FromPreparedTopology(TopologyChart prepared, TopologyRenderOptions options) {
+        var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!, VisualArtifactKind.Topology, prepared);
+        artifact.Accessibility.Name = prepared.Accessibility.Name;
+        artifact.Accessibility.Description = prepared.Accessibility.Description;
+        artifact.Accessibility.Language = prepared.Accessibility.Language;
+        artifact.Accessibility.IsDecorative = prepared.Accessibility.IsDecorative;
+        var envelope = Common(artifact, out _);
+        MapPreparedTopology(envelope, artifact, prepared, options);
+        envelope.Validate();
+        return envelope;
+    }
+
+    private static void MapPreparedTopology(VisualArtifactInterchangeEnvelope envelope, VisualArtifact artifact, TopologyChart prepared, TopologyRenderOptions options) {
         RefreshTopologyAccessibility(envelope, artifact, prepared);
         var ids = new InterchangeIdScope();
         foreach (var group in prepared.Groups) ids.AddGroup(group.Id);
@@ -107,10 +125,16 @@ public static partial class VisualArtifactInterchangeMapping {
         }
 
         foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
+        var projectedSourceIds = new List<ProjectedSourceId>();
         foreach (var node in prepared.Nodes) {
             TopologyNodeDisplayMode displayMode = EffectiveNodeDisplayMode(node, options);
-            envelope.Nodes.Add(MapNode(node, ids.Node(node.Id), ids.OptionalGroup(node.GroupId), ids, displayMode,
-                options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options)));
+            string projectedId = ids.Node(node.Id);
+            var mappedNode = MapNode(node, projectedId, ids.OptionalGroup(node.GroupId), ids, displayMode,
+                options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options));
+            envelope.Nodes.Add(mappedNode);
+            if (!string.Equals(node.Id, projectedId, StringComparison.Ordinal)) {
+                projectedSourceIds.Add(new ProjectedSourceId(mappedNode.Extensions, node.Id));
+            }
         }
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
@@ -129,6 +153,7 @@ public static partial class VisualArtifactInterchangeMapping {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
             if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
         }
+        if (projectedSourceIds.Count > 0) AddProjectedSourceIds(envelope, projectedSourceIds);
     }
 
     private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
@@ -374,22 +399,10 @@ public static partial class VisualArtifactInterchangeMapping {
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
 
         var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
-        if (detachOmittedSourceGroups) DetachOmittedSourceGroups(topology, prepared);
+        if (detachOmittedSourceGroups) TopologyLayoutEngine.DetachOmittedSourceGroups(topology, prepared);
         var preparedValidation = validator.Validate(prepared, validateScenarioReferences: false, options);
         if (!preparedValidation.IsValid) throw new TopologyValidationException(preparedValidation);
         return prepared;
-    }
-
-    private static void DetachOmittedSourceGroups(TopologyChart source, TopologyChart prepared) {
-        var sourceGroupIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var group in source.Groups) sourceGroupIds.Add(group.Id);
-        var preparedGroupIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var group in prepared.Groups) preparedGroupIds.Add(group.Id);
-        foreach (var node in prepared.Nodes) {
-            if (!string.IsNullOrWhiteSpace(node.GroupId) && sourceGroupIds.Contains(node.GroupId!) && !preparedGroupIds.Contains(node.GroupId!)) {
-                node.GroupId = null;
-            }
-        }
     }
 
     private static VisualArtifactInterchangeNode MapNode(

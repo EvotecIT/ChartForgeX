@@ -41,6 +41,10 @@ public sealed partial class TopologySvgRenderer {
         var validation = validator.Validate(prepared, validateScenarioReferences: false, options);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
 
+        return RenderPrepared(prepared, options, requestedWidth, requestedHeight);
+    }
+
+    internal string RenderPrepared(TopologyChart prepared, TopologyRenderOptions options, double requestedWidth, double requestedHeight) {
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var prefix = NormalizeCssClassPrefix(options.CssClassPrefix, "cfx-topology");
         var id = SanitizeId(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!);

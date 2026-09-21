@@ -4,6 +4,8 @@ namespace ChartForgeX.Topology;
 /// Provides topology SVG theme tokens.
 /// </summary>
 public sealed class TopologyTheme {
+    internal TopologyTheme Clone() => (TopologyTheme)MemberwiseClone();
+
     /// <summary>Gets or sets the background color.</summary>
     public string Background { get; set; } = "#FFFFFF";
 
