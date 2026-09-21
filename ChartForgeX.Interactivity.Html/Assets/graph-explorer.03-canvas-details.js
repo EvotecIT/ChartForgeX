@@ -3,6 +3,7 @@
     const palette = graphThemePalette(root);
     const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
     const primary = node.el.classList.contains('cfx-graph-neighborhood-primary');
+    const related = node.el.classList.contains('cfx-graph-neighborhood-related');
     const selected = node.el.classList.contains('cfx-graph-selected');
     const card = node.card === true;
     const cardHalfWidth = node.size * 1.45;
@@ -42,7 +43,7 @@
       context.lineWidth = 3;
       context.stroke();
     }
-    if ((!compact && !moving) || node.shape === 'text' || selected || primary) {
+    if ((!compact && !moving) || node.shape === 'text' || selected || primary || related) {
       context.font = card ? '700 12.5px Inter, Segoe UI, Arial, sans-serif' : '12px Inter, Segoe UI, Arial, sans-serif';
       context.textAlign = card ? 'left' : 'center';
       context.textBaseline = node.shape === 'text' ? 'middle' : card ? 'alphabetic' : 'top';

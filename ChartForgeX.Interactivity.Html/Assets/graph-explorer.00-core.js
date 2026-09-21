@@ -127,7 +127,7 @@
     });
     return { nodes, edges, clusters, byId, clusterById };
   };
-  const visible = (el) => !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member') && !el.classList.contains('cfx-graph-bundle-member') && !el.classList.contains('cfx-graph-overview-member') && !el.classList.contains('cfx-graph-hierarchy-hidden');
+  const visible = (el) => !el.classList.contains('cfx-graph-neighborhood-hidden') && !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member') && !el.classList.contains('cfx-graph-bundle-member') && !el.classList.contains('cfx-graph-overview-member') && !el.classList.contains('cfx-graph-hierarchy-hidden');
   const viewport = (root) => ({
     x: num(root, 'data-cfx-viewport-x', 0),
     y: num(root, 'data-cfx-viewport-y', 0),

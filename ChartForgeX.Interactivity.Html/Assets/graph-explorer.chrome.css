@@ -610,3 +610,23 @@
     box-shadow: none;
   }
 }
+
+.cfx-graph-neighborhood-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 10px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 12px;
+  background: var(--cfx-color-surface-solid);
+}
+.cfx-graph-neighborhood-navigation[hidden] { display: none; }
+.cfx-graph-neighborhood-navigation [data-cfx-role="graph-neighborhood-summary"] {
+  flex: 1 1 260px;
+  overflow-wrap: anywhere;
+  color: var(--cfx-color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}

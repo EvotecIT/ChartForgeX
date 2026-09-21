@@ -11,7 +11,7 @@
     capturedAt: new Date().toISOString(),
     viewport: viewport(root),
     selection: (root.dataset.cfxGraphSelectionIds || '').split(',').filter(Boolean),
-    focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' },
+    focus: graphFocusSnapshot(root),
     hierarchy: { rootNodeId: root.dataset.cfxGraphHierarchyRoot || '', depth: Number(root.dataset.cfxGraphHierarchyDepth || attr(root, 'data-cfx-graph-hierarchy-depth') || 0) },
     clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true' })),
     positions: (root.__cfxGraphState || graphState(root)).nodes.map(node => ({ id: node.id, x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true' })),
@@ -38,10 +38,14 @@
     (snapshots || []).forEach(snapshot => applyClusterState(root, !!snapshot.collapsed, String(snapshot.id || ''), { reheat: false }));
   };
   const restoreGraphSelection = (root, ids) => {
-    const selected = new Set((ids || []).map(String));
+    const selected = new Set((ids || []).map(value => {
+      if (value && typeof value === 'object') return `${String(value.role || '')}:${String(value.id || '')}`;
+      return `:${String(value)}`;
+    }));
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      item.classList.toggle('cfx-graph-selected', selected.has(id));
+      const role = attr(item, 'data-cfx-role');
+      item.classList.toggle('cfx-graph-selected', selected.has(`${role}:${id}`) || selected.has(`:${id}`));
     });
     const details = updateSelectionState(root);
     syncSelectionTooltip(root, details);
@@ -77,7 +81,13 @@
       if (snapshot.hierarchy && hasFeature(root, 'HierarchyNavigation')) applyHierarchyView(root, snapshot.hierarchy.rootNodeId || '', snapshot.hierarchy.depth, { fit: false, restartPhysics: false });
       if (snapshot.viewport && hasFeature(root, 'Viewport')) { root.__cfxGraphViewportTouched = true; setViewport(root, snapshot.viewport); }
       restoreGraphSelection(root, snapshot.selection);
-      if (snapshot.focus?.active && snapshot.focus.nodeId) applyNeighborhoodFocus(root, snapshot.focus.nodeId); else if (root.dataset.cfxGraphFocus === 'active') clearNeighborhoodFocus(root);
+      if (snapshot.focus?.active && snapshot.focus.nodeId) {
+        if (applyNeighborhoodFocus(root, snapshot.focus.nodeId, snapshot.focus, { refresh: true, fit: false })) {
+          root.__cfxGraphNeighborhoodOverview = snapshot.focus.overview || null;
+          root.__cfxGraphNeighborhoodHistory = Array.isArray(snapshot.focus.history) ? snapshot.focus.history.slice(-50) : [];
+          syncNeighborhoodNavigation(root, root.__cfxGraphNeighborhoodView);
+        } else clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
+      } else if (root.dataset.cfxGraphFocus === 'active') clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
       drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
       emit(root, 'cfxgraphstateapplied', { graphId: attr(root, 'data-cfx-graph-id'), source: options?.source || snapshot.source || 'api', state: snapshot });
       if (options?.persist !== false) persistGraphInteractionState(root, options?.source || 'state-apply');

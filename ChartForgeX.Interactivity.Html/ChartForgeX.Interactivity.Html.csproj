@@ -66,6 +66,8 @@
     <EmbeddedResource Include="Assets\graph-explorer.09-performance.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.09-performance.js" />
     <EmbeddedResource Include="Assets\graph-explorer.09-edge-bundles.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.09-edge-bundles.js" />
     <EmbeddedResource Include="Assets\graph-explorer.10-layout.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.10-neighborhood-plan.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-neighborhood-plan.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.10-neighborhood.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-neighborhood.js" />
     <EmbeddedResource Include="Assets\graph-explorer.11-state-sync.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.11-state-sync.js" />
     <EmbeddedResource Include="Assets\graph-explorer.12-overview.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js" />
     <EmbeddedResource Include="Assets\graph-explorer.13-hierarchy.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js" />

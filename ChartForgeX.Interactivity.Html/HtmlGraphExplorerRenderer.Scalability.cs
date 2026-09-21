@@ -13,6 +13,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
     }
 
     private static void WriteScalabilityAttributes(StringBuilder writer, GraphScene scene) {
+        Attribute(writer, "data-cfx-neighborhood-hops", scene.Options.Neighborhood.Hops.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-neighborhood-max-nodes", scene.Options.Neighborhood.MaximumNodes.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-neighborhood-max-edges", scene.Options.Neighborhood.MaximumEdges.ToString(CultureInfo.InvariantCulture));
+        Attribute(writer, "data-cfx-neighborhood-offset", scene.Options.Neighborhood.NeighborOffset.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-lod-cluster-threshold", scene.Options.LevelOfDetail.ClusterNodeThreshold.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-lod-hide-edge-labels-threshold", scene.Options.LevelOfDetail.HideEdgeLabelsThreshold.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-lod-compact-node-threshold", scene.Options.LevelOfDetail.CompactNodeThreshold.ToString(CultureInfo.InvariantCulture));

@@ -21,6 +21,8 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.09-performance.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.09-edge-bundles.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-layout.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-neighborhood-plan.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.10-neighborhood.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.11-state-sync.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js",

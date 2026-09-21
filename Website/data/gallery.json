@@ -721,11 +721,15 @@
       "image": "/examples/generated/graph-2000-stage-05-full.svg"
     },
     {
-      "category": "charts",
-      "title": "Graph Neighborhood Page 1",
-      "body": "Generated ChartForgeX visual output.",
-      "tags": [],
-      "image": "/examples/generated/graph-neighborhood-page-1.svg"
+      "category": "topology",
+      "title": "Service Neighborhood Explorer",
+      "body": "Explore a bounded, paged neighborhood from a 1,001-object service graph.",
+      "tags": [
+        "Topology",
+        "Interactive"
+      ],
+      "image": "/examples/generated/graph-neighborhood-page-1.svg",
+      "href": "/examples/generated/graph-neighborhood-explorer.html"
     },
     {
       "category": "charts",

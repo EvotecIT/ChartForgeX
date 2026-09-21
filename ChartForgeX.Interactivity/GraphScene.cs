@@ -144,6 +144,7 @@ public sealed class GraphScene {
         Options.Layout.Validate();
         Options.Cluster.Validate();
         Options.Hierarchy.Validate();
+        Options.Neighborhood.Validate();
     }
 
     private static void ValidateParentReferences(IReadOnlyDictionary<string, string> parents, ISet<string> ids, string itemKind) {
