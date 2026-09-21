@@ -155,9 +155,9 @@ internal static class TopologyLayoutNormalizer {
     private static double HeaderWidth(TopologyGroup group, TopologyRenderOptions options) {
         var rendersSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol);
         var maxLabelWidth = GroupHeaderLabelWidth(group, options, rendersSymbol);
-        var labelSize = FitFontSize(group.Label, maxLabelWidth, 16, 12, true);
-        var labelWidth = EstimateTextWidth(TrimToEstimatedWidth(group.Label, maxLabelWidth, labelSize, true), labelSize, true) + (rendersSymbol ? 30 : 0);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false);
+        var labelSize = FitFontSize(group.Label, maxLabelWidth, 16, 12, true, options.TextMeasurement);
+        var labelWidth = EstimateTextWidth(TrimToEstimatedWidth(group.Label, maxLabelWidth, labelSize, true, options.TextMeasurement), labelSize, true, options.TextMeasurement) + (rendersSymbol ? 30 : 0);
+        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, options.TextMeasurement);
         return Math.Min(Math.Max(96, Math.Max(labelWidth, subtitleWidth) + 12), Math.Max(96, group.Width - GroupPadding * 2));
     }
 
@@ -222,7 +222,7 @@ internal static class TopologyLayoutNormalizer {
 
         var badge = NodeBadge(node);
         if (!string.IsNullOrWhiteSpace(badge)) {
-            var width = Math.Max(18, badge.Length * 6.5 + 12);
+            var width = NodeBadgeWidth(node, options);
             var height = 18.0;
             var x = displayMode == TopologyNodeDisplayMode.Dot ? CenterX(node) + 8 : displayMode == TopologyNodeDisplayMode.Icon ? CenterX(node) - width / 2 : node.X + node.Width - width - 6;
             var y = displayMode == TopologyNodeDisplayMode.Dot ? CenterY(node) - 21 : displayMode == TopologyNodeDisplayMode.Icon ? node.Y + node.Height + 4 : displayMode == TopologyNodeDisplayMode.Tile ? node.Y - 8 : node.Y + node.Height - height - 6;
@@ -232,7 +232,7 @@ internal static class TopologyLayoutNormalizer {
         if (!options.IncludeNodeLabels) return bounds;
         if (displayMode == TopologyNodeDisplayMode.Icon) {
             if (options.IncludeIconLabels) {
-                var labelWidth = IconLabelPlateWidth(node);
+                var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement);
                 var labelCenter = CenterX(node);
                 var labelY = IconLabelPlateY(node);
                 bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + 15);
@@ -248,13 +248,12 @@ internal static class TopologyLayoutNormalizer {
             var lineCount = Math.Max(1, labelLines.Count);
             if (labelLines.Count == 0) bounds = bounds.Include(labelCenter, labelTop, labelCenter, labelTop + lineCount * 14 + 4);
             foreach (var line in labelLines) {
-                var labelWidth = EstimateTextWidth(line, 11, true);
+                var labelWidth = EstimateTextWidth(line, 11, true, options.TextMeasurement);
                 bounds = bounds.Include(labelCenter - labelWidth / 2, labelTop, labelCenter + labelWidth / 2, labelTop + lineCount * 14 + 4);
             }
 
             if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) {
-                var subtitle = TrimTo(node.Subtitle!, 16);
-                var subtitleWidth = Math.Min(Math.Max(46, subtitle.Length * 5.8 + 18), Math.Max(46, node.Width + 28));
+                var subtitleWidth = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options).Width;
                 var subtitleY = node.Y + node.Height + 7 + lineCount * 14;
                 bounds = bounds.Include(labelCenter - subtitleWidth / 2, subtitleY, labelCenter + subtitleWidth / 2, subtitleY + 17);
             }

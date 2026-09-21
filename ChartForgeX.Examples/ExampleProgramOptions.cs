@@ -23,6 +23,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--topology-typography-only")) {
+            TopologyTypographyExamples.Write(output);
+            Console.WriteLine("Generated topology typography examples in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--topology-only")) {
             TopologyExamples.Write(output);
             Console.WriteLine("Generated topology files in: " + Path.Combine(output, "topology-demo"));

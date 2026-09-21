@@ -2552,6 +2552,40 @@
       }
     },
     {
+      "name": "topology-measured-typography-mono",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 725,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "topology-measured-typography-sans",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 762,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "transparent-report-summary-metric-strip",
       "width": 980,
       "height": 294,
@@ -2656,7 +2690,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 811,
+      "height": 813,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
