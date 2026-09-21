@@ -89,6 +89,7 @@
     root.dataset.cfxGraphHierarchyDepth = String(depth);
     root.dataset.cfxGraphHierarchyVisibleNodes = String(visibleIds?.size || state.nodes.length);
     updateHierarchyBreadcrumb(root, state, rootId);
+    clearInvalidatedNeighborhoodFocus(root, state);
     clearHiddenSelections(root);
     applyFilters(root);
     if (hasFeature(root, 'LevelOfDetail')) applyLod(root);

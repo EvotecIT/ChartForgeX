@@ -128,6 +128,17 @@
   grid-template-rows: auto minmax(0, 1fr);
 }
 
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-neighborhood-active { grid-template-rows: auto minmax(0, 1fr); }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header.cfx-graph-neighborhood-active { grid-template-rows: auto auto minmax(0, 1fr); }
+
+.cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-header { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-stage { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-neighborhood-active .cfx-graph-neighborhood-navigation { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-neighborhood-active .cfx-graph-stage { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header.cfx-graph-neighborhood-active .cfx-graph-neighborhood-navigation { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header.cfx-graph-neighborhood-active .cfx-graph-stage { grid-row: 3; }
+
 .cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage {
   height: 100%;
   min-height: 0;
@@ -3877,6 +3888,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     });
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => label.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdgeIds.has(attr(label, 'data-edge-label-for'))));
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
+    clearInvalidatedNeighborhoodFocus(root, state);
     syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), clusterId: clusterId || '', collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
     applyFilters(root); syncBundledEdgePresentation(root, state); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
@@ -4035,10 +4047,12 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       const hiddenMemberHit = memberIds.some(id => hiddenMemberHits.has(id));
       cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !hiddenMemberHit);
     });
-    clearHiddenSelections(root);
     const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
-    if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
-    else { if (focusNode) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false }); const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
+    const focusVisible = focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node));
+    if (focusNode && !focusVisible) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
+    clearHiddenSelections(root);
+    if (focusVisible) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
+    else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
     const actualVisibleNodes = items(root, '[data-cfx-role="graph-node"]').filter(node => visible(node));
     const searchStatus = root.querySelector('[data-cfx-role="graph-search-status"]');
     root.dataset.cfxGraphSearchMatches = String(actualVisibleNodes.length);
@@ -4097,12 +4111,18 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   const neighborhoodBaseVisible = element => !['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-bundle-member', 'cfx-graph-overview-member', 'cfx-graph-hierarchy-hidden'].some(name => element.classList.contains(name));
   const refreshNeighborhoodPresentation = root => {
     root.__cfxGraphHitGrid = null; root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
-    const state = graphState(root);
+    const state = root.__cfxGraphState || graphState(root);
     syncNodeDetailLayers(state);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
     if (typeof syncFocusControls === 'function') syncFocusControls(root);
     syncGraphItemTabStops(root);
+  };
+  const clearInvalidatedNeighborhoodFocus = (root, state) => {
+    if (root.dataset.cfxGraphFocus !== 'active') return false;
+    const focusNode = state?.byId?.get(root.dataset.cfxGraphFocusNode || '');
+    if (focusNode && visible(focusNode.el)) return false;
+    return clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
   };
   const clearNeighborhoodFocus = (root, options) => {
     const overview = root.__cfxGraphNeighborhoodOverview;
@@ -4115,7 +4135,11 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     const navigation = root.querySelector('[data-cfx-role="graph-neighborhood-navigation"]');
     if (navigation) navigation.hidden = true;
     if (overview && options?.restoreSelection !== false) { restoreGraphSelection(root, overview.selection); clearHiddenSelections(root); }
-    if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) setViewport(root, overview.viewport);
+    if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) {
+      setViewport(root, overview.viewport);
+      root.__cfxGraphViewportTouched = overview.viewportTouched === true;
+    }
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     refreshNeighborhoodPresentation(root);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
     return true;
@@ -4138,7 +4162,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   };
   const applyNeighborhoodFocus = (root, nodeId, configuration, navigation) => {
     if (!hasFeature(root, 'NeighborhoodFocus')) return false;
-    const state = graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
+    const cachedState = root.__cfxGraphState;
+    const state = cachedState || graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
     const plannedNodes = state.nodes.map(node => ({ id: node.id, visible: neighborhoodBaseVisible(node.el) && attr(node.el, 'data-node-hidden') !== 'true' }));
     const plannedEdges = state.edges.map(edge => ({ id: edge.id || attr(edge.el, 'data-edge-id'), sourceId: edge.source.id, targetId: edge.target.id,
         visible: neighborhoodBaseVisible(edge.el) && attr(edge.el, 'data-edge-hidden') !== 'true' }));
@@ -4147,15 +4172,20 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       options.neighborOffset = 0; view = planGraphNeighborhood(plannedNodes, plannedEdges, nodeId, options);
     }
     if (!view) return false;
+    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
+    if (cachedState && typeof syncSvgLayout === 'function') syncSvgLayout(root, cachedState);
     if (!navigation?.refresh) {
-      if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = { viewport: { ...viewport(root) }, selection: selectedItems(root).map(item => item.id) };
+      if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = {
+        viewport: { ...viewport(root) },
+        viewportTouched: root.__cfxGraphViewportTouched === true,
+        selection: selectedItems(root).map(item => ({ id: item.id, role: item.role }))
+      };
       if (root.dataset.cfxGraphFocus === 'active' && root.dataset.cfxGraphFocusNode !== nodeId) {
         const history = root.__cfxGraphNeighborhoodHistory || (root.__cfxGraphNeighborhoodHistory = []);
         history.push({ nodeId: root.dataset.cfxGraphFocusNode, options: root.__cfxGraphNeighborhood, viewport: { ...viewport(root) } });
         if (history.length > 50) history.shift();
       }
     }
-    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
     state.nodes.forEach(node => {
       node.el.classList.toggle('cfx-graph-neighborhood-hidden', !view.nodeIds.has(node.id));
       node.el.classList.toggle('cfx-graph-neighborhood-primary', node.id === nodeId);
@@ -4174,6 +4204,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     root.classList.add('cfx-graph-neighborhood-active'); root.dataset.cfxGraphFocus = 'active'; root.dataset.cfxGraphFocusNode = nodeId;
     root.__cfxGraphNeighborhood = { hops: options.hops, maximumNodes: options.maximumNodes, maximumEdges: options.maximumEdges, neighborOffset: options.neighborOffset };
     root.__cfxGraphNeighborhoodView = view;
+    clearHiddenSelections(root);
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     syncNeighborhoodNavigation(root, view); refreshNeighborhoodPresentation(root);
     if (navigation?.fit !== false && hasFeature(root, 'Viewport')) { root.__cfxGraphViewportTouched = true; fitViewport(root); }
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: true, nodeId, ...root.__cfxGraphNeighborhood,
@@ -4193,7 +4225,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     const applied = applyNeighborhoodFocus(root, previous.nodeId, previous.options, { refresh: true, fit: false });
     if (!applied) return clearNeighborhoodFocus(root);
     if (hasFeature(root, 'Viewport')) setViewport(root, previous.viewport);
-    restoreGraphSelection(root, [previous.nodeId]);
+    if (hasFeature(root, 'Selection')) restoreGraphSelection(root, [{ id: previous.nodeId, role: 'graph-node' }]);
     refreshNeighborhoodPresentation(root);
     return true;
   };
@@ -4272,7 +4304,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       const expandedCluster = attr(item, 'data-cfx-role') === 'graph-cluster' && item.classList.contains('cfx-graph-cluster-expanded');
       if (visible(item) && !expandedCluster) return;
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && id === focusNode);
+      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && attr(item, 'data-cfx-role') === 'graph-node' && id === focusNode);
       item.classList.remove('cfx-graph-selected');
       changed = true;
     });
@@ -4539,6 +4571,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     root.dataset.cfxGraphHierarchyDepth = String(depth);
     root.dataset.cfxGraphHierarchyVisibleNodes = String(visibleIds?.size || state.nodes.length);
     updateHierarchyBreadcrumb(root, state, rootId);
+    clearInvalidatedNeighborhoodFocus(root, state);
     clearHiddenSelections(root);
     applyFilters(root);
     if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
@@ -4670,10 +4703,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     (snapshots || []).forEach(snapshot => applyClusterState(root, !!snapshot.collapsed, String(snapshot.id || ''), { reheat: false }));
   };
   const restoreGraphSelection = (root, ids) => {
-    const selected = new Set((ids || []).map(String));
+    const selected = new Set((ids || []).map(value => {
+      if (value && typeof value === 'object') return `${String(value.role || '')}:${String(value.id || '')}`;
+      return `:${String(value)}`;
+    }));
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      item.classList.toggle('cfx-graph-selected', selected.has(id));
+      const role = attr(item, 'data-cfx-role');
+      item.classList.toggle('cfx-graph-selected', selected.has(`${role}:${id}`) || selected.has(`:${id}`));
     });
     const details = updateSelectionState(root);
     syncSelectionTooltip(root, details);

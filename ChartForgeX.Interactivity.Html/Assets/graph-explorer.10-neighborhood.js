@@ -9,12 +9,18 @@
   const neighborhoodBaseVisible = element => !['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-bundle-member', 'cfx-graph-overview-member', 'cfx-graph-hierarchy-hidden'].some(name => element.classList.contains(name));
   const refreshNeighborhoodPresentation = root => {
     root.__cfxGraphHitGrid = null; root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
-    const state = graphState(root);
+    const state = root.__cfxGraphState || graphState(root);
     syncNodeDetailLayers(state);
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
     if (typeof syncFocusControls === 'function') syncFocusControls(root);
     syncGraphItemTabStops(root);
+  };
+  const clearInvalidatedNeighborhoodFocus = (root, state) => {
+    if (root.dataset.cfxGraphFocus !== 'active') return false;
+    const focusNode = state?.byId?.get(root.dataset.cfxGraphFocusNode || '');
+    if (focusNode && visible(focusNode.el)) return false;
+    return clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
   };
   const clearNeighborhoodFocus = (root, options) => {
     const overview = root.__cfxGraphNeighborhoodOverview;
@@ -54,7 +60,8 @@
   };
   const applyNeighborhoodFocus = (root, nodeId, configuration, navigation) => {
     if (!hasFeature(root, 'NeighborhoodFocus')) return false;
-    const state = graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
+    const cachedState = root.__cfxGraphState;
+    const state = cachedState || graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
     const plannedNodes = state.nodes.map(node => ({ id: node.id, visible: neighborhoodBaseVisible(node.el) && attr(node.el, 'data-node-hidden') !== 'true' }));
     const plannedEdges = state.edges.map(edge => ({ id: edge.id || attr(edge.el, 'data-edge-id'), sourceId: edge.source.id, targetId: edge.target.id,
         visible: neighborhoodBaseVisible(edge.el) && attr(edge.el, 'data-edge-hidden') !== 'true' }));
@@ -63,6 +70,8 @@
       options.neighborOffset = 0; view = planGraphNeighborhood(plannedNodes, plannedEdges, nodeId, options);
     }
     if (!view) return false;
+    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
+    if (cachedState && typeof syncSvgLayout === 'function') syncSvgLayout(root, cachedState);
     if (!navigation?.refresh) {
       if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = {
         viewport: { ...viewport(root) },
@@ -75,7 +84,6 @@
         if (history.length > 50) history.shift();
       }
     }
-    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
     state.nodes.forEach(node => {
       node.el.classList.toggle('cfx-graph-neighborhood-hidden', !view.nodeIds.has(node.id));
       node.el.classList.toggle('cfx-graph-neighborhood-primary', node.id === nodeId);

@@ -4,9 +4,9 @@ const path = require('node:path');
 const test = require('node:test');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
+const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '13-hierarchy', '15-edge-hit-index', '15-hit-testing', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, applyFilters, applyNeighborhoodFocus, clearHiddenSelections, attr };');
+const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, attr };');
 const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
 
 function scene(siteCount, edgeSpecs, renderer = 'canvas') {
@@ -142,6 +142,54 @@ test('filtering out the focused root clears focus without restoring the overview
   assert.equal(root.getAttribute('data-cfx-viewport-x'), '91');
   assert.equal(root.getAttribute('data-cfx-viewport-y'), '73');
   assert.equal(root.getAttribute('data-cfx-viewport-scale'), '1.4');
+});
+
+function structuralFocusRoot(withHierarchy) {
+  const root = runtime.graphVirtualElement('root', {
+    'data-cfx-graph-id': withHierarchy ? 'hierarchy-focus' : 'cluster-focus',
+    'data-cfx-graph-features': 'Selection,Viewport,NeighborhoodFocus,Clustering,HierarchyNavigation',
+    'data-cfx-viewport-x': '12', 'data-cfx-viewport-y': '18', 'data-cfx-viewport-scale': '1'
+  }, []);
+  root.dataset = { cfxGraphRendererActive: 'svg' };
+  root.dispatchEvent = () => true;
+  root.ownerDocument = { activeElement: null };
+  root.querySelector = () => null;
+  root.querySelectorAll = () => [];
+  const parent = runtime.graphVirtualElement('graph-node', {
+    'data-node-id': 'parent', 'data-node-label': 'Parent', 'data-node-cluster': 'site',
+    'data-node-x': '80', 'data-node-y': '80', 'data-node-size': '12'
+  }, []);
+  const focused = runtime.graphVirtualElement('graph-node', {
+    'data-node-id': 'focused', 'data-node-label': 'Focused', 'data-node-cluster': 'site',
+    'data-node-parent': withHierarchy ? 'parent' : '', 'data-node-x': '180', 'data-node-y': '80', 'data-node-size': '12'
+  }, ['cfx-graph-selected']);
+  const cluster = runtime.graphVirtualElement('graph-cluster', {
+    'data-cluster-id': 'site', 'data-cluster-label': 'Site', 'data-cluster-node-ids': 'parent,focused',
+    'data-cluster-collapsed': 'false'
+  }, ['cfx-graph-cluster-expanded']);
+  root.__cfxGraphVirtualItems = [parent, focused, cluster];
+  root.__cfxGraphState = runtime.graphState(root);
+  assert.equal(runtime.applyNeighborhoodFocus(root, 'focused', {}, { fit: false }), true);
+  root.setAttribute('data-cfx-viewport-x', '91');
+  root.setAttribute('data-cfx-viewport-y', '73');
+  root.setAttribute('data-cfx-viewport-scale', '1.4');
+  return root;
+}
+
+test('cluster and hierarchy invalidation clear focus without restoring a stale overview', () => {
+  const clusterRoot = structuralFocusRoot(false);
+  runtime.applyClusterState(clusterRoot, true, 'site', { reheat: false });
+  assert.equal(clusterRoot.dataset.cfxGraphFocus, 'none');
+  assert.equal(clusterRoot.getAttribute('data-cfx-viewport-x'), '91');
+  assert.equal(clusterRoot.getAttribute('data-cfx-viewport-y'), '73');
+  assert.equal(clusterRoot.getAttribute('data-cfx-viewport-scale'), '1.4');
+
+  const hierarchyRoot = structuralFocusRoot(true);
+  assert.equal(runtime.applyHierarchyView(hierarchyRoot, 'parent', 0, { fit: false, restartPhysics: false }), true);
+  assert.equal(hierarchyRoot.dataset.cfxGraphFocus, 'none');
+  assert.equal(hierarchyRoot.getAttribute('data-cfx-viewport-x'), '91');
+  assert.equal(hierarchyRoot.getAttribute('data-cfx-viewport-y'), '73');
+  assert.equal(hierarchyRoot.getAttribute('data-cfx-viewport-scale'), '1.4');
 });
 
 test('reversed endpoint data for the same directed route is bundled together', () => {

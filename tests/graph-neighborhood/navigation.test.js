@@ -18,6 +18,7 @@ const runtime = new Function(`
   const updateSelectionState = root => { root.selection = root.elements.filter(item => item.classList.contains('cfx-graph-selected')).map(item => ({id:attr(item,'data-node-id')||attr(item,'data-edge-id')||attr(item,'data-cluster-id'), role:attr(item,'data-cfx-role')})); return root.selection; };
   const clearHiddenSelections = root => { root.selection = selectedItems(root).filter(value => { const item=root.elements.find(element => (attr(element,'data-node-id')||attr(element,'data-edge-id')||attr(element,'data-cluster-id'))===value.id && attr(element,'data-cfx-role')===value.role); return item && !item.classList.contains('cfx-graph-neighborhood-hidden'); }); return true; };
   const syncSelectionTooltip = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = root => { root.paintedSelection = JSON.parse(JSON.stringify(root.selection)); };
+  const syncSvgLayout = (root, state) => { root.syncedState = state; state.nodes.forEach(node => { node.el.setAttribute('data-node-x', node.x); node.el.setAttribute('data-node-y', node.y); }); };
   const applyLod = root => { root.lodChanges = (root.lodChanges || 0) + 1; };
   const pausePhysics = root => { root.paused = true; }, fitViewport = root => { root.viewport = {x:10,y:20,scale:2}; };
   const emit = (root, name, detail) => root.events.push({name, detail});
@@ -57,7 +58,7 @@ test('paging and drill-down preserve geometry and restore overview viewport and 
   assert.equal(JSON.stringify(root.state.nodes.map(({id,x,y,fixed})=>({id,x,y,fixed}))),geometry);
 });
 test('missing roots are rejected without changing view and snapshots detach navigation state', () => {
-  const root=hub(); assert.equal(runtime.applyNeighborhoodFocus(root,'absent'),false); assert.equal(root.events.length,0);
+  const root=hub(); root.paused = false; assert.equal(runtime.applyNeighborhoodFocus(root,'absent'),false); assert.equal(root.events.length,0); assert.equal(root.paused,false);
   runtime.applyNeighborhoodFocus(root,'n00'); runtime.applyNeighborhoodFocus(root,'n01');
   const snapshot=runtime.graphFocusSnapshot(root);
   snapshot.overview.viewport.x=999; snapshot.history.length=0;
@@ -94,6 +95,20 @@ test('restored focus pauses active physics even when navigation history is retai
   root.paused = false;
   runtime.applyNeighborhoodFocus(root, 'n00', {}, {refresh:true, fit:false});
   assert.equal(root.paused, true);
+});
+test('focus preserves the live cached coordinates visible during active physics', () => {
+  const root = hub();
+  const nodes = root.state.nodes.map(node => ({ ...node, x: node.x + 500, y: node.y + 300 }));
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  const edges = root.state.edges.map(edge => ({ ...edge, source: byId.get(edge.source.id), target: byId.get(edge.target.id) }));
+  root.__cfxGraphState = { nodes, edges, clusters: [], byId };
+
+  runtime.applyNeighborhoodFocus(root, 'n00', {}, { fit: false });
+
+  assert.equal(root.paused, true);
+  assert.equal(root.syncedState, root.__cfxGraphState);
+  assert.equal(root.state.nodes[0].el.getAttribute('data-node-x'), '500');
+  assert.equal(root.state.nodes[0].el.getAttribute('data-node-y'), '300');
 });
 test('Back paints restored selection after leaving a drilled neighbor', () => {
   const root = hub();
