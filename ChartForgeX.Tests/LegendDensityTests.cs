@@ -2,6 +2,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Svg;
 using ChartForgeX.Raster;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using Xunit;
 
@@ -136,13 +137,17 @@ public sealed class LegendDensityTests {
     }
 
     [Fact]
-    public void LegendRowsReserveMeasuredFontHeight() {
+    public void LegendRowsReservePortableFontHeight() {
         var chart = Chart.Create().WithLegendStyle(style => style.WithFontSize(18));
         var measuredHeight = 42.0;
 
         Assert.Equal(48, Rendering.LegendRowBudget.RowHeight(chart, measuredHeight));
         var font = TrueTypeFont.TryLoadForFamily(chart.Options.Theme.FontFamily, out _);
-        Assert.True(Rendering.LegendRowBudget.RowHeight(chart) >= RgbaCanvas.MeasureTextHeight(18, font) + 6);
+        var portable = Rendering.LegendRowBudget.RowHeight(chart);
+        Assert.True(portable >= Math.Max(18 * 1.2, font?.LineHeight(18) ?? 0) + 6);
+        TrueTypeFont.TryLoadForFamily(ChartFontStacks.Serif, out var pngFontPath);
+        if (pngFontPath != null) chart.WithPngFont(pngFontPath);
+        Assert.Equal(portable, Rendering.LegendRowBudget.RowHeight(chart), 6);
     }
 
     [Theory]

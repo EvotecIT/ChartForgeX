@@ -77,9 +77,8 @@ internal static class LegendRowBudget {
         var style = chart.Options.LegendStyle;
         var fontSize = style?.FontSize ?? chart.Options.Theme.LegendFontSize;
         if (style?.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
-        var explicitFont = TrueTypeFont.TryLoadFromPath(chart.Options.PngFontPath, chart.Options.PngFontCollectionIndex, chart.Options.PngFontFaceName);
-        var font = explicitFont ?? TrueTypeFont.TryLoadForFamily(style?.FontFamily ?? chart.Options.Theme.FontFamily, out _);
-        var height = RgbaCanvas.MeasureTextHeight(fontSize, font);
+        var font = TrueTypeFont.TryLoadForFamily(style?.FontFamily ?? chart.Options.Theme.FontFamily, out _);
+        var height = Math.Max(fontSize * 1.2, font?.LineHeight(Math.Max(1, fontSize)) ?? 0);
         var underline = style?.UnderlineStyle ?? (style?.Underline == true ? TextDecorationStyle.Single : TextDecorationStyle.None);
         if (underline != TextDecorationStyle.None) {
             var thickness = Math.Max(1, fontSize / 13.0);
