@@ -47,6 +47,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--graph-neighborhood-only")) {
+            GraphNeighborhoodExample.Write(output);
+            Console.WriteLine("Generated bounded graph neighborhoods in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--graph-scale-only")) {
             GraphExplorerScaleExamples.Write(output);
             Console.WriteLine("Generated graph explorer scale baselines in: " + output);

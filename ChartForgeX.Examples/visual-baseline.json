@@ -1391,7 +1391,7 @@
         "outputScale": 1,
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 387,
+        "minDistinctColors": 853,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1400,7 +1400,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 48,
+        "minVisualNodes": 49,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1408,7 +1408,7 @@
         "outputScale": 1,
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1600,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1417,7 +1417,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 152,
+        "minVisualNodes": 153,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1434,7 +1434,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 453,
+        "minVisualNodes": 454,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1451,7 +1451,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 3048,
+        "minVisualNodes": 3051,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1460,6 +1460,40 @@
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-neighborhood-page-1",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 838,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-neighborhood-page-2",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 838,
         "maxEdgeInkPixels": 0
       }
     },

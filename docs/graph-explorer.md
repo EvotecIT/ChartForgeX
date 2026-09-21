@@ -225,6 +225,24 @@ Files use stable names such as `estate-01-overview.png`, `estate-02-depth-1.png`
 
 For one image, use `graph.ToGraphSvg(stage)` or `graph.ToGraphPng(stage)`. These paths do not open a browser and do not add scripts. PNG export preserves self-contained PNG, JPEG, or SVG data-URI node images. Static output limits labels deterministically at large scale—frontier summaries, roots, and high-degree nodes win—because rendering 2,000 labels into one non-interactive frame would not be readable. Set `MaximumNodeLabels` explicitly for the target medium.
 
+For a high-degree node, `CreateNeighborhood` bounds the selected objects and relationships before rendering:
+
+```csharp
+var view = graph.CreateNeighborhood("gateway", options => {
+    options.MaximumNodes = 13; // Includes the gateway on every page.
+    options.MaximumEdges = 24;
+    options.Hops = 1;
+    options.NeighborOffset = 0; // Use 12 for the next page.
+});
+File.WriteAllText("gateway.svg", graph.ToGraphSvg(view));
+File.WriteAllBytes("gateway.png", graph.ToGraphPng(view));
+```
+
+`ScopeNodeCount` reports the neighborhood size before paging. `HiddenNodeCount` and `HiddenEdgeCount` count all source objects omitted from the view; `BoundaryEdgeCount` counts relationships with exactly one visible endpoint. Static stage images show these counts below the drawing. Pages retain the root and order other nodes by relationship distance, then ordinal id. Discovery follows relationships in both directions, while output preserves their original arrows. Edge budgets prefer relationships nearest the root. A page can contain disconnected nodes when their intermediate neighbors are on another page.
+
+The planner leaves the source scene unchanged and examines the full source graph. Replan after changing its membership or relationships. Static neighborhoods with no authored coordinates or routes receive a deterministic radial layout; authored geometry is preserved. This API controls static views; interactive neighborhood focus continues to dim unrelated objects.
+
+
 ## Clustering
 
 `GraphClusterMode` supports:

@@ -691,6 +691,20 @@
       "image": "/examples/generated/graph-2000-stage-05-full.svg"
     },
     {
+      "category": "charts",
+      "title": "Graph Neighborhood Page 1",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-neighborhood-page-1.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph Neighborhood Page 2",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-neighborhood-page-2.svg"
+    },
+    {
       "category": "themes",
       "title": "Icon Palette",
       "body": "Generated ChartForgeX visual output.",
