@@ -26,11 +26,7 @@ public sealed partial class SvgChartRenderer {
         var dataStyle = DataLabelStyle(chart, series);
         var valueFontSize = StyleFontSize(dataStyle, Math.Max(26, t.TitleFontSize * 1.32));
         var nameFontSize = StyleFontSize(dataStyle, Math.Max(9, t.LegendFontSize - 1));
-        var requestedCenterRadius = chart.Options.ShowRadialBarCenterLabel && series.ShowDataLabels != false
-            ? Math.Max(
-                Math.Max(EstimateSvgStyledTextWidth(chart, centerLabel, valueFontSize, dataStyle, emphasized: true), EstimateSvgStyledTextWidth(chart, series.Name, nameFontSize, dataStyle, emphasized: true)) / 2.0 + 10,
-                (valueFontSize + Math.Max(4, Math.Min(8, outerRadius * 0.10)) + nameFontSize) / 2.0 + 8)
-            : 0;
+        var requestedCenterRadius = RadialBarRingLayout.RequestedCenterRadius(chart, series, outerRadius, centerLabel, valueFontSize, nameFontSize, dataStyle);
         var ringLayout = RadialBarRingLayout.Create(outerRadius, count, chart.Options.RadialBarStrokeScale, requestedCenterRadius);
         var stroke = ringLayout.StrokeWidth;
         var labelWidth = Math.Max(8, Math.Min(chartPlot.Width * 0.32, ringLayout.CenterRadius * 2 - 16));

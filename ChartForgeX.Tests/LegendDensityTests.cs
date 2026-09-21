@@ -135,6 +135,16 @@ public sealed class LegendDensityTests {
         Assert.DoesNotContain(XDocument.Parse(new SvgChartRenderer().Render(chart)).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-row");
     }
 
+    [Fact]
+    public void LegendRowsReserveMeasuredFontHeight() {
+        var chart = Chart.Create().WithLegendStyle(style => style.WithFontSize(18));
+        var measuredHeight = 42.0;
+
+        Assert.Equal(48, Rendering.LegendRowBudget.RowHeight(chart, measuredHeight));
+        var font = TrueTypeFont.TryLoadForFamily(chart.Options.Theme.FontFamily, out _);
+        Assert.True(Rendering.LegendRowBudget.RowHeight(chart) >= RgbaCanvas.MeasureTextHeight(18, font) + 6);
+    }
+
     [Theory]
     [InlineData("line")]
     [InlineData("pie")]
@@ -225,6 +235,27 @@ public sealed class LegendDensityTests {
         var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
         var firstRing = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-ring");
         Assert.InRange((double)firstRing.Attribute("stroke-width")!, 0.000001, 0.999999);
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+    }
+
+    [Fact]
+    public void RadialCenterGeometryIgnoresPngFontSelection() {
+        var chart = Chart.Create().WithSize(420, 280)
+            .AddRadialBar("Moderately long portable center label", new[] { new ChartPoint(0, 73), new ChartPoint(1, 41) });
+        var series = chart.Series[0];
+        const double outerRadius = 72;
+        const double valueFontSize = 26;
+        const double nameFontSize = 10.5;
+        var baseline = Rendering.RadialBarRingLayout.RequestedCenterRadius(chart, series, outerRadius, "57", valueFontSize, nameFontSize, chart.Options.DataLabelStyle);
+
+        chart.WithPngFont(Path.Combine(Path.GetTempPath(), "ChartForgeX-missing-custom-font.ttf"));
+        var configured = Rendering.RadialBarRingLayout.RequestedCenterRadius(chart, series, outerRadius, "57", valueFontSize, nameFontSize, chart.Options.DataLabelStyle);
+
+        Assert.Equal(baseline, configured, 6);
+        Assert.Equal(
+            Rendering.RadialBarRingLayout.Create(outerRadius, series.Points.Count, chart.Options.RadialBarStrokeScale, baseline).CenterRadius,
+            Rendering.RadialBarRingLayout.Create(outerRadius, series.Points.Count, chart.Options.RadialBarStrokeScale, configured).CenterRadius,
+            6);
         Assert.NotEmpty(new PngChartRenderer().Render(chart));
     }
 

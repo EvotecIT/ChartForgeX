@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
+using ChartForgeX.Raster;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
@@ -34,9 +36,10 @@ internal static class LegendRowBudget {
     }
 
     internal static double RowHeight(Chart chart) {
-        var fontSize = chart.Options.LegendStyle?.FontSize ?? chart.Options.Theme.LegendFontSize;
-        return Math.Max(20, fontSize * 1.2 + 6);
+        return RowHeight(chart, MeasureLegendTextHeight(chart));
     }
+
+    internal static double RowHeight(Chart chart, double measuredTextHeight) => Math.Max(20, Math.Max(0, measuredTextHeight) + 6);
 
     internal static double HorizontalReserve(Chart chart, int rowCount, double? availableHeight = null) {
         if (rowCount <= 0) return 0;
@@ -69,6 +72,23 @@ internal static class LegendRowBudget {
     }
 
     internal static string Summary(int omitted) => "+ " + omitted.ToString(CultureInfo.InvariantCulture) + " more entries";
+
+    private static double MeasureLegendTextHeight(Chart chart) {
+        var style = chart.Options.LegendStyle;
+        var fontSize = style?.FontSize ?? chart.Options.Theme.LegendFontSize;
+        if (style?.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
+        var explicitFont = TrueTypeFont.TryLoadFromPath(chart.Options.PngFontPath, chart.Options.PngFontCollectionIndex, chart.Options.PngFontFaceName);
+        var font = explicitFont ?? TrueTypeFont.TryLoadForFamily(style?.FontFamily ?? chart.Options.Theme.FontFamily, out _);
+        var height = RgbaCanvas.MeasureTextHeight(fontSize, font);
+        var underline = style?.UnderlineStyle ?? (style?.Underline == true ? TextDecorationStyle.Single : TextDecorationStyle.None);
+        if (underline != TextDecorationStyle.None) {
+            var thickness = Math.Max(1, fontSize / 13.0);
+            height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(underline, thickness));
+        }
+        if (style?.Baseline == TextBaseline.Superscript) height += fontSize * 0.35;
+        else if (style?.Baseline == TextBaseline.Subscript) height += fontSize * 0.22;
+        return height;
+    }
 
     private static bool IsHorizontal(ChartLegendPosition position) =>
         position != ChartLegendPosition.Left && position != ChartLegendPosition.Right;

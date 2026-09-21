@@ -33,11 +33,7 @@ public sealed partial class PngChartRenderer {
         var dataStyle = DataLabelStyle(chart, series);
         var valueFontSize = PngStyleFontSize(dataStyle, Math.Max(26, theme.TitleFontSize * 1.32));
         var nameFontSize = PngStyleFontSize(dataStyle, Math.Max(9, theme.LegendFontSize - 1));
-        var requestedCenterRadius = chart.Options.ShowRadialBarCenterLabel && series.ShowDataLabels != false
-            ? Math.Max(
-                Math.Max(EstimatePngStyledTextWidth(centerLabel, valueFontSize, dataStyle, emphasized: true), EstimatePngStyledTextWidth(series.Name, nameFontSize, dataStyle, emphasized: true)) / 2.0 + 10,
-                (EstimatePngStyledTextHeight(valueFontSize, dataStyle) + Math.Max(4, Math.Min(8, outerRadius * 0.10)) + EstimatePngStyledTextHeight(nameFontSize, dataStyle)) / 2.0 + 8)
-            : 0;
+        var requestedCenterRadius = RadialBarRingLayout.RequestedCenterRadius(chart, series, outerRadius, centerLabel, valueFontSize, nameFontSize, dataStyle);
         var ringLayout = RadialBarRingLayout.Create(outerRadius, count, chart.Options.RadialBarStrokeScale, requestedCenterRadius);
         var stroke = ringLayout.StrokeWidth;
         var start = -Math.PI / 2;
