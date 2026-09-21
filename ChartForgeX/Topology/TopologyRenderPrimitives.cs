@@ -1,3 +1,4 @@
+using ChartForgeX.Typography;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -165,33 +166,33 @@ internal static partial class TopologyRenderPrimitives {
     public static int NodeTitleMaxLength(TopologyNode node, TopologyNodeDisplayMode displayMode) =>
         node.MaximumLabelCharacters is > 0 ? node.MaximumLabelCharacters.Value : NodeTitleMaxLength(displayMode);
 
-    public static double EstimateTextWidth(string value, double fontSize, bool bold) {
-        var weightFactor = bold ? 0.62 : 0.56;
-        return value.Length * fontSize * weightFactor;
+    public static double EstimateTextWidth(string value, double fontSize, bool bold, TextMeasurementContext? measurement = null) {
+        return (measurement ?? new TextMeasurementContext(TopologyTheme.Light().FontFamily)).Measure(value, fontSize, bold);
     }
 
-    public static string TrimToEstimatedWidth(string value, double maxWidth, double fontSize, bool bold) {
+    public static string TrimToEstimatedWidth(string value, double maxWidth, double fontSize, bool bold, TextMeasurementContext? measurement = null) {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-        maxWidth = Math.Max(fontSize * 2.4, maxWidth);
-        if (EstimateTextWidth(value, fontSize, bold) <= maxWidth) return value;
-        if (maxWidth <= EstimateTextWidth("...", fontSize, bold)) return "...";
+        maxWidth = Math.Max(0, maxWidth);
+        if (EstimateTextWidth(value, fontSize, bold, measurement) <= maxWidth) return value;
+        if (maxWidth < EstimateTextWidth("...", fontSize, bold, measurement)) return string.Empty;
 
+        var boundaries = StringInfo.ParseCombiningCharacters(value);
         var low = 0;
-        var high = value.Length;
+        var high = boundaries.Length;
         while (low < high) {
             var mid = (low + high + 1) / 2;
-            var candidate = value.Substring(0, Math.Max(0, mid)) + "...";
-            if (EstimateTextWidth(candidate, fontSize, bold) <= maxWidth) low = mid;
+            var candidate = value.Substring(0, mid == boundaries.Length ? value.Length : boundaries[mid]) + "...";
+            if (EstimateTextWidth(candidate, fontSize, bold, measurement) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 
-        return value.Substring(0, Math.Max(0, low)) + "...";
+        return value.Substring(0, low == boundaries.Length ? value.Length : boundaries[low]) + "...";
     }
 
-    public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize, bool bold) {
+    public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize, bool bold, TextMeasurementContext? measurement = null) {
         if (string.IsNullOrWhiteSpace(value)) return preferredFontSize;
         var fontSize = preferredFontSize;
-        while (fontSize > minimumFontSize && EstimateTextWidth(value, fontSize, bold) > maxWidth) {
+        while (fontSize > minimumFontSize && EstimateTextWidth(value, fontSize, bold, measurement) > maxWidth) {
             fontSize -= 0.5;
         }
 
@@ -502,7 +503,9 @@ internal static partial class TopologyRenderPrimitives {
 
     public static string TrimTo(string value, int max) {
         if (value.Length <= max) return value;
-        return value.Substring(0, Math.Max(0, max - 3)) + "...";
+        var boundaries = StringInfo.ParseCombiningCharacters(value);
+        if (boundaries.Length <= max) return value;
+        return value.Substring(0, boundaries[Math.Max(0, max - 3)]) + "...";
     }
 
     public static string SafeElementId(string? chartId, string kind, string id) => SanitizeId((chartId ?? "topology") + "-" + kind + "-" + id);

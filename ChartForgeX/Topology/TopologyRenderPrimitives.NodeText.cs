@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Topology;
 
@@ -11,22 +12,22 @@ internal static partial class TopologyRenderPrimitives {
         var allowMultiline = options.AllowMultilineNodeLabels;
         var wrap = options.WrapNodeLabels;
         maximumCharacters = Math.Max(1, maximumCharacters);
-        if (!allowMultiline && !wrap) return new List<string> { TrimToEstimatedWidth(TrimTo(value, maximumCharacters), maxWidth, fontSize, bold) };
+        if (!allowMultiline && !wrap) return new List<string> { TrimToEstimatedWidth(TrimTo(value, maximumCharacters), maxWidth, fontSize, bold, options.TextMeasurement) };
 
         var lines = new List<string>();
         foreach (var explicitLine in SplitExplicitLines(value, allowMultiline)) {
             if (lines.Count >= maxLines) break;
             var trimmed = explicitLine.Trim();
             if (trimmed.Length == 0) continue;
-            if (!wrap || EstimateTextWidth(trimmed, fontSize, bold) <= maxWidth) {
-                lines.Add(TrimToEstimatedWidth(TrimTo(trimmed, maximumCharacters * maxLines), maxWidth, fontSize, bold));
+            if (!wrap || EstimateTextWidth(trimmed, fontSize, bold, options.TextMeasurement) <= maxWidth) {
+                lines.Add(TrimToEstimatedWidth(TrimTo(trimmed, maximumCharacters * maxLines), maxWidth, fontSize, bold, options.TextMeasurement));
                 continue;
             }
 
-            AddWrappedNodeTextLines(lines, trimmed, maxWidth, fontSize, bold, maxLines, maximumCharacters);
+            AddWrappedNodeTextLines(lines, trimmed, maxWidth, fontSize, bold, maxLines, maximumCharacters, options.TextMeasurement);
         }
 
-        if (lines.Count == 0) lines.Add(TrimToEstimatedWidth(TrimTo(value.Trim(), maximumCharacters), maxWidth, fontSize, bold));
+        if (lines.Count == 0) lines.Add(TrimToEstimatedWidth(TrimTo(value.Trim(), maximumCharacters), maxWidth, fontSize, bold, options.TextMeasurement));
         if (lines.Count > maxLines) lines.RemoveRange(maxLines, lines.Count - maxLines);
         return lines;
     }
@@ -49,7 +50,7 @@ internal static partial class TopologyRenderPrimitives {
         var best = string.Empty;
         var bestWidth = -1.0;
         foreach (var line in lines) {
-            var width = EstimateTextWidth(line, fontSize, bold);
+            var width = EstimateTextWidth(line, fontSize, bold, options.TextMeasurement);
             if (width <= bestWidth) continue;
             best = line;
             bestWidth = width;
@@ -62,7 +63,7 @@ internal static partial class TopologyRenderPrimitives {
         var textWidth = Math.Max(24, node.Width - 52);
         var titleLimit = NodeTitleMaxLength(node, TopologyNodeDisplayMode.Card);
         var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? titleLimit * Math.Max(1, options.MaxNodeLabelLines) : titleLimit);
-        var titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, 12.5, true, options.MaxNodeLabelLines, options), textWidth, 12.5, 10, true);
+        var titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, 12.5, true, options.MaxNodeLabelLines, options), textWidth, 12.5, 10, true, options.TextMeasurement);
         var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleLimit);
         var titleLastBaseline = 28 + Math.Max(0, titleLines.Count - 1) * 14;
         var detailStart = Math.Max(63, titleLastBaseline + 14);
@@ -83,7 +84,7 @@ internal static partial class TopologyRenderPrimitives {
         var textWidth = Math.Max(24, node.Width - 52);
         var titleLimit = NodeTitleMaxLength(node, TopologyNodeDisplayMode.Card);
         var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? titleLimit * Math.Max(1, options.MaxNodeLabelLines) : titleLimit);
-        var titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, 12.5, true, options.MaxNodeLabelLines, options), textWidth, 12.5, 10, true);
+        var titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, 12.5, true, options.MaxNodeLabelLines, options), textWidth, 12.5, 10, true, options.TextMeasurement);
         var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleLimit);
         return Math.Max(36, 28 + Math.Max(0, titleLines.Count - 1) * 14 + 6);
     }
@@ -97,14 +98,14 @@ internal static partial class TopologyRenderPrimitives {
         foreach (var line in value.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n')) yield return line;
     }
 
-    private static void AddWrappedNodeTextLines(List<string> lines, string value, double maxWidth, double fontSize, bool bold, int maxLines, int maximumCharacters) {
+    private static void AddWrappedNodeTextLines(List<string> lines, string value, double maxWidth, double fontSize, bool bold, int maxLines, int maximumCharacters, TextMeasurementContext? measurement) {
         value = TrimTo(value, maximumCharacters);
         var words = value.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
         var current = new StringBuilder();
         foreach (var word in words) {
             if (lines.Count >= maxLines) break;
             var candidate = current.Length == 0 ? word : current.ToString() + " " + word;
-            if (EstimateTextWidth(candidate, fontSize, bold) <= maxWidth) {
+            if (EstimateTextWidth(candidate, fontSize, bold, measurement) <= maxWidth) {
                 current.Clear();
                 current.Append(candidate);
                 continue;
@@ -115,14 +116,14 @@ internal static partial class TopologyRenderPrimitives {
                 current.Clear();
             }
 
-            if (EstimateTextWidth(word, fontSize, bold) > maxWidth) lines.Add(TrimToEstimatedWidth(word, maxWidth, fontSize, bold));
+            if (EstimateTextWidth(word, fontSize, bold, measurement) > maxWidth) lines.Add(TrimToEstimatedWidth(word, maxWidth, fontSize, bold, measurement));
             else current.Append(word);
         }
 
         if (current.Length > 0 && lines.Count < maxLines) lines.Add(current.ToString());
         if (lines.Count == maxLines && words.Length > 0) {
             var lastIndex = lines.Count - 1;
-            lines[lastIndex] = TrimToEstimatedWidth(lines[lastIndex], maxWidth, fontSize, bold);
+            lines[lastIndex] = TrimToEstimatedWidth(lines[lastIndex], maxWidth, fontSize, bold, measurement);
         }
     }
 }

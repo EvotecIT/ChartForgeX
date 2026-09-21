@@ -1,6 +1,8 @@
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
+    internal const double HeaderReservedHeight = 72;
+
     public static bool ShouldRenderCanvasSurface(TopologyChart chart, TopologyRenderOptions options) =>
         chart.LayoutMode != TopologyLayoutMode.Geographic && options.CanvasSurfaceStyle != TopologyCanvasSurfaceStyle.Plain;
 

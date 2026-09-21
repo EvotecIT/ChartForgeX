@@ -2,10 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
+    internal static double EdgeLabelTextWidth(string? primary, string? secondary, string? tertiary, TextMeasurementContext? measurement) =>
+        Math.Max(48, Math.Max(EstimateTextWidth(primary ?? string.Empty, 12, true, measurement),
+            Math.Max(EstimateTextWidth(secondary ?? string.Empty, 10, false, measurement),
+                EstimateTextWidth(tertiary ?? string.Empty, 10, false, measurement))) + 18);
+
     public static List<TopologyEdgeLabelLayout> EdgeLabelLayouts(TopologyChart chart, TopologyRenderOptions options) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var nodeBoxes = chart.Nodes
@@ -30,9 +36,8 @@ internal static partial class TopologyRenderPrimitives {
             var labelPoint = IsGeographicCurve(chart, edge, nodes)
                 ? QuadraticPoint(points[0], GeographicCurveControlPoint(chart, edge, nodes, points), points[points.Count - 1], 0.5)
                 : EdgeLabelPoint(points);
-            var maxText = Math.Max(label.Length, Math.Max(secondary.Length, tertiary.Length));
             var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
-            var width = Math.Max(48, maxText * 7.2 + 18);
+            var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 0;
             var height = EdgeLabelHeight(lineCount, options);
             var obstacles = new List<LabelBox>(nodeBoxes.Count + (options.IncludeGroups && options.IncludeGroupLabels ? groupHeaderBoxes.Count : 0) + (options.IncludeGroups ? groupBoxes.Count : 0));
@@ -77,7 +82,7 @@ internal static partial class TopologyRenderPrimitives {
 
     private static LabelBox EdgeLabelNodeObstacle(TopologyNode node, TopologyRenderOptions options, double padding) {
         if (EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Icon || !options.IncludeNodeLabels || !options.IncludeIconLabels) return LabelBox.FromNode(node, padding);
-        var labelWidth = IconLabelPlateWidth(node);
+        var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement);
         var labelY = IconLabelPlateY(node);
         var centerX = CenterX(node);
         return LabelBox.FromBounds(

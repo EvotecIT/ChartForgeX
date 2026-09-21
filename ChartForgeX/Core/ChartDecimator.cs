@@ -40,7 +40,7 @@ public sealed class ChartDecimationResult {
 }
 
 /// <summary>Provides explicit point reduction for dense ordered chart series.</summary>
-public static class ChartDecimator {
+public static partial class ChartDecimator {
     /// <summary>Reduces an ordered point sequence while retaining its source-index mapping.</summary>
     /// <param name="points">The ordered source points.</param>
     /// <param name="maximumPoints">The maximum number of rendered points. Must be at least three.</param>
@@ -52,6 +52,7 @@ public static class ChartDecimator {
         if (!Enum.IsDefined(typeof(ChartDecimationMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown chart decimation mode.");
         var source = ChartGuards.Points(points, nameof(points)).ToArray();
         if (source.Length <= maximumPoints) return Identity(source, mode);
+        if (source.Skip(1).Any(point => point.BreakBefore)) return Segmented(source, maximumPoints, mode);
         return mode == ChartDecimationMode.MinMax
             ? MinMax(source, maximumPoints)
             : LargestTriangleThreeBuckets(source, maximumPoints);
