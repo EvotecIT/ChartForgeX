@@ -108,7 +108,7 @@
     };
   };
   const fitViewport = (root) => {
-    const bounds = contentBounds(root, graphState(root));
+    const bounds = contentBounds(root, root.__cfxGraphState || graphState(root));
     const size = sceneSize(root);
     if (!bounds) {
       setViewport(root, { x: 0, y: 0, scale: 1 });
@@ -128,4 +128,21 @@
       x: size.centerX - centerX * scale,
       y: size.centerY - centerY * scale
     });
+  };
+
+  const bindGraphSurfaceResize = root => {
+    const stage = root.querySelector('.cfx-graph-stage');
+    if (!stage || typeof ResizeObserver === 'undefined') return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (root.isConnected === false) { observer.disconnect(); return; }
+        if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
+        else drawCanvas(root, root.__cfxGraphState || graphState(root));
+      });
+    });
+    observer.observe(stage);
+    root.__cfxGraphResizeObserver = observer;
   };
