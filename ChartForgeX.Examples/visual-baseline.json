@@ -2042,6 +2042,23 @@
       }
     },
     {
+      "name": "readable-topology-detail",
+      "width": 1200,
+      "height": 800,
+      "svg": {
+        "minVisualNodes": 147,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 960000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 939,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "remediation-impact-waterfall-dark",
       "width": 920,
       "height": 540,
