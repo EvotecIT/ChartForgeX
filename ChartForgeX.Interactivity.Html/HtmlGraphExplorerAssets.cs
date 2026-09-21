@@ -25,6 +25,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.14-state-history.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-edge-hit-index.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.17-physics-profile.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js",

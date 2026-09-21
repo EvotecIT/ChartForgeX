@@ -70,6 +70,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.12-overview.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js" />
     <EmbeddedResource Include="Assets\graph-explorer.13-hierarchy.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js" />
     <EmbeddedResource Include="Assets\graph-explorer.14-state-history.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.14-state-history.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.15-edge-hit-index.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-edge-hit-index.js" />
     <EmbeddedResource Include="Assets\graph-explorer.15-hit-testing.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js" />
     <EmbeddedResource Include="Assets\graph-explorer.17-physics-profile.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.17-physics-profile.js" />
     <EmbeddedResource Include="Assets\graph-explorer.18-structural-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js" />

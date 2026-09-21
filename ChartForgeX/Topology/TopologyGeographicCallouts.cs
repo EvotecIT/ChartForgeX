@@ -299,7 +299,7 @@ internal static class TopologyGeographicCallouts {
 
             if (mode == TopologyNodeDisplayMode.Icon) {
                 var hasIconLabel = options.IncludeNodeLabels && options.IncludeIconLabels;
-                var labelWidth = hasIconLabel ? IconLabelPlateWidth(node) : node.Width;
+                var labelWidth = hasIconLabel ? IconLabelPlateWidth(node, options.TextMeasurement) : node.Width;
                 var centerX = node.X + node.Width / 2;
                 if (!hasIconLabel) return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, node.Height + 16);
                 var labelBottom = IconLabelPlateY(node) + 15;
