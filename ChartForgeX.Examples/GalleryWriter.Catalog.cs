@@ -254,6 +254,9 @@ public static partial class GalleryWriter {
             "control-scorecards-grid",
             "foundation-typed-facets",
             "shared-axis-coverage-grid",
+            "paged-facets-1",
+            "paged-facets-2",
+            "paged-facets-3",
             "domain-signal-mix-stacked-area-dark")
     };
 

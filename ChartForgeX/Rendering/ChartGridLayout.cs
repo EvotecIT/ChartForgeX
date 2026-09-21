@@ -22,7 +22,7 @@ internal sealed class ChartGridLayout {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (grid.Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
 
-        var columns = Math.Min(grid.Columns, grid.Charts.Count);
+        var columns = grid.PreserveEmptyColumns ? grid.Columns : Math.Min(grid.Columns, grid.Charts.Count);
         var panelWidth = grid.PanelSize.HasValue ? grid.PanelSize.Value.Width : 1;
         var panelHeight = grid.PanelSize.HasValue ? grid.PanelSize.Value.Height : 1;
         foreach (var chart in grid.Charts) {

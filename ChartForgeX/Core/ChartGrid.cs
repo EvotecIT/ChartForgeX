@@ -49,6 +49,10 @@ public sealed partial class ChartGrid {
         }
     }
 
+    /// <summary>Gets or sets whether composed SVG and PNG exports retain columns without charts.</summary>
+    /// <remarks>Pagination enables this to keep the last page's columns and panel spans consistent.</remarks>
+    public bool PreserveEmptyColumns { get; set; }
+
     /// <summary>
     /// Gets or sets the gap between charts in pixels.
     /// </summary>
@@ -259,8 +263,9 @@ public sealed partial class ChartGrid {
     /// <returns>The current chart grid.</returns>
     public ChartGrid Add(Chart chart, int columnSpan, int rowSpan = 1) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        var span = new ChartGridPanelSpan(columnSpan, rowSpan);
         _charts.Add(chart);
-        _panelSpans.Add(new ChartGridPanelSpan(columnSpan, rowSpan));
+        _panelSpans.Add(span);
         return this;
     }
 

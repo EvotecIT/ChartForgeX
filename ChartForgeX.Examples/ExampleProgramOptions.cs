@@ -5,6 +5,11 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--paged-facets-only")) {
+            PagedFacetExamples.Write(output, pngOutputScale);
+            return true;
+        }
+
         if (HasArg(args, "--dense-signals-only")) {
             DenseSignalExamples.Write(output, pngOutputScale);
             Console.WriteLine("Generated dense-signal files in: " + output);

@@ -231,6 +231,19 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
+For larger reports, apply shared axes to the whole grid, then paginate before rendering:
+
+```csharp
+report.WithSharedAxes().WithPanelSize(440, 280);
+foreach (var page in report.Paginate(maximumChartsPerPage: 6)) {
+    page.Grid.WithSubtitle($"Page {page.Number} of {page.TotalPages}");
+    page.Grid.SaveSvg($"cpu-by-site-{page.Number}.svg");
+    page.Grid.SavePng($"cpu-by-site-{page.Number}.png");
+}
+```
+
+Pages preserve chart order, panel spans, heading styles, and export settings. Their grids share the original chart and theme objects; changing a chart affects every grid containing it. Grid-level settings and styles are copied independently. Page metadata records the original partition. Empty columns remain in composed exports, keeping the last page aligned. Set `PanelSize` for consistent panel dimensions; automatic sizing uses each page's charts. The limit counts charts, not rows or pixels occupied by spanned panels. Empty grids return no pages.
+
 `ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
 
 ## Project Status

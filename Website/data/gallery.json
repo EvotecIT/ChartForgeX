@@ -876,6 +876,36 @@
       "image": "/examples/generated/observed-remediation-trend-light.svg"
     },
     {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 1",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-1.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 2",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-2.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 3",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-3.svg"
+    },
+    {
       "category": "themes",
       "title": "Palette swatch",
       "body": "Reusable palette swatch grid.",
