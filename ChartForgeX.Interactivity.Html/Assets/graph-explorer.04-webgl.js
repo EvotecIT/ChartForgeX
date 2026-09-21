@@ -103,21 +103,27 @@
     }
     runtime.gl.viewport(0, 0, width, height);
   };
-  const webGlUpload = (runtime, positions, colors, sizes, points) => {
+  // Keep CPU staging arrays and GPU storage until a larger scene needs capacity.
+  const webGlUploadAttribute = (runtime, name, values, components) => {
     const { gl } = runtime;
-    gl.bindBuffer(gl.ARRAY_BUFFER, runtime.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
-    gl.enableVertexAttribArray(runtime.position);
-    gl.vertexAttribPointer(runtime.position, 2, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, runtime.colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
-    gl.enableVertexAttribArray(runtime.color);
-    gl.vertexAttribPointer(runtime.color, 4, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, runtime.sizeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sizes), gl.DYNAMIC_DRAW);
-    gl.enableVertexAttribArray(runtime.size);
-    gl.vertexAttribPointer(runtime.size, 1, gl.FLOAT, false, 0, 0);
-    gl.uniform1i(runtime.points, points ? 1 : 0);
+    const uploads = runtime.uploads || (runtime.uploads = {});
+    let upload = uploads[name];
+    gl.bindBuffer(gl.ARRAY_BUFFER, runtime[name + 'Buffer']);
+    if (!upload || upload.data.length < values.length) {
+      const capacity = Math.max(64, 2 ** Math.ceil(Math.log2(Math.max(1, values.length))));
+      upload = uploads[name] = { data: new Float32Array(capacity) };
+      gl.bufferData(gl.ARRAY_BUFFER, upload.data.byteLength, gl.DYNAMIC_DRAW);
+    }
+    upload.data.set(values);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, upload.data.subarray(0, values.length));
+    gl.enableVertexAttribArray(runtime[name]);
+    gl.vertexAttribPointer(runtime[name], components, gl.FLOAT, false, 0, 0);
+  };
+  const webGlUpload = (runtime, positions, colors, sizes, points) => {
+    webGlUploadAttribute(runtime, 'position', positions, 2);
+    webGlUploadAttribute(runtime, 'color', colors, 4);
+    webGlUploadAttribute(runtime, 'size', sizes, 1);
+    runtime.gl.uniform1i(runtime.points, points ? 1 : 0);
   };
   const drawWebGl = (root, state) => {
     const runtime = webGlRuntime(root);
