@@ -245,12 +245,12 @@ public sealed partial class PngChartRenderer {
         if ((s.Kind == ChartSeriesKind.Area || s.Kind == ChartSeriesKind.StepArea) && s.Points.Count > 0) {
             var zeroY = map.YBaseline();
             var pathPoints = MapSeriesPathPoints(s, map);
-            var polygon = new List<ChartPoint>(pathPoints.Count + 2) {
-                new(pathPoints[0].X, zeroY)
-            };
-            foreach (var point in pathPoints) polygon.Add(point);
-            polygon.Add(new ChartPoint(pathPoints[pathPoints.Count - 1].X, zeroY));
-            c.FillPolygonVerticalGradient(polygon, ChartColor.FromRgba(color.R, color.G, color.B, 72), ChartColor.FromRgba(color.R, color.G, color.B, 8));
+            foreach (var segment in ChartPointSegments.Split(pathPoints)) {
+                var polygon = new List<ChartPoint>(segment.Count + 2) { new(segment[0].X, zeroY) };
+                foreach (var point in segment) polygon.Add(point);
+                polygon.Add(new ChartPoint(segment[segment.Count - 1].X, zeroY));
+                c.FillPolygonVerticalGradient(polygon, ChartColor.FromRgba(color.R, color.G, color.B, 72), ChartColor.FromRgba(color.R, color.G, color.B, 8));
+            }
         }
         var linePoints = MapSeriesPathPoints(s, map);
         if (s.Kind != ChartSeriesKind.Scatter) {
@@ -462,7 +462,11 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth) {
         var thickness = Math.Max(1, strokeWidth);
-        c.DrawPolyline(points, color, thickness);
+        foreach (var segment in ChartPointSegments.Split(points)) {
+            if (segment.Count == 1 || (segment.Count == 2 && segment[0].X == segment[1].X && segment[0].Y == segment[1].Y))
+                c.DrawCircle(segment[0].X, segment[0].Y, thickness / 2, color);
+            else c.DrawPolyline(segment, color, thickness);
+        }
     }
 
     private static void DrawPremiumPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth, ChartLineVisualStyle style) {
