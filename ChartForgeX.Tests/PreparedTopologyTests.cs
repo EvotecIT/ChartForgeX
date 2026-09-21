@@ -26,6 +26,21 @@ public sealed class PreparedTopologyTests {
     }
 
     [Fact]
+    public void ReportSearchRecordsFollowStableDetailPageOrder() {
+        var chart = TopologyChart.Create().AddAutoGroup("z-first", "First group").AddAutoGroup("a-second", "Second group");
+        for (var index = 0; index < 22; index++) {
+            string groupId = index % 2 == 0 ? "a-second" : "z-first";
+            chart.AddAutoNode("node-" + index.ToString("D2"), "Node " + index, groupId: groupId);
+        }
+        chart.AddAutoNode("ungrouped", "Ungrouped");
+
+        var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
+        string[][] records = ReportRecords(report.ToInteractiveHtmlPage(), "objects");
+
+        Assert.Equal(report.Pages.Select(page => Assert.Single(page.ToInterchangeEnvelope().Nodes).Id), records.Select(record => record[5]));
+    }
+
+    [Fact]
     public void ReportNavigationDataRoundTripsHtmlSensitiveLabels() {
         const string label = "</script><script>alert(1)</script>\n\"&";
         string html = TopologyChart.Create().AddAutoNode("node", label).PrepareReport().ToInteractiveHtmlPage();
@@ -213,6 +228,19 @@ public sealed class PreparedTopologyTests {
         var extensions = chart.PrepareReport().Pages.Single().ToInterchangeEnvelope().Nodes.Single().Extensions;
 
         Assert.DoesNotContain("report.sourceGroupId", extensions.Keys);
+    }
+
+    [Fact]
+    public void ReportPageTitlesRetainTheirSuffixWithinTheInterchangeTextBudget() {
+        string title = new string('t', 65_536);
+        var report = TopologyChart.Create().WithTitle(title).AddAutoNode("node", "Node").PrepareReport();
+
+        VisualArtifactInterchangeEnvelope page = Assert.Single(report.Pages).ToInterchangeEnvelope();
+
+        Assert.Equal(65_536, page.Title.Length);
+        Assert.EndsWith(" — 1", page.Title);
+        Assert.NotEmpty(page.ToJson());
+        Assert.Equal(title, report.Overview.ToInterchangeEnvelope().Title);
     }
 
     [Fact]

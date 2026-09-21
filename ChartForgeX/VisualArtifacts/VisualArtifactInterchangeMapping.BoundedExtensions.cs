@@ -5,6 +5,20 @@ using System.Text;
 namespace ChartForgeX.VisualArtifacts;
 
 public static partial class VisualArtifactInterchangeMapping {
+    internal static string BoundedGeneratedText(string value, string suffix) {
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (suffix == null) throw new ArgumentNullException(nameof(suffix));
+        if (suffix.Length > VisualArtifactInterchangeValidation.MaximumTextCharacters) {
+            throw new ArgumentException("Generated text suffixes must fit the interchange text limit.", nameof(suffix));
+        }
+        if (value.Length <= VisualArtifactInterchangeValidation.MaximumTextCharacters - suffix.Length) return value + suffix;
+        int prefixLength = VisualArtifactInterchangeValidation.MaximumTextCharacters - suffix.Length;
+        if (prefixLength > 0 && prefixLength < value.Length && char.IsHighSurrogate(value[prefixLength - 1]) && char.IsLowSurrogate(value[prefixLength])) {
+            prefixLength--;
+        }
+        return value.Substring(0, prefixLength) + suffix;
+    }
+
     private static void AddProjectedSourceIds(VisualArtifactInterchangeEnvelope envelope, IEnumerable<ProjectedSourceId> candidates) {
         string baseJson = VisualArtifactInterchangeJson.Serialize(envelope);
         int remainingCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters - baseJson.Length;

@@ -61,9 +61,10 @@ public sealed class TopologyReportLink {
 
 /// <summary>A topology overview, bounded detail pages, and a complete node and cross-page relationship index.</summary>
 public sealed class TopologyReport {
-    internal TopologyReport(PreparedTopology source, PreparedTopology overview, List<PreparedTopology> pages, Dictionary<string, int> nodePages, Dictionary<string, string> nodeLabels, List<TopologyReportLink> links) {
+    internal TopologyReport(PreparedTopology source, PreparedTopology overview, List<PreparedTopology> pages, Dictionary<string, int> nodePages, Dictionary<string, string> nodeLabels, List<string> orderedNodeIds, List<TopologyReportLink> links) {
         Source = source; Overview = overview; Pages = pages.AsReadOnly(); NodePages = new ReadOnlyDictionary<string, int>(nodePages); CrossPageLinks = links.AsReadOnly();
         NodeLabels = new ReadOnlyDictionary<string, string>(nodeLabels);
+        OrderedNodeIds = orderedNodeIds.AsReadOnly();
     }
     /// <summary>Gets the original topology for exploration and source readability diagnostics.</summary>
     public PreparedTopology Source { get; }
@@ -75,6 +76,7 @@ public sealed class TopologyReport {
     public IReadOnlyDictionary<string, int> NodePages { get; }
     /// <summary>Gets labels keyed by original source node ids, in the same namespace as NodePages and CrossPageLinks.</summary>
     public IReadOnlyDictionary<string, string> NodeLabels { get; }
+    internal IReadOnlyList<string> OrderedNodeIds { get; }
     /// <summary>Gets relationships omitted from individual drawings because their endpoints are on different pages.</summary>
     public IReadOnlyList<TopologyReportLink> CrossPageLinks { get; }
 }
@@ -98,6 +100,7 @@ public static partial class TopologyChartExtensions {
         source.Title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
         var pages = new List<TopologyChart>();
         var nodePages = new Dictionary<string, int>(StringComparer.Ordinal);
+        var orderedNodeIds = new List<string>();
         var incidentEdges = source.Edges.SelectMany(edge => edge.SourceNodeId == edge.TargetNodeId
             ? new[] { (NodeId: edge.SourceNodeId, Edge: edge) }
             : new[] { (NodeId: edge.SourceNodeId, Edge: edge), (NodeId: edge.TargetNodeId, Edge: edge) }).ToLookup(item => item.NodeId, item => item.Edge, StringComparer.Ordinal);
@@ -123,8 +126,9 @@ public static partial class TopologyChartExtensions {
                 (edge.TargetNodeId == node.Id || pageNodeIds.Contains(edge.TargetNodeId)));
             if (page == null || page.Nodes.Count >= options.MaximumNodesPerPage ||
                 (page.Nodes.Count > 0 && pageEdgeCount + addedEdges > options.MaximumEdgesPerPage) || (y + node.Height > options.PageHeight - margin && page.Nodes.Count > 0)) {
+                string pageSuffix = " — " + (pages.Count + 1).ToString(CultureInfo.InvariantCulture);
                 page = TopologyChart.Create().WithId((chart.Id ?? "topology") + "-page-" + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
-                    .WithTitle(source.Title + " — " + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
+                    .WithTitle(VisualArtifactInterchangeMapping.BoundedGeneratedText(source.Title!, pageSuffix))
                     .WithViewport(options.PageWidth, options.PageHeight, margin);
                 page.Theme = source.Theme;
                 page.Accessibility.Name = source.Accessibility.Name;
@@ -144,6 +148,7 @@ public static partial class TopologyChartExtensions {
             pageNodeIds.Add(node.Id);
             pageEdgeCount += addedEdges;
             nodePages.Add(node.Id, pages.Count);
+            orderedNodeIds.Add(node.Id);
             x += node.Width + gap;
             rowHeight = Math.Max(rowHeight, node.Height);
         }
@@ -163,7 +168,7 @@ public static partial class TopologyChartExtensions {
         }
         var preparedPages = pages.Select(item => item.Prepare(pageOptions)).ToList();
         var overview = BuildReportOverview(source, pages, links, options).Prepare(renderOptions);
-        return new TopologyReport(preparedSource, overview, preparedPages, nodePages, source.Nodes.ToDictionary(node => node.Id, node => node.Label, StringComparer.Ordinal), links);
+        return new TopologyReport(preparedSource, overview, preparedPages, nodePages, source.Nodes.ToDictionary(node => node.Id, node => node.Label, StringComparer.Ordinal), orderedNodeIds, links);
     }
 
     private static TopologyChart BuildReportOverview(TopologyChart source, List<TopologyChart> pages,

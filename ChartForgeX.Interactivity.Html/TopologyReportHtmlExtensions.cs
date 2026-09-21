@@ -26,13 +26,13 @@ public static partial class TopologyReportHtmlExtensions {
         html.Append("<div class=\"search\"><label for=\"search\">Find an object</label><input id=\"search\" type=\"search\" placeholder=\"Name or stable ID\" autocomplete=\"off\"><p id=\"search-status\" role=\"status\"></p><div id=\"results\"></div></div>");
         html.Append("<p id=\"page-status\" role=\"status\"></p><div id=\"content\"></div><noscript>Enable JavaScript to navigate this report, or use the separately exported SVG pages.</noscript>");
         html.Append("<script type=\"application/json\" id=\"objects\">[");
-        var objects = labels.Select(node => new[] {
-            report.NodePages[node.Key].ToString(System.Globalization.CultureInfo.InvariantCulture),
-            node.Value + " — " + node.Key,
+        var objects = report.OrderedNodeIds.Select(nodeId => new[] {
+            report.NodePages[nodeId].ToString(System.Globalization.CultureInfo.InvariantCulture),
+            labels[nodeId] + " — " + nodeId,
             "",
             string.IsNullOrWhiteSpace(source.Language) ? "en" : source.Language!,
-            node.Value,
-            node.Key
+            labels[nodeId],
+            nodeId
         });
         WriteRecords(html, objects);
         html.Append("]</script>");
