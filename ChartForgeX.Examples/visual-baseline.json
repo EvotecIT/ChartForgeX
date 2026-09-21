@@ -971,6 +971,57 @@
       }
     },
     {
+      "name": "dense-legend-pie",
+      "width": 1000,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 90,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1204189,
+        "minTransparentPixels": 75811,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dense-legend-radial",
+      "width": 1000,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 82,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1204189,
+        "minTransparentPixels": 75811,
+        "minDistinctColors": 1895,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dense-legend-series",
+      "width": 1000,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 1015,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1204189,
+        "minTransparentPixels": 75811,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "dense-signal-decimated-light",
       "width": 1180,
       "height": 640,
