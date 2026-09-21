@@ -23,7 +23,10 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var total = values.Sum(item => item.Point.Y);
         var chartPlot = PieChartPlot(chart, plot, legendValues);
-        var radiusFactor = chart.Options.ShowLegend && IsTopOrBottomLegend(chart.Options.LegendPosition) ? 0.40 : 0.44;
+        var hasHorizontalLegendLane = chart.Options.ShowLegend
+            && IsTopOrBottomLegend(chart.Options.LegendPosition)
+            && SliceLegendReserve(chart, legendValues, plot) > 0;
+        var radiusFactor = hasHorizontalLegendLane ? 0.40 : 0.44;
         var radius = Math.Max(1, Math.Min(chartPlot.Width, chartPlot.Height) * radiusFactor);
         var cx = chartPlot.Left + chartPlot.Width / 2;
         var cy = chartPlot.Top + chartPlot.Height / 2;
@@ -136,7 +139,7 @@ public sealed partial class SvgChartRenderer {
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, t.LegendFontSize);
         var area = SliceLegendArea(chart, plot, values);
-        var rows = BuildSliceLegendRows(chart, series, values, total, area.Width);
+        var rows = BuildSliceLegendRows(chart, series, values, total, area.Width, area.Height);
         var y = SliceLegendStartY(chart, area, rows.Count);
         var writer = new SvgMarkupWriter(2048);
         writer
@@ -147,6 +150,11 @@ public sealed partial class SvgChartRenderer {
             .Line();
         foreach (var row in rows) {
             if (y > area.Bottom - 4) break;
+            if (row.Omitted > 0) {
+                DrawLegendOverflow(writer, chart, area, y, row.Omitted);
+                y += SliceLegendRowHeight(chart);
+                continue;
+            }
             var x = SliceLegendRowX(chart, area, row.Width);
             foreach (var item in row.Items) {
                 var itemX = x + item.X;
@@ -236,50 +244,65 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double SliceLegendReserve(Chart chart, IReadOnlyList<IndexedPieValue> values, ChartRect plot) {
-        if (IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition)) return Math.Min(230, Math.Max(142, SliceLegendWidestItem(chart, values) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
-        return 18 + BuildSliceLegendRows(chart, chart.Series[0], values, values.Sum(item => item.Point.Y), Math.Max(80, plot.Width - 80)).Count * SliceLegendRowHeight(chart) + ChartVisualPrimitives.LegendPlotGap;
+        if (IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition)) {
+            var availableHeight = Math.Max(1, plot.Height - LegendSideInset(plot.Height) * 2);
+            if (LegendRowBudget.MaximumRows(chart, availableHeight) == 0) return 0;
+            var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, values.Count, availableHeight);
+            return Math.Min(230, Math.Max(142, SliceLegendWidestItem(chart, values, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
+        }
+        var rows = BuildSliceLegendRows(chart, chart.Series[0], values, values.Sum(item => item.Point.Y), Math.Max(80, plot.Width - 80), plot.Height).Count;
+        return LegendRowBudget.HorizontalReserve(chart, rows, plot.Height);
     }
 
-    private static double SliceLegendWidestItem(Chart chart, IReadOnlyList<IndexedPieValue> values) {
+    private static double SliceLegendWidestItem(Chart chart, IReadOnlyList<IndexedPieValue> values, int visible) {
         var widest = 0.0;
         var total = Math.Max(0.000001, values.Sum(item => item.Point.Y));
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
-        for (var i = 0; i < values.Count; i++) {
+        for (var i = 0; i < visible; i++) {
             var label = SliceLabel(chart, values[i].Point, values[i].PointIndex);
             var percent = FormatPercent(values[i].Point.Y / total);
             widest = Math.Max(widest, ChartVisualPrimitives.SliceLegendSwatchSize + EstimateSvgStyledTextWidth(chart, label, fontSize, style, emphasized: true) + EstimateSvgStyledTextWidth(chart, percent, fontSize, style) + 34);
         }
+        if (visible < values.Count) widest = Math.Max(widest, EstimateSvgStyledTextWidth(chart, LegendRowBudget.Summary(values.Count - visible), fontSize, style, emphasized: true));
 
         return widest;
     }
 
     private static ChartRect SliceLegendArea(Chart chart, ChartRect plot, IReadOnlyList<IndexedPieValue> values) {
         var reserve = SliceLegendReserve(chart, values, plot);
-        if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
-        if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + 20, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - 40));
+        var sideInset = LegendSideInset(plot.Height);
+        if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Left + 18, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
+        if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.Right - reserve + 10, plot.Top + sideInset, Math.Max(1, reserve - 28), Math.Max(1, plot.Height - sideInset * 2));
         var y = IsTopLegend(chart.Options.LegendPosition) ? plot.Top + 14 : plot.Bottom - reserve - 4;
         return new ChartRect(plot.Left + 36, y, Math.Max(1, plot.Width - 72), reserve);
     }
 
-    private static List<SliceLegendRow> BuildSliceLegendRows(Chart chart, ChartSeries series, IReadOnlyList<IndexedPieValue> values, double total, double width) {
+    private static List<SliceLegendRow> BuildSliceLegendRows(Chart chart, ChartSeries series, IReadOnlyList<IndexedPieValue> values, double total, double width, double? availableHeight = null) {
         var rows = new List<SliceLegendRow>();
         var row = new SliceLegendRow();
         rows.Add(row);
         var x = 0.0;
         var vertical = IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition);
-        var maxX = Math.Max(48, width);
+        var maxX = Math.Max(1, width);
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
         for (var i = 0; i < values.Count; i++) {
             var pointIndex = values[i].PointIndex;
             var percent = StyleText(style, FormatPercent(values[i].Point.Y / Math.Max(0.000001, total)));
             var percentWidth = MeasureSvgStyledTextWidth(chart, percent, fontSize, style);
-            var labelMax = Math.Max(24, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 30);
+            var labelMax = Math.Max(1, maxX - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 30);
             var rawLabel = SliceLabel(chart, values[i].Point, pointIndex);
             var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
             var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
-            var itemWidth = Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style, emphasized: true) + percentWidth + 32);
+            var itemWidth = vertical
+                ? Math.Min(maxX, ChartVisualPrimitives.SliceLegendSwatchSize + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style, emphasized: true) + percentWidth + 32)
+                : LegendRowBudget.HorizontalItemWidth(StyleText(style, rawLabel) + " " + percent, fontSize, maxX, ChartVisualPrimitives.SliceLegendSwatchSize + 34);
+            if (!vertical) {
+                labelMax = Math.Max(1, itemWidth - percentWidth - ChartVisualPrimitives.SliceLegendSwatchSize - 30);
+                labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
+                label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
+            }
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new SliceLegendRow();
                 rows.Add(row);
@@ -291,11 +314,15 @@ public sealed partial class SvgChartRenderer {
             x += itemWidth;
         }
 
-        return rows;
+        return LegendRowBudget.Apply(rows, chart, row => row.Items.Count, omitted => new SliceLegendRow { Omitted = omitted, Width = Math.Min(width, 140) }, availableHeight);
     }
 
-    private static double SliceLegendStartY(Chart chart, ChartRect area, int rows) =>
-        IsBottomLegend(chart.Options.LegendPosition) ? area.Bottom - 18 - Math.Max(0, rows - 1) * SliceLegendRowHeight(chart) : area.Top + 16;
+    private static double SliceLegendStartY(Chart chart, ChartRect area, int rows) {
+        if (!IsBottomLegend(chart.Options.LegendPosition)) return Math.Min(area.Top + 16, area.Bottom - 4);
+        var precedingRowsHeight = Math.Max(0, rows - 1) * SliceLegendRowHeight(chart);
+        var bottomInset = Math.Min(18, Math.Max(4, area.Height - 16 - precedingRowsHeight));
+        return area.Bottom - bottomInset - precedingRowsHeight;
+    }
 
     private static double SliceLegendRowX(Chart chart, ChartRect area, double rowWidth) {
         if (chart.Options.LegendPosition == ChartLegendPosition.TopRight || chart.Options.LegendPosition == ChartLegendPosition.BottomRight || IsRightLegend(chart.Options.LegendPosition)) return area.Right - Math.Min(area.Width, rowWidth);
@@ -305,7 +332,7 @@ public sealed partial class SvgChartRenderer {
 
     private static bool IsTopOrBottomLegend(ChartLegendPosition position) => IsTopLegend(position) || IsBottomLegend(position);
 
-    private static double SliceLegendRowHeight(Chart chart) => EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.LegendStyle, chart.Options.Theme.LegendFontSize), chart.Options.LegendStyle) + 10;
+    private static double SliceLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
     private static double PieLabelRadius(double inner, double radius, ChartDataLabelPlacement placement) {
         if (placement == ChartDataLabelPlacement.Outside || placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Above || placement == ChartDataLabelPlacement.Below) return radius * 1.10;
@@ -461,6 +488,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private sealed class SliceLegendRow {
+        public int Omitted { get; set; }
         public List<SliceLegendItem> Items { get; } = new();
         public double Width { get; set; }
     }

@@ -183,35 +183,16 @@ public sealed partial class PngChartRenderer {
             var reserve = PngLegendBottomReserve(chart);
             plot = new ChartRect(plot.X, plot.Y + reserve, plot.Width, Math.Max(1, plot.Height - reserve));
         } else if (ShouldDrawLegend(chart) && PngIsLeftLegend(chart.Options.LegendPosition)) {
-            var reserve = PngLegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = PngLegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             plot = new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         } else if (ShouldDrawLegend(chart) && PngIsRightLegend(chart.Options.LegendPosition)) {
-            var reserve = PngLegendSideReserve(chart) + ChartVisualPrimitives.SideLegendPlotGap;
+            var legendReserve = PngLegendSideReserve(chart);
+            var reserve = legendReserve > 0 ? legendReserve + ChartVisualPrimitives.SideLegendPlotGap : 0;
             plot = new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         }
 
         return plot;
-    }
-
-    private static int PngLegendRowCount(Chart chart) {
-        var fontSize = PngLegendFontSize(chart);
-        var symbolWidth = 18;
-        var x = 0.0;
-        var rows = 1;
-        var maxX = Math.Max(80, chart.Options.Size.Width - 80);
-        var entries = BuildPngLegendEntries(chart);
-        if (PngIsVerticalLegend(chart.Options.LegendPosition)) return entries.Count;
-        for (var i = 0; i < entries.Count; i++) {
-            var itemWidth = symbolWidth + 10 + EstimatePngStyledTextWidth(entries[i].Label, fontSize, chart.Options.LegendStyle, emphasized: true) + 18;
-            if (i > 0 && x + itemWidth > maxX) {
-                rows++;
-                x = 0;
-            }
-
-            x += itemWidth;
-        }
-
-        return rows;
     }
 
     private static double PngXAxisLabelOffset(Chart chart, IReadOnlyList<string>? labels = null) {

@@ -3,15 +3,23 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const source = ['10-neighborhood-plan', '10-neighborhood'].map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
+const source = ['10-neighborhood-plan', '10-neighborhood', '14-state-history'].map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 const runtime = new Function(`
   const attr = (element, name) => element.attributes[name] || '';
   const num = (element, name, fallback) => name in element.attributes ? Number(element.attributes[name]) : fallback;
-  const hasFeature = () => true, graphState = root => root.state;
-  const items = (root, selector) => root.elements.filter(item => selector.split(',').some(part => part[0] === '.' ? item.classList.contains(part.slice(1)) : false));
+  const hasFeature = (root, name) => !root.disabledFeatures?.has(name), graphState = root => root.state;
+  const items = (root, selector) => root.elements.filter(item => selector.split(',').some(part => {
+    if (part[0] === '.') return item.classList.contains(part.slice(1));
+    const role = part.match(/data-cfx-role="([^"]+)"/);
+    return role ? item.attributes['data-cfx-role'] === role[1] : false;
+  }));
   const viewport = root => root.viewport, setViewport = (root, value) => { root.viewport = { ...value }; };
-  const selectedItems = root => root.selection.map(id => ({id})), restoreGraphSelection = (root, ids) => { root.selection = [...ids]; };
-  const clearHiddenSelections = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = (root, state) => { root.paintedState = state; root.paintedSelection = [...root.selection]; };
+  const selectedItems = root => root.selection.map(value => typeof value === 'string' ? {id:value, role:'graph-node'} : value);
+  const updateSelectionState = root => { root.selection = root.elements.filter(item => item.classList.contains('cfx-graph-selected')).map(item => ({id:attr(item,'data-node-id')||attr(item,'data-edge-id')||attr(item,'data-cluster-id'), role:attr(item,'data-cfx-role')})); return root.selection; };
+  const clearHiddenSelections = root => { root.selection = selectedItems(root).filter(value => { const item=root.elements.find(element => (attr(element,'data-node-id')||attr(element,'data-edge-id')||attr(element,'data-cluster-id'))===value.id && attr(element,'data-cfx-role')===value.role); return item && !item.classList.contains('cfx-graph-neighborhood-hidden'); }); return true; };
+  const syncSelectionTooltip = () => {}, syncGraphItemTabStops = () => {}, syncNodeDetailLayers = () => {}, drawCanvas = root => { root.paintedSelection = JSON.parse(JSON.stringify(root.selection)); };
+  const syncSvgLayout = (root, state) => { root.syncedState = state; state.nodes.forEach(node => { node.el.setAttribute('data-node-x', node.x); node.el.setAttribute('data-node-y', node.y); }); };
+  const applyLod = root => { root.lodChanges = (root.lodChanges || 0) + 1; };
   const pausePhysics = root => { root.paused = true; }, fitViewport = root => { root.viewport = {x:10,y:20,scale:2}; };
   const emit = (root, name, detail) => root.events.push({name, detail});
   ${source}
@@ -19,18 +27,20 @@ const runtime = new Function(`
 `)();
 function element(attributes = {}) {
   const classes = new Set();
-  return { attributes, classList: { add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name), toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); } } };
+  return { attributes, setAttribute(name,value){this.attributes[name]=String(value);}, getAttribute(name){return this.attributes[name]||null;}, classList: { add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name), toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); } } };
 }
 function hub() {
-  const nodes = Array.from({length:26}, (_, i) => ({id:`n${String(i).padStart(2,'0')}`, x:i*20, y:i*10, fixed:i===0, el:element()}));
-  const edges = nodes.slice(1).map(node => ({id:`e${node.id}`, source:nodes[0], target:node, el:element({'data-edge-id':`e${node.id}`})}));
+  const nodes = Array.from({length:26}, (_, i) => { const id=`n${String(i).padStart(2,'0')}`; return {id, x:i*20, y:i*10, fixed:i===0, el:element({'data-cfx-role':'graph-node','data-node-id':id})}; });
+  const edges = nodes.slice(1).map(node => ({id:`e${node.id}`, source:nodes[0], target:node, el:element({'data-cfx-role':'graph-edge','data-edge-id':`e${node.id}`})}));
   return { ...element(), dataset:{}, state:{nodes,edges,clusters:[],byId:new Map(nodes.map(node=>[node.id,node]))},
     elements:[...nodes.map(node=>node.el),...edges.map(edge=>edge.el)], querySelector:()=>null,
-    selection:['n00'], viewport:{x:27,y:63,scale:.8}, events:[] };
+    selection:[{id:'n00',role:'graph-node'}], viewport:{x:27,y:63,scale:.8}, events:[] };
 }
 test('paging and drill-down preserve geometry and restore overview viewport and selection', () => {
   const root=hub(), geometry=JSON.stringify(root.state.nodes.map(({id,x,y,fixed})=>({id,x,y,fixed})));
+  root.__cfxGraphViewportTouched = false;
   assert.equal(runtime.applyNeighborhoodFocus(root,'n00'),true);
+  assert.equal(root.__cfxGraphViewportTouched,true);
   assert.equal(root.state.nodes.filter(node=>!node.el.classList.contains('cfx-graph-neighborhood-hidden')).length,13);
   assert.equal(runtime.pageGraphNeighborhood(root,-1),false);
   runtime.pageGraphNeighborhood(root,1);
@@ -42,12 +52,13 @@ test('paging and drill-down preserve geometry and restore overview viewport and 
   runtime.pageGraphNeighborhood(root,1);
   assert.equal(root.__cfxGraphNeighborhoodView.nodeIds.size,2); assert.equal(runtime.pageGraphNeighborhood(root,1),false);
   runtime.clearNeighborhoodFocus(root);
-  assert.deepEqual(root.viewport,{x:27,y:63,scale:.8}); assert.deepEqual(root.selection,['n00']);
+  assert.deepEqual(root.viewport,{x:27,y:63,scale:.8}); assert.deepEqual(root.selection,[{id:'n00',role:'graph-node'}]);
+  assert.equal(root.__cfxGraphViewportTouched,false);
   assert.equal(root.elements.some(item=>item.classList.contains('cfx-graph-neighborhood-hidden')),false);
   assert.equal(JSON.stringify(root.state.nodes.map(({id,x,y,fixed})=>({id,x,y,fixed}))),geometry);
 });
 test('missing roots are rejected without changing view and snapshots detach navigation state', () => {
-  const root=hub(); assert.equal(runtime.applyNeighborhoodFocus(root,'absent'),false); assert.equal(root.events.length,0);
+  const root=hub(); root.paused = false; assert.equal(runtime.applyNeighborhoodFocus(root,'absent'),false); assert.equal(root.events.length,0); assert.equal(root.paused,false);
   runtime.applyNeighborhoodFocus(root,'n00'); runtime.applyNeighborhoodFocus(root,'n01');
   const snapshot=runtime.graphFocusSnapshot(root);
   snapshot.overview.viewport.x=999; snapshot.history.length=0;
@@ -85,24 +96,57 @@ test('restored focus pauses active physics even when navigation history is retai
   runtime.applyNeighborhoodFocus(root, 'n00', {}, {refresh:true, fit:false});
   assert.equal(root.paused, true);
 });
+test('focus preserves the live cached coordinates visible during active physics', () => {
+  const root = hub();
+  const nodes = root.state.nodes.map(node => ({ ...node, x: node.x + 500, y: node.y + 300 }));
+  const byId = new Map(nodes.map(node => [node.id, node]));
+  const edges = root.state.edges.map(edge => ({ ...edge, source: byId.get(edge.source.id), target: byId.get(edge.target.id) }));
+  root.__cfxGraphState = { nodes, edges, clusters: [], byId };
+
+  runtime.applyNeighborhoodFocus(root, 'n00', {}, { fit: false });
+
+  assert.equal(root.paused, true);
+  assert.equal(root.syncedState, root.__cfxGraphState);
+  assert.equal(root.state.nodes[0].el.getAttribute('data-node-x'), '500');
+  assert.equal(root.state.nodes[0].el.getAttribute('data-node-y'), '300');
+});
 test('Back paints restored selection after leaving a drilled neighbor', () => {
   const root = hub();
   runtime.applyNeighborhoodFocus(root, 'n00');
-  root.selection = ['n01'];
+  root.selection = [{id:'n01',role:'graph-node'}];
   runtime.applyNeighborhoodFocus(root, 'n01');
   runtime.backGraphNeighborhood(root);
-  assert.deepEqual(root.selection, ['n00']);
-  assert.deepEqual(root.paintedSelection, ['n00']);
+  assert.deepEqual(root.selection, [{id:'n00',role:'graph-node'}]);
+  assert.deepEqual(root.paintedSelection, [{id:'n00',role:'graph-node'}]);
 });
 
-test('neighborhood presentation preserves live accelerated coordinates across navigation', () => {
+test('bounded views re-evaluate rendering LOD and remove hidden selections', () => {
   const root = hub();
-  root.__cfxGraphState = {...root.state, nodes:root.state.nodes.map(node=>({...node,x:node.x+500}))};
-  runtime.applyNeighborhoodFocus(root,'n00');
-  assert.equal(root.paintedState,root.__cfxGraphState);
-  runtime.applyNeighborhoodFocus(root,'n01');
-  runtime.backGraphNeighborhood(root);
-  assert.equal(root.paintedState,root.__cfxGraphState);
+  root.selection.push({id:'n20',role:'graph-node'});
+  runtime.applyNeighborhoodFocus(root, 'n00');
+  assert.equal(root.lodChanges, 1);
+  assert.deepEqual(root.selection, [{id:'n00',role:'graph-node'}]);
   runtime.clearNeighborhoodFocus(root);
-  assert.equal(root.paintedState,root.__cfxGraphState);
+  assert.equal(root.lodChanges, 2);
+});
+
+test('Back does not create selection when Selection is disabled', () => {
+  const root = hub();
+  root.disabledFeatures = new Set(['Selection']);
+  root.selection = [];
+  runtime.applyNeighborhoodFocus(root, 'n00');
+  runtime.applyNeighborhoodFocus(root, 'n01');
+  runtime.backGraphNeighborhood(root);
+  assert.deepEqual(root.selection, []);
+});
+
+test('overview restores the selected role when node and edge IDs match', () => {
+  const root = hub();
+  const duplicate = root.state.edges[0];
+  duplicate.id = 'n00';
+  duplicate.el.attributes['data-edge-id'] = 'n00';
+  runtime.applyNeighborhoodFocus(root, 'n00');
+  runtime.clearNeighborhoodFocus(root);
+  assert.deepEqual(root.selection, [{id:'n00',role:'graph-node'}]);
+  assert.equal(duplicate.el.classList.contains('cfx-graph-selected'), false);
 });

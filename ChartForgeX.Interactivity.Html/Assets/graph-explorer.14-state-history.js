@@ -38,10 +38,14 @@
     (snapshots || []).forEach(snapshot => applyClusterState(root, !!snapshot.collapsed, String(snapshot.id || ''), { reheat: false }));
   };
   const restoreGraphSelection = (root, ids) => {
-    const selected = new Set((ids || []).map(String));
+    const selected = new Set((ids || []).map(value => {
+      if (value && typeof value === 'object') return `${String(value.role || '')}:${String(value.id || '')}`;
+      return `:${String(value)}`;
+    }));
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      item.classList.toggle('cfx-graph-selected', selected.has(id));
+      const role = attr(item, 'data-cfx-role');
+      item.classList.toggle('cfx-graph-selected', selected.has(`${role}:${id}`) || selected.has(`:${id}`));
     });
     const details = updateSelectionState(root);
     syncSelectionTooltip(root, details);

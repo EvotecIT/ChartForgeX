@@ -117,7 +117,8 @@
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return 0;
     const includeLabels = state.nodes.length < 500;
-    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, nodeRadius(node, includeLabels) * 2 + 10), 0)));
+    const radii = new Map(movable.map(node => [node, nodeRadius(node, includeLabels)]));
+    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, radii.get(node) * 2 + 10), 0)));
     const maxPairs = state.nodes.length >= 3000 ? 120000 : state.nodes.length >= 1000 ? 180000 : 220000;
     let totalResolved = 0;
     for (let pass = 0; pass < passes; pass++) {
@@ -144,7 +145,7 @@
               if (other === node || other.id < node.id) continue;
               pairs += 1;
               if (pairs > maxPairs) { exhausted = true; break; }
-              const minDistance = nodeRadius(node, includeLabels) + nodeRadius(other, includeLabels);
+              const minDistance = radii.get(node) + radii.get(other);
               let dx = other.x - node.x;
               let dy = other.y - node.y;
               let distance = Math.hypot(dx, dy);
@@ -172,41 +173,6 @@
     }
     if (totalResolved) root.dataset.cfxGraphLayoutOverlapResolved = String(totalResolved);
     return totalResolved;
-  };
-
-  const countOverlaps = (nodes) => {
-    const probe = nodes.slice(0, Math.min(nodes.length, 900));
-    const includeLabels = nodes.length < 500;
-    let overlaps = 0;
-    for (let i = 0; i < probe.length; i++) {
-      for (let j = i + 1; j < probe.length; j++) {
-        const minDistance = nodeRadius(probe[i], includeLabels) + nodeRadius(probe[j], includeLabels);
-        if (Math.hypot(probe[j].x - probe[i].x, probe[j].y - probe[i].y) < minDistance) overlaps += 1;
-      }
-    }
-    return overlaps;
-  };
-
-  const layoutQualityMetrics = (root, state) => {
-    const nodes = state.nodes;
-    if (!nodes.length) return;
-    const size = sceneSize(root);
-    const minX = Math.min(...nodes.map(node => node.x));
-    const maxX = Math.max(...nodes.map(node => node.x));
-    const minY = Math.min(...nodes.map(node => node.y));
-    const maxY = Math.max(...nodes.map(node => node.y));
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    const drift = Math.hypot(centerX - size.centerX, centerY - size.centerY);
-    const overlapProbe = countOverlaps(nodes);
-    const driftPenalty = Math.min(1, drift / Math.max(1, Math.min(size.width, size.height) * 0.5));
-    const overlapTolerance = nodes.length >= 300 ? nodes.length * 24 : nodes.length * 10;
-    const score = Math.max(0, 1 - driftPenalty - Math.min(0.35, overlapProbe / Math.max(1, overlapTolerance)));
-    root.dataset.cfxGraphLayoutBounds = `${(maxX - minX).toFixed(1)}x${(maxY - minY).toFixed(1)}`;
-    root.dataset.cfxGraphLayoutCenterDrift = drift.toFixed(2);
-    root.dataset.cfxGraphLayoutOverlapCount = String(overlapProbe);
-    root.dataset.cfxGraphLayoutQualityScore = score.toFixed(3);
-    root.dataset.cfxGraphLayoutQuality = score >= 0.82 ? 'centered-structured' : 'needs-review';
   };
 
   const centerLayout = (root, state) => {
@@ -245,8 +211,9 @@
     const maxY = Math.max(...movable.map(node => node.y));
     const width = Math.max(1, maxX - minX);
     const height = Math.max(1, maxY - minY);
-    const overlaps = countOverlaps(movable);
-    if (overlaps > movable.length * 0.45) {
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
+    if (!assessment.complete || overlaps > movable.length * 0.45) {
       root.dataset.cfxGraphLayoutCompactionSkipped = String(overlaps);
       return;
     }
@@ -269,9 +236,15 @@
   const expandDenseLayout = (root, state) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 24) return;
-    const overlaps = countOverlaps(movable);
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
     const threshold = movable.length >= 300 ? movable.length * 0.65 : movable.length * 0.35;
-    if (overlaps <= threshold) return;
+    root.dataset.cfxGraphLayoutDensityCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    if (overlaps <= threshold) {
+      root.dataset.cfxGraphLayoutDensityDecision = assessment.complete ? 'sparse' : 'unresolved';
+      return;
+    }
+    root.dataset.cfxGraphLayoutDensityDecision = 'expand';
     const size = sceneSize(root);
     const minX = Math.min(...movable.map(node => node.x));
     const maxX = Math.max(...movable.map(node => node.x));

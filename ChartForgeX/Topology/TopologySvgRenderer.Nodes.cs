@@ -65,7 +65,7 @@ public sealed partial class TopologySvgRenderer {
 
             if (options.IncludeTooltips && !string.IsNullOrWhiteSpace(node.Tooltip)) group.Element("title", title => title.Text(node.Tooltip!));
             group.AddElement(BuildNodeBody(node, prefix, theme, color, options, chart.Id, selected));
-            group.AddElement(BuildNodeBadge(node, prefix, theme, color, displayMode));
+            group.AddElement(BuildNodeBadge(node, prefix, theme, color, displayMode, options));
         }
 
         root.AddElement(layer);
@@ -158,8 +158,8 @@ public sealed partial class TopologySvgRenderer {
         if (!options.IncludeNodeLabels) return body;
         if (displayMode == TopologyNodeDisplayMode.Icon) {
             if (options.IncludeIconLabels) {
-                var label = IconLabelText(node);
-                var labelWidth = IconLabelPlateWidth(node);
+                var label = IconLabelText(node, options.TextMeasurement);
+                var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement);
                 var labelX = CenterX(node) - labelWidth / 2;
                 var labelY = IconLabelPlateY(node);
                 body.Element("rect", rect => rect
@@ -200,7 +200,7 @@ public sealed partial class TopologySvgRenderer {
         var textWidth = Math.Max(24, node.Width - (textX - node.X) - textRightPadding);
         var titleCharacterLimit = NodeTitleMaxLength(node, displayMode);
         var titleValue = TrimTo(node.Label, options.AllowMultilineNodeLabels || options.WrapNodeLabels ? titleCharacterLimit * Math.Max(1, options.MaxNodeLabelLines) : titleCharacterLimit);
-        titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options), textWidth, titleSize, 10, true);
+        titleSize = FitFontSize(NodeTextFitProbe(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options), textWidth, titleSize, 10, true, options.TextMeasurement);
         var titleLines = NodeTextLines(titleValue, textWidth, titleSize, true, options.MaxNodeLabelLines, options, titleCharacterLimit);
         AddNodeTextLines(body, titleLines, textX, titleY, theme.Foreground, titleSize, "700", null, displayMode == TopologyNodeDisplayMode.CompactCard ? 13 : 14);
         if (displayMode != TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle)) {
@@ -308,8 +308,7 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static SvgElement BuildCardSubtitleChip(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
-        var subtitle = TrimTo(node.Subtitle!, displayMode == TopologyNodeDisplayMode.CompactCard ? 12 : 16);
-        var width = Math.Min(Math.Max(48, subtitle.Length * 6 + 18), Math.Max(48, node.Width - 50));
+        var (subtitle, width) = SubtitleChip(node, displayMode, options);
         var height = 17.0;
         var x = node.X + 42;
         var y = node.Y + (displayMode == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, options));
@@ -338,8 +337,7 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static SvgElement BuildTileSubtitle(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyRenderOptions options) {
-        var subtitle = TrimTo(node.Subtitle!, 16);
-        var width = Math.Min(Math.Max(46, subtitle.Length * 5.8 + 18), Math.Max(46, node.Width + 28));
+        var (subtitle, width) = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options);
         var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options).Count;
         var x = CenterX(node) - width / 2;
         var y = node.Y + node.Height + 7 + labelLineCount * 14;
@@ -367,13 +365,13 @@ public sealed partial class TopologySvgRenderer {
         return group;
     }
 
-    private static SvgElement? BuildNodeBadge(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode) {
+    private static SvgElement? BuildNodeBadge(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyNodeDisplayMode displayMode, TopologyRenderOptions options) {
         var badge = NodeBadge(node);
         if (string.IsNullOrWhiteSpace(badge)) return null;
-        var width = Math.Max(18, badge.Length * 6.5 + 12);
+        var width = NodeBadgeWidth(node, options);
         var height = 18.0;
         var x = displayMode == TopologyNodeDisplayMode.Dot ? CenterX(node) + 8 : displayMode == TopologyNodeDisplayMode.Icon ? CenterX(node) - width / 2 : node.X + node.Width - width - 6;
-        var y = displayMode == TopologyNodeDisplayMode.Dot ? CenterY(node) - 21 : displayMode == TopologyNodeDisplayMode.Icon ? node.Y + node.Height + 4 : node.Y + node.Height - height - 6;
+        var y = displayMode == TopologyNodeDisplayMode.Dot ? CenterY(node) - 21 : displayMode == TopologyNodeDisplayMode.Icon ? node.Y + node.Height + 4 : displayMode == TopologyNodeDisplayMode.Tile ? node.Y - 8 : node.Y + node.Height - height - 6;
         var group = new SvgElement("g")
             .Class(prefix + "__node-badge")
             .Attribute("data-cfx-role", "topology-node-badge")

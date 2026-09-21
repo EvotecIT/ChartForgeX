@@ -971,11 +971,79 @@
       }
     },
     {
+      "name": "dense-legend-pie",
+      "width": 1000,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 90,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1204189,
+        "minTransparentPixels": 75811,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dense-legend-radial",
+      "width": 1000,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 82,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1204189,
+        "minTransparentPixels": 75811,
+        "minDistinctColors": 1895,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dense-legend-series",
+      "width": 1000,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 1015,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1204189,
+        "minTransparentPixels": 75811,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "dense-signal-decimated-light",
       "width": 1180,
       "height": 640,
       "svg": {
         "minVisualNodes": 27,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1427029,
+        "minTransparentPixels": 83371,
+        "minDistinctColors": 1906,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "dense-signal-gaps-light",
+      "width": 1180,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 28,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1855,6 +1923,57 @@
       }
     },
     {
+      "name": "paged-facets-1",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 203,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1735,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "paged-facets-2",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 203,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1650,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "paged-facets-3",
+      "width": 946,
+      "height": 404,
+      "svg": {
+        "minVisualNodes": 35,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 764368,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1339,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "palette-swatch-showcase-grid",
       "width": 914,
       "height": 948,
@@ -2072,6 +2191,23 @@
         "minVisiblePixels": 495232,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "readable-topology-detail",
+      "width": 1200,
+      "height": 800,
+      "svg": {
+        "minVisualNodes": 147,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 960000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 939,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2569,6 +2705,40 @@
       }
     },
     {
+      "name": "topology-measured-typography-mono",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 725,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "topology-measured-typography-sans",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 762,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "transparent-report-summary-metric-strip",
       "width": 980,
       "height": 294,
@@ -2673,7 +2843,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 811,
+      "height": 813,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,

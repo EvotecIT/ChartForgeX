@@ -8,6 +8,10 @@ public static partial class GalleryWriter {
             "Core chart types for operational reports, trend panels, and executive summaries.",
             "domain-security-dark",
             "dense-signal-decimated-light",
+            "dense-legend-series",
+            "dense-legend-pie",
+            "dense-legend-radial",
+            "dense-signal-gaps-light",
             "ct-volume-light",
             "ct-regional-light",
             "monthly-posture-dark",
@@ -155,6 +159,8 @@ public static partial class GalleryWriter {
             "service-dependency",
             "advanced-topology",
             "advanced-topology-diagnostics",
+            "topology-measured-typography-sans",
+            "topology-measured-typography-mono",
             "icon-palette",
             "icon-stencil-browser"),
         new(
@@ -252,6 +258,9 @@ public static partial class GalleryWriter {
             "control-scorecards-grid",
             "foundation-typed-facets",
             "shared-axis-coverage-grid",
+            "paged-facets-1",
+            "paged-facets-2",
+            "paged-facets-3",
             "domain-signal-mix-stacked-area-dark")
     };
 

@@ -4,6 +4,14 @@
 
 Use it for static or embeddable diagrams such as service maps, SQL/server dependency views, people/team relationship diagrams, network connectivity maps, replication meshes, geographic-style location views, and product-specific topology views supplied by host applications.
 
+## Text measurement and fonts
+
+Topology layout defaults to `TextMeasurementMode.PortableEstimate`, which preserves the portable width estimate and does not inspect installed fonts. This keeps geometry reproducible across hosts, but the estimate cannot guarantee that every custom font fits. Set `TopologyRenderOptions.TextMeasurementMode = TextMeasurementMode.InstalledFonts` (from `ChartForgeX.Typography`) to measure the host font resolved from `TopologyTheme.FontFamily`; this opt-in can change wrapping and geometry between machines. Node wrapping, edge-label backplates and routing clearance share that measurement. Subtitle chips and badges use the same geometry in SVG and PNG; long center-banner titles are shortened to the available width. Trimming respects text-element boundaries rather than cutting UTF-16 code units.
+
+Use `chart.GetPngFontInfo()` to inspect the PNG face and fallback; installed-font layout uses the same resolver. This diagnostic does not change the portable layout policy. Measurements are cached within each render with a bounded cache; changing a source theme takes effect on the next render.
+
+In installed-font mode, for Arial and recognized DejaVu or Liberation bold companions, layout reserves the larger of native bold advances and the raster renderer's synthetic bold advances. Other faces retain the resolved regular-face measurement with synthetic bold spacing. SVG keeps the theme's font-family stack. A browser or document viewer may resolve it differently from the generating machine, so matching layout does not guarantee identical glyphs across hosts. Fonts are not embedded, and this measurement path does not add complex-script shaping or per-glyph fallback.
+
 ## Model
 
 - `TopologyChart` contains viewport, layout mode, layout direction, groups, nodes, edges, legend, and theme.
@@ -413,3 +421,39 @@ The example console app writes sample diagrams to `artifacts/topology-demo/` and
 - matching `.png` and `.html` files
 - focused view examples for EMEA, selected-node neighbors, DC-level replication, offender highlighting, compact service dependencies, critical dependencies, and critical replication paths
 - `index.html`
+
+## Prepare once for multiple outputs
+
+`Prepare()` validates and detaches a topology layout so SVG, PNG, diagnostics, and semantic interchange use the same node and group positions. Later edits to the source chart or render options do not change the snapshot. External artwork files and system fonts remain host resources.
+
+```csharp
+var prepared = topology.Prepare();
+File.WriteAllText("topology.svg", prepared.ToSvg());
+File.WriteAllBytes("topology.png", prepared.ToPng());
+var envelope = prepared.ToInterchangeEnvelope();
+var readability = prepared.AssessReadability(1200, 800);
+```
+
+`AssessReadability` reports node collisions, out-of-bounds nodes, and the scale needed to fit a target display. `NeedsDetailViews` indicates a geometric readability concern. It cannot certify label legibility, contrast, or whether the relationships communicate the intended meaning. Interchange preserves authored waypoints; it does not capture every renderer-computed route or curve.
+
+## Split dense topologies into report pages
+
+`PrepareReport()` creates a page summary, detail pages, and indexes without dropping source objects or relationships. The defaults use at most 12 cards and 24 internal relationships per page, with cards at least 240 pixels wide and additional limits from the page dimensions. `MaximumEdgesPerPage` bounds relationship density; self relationships attached to one indivisible node can exceed that budget. Ungrouped nodes come first, followed by groups in their declared order; nodes within each group retain source order. Detail pages reflow cards and retain their internal edges; cross-page edges appear in `CrossPageLinks`, with one-based source and target page numbers. `NodePages` maps every source node id to its detail page.
+
+```csharp
+var report = topology.PrepareReport(new TopologyReportOptions {
+    PageWidth = 1200,
+    PageHeight = 800,
+    MaximumNodesPerPage = 12
+});
+File.WriteAllText("overview.svg", report.Overview.ToSvg());
+for (int i = 0; i < report.Pages.Count; i++) {
+    File.WriteAllText($"page-{i + 1}.svg", report.Pages[i].ToSvg());
+}
+```
+
+`Overview` contains a summary node for each page and counts relationships between pages. `Source` retains the complete prepared topology and its semantics. Set `TopologyReportOptions.IconCatalog` for custom artwork and `RequireResolvedIcons = true` to reject missing icon identifiers. Preparation snapshots the catalog for source and detail exports. Each detail page is also a `PreparedTopology`, so callers can export it or pass its envelope to native-document adapters without laying it out again.
+
+Report pages remove visual group containers while retaining each node's original group id in `Metadata["report.sourceGroupId"]`. A card larger than the requested page expands that page; use `AssessReadability(PageWidth, PageHeight)` to detect the resulting fitting cost. Pagination bounds node density, but dense internal connections and long labels still need inspection. Cross-page links are explicit index entries, not automatically rendered continuation connectors.
+
+The HTML adapter renders a complete navigator with `report.ToInteractiveHtmlPage()` from `ChartForgeX.Interactivity.Html`. It mounts one SVG at a time, searches node names and stable ids with at most 20 visible results, and links cross-page relationships to their destination pages. Relationship navigation displays 20 entries per batch with previous/next controls; undisplayed entries remain data rather than hidden buttons. Natural-size scrolling is the default; readers can choose Fit page when an overview matters more than label size. Export SVG or PNG separately for readers without JavaScript.

@@ -128,6 +128,17 @@
   grid-template-rows: auto minmax(0, 1fr);
 }
 
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-neighborhood-active { grid-template-rows: auto minmax(0, 1fr); }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header.cfx-graph-neighborhood-active { grid-template-rows: auto auto minmax(0, 1fr); }
+
+.cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-header { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-stage { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-neighborhood-active .cfx-graph-neighborhood-navigation { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-neighborhood-active .cfx-graph-stage { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header.cfx-graph-neighborhood-active .cfx-graph-neighborhood-navigation { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header.cfx-graph-neighborhood-active .cfx-graph-stage { grid-row: 3; }
+
 .cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage {
   height: 100%;
   min-height: 0;
@@ -3897,6 +3908,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     });
     items(root, '[data-cfx-role="graph-edge-label"]').forEach(label => label.classList.toggle('cfx-graph-cluster-collapsed-member', collapsedEdgeIds.has(attr(label, 'data-edge-label-for'))));
     root.dataset.cfxGraphClusters = hiddenNodeIds.size ? 'collapsed' : 'expanded';
+    clearInvalidatedNeighborhoodFocus(root, state);
     syncGraphItemTabStops(root); clearHiddenSelections(root); if (typeof syncClusterControls === 'function') syncClusterControls(root);
     emit(root, 'cfxgraphcluster', { graphId: attr(root, 'data-cfx-graph-id'), clusterId: clusterId || '', collapsed: hiddenNodeIds.size > 0, hiddenNodeCount: hiddenNodeIds.size });
     applyFilters(root); syncBundledEdgePresentation(root, state); updateEdges(root, state.edges); indexHitTesting(root, state); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state);
@@ -4055,10 +4067,12 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       const hiddenMemberHit = memberIds.some(id => hiddenMemberHits.has(id));
       cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !hiddenMemberHit);
     });
-    clearHiddenSelections(root);
     const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
-    if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
-    else { if (focusNode) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false }); const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
+    const focusVisible = focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node));
+    if (focusNode && !focusVisible) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
+    clearHiddenSelections(root);
+    if (focusVisible) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
+    else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
     const actualVisibleNodes = items(root, '[data-cfx-role="graph-node"]').filter(node => visible(node));
     const searchStatus = root.querySelector('[data-cfx-role="graph-search-status"]');
     root.dataset.cfxGraphSearchMatches = String(actualVisibleNodes.length);
@@ -4124,6 +4138,12 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     if (typeof syncFocusControls === 'function') syncFocusControls(root);
     syncGraphItemTabStops(root);
   };
+  const clearInvalidatedNeighborhoodFocus = (root, state) => {
+    if (root.dataset.cfxGraphFocus !== 'active') return false;
+    const focusNode = state?.byId?.get(root.dataset.cfxGraphFocusNode || '');
+    if (focusNode && visible(focusNode.el)) return false;
+    return clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
+  };
   const clearNeighborhoodFocus = (root, options) => {
     const overview = root.__cfxGraphNeighborhoodOverview;
     root.classList.remove('cfx-graph-neighborhood-active');
@@ -4135,7 +4155,11 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     const navigation = root.querySelector('[data-cfx-role="graph-neighborhood-navigation"]');
     if (navigation) navigation.hidden = true;
     if (overview && options?.restoreSelection !== false) { restoreGraphSelection(root, overview.selection); clearHiddenSelections(root); }
-    if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) setViewport(root, overview.viewport);
+    if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) {
+      setViewport(root, overview.viewport);
+      root.__cfxGraphViewportTouched = overview.viewportTouched === true;
+    }
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     refreshNeighborhoodPresentation(root);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
     return true;
@@ -4151,14 +4175,15 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     }
     const summary = navigation.querySelector('[data-cfx-role="graph-neighborhood-summary"]');
     if (summary) {
-      const state = root.__cfxGraphState || graphState(root), label = id => state.byId.get(id)?.label || id;
+      const state = graphState(root), label = id => state.byId.get(id)?.label || id;
       const path = [...history.slice(-3).map(entry => label(entry.nodeId)), label(view.rootNodeId)].join(' / ');
       summary.textContent = `${path}: ${view.nodeIds.size} of ${view.scopeNodeCount} neighborhood nodes · ${view.edgeIds.size} relationships · ${view.hiddenNodeCount} nodes and ${view.hiddenEdgeCount} relationships omitted`;
     }
   };
   const applyNeighborhoodFocus = (root, nodeId, configuration, navigation) => {
     if (!hasFeature(root, 'NeighborhoodFocus')) return false;
-    const state = root.__cfxGraphState || graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
+    const cachedState = root.__cfxGraphState;
+    const state = cachedState || graphState(root), options = neighborhoodOptions({ ...graphNeighborhoodConfiguration(root), ...configuration });
     const plannedNodes = state.nodes.map(node => ({ id: node.id, visible: neighborhoodBaseVisible(node.el) && attr(node.el, 'data-node-hidden') !== 'true' }));
     const plannedEdges = state.edges.map(edge => ({ id: edge.id || attr(edge.el, 'data-edge-id'), sourceId: edge.source.id, targetId: edge.target.id,
         visible: neighborhoodBaseVisible(edge.el) && attr(edge.el, 'data-edge-hidden') !== 'true' }));
@@ -4167,15 +4192,20 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       options.neighborOffset = 0; view = planGraphNeighborhood(plannedNodes, plannedEdges, nodeId, options);
     }
     if (!view) return false;
+    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
+    if (cachedState && typeof syncSvgLayout === 'function') syncSvgLayout(root, cachedState);
     if (!navigation?.refresh) {
-      if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = { viewport: { ...viewport(root) }, selection: selectedItems(root).map(item => item.id) };
+      if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = {
+        viewport: { ...viewport(root) },
+        viewportTouched: root.__cfxGraphViewportTouched === true,
+        selection: selectedItems(root).map(item => ({ id: item.id, role: item.role }))
+      };
       if (root.dataset.cfxGraphFocus === 'active' && root.dataset.cfxGraphFocusNode !== nodeId) {
         const history = root.__cfxGraphNeighborhoodHistory || (root.__cfxGraphNeighborhoodHistory = []);
         history.push({ nodeId: root.dataset.cfxGraphFocusNode, options: root.__cfxGraphNeighborhood, viewport: { ...viewport(root) } });
         if (history.length > 50) history.shift();
       }
     }
-    if (typeof pausePhysics === 'function' && hasFeature(root, 'RuntimePhysics')) pausePhysics(root);
     state.nodes.forEach(node => {
       node.el.classList.toggle('cfx-graph-neighborhood-hidden', !view.nodeIds.has(node.id));
       node.el.classList.toggle('cfx-graph-neighborhood-primary', node.id === nodeId);
@@ -4194,6 +4224,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     root.classList.add('cfx-graph-neighborhood-active'); root.dataset.cfxGraphFocus = 'active'; root.dataset.cfxGraphFocusNode = nodeId;
     root.__cfxGraphNeighborhood = { hops: options.hops, maximumNodes: options.maximumNodes, maximumEdges: options.maximumEdges, neighborOffset: options.neighborOffset };
     root.__cfxGraphNeighborhoodView = view;
+    clearHiddenSelections(root);
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     syncNeighborhoodNavigation(root, view); refreshNeighborhoodPresentation(root);
     if (navigation?.fit !== false && hasFeature(root, 'Viewport')) { root.__cfxGraphViewportTouched = true; fitViewport(root); }
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: true, nodeId, ...root.__cfxGraphNeighborhood,
@@ -4213,7 +4245,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     const applied = applyNeighborhoodFocus(root, previous.nodeId, previous.options, { refresh: true, fit: false });
     if (!applied) return clearNeighborhoodFocus(root);
     if (hasFeature(root, 'Viewport')) setViewport(root, previous.viewport);
-    restoreGraphSelection(root, [previous.nodeId]);
+    if (hasFeature(root, 'Selection')) restoreGraphSelection(root, [{ id: previous.nodeId, role: 'graph-node' }]);
     refreshNeighborhoodPresentation(root);
     return true;
   };
@@ -4292,7 +4324,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       const expandedCluster = attr(item, 'data-cfx-role') === 'graph-cluster' && item.classList.contains('cfx-graph-cluster-expanded');
       if (visible(item) && !expandedCluster) return;
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && id === focusNode);
+      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && attr(item, 'data-cfx-role') === 'graph-node' && id === focusNode);
       item.classList.remove('cfx-graph-selected');
       changed = true;
     });
@@ -4559,6 +4591,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     root.dataset.cfxGraphHierarchyDepth = String(depth);
     root.dataset.cfxGraphHierarchyVisibleNodes = String(visibleIds?.size || state.nodes.length);
     updateHierarchyBreadcrumb(root, state, rootId);
+    clearInvalidatedNeighborhoodFocus(root, state);
     clearHiddenSelections(root);
     applyFilters(root);
     if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
@@ -4690,10 +4723,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     (snapshots || []).forEach(snapshot => applyClusterState(root, !!snapshot.collapsed, String(snapshot.id || ''), { reheat: false }));
   };
   const restoreGraphSelection = (root, ids) => {
-    const selected = new Set((ids || []).map(String));
+    const selected = new Set((ids || []).map(value => {
+      if (value && typeof value === 'object') return `${String(value.role || '')}:${String(value.id || '')}`;
+      return `:${String(value)}`;
+    }));
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      item.classList.toggle('cfx-graph-selected', selected.has(id));
+      const role = attr(item, 'data-cfx-role');
+      item.classList.toggle('cfx-graph-selected', selected.has(`${role}:${id}`) || selected.has(`:${id}`));
     });
     const details = updateSelectionState(root);
     syncSelectionTooltip(root, details);
@@ -5651,6 +5688,61 @@ self.onmessage = event => {
     active.editedNodes.set(node.id, ++active.generation);
     active.worker.postMessage({ type: 'release', generation: active.generation, nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
   };
+  const assessOverlaps = (nodes, includeLabels = nodes.length < 500, maximumComparisons = 250000) => {
+    // Cache each radius once. Sweep bounds rather than sampling the first nodes.
+    const items = nodes.map(node => ({ x: node.x, y: node.y, radius: nodeRadius(node, includeLabels) }));
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    items.forEach(item => {
+      minX = Math.min(minX, item.x); maxX = Math.max(maxX, item.x);
+      minY = Math.min(minY, item.y); maxY = Math.max(maxY, item.y);
+    });
+    // Sweep the wider axis so tall, sparse layouts do not spend their budget on x ties.
+    const vertical = maxY - minY > maxX - minX;
+    items.forEach(item => {
+      const coordinate = vertical ? item.y : item.x;
+      item.left = coordinate - item.radius; item.right = coordinate + item.radius;
+    });
+    items.sort((a, b) => a.left - b.left);
+    let overlaps = 0, comparisons = 0;
+    for (let i = 0; i < items.length; i++) {
+      const a = items[i];
+      for (let j = i + 1; j < items.length && items[j].left < a.right; j++) {
+        if (comparisons >= maximumComparisons) return { overlaps, comparisons, complete: false, nodeCount: nodes.length, includeLabels };
+        comparisons++;
+        const b = items[j], radius = a.radius + b.radius;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        if (dx * dx + dy * dy < radius * radius) overlaps++;
+      }
+    }
+    return { overlaps, comparisons, complete: true, nodeCount: nodes.length, includeLabels };
+  };
+
+  const layoutQualityMetrics = (root, state) => {
+    const nodes = state.nodes;
+    if (!nodes.length) return;
+    const size = sceneSize(root);
+    const minX = Math.min(...nodes.map(node => node.x));
+    const maxX = Math.max(...nodes.map(node => node.x));
+    const minY = Math.min(...nodes.map(node => node.y));
+    const maxY = Math.max(...nodes.map(node => node.y));
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const drift = Math.hypot(centerX - size.centerX, centerY - size.centerY);
+    const assessment = assessOverlaps(nodes);
+    const overlapProbe = assessment.overlaps;
+    const driftPenalty = Math.min(1, drift / Math.max(1, Math.min(size.width, size.height) * 0.5));
+    const overlapTolerance = nodes.length >= 300 ? nodes.length * 24 : nodes.length * 10;
+    const score = Math.max(0, 1 - driftPenalty - Math.min(0.35, overlapProbe / Math.max(1, overlapTolerance)));
+    root.dataset.cfxGraphLayoutBounds = `${(maxX - minX).toFixed(1)}x${(maxY - minY).toFixed(1)}`;
+    root.dataset.cfxGraphLayoutCenterDrift = drift.toFixed(2);
+    root.dataset.cfxGraphLayoutOverlapCount = String(overlapProbe);
+    root.dataset.cfxGraphLayoutOverlapCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    root.dataset.cfxGraphLayoutOverlapComparisons = String(assessment.comparisons);
+    root.dataset.cfxGraphLayoutOverlapNodeCount = String(assessment.nodeCount);
+    root.dataset.cfxGraphLayoutOverlapGeometry = assessment.includeLabels ? 'estimated-label-radius' : 'node-radius';
+    root.dataset.cfxGraphLayoutQualityScore = score.toFixed(3);
+    root.dataset.cfxGraphLayoutQuality = assessment.complete && overlapProbe === 0 && score >= 0.82 ? 'centered-structured' : 'needs-review';
+  };
   const layoutCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
 
   const restoreClusterAnchors = (root, state) => {
@@ -5770,7 +5862,8 @@ self.onmessage = event => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return 0;
     const includeLabels = state.nodes.length < 500;
-    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, nodeRadius(node, includeLabels) * 2 + 10), 0)));
+    const radii = new Map(movable.map(node => [node, nodeRadius(node, includeLabels)]));
+    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, radii.get(node) * 2 + 10), 0)));
     const maxPairs = state.nodes.length >= 3000 ? 120000 : state.nodes.length >= 1000 ? 180000 : 220000;
     let totalResolved = 0;
     for (let pass = 0; pass < passes; pass++) {
@@ -5797,7 +5890,7 @@ self.onmessage = event => {
               if (other === node || other.id < node.id) continue;
               pairs += 1;
               if (pairs > maxPairs) { exhausted = true; break; }
-              const minDistance = nodeRadius(node, includeLabels) + nodeRadius(other, includeLabels);
+              const minDistance = radii.get(node) + radii.get(other);
               let dx = other.x - node.x;
               let dy = other.y - node.y;
               let distance = Math.hypot(dx, dy);
@@ -5825,41 +5918,6 @@ self.onmessage = event => {
     }
     if (totalResolved) root.dataset.cfxGraphLayoutOverlapResolved = String(totalResolved);
     return totalResolved;
-  };
-
-  const countOverlaps = (nodes) => {
-    const probe = nodes.slice(0, Math.min(nodes.length, 900));
-    const includeLabels = nodes.length < 500;
-    let overlaps = 0;
-    for (let i = 0; i < probe.length; i++) {
-      for (let j = i + 1; j < probe.length; j++) {
-        const minDistance = nodeRadius(probe[i], includeLabels) + nodeRadius(probe[j], includeLabels);
-        if (Math.hypot(probe[j].x - probe[i].x, probe[j].y - probe[i].y) < minDistance) overlaps += 1;
-      }
-    }
-    return overlaps;
-  };
-
-  const layoutQualityMetrics = (root, state) => {
-    const nodes = state.nodes;
-    if (!nodes.length) return;
-    const size = sceneSize(root);
-    const minX = Math.min(...nodes.map(node => node.x));
-    const maxX = Math.max(...nodes.map(node => node.x));
-    const minY = Math.min(...nodes.map(node => node.y));
-    const maxY = Math.max(...nodes.map(node => node.y));
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    const drift = Math.hypot(centerX - size.centerX, centerY - size.centerY);
-    const overlapProbe = countOverlaps(nodes);
-    const driftPenalty = Math.min(1, drift / Math.max(1, Math.min(size.width, size.height) * 0.5));
-    const overlapTolerance = nodes.length >= 300 ? nodes.length * 24 : nodes.length * 10;
-    const score = Math.max(0, 1 - driftPenalty - Math.min(0.35, overlapProbe / Math.max(1, overlapTolerance)));
-    root.dataset.cfxGraphLayoutBounds = `${(maxX - minX).toFixed(1)}x${(maxY - minY).toFixed(1)}`;
-    root.dataset.cfxGraphLayoutCenterDrift = drift.toFixed(2);
-    root.dataset.cfxGraphLayoutOverlapCount = String(overlapProbe);
-    root.dataset.cfxGraphLayoutQualityScore = score.toFixed(3);
-    root.dataset.cfxGraphLayoutQuality = score >= 0.82 ? 'centered-structured' : 'needs-review';
   };
 
   const centerLayout = (root, state) => {
@@ -5898,8 +5956,9 @@ self.onmessage = event => {
     const maxY = Math.max(...movable.map(node => node.y));
     const width = Math.max(1, maxX - minX);
     const height = Math.max(1, maxY - minY);
-    const overlaps = countOverlaps(movable);
-    if (overlaps > movable.length * 0.45) {
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
+    if (!assessment.complete || overlaps > movable.length * 0.45) {
       root.dataset.cfxGraphLayoutCompactionSkipped = String(overlaps);
       return;
     }
@@ -5922,9 +5981,15 @@ self.onmessage = event => {
   const expandDenseLayout = (root, state) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 24) return;
-    const overlaps = countOverlaps(movable);
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
     const threshold = movable.length >= 300 ? movable.length * 0.65 : movable.length * 0.35;
-    if (overlaps <= threshold) return;
+    root.dataset.cfxGraphLayoutDensityCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    if (overlaps <= threshold) {
+      root.dataset.cfxGraphLayoutDensityDecision = assessment.complete ? 'sparse' : 'unresolved';
+      return;
+    }
+    root.dataset.cfxGraphLayoutDensityDecision = 'expand';
     const size = sceneSize(root);
     const minX = Math.min(...movable.map(node => node.x));
     const maxX = Math.max(...movable.map(node => node.x));

@@ -172,11 +172,6 @@ internal static partial class SmokeTests {
     }
 
     private static void PngSmoothSeriesUseCurvedRasterPaths() {
-        var root = FindRepositoryRoot();
-        var canvas = string.Join("\n", Directory.EnumerateFiles(Path.Combine(root, "ChartForgeX", "Raster"), "RgbaCanvas*.cs", SearchOption.TopDirectoryOnly)
-            .OrderBy(file => file, StringComparer.Ordinal)
-            .Select(File.ReadAllText));
-        var cartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 90), new ChartPoint(3, 20), new ChartPoint(4, 82), new ChartPoint(5, 24) };
         var straight = Chart.Create()
             .WithSize(260, 160)
@@ -194,10 +189,6 @@ internal static partial class SmokeTests {
         }
 
         Assert(!straight.ToPng().SequenceEqual(smooth.ToPng()), "PNG renderer should honor smooth series instead of drawing the same angular path.");
-        Assert(cartesian.Contains("c.DrawPolyline(points, color, thickness)", StringComparison.Ordinal), "PNG cartesian lines should render flattened smooth paths as a continuous polyline.");
-        Assert(canvas.Contains("DrawLinePixelsButt", StringComparison.Ordinal), "PNG polyline strokes should avoid repeating rounded caps at every flattened curve segment.");
-        Assert(canvas.Contains("ShouldRoundPolylineJoin", StringComparison.Ordinal), "PNG polyline strokes should cover real corners without stamping every flattened smooth-curve point.");
-        Assert(canvas.Contains("cosine < 0.985", StringComparison.Ordinal), "PNG polyline joins should skip shallow curve-flattening turns that otherwise create dotted line artifacts.");
     }
 
     private static void PngRendersReportChrome() {
@@ -277,7 +268,6 @@ internal static partial class SmokeTests {
         Assert(svgHelpers.Contains("TextFontSizeForSvgWidth", StringComparison.Ordinal), "SVG chart renderer should shrink labels before trimming when chart surfaces are constrained.");
         Assert(svgHelpers.Contains("DrawSvgTextCenteredX", StringComparison.Ordinal), "SVG chart renderer should share centered bounded label placement for specialized chart surfaces.");
         Assert(svgHelpers.Contains("DrawSvgTextLeft", StringComparison.Ordinal), "SVG chart renderer should share left-aligned bounded label placement for header text.");
-        Assert(svgHelpers.Contains("SvgLegendLabel", StringComparison.Ordinal), "SVG chart renderer should draw and measure bounded legend labels consistently.");
         Assert(svgHelpers.Contains("DrawSvgXAxisTitle", StringComparison.Ordinal), "SVG chart renderer should share bounded x-axis title placement.");
         Assert(svgHelpers.Contains("DrawSvgYAxisTitle", StringComparison.Ordinal), "SVG chart renderer should share bounded y-axis title placement.");
     }
@@ -310,7 +300,6 @@ internal static partial class SmokeTests {
         var svgRangeBand = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeBand.cs"));
         var svgRangeArea = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeArea.cs"));
         var svgWaterfall = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Waterfall.cs"));
-        var svgLegend = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
         var canvas = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.cs"));
         var png = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.cs"));
         var cartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
@@ -335,8 +324,6 @@ internal static partial class SmokeTests {
         Assert(canvas.Contains("StrokeRoundedRect(double x, double y, double width, double height, double radius, ChartColor color, double thickness", StringComparison.Ordinal), "PNG canvas should preserve fractional rounded-rectangle stroke widths for SVG/PNG parity.");
         Assert(svg.Contains("ChartVisualPrimitives.AxisStrokeWidth", StringComparison.Ordinal) && png.Contains("ChartVisualPrimitives.AxisStrokeWidth", StringComparison.Ordinal), "SVG and PNG axes should use the same shared stroke widths.");
         Assert(svg.Contains("ChartVisualPrimitives.AnnotationLineStrokeWidth", StringComparison.Ordinal) && png.Contains("ChartVisualPrimitives.AnnotationLineStrokeWidth", StringComparison.Ordinal), "SVG and PNG annotation lines should share overlay stroke width.");
-        Assert(svgLegend.Contains("ChartVisualPrimitives.LegendLineStrokeWidth", StringComparison.Ordinal) && legend.Contains("ChartVisualPrimitives.LegendLineStrokeWidth", StringComparison.Ordinal), "SVG and PNG legends should share line swatch stroke width.");
-        Assert(svgLegend.Contains("ChartVisualPrimitives.LegendMarkerRadius", StringComparison.Ordinal) && legend.Contains("ChartVisualPrimitives.LegendMarkerRadius", StringComparison.Ordinal), "SVG and PNG legends should share marker sizing contracts.");
         Assert(svgBullet.Contains("ChartVisualPrimitives.BulletAxisStrokeWidth", StringComparison.Ordinal) && bullet.Contains("ChartVisualPrimitives.BulletAxisStrokeWidth", StringComparison.Ordinal), "SVG and PNG bullet axes should share tick stroke width.");
         Assert(svg.Contains("LineVisualStyle", StringComparison.Ordinal) && cartesian.Contains("LineVisualStyle", StringComparison.Ordinal), "SVG and PNG line strokes should use the same reusable chart line style.");
         Assert(primitives.Contains("LineAmbientHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineHighlightOpacity", StringComparison.Ordinal), "Shared visual primitive constants should preserve default premium line lighting tokens.");

@@ -458,6 +458,46 @@
     },
     {
       "category": "charts",
+      "title": "Dense pie legend",
+      "body": "A bounded legend with an explicit count of additional entries.",
+      "tags": [
+        "Legend",
+        "Density"
+      ],
+      "image": "/examples/generated/dense-legend-pie.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Dense radial legend",
+      "body": "A bounded legend with an explicit count of additional entries.",
+      "tags": [
+        "Legend",
+        "Density"
+      ],
+      "image": "/examples/generated/dense-legend-radial.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Dense series legend",
+      "body": "A bounded legend with an explicit count of additional entries.",
+      "tags": [
+        "Legend",
+        "Density"
+      ],
+      "image": "/examples/generated/dense-legend-series.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Signal with collection gaps",
+      "body": "Missing-data intervals stay empty after min/max reduction and SVG/PNG rendering.",
+      "tags": [
+        "Area",
+        "Decimation"
+      ],
+      "image": "/examples/generated/dense-signal-gaps-light.svg"
+    },
+    {
+      "category": "charts",
       "title": "Detection Confidence Errorbar Dark",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
@@ -681,11 +721,15 @@
       "image": "/examples/generated/graph-2000-stage-05-full.svg"
     },
     {
-      "category": "charts",
-      "title": "Graph Neighborhood Page 1",
-      "body": "Generated ChartForgeX visual output.",
-      "tags": [],
-      "image": "/examples/generated/graph-neighborhood-page-1.svg"
+      "category": "topology",
+      "title": "Service Neighborhood Explorer",
+      "body": "Explore a bounded, paged neighborhood from a 1,001-object service graph.",
+      "tags": [
+        "Topology",
+        "Interactive"
+      ],
+      "image": "/examples/generated/graph-neighborhood-page-1.svg",
+      "href": "/examples/generated/graph-neighborhood-explorer.html"
     },
     {
       "category": "charts",
@@ -864,6 +908,36 @@
         "Scatter"
       ],
       "image": "/examples/generated/observed-remediation-trend-light.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 1",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-1.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 2",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-2.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 3",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-3.svg"
     },
     {
       "category": "themes",
@@ -1212,6 +1286,20 @@
         "Showcase"
       ],
       "image": "/examples/generated/theme-font-showcase-grid.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Topology Measured Typography Mono",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/topology-measured-typography-mono.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Topology Measured Typography Sans",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/topology-measured-typography-sans.svg"
     },
     {
       "category": "dashboards",

@@ -19,7 +19,7 @@ internal sealed class ChartPath {
 
         foreach (var command in Commands) {
             if (command.Kind == ChartPathCommandKind.MoveTo) {
-                current = new ChartPoint(command.X, command.Y);
+                current = new ChartPoint(command.X, command.Y, hasCurrent);
                 points.Add(current);
                 hasCurrent = true;
             } else if (command.Kind == ChartPathCommandKind.LineTo && hasCurrent) {
