@@ -37,7 +37,9 @@ function hub() {
 }
 test('paging and drill-down preserve geometry and restore overview viewport and selection', () => {
   const root=hub(), geometry=JSON.stringify(root.state.nodes.map(({id,x,y,fixed})=>({id,x,y,fixed})));
+  root.__cfxGraphViewportTouched = false;
   assert.equal(runtime.applyNeighborhoodFocus(root,'n00'),true);
+  assert.equal(root.__cfxGraphViewportTouched,true);
   assert.equal(root.state.nodes.filter(node=>!node.el.classList.contains('cfx-graph-neighborhood-hidden')).length,13);
   assert.equal(runtime.pageGraphNeighborhood(root,-1),false);
   runtime.pageGraphNeighborhood(root,1);
@@ -50,6 +52,7 @@ test('paging and drill-down preserve geometry and restore overview viewport and 
   assert.equal(root.__cfxGraphNeighborhoodView.nodeIds.size,2); assert.equal(runtime.pageGraphNeighborhood(root,1),false);
   runtime.clearNeighborhoodFocus(root);
   assert.deepEqual(root.viewport,{x:27,y:63,scale:.8}); assert.deepEqual(root.selection,[{id:'n00',role:'graph-node'}]);
+  assert.equal(root.__cfxGraphViewportTouched,false);
   assert.equal(root.elements.some(item=>item.classList.contains('cfx-graph-neighborhood-hidden')),false);
   assert.equal(JSON.stringify(root.state.nodes.map(({id,x,y,fixed})=>({id,x,y,fixed}))),geometry);
 });

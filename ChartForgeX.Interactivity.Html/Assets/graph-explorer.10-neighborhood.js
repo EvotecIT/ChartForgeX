@@ -27,7 +27,10 @@
     const navigation = root.querySelector('[data-cfx-role="graph-neighborhood-navigation"]');
     if (navigation) navigation.hidden = true;
     if (overview && options?.restoreSelection !== false) { restoreGraphSelection(root, overview.selection); clearHiddenSelections(root); }
-    if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) setViewport(root, overview.viewport);
+    if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) {
+      setViewport(root, overview.viewport);
+      root.__cfxGraphViewportTouched = overview.viewportTouched === true;
+    }
     if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     refreshNeighborhoodPresentation(root);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
@@ -63,6 +66,7 @@
     if (!navigation?.refresh) {
       if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = {
         viewport: { ...viewport(root) },
+        viewportTouched: root.__cfxGraphViewportTouched === true,
         selection: selectedItems(root).map(item => ({ id: item.id, role: item.role }))
       };
       if (root.dataset.cfxGraphFocus === 'active' && root.dataset.cfxGraphFocusNode !== nodeId) {

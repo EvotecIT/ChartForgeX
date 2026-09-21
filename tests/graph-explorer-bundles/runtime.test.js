@@ -6,7 +6,7 @@ const test = require('node:test');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, clearHiddenSelections, attr };');
+const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, applyFilters, applyNeighborhoodFocus, clearHiddenSelections, attr };');
 const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
 
 function scene(siteCount, edgeSpecs, renderer = 'canvas') {
@@ -106,6 +106,42 @@ test('a hidden same-ID edge cannot clear an active node neighborhood', () => {
   assert.equal(root.dataset.cfxGraphFocus, 'active');
   assert.equal(node.classList.contains('cfx-graph-selected'), true);
   assert.equal(edge.classList.contains('cfx-graph-selected'), false);
+});
+
+test('filtering out the focused root clears focus without restoring the overview viewport', () => {
+  const root = runtime.graphVirtualElement('root', {
+    'data-cfx-graph-id': 'filtered-focus',
+    'data-cfx-graph-features': 'Selection,Viewport,NeighborhoodFocus',
+    'data-cfx-viewport-x': '12', 'data-cfx-viewport-y': '18', 'data-cfx-viewport-scale': '1'
+  }, []);
+  root.dataset = { cfxGraphRendererActive: 'svg' };
+  root.dispatchEvent = () => true;
+  root.ownerDocument = { activeElement: null };
+  root.search = { value: '' };
+  root.querySelector = selector => selector.includes('graph-search') ? root.search : null;
+  root.querySelectorAll = () => [];
+  const focused = runtime.graphVirtualElement('graph-node', {
+    'data-cfx-role': 'graph-node', 'data-node-id': 'focused', 'data-node-label': 'Focused service',
+    'data-node-x': '80', 'data-node-y': '80', 'data-node-size': '12'
+  }, ['cfx-graph-selected']);
+  const other = runtime.graphVirtualElement('graph-node', {
+    'data-cfx-role': 'graph-node', 'data-node-id': 'other', 'data-node-label': 'Other service',
+    'data-node-x': '180', 'data-node-y': '80', 'data-node-size': '12'
+  }, []);
+  root.__cfxGraphVirtualItems = [focused, other];
+  root.__cfxGraphState = runtime.graphState(root);
+
+  assert.equal(runtime.applyNeighborhoodFocus(root, 'focused', {}, { fit: false }), true);
+  root.setAttribute('data-cfx-viewport-x', '91');
+  root.setAttribute('data-cfx-viewport-y', '73');
+  root.setAttribute('data-cfx-viewport-scale', '1.4');
+  root.search.value = 'Other';
+  runtime.applyFilters(root);
+
+  assert.equal(root.dataset.cfxGraphFocus, 'none');
+  assert.equal(root.getAttribute('data-cfx-viewport-x'), '91');
+  assert.equal(root.getAttribute('data-cfx-viewport-y'), '73');
+  assert.equal(root.getAttribute('data-cfx-viewport-scale'), '1.4');
 });
 
 test('reversed endpoint data for the same directed route is bundled together', () => {

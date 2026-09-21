@@ -38,7 +38,11 @@
         {{ if data.gallery && data.gallery.items }}
         <section class="gallery-page-grid" aria-label="Generated ChartForgeX visuals">
           {{ for item in data.gallery.items }}
+          {{ if item.href }}
+          <a class="gallery-page-card" href="{{ item.href }}" target="_blank" rel="noopener" data-gallery-card data-category="{{ item.category }}" aria-label="Open {{ item.title }} interactive example">
+          {{ else }}
           <a class="gallery-page-card" href="{{ item.image }}" target="_blank" rel="noopener" data-gallery-card data-category="{{ item.category }}" aria-label="Open {{ item.title }} SVG">
+          {{ end }}
             <div class="gallery-page-thumb">
               <img src="{{ item.image }}" alt="{{ item.title }}" loading="lazy" decoding="async" />
             </div>

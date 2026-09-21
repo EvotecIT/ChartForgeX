@@ -268,10 +268,12 @@
       const hiddenMemberHit = memberIds.some(id => hiddenMemberHits.has(id));
       cluster.classList.toggle('cfx-graph-hidden', !(queryOk && statusOk && kindOk) && !memberVisible && !hiddenMemberHit);
     });
-    clearHiddenSelections(root);
     const focusNode = root.dataset.cfxGraphFocus === 'active' ? root.dataset.cfxGraphFocusNode : '';
-    if (focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node))) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
-    else { if (focusNode) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false }); const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
+    const focusVisible = focusNode && items(root, '[data-cfx-role="graph-node"]').some(node => attr(node, 'data-node-id') === focusNode && visible(node));
+    if (focusNode && !focusVisible) clearNeighborhoodFocus(root, { restoreSelection: false, restoreViewport: false });
+    clearHiddenSelections(root);
+    if (focusVisible) applyNeighborhoodFocus(root, focusNode, root.__cfxGraphNeighborhood, { refresh: true, fit: false });
+    else { const state = graphState(root); drawCanvas(root, state); if (typeof updateOverview === 'function') updateOverview(root, state); }
     const actualVisibleNodes = items(root, '[data-cfx-role="graph-node"]').filter(node => visible(node));
     const searchStatus = root.querySelector('[data-cfx-role="graph-search-status"]');
     root.dataset.cfxGraphSearchMatches = String(actualVisibleNodes.length);
@@ -279,4 +281,3 @@
     syncGraphItemTabStops(root);
     emit(root, 'cfxgraphfilter', { graphId: attr(root, 'data-cfx-graph-id'), query, filters, visibleNodeCount: actualVisibleNodes.length });
   };
-
