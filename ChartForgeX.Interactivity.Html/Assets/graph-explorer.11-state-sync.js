@@ -67,7 +67,7 @@
       const expandedCluster = attr(item, 'data-cfx-role') === 'graph-cluster' && item.classList.contains('cfx-graph-cluster-expanded');
       if (visible(item) && !expandedCluster) return;
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
-      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && id === focusNode);
+      focusedSelectionHidden = focusedSelectionHidden || (root.dataset.cfxGraphFocus === 'active' && attr(item, 'data-cfx-role') === 'graph-node' && id === focusNode);
       item.classList.remove('cfx-graph-selected');
       changed = true;
     });

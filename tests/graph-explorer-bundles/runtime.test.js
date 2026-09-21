@@ -6,7 +6,7 @@ const test = require('node:test');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, attr };');
+const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, clearHiddenSelections, attr };');
 const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
 
 function scene(siteCount, edgeSpecs, renderer = 'canvas') {
@@ -86,6 +86,26 @@ test('hidden hierarchy edges never replace an in-scope bundle route', () => {
   assert.equal(runtime.attr(edges[1], 'data-cfx-bundle-count'), '2');
   assert.equal(edges[1].classList.contains('cfx-graph-bundle-member'), false);
   assert.equal(runtime.attr(edges[2], 'data-cfx-bundle-count'), '');
+});
+
+test('a hidden same-ID edge cannot clear an active node neighborhood', () => {
+  const root = runtime.graphVirtualElement('root', { 'data-cfx-graph-id': 'same-id' }, []);
+  root.dataset = { cfxGraphFocus: 'active', cfxGraphFocusNode: 'shared' };
+  root.dispatchEvent = () => true;
+  root.querySelector = () => null;
+  root.querySelectorAll = () => [];
+  const node = runtime.graphVirtualElement('graph-node', {
+    'data-cfx-role': 'graph-node', 'data-node-id': 'shared', 'data-node-label': 'Focused node'
+  }, ['cfx-graph-selected']);
+  const edge = runtime.graphVirtualElement('graph-edge', {
+    'data-cfx-role': 'graph-edge', 'data-edge-id': 'shared', 'data-edge-label': 'Hidden route'
+  }, ['cfx-graph-selected', 'cfx-graph-neighborhood-hidden']);
+  root.__cfxGraphVirtualItems = [node, edge];
+
+  assert.equal(runtime.clearHiddenSelections(root), true);
+  assert.equal(root.dataset.cfxGraphFocus, 'active');
+  assert.equal(node.classList.contains('cfx-graph-selected'), true);
+  assert.equal(edge.classList.contains('cfx-graph-selected'), false);
 });
 
 test('reversed endpoint data for the same directed route is bundled together', () => {

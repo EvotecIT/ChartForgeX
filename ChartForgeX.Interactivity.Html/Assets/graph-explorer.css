@@ -118,15 +118,21 @@
 }
 
 .cfx-graph-explorer.cfx-graph-fill-available {
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   max-width: none;
   height: 100vh;
   min-height: 0;
 }
 
 .cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header {
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
 }
+
+.cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-neighborhood-navigation { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-header { grid-row: 1; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-neighborhood-navigation { grid-row: 2; }
+.cfx-graph-explorer.cfx-graph-fill-available.cfx-graph-has-header .cfx-graph-stage { grid-row: 3; }
 
 .cfx-graph-explorer.cfx-graph-fill-available .cfx-graph-stage {
   height: 100%;
