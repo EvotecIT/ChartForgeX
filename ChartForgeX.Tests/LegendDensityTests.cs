@@ -138,15 +138,15 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void LegendRowsReservePortableFontHeight() {
-        var chart = Chart.Create().WithLegendStyle(style => style.WithFontSize(18));
+        var chart = Chart.Create().WithLegendStyle(style => style.WithFontSize(18).WithFontFamily(ChartFontStacks.SystemSans));
         var measuredHeight = 42.0;
 
         Assert.Equal(48, Rendering.LegendRowBudget.RowHeight(chart, measuredHeight));
-        var font = TrueTypeFont.TryLoadForFamily(chart.Options.Theme.FontFamily, out _);
         var portable = Rendering.LegendRowBudget.RowHeight(chart);
-        Assert.True(portable >= Math.Max(18 * 1.2, font?.LineHeight(18) ?? 0) + 6);
-        TrueTypeFont.TryLoadForFamily(ChartFontStacks.Serif, out var pngFontPath);
-        if (pngFontPath != null) chart.WithPngFont(pngFontPath);
+        Assert.Equal(18 * 1.2 + 6, portable, 6);
+        chart.WithLegendStyle(style => style.WithFontFamily(ChartFontStacks.Serif));
+        Assert.Equal(portable, Rendering.LegendRowBudget.RowHeight(chart), 6);
+        chart.WithPngFont(Path.Combine(Path.GetTempPath(), "ChartForgeX-missing-custom-font.ttf"));
         Assert.Equal(portable, Rendering.LegendRowBudget.RowHeight(chart), 6);
     }
 
@@ -226,6 +226,7 @@ public sealed class LegendDensityTests {
         var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
         Assert.Equal(count, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-track"));
         Assert.Equal(count, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-ring"));
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
     }
 
     [Fact]

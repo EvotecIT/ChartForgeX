@@ -37,17 +37,25 @@ public sealed partial class PngChartRenderer {
         var ringLayout = RadialBarRingLayout.Create(outerRadius, count, chart.Options.RadialBarStrokeScale, requestedCenterRadius);
         var stroke = ringLayout.StrokeWidth;
         var start = -Math.PI / 2;
+        var ratios = new double[count];
+        var colors = new ChartColor[count];
 
         for (var i = 0; i < count; i++) {
             var point = series.Points[i];
             var ratio = Clamp(point.Y / 100.0, 0, 1);
-            var radius = ringLayout.RadiusAt(i);
-            var color = PngRadialBarColor(series, theme, i);
-            c.DrawArc(cx, cy, radius, start, start + Math.PI * 2, ApplyOpacity(theme.Grid, ChartVisualPrimitives.RadialTrackOpacity), stroke);
-            if (ratio <= 0) continue;
-            var end = start + Math.PI * 2 * ratio;
-            c.DrawArc(cx, cy, radius, start, end, color, stroke);
+            ratios[i] = ratio;
+            colors[i] = PngRadialBarColor(series, theme, i);
         }
+        c.DrawConcentricArcs(
+            cx,
+            cy,
+            ringLayout.RadiusAt(0),
+            ringLayout.StrokeWidth + ringLayout.Gap,
+            start,
+            ratios,
+            colors,
+            ApplyOpacity(theme.Grid, ChartVisualPrimitives.RadialTrackOpacity),
+            stroke);
 
         var labelWidth = Math.Max(8, Math.Min(chartPlot.Width * 0.32, ringLayout.CenterRadius * 2 - 16));
         var centerDiskRadius = ringLayout.CenterRadius;

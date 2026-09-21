@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
-using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
 internal static class LegendRowBudget {
+    private const double PortableLineHeightEm = 1.2;
+
     internal static List<T> Apply<T>(List<T> rows, Chart chart, Func<T, int> count, Func<int, T> summary, double? availableHeight = null) {
         var maximumRows = MaximumRows(chart, availableHeight);
         if (maximumRows <= 0) {
@@ -77,8 +78,7 @@ internal static class LegendRowBudget {
         var style = chart.Options.LegendStyle;
         var fontSize = style?.FontSize ?? chart.Options.Theme.LegendFontSize;
         if (style?.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
-        var font = TrueTypeFont.TryLoadForFamily(style?.FontFamily ?? chart.Options.Theme.FontFamily, out _);
-        var height = Math.Max(fontSize * 1.2, font?.LineHeight(Math.Max(1, fontSize)) ?? 0);
+        var height = fontSize * PortableLineHeightEm;
         var underline = style?.UnderlineStyle ?? (style?.Underline == true ? TextDecorationStyle.Single : TextDecorationStyle.None);
         if (underline != TextDecorationStyle.None) {
             var thickness = Math.Max(1, fontSize / 13.0);
