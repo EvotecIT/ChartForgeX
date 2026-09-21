@@ -28,6 +28,7 @@
     if (navigation) navigation.hidden = true;
     if (overview && options?.restoreSelection !== false) { restoreGraphSelection(root, overview.selection); clearHiddenSelections(root); }
     if (overview && options?.restoreViewport !== false && hasFeature(root, 'Viewport')) setViewport(root, overview.viewport);
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     refreshNeighborhoodPresentation(root);
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: false, nodeId: '', neighborNodeCount: 0, edgeCount: 0 });
     return true;
@@ -60,7 +61,10 @@
     }
     if (!view) return false;
     if (!navigation?.refresh) {
-      if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = { viewport: { ...viewport(root) }, selection: selectedItems(root).map(item => item.id) };
+      if (!root.__cfxGraphNeighborhoodOverview) root.__cfxGraphNeighborhoodOverview = {
+        viewport: { ...viewport(root) },
+        selection: selectedItems(root).map(item => ({ id: item.id, role: item.role }))
+      };
       if (root.dataset.cfxGraphFocus === 'active' && root.dataset.cfxGraphFocusNode !== nodeId) {
         const history = root.__cfxGraphNeighborhoodHistory || (root.__cfxGraphNeighborhoodHistory = []);
         history.push({ nodeId: root.dataset.cfxGraphFocusNode, options: root.__cfxGraphNeighborhood, viewport: { ...viewport(root) } });
@@ -86,6 +90,8 @@
     root.classList.add('cfx-graph-neighborhood-active'); root.dataset.cfxGraphFocus = 'active'; root.dataset.cfxGraphFocusNode = nodeId;
     root.__cfxGraphNeighborhood = { hops: options.hops, maximumNodes: options.maximumNodes, maximumEdges: options.maximumEdges, neighborOffset: options.neighborOffset };
     root.__cfxGraphNeighborhoodView = view;
+    clearHiddenSelections(root);
+    if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
     syncNeighborhoodNavigation(root, view); refreshNeighborhoodPresentation(root);
     if (navigation?.fit !== false && hasFeature(root, 'Viewport')) { root.__cfxGraphViewportTouched = true; fitViewport(root); }
     emit(root, 'cfxgraphfocus', { graphId: attr(root, 'data-cfx-graph-id'), active: true, nodeId, ...root.__cfxGraphNeighborhood,
@@ -105,7 +111,7 @@
     const applied = applyNeighborhoodFocus(root, previous.nodeId, previous.options, { refresh: true, fit: false });
     if (!applied) return clearNeighborhoodFocus(root);
     if (hasFeature(root, 'Viewport')) setViewport(root, previous.viewport);
-    restoreGraphSelection(root, [previous.nodeId]);
+    if (hasFeature(root, 'Selection')) restoreGraphSelection(root, [{ id: previous.nodeId, role: 'graph-node' }]);
     refreshNeighborhoodPresentation(root);
     return true;
   };
