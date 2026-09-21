@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -11,12 +12,12 @@ internal static class TopologyEdgeRouter {
         var routeLane = routeLaneOverride ?? edge.RouteLane;
         if (edge.Waypoints.Count > 0) {
             var points = EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1);
+            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement);
         }
 
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
             var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
-            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1);
+            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement);
         }
 
         var sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), edge.SourcePort);
@@ -54,7 +55,7 @@ internal static class TopologyEdgeRouter {
         var best = candidates
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
-            .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count))
+            .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement))
             .OrderBy(plan => RouteScore(plan, edge))
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
@@ -71,7 +72,7 @@ internal static class TopologyEdgeRouter {
         var obstacles = RouteObstacles(chart, edge.SourceNodeId, edge.TargetNodeId, edge.Id);
         var obstacleHits = RouteObstacleHits(renderedPoints, obstacles);
         var routeOverlap = RouteOverlapScore(renderedPoints, RouteSegments(chart, edge));
-        var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles);
+        var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles, chart.TextMeasurement);
         return new TopologyRouteDiagnostics(
             plan.Diagnostics.Strategy,
             plan.Diagnostics.Corridor,
@@ -84,10 +85,10 @@ internal static class TopologyEdgeRouter {
             FallbackReason(plan.Diagnostics.Strategy, obstacleHits, labelHits, routeOverlap));
     }
 
-    private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount) {
+    private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount, TextMeasurementContext? measurement) {
         var obstacleHits = RouteObstacleHits(points, obstacles);
         var routeOverlap = RouteOverlapScore(points, existingSegments);
-        var labelHits = LabelObstacleHits(points, edge, obstacles);
+        var labelHits = LabelObstacleHits(points, edge, obstacles, measurement);
         return new TopologyRoutePlan(points, new TopologyRouteDiagnostics(strategy, corridor, Math.Max(0, points.Count - 1), obstacles.Count, obstacleHits, labelHits, routeOverlap, candidateCount, FallbackReason(strategy, obstacleHits, labelHits, routeOverlap)));
     }
 
@@ -254,7 +255,7 @@ internal static class TopologyEdgeRouter {
 
         const double groupPadding = 10;
         foreach (var group in chart.Groups) {
-            var header = GroupHeaderBox(group).Expand(groupPadding);
+            var header = GroupHeaderBox(group, chart.TextMeasurement).Expand(groupPadding);
             if (header.Width > 0 && header.Height > 0) obstacles.Add(header);
         }
 
@@ -280,9 +281,8 @@ internal static class TopologyEdgeRouter {
                 ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))
                 : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
             var center = EdgeLabelPoint(points);
-            var maxText = Math.Max(label.Length, Math.Max(secondary.Length, tertiary.Length));
             var lineCount = (string.IsNullOrWhiteSpace(label) ? 0 : 1) + (string.IsNullOrWhiteSpace(secondary) ? 0 : 1) + (string.IsNullOrWhiteSpace(tertiary) ? 0 : 1);
-            var width = Math.Max(48, maxText * 7.2 + 18);
+            var width = EdgeLabelTextWidth(label, secondary, tertiary, chart.TextMeasurement);
             var height = lineCount <= 1 ? 22 : lineCount == 2 ? 38 : 52;
             yield return RouteBox.FromCenter(center.X, center.Y, width, height);
         }
@@ -320,12 +320,11 @@ internal static class TopologyEdgeRouter {
         return hits;
     }
 
-    private static int LabelObstacleHits(IReadOnlyList<ChartPoint> points, TopologyEdge edge, IReadOnlyList<RouteBox> obstacles) {
+    private static int LabelObstacleHits(IReadOnlyList<ChartPoint> points, TopologyEdge edge, IReadOnlyList<RouteBox> obstacles, TextMeasurementContext? measurement) {
         if (string.IsNullOrWhiteSpace(edge.Label) && string.IsNullOrWhiteSpace(edge.SecondaryLabel) && string.IsNullOrWhiteSpace(edge.TertiaryLabel)) return 0;
         var center = EdgeLabelPoint(points);
-        var maxText = Math.Max((edge.Label ?? string.Empty).Length, Math.Max((edge.SecondaryLabel ?? string.Empty).Length, (edge.TertiaryLabel ?? string.Empty).Length));
         var lineCount = (string.IsNullOrWhiteSpace(edge.Label) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.SecondaryLabel) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.TertiaryLabel) ? 0 : 1);
-        var label = RouteBox.FromCenter(center.X, center.Y, Math.Max(48, maxText * 7.2 + 18), lineCount <= 1 ? 22 : lineCount == 2 ? 38 : 52);
+        var label = RouteBox.FromCenter(center.X, center.Y, EdgeLabelTextWidth(edge.Label, edge.SecondaryLabel, edge.TertiaryLabel, measurement), lineCount <= 1 ? 22 : lineCount == 2 ? 38 : 52);
         return obstacles.Count(obstacle => label.OverlapArea(obstacle) > 0);
     }
 
@@ -347,19 +346,14 @@ internal static class TopologyEdgeRouter {
 
     private static string RouteKey(IReadOnlyList<ChartPoint> points) => string.Join(";", points.Select(point => F(point.X) + "," + F(point.Y)));
 
-    private static RouteBox GroupHeaderBox(TopologyGroup group) {
+    private static RouteBox GroupHeaderBox(TopologyGroup group, TextMeasurementContext? measurement) {
         const double groupPadding = 24;
         const double topPadding = 14;
-        var labelWidth = EstimateTextWidth(group.Label, 16, true);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false);
+        var labelWidth = EstimateTextWidth(group.Label, 16, true, measurement);
+        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, measurement);
         var width = Math.Min(Math.Max(96, Math.Max(labelWidth, subtitleWidth) + 12), Math.Max(96, group.Width - groupPadding * 2));
         var height = string.IsNullOrWhiteSpace(group.Subtitle) ? 40 : 60;
         return new RouteBox(group.X + groupPadding, group.Y + topPadding, group.X + groupPadding + width, group.Y + topPadding + height);
-    }
-
-    private static double EstimateTextWidth(string value, double fontSize, bool bold) {
-        var weightFactor = bold ? 0.62 : 0.56;
-        return value.Length * fontSize * weightFactor;
     }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {

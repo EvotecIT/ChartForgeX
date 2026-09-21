@@ -156,6 +156,8 @@ public static partial class GalleryWriter {
             "service-dependency",
             "advanced-topology",
             "advanced-topology-diagnostics",
+            "topology-measured-typography-sans",
+            "topology-measured-typography-mono",
             "icon-palette",
             "icon-stencil-browser"),
         new(

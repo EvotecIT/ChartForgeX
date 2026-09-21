@@ -11,6 +11,11 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--readable-topology-only")) {
+            ReadableTopologyExamples.Write(output);
+            return true;
+        }
+
         if (HasArg(args, "--visual-story-only")) {
             VisualStoryExamples.Write(output);
             Console.WriteLine("Generated visual-story files in: " + output);
@@ -21,6 +26,12 @@ internal static class ExampleProgramOptions {
             ExpressiveExamples.Write(output, pngOutputScale);
             GalleryWriter.Write(output);
             Console.WriteLine("Generated expressive files in: " + output);
+            return true;
+        }
+
+        if (HasArg(args, "--topology-typography-only")) {
+            TopologyTypographyExamples.Write(output);
+            Console.WriteLine("Generated topology typography examples in: " + output);
             return true;
         }
 
