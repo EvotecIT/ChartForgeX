@@ -201,6 +201,8 @@ internal static partial class SvgRasterRenderer {
             if (underline) RasterTextDecoration.Draw(glyphMask, padding, padding + width, underlineY, underlineStyle, ChartColor.White, underlineThickness);
             if (strikethrough) RasterTextDecoration.Draw(glyphMask, padding, padding + width, strikeY, strikethroughStyle, ChartColor.White, underlineThickness);
         }
+        if (style.StrokeBeforeFill && strokeColor.A > 0)
+            PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
         if (style.Fill.IsReference && glyphMask != null) {
             var localToCanvas = matrix
                 .Multiply(SvgRasterMatrix.Translate(drawX - padding / renderScale, drawY - padding / renderScale))
@@ -224,7 +226,7 @@ internal static partial class SvgRasterRenderer {
             if (underline) RasterTextDecoration.Draw(buffer, padding, padding + width, underlineY, underlineStyle, fillColor, underlineThickness);
             if (strikethrough) RasterTextDecoration.Draw(buffer, padding, padding + width, strikeY, strikethroughStyle, fillColor, underlineThickness);
         }
-        if (strokeColor.A > 0) {
+        if (!style.StrokeBeforeFill && strokeColor.A > 0) {
             PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
         }
 

@@ -70,12 +70,14 @@
     <EmbeddedResource Include="Assets\graph-explorer.12-overview.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.12-overview.js" />
     <EmbeddedResource Include="Assets\graph-explorer.13-hierarchy.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.13-hierarchy.js" />
     <EmbeddedResource Include="Assets\graph-explorer.14-state-history.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.14-state-history.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.15-edge-hit-index.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-edge-hit-index.js" />
     <EmbeddedResource Include="Assets\graph-explorer.15-hit-testing.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.15-hit-testing.js" />
     <EmbeddedResource Include="Assets\graph-explorer.17-physics-profile.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.17-physics-profile.js" />
     <EmbeddedResource Include="Assets\graph-explorer.18-structural-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js" />
     <EmbeddedResource Include="Assets\graph-explorer.19-physics-telemetry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.19-physics-telemetry.js" />
     <EmbeddedResource Include="Assets\graph-explorer.20-physics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js" />
     <EmbeddedResource Include="Assets\graph-explorer.21-physics-runtime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.21-physics-runtime.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.25-layout-metrics.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-metrics.js" />
     <EmbeddedResource Include="Assets\graph-explorer.25-layout-quality.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-quality.js" />
     <EmbeddedResource Include="Assets\graph-explorer.26-box-selection.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.26-box-selection.js" />
     <EmbeddedResource Include="Assets\graph-explorer.27-pointer-interactions.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.27-pointer-interactions.js" />

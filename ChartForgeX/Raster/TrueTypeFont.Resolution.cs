@@ -6,6 +6,15 @@ namespace ChartForgeX.Raster;
 
 internal sealed partial class TrueTypeFont {
     private static IEnumerable<string> CandidatePaths(string? fontFamily) {
+        // Prefer an installed requested face before substituting a generic family.
+        // Arial is supplied in Supplemental on macOS, not the system font folder.
+        if ((fontFamily ?? string.Empty).Split(',')[0].Trim().Trim('\"', '\'').Equals("Arial", StringComparison.OrdinalIgnoreCase)) {
+            yield return "/System/Library/Fonts/Supplemental/Arial.ttf";
+            yield return "/Library/Fonts/Arial.ttf";
+            var windowsRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            if (!string.IsNullOrEmpty(windowsRoot)) yield return Path.Combine(windowsRoot, "Fonts", "arial.ttf");
+        }
+
         var kind = ClassifyFamily(fontFamily);
         if (kind == FontFamilyKind.Serif) {
             yield return "/System/Library/Fonts/Supplemental/Georgia.ttf";
@@ -58,6 +67,7 @@ internal sealed partial class TrueTypeFont {
     private static FontFamilyKind ClassifyFamily(string? fontFamily) {
         var family = fontFamily ?? string.Empty;
         if (family.Trim().Length == 0) return FontFamilyKind.SansSerif;
+        if (family.Split(',')[0].Trim().Trim('\"', '\'').Equals("Arial", StringComparison.OrdinalIgnoreCase)) return FontFamilyKind.SansSerif;
         if (ContainsAny(family, "monospace", "Consolas", "Menlo", "Courier", "Monaco", "DejaVu Sans Mono", "Liberation Mono", "Cascadia Mono")) return FontFamilyKind.Monospace;
         if (family.IndexOf(", serif", StringComparison.OrdinalIgnoreCase) >= 0 || family.Trim().Equals("serif", StringComparison.OrdinalIgnoreCase) || ContainsAny(family, "Georgia", "Cambria", "Times New Roman", "Charter", "DejaVu Serif", "Liberation Serif")) return FontFamilyKind.Serif;
         if (family.IndexOf("Rounded", StringComparison.OrdinalIgnoreCase) >= 0 || family.IndexOf("Nunito", StringComparison.OrdinalIgnoreCase) >= 0) return FontFamilyKind.Rounded;

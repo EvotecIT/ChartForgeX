@@ -42,6 +42,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
 
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 DenseLegendExamples.Write(output, DemoPngOutputScale);
+PagedFacetExamples.Write(output, DemoPngOutputScale);
 AnimatedVisualStoryExamples.Write(output, DemoPngOutputScale);
 TerminalStoryExamples.Write(output, DemoPngOutputScale);
 VisualStoryExamples.Write(output);
@@ -127,7 +128,7 @@ var heatmap = Chart.Create()
 SaveChart(heatmap, "control-coverage-heatmap-dark");
 FoundationExamples.Write(output, DemoPngOutputScale);
 MapExamples.Write(output, DemoPngOutputScale, ExampleProgramOptions.HasArg(args, "--include-external-map-examples"));
-if (!ExampleProgramOptions.HasArg(args, "--skip-topology")) TopologyExamples.Write(output); MarkupExamples.Write(output); GraphExplorerExamples.Write(output);
+if (!ExampleProgramOptions.HasArg(args, "--skip-topology")) { TopologyExamples.Write(output); ReadableTopologyExamples.Write(output); } MarkupExamples.Write(output); GraphExplorerExamples.Write(output);
 
 var gauge = Chart.Create()
     .WithTitle("Security Posture Score")

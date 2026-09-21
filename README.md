@@ -233,6 +233,19 @@ record CpuSample(string Site, double Minute, double Cpu);
 
 Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, and radial-bar legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
+For larger reports, apply shared axes to the whole grid, then paginate before rendering:
+
+```csharp
+report.WithSharedAxes().WithPanelSize(440, 280);
+foreach (var page in report.Paginate(maximumChartsPerPage: 6)) {
+    page.Grid.WithSubtitle($"Page {page.Number} of {page.TotalPages}");
+    page.Grid.SaveSvg($"cpu-by-site-{page.Number}.svg");
+    page.Grid.SavePng($"cpu-by-site-{page.Number}.png");
+}
+```
+
+Pages preserve chart order, panel spans, heading styles, and export settings. Their grids share the original chart and theme objects; changing a chart affects every grid containing it. Grid-level settings and styles are copied independently. Page metadata records the original partition. Empty columns remain in composed exports, keeping the last page aligned. Set `PanelSize` for consistent panel dimensions; automatic sizing uses each page's charts. The limit counts charts, not rows or pixels occupied by spanned panels. Empty grids return no pages.
+
 `ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
 
 ## Project Status
@@ -573,7 +586,12 @@ The generated explorer uses one responsive control system across SVG, Canvas, an
 
 Nodes with children drill directly from the graph. Empty-space double-click, `Escape`, `Backspace`, Left Arrow, or a clickable breadcrumb move back up. Arrow keys move through a single roving graph-item tab stop, so a 2,000-node graph does not add 2,000 stops to the page. Box selection works across SVG, Canvas, and WebGL. Editing stays opt in through `GraphManipulationOptions`; enabled explorers use validated patches, cancelable host callbacks, bounded undo/redo, group dragging, and explicit position export. Reduced-motion mode removes drag momentum and visible intermediate physics frames; forced colors, increased contrast, live announcements, explicit control names, and strong focus indicators are built in. `PinOnDrop` remains available when manual placement should persist. See [Graph explorer](docs/graph-explorer.md) for themes and accessibility, solver profiles, static stage exports, clustering, hierarchy navigation, editing and state persistence, the browser API, host events, export behavior, and measured scale fixtures.
 
-Dense ordered line, area, and scatter data can use either an explicit point count or a reusable display-resolution policy. `AddDecimatedLine`, `AddDecimatedArea`, and `AddDecimatedScatter` accept an exact budget. `AddAdaptiveLine`, `AddAdaptiveArea`, and `AddAdaptiveScatter` combine an intended render width with `ChartResolutionPolicy`; the report-friendly `ChartResolutionPolicy.Trend()` preset allows two points per horizontal pixel with a 64-point floor and applies deterministic LTTB only when needed. It also suppresses optional line and area markers above `MaximumMarkerCount`, avoiding marker clutter and redundant render nodes while leaving short series unchanged. Override a single series through `ChartSeries.WithMarkerRadius(...)` when a different visual treatment is intentional. `ChartSeries.SourcePointCount`, `SourcePointIndices`, and `DecimationMode` keep every reduction honest. SVG roots publish the same provenance, and interactive point identities resolve back to source indices.
+Dense ordered line, area, and scatter data can use either an explicit point count or a reusable display-resolution policy. `AddDecimatedLine`, `AddDecimatedArea`, and `AddDecimatedScatter` accept a maximum point budget. `AddAdaptiveLine`, `AddAdaptiveArea`, and `AddAdaptiveScatter` combine an intended render width with `ChartResolutionPolicy`; the report-friendly `ChartResolutionPolicy.Trend()` preset allows two points per horizontal pixel with a 64-point floor and applies deterministic LTTB only when needed. It also suppresses optional line and area markers above `MaximumMarkerCount`, avoiding marker clutter and redundant render nodes while leaving short series unchanged. Override a single series through `ChartSeries.WithMarkerRadius(...)` when a different visual treatment is intentional. `ChartSeries.SourcePointCount`, `SourcePointIndices`, and `DecimationMode` keep every reduction honest. SVG roots publish the same provenance, and interactive point identities resolve back to source indices.
+
+Use `new ChartPoint(x, y, breakBefore: true)` for the first observed point after a gap. Line, step-line, area, and step-area output starts a separate segment there; SVG, HTML, and PNG leave the missing interval empty, including smoothed paths. Coordinates remain finite. Scatter accepts the flag without joining points; other series kinds reject it.
+
+Decimation retains each segment's endpoints and original source indices. `MinMax` retains local extrema within each disconnected segment; these segments receive at least four points (or their full size when smaller). LTTB receives at least three. If a reduction budget cannot accommodate those minima, the API throws with the required total instead of joining or dropping segments. Increase the budget or split the display into smaller panels. See the [gapped signal example](ChartForgeX.Examples/DenseSignalExamples.cs).
+
 
 Scenario timelines are also typed and opt in. Chart and topology scenarios support default and per-step timing, direct scrubber navigation, finite or looping playback, reduced-motion-safe autoplay, deep links, and a context-preserving highlight mode. Strong dimming is available through an explicit `Spotlight` focus mode rather than being imposed on every route. `ChartForgeX.Interactivity.Html` protects label readability on narrow screens with a contained readable viewport by default; hosts can choose whole-chart fitting when that tradeoff is preferable. See [Interactivity](docs/interactivity.md) for the model, browser events, and host commands.
 

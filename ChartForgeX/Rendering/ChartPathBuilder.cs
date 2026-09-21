@@ -11,13 +11,14 @@ internal static class ChartPathBuilder {
         var commands = new List<ChartPathCommand>();
         if (points.Count == 0) return new ChartPath(commands);
 
-        commands.Add(ChartPathCommand.MoveTo(points[0].X, points[0].Y));
-        if (kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea) {
-            AddStepSegments(commands, points);
-        } else if (smooth && points.Count >= 3) {
-            AddSmoothSegments(commands, points);
-        } else {
-            AddStraightSegments(commands, points);
+        foreach (var segment in ChartPointSegments.Split(points)) {
+            commands.Add(ChartPathCommand.MoveTo(segment[0].X, segment[0].Y));
+            if (segment.Count == 1) {
+                // A round-capped zero-length segment keeps an isolated observation visible.
+                commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
+            } else if (kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea) AddStepSegments(commands, segment);
+            else if (smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
+            else AddStraightSegments(commands, segment);
         }
 
         return new ChartPath(commands);

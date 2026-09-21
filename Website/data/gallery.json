@@ -488,6 +488,16 @@
     },
     {
       "category": "charts",
+      "title": "Signal with collection gaps",
+      "body": "Missing-data intervals stay empty after min/max reduction and SVG/PNG rendering.",
+      "tags": [
+        "Area",
+        "Decimation"
+      ],
+      "image": "/examples/generated/dense-signal-gaps-light.svg"
+    },
+    {
+      "category": "charts",
       "title": "Detection Confidence Errorbar Dark",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
@@ -711,6 +721,20 @@
       "image": "/examples/generated/graph-2000-stage-05-full.svg"
     },
     {
+      "category": "charts",
+      "title": "Graph Neighborhood Page 1",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-neighborhood-page-1.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Graph Neighborhood Page 2",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/graph-neighborhood-page-2.svg"
+    },
+    {
       "category": "themes",
       "title": "Icon Palette",
       "body": "Generated ChartForgeX visual output.",
@@ -880,6 +904,36 @@
         "Scatter"
       ],
       "image": "/examples/generated/observed-remediation-trend-light.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 1",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-1.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 2",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-2.svg"
+    },
+    {
+      "category": "dashboards",
+      "title": "Fleet utilization - page 3",
+      "body": "A bounded report page with shared axes and consistent panel dimensions.",
+      "tags": [
+        "SmallMultiples",
+        "Pagination"
+      ],
+      "image": "/examples/generated/paged-facets-3.svg"
     },
     {
       "category": "themes",
@@ -1228,6 +1282,20 @@
         "Showcase"
       ],
       "image": "/examples/generated/theme-font-showcase-grid.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Topology Measured Typography Mono",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/topology-measured-typography-mono.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Topology Measured Typography Sans",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/topology-measured-typography-sans.svg"
     },
     {
       "category": "dashboards",

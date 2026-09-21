@@ -10,6 +10,22 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--paged-facets-only")) {
+            PagedFacetExamples.Write(output, pngOutputScale);
+            return true;
+        }
+
+        if (HasArg(args, "--dense-signals-only")) {
+            DenseSignalExamples.Write(output, pngOutputScale);
+            Console.WriteLine("Generated dense-signal files in: " + output);
+            return true;
+        }
+
+        if (HasArg(args, "--readable-topology-only")) {
+            ReadableTopologyExamples.Write(output);
+            return true;
+        }
+
         if (HasArg(args, "--visual-story-only")) {
             VisualStoryExamples.Write(output);
             Console.WriteLine("Generated visual-story files in: " + output);
@@ -23,6 +39,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--topology-typography-only")) {
+            TopologyTypographyExamples.Write(output);
+            Console.WriteLine("Generated topology typography examples in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--topology-only")) {
             TopologyExamples.Write(output);
             Console.WriteLine("Generated topology files in: " + Path.Combine(output, "topology-demo"));
@@ -32,6 +54,12 @@ internal static class ExampleProgramOptions {
         if (HasArg(args, "--force-graph-only")) {
             TopologyVisualExamples.WriteForceGraph(output);
             Console.WriteLine("Generated force graph files in: " + output);
+            return true;
+        }
+
+        if (HasArg(args, "--graph-neighborhood-only")) {
+            GraphNeighborhoodExample.Write(output);
+            Console.WriteLine("Generated bounded graph neighborhoods in: " + output);
             return true;
         }
 

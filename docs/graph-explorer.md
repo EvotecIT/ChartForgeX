@@ -156,6 +156,8 @@ graph.Options.Physics.ForceAtlas2.AvoidOverlap = 0.82;
 
 Scenes with at least 160 active nodes move physics to a browser worker automatically when the platform supports it. SVG, Canvas, and WebGL consume the same live coordinates, so changing rendering backends does not change drag semantics. Hierarchy navigation, cluster changes, and runtime graph patches rebuild and reheat the active simulation by default.
 
+Worker updates transfer a reusable position buffer and wait for the browser to present it before calculating the next batch. This bounds queued updates when a tab is throttled. During dragging, newer edits retain their coordinates while neighboring nodes continue receiving physics updates. Removing the graph stops its simulation at the next callback. WebGL retains upload storage and grows it only when a larger visible scene requires more capacity.
+
 `ReleaseAndReheat` is the default drag policy. The held node is fixed only while the pointer is down, connected movable nodes keep responding, recent pointer momentum is transferred on release, and the node's original fixed state is restored. Use `PinOnDrop` when the dropped position should become a new fixed anchor:
 
 ```csharp
@@ -222,6 +224,24 @@ var files = graph.SaveGraphStageImages("report-assets", "estate", options => {
 Files use stable names such as `estate-01-overview.png`, `estate-02-depth-1.png`, and `estate-05-full.png`. A frontier node receives a `+N` badge and `N hidden` secondary label, so a static overview still communicates what was collapsed. The deepest requested level is clamped to the scene depth and the complete view is included by default.
 
 For one image, use `graph.ToGraphSvg(stage)` or `graph.ToGraphPng(stage)`. These paths do not open a browser and do not add scripts. PNG export preserves self-contained PNG, JPEG, or SVG data-URI node images. Static output limits labels deterministically at large scale—frontier summaries, roots, and high-degree nodes win—because rendering 2,000 labels into one non-interactive frame would not be readable. Set `MaximumNodeLabels` explicitly for the target medium.
+
+For a high-degree node, `CreateNeighborhood` bounds the selected objects and relationships before rendering:
+
+```csharp
+var view = graph.CreateNeighborhood("gateway", options => {
+    options.MaximumNodes = 13; // Includes the gateway on every page.
+    options.MaximumEdges = 24;
+    options.Hops = 1;
+    options.NeighborOffset = 0; // Use 12 for the next page.
+});
+File.WriteAllText("gateway.svg", graph.ToGraphSvg(view));
+File.WriteAllBytes("gateway.png", graph.ToGraphPng(view));
+```
+
+`ScopeNodeCount` reports the neighborhood size before paging. `HiddenNodeCount` and `HiddenEdgeCount` count all source objects omitted from the view; `BoundaryEdgeCount` counts relationships with exactly one visible endpoint. Static stage images show these counts below the drawing. Pages retain the root and order other nodes by relationship distance, then ordinal id. Discovery follows relationships in both directions, while output preserves their original arrows. Edge budgets prefer relationships nearest the root. A page can contain disconnected nodes when their intermediate neighbors are on another page.
+
+The planner leaves the source scene unchanged and examines the full source graph. Replan after changing its membership or relationships. Static neighborhoods with no authored coordinates or routes receive a deterministic radial layout; authored geometry is preserved. This API controls static views; interactive neighborhood focus continues to dim unrelated objects.
+
 
 ## Clustering
 
@@ -308,9 +328,11 @@ The explorer includes search, status/kind filters, selection, Ctrl/Meta/Shift mu
 
 Stable events include `cfxgraphready`, `cfxgraphselect`, `cfxgraphselection`, `cfxgraphboxselect`, `cfxgraphfilter`, `cfxgraphfocus`, `cfxgraphnavigate`, `cfxgraphcluster`, `cfxgraphpatch`, `cfxgraphbeforechange`, `cfxgraphchange`, `cfxgraphhistory`, `cfxgraphstate`, `cfxgraphstateapplied`, `cfxgraphpositions`, `cfxgraphdragstart`, `cfxgraphdrag`, `cfxgraphdragend`, `cfxgraphgroupdrag`, `cfxgraphphysicschange`, `cfxgraphthemechange`, `cfxgraphviewport`, `cfxgraphexport`, `cfxgraphstabilized`, `cfxgraphlod`, and `cfxgraphperformance`.
 
-Performance telemetry deliberately separates renderer work from browser cadence. `performance.budgetMisses`, `budgetMissRate`, and `maxRenderMs` measure ChartForgeX render work against the configured frame budget. `cadenceBudgetMisses`, `cadenceBudgetMissRate`, and `maxFrameMs` report delayed animation-frame delivery, which can also include browser scheduling, background throttling, capture tooling, or unrelated page work. Use the first group as the ChartForgeX release gate; use cadence as a diagnostic signal instead of attributing every late browser callback to the renderer.
+Performance telemetry deliberately separates renderer work from browser cadence. `performance.budgetMisses`, `budgetMissRate`, and `maxRenderMs` measure ChartForgeX render work against the configured frame budget. `cadenceBudgetMisses`, `cadenceBudgetMissRate`, and `maxFrameMs` report delayed animation-frame delivery, which can also include browser scheduling, background throttling, capture tooling, or unrelated page work. `workerTransferBytes` reports position bytes received from the worker; `staleWorkerUpdates` counts batches older than the latest drag or reheat command. Such batches can still update unaffected nodes, but cannot finish a newer simulation or overwrite later node edits. Restarting physics starts a fresh cadence window, so idle time between runs is not counted as a slow frame. Use the first group as the ChartForgeX release gate; use cadence as a diagnostic signal instead of attributing every late browser callback to the renderer.
 
 The same values are available through `ChartForgeXGraph.get(id).performance` and root attributes such as `data-cfx-graph-performance-budget-misses` and `data-cfx-graph-performance-cadence-budget-misses`.
+
+Pointer picking uses the node grid without full-scene or DOM fallbacks on empty cells. Edge picking caches rendered route bounds in a spatial tree, refits it after layout changes, and rebuilds its membership after filtering or graph updates. Exact checks still use the route geometry and picking tolerance. The first edge query after a change pays the index update cost; dense crossings can still produce many candidates. `performance.nodeHitCandidates`, `edgeHitCandidates`, `edgeHitIndexBuilds`, `edgeHitIndexRefits`, and `edgeHitIndexLastMs` expose that work for host diagnostics.
 
 Exactly one rendering surface is exposed to assistive technology. SVG uses a single roving graph-item tab stop; the labeled Canvas or WebGL surface becomes the keyboard target in accelerated modes.
 
@@ -347,3 +369,9 @@ The 10k browser run also applied a node-and-edge patch, searched the result to o
 - `identity-risk-graph-explorer.html` demonstrates a product-shaped relationship graph with images, filters, selection, focus, clusters, live ForceAtlas2 dragging, and the opt-in physics configurator.
 - `enterprise-access-graph-benchmark.html` demonstrates accelerated compact-document rendering with 360 nodes and 720 directed edges.
 - `vis-network-parity-hierarchy.html` demonstrates the typed vis-style compatibility surface with opt-in editing, undo/redo, position publishing, box selection, and persisted interaction state.
+
+### Layout assessment coverage
+
+Layout overlap diagnostics consider the full active node set using a spatial sweep along the wider coordinate axis. The check caches geometry once and stops after 250,000 candidate comparisons in a dense case. `data-cfx-graph-layout-overlap-coverage` is `complete` or `budget-limited`; a budget-limited overlap count is a lower bound. Incomplete coverage or any remaining estimated overlap produces `needs-review`, even when the graph is centered. Node count and comparison count are exposed alongside the result. Density expansion requires an observed overlap count above its threshold; incomplete low counts are marked as an unresolved density decision and do not move the layout.
+
+`data-cfx-graph-layout-overlap-geometry` identifies `estimated-label-radius` for fewer than 500 nodes or `node-radius` for larger scenes. These are conservative circular layout estimates, not measurements of rendered glyphs, connector crossings, contrast, or overall readability. Check the coverage and geometry fields before using the numeric quality score.

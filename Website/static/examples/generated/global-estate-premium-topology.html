@@ -2991,21 +2991,27 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     }
     runtime.gl.viewport(0, 0, width, height);
   };
-  const webGlUpload = (runtime, positions, colors, sizes, points) => {
+  // Keep CPU staging arrays and GPU storage until a larger scene needs capacity.
+  const webGlUploadAttribute = (runtime, name, values, components) => {
     const { gl } = runtime;
-    gl.bindBuffer(gl.ARRAY_BUFFER, runtime.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
-    gl.enableVertexAttribArray(runtime.position);
-    gl.vertexAttribPointer(runtime.position, 2, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, runtime.colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
-    gl.enableVertexAttribArray(runtime.color);
-    gl.vertexAttribPointer(runtime.color, 4, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, runtime.sizeBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sizes), gl.DYNAMIC_DRAW);
-    gl.enableVertexAttribArray(runtime.size);
-    gl.vertexAttribPointer(runtime.size, 1, gl.FLOAT, false, 0, 0);
-    gl.uniform1i(runtime.points, points ? 1 : 0);
+    const uploads = runtime.uploads || (runtime.uploads = {});
+    let upload = uploads[name];
+    gl.bindBuffer(gl.ARRAY_BUFFER, runtime[name + 'Buffer']);
+    if (!upload || upload.data.length < values.length) {
+      const capacity = Math.max(64, 2 ** Math.ceil(Math.log2(Math.max(1, values.length))));
+      upload = uploads[name] = { data: new Float32Array(capacity) };
+      gl.bufferData(gl.ARRAY_BUFFER, upload.data.byteLength, gl.DYNAMIC_DRAW);
+    }
+    upload.data.set(values);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, upload.data.subarray(0, values.length));
+    gl.enableVertexAttribArray(runtime[name]);
+    gl.vertexAttribPointer(runtime[name], components, gl.FLOAT, false, 0, 0);
+  };
+  const webGlUpload = (runtime, positions, colors, sizes, points) => {
+    webGlUploadAttribute(runtime, 'position', positions, 2);
+    webGlUploadAttribute(runtime, 'color', colors, 4);
+    webGlUploadAttribute(runtime, 'size', sizes, 1);
+    runtime.gl.uniform1i(runtime.points, points ? 1 : 0);
   };
   const drawWebGl = (root, state) => {
     const runtime = webGlRuntime(root);
@@ -3435,6 +3441,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       cadenceBudgetMisses: 0,
       cadenceBudgetMissRate: 0,
       physicsSamples: 0,
+      workerTransferBytes: 0,
+      staleWorkerUpdates: 0,
       physicsBudgetMisses: 0,
       frameSamples: 0,
       warmupFrameSamples: 0,
@@ -3461,6 +3469,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     summary.frameSamples += frameSample ? 1 : 0;
     summary.warmupFrameSamples += warmupSample ? 1 : 0;
     summary.physicsSamples += physicsSample ? 1 : 0;
+    summary.workerTransferBytes += physicsSample ? Math.max(0, Number(detail.transferBytes) || 0) : 0;
+    summary.staleWorkerUpdates += physicsSample && detail.stale ? 1 : 0;
     summary.lastTick = Number.isFinite(detail.tick) ? detail.tick : summary.lastTick;
     summary.maxVelocity = Math.max(summary.maxVelocity, Number.isFinite(detail.maxVelocity) ? detail.maxVelocity : 0);
     summary.overlapPressureEvents += Math.max(0, Number.isFinite(detail.overlaps) ? detail.overlaps : 0);
@@ -3493,6 +3503,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     root.dataset.cfxGraphPerformanceMaxWarmupFrameMs = summary.maxWarmupFrameMs.toFixed(3);
     root.dataset.cfxGraphPerformanceMaxWarmupRenderMs = summary.maxWarmupRenderMs.toFixed(3);
     root.dataset.cfxGraphPerformancePhysicsSamples = String(summary.physicsSamples);
+    root.dataset.cfxGraphPerformanceWorkerTransferBytes = String(summary.workerTransferBytes);
+    root.dataset.cfxGraphPerformanceStaleWorkerUpdates = String(summary.staleWorkerUpdates);
     root.dataset.cfxGraphPerformancePhysicsBudgetMisses = String(summary.physicsBudgetMisses);
     root.dataset.cfxGraphPerformanceOverlapPressureEvents = String(summary.overlapPressureEvents);
     root.dataset.cfxGraphPerformanceCommunityPackingEvents = String(summary.communityPackingEvents);
@@ -3546,6 +3558,29 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     if (gated) publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'gated', renderer: root.dataset.cfxGraphRendererActive, nodeCount, edgeCount, totalNodeCount, totalEdgeCount, nodeLimit, edgeLimit });
     return gated;
   };
+
+  const exportGraphPerformance = (root) => ({
+      state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
+      samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
+      nodeHitCandidates: Number(root.dataset.cfxGraphNodeHitCandidates || 0),
+      edgeHitCandidates: Number(root.dataset.cfxGraphEdgeHitCandidates || 0),
+      edgeHitIndexBuilds: Number(root.dataset.cfxGraphEdgeHitBuilds || 0),
+      edgeHitIndexRefits: Number(root.dataset.cfxGraphEdgeHitRefits || 0),
+      edgeHitIndexLastMs: Number(root.dataset.cfxGraphEdgeHitIndexMs || 0),
+      workerTransferBytes: Number(root.dataset.cfxGraphPerformanceWorkerTransferBytes || 0),
+      staleWorkerUpdates: Number(root.dataset.cfxGraphPerformanceStaleWorkerUpdates || 0),
+      frameSamples: Number(root.dataset.cfxGraphPerformanceFrameSamples || 0), maxFrameMs: Number(root.dataset.cfxGraphPerformanceMaxFrameMs || 0), maxRenderMs: Number(root.dataset.cfxGraphPerformanceMaxRenderMs || 0),
+      warmupFrameSamples: Number(root.dataset.cfxGraphPerformanceWarmupFrameSamples || 0), maxWarmupFrameMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupFrameMs || 0), maxWarmupRenderMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupRenderMs || 0),
+      physicsSamples: Number(root.dataset.cfxGraphPerformancePhysicsSamples || 0), physicsBudgetMisses: Number(root.dataset.cfxGraphPerformancePhysicsBudgetMisses || 0),
+      budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0), budgetMissRate: Number(root.dataset.cfxGraphPerformanceBudgetMissRate || 0),
+      cadenceBudgetMisses: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMisses || 0), cadenceBudgetMissRate: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMissRate || 0),
+      maxSampleMs: Number(root.dataset.cfxGraphPerformanceMaxSampleMs || 0),
+      lastSampleMs: Number(root.dataset.cfxGraphPerformanceLastSampleMs || 0),
+      overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0), communityPackingEvents: Number(root.dataset.cfxGraphPerformanceCommunityPackingEvents || 0),
+      sampleTicks: Number(root.dataset.cfxGraphPerformanceSampleTicks || 0),
+      sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
+      thread: root.dataset.cfxGraphPerformanceThread || '', acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
+    });
   // A collapsed cluster overview shows one labelled relationship per site pair,
   // kind, and direction. The original edges remain in the document for expansion.
   const syncBundledEdgePresentation = (root, state) => {
@@ -3963,6 +3998,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     applyNeighborhoodFocus(root, nodeId);
   };
   const applyFilters = (root) => {
+    root.__cfxGraphHitGrid = null;
+    root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
     applyCollapsedEdgeBundles(root);
     syncBundledEdgePresentation(root, root.__cfxGraphState);
     const query = (root.querySelector('[data-cfx-graph-search]')?.value || '').trim().toLowerCase();
@@ -4590,30 +4627,129 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     };
     ['cfxgraphselection', 'cfxgraphviewport', 'cfxgraphcluster', 'cfxgraphfocus', 'cfxgraphhierarchy'].forEach(name => root.addEventListener(name, schedule));
   };
+  // Bounds use the control hull, so curved routes and self loops cannot escape
+  // the broad phase. Exact distance checks retain the existing picking tolerance.
+  const updateEdgeHitEntry = (entry, byId) => {
+    const rendered = visualEdge(entry.edge, byId);
+    const control = edgeControl(rendered);
+    const endpoints = edgeRenderEndpoints(rendered, control);
+    const loop = rendered.source === rendered.target ? selfLoopGeometry(rendered.source) : null;
+    const route = !loop && edgeHasRoute(rendered) ? routeRenderPoints(rendered) : null;
+    const points = loop ? [loop.start, loop.c1, loop.c2, loop.end]
+      : route || (control ? [endpoints.source, control, endpoints.target] : [endpoints.source, endpoints.target]);
+    const tolerance = Math.max(8, entry.edge.weight + 6);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    points.forEach(point => {
+      minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
+    });
+    Object.assign(entry, { rendered, control, endpoints, loop, route, tolerance,
+      minX: minX - tolerance, minY: minY - tolerance, maxX: maxX + tolerance, maxY: maxY + tolerance });
+  };
+  const refitEdgeHitTree = (tree) => {
+    if (!tree) return;
+    const children = tree.entries || tree.children;
+    if (!tree.entries) tree.children.forEach(refitEdgeHitTree);
+    tree.minX = Infinity; tree.minY = Infinity; tree.maxX = -Infinity; tree.maxY = -Infinity;
+    children.forEach(child => {
+      tree.minX = Math.min(tree.minX, child.minX); tree.minY = Math.min(tree.minY, child.minY);
+      tree.maxX = Math.max(tree.maxX, child.maxX); tree.maxY = Math.max(tree.maxY, child.maxY);
+    });
+  };
+  // Bulk-pack an eight-way tree with spatial tiles. Sorting each level once
+  // avoids recursively sorting the same geometry at every binary split.
+  const buildEdgeHitTree = (entries) => {
+    if (!entries.length) return null;
+    let level = entries, leaves = true;
+    do {
+      const sliceSize = Math.ceil(Math.sqrt(Math.ceil(level.length / 8))) * 8;
+      level.sort((a, b) => a.minX + a.maxX - b.minX - b.maxX);
+      const parents = [];
+      for (let start = 0; start < level.length; start += sliceSize) {
+        const slice = level.slice(start, start + sliceSize).sort((a, b) => a.minY + a.maxY - b.minY - b.maxY);
+        for (let offset = 0; offset < slice.length; offset += 8) {
+          const children = slice.slice(offset, offset + 8);
+          const parent = leaves ? { entries: children } : { children };
+          parent.minX = Infinity; parent.minY = Infinity; parent.maxX = -Infinity; parent.maxY = -Infinity;
+          children.forEach(child => {
+            parent.minX = Math.min(parent.minX, child.minX); parent.minY = Math.min(parent.minY, child.minY);
+            parent.maxX = Math.max(parent.maxX, child.maxX); parent.maxY = Math.max(parent.maxY, child.maxY);
+          });
+          parents.push(parent);
+        }
+      }
+      level = parents; leaves = false;
+    } while (level.length > 1);
+    return level[0];
+  };
+  const edgeHitCandidates = (root, state, point) => {
+    const version = root.__cfxGraphHitVersion || 0;
+    let cache = root.__cfxGraphEdgeHitIndex;
+    if (!cache || cache.state !== state || cache.version !== version) {
+      const started = performance.now();
+      const edges = state.edges.filter(edge => visible(edge.el) && edgeHasVisibleEndpoints(edge, state.byId));
+      const reuse = cache?.state === state && cache.entries.length === edges.length && cache.entries.every((entry, index) => entry.edge === edges[index]);
+      const entries = reuse ? cache.entries : edges.map((edge, order) => ({ edge, order }));
+      entries.forEach(entry => updateEdgeHitEntry(entry, state.byId));
+      const tree = reuse ? cache.tree : buildEdgeHitTree(entries.slice());
+      if (reuse) refitEdgeHitTree(tree);
+      cache = { state, version, entries, tree };
+      root.__cfxGraphEdgeHitIndex = cache;
+      root.dataset.cfxGraphEdgeHitIndex = reuse ? 'refit' : 'built';
+      const counter = reuse ? 'cfxGraphEdgeHitRefits' : 'cfxGraphEdgeHitBuilds';
+      root.dataset[counter] = String(Number(root.dataset[counter] || 0) + 1);
+      root.dataset.cfxGraphEdgeHitIndexMs = String(performance.now() - started);
+    }
+    const candidates = [], pending = cache.tree ? [cache.tree] : [];
+    const contains = item => point.x >= item.minX && point.x <= item.maxX && point.y >= item.minY && point.y <= item.maxY;
+    while (pending.length) {
+      const tree = pending.pop();
+      if (!contains(tree)) continue;
+      if (tree.entries) tree.entries.forEach(entry => { if (contains(entry)) candidates.push(entry); });
+      else pending.push(...tree.children);
+    }
+    return candidates;
+  };
   const indexHitTesting = (root, state) => {
-    const cellSize = 48;
-    const grid = new Map();
-    state.nodes.forEach(node => {
-      const slack = 10;
+    const fullState = state.fullState || state;
+    const previous = root.__cfxGraphHitGrid;
+    const incremental = !!state.fullState && previous?.state === fullState;
+    const index = incremental ? previous : { cellSize: 48, grid: new Map(), nodeCells: new Map(), state: fullState };
+    // Rebuild membership once after filtering. Later physics frames update only
+    // their moving subset, retaining nodes revealed while that session was running.
+    const nodes = incremental ? state.nodes : fullState.nodes;
+    nodes.forEach(node => {
+      for (const key of index.nodeCells.get(node.id) || []) {
+        const bucket = index.grid.get(key);
+        bucket.delete(node);
+        if (!bucket.size) index.grid.delete(key);
+      }
+      index.nodeCells.delete(node.id);
+      if (!visible(node.el)) return;
+      const slack = 10, cellSize = index.cellSize;
       const minX = Math.floor((node.x - nodeHalfWidth(node) - slack) / cellSize);
       const maxX = Math.floor((node.x + nodeHalfWidth(node) + slack) / cellSize);
       const minY = Math.floor((node.y - nodeHalfHeight(node) - slack) / cellSize);
       const maxY = Math.floor((node.y + nodeHalfHeight(node) + slack) / cellSize);
+      const cells = [];
       for (let x = minX; x <= maxX; x++) for (let y = minY; y <= maxY; y++) {
         const key = `${x}:${y}`;
-        const bucket = grid.get(key) || [];
-        bucket.push(node);
-        grid.set(key, bucket);
+        const bucket = index.grid.get(key) || new Set();
+        bucket.add(node);
+        index.grid.set(key, bucket);
+        cells.push(key);
       }
+      index.nodeCells.set(node.id, cells);
     });
-    root.__cfxGraphState = state.fullState || state;
-    root.__cfxGraphHitGrid = { cellSize, grid };
-    root.dataset.cfxGraphHitTest = state.nodes.length >= 160 ? 'grid' : 'linear';
+    root.__cfxGraphState = fullState;
+    root.__cfxGraphHitGrid = index;
+    root.__cfxGraphHitVersion = (root.__cfxGraphHitVersion || 0) + 1;
+    root.dataset.cfxGraphHitTest = fullState.nodes.length >= 160 ? 'grid' : 'linear';
   };
   const hitTestNodes = (root, point) => {
     const state = root.__cfxGraphState || graphState(root);
-    if (state.nodes.length < 160) return state.nodes;
-    const index = root.__cfxGraphHitGrid || (indexHitTesting(root, state), root.__cfxGraphHitGrid);
+    if (state.nodes.length < 160) { root.dataset.cfxGraphNodeHitCandidates = String(state.nodes.length); return state.nodes; }
+    const index = root.__cfxGraphHitGrid?.state === state ? root.__cfxGraphHitGrid : (indexHitTesting(root, state), root.__cfxGraphHitGrid);
     const cx = Math.floor(point.x / index.cellSize);
     const cy = Math.floor(point.y / index.cellSize);
     const candidates = [];
@@ -4625,25 +4761,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
         candidates.push(node);
       });
     }
-    return candidates.length ? candidates : state.nodes;
-  };
-  const domHitNodeAt = (root, point) => {
-    let best = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    items(root, '[data-cfx-role="graph-node"]').forEach(el => {
-      if (!visible(el)) return;
-      const size = Math.max(4, num(el, 'data-node-size', 8));
-      const x = num(el, 'data-node-x', 0);
-      const y = num(el, 'data-node-y', 0);
-      const candidate = { el, id: attr(el, 'data-node-id'), x, y, size, shape: attr(el, 'data-node-shape') || 'circle' };
-      const distance = nodeHitDistance(candidate, point, 10);
-      if (distance < bestDistance) {
-        best = candidate;
-        bestDistance = distance;
-      }
-    });
-    if (!best) return null;
-    return root.__cfxGraphState?.byId?.get(best.id) || best;
+    root.dataset.cfxGraphNodeHitCandidates = String(candidates.length);
+    return candidates;
   };
   const hitNodeAt = (root, point) => {
     let best = null;
@@ -4656,7 +4775,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
         bestDistance = distance;
       }
     });
-    return best || domHitNodeAt(root, point);
+    return best;
   };
   const distanceToSegment = (point, a, b) => {
     const dx = b.x - a.x;
@@ -4712,23 +4831,24 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     let best = null;
     let bestDistance = Number.POSITIVE_INFINITY;
     const state = root.__cfxGraphState || graphState(root);
-    state.edges.forEach(edge => {
-      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)) return;
-      const rendered = visualEdge(edge, state.byId);
-      const control = edgeControl(rendered), endpoints = edgeRenderEndpoints(rendered, control);
-      const distance = rendered.source === rendered.target
+    const candidates = edgeHitCandidates(root, state, point);
+    root.dataset.cfxGraphEdgeHitCandidates = String(candidates.length);
+    candidates.forEach(entry => {
+      const { edge, rendered, control, endpoints, route, loop } = entry;
+      if (!visible(edge.el) || !endpointVisible(rendered.source) || !endpointVisible(rendered.target)) return;
+      const distance = loop
         ? distanceToSelfLoop(point, rendered.source)
-        : edgeHasRoute(rendered)
-        ? distanceToRoute(point, routeRenderPoints(rendered))
+        : route
+        ? distanceToRoute(point, route)
         : control
         ? distanceToQuadratic(point, endpoints.source, control, endpoints.target)
         : distanceToSegment(point, endpoints.source, endpoints.target);
-      if (distance <= Math.max(8, edge.weight + 6) && distance < bestDistance) {
-        best = edge;
+      if (distance <= entry.tolerance && (distance < bestDistance || distance === bestDistance && entry.order < best.order)) {
+        best = entry;
         bestDistance = distance;
       }
     });
-    return best;
+    return best?.edge || null;
   };
   const hitClusterAt = (root, point) => {
     let best = null;
@@ -5157,12 +5277,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
       edges: state.edges.filter(edge => edge.physics !== false).map(edge => ({ sourceIndex: nodeIndex.get(edge.source.id), targetIndex: nodeIndex.get(edge.target.id), length: edge.length, weight: edge.weight })).filter(edge => Number.isInteger(edge.sourceIndex) && Number.isInteger(edge.targetIndex))
     };
   };
-  const updatePhysicsNodes = (root, state, nodes) => {
-    const byId = new Map(state.nodes.map(node => [node.id, node]));
-    nodes.forEach(source => {
-      const node = byId.get(source.id);
-      if (!node || root.__cfxGraphDragNodeId === node.id) return;
-      node.x = source.x; node.y = source.y; node.vx = source.vx; node.vy = source.vy; node.fixed = source.fixed;
+  // The worker uses the immutable start-order; positions are transferred, not cloned node records.
+  const updatePhysicsNodes = (root, state, positions, editedNodes, generation) => {
+    if (!positions || positions.length !== state.nodes.length * 5) return;
+    state.nodes.forEach((node, index) => {
+      if (root.__cfxGraphDragNodeId === node.id || (editedNodes?.get(node.id) || 0) > generation) return;
+      const offset = index * 5;
+      node.x = positions[offset]; node.y = positions[offset + 1];
+      node.vx = positions[offset + 2]; node.vy = positions[offset + 3]; node.fixed = positions[offset + 4] === 1;
     });
   };
   const workerPhysicsSource = () => `
@@ -5192,7 +5314,7 @@ const updateAdaptiveTimestep = ${updateAdaptiveTimestep.toString()};
 const simulatePhysicsStep = ${simulatePhysicsStep.toString()};
 let runtime = null;
 let timer = 0;
-const schedule = () => { if (!timer && runtime?.running) timer = setTimeout(runBatch, 0); };
+const schedule = () => { if (!timer && runtime?.running && !runtime.waiting) timer = setTimeout(runBatch, 0); };
 const runBatch = () => {
   timer = 0;
   if (!runtime?.running) return;
@@ -5205,18 +5327,27 @@ const runBatch = () => {
     if (!runtime.dragging && (runtime.tick >= runtime.settings.iterations || result.maxVelocity <= runtime.settings.minVelocity)) break;
   }
   const done = !runtime.dragging && (runtime.tick >= runtime.settings.iterations || result.maxVelocity <= runtime.settings.minVelocity);
-  self.postMessage({ type: done ? 'done' : 'progress', tick: runtime.tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, sampleMs: Date.now() - started, sampleTicks, nodes: runtime.state.nodes });
-  runtime.running = !done;
-  if (runtime.running) schedule();
+  const positions = runtime.positions || new Float64Array(runtime.state.nodes.length * 5);
+  runtime.state.nodes.forEach((node, index) => {
+    const offset = index * 5;
+    positions[offset] = node.x; positions[offset + 1] = node.y;
+    positions[offset + 2] = node.vx; positions[offset + 3] = node.vy; positions[offset + 4] = node.fixed ? 1 : 0;
+  });
+  runtime.waiting = true; runtime.positions = null; runtime.running = !done;
+  self.postMessage({ type: done ? 'done' : 'progress', generation: runtime.generation, tick: runtime.tick, maxVelocity: result.maxVelocity, acceleration: result.acceleration, overlaps: result.overlaps, communityPushes: result.communityPushes, sampleMs: Date.now() - started, sampleTicks, positions }, [positions.buffer]);
 };
 self.onmessage = event => {
   const data = event.data || {};
   if (data.type === 'start') {
     const nodes = data.nodes || [];
-    runtime = { state: { nodes, edges: (data.edges || []).map(edge => ({ ...edge, source: nodes[edge.sourceIndex], target: nodes[edge.targetIndex] })).filter(edge => edge.source && edge.target) }, settings: data.settings, interval: Math.max(1, data.interval || 12), tick: 0, dragging: '', running: true };
+    runtime = { state: { nodes, edges: (data.edges || []).map(edge => ({ ...edge, source: nodes[edge.sourceIndex], target: nodes[edge.targetIndex] })).filter(edge => edge.source && edge.target) }, settings: data.settings, interval: Math.max(1, data.interval || 12), tick: 0, dragging: '', running: true, waiting: false, generation: 0, positions: null };
     schedule(); return;
   }
   if (!runtime) return;
+  if (data.type === 'continue') {
+    runtime.positions = data.positions; runtime.waiting = false; schedule(); return;
+  }
+  if (Number.isInteger(data.generation)) runtime.generation = data.generation;
   if (data.type === 'pin') {
     const node = runtime.state.nodes.find(item => item.id === data.nodeId);
     if (node) { node.x = data.x; node.y = data.y; node.vx = 0; node.vy = 0; node.fixed = true; }
@@ -5233,6 +5364,7 @@ self.onmessage = event => {
   const stopWorkerPhysics = (root, preserveThread) => {
     const active = root.__cfxGraphWorker;
     if (!active) return;
+    if (active.frame) cancelAnimationFrame(active.frame);
     active.worker.terminate(); URL.revokeObjectURL(active.url); root.__cfxGraphWorker = null;
     if (!preserveThread) root.dataset.cfxGraphPhysicsThread = 'stopped';
   };
@@ -5251,7 +5383,9 @@ self.onmessage = event => {
   };
   const completePhysics = (root, state, ticks, velocity, thread) => {
     root.dataset.cfxGraphPhysicsState = 'stabilized';
-    runLayoutQualityPass(root, state); applyLayout(root, state); syncSvgLayout(root, state); drawCanvas(root, state);
+    runLayoutQualityPass(root, state);
+    if (root.dataset.cfxGraphRendererActive !== 'svg') syncSvgLayout(root, state);
+    applyLayout(root, state);
     if (root.__cfxGraphAutoFitOnStabilize && root.__cfxGraphViewportTouched !== true) fitViewport(root);
     root.__cfxGraphAutoFitOnStabilize = false;
     if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root);
@@ -5259,33 +5393,54 @@ self.onmessage = event => {
     emit(root, 'cfxgraphstabilized', { graphId: attr(root, 'data-cfx-graph-id'), ticks, maxVelocity: velocity, thread });
   };
   const startWorkerPhysics = (root, state, settings) => {
+    let url;
     try {
       const blob = new Blob([workerPhysicsSource()], { type: 'application/javascript' });
-      const url = URL.createObjectURL(blob), worker = new Worker(url), active = { worker, url, state, settings };
+      url = URL.createObjectURL(blob);
+      const worker = new Worker(url), active = { worker, url, state, settings, frame: 0, generation: 0, editedNodes: new Map() };
+      root.__cfxGraphPerformanceFrameTimestamp = undefined;
+      root.__cfxGraphPerformanceFrameCount = 0;
       root.__cfxGraphWorker = active; root.dataset.cfxGraphPhysicsThread = 'worker'; root.dataset.cfxGraphPhysicsAcceleration = physicsAcceleration(state, settings);
       worker.onmessage = event => {
         if (root.__cfxGraphWorker !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
+        if (root.isConnected === false) { pausePhysics(root); return; }
         const message = event.data || {};
-        const present = message.type === 'done' || !graphPrefersReducedMotion(root);
-        if (present) updatePhysicsNodes(root, state, message.nodes || []);
-        const renderStarted = performanceClock(); if (present) applyLayout(root, state); const renderedAt = performanceClock();
-        recordFramePerformance(root, renderedAt, renderedAt - renderStarted, 'worker');
-        publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks });
-        if (message.type === 'done') { stopWorkerPhysics(root, true); completePhysics(root, state, message.tick, message.maxVelocity, 'worker'); }
+        // One outstanding batch bounds queue growth, even in a throttled/hidden tab.
+        active.frame = requestAnimationFrame(timestamp => {
+          active.frame = 0;
+          if (root.__cfxGraphWorker !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
+          if (root.isConnected === false) { pausePhysics(root); return; }
+          const current = message.generation === active.generation;
+          const present = (current && message.type === 'done') || !graphPrefersReducedMotion(root);
+          const renderStarted = performanceClock();
+          if (present) updatePhysicsNodes(root, state, message.positions, active.editedNodes, message.generation);
+          if (current && message.type === 'done') {
+            stopWorkerPhysics(root, true);
+            completePhysics(root, state, message.tick, message.maxVelocity, 'worker');
+          } else if (present) applyLayout(root, state);
+          const renderedAt = performanceClock();
+          recordFramePerformance(root, timestamp, renderedAt - renderStarted, 'worker');
+          publishPerformance(root, { graphId: attr(root, 'data-cfx-graph-id'), mode: 'physics', tick: message.tick, maxVelocity: message.maxVelocity, acceleration: message.acceleration, overlaps: message.overlaps, communityPushes: message.communityPushes, frameBudget: num(root, 'data-cfx-performance-frame-budget', 16), thread: 'worker', sampleMs: message.sampleMs, sampleTicks: message.sampleTicks, transferBytes: message.positions?.byteLength || 0, stale: !current });
+          if (root.__cfxGraphWorker === active) worker.postMessage({ type: 'continue', positions: message.positions }, [message.positions.buffer]);
+        });
       };
       worker.onerror = () => { root.__cfxGraphWorkerFailed = true; stopWorkerPhysics(root); if (root.dataset.cfxGraphPhysicsState === 'running') startMainPhysics(root, state, settings); };
       worker.postMessage({ type: 'start', ...serializePhysicsState(state), settings, interval: Math.max(settings.progressInterval, num(root, 'data-cfx-performance-worker-progress-interval', 4)) });
       return true;
     } catch {
+      if (!root.__cfxGraphWorker && url) URL.revokeObjectURL(url);
       root.__cfxGraphWorkerFailed = true; stopWorkerPhysics(root); return false;
     }
   };
   const startMainPhysics = (root, state, settings) => {
     stopMainPhysics(root, true);
+    root.__cfxGraphPerformanceFrameTimestamp = undefined;
+    root.__cfxGraphPerformanceFrameCount = 0;
     const active = { tick: 0, frame: 0, state, settings };
     root.__cfxGraphMainPhysics = active; root.dataset.cfxGraphPhysicsThread = 'main'; root.dataset.cfxGraphPhysicsAcceleration = physicsAcceleration(state, settings);
     const step = (timestamp) => {
       if (root.__cfxGraphMainPhysics !== active || root.dataset.cfxGraphPhysicsState !== 'running') return;
+      if (root.isConnected === false) { pausePhysics(root); return; }
       active.tick += 1;
       const frame = physicsTick(root, state, settings, active.tick);
       const renderedAt = performanceClock(); recordFramePerformance(root, Number.isFinite(timestamp) ? timestamp : renderedAt, frame.renderMs, 'main');
@@ -5324,7 +5479,7 @@ self.onmessage = event => {
     root.dataset.cfxGraphPhysicsReason = reason || 'reheat';
     if (options?.rebuild) return startPhysics(root, { reason, fit: options.fit });
     if (root.__cfxGraphWorker) {
-      root.dataset.cfxGraphPhysicsState = 'running'; root.__cfxGraphWorker.worker.postMessage({ type: 'reheat' });
+      root.dataset.cfxGraphPhysicsState = 'running'; root.__cfxGraphWorker.worker.postMessage({ type: 'reheat', generation: ++root.__cfxGraphWorker.generation });
       if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root); return true;
     }
     if (root.__cfxGraphMainPhysics) {
@@ -5334,10 +5489,71 @@ self.onmessage = event => {
     return startPhysics(root, { reason, fit: options?.fit });
   };
   const updateDraggedPhysicsNode = (root, node) => {
-    root.__cfxGraphWorker?.worker.postMessage({ type: 'pin', nodeId: node.id, x: node.x, y: node.y });
+    const active = root.__cfxGraphWorker;
+    if (!active) return;
+    active.editedNodes.set(node.id, ++active.generation);
+    active.worker.postMessage({ type: 'pin', generation: active.generation, nodeId: node.id, x: node.x, y: node.y });
   };
   const releaseDraggedPhysicsNode = (root, node) => {
-    root.__cfxGraphWorker?.worker.postMessage({ type: 'release', nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
+    const active = root.__cfxGraphWorker;
+    if (!active) return;
+    active.editedNodes.set(node.id, ++active.generation);
+    active.worker.postMessage({ type: 'release', generation: active.generation, nodeId: node.id, x: node.x, y: node.y, vx: node.vx, vy: node.vy, fixed: node.fixed });
+  };
+  const assessOverlaps = (nodes, includeLabels = nodes.length < 500, maximumComparisons = 250000) => {
+    // Cache each radius once. Sweep bounds rather than sampling the first nodes.
+    const items = nodes.map(node => ({ x: node.x, y: node.y, radius: nodeRadius(node, includeLabels) }));
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    items.forEach(item => {
+      minX = Math.min(minX, item.x); maxX = Math.max(maxX, item.x);
+      minY = Math.min(minY, item.y); maxY = Math.max(maxY, item.y);
+    });
+    // Sweep the wider axis so tall, sparse layouts do not spend their budget on x ties.
+    const vertical = maxY - minY > maxX - minX;
+    items.forEach(item => {
+      const coordinate = vertical ? item.y : item.x;
+      item.left = coordinate - item.radius; item.right = coordinate + item.radius;
+    });
+    items.sort((a, b) => a.left - b.left);
+    let overlaps = 0, comparisons = 0;
+    for (let i = 0; i < items.length; i++) {
+      const a = items[i];
+      for (let j = i + 1; j < items.length && items[j].left < a.right; j++) {
+        if (comparisons >= maximumComparisons) return { overlaps, comparisons, complete: false, nodeCount: nodes.length, includeLabels };
+        comparisons++;
+        const b = items[j], radius = a.radius + b.radius;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        if (dx * dx + dy * dy < radius * radius) overlaps++;
+      }
+    }
+    return { overlaps, comparisons, complete: true, nodeCount: nodes.length, includeLabels };
+  };
+
+  const layoutQualityMetrics = (root, state) => {
+    const nodes = state.nodes;
+    if (!nodes.length) return;
+    const size = sceneSize(root);
+    const minX = Math.min(...nodes.map(node => node.x));
+    const maxX = Math.max(...nodes.map(node => node.x));
+    const minY = Math.min(...nodes.map(node => node.y));
+    const maxY = Math.max(...nodes.map(node => node.y));
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const drift = Math.hypot(centerX - size.centerX, centerY - size.centerY);
+    const assessment = assessOverlaps(nodes);
+    const overlapProbe = assessment.overlaps;
+    const driftPenalty = Math.min(1, drift / Math.max(1, Math.min(size.width, size.height) * 0.5));
+    const overlapTolerance = nodes.length >= 300 ? nodes.length * 24 : nodes.length * 10;
+    const score = Math.max(0, 1 - driftPenalty - Math.min(0.35, overlapProbe / Math.max(1, overlapTolerance)));
+    root.dataset.cfxGraphLayoutBounds = `${(maxX - minX).toFixed(1)}x${(maxY - minY).toFixed(1)}`;
+    root.dataset.cfxGraphLayoutCenterDrift = drift.toFixed(2);
+    root.dataset.cfxGraphLayoutOverlapCount = String(overlapProbe);
+    root.dataset.cfxGraphLayoutOverlapCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    root.dataset.cfxGraphLayoutOverlapComparisons = String(assessment.comparisons);
+    root.dataset.cfxGraphLayoutOverlapNodeCount = String(assessment.nodeCount);
+    root.dataset.cfxGraphLayoutOverlapGeometry = assessment.includeLabels ? 'estimated-label-radius' : 'node-radius';
+    root.dataset.cfxGraphLayoutQualityScore = score.toFixed(3);
+    root.dataset.cfxGraphLayoutQuality = assessment.complete && overlapProbe === 0 && score >= 0.82 ? 'centered-structured' : 'needs-review';
   };
   const layoutCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
 
@@ -5458,7 +5674,8 @@ self.onmessage = event => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 2) return 0;
     const includeLabels = state.nodes.length < 500;
-    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, nodeRadius(node, includeLabels) * 2 + 10), 0)));
+    const radii = new Map(movable.map(node => [node, nodeRadius(node, includeLabels)]));
+    const cellSize = Math.max(28, Math.min(220, movable.reduce((max, node) => Math.max(max, radii.get(node) * 2 + 10), 0)));
     const maxPairs = state.nodes.length >= 3000 ? 120000 : state.nodes.length >= 1000 ? 180000 : 220000;
     let totalResolved = 0;
     for (let pass = 0; pass < passes; pass++) {
@@ -5485,7 +5702,7 @@ self.onmessage = event => {
               if (other === node || other.id < node.id) continue;
               pairs += 1;
               if (pairs > maxPairs) { exhausted = true; break; }
-              const minDistance = nodeRadius(node, includeLabels) + nodeRadius(other, includeLabels);
+              const minDistance = radii.get(node) + radii.get(other);
               let dx = other.x - node.x;
               let dy = other.y - node.y;
               let distance = Math.hypot(dx, dy);
@@ -5513,41 +5730,6 @@ self.onmessage = event => {
     }
     if (totalResolved) root.dataset.cfxGraphLayoutOverlapResolved = String(totalResolved);
     return totalResolved;
-  };
-
-  const countOverlaps = (nodes) => {
-    const probe = nodes.slice(0, Math.min(nodes.length, 900));
-    const includeLabels = nodes.length < 500;
-    let overlaps = 0;
-    for (let i = 0; i < probe.length; i++) {
-      for (let j = i + 1; j < probe.length; j++) {
-        const minDistance = nodeRadius(probe[i], includeLabels) + nodeRadius(probe[j], includeLabels);
-        if (Math.hypot(probe[j].x - probe[i].x, probe[j].y - probe[i].y) < minDistance) overlaps += 1;
-      }
-    }
-    return overlaps;
-  };
-
-  const layoutQualityMetrics = (root, state) => {
-    const nodes = state.nodes;
-    if (!nodes.length) return;
-    const size = sceneSize(root);
-    const minX = Math.min(...nodes.map(node => node.x));
-    const maxX = Math.max(...nodes.map(node => node.x));
-    const minY = Math.min(...nodes.map(node => node.y));
-    const maxY = Math.max(...nodes.map(node => node.y));
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    const drift = Math.hypot(centerX - size.centerX, centerY - size.centerY);
-    const overlapProbe = countOverlaps(nodes);
-    const driftPenalty = Math.min(1, drift / Math.max(1, Math.min(size.width, size.height) * 0.5));
-    const overlapTolerance = nodes.length >= 300 ? nodes.length * 24 : nodes.length * 10;
-    const score = Math.max(0, 1 - driftPenalty - Math.min(0.35, overlapProbe / Math.max(1, overlapTolerance)));
-    root.dataset.cfxGraphLayoutBounds = `${(maxX - minX).toFixed(1)}x${(maxY - minY).toFixed(1)}`;
-    root.dataset.cfxGraphLayoutCenterDrift = drift.toFixed(2);
-    root.dataset.cfxGraphLayoutOverlapCount = String(overlapProbe);
-    root.dataset.cfxGraphLayoutQualityScore = score.toFixed(3);
-    root.dataset.cfxGraphLayoutQuality = score >= 0.82 ? 'centered-structured' : 'needs-review';
   };
 
   const centerLayout = (root, state) => {
@@ -5586,8 +5768,9 @@ self.onmessage = event => {
     const maxY = Math.max(...movable.map(node => node.y));
     const width = Math.max(1, maxX - minX);
     const height = Math.max(1, maxY - minY);
-    const overlaps = countOverlaps(movable);
-    if (overlaps > movable.length * 0.45) {
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
+    if (!assessment.complete || overlaps > movable.length * 0.45) {
       root.dataset.cfxGraphLayoutCompactionSkipped = String(overlaps);
       return;
     }
@@ -5610,9 +5793,15 @@ self.onmessage = event => {
   const expandDenseLayout = (root, state) => {
     const movable = state.nodes.filter(node => !node.fixed);
     if (movable.length < 24) return;
-    const overlaps = countOverlaps(movable);
+    const assessment = assessOverlaps(movable);
+    const overlaps = assessment.overlaps;
     const threshold = movable.length >= 300 ? movable.length * 0.65 : movable.length * 0.35;
-    if (overlaps <= threshold) return;
+    root.dataset.cfxGraphLayoutDensityCoverage = assessment.complete ? 'complete' : 'budget-limited';
+    if (overlaps <= threshold) {
+      root.dataset.cfxGraphLayoutDensityDecision = assessment.complete ? 'sparse' : 'unresolved';
+      return;
+    }
+    root.dataset.cfxGraphLayoutDensityDecision = 'expand';
     const size = sceneSize(root);
     const minX = Math.min(...movable.map(node => node.x));
     const maxX = Math.max(...movable.map(node => node.x));
@@ -6879,21 +7068,7 @@ self.onmessage = event => {
       primary: root.dataset.cfxGraphSelectionPrimary || ''
     },
     focus: { active: root.dataset.cfxGraphFocus === 'active', nodeId: root.dataset.cfxGraphFocusNode || '' }, hierarchy: { rootNodeId: root.dataset.cfxGraphHierarchyRoot || '', depth: Number(root.dataset.cfxGraphHierarchyDepth || attr(root, 'data-cfx-graph-hierarchy-depth') || 0), visibleNodeCount: Number(root.dataset.cfxGraphHierarchyVisibleNodes || attr(root, 'data-cfx-graph-node-count') || 0) }, clustering: { mode: attr(root, 'data-cfx-graph-cluster-mode'), adaptive: attr(root, 'data-cfx-graph-cluster-adaptive') === 'true', minimumClusterSize: Number(attr(root, 'data-cfx-graph-cluster-min-size') || 0), targetClusterSize: Number(attr(root, 'data-cfx-graph-cluster-target-size') || 0), collapseOnLoad: attr(root, 'data-cfx-lod-collapse-clusters') === 'true' || attr(root, 'data-cfx-graph-cluster-collapse-on-load') === 'true', lod: root.dataset.cfxGraphClusterLod || '', state: root.dataset.cfxGraphClusters || '', count: Number(attr(root, 'data-cfx-graph-cluster-count') || 0) }, manipulation: { enabled: attr(root, 'data-cfx-graph-manipulation') === 'true', capabilities: (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').filter(Boolean) },
-    performance: {
-      state: root.dataset.cfxGraphPerformance || '', budget: root.dataset.cfxGraphPerformanceBudget || '',
-      samples: Number(root.dataset.cfxGraphPerformanceSamples || 0),
-      frameSamples: Number(root.dataset.cfxGraphPerformanceFrameSamples || 0), maxFrameMs: Number(root.dataset.cfxGraphPerformanceMaxFrameMs || 0), maxRenderMs: Number(root.dataset.cfxGraphPerformanceMaxRenderMs || 0),
-      warmupFrameSamples: Number(root.dataset.cfxGraphPerformanceWarmupFrameSamples || 0), maxWarmupFrameMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupFrameMs || 0), maxWarmupRenderMs: Number(root.dataset.cfxGraphPerformanceMaxWarmupRenderMs || 0),
-      physicsSamples: Number(root.dataset.cfxGraphPerformancePhysicsSamples || 0), physicsBudgetMisses: Number(root.dataset.cfxGraphPerformancePhysicsBudgetMisses || 0),
-      budgetMisses: Number(root.dataset.cfxGraphPerformanceBudgetMisses || 0), budgetMissRate: Number(root.dataset.cfxGraphPerformanceBudgetMissRate || 0),
-      cadenceBudgetMisses: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMisses || 0), cadenceBudgetMissRate: Number(root.dataset.cfxGraphPerformanceCadenceBudgetMissRate || 0),
-      maxSampleMs: Number(root.dataset.cfxGraphPerformanceMaxSampleMs || 0),
-      lastSampleMs: Number(root.dataset.cfxGraphPerformanceLastSampleMs || 0),
-      overlapPressureEvents: Number(root.dataset.cfxGraphPerformanceOverlapPressureEvents || 0), communityPackingEvents: Number(root.dataset.cfxGraphPerformanceCommunityPackingEvents || 0),
-      sampleTicks: Number(root.dataset.cfxGraphPerformanceSampleTicks || 0),
-      sampleBudgetMs: Number(root.dataset.cfxGraphPerformanceSampleBudgetMs || 0),
-      thread: root.dataset.cfxGraphPerformanceThread || '', acceleration: root.dataset.cfxGraphPerformanceAcceleration || ''
-    },
+    performance: exportGraphPerformance(root),
     nodes: (root.__cfxGraphState || graphState(root)).nodes.map(node => ({ id: node.id, label: attr(node.el, 'data-node-label'), secondaryLabel: attr(node.el, 'data-node-secondary-label'), badge: attr(node.el, 'data-node-badge'), parentId: attr(node.el, 'data-node-parent'), x: Number(node.x.toFixed(3)), y: Number(node.y.toFixed(3)), fixed: attr(node.el, 'data-node-fixed') === 'true', level: attr(node.el, 'data-node-level') === '' ? null : Number(attr(node.el, 'data-node-level')), kind: attr(node.el, 'data-node-kind'), groupId: attr(node.el, 'data-node-group'), clusterId: attr(node.el, 'data-node-cluster'), status: attr(node.el, 'data-cfx-status'), size: Number(attr(node.el, 'data-node-size') || 0), shape: attr(node.el, 'data-node-shape'), card: attr(node.el, 'data-node-card') === 'true', icon: attr(node.el, 'data-node-icon'), imageUrl: attr(node.el, 'data-node-image-url'), imageAlt: attr(node.el, 'data-node-image-alt') || attr(node.el.querySelector('image'), 'aria-label'), style: { backgroundColor: attr(node.el, 'data-node-background-color'), borderColor: attr(node.el, 'data-node-border-color'), labelColor: attr(node.el, 'data-node-label-color'), labelBackgroundColor: attr(node.el, 'data-node-label-background-color'), shadow: attr(node.el, 'data-node-shadow') === 'true' }, hidden: attr(node.el, 'data-node-hidden') === 'true', search: attr(node.el, 'data-cfx-search'), metadata: metadataDetail(node.el) })),
     edges: items(root, '[data-cfx-role="graph-edge"]').map(edge => ({ id: attr(edge, 'data-edge-id'), source: attr(edge, 'data-source-node-id'), target: attr(edge, 'data-target-node-id'), label: attr(edge, 'data-edge-label'), kind: attr(edge, 'data-edge-kind'), status: attr(edge, 'data-cfx-status'), weight: Number(attr(edge, 'data-edge-weight') || 0), length: Number(attr(edge, 'data-edge-length') || 0), shape: attr(edge, 'data-edge-shape'), routePoints: routePoints(attr(edge, 'data-edge-route-points')), curvature: Number(attr(edge, 'data-edge-curvature') || 0), dashed: attr(edge, 'data-edge-dashed') === 'true', dashPattern: attr(edge, 'data-edge-dash-pattern'), showLabel: attr(edge, 'data-edge-show-label') !== 'false', directed: attr(edge, 'data-edge-directed') === 'true', sourceArrow: attr(edge, 'data-edge-source-arrow') === 'true', targetArrow: attr(edge, 'data-edge-target-arrow') === 'true', physics: attr(edge, 'data-edge-physics') !== 'false', style: { color: attr(edge, 'data-edge-color'), labelColor: attr(edge, 'data-edge-label-color'), width: Number(attr(edge, 'data-edge-width') || 0) }, hidden: attr(edge, 'data-edge-hidden') === 'true', search: attr(edge, 'data-cfx-search'), metadata: metadataDetail(edge) })),
     clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), label: attr(cluster, 'data-cluster-label'), kind: attr(cluster, 'data-cluster-kind'), status: attr(cluster, 'data-cfx-status'), parentClusterId: attr(cluster, 'data-cluster-parent'), nodeIds: idList(attr(cluster, 'data-cluster-node-ids')), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true', hidden: false, search: attr(cluster, 'data-cfx-search'), metadata: metadataDetail(cluster) }))

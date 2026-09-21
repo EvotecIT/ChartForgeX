@@ -14,7 +14,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         var options = StaticOptions(configure);
         var projected = ProjectStaticScene(scene, stage);
-        var body = RenderStaticSvgBody(projected, options);
+        var body = RenderStaticSvgBody(projected, options, stage);
         return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + options.Width + "\" height=\"" + options.Height + "\" viewBox=\"0 0 960 560\" role=\"img\" aria-label=\"" + Text(projected.Title) + "\">" + body + "</svg>";
     }
 
@@ -23,7 +23,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         var options = StaticOptions(configure);
         var projected = ProjectStaticScene(scene, stage);
-        var body = RenderStaticSvgBody(projected, options);
+        var body = RenderStaticSvgBody(projected, options, stage);
         if (!SvgRasterRenderer.TryRenderFragment(body, "0 0 960 560", "xMidYMid meet", options.Width, options.Height, out var rgba)) throw new InvalidOperationException("Static graph SVG could not be rasterized.");
         CompositeTransparentPixels(rgba, 255, 255, 255);
         return PngWriter.WriteRgba(options.Width, options.Height, rgba);
@@ -36,7 +36,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return options;
     }
 
-    private static string RenderStaticSvgBody(GraphScene scene, GraphSceneStaticRenderOptions options) {
+    private static string RenderStaticSvgBody(GraphScene scene, GraphSceneStaticRenderOptions options, GraphSceneStage? stage) {
         var writer = new StringBuilder();
         var positions = ComputePositions(scene);
         var labeledNodeIds = SelectStaticNodeLabels(scene, options.MaximumNodeLabels);
@@ -58,7 +58,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteEdges(writer, scene, positions, clusterMembership, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), markerId, emptyIds, false);
         WriteEdgeLabels(writer, scene, positions, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), emptyIds);
         WriteNodes(writer, scene, positions, clusterMembership, emptyIds, false, false, labeledNodeIds);
-        writer.Append("</g></g>");
+        writer.Append("</g>");
+        if (stage != null) {
+            writer.Append("<text x=\"480\" y=\"542\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">");
+            var shownNodes = scene.Nodes.Count(node => !node.Hidden);
+            var shownEdges = scene.Edges.Count(edge => !edge.Style.Hidden);
+            writer.Append(shownNodes).Append(" nodes · ").Append(shownEdges).Append(" relationships shown; ");
+            writer.Append(stage.HiddenNodeCount + stage.VisibleNodeIds.Count - shownNodes).Append(" nodes · ")
+                .Append(stage.HiddenEdgeCount + stage.VisibleEdgeIds.Count - shownEdges).Append(" relationships omitted (");
+            writer.Append(stage.BoundaryEdgeCount).Append(" cross the view boundary).</text>");
+        }
+        writer.Append("</g>");
         return writer.ToString();
     }
 
@@ -76,10 +86,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var contentWidth = Math.Max(1, maxX - minX);
         var contentHeight = Math.Max(1, maxY - minY);
         var scale = Math.Min((Width - 120) / contentWidth, (Height - 100) / contentHeight);
-        scale = Math.Max(0.05, Math.Min(scene.Nodes.Count <= 20 ? 3 : scene.Nodes.Count <= 100 ? 1.8 : 1.15, scale));
+        scale = Math.Min(scene.Nodes.Count <= 20 ? 3 : scene.Nodes.Count <= 100 ? 1.8 : 1.15, scale);
         var centerX = (minX + maxX) / 2;
         var centerY = (minY + maxY) / 2;
-        return "translate(" + Number(Width / 2 - centerX * scale) + " " + Number(Height / 2 - centerY * scale) + ") scale(" + Number(scale) + ")";
+        return "translate(" + Number(Width / 2 - centerX * scale) + " " + Number(Height / 2 - centerY * scale) + ") scale(" + scale.ToString("G17", System.Globalization.CultureInfo.InvariantCulture) + ")";
     }
 
     private static ISet<string> SelectStaticNodeLabels(GraphScene scene, int maximumLabels) {
@@ -161,7 +171,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
             retainedClusterIds.Add(cluster.Id);
         }
         foreach (var source in scene.Nodes.Where(node => visible.Contains(node.Id))) projected.Nodes.Add(CopyNode(source, visible, hiddenDescendants, retainedClusterIds));
-        foreach (var source in scene.Edges.Where(edge => visible.Contains(edge.SourceNodeId) && visible.Contains(edge.TargetNodeId))) projected.Edges.Add(CopyEdge(source));
+        var visibleEdges = stage == null ? null : new HashSet<string>(stage.VisibleEdgeIds, StringComparer.Ordinal);
+        foreach (var source in scene.Edges.Where(edge => visible.Contains(edge.SourceNodeId) && visible.Contains(edge.TargetNodeId) && (visibleEdges == null || visibleEdges.Contains(edge.Id)))) projected.Edges.Add(CopyEdge(source));
+        if (visibleEdges != null && projected.Edges.Count != visibleEdges.Count) throw new InvalidOperationException("Graph scene stage contains an unavailable relationship or an endpoint outside the view.");
         projected.Options.Layout.Mode = scene.Options.Layout.Mode;
         projected.Options.Layout.Direction = scene.Options.Layout.Direction;
         projected.Options.Layout.LevelSeparation = scene.Options.Layout.LevelSeparation;
@@ -171,7 +183,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         // A single hierarchy rank stops being readable well before it becomes a "large" graph.
         // Dense static stages use concentric hierarchy bands: parent order stays deterministic,
         // leaf-heavy levels can occupy several rings, and the full graph remains inspectable.
-        if (projected.Nodes.Count >= 40) ApplyStaticHierarchyBands(projected);
+        if (stage?.Kind == GraphSceneStageKind.Neighborhood) ApplyStaticNeighborhoodLayout(projected, stage.RootNodeId!);
+        else if (projected.Nodes.Count >= 40) ApplyStaticHierarchyBands(projected);
         projected.Options.Disable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Manipulation);
         projected.Validate();
         return projected;

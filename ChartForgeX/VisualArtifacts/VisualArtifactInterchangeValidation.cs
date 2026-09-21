@@ -29,7 +29,7 @@ internal static class VisualArtifactInterchangeValidation {
     internal const int MaximumDashPatternValues = 64;
     internal const int MaximumWaypointsPerEdge = 10000;
     internal const int MaximumIdCharacters = 512;
-    private const int MaximumTextCharacters = 65536;
+    internal const int MaximumTextCharacters = 65536;
 
     public static void Validate(VisualArtifactInterchangeEnvelope envelope) {
         if (envelope == null) throw new ArgumentNullException(nameof(envelope));

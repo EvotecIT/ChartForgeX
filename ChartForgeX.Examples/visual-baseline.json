@@ -1039,6 +1039,23 @@
       }
     },
     {
+      "name": "dense-signal-gaps-light",
+      "width": 1180,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1427029,
+        "minTransparentPixels": 83371,
+        "minDistinctColors": 1906,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "detection-confidence-errorbar-dark",
       "width": 760,
       "height": 460,
@@ -1425,7 +1442,7 @@
         "outputScale": 1,
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 387,
+        "minDistinctColors": 853,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1434,7 +1451,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 48,
+        "minVisualNodes": 49,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1442,7 +1459,7 @@
         "outputScale": 1,
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1600,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1451,7 +1468,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 152,
+        "minVisualNodes": 153,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1468,7 +1485,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 453,
+        "minVisualNodes": 454,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1485,7 +1502,7 @@
       "width": 1600,
       "height": 900,
       "svg": {
-        "minVisualNodes": 3048,
+        "minVisualNodes": 3051,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1494,6 +1511,40 @@
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-neighborhood-page-1",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 838,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graph-neighborhood-page-2",
+      "width": 1600,
+      "height": 900,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 720000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 838,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1872,6 +1923,57 @@
       }
     },
     {
+      "name": "paged-facets-1",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 203,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1735,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "paged-facets-2",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 203,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1650,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "paged-facets-3",
+      "width": 946,
+      "height": 404,
+      "svg": {
+        "minVisualNodes": 35,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 764368,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1339,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "palette-swatch-showcase-grid",
       "width": 914,
       "height": 948,
@@ -2089,6 +2191,23 @@
         "minVisiblePixels": 495232,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "readable-topology-detail",
+      "width": 1200,
+      "height": 800,
+      "svg": {
+        "minVisualNodes": 147,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 960000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 939,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2586,6 +2705,40 @@
       }
     },
     {
+      "name": "topology-measured-typography-mono",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 725,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "topology-measured-typography-sans",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 762,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "transparent-report-summary-metric-strip",
       "width": 980,
       "height": 294,
@@ -2690,7 +2843,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 811,
+      "height": 813,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
