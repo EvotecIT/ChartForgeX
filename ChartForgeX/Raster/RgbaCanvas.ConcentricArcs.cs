@@ -60,9 +60,12 @@ internal sealed partial class RgbaCanvas {
                 progress = AngleInArc(Math.Atan2(dy, dx), normalizedStart, end);
             }
 
-            var color = progress ? colors[ringIndex] : trackColor;
             var coverage = distance <= strokeRadius ? 1 : strokeRadius + feather - distance;
-            BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+            BlendPixel(x, y, coverage >= 1 ? trackColor : WithOpacity(trackColor, coverage));
+            if (progress) {
+                var color = colors[ringIndex];
+                BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+            }
         }
 
         // Restore the rounded progress caps without turning the dense path back into

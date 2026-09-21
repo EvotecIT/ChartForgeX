@@ -230,6 +230,30 @@ public sealed class LegendDensityTests {
     }
 
     [Fact]
+    public void DenseRadialRasterCompositesTransparentProgressOverTheTrack() {
+        static RgbaCanvas Render(double ratio, ChartColor progress) {
+            var canvas = new RgbaCanvas(100, 100, 1, null, 1, useDefaultOutlineFont: false);
+            canvas.Clear(ChartColor.FromRgb(255, 255, 255));
+            canvas.DrawConcentricArcs(
+                50,
+                50,
+                30,
+                6,
+                -Math.PI / 2,
+                new[] { ratio },
+                new[] { progress },
+                ChartColor.FromRgb(30, 80, 180),
+                4);
+            return canvas;
+        }
+
+        var trackOnly = Render(0, ChartColor.FromRgba(255, 0, 0, 0));
+        var transparentProgress = Render(0.5, ChartColor.FromRgba(255, 0, 0, 0));
+
+        Assert.Equal(trackOnly.Pixels, transparentProgress.Pixels);
+    }
+
+    [Fact]
     public void LongRadialCenterLabelsCannotConsumeTheRingBand() {
         var layout = Rendering.RadialBarRingLayout.Create(100, 40, 1, 10_000);
         Assert.Equal(55, layout.CenterRadius, 6);
