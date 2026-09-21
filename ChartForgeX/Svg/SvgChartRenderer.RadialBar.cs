@@ -119,7 +119,7 @@ public sealed partial class SvgChartRenderer {
         var style = chart.Options.LegendStyle;
         var fontSize = StyleFontSize(style, t.LegendFontSize);
         var area = RadialBarLegendArea(chart, plot, series);
-        var rows = BuildRadialBarLegendRows(chart, series, area.Width, IsLeftLegend(chart.Options.LegendPosition) || IsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
+        var rows = BuildRadialBarLegendRows(chart, series, area.Width, area.Height);
         var y = RadialBarLegendStartY(chart, area, rows.Count);
         writer
             .StartElement("g")
@@ -206,7 +206,8 @@ public sealed partial class SvgChartRenderer {
             var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, series.Points.Count, availableHeight);
             return Math.Min(230, Math.Max(142, RadialBarLegendWidestItem(chart, series, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
         }
-        return LegendRowBudget.HorizontalReserve(chart, BuildRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80)).Count);
+        var rows = BuildRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80), plot.Height).Count;
+        return LegendRowBudget.HorizontalReserve(chart, rows, plot.Height);
     }
 
     private static double RadialBarLegendWidestItem(Chart chart, ChartSeries series, int visible) {
@@ -251,6 +252,11 @@ public sealed partial class SvgChartRenderer {
             var itemWidth = vertical
                 ? Math.Min(maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style, emphasized: true) + valueWidth + 34)
                 : LegendRowBudget.HorizontalItemWidth(StyleText(style, rawLabel) + " " + value, fontSize, maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + 34);
+            if (!vertical) {
+                labelMax = Math.Max(1, itemWidth - valueWidth - ChartVisualPrimitives.RadialLegendMarkerRadius * 2 - 28);
+                labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, labelMax, fontSize, style, emphasized: true);
+                label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, labelMax, style, emphasized: true);
+            }
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new RadialBarLegendRow();
                 rows.Add(row);

@@ -135,6 +135,51 @@ public sealed class LegendDensityTests {
         Assert.DoesNotContain(XDocument.Parse(new SvgChartRenderer().Render(chart)).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-row");
     }
 
+    [Theory]
+    [InlineData("line")]
+    [InlineData("pie")]
+    [InlineData("radial")]
+    public void FullHeightHorizontalLegendBudgetStaysInsideTheDrawableViewport(string kind) {
+        var chart = Chart.Create()
+            .WithSize(900, 560)
+            .WithTitle("Bounded horizontal legend")
+            .WithLegendPosition(ChartLegendPosition.Top)
+            .WithLegendBudget(1.0);
+        var points = Enumerable.Range(0, 300).Select(index => new ChartPoint(index, index % 100 + 1)).ToArray();
+        if (kind == "pie") chart.AddPie("Values", points);
+        else if (kind == "radial") chart.AddRadialBar("Values", points);
+        else foreach (var point in points) chart.AddLine("Service " + point.X, new[] { new ChartPoint(0, point.Y), new ChartPoint(1, point.Y + 1) });
+
+        var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+        var summary = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-overflow");
+
+        Assert.InRange((double)summary.Attribute("y")!, 1, 559);
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+    }
+
+    [Theory]
+    [InlineData("pie", "slice-legend-label", "slice-legend-percent")]
+    [InlineData("radial", "radial-bar-legend-label", "radial-bar-legend-value")]
+    public void HorizontalSpecializedLegendLabelsFitBeforeTheirValues(string kind, string labelRole, string valueRole) {
+        var chart = Chart.Create()
+            .WithSize(900, 560)
+            .WithLegendPosition(ChartLegendPosition.Top)
+            .WithLegendStyle(style => style.WithFontFamily("monospace").WithFontSize(18));
+        var points = Enumerable.Range(0, 8).Select(index => new ChartPoint(index, index + 1)).ToArray();
+        chart.WithXLabels(points.Select(point => new string('i', 32) + point.X).ToArray());
+        if (kind == "pie") chart.AddPie("Values", points);
+        else chart.AddRadialBar("Values", points);
+
+        var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
+        var label = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == labelRole);
+        var value = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == valueRole && (string?)element.Attribute("data-cfx-point") == (string?)label.Attribute("data-cfx-point"));
+        var fontSize = (double)label.Attribute("font-size")!;
+        var measuredWidth = new TextMeasurementContext((string)label.Attribute("font-family")!).Measure(label.Value, fontSize, true);
+
+        Assert.True((double)label.Attribute("x")! + measuredWidth <= (double)value.Attribute("x")! - 4);
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+    }
+
     [Fact]
     public void OverflowSummaryUsesLegendTextCaseInSvg() {
         var chart = Chart.Create().WithSize(900, 560).WithLegendBudget(maximumRows: 2)
@@ -239,6 +284,22 @@ public sealed class LegendDensityTests {
         var withLegend = Create(position, showLegend: true);
         var withoutLegend = Create(position, showLegend: false);
         Assert.Equal(FirstSlicePath(withoutLegend), FirstSlicePath(withLegend));
+        Assert.Equal(new PngChartRenderer().Render(withoutLegend), new PngChartRenderer().Render(withLegend));
+    }
+
+    [Theory]
+    [InlineData(ChartLegendPosition.Top)]
+    [InlineData(ChartLegendPosition.Bottom)]
+    public void ImpossibleHorizontalWaterfallLegendBudgetPreservesPngGeometry(ChartLegendPosition position) {
+        static Chart Create(ChartLegendPosition legendPosition, bool showLegend) => Chart.Create()
+            .WithSize(900, 560)
+            .WithLegendPosition(legendPosition)
+            .WithLegendBudget(0.01)
+            .WithLegend(showLegend)
+            .AddWaterfall("Delta", new[] { new ChartPoint(0, 18), new ChartPoint(1, -7), new ChartPoint(2, 12) });
+
+        var withLegend = Create(position, showLegend: true);
+        var withoutLegend = Create(position, showLegend: false);
         Assert.Equal(new PngChartRenderer().Render(withoutLegend), new PngChartRenderer().Render(withLegend));
     }
 

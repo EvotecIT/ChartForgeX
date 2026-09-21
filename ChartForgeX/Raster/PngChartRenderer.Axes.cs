@@ -195,8 +195,6 @@ public sealed partial class PngChartRenderer {
         return plot;
     }
 
-    private static int PngLegendRowCount(Chart chart) => BuildPngLegendRows(chart, Math.Max(80, chart.Options.Size.Width - 80)).Count;
-
     private static double PngXAxisLabelOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var angle = Math.Abs(Clamp(chart.Options.XAxisLabelAngle, -80, 80)) * Math.PI / 180.0;
         var fontSize = PngTickFontSize(chart);

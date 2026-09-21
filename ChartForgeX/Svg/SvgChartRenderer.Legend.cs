@@ -14,7 +14,7 @@ public sealed partial class SvgChartRenderer {
         if (!ShouldDrawLegend(chart)) return;
         var t = chart.Options.Theme;
         var area = LegendArea(chart, w, h);
-        var rows = BuildLegendRows(chart, area.Width, IsVerticalLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
+        var rows = BuildLegendRows(chart, area.Width, area.Height);
         var y = LegendStartY(chart, area, rows.Count);
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("g").Attribute("data-cfx-role", "legend").Attribute("data-cfx-position", chart.Options.LegendPosition.ToString()).EndStartElement().Line();
@@ -179,7 +179,11 @@ public sealed partial class SvgChartRenderer {
 
     private static double LegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
-    private static double LegendBottomReserve(Chart chart) => LegendRowBudget.HorizontalReserve(chart, BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80)).Count);
+    private static double LegendBottomReserve(Chart chart) {
+        var availableHeight = LegendRowBudget.HorizontalAvailableHeight(chart);
+        var rows = BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80), availableHeight).Count;
+        return LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
+    }
 
     private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Any(series => series.ShowInLegend) && !IsMapChart(chart);
 

@@ -72,7 +72,7 @@ public sealed partial class PngChartRenderer {
         var fontSize = PngLegendFontSize(chart);
         var style = chart.Options.LegendStyle;
         var area = PngRadialBarLegendArea(chart, plot, series);
-        var rows = BuildPngRadialBarLegendRows(chart, series, area.Width, PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
+        var rows = BuildPngRadialBarLegendRows(chart, series, area.Width, area.Height);
         var y = PngRadialBarLegendStartY(chart, area, rows.Count);
         foreach (var row in rows) {
             if (y > area.Bottom) break;
@@ -114,7 +114,8 @@ public sealed partial class PngChartRenderer {
             var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, series.Points.Count, availableHeight);
             return Math.Min(230, Math.Max(142, PngRadialBarLegendWidestItem(chart, series, visible) + 22)) + ChartVisualPrimitives.SideLegendPlotGap;
         }
-        return LegendRowBudget.HorizontalReserve(chart, BuildPngRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80)).Count);
+        var rows = BuildPngRadialBarLegendRows(chart, series, Math.Max(80, plot.Width - 80), plot.Height).Count;
+        return LegendRowBudget.HorizontalReserve(chart, rows, plot.Height);
     }
 
     private static double PngRadialBarLegendWidestItem(Chart chart, ChartSeries series, int visible) {
@@ -159,6 +160,11 @@ public sealed partial class PngChartRenderer {
             var itemWidth = vertical
                 ? Math.Min(maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + valueWidth + 34)
                 : LegendRowBudget.HorizontalItemWidth(style.TransformText(rawLabel, System.Globalization.CultureInfo.InvariantCulture) + " " + style.TransformText(value, System.Globalization.CultureInfo.InvariantCulture), fontSize, maxX, ChartVisualPrimitives.RadialLegendMarkerRadius * 2 + 34);
+            if (!vertical) {
+                labelMax = Math.Max(1, itemWidth - valueWidth - ChartVisualPrimitives.RadialLegendMarkerRadius * 2 - 28);
+                labelFontSize = TextFontSizeForEmphasizedWidth(rawLabel, labelMax, fontSize, style);
+                label = TrimReadablePngLabelToWidth(rawLabel, labelFontSize, labelMax, style);
+            }
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngRadialBarLegendRow();
                 rows.Add(row);

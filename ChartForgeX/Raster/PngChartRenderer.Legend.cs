@@ -12,7 +12,7 @@ public sealed partial class PngChartRenderer {
         var symbolWidth = 18;
         var rowHeight = PngLegendRowHeight(chart);
         var area = PngLegendArea(chart);
-        var rows = BuildPngLegendRows(chart, area.Width, PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition) ? area.Height : (double?)null);
+        var rows = BuildPngLegendRows(chart, area.Width, area.Height);
         var y = PngLegendStartY(chart, area, rows.Count);
 
         foreach (var row in rows) {
@@ -173,7 +173,11 @@ public sealed partial class PngChartRenderer {
 
     private static double PngLegendRowHeight(Chart chart) => LegendRowBudget.RowHeight(chart);
 
-    private static double PngLegendBottomReserve(Chart chart) => LegendRowBudget.HorizontalReserve(chart, PngLegendRowCount(chart));
+    private static double PngLegendBottomReserve(Chart chart) {
+        var availableHeight = LegendRowBudget.HorizontalAvailableHeight(chart);
+        var rows = BuildPngLegendRows(chart, System.Math.Max(1, chart.Options.Size.Width - 80), availableHeight).Count;
+        return LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
+    }
 
     private static double PngLegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;

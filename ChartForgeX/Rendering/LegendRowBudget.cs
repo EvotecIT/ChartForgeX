@@ -38,12 +38,18 @@ internal static class LegendRowBudget {
         return Math.Max(20, fontSize * 1.2 + 6);
     }
 
-    internal static double HorizontalReserve(Chart chart, int rowCount) {
+    internal static double HorizontalReserve(Chart chart, int rowCount, double? availableHeight = null) {
         if (rowCount <= 0) return 0;
         var maximumHeight = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
+        if (availableHeight.HasValue) maximumHeight = Math.Min(maximumHeight, Math.Max(0, availableHeight.Value));
         var rowHeight = RowHeight(chart);
         var fixedSpacing = Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, maximumHeight - rowHeight));
         return Math.Min(maximumHeight, fixedSpacing + rowCount * rowHeight);
+    }
+
+    internal static double HorizontalAvailableHeight(Chart chart) {
+        var top = chart.Options.ShowHeader ? 98 : 44;
+        return Math.Max(0, chart.Options.Size.Height - top - 4);
     }
 
     internal static double HorizontalItemWidth(string text, double fontSize, double availableWidth, double overhead) {
