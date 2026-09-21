@@ -319,8 +319,9 @@
       const paddingBottom = styles ? Number.parseFloat(styles.paddingBottom || '0') || 0 : 0;
       const width = Math.max(1, rect.width - paddingLeft - paddingRight);
       const availableHeight = Math.max(1, rect.height - paddingTop - paddingBottom);
-      const svgWidth = Math.max(1, width);
-      const svgHeight = viewBox && viewBox.width > 0 && viewBox.height > 0 ? svgWidth * (viewBox.height / viewBox.width) : Math.max(1, svg ? svg.getBoundingClientRect().height : availableHeight);
+      const svgStyles = svg && window.getComputedStyle ? window.getComputedStyle(svg) : null;
+      const svgWidth = Math.max(1, svgStyles ? Number.parseFloat(svgStyles.width) || svg.clientWidth : width);
+      const svgHeight = Math.max(1, svgStyles ? Number.parseFloat(svgStyles.height) || svg.clientHeight : availableHeight);
       return { rect, paddingTop, paddingLeft, width, availableHeight, svgWidth, svgHeight };
     };
     const emitViewport = () => {
@@ -378,14 +379,20 @@
         bottom: Math.max(current.bottom, box.y + box.height)
       }), { x: boxes[0].x, y: boxes[0].y, right: boxes[0].x + boxes[0].width, bottom: boxes[0].y + boxes[0].height });
       const metrics = viewportMetrics();
-      const unitX = metrics.svgWidth / viewBox.width;
-      const unitY = metrics.svgHeight / viewBox.height;
+      const aspect = svg.getAttribute('preserveAspectRatio') || 'xMidYMid meet';
+      const uniform = aspect.includes('slice')
+        ? Math.max(metrics.svgWidth / viewBox.width, metrics.svgHeight / viewBox.height)
+        : Math.min(metrics.svgWidth / viewBox.width, metrics.svgHeight / viewBox.height);
+      const unitX = aspect.trim() === 'none' ? metrics.svgWidth / viewBox.width : uniform;
+      const unitY = aspect.trim() === 'none' ? metrics.svgHeight / viewBox.height : uniform;
+      const offsetX = (metrics.svgWidth - viewBox.width * unitX) * (aspect.includes('xMin') ? 0 : aspect.includes('xMax') ? 1 : 0.5);
+      const offsetY = (metrics.svgHeight - viewBox.height * unitY) * (aspect.includes('YMin') ? 0 : aspect.includes('YMax') ? 1 : 0.5);
       const boundsWidth = Math.max(1, (bounds.right - bounds.x) * unitX);
       const boundsHeight = Math.max(1, (bounds.bottom - bounds.y) * unitY);
       const padding = 44;
       const zoom = clamp(Math.min(metrics.width / (boundsWidth + padding * 2), metrics.availableHeight / (boundsHeight + padding * 2)), 0.5, 3.2);
-      const centerX = (bounds.x + (bounds.right - bounds.x) / 2 - viewBox.x) * unitX;
-      const centerY = (bounds.y + (bounds.bottom - bounds.y) / 2 - viewBox.y) * unitY;
+      const centerX = (bounds.x + (bounds.right - bounds.x) / 2 - viewBox.x) * unitX + offsetX;
+      const centerY = (bounds.y + (bounds.bottom - bounds.y) / 2 - viewBox.y) * unitY + offsetY;
       const originX = metrics.svgWidth / 2;
       const originY = metrics.svgHeight / 2;
       const targetX = metrics.width / 2;
@@ -1071,28 +1078,45 @@
         const edgeStatusOk = !status || attr(edge, 'data-cfx-status') === status || (source && attr(source, 'data-cfx-status') === status) || (target && attr(target, 'data-cfx-status') === status);
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)'));
-      setTopologyFilterHidden('[data-cfx-role="topology-group"]', groupElement => {
-        const groupId = attr(groupElement, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)');
-        return !showGroups || !hasVisibleNodes || (group && groupId !== group);
-      });
-      const detail = {
-        chartId: attr(wrapper, 'data-chart-id'),
-        nodes: visibleNodes.size,
-        edges: wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)').length,
-        query: topologyFilterState.query || '',
-        status,
-        group,
-        kind,
-        active
-      };
-      setTopologyFilterAttributes(detail);
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
-      if (active && visibleNodes.size) fitVisibleTopology(false);
+      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
+      syncTopologyGroupVisibility();
+      const detail = publishTopologyFilterSummary();
+      if (active && detail.nodes) fitVisibleTopology(false);
       restoreForceFocusLabels();
     };
     const clearTopologyFilter = () => applyTopologyFilter({ query: '', status: '', group: '', kind: '', edges: true, labels: true, groups: true });
+    // Each filter owns its hidden class. Report their intersection without
+    // copying one filter's transient visibility into the other's state.
+    const syncTopologyGroupVisibility = () => {
+      const force = forceGraphControls && forceGraphPanel ? forceGraphState() : null;
+      wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(groupElement => {
+        const groupId = attr(groupElement, 'data-group-id');
+        const hostAllowsGroup = topologyFilterState.groups !== false && (!topologyFilterState.group || topologyFilterState.group === groupId);
+        const forceAllowsGroup = !force || (force.groups && (!force.group || force.group === groupId));
+        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + topologyFilterEscape(groupId) + '"]:not(.cfx-topology-html-filter-hidden):not(.cfx-topology-html-force-hidden)');
+        groupElement.classList.toggle('cfx-topology-html-filter-hidden', !hostAllowsGroup || !forceAllowsGroup || !hasVisibleNodes);
+        groupElement.classList.remove('cfx-topology-html-force-hidden');
+      });
+    };
+    const publishTopologyFilterSummary = () => {
+      const force = forceGraphControls && forceGraphPanel ? forceGraphState() : null;
+      const active = state => !!(state && (String(state.query || '').trim() || state.status || state.group || state.kind || state.edges === false || state.labels === false || state.groups === false));
+      const count = role => Array.from(wrapper.querySelectorAll('[data-cfx-role="' + role + '"]')).filter(isViewportVisible).length;
+      const detail = {
+        chartId: attr(wrapper, 'data-chart-id'), nodes: count('topology-node'), edges: count('topology-edge'),
+        query: topologyFilterState.query || force?.query || '',
+        status: topologyFilterState.status || force?.status || '',
+        group: topologyFilterState.group || force?.group || '',
+        kind: topologyFilterState.kind || '',
+        active: active(topologyFilterState) || active(force),
+        filters: { topology: { ...topologyFilterState }, force: force ? { ...force } : null }
+      };
+      setTopologyFilterAttributes(detail);
+      const summary = forceGraphPanel?.querySelector('[data-cfx-force-summary]');
+      if (summary) summary.textContent = detail.nodes + ' nodes / ' + detail.edges + ' edges visible';
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
+      return detail;
+    };
     const forceSearchText = element => [
       attr(element, 'data-node-id'), attr(element, 'data-node-label'), attr(element, 'data-node-kind'), attr(element, 'data-group-id'),
       attr(element, 'data-edge-id'), attr(element, 'data-edge-label'), attr(element, 'data-edge-secondary-label'), attr(element, 'data-edge-tertiary-label'), attr(element, 'data-edge-kind'), attr(element, 'data-source-node-id'), attr(element, 'data-target-node-id'),
@@ -1164,19 +1188,9 @@
         return !state.edges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
       setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
-      setForceHidden('[data-cfx-role="topology-group"]', group => {
-        const groupId = attr(group, 'data-group-id');
-        const hasVisibleNodes = !!wrapper.querySelector('[data-cfx-role="topology-node"][data-group-id="' + cssEscape(groupId) + '"]:not(.cfx-topology-html-force-hidden)');
-        return !state.groups || !hasVisibleNodes || (state.group && groupId !== state.group);
-      });
-      const nodeCount = visibleNodes.size;
-      const edgeCount = wrapper.querySelectorAll('[data-cfx-role="topology-edge"]:not(.cfx-topology-html-force-hidden)').length;
-      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary) summary.textContent = nodeCount + ' nodes / ' + edgeCount + ' edges visible';
-      const detail = { chartId: attr(wrapper, 'data-chart-id'), nodes: nodeCount, edges: edgeCount, query: state.query, status: state.status, group: state.group, kind: '', active: !!(state.query || state.status || state.group || !state.edges || !state.labels || !state.groups) };
-      setTopologyFilterAttributes(detail);
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail }));
+      syncTopologyGroupVisibility();
+      const detail = publishTopologyFilterSummary();
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
       restoreForceFocusLabels();
     };
     const clearForceFocusLabels = () => {
@@ -1195,7 +1209,7 @@
     const restoreForceFocusLabels = () => {
       if (!forceGraphControls || !forceGraphPanel) return;
       const selected = selectedFocusElement();
-      if (selected) applyForceFocusLabels(identity(selected));
+      if (selected && isViewportVisible(selected)) applyForceFocusLabels(identity(selected));
       else clearForceFocusLabels();
     };
     const applyForceFocusLabels = detail => {
@@ -1216,8 +1230,6 @@
         if (active) label.classList.remove('cfx-topology-html-force-hidden');
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
-      const summary = forceGraphPanel.querySelector('[data-cfx-force-summary]');
-      if (summary && detail.kind === 'node') summary.textContent = detail.id + ': ' + (detail.related.nodeIds || []).length + ' neighbors / ' + edgeIds.size + ' edges';
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
@@ -1334,8 +1346,12 @@
     }
     if (forceGraphControls && forceGraphPanel) {
       forceGraphPanel.querySelectorAll('input,select').forEach(control => {
-        control.addEventListener('input', applyForceGraphFilters);
-        control.addEventListener('change', applyForceGraphFilters);
+        const filterAndReveal = () => {
+          applyForceGraphFilters();
+          // Query changes reveal results; appearance toggles preserve the reader's viewport.
+          if (control.matches('[data-cfx-force-search],[data-cfx-force-status],[data-cfx-force-group]')) fitVisibleTopology();
+        };
+        control.addEventListener(control.tagName === 'SELECT' ? 'change' : 'input', filterAndReveal);
       });
       wrapper.addEventListener('cfx-topology-force-filter-set', event => {
         const detail = event.detail || {};

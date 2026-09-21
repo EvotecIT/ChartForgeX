@@ -32,7 +32,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => ChartDecimator.Decimate(points, 2), "Decimation should reject budgets below three points.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartDecimator.Decimate(points, 10, (ChartDecimationMode)99), "Decimation should reject unknown algorithms.");
         var invalid = points.ToArray();
-        invalid[517] = MemoryMarshal.Cast<double, ChartPoint>(new[] { invalid[517].X, double.NaN }.AsSpan())[0];
+        MemoryMarshal.Cast<ChartPoint, double>(invalid.AsSpan(517, 1))[1] = double.NaN;
         AssertThrows<ArgumentOutOfRangeException>(() => ChartDecimator.Decimate(invalid, 3), "Decimation should validate every source point even when an invalid point would not be retained.");
     }
 

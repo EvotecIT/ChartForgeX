@@ -104,6 +104,8 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSeriesShape(ChartSeries series) {
+        if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter)
+            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, and scatter series.");
         if (series.HistogramBinLayout != null) ValidateHistogramSeries(series);
         if (series.Kind == ChartSeriesKind.Bubble) {
             ValidateTupleSeries(series, 2, "Bubble");

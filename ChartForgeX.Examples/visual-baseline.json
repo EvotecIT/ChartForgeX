@@ -988,6 +988,23 @@
       }
     },
     {
+      "name": "dense-signal-gaps-light",
+      "width": 1180,
+      "height": 640,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1427029,
+        "minTransparentPixels": 83371,
+        "minDistinctColors": 1906,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "detection-confidence-errorbar-dark",
       "width": 760,
       "height": 460,
@@ -2076,6 +2093,23 @@
       }
     },
     {
+      "name": "readable-topology-detail",
+      "width": 1200,
+      "height": 800,
+      "svg": {
+        "minVisualNodes": 147,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 960000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 939,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "remediation-impact-waterfall-dark",
       "width": 920,
       "height": 540,
@@ -2569,6 +2603,40 @@
       }
     },
     {
+      "name": "topology-measured-typography-mono",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 725,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "topology-measured-typography-sans",
+      "width": 1000,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 210000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 762,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "transparent-report-summary-metric-strip",
       "width": 980,
       "height": 294,
@@ -2673,7 +2741,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 811,
+      "height": 813,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,

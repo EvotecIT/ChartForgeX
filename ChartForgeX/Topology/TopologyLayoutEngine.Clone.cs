@@ -10,8 +10,8 @@ internal static partial class TopologyLayoutEngine {
             LayoutDirection = chart.LayoutDirection,
             Viewport = new TopologyViewport { Width = chart.Viewport.Width, Height = chart.Viewport.Height, Padding = chart.Viewport.Padding },
             MapViewport = chart.MapViewport,
-            Legend = chart.Legend,
-            Theme = chart.Theme
+            Legend = chart.Legend == null ? null : TopologyLegend.Clone(chart.Legend),
+            Theme = chart.Theme?.Clone()
         };
         copy.Accessibility.Name = chart.Accessibility.Name;
         copy.Accessibility.Description = chart.Accessibility.Description;
@@ -58,7 +58,7 @@ internal static partial class TopologyLayoutEngine {
             Kind = node.Kind,
             Symbol = node.Symbol,
             IconId = node.IconId,
-            Artwork = node.Artwork,
+            Artwork = node.Artwork?.Clone(),
             DisplayMode = node.DisplayMode,
             Badge = node.Badge,
             Status = node.Status,
