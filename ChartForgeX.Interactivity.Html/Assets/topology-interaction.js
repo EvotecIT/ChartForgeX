@@ -1273,6 +1273,7 @@
       viewport.addEventListener('pointerdown', event => {
         if (event.button !== 0) return;
         if (isViewportChrome(event.target)) return;
+        if (!(event.target instanceof Element && event.target.closest(selectables))) event.preventDefault();
         const state = viewportState();
         drag = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY, moved: false };
         wrapper.setAttribute('data-cfx-topology-dragging', 'true');
