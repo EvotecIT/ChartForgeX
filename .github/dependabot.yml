@@ -28,6 +28,10 @@ updates:
     all-dependencies:
       patterns:
       - '*'
+  ignore:
+  - dependency-name: '@types/vscode'
+    versions:
+    - '>=1.137.0'
 - package-ecosystem: github-actions
   directory: /
   schedule:
