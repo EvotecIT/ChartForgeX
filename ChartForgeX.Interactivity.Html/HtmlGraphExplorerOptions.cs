@@ -10,6 +10,13 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets an optional CSP nonce for inline script elements.</summary>
     public string? ScriptNonce { get; set; }
 
+    /// <summary>
+    /// Gets or sets shared asset references. When set, <see cref="HtmlGraphExplorerRenderer.RenderPage"/> links the explorer
+    /// runtime and stylesheet from <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them (see
+    /// <see cref="HtmlInteractiveAssetFiles.GraphExplorer"/>). Null keeps pages self-contained; fragments are unaffected.
+    /// </summary>
+    public HtmlAssetReferences? ExternalAssets { get; set; }
+
     /// <summary>Gets or sets an optional deterministic SVG id scope for repeated embeds of the same scene on one page.</summary>
     public string? IdScope { get; set; }
 

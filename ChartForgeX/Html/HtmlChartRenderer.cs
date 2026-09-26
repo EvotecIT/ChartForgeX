@@ -62,11 +62,11 @@ public sealed class HtmlChartRenderer {
         return writer.Build();
     }
 
-    internal static void WriteDocumentHead(HtmlMarkupWriter writer, string title, string css) {
+    internal static void WriteDocumentHead(HtmlMarkupWriter writer, string title, string? css) {
         writer.StartElement("meta").Attribute("charset", "utf-8").EndVoidElement().Line()
             .StartElement("meta").Attribute("name", "viewport").Attribute("content", "width=device-width, initial-scale=1").EndVoidElement().Line()
-            .StartElement("title").EndStartElement().Text(title).EndElement().Line()
-            .StartElement("style").EndStartElement().RawTrusted(css).EndElement().Line();
+            .StartElement("title").EndStartElement().Text(title).EndElement().Line();
+        if (css != null) writer.StartElement("style").EndStartElement().RawTrusted(css).EndElement().Line();
     }
 
     private static string CssFontFamily(string value) {

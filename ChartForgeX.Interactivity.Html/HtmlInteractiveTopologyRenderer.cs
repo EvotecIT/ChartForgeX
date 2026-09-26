@@ -23,7 +23,19 @@ public sealed class HtmlInteractiveTopologyRenderer {
     }
 
     /// <summary>Renders a complete self-contained interactive topology HTML page.</summary>
-    public string RenderPage(TopologyChart chart, TopologyRenderOptions? options = null) {
+    public string RenderPage(TopologyChart chart, TopologyRenderOptions? options = null) => RenderPage(chart, options, null);
+
+    /// <summary>
+    /// Renders a complete interactive topology HTML page. When <paramref name="externalAssets"/> is set, the interaction
+    /// runtime is linked from its base path instead of inlined; write it once per bundle with
+    /// <see cref="HtmlInteractiveAssetFiles.TopologyScript"/> using the same options. Page styles stay inline because they
+    /// depend on the render options.
+    /// </summary>
+    /// <param name="chart">The topology to render.</param>
+    /// <param name="options">Optional render options.</param>
+    /// <param name="externalAssets">Optional shared asset references; null inlines the runtime.</param>
+    /// <returns>A complete HTML document.</returns>
+    public string RenderPage(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options);
         var theme = chart.Theme ?? TopologyTheme.Light();
@@ -36,7 +48,9 @@ public sealed class HtmlInteractiveTopologyRenderer {
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document")).Line()
-            .RawTrusted(InteractionScriptTag(options)).Line()
+            .RawTrusted(externalAssets == null ? InteractionScriptTag(options) : string.Empty);
+        if (externalAssets != null) HtmlInteractiveAssetFiles.WriteScript(writer, externalAssets, HtmlInteractiveAssetFiles.TopologyScript(options), null);
+        writer.Line()
             .EndElement().Line()
             .EndElement().Line();
         return writer.Build();
@@ -57,7 +71,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
             .Replace("cfx-topology-html-", cssPrefix + "-html-");
     }
 
-    private static TopologyRenderOptions Prepare(TopologyRenderOptions? options) {
+    internal static TopologyRenderOptions Prepare(TopologyRenderOptions? options) {
         return (options ?? new TopologyRenderOptions()).ForInteractiveHtmlRendering();
     }
 

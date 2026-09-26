@@ -31,11 +31,11 @@ public sealed class HtmlInteractiveChartRenderer {
         configure?.Invoke(options);
 
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
-        var writer = HtmlInteractivePage.StartDocument(title);
+        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets);
         writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
-        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce);
+        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
         return writer.Build();
     }
 
