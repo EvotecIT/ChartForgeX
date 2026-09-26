@@ -536,8 +536,11 @@ public static partial class TopologyIconPackJson {
     }
 
     private sealed class JsonReader {
+        // The reader is recursive; cap nesting so hostile manifests fail cleanly instead of exhausting the thread stack.
+        private const int MaximumDepth = 64;
         private readonly string _json;
         private int _position;
+        private int _depth;
 
         private JsonReader(string json) {
             _json = json;
@@ -558,8 +561,15 @@ public static partial class TopologyIconPackJson {
             if (End) throw Error("Unexpected end of JSON.");
             var c = _json[_position];
             if (c == '"') return new JsonValue(ReadString());
-            if (c == '{') return ReadObject();
-            if (c == '[') return ReadArray();
+            if (c == '{' || c == '[') {
+                if (++_depth > MaximumDepth) throw Error("JSON nesting is too deep.");
+                try {
+                    return c == '{' ? ReadObject() : ReadArray();
+                } finally {
+                    _depth--;
+                }
+            }
+
             if (Match("true")) return new JsonValue(true);
             if (Match("false")) return new JsonValue(false);
             if (Match("null")) return JsonValue.Null;
