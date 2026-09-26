@@ -54,6 +54,14 @@ public sealed class HtmlChartInteractionOptions {
     /// </summary>
     public bool IncludeResetButton { get; set; }
 
+    /// <summary>
+    /// Gets or sets shared asset references. When set, <see cref="HtmlInteractiveChartRenderer.RenderPage(ChartForgeX.Core.Chart, System.Action{HtmlChartInteractionOptions})"/>
+    /// links the runtime and stylesheet from <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them; write the
+    /// files once per bundle with <see cref="HtmlInteractiveAssetFiles.Charts"/>. Null (the default) keeps pages self-contained.
+    /// Fragments are unaffected.
+    /// </summary>
+    public HtmlAssetReferences? ExternalAssets { get; set; }
+
     /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 

@@ -28,14 +28,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var writer = new StringBuilder();
         writer.Append("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>");
         writer.Append(Text(title));
-        writer.Append("</title><style>");
-        writer.Append(BuildFragmentStyle());
-        writer.Append("</style></head><body class=\"cfx-graph-shell");
+        writer.Append("</title>");
+        if (options.ExternalAssets == null) writer.Append("<style>").Append(BuildFragmentStyle()).Append("</style>");
+        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteStylesheet(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerStyle)));
+        writer.Append("</head><body class=\"cfx-graph-shell");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
         if (options.FillAvailableHeight) writer.Append(" cfx-graph-shell-embedded");
         writer.Append("\">");
         writer.Append(RenderGraph(scene, options));
-        AppendScript(writer, options);
+        if (options.ExternalAssets == null) AppendScript(writer, options);
+        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteScript(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerScript, string.IsNullOrWhiteSpace(options.ScriptNonce) ? null : options.ScriptNonce)));
         writer.Append("</body></html>");
         return writer.ToString();
     }
@@ -598,10 +600,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<script");
         if (!string.IsNullOrWhiteSpace(options.ScriptNonce)) Attribute(writer, "nonce", options.ScriptNonce);
         writer.Append('>');
-        writer.Append("(() => {\n");
-        writer.Append(BuildInteractionScript());
-        writer.Append("})();");
+        writer.Append(WrappedInteractionScript());
         writer.Append("</script>");
+    }
+
+    internal static string WrappedInteractionScript() => "(() => {\n" + BuildInteractionScript() + "})();";
+
+    private static string ExternalAssetMarkup(Action<ChartForgeX.Html.HtmlMarkupWriter> write) {
+        var markup = new ChartForgeX.Html.HtmlMarkupWriter();
+        write(markup);
+        return markup.Build();
     }
 
     private static string SafeId(string value) {
