@@ -30,9 +30,9 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Topology
 
-- Drive the dense replication fixtures (`ChartForgeX.Tests/ReplicationTopologyFixture.cs`, 76/121/144 DCs) to zero route/foreign-card crossings and zero node-card overlaps, then lower the ceilings in `TopologyReplicationBudgetTests`. Today DenseGrouped places all sites in one row (up to 7300 px wide), hubs collapse DCs to dots, routes cross 31/62/82 foreign cards, and the 144-DC tier overlaps six cards.
+- Give grid-searched (maze) topology routes route-lane separation and overlap scoring against other maze routes; today parallel edges that both fall back to the maze share one middle path.
 - Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
-- Tune label-clearance and route-overlap weights with real dense examples.
+- Tune label-clearance and route-overlap weights with real dense examples. The wrapped replication fixtures place most site-link labels more than 60 px from their route and allow up to two label overlaps per tier; keep labels next to their routes and lower `labelOverlapCeiling` in `TopologyReplicationBudgetTests`.
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
