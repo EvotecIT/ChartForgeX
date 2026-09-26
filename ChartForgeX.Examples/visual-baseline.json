@@ -2331,6 +2331,23 @@
       }
     },
     {
+      "name": "reporting-hour-weekday",
+      "width": 1180,
+      "height": 440,
+      "svg": {
+        "minVisualNodes": 120,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 965829,
+        "minTransparentPixels": 72571,
+        "minDistinctColors": 1221,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "reporting-incident-lanes",
       "width": 1180,
       "height": 560,

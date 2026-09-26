@@ -13,6 +13,36 @@ internal static class ReportingExamples {
         WriteStateTimeline(output, pngOutputScale);
         WriteStatusMatrix(output, pngOutputScale);
         WriteIncidentLanes(output, pngOutputScale);
+        WriteHourWeekday(output, pngOutputScale);
+    }
+
+    private static void WriteHourWeekday(string output, ChartPngOutputScale pngOutputScale) {
+        // Four weeks of synthetic sign-in failures: business-hour peaks, a Monday-morning spike, and quiet weekends.
+        var events = new List<ChartTimedValue>();
+        var monday = new DateTime(2026, 8, 31, 0, 0, 0, DateTimeKind.Utc);
+        for (var day = 0; day < 28; day++) {
+            var weekday = day % 7;
+            for (var hour = 0; hour < 24; hour++) {
+                var business = hour is >= 7 and <= 17 ? 6 + (hour == 9 ? 4 : 0) : 1;
+                var weekend = weekday >= 5 ? 0.25 : 1;
+                var spike = weekday == 0 && hour is 8 or 9 ? 6 : 0;
+                var total = (int)Math.Round(business * weekend + spike + ((day * 31 + hour * 17) % 5) * 0.4);
+                for (var i = 0; i < total; i++) events.Add(new ChartTimedValue(monday.AddDays(day).AddHours(hour).AddMinutes(i * 7 % 60)));
+            }
+        }
+
+        var chart = Chart.Create()
+            .WithTitle("Sign-in failures by hour and weekday")
+            .WithSubtitle("Four weeks of events; darker cells had more failures")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(1180, 440)
+            .WithPngOutputScale(pngOutputScale)
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden)
+            .AddHourWeekdayHeatmap(events, color: ChartColor.FromHex("#2a78d6"));
+
+        chart.SaveSvg(Path.Combine(output, "reporting-hour-weekday.svg"));
+        chart.SaveHtml(Path.Combine(output, "reporting-hour-weekday.html"));
+        chart.SavePng(Path.Combine(output, "reporting-hour-weekday.png"));
     }
 
     private static void WriteIncidentLanes(string output, ChartPngOutputScale pngOutputScale) {

@@ -59,7 +59,7 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, column);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
-                var ratio = ChartHeatmapSurface.Ratio(value, min, max);
+                var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
                 var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
                 var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
                 var status = category?.Key ?? ChartHeatmapSurface.Status(ratio);
@@ -281,7 +281,7 @@ public sealed partial class SvgChartRenderer {
             var ratio = i / (double)(steps - 1);
             var value = min + (max - min) * ratio;
             var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
-            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(value, min, max)), color);
+            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max)), color);
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);
