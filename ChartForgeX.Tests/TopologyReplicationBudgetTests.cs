@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 /// <summary>
 /// Dense Active Directory replication fixtures (76, 121, and 144 domain controllers in 16, 24, and 28 sites) with CI
 /// budgets for render time, SVG size, and routing quality. The time budget is generous for small CI runners and a JIT
-/// warm-up render runs first. Size and routing ceilings sit about 25% above the values measured on Windows; layout uses
-/// portable text estimates, so the margin covers floating-point differences between runner architectures. The ceilings
-/// are regression guards: routes still cross foreign cards and the 144-DC tier still has overlapping cards (TODO.md).
+/// warm-up render runs first. SVG size budgets sit about 15% above the values measured on Windows. Dense layouts wrap site
+/// panels into rows no wider than the viewport, keep readable cards, and route around every card, so the fixtures require
+/// zero route/foreign-card crossings, zero card overlaps, and the viewport width.
 /// </summary>
 [Collection(nameof(TopologyReplicationBudgetCollection))]
 public sealed class TopologyReplicationBudgetTests {
@@ -20,17 +20,17 @@ public sealed class TopologyReplicationBudgetTests {
     public TopologyReplicationBudgetTests(ITestOutputHelper output) => _output = output;
 
     public static IEnumerable<object[]> Tiers => new[] {
-        // branches per region, DCs per hub site, SVG byte budget, edge/foreign-card crossing ceiling, node collision ceiling
-        new object[] { 3, 10, 480_000, 39, 0 },
-        new object[] { 5, 15, 760_000, 78, 0 },
-        // Known DenseGrouped defect: six overlapping DC cards at 144 DCs.
-        new object[] { 6, 18, 900_000, 103, 8 }
+        // branches per region, DCs per hub site, SVG byte budget, edge/foreign-card crossing ceiling, node collision ceiling,
+        // edge-label overlap ceiling (label placement is tracked in TODO.md)
+        new object[] { 3, 10, 480_000, 0, 0, 2 },
+        new object[] { 5, 15, 760_000, 0, 0, 2 },
+        new object[] { 6, 18, 900_000, 0, 0, 2 }
     };
 
     [Theory]
     [MemberData(nameof(Tiers))]
-    public void DenseReplicationFixture_RendersWithinBudgets(int branchSites, int hubControllers, int svgByteBudget, int crossingCeiling, int collisionCeiling) {
-        var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+    public void DenseReplicationFixture_RendersWithinBudgets(int branchSites, int hubControllers, int svgByteBudget, int crossingCeiling, int collisionCeiling, int labelOverlapCeiling) {
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var chart = ReplicationTopologyFixture.Create(branchSites, hubControllers);
         var expectedControllers = ReplicationTopologyFixture.DomainControllerCount(branchSites, hubControllers);
         ReplicationTopologyFixture.Create(1, 2).Prepare(options).ToPng();
@@ -57,14 +57,18 @@ public sealed class TopologyReplicationBudgetTests {
         Assert.True(png.Length > 10_000, "The PNG export should contain the rendered topology.");
         Assert.True(prepareMs + svgMs + pngMs <= RenderTimeBudgetMilliseconds, $"Layout plus SVG and PNG export took {prepareMs + svgMs + pngMs} ms; budget {RenderTimeBudgetMilliseconds} ms.");
         Assert.True(svg.Length <= svgByteBudget, $"SVG is {svg.Length} bytes; budget {svgByteBudget}.");
-        Assert.Equal(0, report.Edges.Sum(edge => edge.LabelObstacleHits));
+        var (labelCardOverlaps, labelOverlaps) = ReplicationTopologyFixture.EdgeLabelQuality(chart, options);
+        Assert.Equal(0, labelCardOverlaps);
+        Assert.True(labelOverlaps <= labelOverlapCeiling, $"Edge labels overlap {labelOverlaps} times; ceiling {labelOverlapCeiling}.");
         Assert.True(crossings <= crossingCeiling, $"Routes cross node cards {crossings} times; ceiling {crossingCeiling}.");
         Assert.True(collisions <= collisionCeiling, $"Node cards overlap {collisions} times; ceiling {collisionCeiling}.");
+        Assert.True(prepared.Width <= chart.Viewport.Width, $"Layout is {prepared.Width} px wide; wrapped site rows should stay within {chart.Viewport.Width} px.");
+        Assert.All(report.Nodes, node => Assert.True(node.Bounds.Width >= 40, node.Id + " collapsed below card size."));
     }
 
     [Fact]
     public void DenseReplicationFixture_RendersDeterministically() {
-        var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var first = ReplicationTopologyFixture.Create(3, 10).Prepare(options).ToSvg();
         var second = ReplicationTopologyFixture.Create(3, 10).Prepare(options).ToSvg();
         Assert.Equal(first, second);
@@ -83,7 +87,7 @@ public sealed class TopologyReplicationBudgetTests {
             .AddNode("b", "B", middleX, middleY, width: 60, height: 40)
             .AddNode("c", "C", 530, 80, width: 60, height: 40)
             .AddEdge("a-c", "a", "c", routing: routing);
-        return ReplicationTopologyFixture.NodeCardCrossings(chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).Analyze());
+        return ReplicationTopologyFixture.NodeCardCrossings(chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false }).Analyze());
     }
 
     private void SaveSample(string svg, byte[] png, int controllers) {

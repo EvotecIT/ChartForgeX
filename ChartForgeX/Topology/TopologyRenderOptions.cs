@@ -49,6 +49,16 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether tile nodes should render their subtitle as a compact chip below the tile label.</summary>
     public bool IncludeTileSubtitles { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether <see cref="TopologyLayoutMode.DenseGrouped"/> uses the readable dense layout for large
+    /// replication-style maps: left-to-right or right-to-left layouts with more than six groups wrap site panels into
+    /// rows no wider than the viewport, <see cref="TopologyGroupLayoutPolicy.Auto"/> groups of 10–24 nodes keep cards in a
+    /// grid (only larger groups collapse to dots), card spacing reserves room for tile captions, and obstacle-avoiding
+    /// routes treat captions as part of the card and fall back to a grid search when a route would cross another card.
+    /// Off by default so existing dense charts render unchanged.
+    /// </summary>
+    public bool ReadableDenseLayout { get; set; }
+
     /// <summary>Gets or sets whether explicit line breaks in node labels and subtitles should be rendered as multiple SVG/PNG text rows.</summary>
     public bool AllowMultilineNodeLabels { get; set; } = true;
 
