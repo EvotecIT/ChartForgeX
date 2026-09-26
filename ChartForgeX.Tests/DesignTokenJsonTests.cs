@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class DesignTokenJsonTests {
     // Fixture copied verbatim from TestimoX docs/roadmaps/evidence/palette-v1-graphite.json (decision D14): the shape
-    // HtmlForgeX tokens v1 generates.
+    // HtmlForgeX design tokens 1.x generate.
     private static readonly string GraphiteJson = File.ReadAllText(FixturePath("tokens", "palette-v1-graphite.json"));
 
     [Fact]

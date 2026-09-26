@@ -291,7 +291,7 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
 
 ### Generated design tokens
 
-Hosts that generate design tokens (the HtmlForgeX tokens v1 JSON, with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
+Hosts that generate design tokens (the HtmlForgeX design tokens 1.x — 1.1.0 adds optional `ramps` — with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
 
 ```csharp
 var tokens = VisualDesignTokens.FromJsonFile("tokens.json", VisualThemeMode.Dark);

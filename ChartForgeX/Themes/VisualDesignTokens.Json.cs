@@ -12,7 +12,7 @@ public sealed partial class VisualDesignTokens {
     private static readonly GeoJsonReadLimits TokenJsonLimits = new GeoJsonReadLimits(4096, 256, 256).LimitDepth(32).RejectDuplicates();
 
     /// <summary>
-    /// Loads tokens from the generated design-token JSON (the HtmlForgeX tokens v1 contract). The document holds a
+    /// Loads tokens from the generated design-token JSON (the HtmlForgeX design tokens 1.x; 1.1.0 adds the optional <c>ramps</c>). The document holds a
     /// <c>light</c> and a <c>dark</c> object, each with <c>surface</c>, <c>text</c>, <c>chrome</c>, <c>accent</c>,
     /// <c>severity</c> (fill and ink), <c>outcome</c>, <c>state</c>, and <c>series</c>, plus optional <c>ramps</c>
     /// (<c>sequential</c>: colours weakest to strongest; <c>diverging</c>: <c>negative</c> and <c>positive</c> arms weakest to
