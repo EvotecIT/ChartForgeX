@@ -169,8 +169,8 @@ internal sealed class ChartGanttLaneModel {
         var axis = Chart.Options.XAxis;
         var item = placed.Item;
         var text = lane.Name + " · " + placed.Category.Label + (string.IsNullOrWhiteSpace(item.Label) ? string.Empty : " · " + item.Label) + " · " +
-            ChartTimeScale.FormatInstant(axis, item.Start) + " – " + (item.IsOpen ? "ongoing" : ChartTimeScale.FormatInstant(axis, placed.End)) +
-            " (" + ChartStateTimelineModel.FormatDuration(placed.End - item.Start) + (item.IsOpen ? " so far" : string.Empty) + ")";
+            ChartTimeScale.FormatInstant(axis, item.Start) + " – " + (item.IsOpen ? Chart.Options.Labels.Ongoing : ChartTimeScale.FormatInstant(axis, placed.End)) +
+            " (" + ChartStateTimelineModel.FormatDuration(placed.End - item.Start) + (item.IsOpen ? " " + Chart.Options.Labels.SoFar : string.Empty) + ")";
         return string.IsNullOrWhiteSpace(item.Detail) ? text : text + " · " + item.Detail;
     }
 }

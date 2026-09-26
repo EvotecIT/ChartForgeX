@@ -99,6 +99,29 @@ public sealed class GanttLaneTests {
     }
 
     [Fact]
+    public void Render_LocalizedLabels_ReplaceNowOngoingAndSoFar() {
+        var chart = CreateChart().WithLabels(labels => {
+            labels.Now = "Teraz";
+            labels.Ongoing = "trwa";
+            labels.SoFar = "dotąd";
+        });
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Equal(new[] { "Teraz" }, Texts(svg, "gantt-lanes-now-label"));
+        var open = ByRole(svg, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-meta-ongoing") == "true");
+        Assert.Contains("– trwa (", Title(open), StringComparison.Ordinal);
+        Assert.Contains(" dotąd)", Title(open), StringComparison.Ordinal);
+        Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
+        Assert.Throws<ArgumentException>(() => chart.Options.Labels.Now = " ");
+
+        var edge = CreateChart().WithGanttToday(Start.AddHours(47.5)).WithLabels(labels => labels.Now = "Aktualny czas systemowy");
+        var edgeSvg = XDocument.Parse(edge.ToSvg());
+        var label = ByRole(edgeSvg, "gantt-lanes-now-label").Single();
+        var axis = ByRole(edgeSvg, "gantt-lanes-axis").Single();
+        Assert.Equal("middle", (string)label.Attribute("text-anchor")!);
+        Assert.True(Number(label, "x") < Number(axis, "x2") - 60, "A long label near the right edge is pulled inside the plot.");
+    }
+
+    [Fact]
     public void Validation_RejectsInvalidItemsAndEmptyCharts() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartGanttLaneItem(Start, Start, "low"));
         Assert.Throws<ArgumentException>(() => new ChartGanttLaneItem(Start, null, " "));

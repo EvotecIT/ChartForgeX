@@ -119,7 +119,12 @@ public sealed partial class SvgChartRenderer {
             var x = model.X(model.Now!.Value, plot);
             writer.StartElement("line").Attribute("data-cfx-role", "gantt-lanes-now").Attribute("x1", x).Attribute("y1", plot.Top).Attribute("x2", x).Attribute("y2", plot.Bottom)
                 .Attribute("stroke", t.Text.ToCss()).Attribute("stroke-opacity", 0.7).Attribute("stroke-width", ChartVisualPrimitives.GanttTodayStrokeWidth).Attribute("stroke-dasharray", "6 5").EndEmptyElement().Line();
-            if (chart.Options.ShowAxes) WriteStateCategoryText(writer, chart, "gantt-lanes-now-label", "Now", x > plot.Right - 24 ? plot.Right - 2 : x < plot.Left + 24 ? plot.Left + 2 : x, plot.Top - 6, x > plot.Right - 24 ? "end" : x < plot.Left + 24 ? "start" : "middle", tickFontSize, tickStyle, "700", false, t.Text);
+            if (chart.Options.ShowAxes) {
+                var label = chart.Options.Labels.Now;
+                var half = EstimateSvgStyledTextWidth(chart, label, tickFontSize, tickStyle, emphasized: true) / 2;
+                var center = Math.Max(plot.Left + 2 + half, Math.Min(plot.Right - 2 - half, x));
+                WriteStateCategoryText(writer, chart, "gantt-lanes-now-label", label, center, plot.Top - 6, "middle", tickFontSize, tickStyle, "700", false, t.Text);
+            }
         }
 
         if (chart.Options.ShowAxes) {

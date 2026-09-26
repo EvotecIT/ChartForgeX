@@ -90,9 +90,9 @@ public sealed partial class PngChartRenderer {
             var x = model.X(model.Now!.Value, plot);
             c.DrawDashedLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Text, 0.7), ChartVisualPrimitives.GanttTodayStrokeWidth, 6, 5);
             if (chart.Options.ShowAxes) {
-                var width = EstimatePngStyledTextWidth("Now", tickFontSize, tickStyle, emphasized: true);
-                var labelX = x > plot.Right - 24 ? plot.Right - 2 - width : x < plot.Left + 24 ? plot.Left + 2 : x - width / 2;
-                DrawPngTextStyled(c, labelX, plot.Top - 6 - PngStyledTextBottomExtent(tickFontSize, tickStyle), "Now", tickStyle, t.Text, tickFontSize, emphasized: true);
+                var width = EstimatePngStyledTextWidth(chart.Options.Labels.Now, tickFontSize, tickStyle, emphasized: true);
+                var labelX = Math.Max(plot.Left + 2, Math.Min(plot.Right - 2 - width, x - width / 2));
+                DrawPngTextStyled(c, labelX, plot.Top - 6 - PngStyledTextBottomExtent(tickFontSize, tickStyle), chart.Options.Labels.Now, tickStyle, t.Text, tickFontSize, emphasized: true);
             }
         }
 
