@@ -12,9 +12,11 @@ public sealed partial class VisualDesignTokens {
     private static readonly GeoJsonReadLimits TokenJsonLimits = new GeoJsonReadLimits(4096, 256, 256).LimitDepth(32).RejectDuplicates();
 
     /// <summary>
-    /// Loads tokens from the generated design-token JSON (the HtmlForgeX tokens v1 contract). The document holds a
+    /// Loads tokens from the generated design-token JSON (the HtmlForgeX design tokens 1.x; 1.1.0 adds the optional <c>ramps</c>). The document holds a
     /// <c>light</c> and a <c>dark</c> object, each with <c>surface</c>, <c>text</c>, <c>chrome</c>, <c>accent</c>,
-    /// <c>severity</c> (fill and ink), <c>outcome</c>, <c>state</c>, and <c>series</c>. Other top-level members, such as
+    /// <c>severity</c> (fill and ink), <c>outcome</c>, <c>state</c>, and <c>series</c>, plus optional <c>ramps</c>
+    /// (<c>sequential</c>: colours weakest to strongest; <c>diverging</c>: <c>negative</c> and <c>positive</c> arms weakest to
+    /// strongest around a <c>neutral</c> colour). Files without ramps still load. Other top-level members, such as
     /// <c>name</c> or <c>notes</c>, are ignored.
     /// </summary>
     /// <remarks>
@@ -69,7 +71,9 @@ public sealed partial class VisualDesignTokens {
             Negative = status.Critical.Fill,
             Disabled = status.Neutral.Fill,
             Palette = Series(set, name + ".series"),
-            Status = status
+            Status = status,
+            SequentialRamp = SequentialRampOrNull(set, name),
+            DivergingRamp = DivergingRampOrNull(set, name)
         };
     }
 
@@ -82,6 +86,41 @@ public sealed partial class VisualDesignTokens {
     public static VisualDesignTokens FromJsonFile(string path, VisualThemeMode mode = VisualThemeMode.Light) {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Token file path must not be empty.", nameof(path));
         return FromJson(File.ReadAllText(path), mode);
+    }
+
+    private static ChartColor[]? SequentialRampOrNull(Dictionary<string, GeoJsonValue> set, string mode) {
+        var ramps = OptionalMember(set, "ramps", mode + ".ramps");
+        if (ramps == null || !ramps.TryGetValue("sequential", out var value) || value.IsNull) return null;
+        var colors = ColorArray(value, mode + ".ramps.sequential");
+        if (colors.Length < 2) throw new ArgumentException("Design tokens require at least two '" + mode + ".ramps.sequential' colours.");
+        return colors;
+    }
+
+    private static VisualDivergingRamp? DivergingRampOrNull(Dictionary<string, GeoJsonValue> set, string mode) {
+        var ramps = OptionalMember(set, "ramps", mode + ".ramps");
+        var diverging = ramps == null ? null : OptionalMember(ramps, "diverging", mode + ".ramps.diverging");
+        if (diverging == null) return null;
+        var path = mode + ".ramps.diverging";
+        if (!diverging.TryGetValue("negative", out var negative) || negative.IsNull) throw new ArgumentException("Design tokens require '" + path + ".negative'.");
+        if (!diverging.TryGetValue("positive", out var positive) || positive.IsNull) throw new ArgumentException("Design tokens require '" + path + ".positive'.");
+        var negativeColors = ColorArray(negative, path + ".negative");
+        var positiveColors = ColorArray(positive, path + ".positive");
+        if (negativeColors.Length == 0 || positiveColors.Length == 0) throw new ArgumentException("Design tokens require at least one colour in each '" + path + "' arm.");
+        return new VisualDivergingRamp(negativeColors, Color(diverging, "neutral", path), positiveColors);
+    }
+
+    private static Dictionary<string, GeoJsonValue>? OptionalMember(Dictionary<string, GeoJsonValue> parent, string name, string path) =>
+        parent.TryGetValue(name, out var value) && !value.IsNull ? value.AsObject(path) : null;
+
+    private static ChartColor[] ColorArray(GeoJsonValue value, string path) {
+        var items = value.AsArray(path);
+        var colors = new ChartColor[items.Count];
+        for (var i = 0; i < items.Count; i++) {
+            var itemPath = path + "[" + i.ToString(System.Globalization.CultureInfo.InvariantCulture) + "]";
+            colors[i] = Hex(items[i].AsString(itemPath), itemPath);
+        }
+
+        return colors;
     }
 
     private static Dictionary<string, GeoJsonValue> Member(Dictionary<string, GeoJsonValue> parent, string name, string path) {

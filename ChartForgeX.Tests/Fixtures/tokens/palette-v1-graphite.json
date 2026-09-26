@@ -6,44 +6,191 @@
     "Severity has a fill (marks, bars, dots) and an ink (text on surfaces and tinted chips). Every ink is at least 4.5:1 on the card surface and on a 13% tint of its fill.",
     "Outcome 'fail' has no colour of its own: a failed result is coloured by its severity.",
     "Operational state maps onto the same hues: up=outcome.pass, degraded=severity.medium, down=severity.critical, recovering=severity.low, maintenance=state.maintenance, notObservable and unknown=outcome.neutral with hatching.",
-    "Series colours are used in this fixed order and never for status. Past six series, charts switch to small multiples. Validated: worst adjacent CVD delta E 10.6 (light, surface #ffffff) and 12.6 (dark, surface #121a26); normal-vision floor passed."
+    "Series colours are used in this fixed order and never for status. Past six series, charts switch to small multiples. Validated against the Graphite card surfaces: worst adjacent CVD delta E 10.6 (light, surface #ffffff) and 12.6 (dark, surface #16181c); worst adjacent normal-vision delta E 15.9 (light) and 16.1 (dark); lightness band, chroma and 3:1 contrast pass in both modes.",
+    "Ramps (optional in consumers): arrays run from weakest to strongest magnitude. 'sequential' is one hue (blue) for magnitude and counts, with no status meaning. 'diverging' has a negative arm (red), a neutral midpoint and a positive arm (blue), each arm weakest to strongest. Every ramp passed the ordinal checks (monotone lightness, adjacent delta L >= 0.06, weakest step >= 2:1 on the card surface, single hue) in its mode."
   ],
   "light": {
-    "surface": { "page": "#f2f3f4", "card": "#ffffff", "cardAlt": "#f8f9fa", "line": "#e2e4e7", "lineStrong": "#cdd0d5" },
-    "text": { "primary": "#16181c", "secondary": "#4d525b", "muted": "#626770" },
-    "chrome": { "background": "#16181c", "text": "#f2f3f5", "textMuted": "#a3a8b1", "accent": "#37c9b8" },
-    "accent": { "base": "#11776f", "soft": "#d6f0ec" },
+    "surface": {
+      "page": "#f2f3f4",
+      "card": "#ffffff",
+      "cardAlt": "#f8f9fa",
+      "line": "#e2e4e7",
+      "lineStrong": "#cdd0d5"
+    },
+    "text": {
+      "primary": "#16181c",
+      "secondary": "#4d525b",
+      "muted": "#626770"
+    },
+    "chrome": {
+      "background": "#16181c",
+      "text": "#f2f3f5",
+      "textMuted": "#a3a8b1",
+      "accent": "#37c9b8"
+    },
+    "accent": {
+      "base": "#11776f",
+      "soft": "#d6f0ec"
+    },
     "severity": {
-      "critical": { "fill": "#d4302f", "ink": "#b8292a" },
-      "high": { "fill": "#dd5a17", "ink": "#b64a13" },
-      "medium": { "fill": "#c78404", "ink": "#8c5c05" },
-      "low": { "fill": "#0c8aa8", "ink": "#0a728b" },
-      "info": { "fill": "#2f6bd9", "ink": "#2b5fc0" }
+      "critical": {
+        "fill": "#d4302f",
+        "ink": "#b8292a"
+      },
+      "high": {
+        "fill": "#dd5a17",
+        "ink": "#b64a13"
+      },
+      "medium": {
+        "fill": "#c78404",
+        "ink": "#8c5c05"
+      },
+      "low": {
+        "fill": "#0c8aa8",
+        "ink": "#0a728b"
+      },
+      "info": {
+        "fill": "#2f6bd9",
+        "ink": "#2b5fc0"
+      }
     },
     "outcome": {
-      "pass": { "fill": "#1d8a52", "ink": "#177345" },
-      "neutral": { "fill": "#7c818a", "ink": "#5b6069" }
+      "pass": {
+        "fill": "#1d8a52",
+        "ink": "#177345"
+      },
+      "neutral": {
+        "fill": "#7c818a",
+        "ink": "#5b6069"
+      }
     },
-    "state": { "maintenance": { "fill": "#6b5bd2", "ink": "#5a4bc0" } },
-    "series": ["#2a78d6", "#0f9f8c", "#7b61e8", "#c24fa8", "#5b7f00", "#1d4f9e"]
+    "state": {
+      "maintenance": {
+        "fill": "#6b5bd2",
+        "ink": "#5a4bc0"
+      }
+    },
+    "series": [
+      "#2a78d6",
+      "#0f9f8c",
+      "#7b61e8",
+      "#c24fa8",
+      "#5b7f00",
+      "#1d4f9e"
+    ],
+    "ramps": {
+      "sequential": [
+        "#86b6ef",
+        "#5598e7",
+        "#2a78d6",
+        "#1c5cab",
+        "#104281"
+      ],
+      "diverging": {
+        "negative": [
+          "#f0a39d",
+          "#e0645b",
+          "#b8292a"
+        ],
+        "neutral": "#eceef0",
+        "positive": [
+          "#86b6ef",
+          "#3f8be3",
+          "#1c5cab"
+        ]
+      }
+    }
   },
   "dark": {
-    "surface": { "page": "#0c0d10", "card": "#16181c", "cardAlt": "#111317", "line": "#272a30", "lineStrong": "#363a42" },
-    "text": { "primary": "#f2f3f5", "secondary": "#b0b4bc", "muted": "#8a8f98" },
-    "chrome": { "background": "#07080a", "text": "#f2f3f5", "textMuted": "#9095a0", "accent": "#37c9b8" },
-    "accent": { "base": "#37c9b8", "soft": "#10302d" },
+    "surface": {
+      "page": "#0c0d10",
+      "card": "#16181c",
+      "cardAlt": "#111317",
+      "line": "#272a30",
+      "lineStrong": "#363a42"
+    },
+    "text": {
+      "primary": "#f2f3f5",
+      "secondary": "#b0b4bc",
+      "muted": "#8a8f98"
+    },
+    "chrome": {
+      "background": "#07080a",
+      "text": "#f2f3f5",
+      "textMuted": "#9095a0",
+      "accent": "#37c9b8"
+    },
+    "accent": {
+      "base": "#37c9b8",
+      "soft": "#10302d"
+    },
     "severity": {
-      "critical": { "fill": "#f47171", "ink": "#f47171" },
-      "high": { "fill": "#f7924f", "ink": "#f7924f" },
-      "medium": { "fill": "#eeb640", "ink": "#eeb640" },
-      "low": { "fill": "#3ec3dd", "ink": "#3ec3dd" },
-      "info": { "fill": "#74a2f7", "ink": "#74a2f7" }
+      "critical": {
+        "fill": "#f47171",
+        "ink": "#f47171"
+      },
+      "high": {
+        "fill": "#f7924f",
+        "ink": "#f7924f"
+      },
+      "medium": {
+        "fill": "#eeb640",
+        "ink": "#eeb640"
+      },
+      "low": {
+        "fill": "#3ec3dd",
+        "ink": "#3ec3dd"
+      },
+      "info": {
+        "fill": "#74a2f7",
+        "ink": "#74a2f7"
+      }
     },
     "outcome": {
-      "pass": { "fill": "#4cc78a", "ink": "#4cc78a" },
-      "neutral": { "fill": "#8a8f98", "ink": "#a0a5ae" }
+      "pass": {
+        "fill": "#4cc78a",
+        "ink": "#4cc78a"
+      },
+      "neutral": {
+        "fill": "#8a8f98",
+        "ink": "#a0a5ae"
+      }
     },
-    "state": { "maintenance": { "fill": "#a497f2", "ink": "#a497f2" } },
-    "series": ["#3987e5", "#179c89", "#8a74ee", "#c9579f", "#6f9120", "#5a7fd8"]
+    "state": {
+      "maintenance": {
+        "fill": "#a497f2",
+        "ink": "#a497f2"
+      }
+    },
+    "series": [
+      "#3987e5",
+      "#179c89",
+      "#8a74ee",
+      "#c9579f",
+      "#6f9120",
+      "#5a7fd8"
+    ],
+    "ramps": {
+      "sequential": [
+        "#184f95",
+        "#2a78d6",
+        "#5598e7",
+        "#86b6ef",
+        "#b7d3f6"
+      ],
+      "diverging": {
+        "negative": [
+          "#8f2f2c",
+          "#d4504b",
+          "#f7a09b"
+        ],
+        "neutral": "#2b2e34",
+        "positive": [
+          "#1d4f8f",
+          "#3f8be3",
+          "#9ec5f4"
+        ]
+      }
+    }
   }
 }
