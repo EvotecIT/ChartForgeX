@@ -88,6 +88,24 @@ internal static class ChartTimeScale {
         return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Formats a tick for a time axis, honouring explicit labels and a configured formatter first.</summary>
+    public static string FormatTick(ChartAxis axis, double value) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        foreach (var label in axis.Labels) {
+            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
+        }
+
+        return axis.LabelFormatter != null ? axis.LabelFormatter(value) ?? string.Empty : Format(axis, value);
+    }
+
+    /// <summary>Formats a full instant (<c>yyyy-MM-dd HH:mm</c> plus the zone designator) for tooltips and metadata.</summary>
+    public static string FormatInstant(ChartAxis axis, double value) {
+        var local = ToDisplayTime(axis, value);
+        if (!local.HasValue) return ChartNumericFormatter.FormatCompact(value);
+        var format = local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
+        return local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ZoneDesignator(axis);
+    }
+
     /// <summary>Returns the axis title with the time-zone designator appended when the axis requests it.</summary>
     public static string DecorateTitle(ChartAxis axis, string title) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));

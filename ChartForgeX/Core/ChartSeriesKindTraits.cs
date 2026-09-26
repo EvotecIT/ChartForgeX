@@ -23,6 +23,7 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.Treemap,
         ChartSeriesKind.Timeline,
         ChartSeriesKind.StateTimeline,
+        ChartSeriesKind.GanttLane,
         ChartSeriesKind.Gantt,
         ChartSeriesKind.Sankey,
         ChartSeriesKind.Tree,

@@ -179,7 +179,7 @@ public sealed class StateTimelineTests {
                 new ChartStateTimelineSegment(Day.AddHours(12), Day.AddHours(24), "notObservable")
             }, "100%")
             .AddStateTimelineLane("DC03", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(24), "up") });
-        chart.Options.StateTimelineSummaryHeader = "Available";
+        chart.Options.LaneSummaryHeader = "Available";
         return chart;
     }
 

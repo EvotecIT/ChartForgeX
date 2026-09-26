@@ -15,6 +15,7 @@ public static partial class GalleryWriter {
             "reporting-time-axis-utc",
             "reporting-state-timeline",
             "reporting-status-matrix",
+            "reporting-incident-lanes",
             "ct-volume-light",
             "ct-regional-light",
             "monthly-posture-dark",
