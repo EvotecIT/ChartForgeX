@@ -5,7 +5,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class DenseTopologyLayoutTests {
-    private static readonly TopologyRenderOptions TileOptions = new() { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+    private static readonly TopologyRenderOptions TileOptions = new() { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
 
     [Fact]
     public void LeftToRight_ManySites_WrapIntoRowsWithinViewportWidth() {
@@ -22,6 +22,28 @@ public sealed class DenseTopologyLayoutTests {
     public void LeftToRight_FewSites_KeepOneRow() {
         var prepared = TopologyLayoutEngine.Prepare(Sites(6, 3), options: TileOptions);
         Assert.Single(prepared.Groups.Select(group => group.Y).Distinct());
+    }
+
+    [Fact]
+    public void DefaultOptions_KeepClassicDenseLayout() {
+        var classic = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        var wide = TopologyLayoutEngine.Prepare(Sites(12, 3), options: classic);
+        Assert.Single(wide.Groups.Select(group => group.Y).Distinct());
+        Assert.Equal(TopologyGroupLayoutPolicy.CollapsedDots, TopologyLayoutEngine.Prepare(Sites(1, 10), options: classic).Groups[0].AppliedLayoutPolicy);
+        Assert.Equal(TopologyGroupLayoutPolicy.CollapsedDots, TopologyLayoutEngine.Prepare(Sites(1, 10)).Groups[0].AppliedLayoutPolicy);
+        var pair = TopologyLayoutEngine.Prepare(Sites(1, 4), options: classic);
+        Assert.Equal(0, TopologyNodeFootprint.Caption(pair, pair.Nodes[0]).Height);
+    }
+
+    [Theory]
+    [InlineData(7, 2)]
+    [InlineData(12, 4)]
+    [InlineData(20, 6)]
+    public void WrappedRows_LegendStaysBelowContent(int sites, int controllers) {
+        var chart = Sites(sites, controllers).WithLegend(TopologyLegend.Default());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
+        var legendTop = prepared.Viewport.Height - prepared.Viewport.Padding - (TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport) - 24);
+        Assert.True(prepared.Groups.Max(group => group.Y + group.Height) + 20 <= legendTop, "The legend must not overlap wrapped site rows.");
     }
 
     [Theory]
@@ -56,9 +78,13 @@ public sealed class DenseTopologyLayoutTests {
             .AddNode("top", "T", 560, 90, width: 190, height: 30)
             .AddNode("bottom", "D", 560, 320, width: 190, height: 30);
         chart.AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        var report = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).Analyze();
+        var report = chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false }).Analyze();
         Assert.Equal(0, ReplicationTopologyFixture.NodeCardCrossings(report));
         Assert.Equal("maze", report.Edges.Single().Corridor);
+
+        var classic = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false });
+        Assert.NotEqual("maze", classic.Analyze().Edges.Single().Corridor);
+        Assert.Equal(classic.ToSvg(), chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = false, IncludeLegend = false }).ToSvg());
     }
 
     [Fact]
@@ -78,7 +104,7 @@ public sealed class DenseTopologyLayoutTests {
             .AddNode("top", "T", 560, 90, width: 190, height: 30)
             .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        var edge = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).Analyze().Edges.Single();
+        var edge = chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false }).Analyze().Edges.Single();
         Assert.Equal("maze", edge.Corridor);
         for (var i = 1; i < edge.Points.Count; i++) {
             var horizontal = Math.Abs(edge.Points[i].Y - edge.Points[i - 1].Y) < 0.0001;

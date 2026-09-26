@@ -30,7 +30,7 @@ public sealed class TopologyReplicationBudgetTests {
     [Theory]
     [MemberData(nameof(Tiers))]
     public void DenseReplicationFixture_RendersWithinBudgets(int branchSites, int hubControllers, int svgByteBudget, int crossingCeiling, int collisionCeiling, int labelOverlapCeiling) {
-        var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var chart = ReplicationTopologyFixture.Create(branchSites, hubControllers);
         var expectedControllers = ReplicationTopologyFixture.DomainControllerCount(branchSites, hubControllers);
         ReplicationTopologyFixture.Create(1, 2).Prepare(options).ToPng();
@@ -68,7 +68,7 @@ public sealed class TopologyReplicationBudgetTests {
 
     [Fact]
     public void DenseReplicationFixture_RendersDeterministically() {
-        var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var first = ReplicationTopologyFixture.Create(3, 10).Prepare(options).ToSvg();
         var second = ReplicationTopologyFixture.Create(3, 10).Prepare(options).ToSvg();
         Assert.Equal(first, second);
@@ -87,7 +87,7 @@ public sealed class TopologyReplicationBudgetTests {
             .AddNode("b", "B", middleX, middleY, width: 60, height: 40)
             .AddNode("c", "C", 530, 80, width: 60, height: 40)
             .AddEdge("a-c", "a", "c", routing: routing);
-        return ReplicationTopologyFixture.NodeCardCrossings(chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).Analyze());
+        return ReplicationTopologyFixture.NodeCardCrossings(chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false }).Analyze());
     }
 
     private void SaveSample(string svg, byte[] png, int controllers) {

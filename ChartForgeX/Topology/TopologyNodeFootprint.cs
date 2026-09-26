@@ -5,7 +5,8 @@ namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Estimates the caption (label lines and optional subtitle chip) drawn below tile nodes, matching the normalizer's
-/// visual bounds, so dense layouts reserve space for it and edge routing treats it as part of the card.
+/// visual bounds, so dense layouts reserve space for it and edge routing treats it as part of the card. Only used with
+/// <see cref="TopologyRenderOptions.ReadableDenseLayout"/>; otherwise the caption is ignored as before.
 /// </summary>
 internal static class TopologyNodeFootprint {
     private const double CaptionFontSize = 11;
@@ -14,7 +15,7 @@ internal static class TopologyNodeFootprint {
     /// <summary>Returns the caption width and the height it adds below the node, or zero for modes without a caption.</summary>
     public static (double Width, double Height) Caption(TopologyChart chart, TopologyNode node) {
         var options = chart.RenderOptions;
-        if (options == null || !options.IncludeNodeLabels || (node.DisplayMode ?? options.NodeDisplayMode) != TopologyNodeDisplayMode.Tile) return (0, 0);
+        if (options == null || !options.ReadableDenseLayout || !options.IncludeNodeLabels || (node.DisplayMode ?? options.NodeDisplayMode) != TopologyNodeDisplayMode.Tile) return (0, 0);
         var width = 0.0;
         var height = 0.0;
         var lineCount = 1;

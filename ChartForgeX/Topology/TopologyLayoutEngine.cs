@@ -520,7 +520,7 @@ internal static partial class TopologyLayoutEngine {
             var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
             var col = i % columns;
             var row = i / columns;
-            var policy = ResolveDenseGroupPolicy(group, nodes);
+            var policy = ResolveDenseGroupPolicy(chart, group, nodes);
             if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
             if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
             columnWidths[col] = Math.Max(columnWidths[col], group.Width);
@@ -574,7 +574,7 @@ internal static partial class TopologyLayoutEngine {
 
     private static void PlaceDenseNodesInGroup(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroup group) {
         if (nodes.Count == 0) return;
-        var policy = ResolveDenseGroupPolicy(group, nodes);
+        var policy = ResolveDenseGroupPolicy(chart, group, nodes);
         group.AppliedLayoutPolicy = policy;
         if (policy == TopologyGroupLayoutPolicy.CollapsedDots) {
             foreach (var node in nodes) {
@@ -661,9 +661,9 @@ internal static partial class TopologyLayoutEngine {
         return nodes.FirstOrDefault(node => node.Kind == TopologyNodeKind.Hub || node.Kind == TopologyNodeKind.Location || node.Metadata.ContainsKey("hub")) ?? nodes[0];
     }
 
-    private static TopologyGroupLayoutPolicy ResolveDenseGroupPolicy(TopologyGroup group, IList<TopologyNode> nodes) {
+    private static TopologyGroupLayoutPolicy ResolveDenseGroupPolicy(TopologyChart chart, TopologyGroup group, IList<TopologyNode> nodes) {
         if (group.LayoutPolicy != TopologyGroupLayoutPolicy.Auto) return group.LayoutPolicy;
-        if (nodes.Count > DenseCollapsedDotThreshold) return TopologyGroupLayoutPolicy.CollapsedDots;
+        if (nodes.Count > (UsesReadableDenseLayout(chart) ? DenseCollapsedDotThreshold : ClassicCollapsedDotThreshold)) return TopologyGroupLayoutPolicy.CollapsedDots;
         if (nodes.Count >= 10) return TopologyGroupLayoutPolicy.Grid;
         if (nodes.Count > 0 && nodes.All(node => node.Kind == TopologyNodeKind.Server)) return TopologyGroupLayoutPolicy.PairRows;
         return TopologyGroupLayoutPolicy.HubAndBranch;
