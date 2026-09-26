@@ -117,8 +117,12 @@ public sealed class GanttLaneTests {
         var edgeSvg = XDocument.Parse(edge.ToSvg());
         var label = ByRole(edgeSvg, "gantt-lanes-now-label").Single();
         var axis = ByRole(edgeSvg, "gantt-lanes-axis").Single();
+        var now = ByRole(edgeSvg, "gantt-lanes-now").Single();
         Assert.Equal("middle", (string)label.Attribute("text-anchor")!);
-        Assert.True(Number(label, "x") < Number(axis, "x2") - 60, "A long label near the right edge is pulled inside the plot.");
+        // The marker sits at (or next to) the right edge, so a long centred label must shift left of it (font-independent).
+        Assert.True(Number(axis, "x2") - Number(now, "x1") < 20);
+        Assert.True(Number(label, "x") < Number(now, "x1") - 20, "A long label near the right edge is pulled inside the plot.");
+        Assert.True(Number(label, "x") > Number(axis, "x1"));
     }
 
     [Fact]
