@@ -614,6 +614,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
+| Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `WithStateCategories`, `ChartStateCategory`, `StateTimelineSummaryHeader` |
 
 ## Renderer Contracts
 
@@ -623,6 +624,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 - Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- State timelines draw one lane per entity on a real time axis. Segment colours come only from the caller's state map (never the series palette), contiguous buckets in the same state draw as one run, uncovered time stays empty, and hatched states mark not-observable data. Each segment exposes `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-meta-duration`, and a `<title>` tooltip, so `ChartForgeX.Interactivity.Html` hover works without extra configuration.
 - Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
 - Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 

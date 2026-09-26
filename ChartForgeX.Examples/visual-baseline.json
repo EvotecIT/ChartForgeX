@@ -2331,6 +2331,23 @@
       }
     },
     {
+      "name": "reporting-state-timeline",
+      "width": 1180,
+      "height": 520,
+      "svg": {
+        "minVisualNodes": 82,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1150309,
+        "minTransparentPixels": 76891,
+        "minDistinctColors": 1673,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "reporting-time-axis-utc",
       "width": 1180,
       "height": 480,
