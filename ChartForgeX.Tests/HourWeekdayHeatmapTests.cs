@@ -60,6 +60,9 @@ public sealed class HourWeekdayHeatmapTests {
 
         var titled = Chart.Create().WithXAxis("Local hour").AddHourWeekdayHeatmap(new[] { sundayLate });
         Assert.Equal("Local hour", titled.XAxisTitle);
+
+        var localized = Chart.Create().WithLabels(labels => labels.HourOfDay = "Godzina").AddHourWeekdayHeatmap(new[] { sundayLate });
+        Assert.Equal("Godzina (UTC)", localized.XAxisTitle);
     }
 
     [Fact]

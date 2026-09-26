@@ -29,7 +29,8 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     /// <remarks>The heatmap owns the whole chart: it sets the <c>00</c>–<c>23</c> column labels and
     /// <see cref="ChartOptions.HeatmapRelativeScale"/>, and it cannot be combined with other heatmap rows. When the x-axis
-    /// title is empty it becomes <c>Hour of day (…)</c> with the zone designator.</remarks>
+    /// title is empty it becomes <see cref="ChartLabels.HourOfDay"/> (default <c>Hour of day</c>) followed by the zone
+    /// designator in parentheses.</remarks>
     public Chart AddHourWeekdayHeatmap(IEnumerable<ChartTimedValue> values, ChartTimeAggregation aggregation = ChartTimeAggregation.Count, TimeZoneInfo? timeZone = null, DayOfWeek firstDayOfWeek = DayOfWeek.Monday, ChartColor? color = null, IReadOnlyList<string>? dayNames = null, string? timeZoneLabel = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         if (dayNames != null && (dayNames.Count != DaysPerWeek || dayNames.Any(string.IsNullOrWhiteSpace))) throw new ArgumentException("Day names must contain seven non-empty entries indexed by DayOfWeek.", nameof(dayNames));
@@ -80,7 +81,7 @@ public sealed partial class Chart {
         Options.HeatmapRelativeScale = true;
         if (string.IsNullOrWhiteSpace(XAxisTitle)) {
             var label = !string.IsNullOrWhiteSpace(timeZoneLabel) ? timeZoneLabel!.Trim() : timeZone == null ? "UTC" : timeZone.Id;
-            XAxisTitle = "Hour of day (" + label + ")";
+            XAxisTitle = Options.Labels.HourOfDay + " (" + label + ")";
         }
 
         return this;
