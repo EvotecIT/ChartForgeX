@@ -30,7 +30,8 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Topology
 
-- Add denser replication and site-link fixtures that prove routes do not cross node cards in common real-world layouts.
+- Drive the dense replication fixtures (`ChartForgeX.Tests/ReplicationTopologyFixture.cs`, 76/121/144 DCs) to zero route/foreign-card crossings and zero node-card overlaps, then lower the ceilings in `TopologyReplicationBudgetTests`. Today DenseGrouped places all sites in one row (up to 7300 px wide), hubs collapse DCs to dots, routes cross 31/62/82 foreign cards, and the 144-DC tier overlaps six cards.
+- Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
 - Tune label-clearance and route-overlap weights with real dense examples.
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
