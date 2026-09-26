@@ -1,5 +1,6 @@
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -9,6 +10,63 @@ internal static class ReportingExamples {
 
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
         WriteTimeAxis(output, pngOutputScale);
+        WriteStateTimeline(output, pngOutputScale);
+    }
+
+    private static void WriteStateTimeline(string output, ChartPngOutputScale pngOutputScale) {
+        // Graphite palette v1 (light): operational states reuse the severity and outcome hues, never series colours.
+        var states = new[] {
+            new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")),
+            new ChartStateCategory("degraded", "Degraded", ChartColor.FromHex("#c78404")),
+            new ChartStateCategory("down", "Down", ChartColor.FromHex("#d4302f")),
+            new ChartStateCategory("recovering", "Recovering", ChartColor.FromHex("#0c8aa8")),
+            new ChartStateCategory("maintenance", "Maintenance", ChartColor.FromHex("#6b5bd2")),
+            new ChartStateCategory("notObservable", "Not observable", ChartColor.FromHex("#7c818a"), hatched: true)
+        };
+        var chart = Chart.Create()
+            .WithTitle("Domain controller availability")
+            .WithSubtitle("15-minute rollups over the last 24 hours; gaps mean no data was collected")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(1180, 520)
+            .WithPngOutputScale(pngOutputScale)
+            .WithXAxisTimeScale(showTimeZone: true)
+            .WithStateCategories(states);
+        chart.Options.StateTimelineSummaryHeader = "Available";
+        var start = WindowStart.AddHours(12);
+        var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
+        for (var lane = 0; lane < names.Length; lane++) {
+            var segments = new List<ChartStateTimelineSegment>();
+            var up = 0.0;
+            var observed = 0.0;
+            for (var bucket = 0; bucket < 96; bucket++) {
+                var state = BucketState(lane, bucket);
+                if (state == null) continue;
+                var from = start.AddMinutes(bucket * 15);
+                segments.Add(new ChartStateTimelineSegment(from, from.AddMinutes(15), state, state == "down" ? "LDAP bind failed" : null));
+                if (state != "notObservable") observed += 15;
+                if (state == "up") up += 15;
+            }
+
+            chart.AddStateTimelineLane(names[lane], segments, (up / observed).ToString("0.0%", System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        chart.SaveSvg(Path.Combine(output, "reporting-state-timeline.svg"));
+        chart.SaveHtml(Path.Combine(output, "reporting-state-timeline.html"));
+        chart.SavePng(Path.Combine(output, "reporting-state-timeline.png"));
+        chart.SaveInteractiveHtml(Path.Combine(output, "reporting-state-timeline-interactive.html"), options => {
+            options.PageTitle = "Domain controller availability";
+            options.IdScope = "reporting-state-timeline-interactive";
+        });
+    }
+
+    private static string? BucketState(int lane, int bucket) {
+        if (lane == 3 && bucket is >= 40 and < 46) return null;
+        if (lane == 5 && bucket is >= 8 and < 16) return "maintenance";
+        if (lane == 2 && bucket is >= 60 and < 63) return "down";
+        if (lane == 2 && bucket is >= 63 and < 66) return "recovering";
+        if (lane == 6 && bucket is >= 70 and < 80) return "notObservable";
+        var hash = (lane * 7919 + bucket * 104729) % 97;
+        return hash < 4 ? "degraded" : "up";
     }
 
     private static void WriteTimeAxis(string output, ChartPngOutputScale pngOutputScale) {

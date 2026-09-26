@@ -237,5 +237,10 @@ public enum ChartSeriesKind {
     /// <summary>
     /// Renders ordered angle/radius points on a polar coordinate plane.
     /// </summary>
-    Polar
+    Polar,
+
+    /// <summary>
+    /// Renders lanes of categorical states over a real time axis, one lane per entity, with gaps where no data exists.
+    /// </summary>
+    StateTimeline
 }

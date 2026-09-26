@@ -22,6 +22,7 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.Funnel,
         ChartSeriesKind.Treemap,
         ChartSeriesKind.Timeline,
+        ChartSeriesKind.StateTimeline,
         ChartSeriesKind.Gantt,
         ChartSeriesKind.Sankey,
         ChartSeriesKind.Tree,

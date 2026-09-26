@@ -205,6 +205,7 @@ internal static class ChartGuards {
         }
         else if (kind == ChartSeriesKind.Bullet) ValidateBullets(chart.Series);
         else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
+        else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
         else if (kind == ChartSeriesKind.Sankey) ValidateSankey(chart.Series[0]);
         else if (kind == ChartSeriesKind.Tree) ValidateTree(chart.Series[0]);
@@ -242,6 +243,24 @@ internal static class ChartGuards {
             if (item.Points.Count < 2) throw new InvalidOperationException("Bullet charts require value and target points.");
             if (item.Points[1].X <= item.Points[0].X) throw new InvalidOperationException("Bullet chart maximum must be greater than minimum.");
         }
+    }
+
+    private static void ValidateStateTimeline(Chart chart) {
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var state in chart.Options.StateCategories) {
+            if (state == null) throw new InvalidOperationException("State timeline states must not contain null entries.");
+            if (!keys.Add(state.Key)) throw new InvalidOperationException("State timeline state keys must be unique: " + state.Key);
+        }
+
+        var series = chart.Series;
+        var segments = 0;
+        foreach (var lane in series) {
+            if (lane.PointLabels.Count != lane.Points.Count || lane.PointLabels.Any(string.IsNullOrWhiteSpace)) throw new InvalidOperationException("State timeline segments require a state key for every segment.");
+            if (lane.Points.Any(point => point.Y <= point.X)) throw new InvalidOperationException("State timeline segment ends must be later than their starts.");
+            segments += lane.Points.Count;
+        }
+
+        if (segments == 0) throw new InvalidOperationException("StateTimeline charts require at least one segment.");
     }
 
     private static void ValidateMinimumPointCount(IReadOnlyList<ChartSeries> series, ChartSeriesKind kind, int count) {

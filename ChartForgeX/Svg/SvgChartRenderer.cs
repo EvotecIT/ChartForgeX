@@ -317,6 +317,7 @@ public sealed partial class SvgChartRenderer {
         if (IsDottedMapChart(chart)) { DrawDottedMap(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsRegionMapChart(chart)) { DrawRegionMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTileMapChart(chart)) { DrawTileMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
+        if (IsStateTimelineChart(chart)) { DrawStateTimeline(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTimelineChart(chart)) {
             DrawTimeline(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);
@@ -622,7 +623,7 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect PlotArea(Chart chart) {
         var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(chart.Options);
-        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart)) return plot;
+        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart) || IsStateTimelineChart(chart)) return plot;
 
         if (ShouldDrawLegend(chart) && IsTopLegend(chart.Options.LegendPosition)) {
             var reserve = LegendBottomReserve(chart);

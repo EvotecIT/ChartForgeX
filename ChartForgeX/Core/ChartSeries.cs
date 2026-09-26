@@ -113,6 +113,12 @@ public sealed class ChartSeries {
     /// </summary>
     internal ChartHistogramBinLayout? HistogramBinLayout { get; set; }
 
+    /// <summary>Gets optional per-segment tooltip details for state timeline lanes.</summary>
+    internal List<string?> StateTimelineDetails { get; } = new();
+
+    /// <summary>Gets or sets the summary-column text for a state timeline lane.</summary>
+    internal string? StateTimelineSummary { get; set; }
+
     /// <summary>
     /// Gets optional point-level data labels. Null entries use the formatted point value.
     /// </summary>
