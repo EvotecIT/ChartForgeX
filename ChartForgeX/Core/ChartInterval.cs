@@ -43,6 +43,6 @@ public readonly struct ChartInterval {
     /// <param name="x">The date/time x value.</param>
     /// <param name="start">The interval start value.</param>
     /// <param name="end">The interval end value.</param>
-    public ChartInterval(DateTime x, double start, double end) : this(x.ToOADate(), start, end) {
+    public ChartInterval(DateTime x, double start, double end) : this(ChartDateTime.ToOADate(x), start, end) {
     }
 }

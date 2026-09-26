@@ -10,6 +10,7 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.Generate(axis, min, max, false) is { } timeTicks) return timeTicks;
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, false);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return Generate(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, false);
@@ -17,6 +18,7 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> GenerateInside(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.Generate(axis, min, max, true) is { } timeTicks) return timeTicks;
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, true);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return GenerateInside(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, true);

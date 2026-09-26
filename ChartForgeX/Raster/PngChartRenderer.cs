@@ -652,7 +652,7 @@ public sealed partial class PngChartRenderer {
 
     private static string FormatXAxisValue(Chart chart, double value) {
         var formatter = chart.Options.XAxisValueFormatter;
-        if (formatter == null && chart.Options.XAxis.Scale == ChartScaleKind.Time) return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (formatter == null && chart.Options.XAxis.Scale == ChartScaleKind.Time) return ChartTimeScale.Format(chart.Options.XAxis, value);
         if (formatter == null) return FormatNumber(value);
         return formatter(value) ?? string.Empty;
     }

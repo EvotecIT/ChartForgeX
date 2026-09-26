@@ -211,7 +211,7 @@ public sealed partial class SvgChartRenderer {
         var leftLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Left) ? sideLabelWidth + 22 : 0;
         var rightLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Right) || HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Outside) ? sideLabelWidth + 22 : 0;
         var axisBottomBase = chart.Options.ShowHeatmapScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
-        var bottomReserve = chart.Options.ShowAxes ? axisBottomBase + (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 0 : SvgXAxisTitleHeight(chart, plot.Width) + 8) : 0;
+        var bottomReserve = chart.Options.ShowAxes ? axisBottomBase + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : SvgXAxisTitleHeight(chart, plot.Width) + 8) : 0;
         var desiredLeft = Math.Max(plot.Left, leftReserve + leftLabelReserve);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 220);
         var shift = Math.Max(0, Math.Min(desiredLeft, maxLeft) - plot.Left);

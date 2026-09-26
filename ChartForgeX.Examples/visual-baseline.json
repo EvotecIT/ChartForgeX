@@ -2331,6 +2331,23 @@
       }
     },
     {
+      "name": "reporting-time-axis-utc",
+      "width": 1180,
+      "height": 480,
+      "svg": {
+        "minVisualNodes": 31,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1058069,
+        "minTransparentPixels": 74731,
+        "minDistinctColors": 1873,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "result-mix-donut",
       "width": 820,
       "height": 460,
