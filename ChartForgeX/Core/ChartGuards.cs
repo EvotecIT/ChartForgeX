@@ -191,6 +191,9 @@ internal static class ChartGuards {
             ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
             if (!chart.Series.Any(series => series.Points.Count > 0)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
+            if (chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
+                throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
+            }
         }
         else if (kind == ChartSeriesKind.CalendarHeatmap) {
             ValidateMinimumPointCount(chart.Series, kind, 1);

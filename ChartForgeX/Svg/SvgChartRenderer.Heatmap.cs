@@ -62,12 +62,13 @@ public sealed partial class SvgChartRenderer {
                 var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
                 var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
                 var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
-                var status = category?.Key ?? ChartHeatmapSurface.Status(ratio);
+                var status = category?.Key ?? ChartHeatmapSurface.CellStatus(chart, ratio);
+                int? level = category == null && status == null ? ChartHeatmapSurface.Level(ratio) : null;
                 var color = category?.Color ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 if (cell?.Tooltip != null) summary = cell.Value.Tooltip!;
-                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color, cell?.Href, category?.Label);
+                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color, cell?.Href, category?.Label, level);
                 if (category?.Hatched == true) AppendSvg(body, writer => WriteStateCategoryHatch(writer, hatchId, x, y, cellWidth, cellHeight, radius, "heatmap-cell-hatch"));
                 var label = FormatDataLabel(chart, series, pointIndex, value);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
@@ -124,6 +125,7 @@ public sealed partial class SvgChartRenderer {
         writer
             .StartElement("g")
             .Attribute("data-cfx-role", "heatmap")
+            .Attribute("data-cfx-label-level", chart.Options.Labels.LevelOverride)
             .Attribute("data-cfx-row-count", rows.Length)
             .Attribute("data-cfx-column-count", columns.Length)
             .Attribute("data-cfx-min", min)
@@ -160,7 +162,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string status, string summary, double x, double y, double width, double height, double radius, ChartColor color, string? href = null, string? stateLabel = null) {
+    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, ChartColor color, string? href = null, string? stateLabel = null, int? level = null) {
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(768);
         // A linked cell takes focus through its <a>, so the rect itself is not a second tab stop.
@@ -171,6 +173,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("tabindex", href == null ? "0" : null)
             .Attribute("focusable", href == null ? "true" : null)
             .Attribute("data-cfx-role", "heatmap-cell")
+            .OptionalAttribute("data-cfx-level", level)
             .Attribute("data-cfx-meta-state", stateLabel)
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)
@@ -281,7 +284,8 @@ public sealed partial class SvgChartRenderer {
             var ratio = i / (double)(steps - 1);
             var value = min + (max - min) * ratio;
             var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
-            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max)), color);
+            var stepRatio = ChartHeatmapSurface.Ratio(chart, value, min, max);
+            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.CellStatus(chart, stepRatio), ChartHeatmapSurface.Level(stepRatio), color);
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);
@@ -299,12 +303,13 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHeatmapScaleStep(StringBuilder sb, double x, double y, double width, double height, string status, ChartColor color) {
+    private static void WriteHeatmapScaleStep(StringBuilder sb, double x, double y, double width, double height, string? status, int level, ChartColor color) {
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("rect")
             .Attribute("data-cfx-role", "heatmap-scale-step")
             .Attribute("data-cfx-status", status)
+            .OptionalAttribute("data-cfx-level", status == null ? level : (int?)null)
             .Attribute("x", x)
             .Attribute("y", y)
             .Attribute("width", width)
