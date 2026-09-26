@@ -35,7 +35,7 @@ public sealed partial class SvgChartRenderer {
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
                 var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
-                var status = ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(value, min, max));
+                var status = ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max));
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, summary);

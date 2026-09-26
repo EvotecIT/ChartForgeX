@@ -6,7 +6,7 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartHeatmapSurface {
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) {
-        var ratio = Ratio(value, min, max);
+        var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticColor(chart, ratio);
         return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, highColor ?? chart.Options.Theme.Palette[0], 0.18 + ratio * 0.82);
     }
@@ -51,6 +51,16 @@ internal static class ChartHeatmapSurface {
         if (ratio < 0.60) return ChartColorMath.Blend(t.Negative, t.Warning, ratio / 0.60 * 0.42);
         if (ratio < 0.80) return ChartColorMath.Blend(t.Warning, t.Positive, (ratio - 0.60) / 0.20 * 0.5);
         return ChartColorMath.Blend(t.Warning, t.Positive, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
+    }
+
+    /// <summary>
+    /// Returns the colour ratio for a heatmap value. With <see cref="ChartOptions.HeatmapRelativeScale"/> the ratio is
+    /// relative to the observed range (from zero for non-negative data) instead of treating 0–100 values as percentages.
+    /// </summary>
+    public static double Ratio(Chart chart, double value, double min, double max) {
+        if (!chart.Options.HeatmapRelativeScale) return Ratio(value, min, max);
+        var floor = Math.Min(0, min);
+        return Clamp((value - floor) / Math.Max(0.000001, max - floor), 0, 1);
     }
 
     public static double Ratio(double value, double min, double max) {
