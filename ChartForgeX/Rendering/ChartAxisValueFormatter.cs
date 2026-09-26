@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
@@ -14,7 +13,7 @@ internal static class ChartAxisValueFormatter {
 
         var formatter = axis.LabelFormatter ?? fallbackFormatter;
         if (formatter != null) return formatter(value) ?? string.Empty;
-        if (axis.Scale == ChartScaleKind.Time) return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Format(axis, value);
         return ChartNumericFormatter.FormatCompact(value);
     }
 }

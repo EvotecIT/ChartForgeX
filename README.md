@@ -248,6 +248,8 @@ Pages preserve chart order, panel spans, heading styles, and export settings. Th
 
 `ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
 
+`Time` axes treat values as UTC instants. Ticks snap to whole seconds, minutes, hours, days, Monday-aligned weeks, months, or years chosen from the visible range and `TickCount`; midnight ticks show `yyyy-MM-dd` and other ticks show `HH:mm`. `chart.WithXAxisTimeScale(timeZone, showTimeZone: true)` moves alignment and labels to a display zone (skipping missing daylight-saving hours) and appends the designator to the x-axis title, for example `Observed (UTC)`. Points with `breakBefore` keep their gaps. Convert local `DateTime` values with `ToUniversalTime()` before plotting.
+
 ## Project Status
 
 The ChartForgeX 1.0 surface uses one typed construction, typography, geometry, direction, and layout vocabulary. Pre-release duplicate APIs have been removed; see the [1.0 migration guide](docs/1.0-migration.md) for intentional breaking changes. Active follow-up work belongs in `TODO.md`; release notes belong in GitHub Releases and short NuGet package notes.

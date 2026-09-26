@@ -14,7 +14,10 @@ public enum ChartScaleKind {
     /// <summary>Use a symmetric logarithmic scale that remains linear around zero.</summary>
     SymmetricLogarithmic,
 
-    /// <summary>Use OLE Automation date values with time-oriented formatting.</summary>
+    /// <summary>
+    /// Use OLE Automation date values as UTC instants. Ticks snap to whole seconds, minutes, hours, days, weeks,
+    /// months, or years chosen from the visible range, and labels are shown in UTC unless <see cref="ChartAxis.TimeZone"/> is set.
+    /// </summary>
     Time
 }
 
@@ -110,6 +113,25 @@ public sealed class ChartAxis {
     /// <summary>Gets or sets a formatter for generated labels.</summary>
     public Func<double, string>? LabelFormatter { get; set; }
 
+    /// <summary>
+    /// Gets or sets the display time zone for <see cref="ChartScaleKind.Time"/> axes. Axis values are UTC instants;
+    /// null keeps ticks and labels in UTC. A zone moves tick alignment and labels to that zone's wall-clock time.
+    /// </summary>
+    public TimeZoneInfo? TimeZone { get; set; }
+
+    /// <summary>
+    /// Gets or sets the time-zone designator shown when <see cref="ShowTimeZone"/> is enabled.
+    /// Null uses <c>UTC</c> when <see cref="TimeZone"/> is null, otherwise the zone identifier. Zone identifiers differ
+    /// between Windows and IANA systems, so set an explicit label when output must match across platforms.
+    /// </summary>
+    public string? TimeZoneLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether time axes append the time-zone designator to the axis title,
+    /// or show it as the title when no title is set. Only the x-axis title is decorated.
+    /// </summary>
+    public bool ShowTimeZone { get; set; }
+
     /// <summary>Gets explicit value-to-label mappings.</summary>
     public List<ChartAxisLabel> Labels { get; } = new();
 
@@ -132,6 +154,21 @@ public sealed class ChartAxis {
 
     /// <summary>Sets axis visibility.</summary>
     public ChartAxis WithVisibility(bool visible = true) { Visible = visible; return this; }
+
+    /// <summary>
+    /// Uses a UTC time scale displayed in <paramref name="timeZone"/> (UTC when null) and optionally shows the zone designator.
+    /// </summary>
+    /// <param name="timeZone">The display time zone, or null for UTC.</param>
+    /// <param name="showTimeZone">Whether the axis title shows the zone designator.</param>
+    /// <param name="label">An optional designator such as <c>CET</c> or <c>Europe/Warsaw</c>.</param>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithTimeScale(TimeZoneInfo? timeZone = null, bool showTimeZone = false, string? label = null) {
+        Scale = ChartScaleKind.Time;
+        TimeZone = timeZone;
+        ShowTimeZone = showTimeZone;
+        TimeZoneLabel = label;
+        return this;
+    }
 
     /// <summary>Sets the label formatter.</summary>
     public ChartAxis WithLabelFormatter(Func<double, string>? formatter) { LabelFormatter = formatter; return this; }

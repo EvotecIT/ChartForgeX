@@ -57,7 +57,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, IReadOnlyList<string>? xAxisLabels = null) {
         var theme = chart.Options.Theme;
-        if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
+        if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(XAxisTitleText(chart))) {
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, xAxisLabels), PngXAxisTitleFontSize(chart));
         }
 
@@ -65,7 +65,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale) {
-        if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(chart.XAxisTitle)) {
+        if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(XAxisTitleText(chart))) {
             var tickHeight = EstimatePngStyledTextBoundsHeight(PngTickFontSize(chart), chart.Options.TickLabelStyle);
             DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 22 + tickHeight + 12, PngAxisTitleFontSize(chart));
         }
@@ -73,10 +73,13 @@ public sealed partial class PngChartRenderer {
         if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
+    private static string XAxisTitleText(Chart chart) => ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+
     private static void DrawPngXAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double baselineY, double preferredFontSize) {
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, plot.Width - 4), preferredFontSize, style);
-        var label = TrimReadablePngLabelToWidth(chart.XAxisTitle, fontSize, Math.Max(48, plot.Width - 4), style);
+        var title = XAxisTitleText(chart);
+        var fontSize = TextFontSizeForEmphasizedWidth(title, Math.Max(48, plot.Width - 4), preferredFontSize, style);
+        var label = TrimReadablePngLabelToWidth(title, fontSize, Math.Max(48, plot.Width - 4), style);
         if (label.Length == 0) return;
         var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true);
         var height = EstimatePngStyledTextHeight(fontSize, style);
@@ -173,7 +176,7 @@ public sealed partial class PngChartRenderer {
         if (ShowXAxis(chart)) {
             var xLabels = XAxisTickLabels(chart, xTicks, valueAxisOnly);
             bottomReserve += PngXAxisTitleOffset(chart, xLabels) + EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 4;
-            if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) bottomReserve -= 16;
+            if (string.IsNullOrWhiteSpace(XAxisTitleText(chart))) bottomReserve -= 16;
         }
 
         if (ShouldDrawLegend(chart) && PngIsBottomLegend(chart.Options.LegendPosition)) bottomReserve += PngLegendBottomReserve(chart);
@@ -218,7 +221,7 @@ public sealed partial class PngChartRenderer {
         return PngXAxisLabelOffset(chart, labels) + gap;
     }
 
-    private static double PngXAxisTitleFontSize(Chart chart) => TextFontSizeForEmphasizedWidth(chart.XAxisTitle, Math.Max(48, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right), PngAxisTitleFontSize(chart), chart.Options.AxisTitleStyle);
+    private static double PngXAxisTitleFontSize(Chart chart) => TextFontSizeForEmphasizedWidth(XAxisTitleText(chart), Math.Max(48, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right), PngAxisTitleFontSize(chart), chart.Options.AxisTitleStyle);
 
     private static double HorizontalCategoryFontSize(Chart chart) => PngTickFontSize(chart);
 

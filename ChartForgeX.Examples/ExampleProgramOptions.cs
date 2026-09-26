@@ -21,6 +21,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--reporting-only")) {
+            ReportingExamples.Write(output, pngOutputScale);
+            Console.WriteLine("Generated reporting files in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--readable-topology-only")) {
             ReadableTopologyExamples.Write(output);
             return true;

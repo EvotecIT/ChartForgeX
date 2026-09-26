@@ -44,9 +44,12 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
+    private static string XAxisTitleText(Chart chart) => ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+
     private static void DrawSvgXAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double y, string role = "") {
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(sb, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        var title = XAxisTitleText(chart);
+        if (string.IsNullOrWhiteSpace(title)) return;
+        DrawSvgTextCenteredX(sb, chart, role, title, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawSvgYAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double axisX, string role = "") {
@@ -67,9 +70,9 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double SvgXAxisTitleHeight(Chart chart, double maxWidth) {
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return 0;
+        if (string.IsNullOrWhiteSpace(XAxisTitleText(chart))) return 0;
         var style = chart.Options.AxisTitleStyle;
-        var fontSize = TextFontSizeForSvgWidth(chart, chart.XAxisTitle, Math.Max(48, maxWidth), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
+        var fontSize = TextFontSizeForSvgWidth(chart, XAxisTitleText(chart), Math.Max(48, maxWidth), StyleFontSize(style, chart.Options.Theme.AxisTitleFontSize), style, emphasized: true);
         return EstimateSvgStyledTextHeight(fontSize, style);
     }
 

@@ -746,7 +746,7 @@ public sealed partial class SvgChartRenderer {
 
     private static double SvgXAxisBottomReserve(Chart chart, IReadOnlyList<string>? labels, double maxWidth) {
         var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return XAxisLabelOffset(chart, labels) + tickHeight + 10;
+        if (string.IsNullOrWhiteSpace(XAxisTitleText(chart))) return XAxisLabelOffset(chart, labels) + tickHeight + 10;
         return XAxisTitleOffset(chart, labels) + SvgXAxisTitleHeight(chart, maxWidth) + 4;
     }
 
