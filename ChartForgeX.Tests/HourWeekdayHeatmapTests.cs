@@ -73,13 +73,14 @@ public sealed class HourWeekdayHeatmapTests {
         var cells = ByRole(svg, "heatmap-cell");
         var busiest = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
         var quiet = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 11:", StringComparison.Ordinal));
-        Assert.Equal("positive", (string)busiest.Attribute("data-cfx-status")!);
+        Assert.Null(busiest.Attribute("data-cfx-status"));
+        Assert.Equal("4", (string?)busiest.Attribute("data-cfx-level"));
         Assert.NotEqual((string)busiest.Attribute("fill")!, (string)quiet.Attribute("fill")!);
 
         var percent = Chart.Create().WithSize(900, 360).AddHourWeekdayHeatmap(values);
         percent.Options.HeatmapRelativeScale = false;
         var percentBusiest = ByRole(XDocument.Parse(percent.ToSvg()), "heatmap-cell").Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
-        Assert.Equal("negative", (string)percentBusiest.Attribute("data-cfx-status")!);
+        Assert.Equal("1", (string?)percentBusiest.Attribute("data-cfx-level"));
 
         Assert.Equal(chart.ToPng(), Chart.Create().WithSize(900, 360).AddHourWeekdayHeatmap(values).ToPng());
         Assert.NotEqual(chart.ToPng(), percent.ToPng());

@@ -68,6 +68,15 @@ internal static class ChartHeatmapSurface {
         return Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
     }
 
+    /// <summary>
+    /// Returns the positive/warning/negative status of a cell only for the <see cref="ChartHeatmapScale.Semantic"/> scale.
+    /// Sequential (count and intensity) heatmaps carry no status; use <see cref="Level"/> instead.
+    /// </summary>
+    public static string? CellStatus(Chart chart, double ratio) => chart.Options.HeatmapScale == ChartHeatmapScale.Semantic ? Status(ratio) : null;
+
+    /// <summary>Returns the neutral intensity level 0–4 (0 is the weakest) used for sequential heatmap cells and scale steps.</summary>
+    public static int Level(double ratio) => (int)Math.Ceiling(Clamp(ratio, 0, 1) * 4);
+
     public static string Status(double ratio) {
         if (ratio < 0.60) return "negative";
         if (ratio < 0.80) return "warning";
@@ -76,7 +85,8 @@ internal static class ChartHeatmapSurface {
 
     public static ChartColor CalendarColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
         var ratio = CalendarRatio(value, min, max);
-        var high = pointColor ?? series.Color ?? chart.Options.Theme.Positive;
+        // Counts use a neutral single-hue ramp from the first categorical colour; status colours stay reserved for status.
+        var high = pointColor ?? series.Color ?? chart.Options.Theme.Palette[0];
         return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, high, 0.30 + ratio * 0.70);
     }
 

@@ -145,6 +145,7 @@
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
+    push('Level', data.cfxLevel);
     push('Kind', data.cfxKind);
     push('Percent', data.cfxPercent);
     push('Delta', data.cfxDelta);

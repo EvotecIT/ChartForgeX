@@ -35,10 +35,11 @@ public sealed partial class SvgChartRenderer {
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
                 var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
-                var status = ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max));
+                var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
+                var status = ChartHeatmapSurface.CellStatus(chart, ratio);
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
-                WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, summary);
+                WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, ChartHeatmapSurface.Level(ratio), summary);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
                     DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartColorMath.TextOnBackground(color), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), layout.HexWidth - 8, "750", style: dataStyle);
@@ -73,7 +74,7 @@ public sealed partial class SvgChartRenderer {
             .Line());
     }
 
-    private static void WriteHexbinCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, double cx, double cy, double radius, ChartColor color, string status, string summary) {
+    private static void WriteHexbinCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, double cx, double cy, double radius, ChartColor color, string? status, int level, string summary) {
         AppendSvg(sb, writer => writer
             .StartElement("polygon")
             .Attribute("class", "cfx-interactive-region")
@@ -83,6 +84,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)
             .Attribute("data-cfx-status", status)
+            .OptionalAttribute("data-cfx-level", status == null ? level : (int?)null)
             .Attribute("role", "img")
             .Attribute("aria-label", summary)
             .Attribute("points", HexbinPointsAttribute(cx, cy, radius))
