@@ -38,9 +38,17 @@ public sealed partial class PngChartRenderer {
         var rawLabelWidth = 0.0;
         if (chart.Options.ShowAxes) foreach (var row in rows) rawLabelWidth = Math.Max(rawLabelWidth, EstimatePngStyledTextWidth(row.Name, tickFontSize, tickStyle, emphasized: true));
         var labelWidth = chart.Options.ShowAxes ? Math.Min(rawLabelWidth, Math.Max(0, plot.Width - 220)) : 0;
-        var axisBottomBase = chart.Options.ShowHeatmapScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
+        var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
+        var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
+        var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
+            ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: false), plot.Left, plot.Width)
+            : Array.Empty<ChartStateCategoryLegendItem>();
+        var legendHeight = ChartStateCategoryLegend.Height(legend);
+        var legendTop = plot.Bottom - legendHeight + 4;
+        var numericScale = chart.Options.ShowHeatmapScale && !categorical;
+        var axisBottomBase = numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
         var axesBottomReserve = chart.Options.ShowAxes ? axisBottomBase + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextBoundsHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 8) : 0;
-        var bottomReserve = chart.Options.ShowHeatmapScale ? Math.Max(axesBottomReserve, 56) : axesBottomReserve;
+        var bottomReserve = (numericScale ? Math.Max(axesBottomReserve, 56) : axesBottomReserve) + legendHeight;
         var labelGap = chart.Options.ShowAxes ? 14 : 0;
         var rowLabelMaxWidth = Math.Max(8, labelWidth);
         var sideLabelWidth = HeatmapSideLabelWidth(chart, rows, columnValues);
@@ -71,8 +79,11 @@ public sealed partial class PngChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
-                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
+                var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
+                var color = category?.Color ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
                 c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
+                if (category?.Hatched == true) DrawStateCategoryHatch(c, x, y, cellWidth, cellHeight, radius);
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
@@ -80,9 +91,10 @@ public sealed partial class PngChartRenderer {
                     cellHeight >= EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle) + 10;
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
+                if (cell.HasValue) drawValueText = cell.Value.Text != null && chart.Options.HeatmapValueTextMode != ChartHeatmapValueTextMode.Hidden && (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || labelFits);
                 if (drawValueText) {
                     var label = FormatDataLabel(chart, series, pointIndex, value);
-                    var placement = DataLabelPlacement(chart, series);
+                    var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
                         DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, ChartColorMath.TextOnBackground(color), color, dataFontSize, dataStyle);
                     } else {
@@ -119,7 +131,8 @@ public sealed partial class PngChartRenderer {
 
             DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
         }
-        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
+        if (legend.Count > 0) DrawStateCategoryLegend(c, chart, legend, legendTop);
+        else if (numericScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
     }
 
     private static bool IsHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Heatmap);

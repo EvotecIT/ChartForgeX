@@ -300,7 +300,7 @@ public sealed partial class SvgChartRenderer {
             return sb.ToString();
         }
         if (IsHeatmapChart(chart)) {
-            DrawHeatmap(sb, chart, plot);
+            DrawHeatmap(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");

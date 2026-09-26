@@ -24,9 +24,9 @@ public sealed partial class PngChartRenderer {
         }
 
         var legend = chart.Options.ShowLegend
-            ? model.LayoutLegend(text => EstimatePngStyledTextWidth(text, legendFontSize, legendStyle, emphasized: false), bounds.Left, bounds.Width)
-            : Array.Empty<ChartStateTimelineLegendItem>();
-        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(legend));
+            ? model.Legend.Layout(text => EstimatePngStyledTextWidth(text, legendFontSize, legendStyle, emphasized: false), bounds.Left, bounds.Width)
+            : Array.Empty<ChartStateCategoryLegendItem>();
+        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), ChartStateCategoryLegend.Height(legend));
 
         foreach (var tick in model.Ticks) {
             var x = model.X(tick, plot);
@@ -46,18 +46,18 @@ public sealed partial class PngChartRenderer {
                 var maxWidth = Math.Max(8, plot.Left - bounds.Left - ChartStateTimelineModel.ColumnGap);
                 var fontSize = TextFontSizeForEmphasizedWidth(lane.Name, maxWidth, tickFontSize, tickStyle);
                 var label = TrimReadablePngLabelToWidth(lane.Name, fontSize, maxWidth, tickStyle);
-                if (label.Length > 0) DrawStateTimelineText(c, label, plot.Left - ChartStateTimelineModel.ColumnGap - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: true), y + band / 2, tickStyle, t.MutedText, fontSize, true);
+                if (label.Length > 0) DrawStateCategoryText(c, label, plot.Left - ChartStateTimelineModel.ColumnGap - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: true), y + band / 2, tickStyle, t.MutedText, fontSize, true);
             }
 
             foreach (var segment in lane.Segments) {
                 if (!model.TrySegmentSpan(segment, plot, out var left, out var width)) continue;
                 c.FillRoundedRect(left, y, width, band, Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2), segment.State.Color);
-                if (segment.State.Hatched) DrawStateTimelineHatch(c, left, y, width, band);
+                if (segment.State.Hatched) DrawStateCategoryHatch(c, left, y, width, band);
             }
 
             if (model.HasSummary && !string.IsNullOrWhiteSpace(lane.Summary)) {
                 var summaryText = TrimReadablePngLabelToWidth(lane.Summary!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle);
-                if (summaryText.Length > 0) DrawStateTimelineText(c, summaryText, bounds.Right - 2 - EstimatePngStyledTextWidth(summaryText, tickFontSize, tickStyle, emphasized: true), y + band / 2, tickStyle, t.Text, tickFontSize, true);
+                if (summaryText.Length > 0) DrawStateCategoryText(c, summaryText, bounds.Right - 2 - EstimatePngStyledTextWidth(summaryText, tickFontSize, tickStyle, emphasized: true), y + band / 2, tickStyle, t.Text, tickFontSize, true);
             }
         }
 
@@ -71,23 +71,6 @@ public sealed partial class PngChartRenderer {
             if (!string.IsNullOrWhiteSpace(XAxisTitleText(chart))) DrawPngXAxisTitle(c, chart, plot, plot.Bottom + ChartStateTimelineModel.AxisReserve + 14, PngAxisTitleFontSize(chart));
         }
 
-        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(legend) + 4;
-        foreach (var item in legend) {
-            var rowY = legendTop + item.Row * ChartStateTimelineModel.LegendRowHeight;
-            c.FillRoundedRect(item.X, rowY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.SegmentRadius, item.State.Color);
-            if (item.State.Hatched) DrawStateTimelineHatch(c, item.X, rowY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
-            DrawStateTimelineText(c, item.State.Label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowY + ChartStateTimelineModel.LegendSwatch / 2, legendStyle, t.MutedText, legendFontSize, false);
-        }
-    }
-
-    private static void DrawStateTimelineHatch(RgbaCanvas c, double x, double y, double width, double height) {
-        var color = ApplyOpacity(ChartColor.White, ChartStateTimelineModel.HatchOpacity);
-        foreach (var line in ChartPatternLineGeometry.Build(ChartFillPattern.DiagonalForward, x, y, width, height, Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2), ChartStateTimelineModel.HatchSpacing * 1.4142)) {
-            c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.5);
-        }
-    }
-
-    private static void DrawStateTimelineText(RgbaCanvas c, string text, double x, double centerY, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {
-        DrawPngTextStyled(c, x, centerY - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), text, style, color, fontSize, emphasized);
+        DrawStateCategoryLegend(c, chart, legend, bounds.Bottom - ChartStateCategoryLegend.Height(legend) + 4);
     }
 }

@@ -11,6 +11,42 @@ internal static class ReportingExamples {
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
         WriteTimeAxis(output, pngOutputScale);
         WriteStateTimeline(output, pngOutputScale);
+        WriteStatusMatrix(output, pngOutputScale);
+    }
+
+    private static void WriteStatusMatrix(string output, ChartPngOutputScale pngOutputScale) {
+        // Graphite palette v1 (light): a failed check is coloured by its severity; not evaluated is neutral and hatched.
+        var chart = Chart.Create()
+            .WithTitle("Directory health by domain controller")
+            .WithSubtitle("Worst finding per check; select a cell to open its evidence")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(1180, 520)
+            .WithPngOutputScale(pngOutputScale)
+            .WithStateCategories(
+                new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")),
+                new ChartStateCategory("low", "Low", ChartColor.FromHex("#0c8aa8")),
+                new ChartStateCategory("medium", "Medium", ChartColor.FromHex("#c78404")),
+                new ChartStateCategory("high", "High", ChartColor.FromHex("#dd5a17")),
+                new ChartStateCategory("critical", "Critical", ChartColor.FromHex("#d4302f")),
+                new ChartStateCategory("notEvaluated", "Not evaluated", ChartColor.FromHex("#7c818a"), hatched: true))
+            .WithXLabels("Replication", "SYSVOL", "DNS", "Time sync", "LDAP", "Kerberos", "Certificates", "Backups", "Services", "Disk");
+        var severities = new[] { "pass", "pass", "pass", "low", "pass", "medium", "pass", "high", "pass", "critical" };
+        var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
+        for (var row = 0; row < names.Length; row++) {
+            var cells = new ChartHeatmapCell?[10];
+            for (var column = 0; column < cells.Length; column++) {
+                if (row == 6 && column == 7) continue;
+                var state = row == 3 && column >= 8 ? "notEvaluated" : severities[(row * 7 + column * 3) % severities.Length];
+                var findings = state is "pass" or "notEvaluated" ? null : ((row + column) % 4 + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                cells[column] = new ChartHeatmapCell(state, findings, href: "#" + names[row].ToLowerInvariant() + "-check-" + (column + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            chart.AddHeatmapCategoryRow(names[row], cells);
+        }
+
+        chart.SaveSvg(Path.Combine(output, "reporting-status-matrix.svg"));
+        chart.SaveHtml(Path.Combine(output, "reporting-status-matrix.html"));
+        chart.SavePng(Path.Combine(output, "reporting-status-matrix.png"));
     }
 
     private static void WriteStateTimeline(string output, ChartPngOutputScale pngOutputScale) {

@@ -113,6 +113,9 @@ public sealed class ChartSeries {
     /// </summary>
     internal ChartHistogramBinLayout? HistogramBinLayout { get; set; }
 
+    /// <summary>Gets categorical heatmap cells aligned with <see cref="Points"/>; empty for numeric heatmap rows.</summary>
+    internal List<ChartHeatmapCell> HeatmapCells { get; } = new();
+
     /// <summary>Gets optional per-segment tooltip details for state timeline lanes.</summary>
     internal List<string?> StateTimelineDetails { get; } = new();
 
