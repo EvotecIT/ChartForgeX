@@ -63,7 +63,7 @@ internal static partial class TopologyEdgeRouter {
 
         // The grid search is a fallback for routes that would cut through a card; label and header near-misses keep the
         // corridor route so curated layouts stay as authored.
-        if (best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id) && MazeRoute(chart, edge, source, target) is { } maze) {
+        if (TopologyLayoutEngine.UsesReadableDenseLayout(chart) && best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id) && MazeRoute(chart, edge, source, target) is { } maze) {
             var mazePlan = BuildPlan("ObstacleAvoidingOrthogonal", "maze", maze, obstacles, existingSegments, edge, candidates.Count + 1, chart.TextMeasurement);
             if (RouteScore(mazePlan, edge) < RouteScore(best, edge)) best = mazePlan;
         }

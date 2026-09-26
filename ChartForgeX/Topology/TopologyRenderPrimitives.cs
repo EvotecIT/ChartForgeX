@@ -284,7 +284,7 @@ internal static partial class TopologyRenderPrimitives {
         if (points.Count < 2) return;
         if (!string.IsNullOrWhiteSpace(edge.SourcePortId)) {
             ApplyNamedEndpoint(source, edge.SourcePortId!, edge, points, 0, 1);
-        } else if (edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(edge, points[0], points[1], edge.SourcePort)) {
+        } else if (edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[0], points[1], edge.SourcePort)) {
             var original = points[0];
             var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
             points[0] = spread;
@@ -293,7 +293,7 @@ internal static partial class TopologyRenderPrimitives {
 
         if (!string.IsNullOrWhiteSpace(edge.TargetPortId)) {
             ApplyNamedEndpoint(target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
-        } else if (edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
+        } else if (edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
             var targetIndex = points.Count - 1;
             var original = points[targetIndex];
             var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);
@@ -304,8 +304,8 @@ internal static partial class TopologyRenderPrimitives {
 
     // A grid-searched route may leave through a different side than the inferred port; spreading along the recorded side
     // would then push the endpoint off the card, so it only applies when the end leg runs along the port's axis.
-    private static bool LegMatchesPort(TopologyEdge edge, ChartPoint end, ChartPoint next, TopologyEdgePort port) {
-        if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0) return true;
+    private static bool LegMatchesPort(TopologyChart chart, TopologyEdge edge, ChartPoint end, ChartPoint next, TopologyEdgePort port) {
+        if (!TopologyLayoutEngine.UsesReadableDenseLayout(chart) || edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0) return true;
         var horizontal = Math.Abs(end.Y - next.Y) < 0.01;
         var vertical = Math.Abs(end.X - next.X) < 0.01;
         if (horizontal == vertical) return true;
