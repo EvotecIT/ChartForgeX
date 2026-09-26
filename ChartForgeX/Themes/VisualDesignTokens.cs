@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Composition;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 
@@ -15,6 +16,7 @@ public sealed partial class VisualDesignTokens {
     private double _cornerRadius = 12;
     private double _strokeWidth = 2;
     private VisualStatusTokens _status = new();
+    private ChartColor[]? _sequentialRamp;
 
     /// <summary>Gets or sets the page or canvas background color.</summary>
     public ChartColor Background { get; set; } = ChartColor.FromHex("#FFFFFF");
@@ -88,6 +90,26 @@ public sealed partial class VisualDesignTokens {
         set => _status = value ?? throw new ArgumentNullException(nameof(value));
     }
 
+    /// <summary>
+    /// Gets or sets the optional sequential ramp (weakest to strongest, one hue) for counts and magnitudes. Applied to
+    /// <see cref="ChartTheme.SequentialRamp"/>; null clears it so heatmaps use the default blend.
+    /// </summary>
+    public ChartColor[]? SequentialRamp {
+        get => _sequentialRamp == null ? null : (ChartColor[])_sequentialRamp.Clone();
+        set {
+            if (value != null && value.Length < 2) throw new ArgumentException("A sequential ramp needs at least two colours.", nameof(value));
+            _sequentialRamp = value == null ? null : (ChartColor[])value.Clone();
+        }
+    }
+
+    /// <summary>Gets or sets the optional diverging ramp for values around a midpoint (see <see cref="VisualDivergingRamp.ToMapColorScale"/>).</summary>
+    public VisualDivergingRamp? DivergingRamp { get; set; }
+
+    /// <summary>Returns a sequential map colour scale from the weakest to the strongest ramp colour, or null without a ramp.</summary>
+    /// <remarks>Map colour scales hold two or three stops, so intermediate ramp colours are dropped and the blend is linear.</remarks>
+    public ChartMapColorScale? ToSequentialMapColorScale() =>
+        _sequentialRamp == null ? null : ChartMapColorScale.Sequential(_sequentialRamp[0], _sequentialRamp[_sequentialRamp.Length - 1]);
+
     /// <summary>Creates an independent copy.</summary>
     public VisualDesignTokens Clone() => new() {
         Background = Background,
@@ -107,7 +129,9 @@ public sealed partial class VisualDesignTokens {
         MonospaceFontFamily = MonospaceFontFamily,
         CornerRadius = CornerRadius,
         StrokeWidth = StrokeWidth,
-        Status = Status.Clone()
+        Status = Status.Clone(),
+        SequentialRamp = SequentialRamp,
+        DivergingRamp = DivergingRamp
     };
 
     /// <summary>Applies the shared tokens to a chart renderer theme.</summary>
@@ -126,6 +150,7 @@ public sealed partial class VisualDesignTokens {
         theme.Warning = Warning;
         theme.Negative = Negative;
         theme.Palette = Palette;
+        theme.SequentialRamp = _sequentialRamp == null ? null : SequentialRamp;
         theme.FontFamily = FontFamily;
         theme.CornerRadius = CornerRadius;
         theme.PlotCornerRadius = Math.Max(0, CornerRadius * 0.72);

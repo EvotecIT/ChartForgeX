@@ -5,7 +5,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public enum ChartHeatmapScale {
     /// <summary>
-    /// Blends from the plot background to the series high-intensity color.
+    /// Blends from the plot background to the series high-intensity color, or interpolates <see cref="ChartForgeX.Themes.ChartTheme.SequentialRamp"/> when set and the series has no colour.
     /// </summary>
     Sequential,
 

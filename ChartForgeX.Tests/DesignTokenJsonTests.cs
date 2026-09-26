@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
@@ -84,7 +85,7 @@ public sealed class DesignTokenJsonTests {
 
     [Fact]
     public void FromJson_MissingOrInvalidMembers_NameThePath() {
-        var missingInk = GraphiteJson.Replace("\"high\": { \"fill\": \"#dd5a17\", \"ink\": \"#b64a13\" }", "\"high\": { \"fill\": \"#dd5a17\" }");
+        var missingInk = Regex.Replace(GraphiteJson, @"""fill"": ""#dd5a17"",\s*""ink"": ""#b64a13""", "\"fill\": \"#dd5a17\"");
         Assert.NotEqual(GraphiteJson, missingInk);
         var error = Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(missingInk));
         Assert.Contains("light.severity.high.ink", error.Message, StringComparison.Ordinal);
@@ -114,7 +115,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(duplicate));
         Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(GraphiteJson.Replace("\"card\": \"#ffffff\"", "\"card\": \"#fff\"")));
         Assert.Contains("light.surface.cardAlt", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(GraphiteJson.Replace("\"cardAlt\": \"#f8f9fa\"", "\"CardAlt\": \"#f8f9fa\""))).Message, StringComparison.Ordinal);
-        Assert.Contains("light.series[1]", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(GraphiteJson.Replace("\"#2a78d6\", \"#0f9f8c\"", "\"#2a78d6\", 7"))).Message, StringComparison.Ordinal);
+        Assert.Contains("light.series[1]", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(Regex.Replace(GraphiteJson, @"""#2a78d6"",\s*""#0f9f8c""","\"#2a78d6\", 7"))).Message, StringComparison.Ordinal);
         Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(new string('[', 100_000) + new string(']', 100_000)));
         Assert.Equal(0x80, VisualDesignTokens.FromJson(GraphiteJson.Replace("\"page\": \"#f2f3f4\"", "\"page\": \"#f2f3f480\"")).Background.A);
         Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJsonFile(" "));
@@ -131,6 +132,64 @@ public sealed class DesignTokenJsonTests {
         var states = status.OperationalStateCategories(labels);
         Assert.Equal("Niedostępny", states.Single(state => state.Key == "down").Label);
         Assert.Equal("Up", states.Single(state => state.Key == "up").Label);
+    }
+
+    [Fact]
+    public void FromJson_Ramps_MapSequentialAndDivergingPerMode() {
+        var light = VisualDesignTokens.FromJson(GraphiteJson);
+        Assert.Equal(new[] { "#86B6EF", "#5598E7", "#2A78D6", "#1C5CAB", "#104281" }, light.SequentialRamp!.Select(color => color.ToHex()).ToArray());
+        Assert.Equal(new[] { "#F0A39D", "#E0645B", "#B8292A" }, light.DivergingRamp!.Negative.Select(color => color.ToHex()).ToArray());
+        Assert.Equal("#ECEEF0", light.DivergingRamp.Neutral.ToHex());
+        Assert.Equal("#1C5CAB", light.DivergingRamp.Positive[2].ToHex());
+        var dark = VisualDesignTokens.FromJson(GraphiteJson, VisualThemeMode.Dark);
+        Assert.Equal("#184F95", dark.SequentialRamp![0].ToHex());
+        Assert.Equal("#2B2E34", dark.DivergingRamp!.Neutral.ToHex());
+
+        var scale = light.DivergingRamp.ToMapColorScale(0);
+        Assert.Equal("#B8292A", scale.LowColor.ToHex());
+        Assert.Equal("#1C5CAB", scale.HighColor.ToHex());
+        Assert.Equal(0, scale.MidpointValue);
+        Assert.Equal("#104281", light.ToSequentialMapColorScale()!.HighColor.ToHex());
+        Assert.Equal(light.SequentialRamp![0], light.Clone().SequentialRamp![0]);
+    }
+
+    [Fact]
+    public void FromJson_WithoutRamps_StillLoadsAndKeepsDefaultBlend() {
+        var withoutRamps = Regex.Replace(GraphiteJson, @",\s*""ramps"": \{(?:[^{}]|\{[^{}]*\})*\}", string.Empty);
+        Assert.DoesNotContain("\"ramps\"", withoutRamps, StringComparison.Ordinal);
+        var tokens = VisualDesignTokens.FromJson(withoutRamps);
+        Assert.Null(tokens.SequentialRamp);
+        Assert.Null(tokens.DivergingRamp);
+        Assert.Null(tokens.ToSequentialMapColorScale());
+        Assert.Null(Chart.Create().WithDesignTokens(tokens).Options.Theme.SequentialRamp);
+        var replaced = Chart.Create().WithDesignTokens(VisualDesignTokens.FromJson(GraphiteJson)).WithDesignTokens(tokens);
+        Assert.Null(replaced.Options.Theme.SequentialRamp);
+    }
+
+    [Fact]
+    public void FromJson_InvalidRamps_NameThePath() {
+        var shortRamp = Regex.Replace(GraphiteJson, @"""sequential"": \[\s*""#86b6ef"",(?:\s*""#[0-9a-f]{6}"",?)*\s*\]","\"sequential\": [\"#86b6ef\"]");
+        Assert.Contains("light.ramps.sequential", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(shortRamp)).Message, StringComparison.Ordinal);
+        var badArm = GraphiteJson.Replace("\"#e0645b\"", "\"red\"");
+        Assert.Contains("light.ramps.diverging.negative[1]", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(badArm)).Message, StringComparison.Ordinal);
+        var noNeutral = GraphiteJson.Replace("\"neutral\": \"#eceef0\",", string.Empty);
+        Assert.Contains("light.ramps.diverging.neutral", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(noNeutral)).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WithDesignTokens_SequentialRampColoursCountHeatmapsInSvgAndPng() {
+        var tokens = VisualDesignTokens.FromJson(GraphiteJson);
+        var chart = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 200d, 400d });
+        chart.Options.HeatmapRelativeScale = true;
+        var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell").Select(element => (string)element.Attribute("fill")!).ToArray();
+        Assert.Equal(new[] { tokens.SequentialRamp![0].ToCss(), tokens.SequentialRamp[2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills);
+        var explicitColour = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 400d }, ChartColor.FromHex("#0f9f8c"));
+        Assert.DoesNotContain(tokens.SequentialRamp[4].ToCss(), explicitColour.ToSvg(), StringComparison.OrdinalIgnoreCase);
+        var withRamp = chart.ToPng();
+        chart.Options.Theme.SequentialRamp = null;
+        Assert.NotEqual(withRamp, chart.ToPng());
+        chart.WithDesignTokens(tokens);
+        Assert.Throws<ArgumentException>(() => chart.Options.Theme.SequentialRamp = new[] { ChartColor.White });
     }
 
     [Fact]

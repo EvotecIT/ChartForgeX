@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
@@ -8,6 +9,7 @@ internal static class ChartHeatmapSurface {
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticColor(chart, ratio);
+        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampColor(ramp, ratio);
         return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, highColor ?? chart.Options.Theme.Palette[0], 0.18 + ratio * 0.82);
     }
 
@@ -63,6 +65,14 @@ internal static class ChartHeatmapSurface {
         return Clamp((value - floor) / Math.Max(0.000001, max - floor), 0, 1);
     }
 
+    /// <summary>Interpolates piecewise-linearly along a ramp ordered weakest to strongest.</summary>
+    public static ChartColor RampColor(IReadOnlyList<ChartColor> ramp, double ratio) {
+        if (ramp.Count == 1) return ramp[0];
+        var position = Clamp(ratio, 0, 1) * (ramp.Count - 1);
+        var index = Math.Min(ramp.Count - 2, (int)Math.Floor(position));
+        return ChartColorMath.Blend(ramp[index], ramp[index + 1], position - index);
+    }
+
     public static double Ratio(double value, double min, double max) {
         if (min >= -0.000001 && max <= 100.000001) return Clamp(value / 100, 0, 1);
         return Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
@@ -85,6 +95,7 @@ internal static class ChartHeatmapSurface {
 
     public static ChartColor CalendarColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
         var ratio = CalendarRatio(value, min, max);
+        if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampColor(ramp, ratio);
         // Counts use a neutral single-hue ramp from the first categorical colour; status colours stay reserved for status.
         var high = pointColor ?? series.Color ?? chart.Options.Theme.Palette[0];
         return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, high, 0.30 + ratio * 0.70);
