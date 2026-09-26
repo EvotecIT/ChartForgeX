@@ -7,8 +7,9 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Themes;
 
 public sealed partial class VisualDesignTokens {
-    // A token file holds about 120 values; the caps bound nesting depth and size, and duplicate keys are rejected.
-    private static readonly GeoJsonReadLimits TokenJsonLimits = new GeoJsonReadLimits(4096, 256, 256).RejectDuplicates();
+    // A token file holds about 120 values nested four levels deep: the caps bound the value count, array and object sizes,
+    // and nesting depth (32), and duplicate keys are rejected.
+    private static readonly GeoJsonReadLimits TokenJsonLimits = new GeoJsonReadLimits(4096, 256, 256).LimitDepth(32).RejectDuplicates();
 
     /// <summary>
     /// Loads tokens from the generated design-token JSON (the HtmlForgeX tokens v1 contract). The document holds a
