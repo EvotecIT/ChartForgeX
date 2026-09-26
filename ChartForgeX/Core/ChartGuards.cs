@@ -186,7 +186,10 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind) {
-        if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) ValidateMinimumPointCount(chart.Series, kind, 1);
+        if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
+            ValidateMinimumPointCount(chart.Series, kind, 1);
+            if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
+        }
         else if (kind == ChartSeriesKind.CalendarHeatmap) {
             ValidateMinimumPointCount(chart.Series, kind, 1);
             ValidateNonNegativeValues(chart.Series[0], kind);
@@ -245,12 +248,29 @@ internal static class ChartGuards {
         }
     }
 
-    private static void ValidateStateTimeline(Chart chart) {
+    private static void ValidateStateCategories(Chart chart) {
         var keys = new HashSet<string>(StringComparer.Ordinal);
         foreach (var state in chart.Options.StateCategories) {
-            if (state == null) throw new InvalidOperationException("State timeline states must not contain null entries.");
-            if (!keys.Add(state.Key)) throw new InvalidOperationException("State timeline state keys must be unique: " + state.Key);
+            if (state == null) throw new InvalidOperationException("State categories must not contain null entries.");
+            if (!keys.Add(state.Key)) throw new InvalidOperationException("State category keys must be unique: " + state.Key);
         }
+    }
+
+    private static void ValidateHeatmapCategories(Chart chart) {
+        var categorical = 0;
+        foreach (var row in chart.Series) {
+            if (row.HeatmapCells.Count == 0) continue;
+            if (row.HeatmapCells.Count != row.Points.Count) throw new InvalidOperationException("Categorical heatmap rows require one cell per point.");
+            categorical++;
+        }
+
+        if (categorical == 0) return;
+        if (categorical != chart.Series.Count) throw new InvalidOperationException("A heatmap must use either numeric rows or categorical rows, not both.");
+        ValidateStateCategories(chart);
+    }
+
+    private static void ValidateStateTimeline(Chart chart) {
+        ValidateStateCategories(chart);
 
         var series = chart.Series;
         var segments = 0;

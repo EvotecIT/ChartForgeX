@@ -14,21 +14,16 @@ internal sealed class ChartStateTimelineModel {
     public const double SegmentRadius = 1.5;
     public const double AxisReserve = 30;
     public const double AxisTitleReserve = 20;
-    public const double LegendRowHeight = 20;
-    public const double LegendSwatch = 10;
-    public const double LegendItemGap = 18;
     public const double ColumnGap = 14;
     public const double ContentInset = 12;
-    public const double HatchSpacing = 6;
-    public const double HatchOpacity = 0.45;
 
-    private ChartStateTimelineModel(Chart chart, List<ChartStateTimelineLane> lanes, double min, double max, IReadOnlyList<double> ticks, List<ChartStateCategory> legendStates) {
+    private ChartStateTimelineModel(Chart chart, List<ChartStateTimelineLane> lanes, double min, double max, IReadOnlyList<double> ticks, ChartStateCategoryLegend legend) {
         Chart = chart;
         Lanes = lanes;
         Min = min;
         Max = max;
         Ticks = ticks;
-        LegendStates = legendStates;
+        Legend = legend;
         foreach (var lane in lanes) HasSummary |= !string.IsNullOrWhiteSpace(lane.Summary);
         HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.StateTimelineSummaryHeader) && lanes.Count > 0;
     }
@@ -43,15 +38,14 @@ internal sealed class ChartStateTimelineModel {
 
     public IReadOnlyList<double> Ticks { get; }
 
-    public IReadOnlyList<ChartStateCategory> LegendStates { get; }
+    public ChartStateCategoryLegend Legend { get; }
 
     public bool HasSummary { get; }
 
     public string? SummaryHeader => Chart.Options.StateTimelineSummaryHeader;
 
     public static ChartStateTimelineModel Build(Chart chart) {
-        var states = new Dictionary<string, ChartStateCategory>(StringComparer.Ordinal);
-        foreach (var state in chart.Options.StateCategories) states[state.Key] = state;
+        var legend = new ChartStateCategoryLegend(chart);
         var lanes = new List<ChartStateTimelineLane>();
         var min = double.PositiveInfinity;
         var max = double.NegativeInfinity;
@@ -60,11 +54,7 @@ internal sealed class ChartStateTimelineModel {
             if (series.Kind != ChartSeriesKind.StateTimeline) continue;
             var segments = new List<ChartStateTimelineResolvedSegment>(series.Points.Count);
             for (var i = 0; i < series.Points.Count; i++) {
-                var key = series.PointLabels[i] ?? string.Empty;
-                if (!states.TryGetValue(key, out var state)) {
-                    state = new ChartStateCategory(key.Length == 0 ? "?" : key, key, chart.Options.Theme.MutedText);
-                    states[key] = state;
-                }
+                var state = legend.Resolve(series.PointLabels[i]);
 
                 var detail = i < series.StateTimelineDetails.Count ? series.StateTimelineDetails[i] : null;
                 var last = segments.Count - 1;
@@ -88,7 +78,7 @@ internal sealed class ChartStateTimelineModel {
         if (!(max > min)) max = min + 1.0 / 24.0;
         var tickCount = Math.Max(2, axis.TickCount);
         var ticks = ChartTimeScale.Generate(axis, min, max, true) ?? ChartTicks.GenerateInside(min, max, tickCount);
-        return new ChartStateTimelineModel(chart, lanes, min, max, ticks, new List<ChartStateCategory>(chart.Options.StateCategories));
+        return new ChartStateTimelineModel(chart, lanes, min, max, ticks, legend);
     }
 
     /// <summary>Returns the lane plot area after reserving the label column, summary column, axis, and legend.</summary>
@@ -158,42 +148,6 @@ internal sealed class ChartStateTimelineModel {
         if (hours < 48) return hours.ToString(CultureInfo.InvariantCulture) + "h" + (minutes % 60 == 0 ? string.Empty : " " + (minutes % 60).ToString(CultureInfo.InvariantCulture) + "m");
         return (hours / 24).ToString(CultureInfo.InvariantCulture) + "d" + (hours % 24 == 0 ? string.Empty : " " + (hours % 24).ToString(CultureInfo.InvariantCulture) + "h");
     }
-
-    /// <summary>Wraps legend entries into centered rows using a renderer-specific label measure.</summary>
-    public IReadOnlyList<ChartStateTimelineLegendItem> LayoutLegend(Func<string, double> measure, double left, double width) {
-        var items = new List<ChartStateTimelineLegendItem>();
-        var row = new List<(ChartStateCategory State, double Width)>();
-        var rowWidth = 0.0;
-        var rowIndex = 0;
-        void Flush() {
-            var x = left + Math.Max(0, (width - rowWidth) / 2);
-            foreach (var entry in row) {
-                items.Add(new ChartStateTimelineLegendItem(entry.State, x, rowIndex));
-                x += entry.Width + LegendItemGap;
-            }
-
-            row.Clear();
-            rowWidth = 0;
-            rowIndex++;
-        }
-
-        foreach (var state in LegendStates) {
-            var itemWidth = LegendSwatch + 6 + measure(state.Label);
-            var needed = row.Count == 0 ? itemWidth : rowWidth + LegendItemGap + itemWidth;
-            if (row.Count > 0 && needed > width) Flush();
-            rowWidth = row.Count == 0 ? itemWidth : rowWidth + LegendItemGap + itemWidth;
-            row.Add((state, itemWidth));
-        }
-
-        if (row.Count > 0) Flush();
-        return items;
-    }
-
-    public static double LegendHeight(IReadOnlyList<ChartStateTimelineLegendItem> items) {
-        var rows = 0;
-        foreach (var item in items) rows = Math.Max(rows, item.Row + 1);
-        return rows == 0 ? 0 : rows * LegendRowHeight + 8;
-    }
 }
 
 /// <summary>One lane of a state timeline with its resolved segments.</summary>
@@ -233,19 +187,4 @@ internal readonly struct ChartStateTimelineResolvedSegment {
     public ChartStateCategory State { get; }
 
     public string? Detail { get; }
-}
-
-/// <summary>A positioned legend entry; <see cref="Row"/> counts from the top of the legend block.</summary>
-internal readonly struct ChartStateTimelineLegendItem {
-    public ChartStateTimelineLegendItem(ChartStateCategory state, double x, int row) {
-        State = state;
-        X = x;
-        Row = row;
-    }
-
-    public ChartStateCategory State { get; }
-
-    public double X { get; }
-
-    public int Row { get; }
 }
