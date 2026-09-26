@@ -289,6 +289,19 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
 }
 ```
 
+### Generated design tokens
+
+Hosts that generate design tokens (the HtmlForgeX tokens v1 JSON, with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
+
+```csharp
+var tokens = VisualDesignTokens.FromJsonFile("tokens.json", VisualThemeMode.Dark);
+var availability = Chart.Create()
+    .WithDesignTokens(tokens)
+    .WithStateCategories(tokens.Status.OperationalStateCategories());
+```
+
+`SeverityCategories()`, `OutcomeCategories()`, and `OperationalStateCategories()` return the keys `critical`…`info`, `pass`/`notEvaluated`/`couldNotEvaluate`, and `up`/`degraded`/`down`/`recovering`/`maintenance`/`notObservable`/`unknown`. Missing members fail with the JSON path, for example `light.severity.high.ink`.
+
 ## Composition
 
 Use `ChartGrid` for chart-only small multiples, comparison grids, and mosaic reports. `Add(chart, columnSpan, rowSpan)` and `WithPanelSpan(index, columnSpan, rowSpan)` let a report mix hero panels with smaller supporting charts without creating a chart type just for layout.
