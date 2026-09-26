@@ -24,6 +24,7 @@ internal static partial class VisualArtifactInterchangeJson {
         .LimitArray("dashPattern", VisualArtifactInterchangeValidation.MaximumDashPatternValues)
         .LimitArray("waypoints", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
         .LimitObject("extensions", VisualArtifactInterchangeValidation.MaximumExtensionEntries)
+        .LimitDepth(MaximumJsonDepth)
         .RejectDuplicates();
 
     public static string Serialize(VisualArtifactInterchangeEnvelope envelope) {
