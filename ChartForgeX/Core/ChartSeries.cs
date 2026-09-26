@@ -119,8 +119,14 @@ public sealed class ChartSeries {
     /// <summary>Gets optional per-segment tooltip details for state timeline lanes.</summary>
     internal List<string?> StateTimelineDetails { get; } = new();
 
-    /// <summary>Gets or sets the summary-column text for a state timeline lane.</summary>
-    internal string? StateTimelineSummary { get; set; }
+    /// <summary>Gets or sets the summary-column text for a state timeline or Gantt lane.</summary>
+    internal string? LaneSummary { get; set; }
+
+    /// <summary>Gets the items of a Gantt lane, aligned with <see cref="Points"/>.</summary>
+    internal List<ChartGanttLaneItem> GanttLaneItems { get; } = new();
+
+    /// <summary>Gets or sets the group header a Gantt lane is listed under.</summary>
+    internal string? LaneGroup { get; set; }
 
     /// <summary>
     /// Gets optional point-level data labels. Null entries use the formatted point value.

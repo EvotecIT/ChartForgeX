@@ -153,6 +153,11 @@ public sealed partial class PngChartRenderer {
                 DrawStateTimeline(c, chart, plot);
                 return c;
             }
+            if (IsGanttLaneChart(chart)) {
+                DrawPlotSurface(c, o, t, plot);
+                DrawGanttLanes(c, chart, plot);
+                return c;
+            }
             if (IsTimelineChart(chart)) {
                 DrawSpecialChart(DrawTimeline);
                 return c;

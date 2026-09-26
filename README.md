@@ -627,7 +627,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
-| Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `WithStateCategories`, `ChartStateCategory`, `StateTimelineSummaryHeader` |
+| Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `AddGanttLane`, `ChartGanttLaneItem`, `WithStateCategories`, `ChartStateCategory`, `LaneSummaryHeader` |
 
 ## Renderer Contracts
 
@@ -635,6 +635,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 - Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
 - Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely.
 - Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
+- Gantt lanes (`AddGanttLane`) list time-bounded items such as incidents per entity, colour them through the same `WithStateCategories` map (for example `VisualStatusTokens.SeverityCategories()`), stack overlapping items into sub-rows, list consecutive lanes with the same group under one group header, run open items (`end: null`) to `WithGanttToday` or the latest time, and draw a neutral "Now" line. Items expose `data-cfx-status`, `data-cfx-meta-state`, `data-cfx-meta-ongoing`, `data-cfx-sub-row`, and a `<title>` tooltip.
 - Categorical heatmaps (`AddHeatmapCategoryRow`) colour each cell through the same `WithStateCategories` map as state timelines, draw a swatch legend in category order instead of the numeric scale, keep masked (null) cells empty, draw optional cell text, and emit `data-cfx-status` with the category key. Cell tooltips default to `row, column: label`; cell links render as SVG `<a href>` and accept only relative, fragment, `http`, `https`, and `mailto` targets.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.

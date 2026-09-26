@@ -12,8 +12,8 @@ public sealed partial class ChartOptions {
     public List<ChartStateCategory> StateCategories { get; } = new();
 
     /// <summary>
-    /// Gets or sets the header for the right-hand lane summary column, for example <c>Available</c>.
-    /// The column is shown when any lane has a summary or this header is set.
+    /// Gets or sets the header for the right-hand lane summary column of state timelines and Gantt lanes, for example
+    /// <c>Available</c>. The column is shown when any lane has a summary or this header is set.
     /// </summary>
-    public string? StateTimelineSummaryHeader { get; set; }
+    public string? LaneSummaryHeader { get; set; }
 }

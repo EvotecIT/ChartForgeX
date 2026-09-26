@@ -242,5 +242,11 @@ public enum ChartSeriesKind {
     /// <summary>
     /// Renders lanes of categorical states over a real time axis, one lane per entity, with gaps where no data exists.
     /// </summary>
-    StateTimeline
+    StateTimeline,
+
+    /// <summary>
+    /// Renders grouped lanes of time-bounded items, such as incidents, coloured by a categorical severity map. Overlapping
+    /// items in a lane stack into sub-rows, and open-ended items run to the current time.
+    /// </summary>
+    GanttLane
 }

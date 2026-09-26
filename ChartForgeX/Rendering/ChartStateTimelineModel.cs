@@ -25,7 +25,7 @@ internal sealed class ChartStateTimelineModel {
         Ticks = ticks;
         Legend = legend;
         foreach (var lane in lanes) HasSummary |= !string.IsNullOrWhiteSpace(lane.Summary);
-        HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.StateTimelineSummaryHeader) && lanes.Count > 0;
+        HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) && lanes.Count > 0;
     }
 
     public Chart Chart { get; }
@@ -42,7 +42,7 @@ internal sealed class ChartStateTimelineModel {
 
     public bool HasSummary { get; }
 
-    public string? SummaryHeader => Chart.Options.StateTimelineSummaryHeader;
+    public string? SummaryHeader => Chart.Options.LaneSummaryHeader;
 
     public static ChartStateTimelineModel Build(Chart chart) {
         var legend = new ChartStateCategoryLegend(chart);
@@ -69,7 +69,7 @@ internal sealed class ChartStateTimelineModel {
                 max = Math.Max(max, series.Points[i].Y);
             }
 
-            lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.StateTimelineSummary, segments));
+            lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments));
         }
 
         var axis = chart.Options.XAxis;
@@ -82,12 +82,16 @@ internal sealed class ChartStateTimelineModel {
     }
 
     /// <summary>Returns the lane plot area after reserving the label column, summary column, axis, and legend.</summary>
-    public ChartRect PlotArea(ChartRect bounds, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight) {
-        var options = Chart.Options;
+    public ChartRect PlotArea(ChartRect bounds, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight) =>
+        LanePlotArea(Chart, bounds, HasSummary, SummaryHeader, laneLabelWidth, summaryWidth, summaryHeaderHeight, legendHeight, 0);
+
+    /// <summary>Shared lane-chart layout: label column, summary column, time axis, legend, and an optional top reserve.</summary>
+    public static ChartRect LanePlotArea(Chart chart, ChartRect bounds, bool hasSummary, string? summaryHeader, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double topLabelHeight) {
+        var options = chart.Options;
         var labelReserve = options.ShowAxes ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * 0.34) : 0;
-        var summaryReserve = HasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
-        var axisReserve = options.ShowAxes ? AxisReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, Chart.XAxisTitle)) ? 0 : AxisTitleReserve) : 0;
-        var topReserve = HasSummary && !string.IsNullOrWhiteSpace(SummaryHeader) ? summaryHeaderHeight + 6 : 0;
+        var summaryReserve = hasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
+        var axisReserve = options.ShowAxes ? AxisReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, chart.XAxisTitle)) ? 0 : AxisTitleReserve) : 0;
+        var topReserve = Math.Max(hasSummary && !string.IsNullOrWhiteSpace(summaryHeader) ? summaryHeaderHeight + 6 : 0, topLabelHeight);
         var width = Math.Max(1, bounds.Width - labelReserve - summaryReserve);
         var height = Math.Max(1, bounds.Height - axisReserve - legendHeight - topReserve);
         return new ChartRect(bounds.Left + labelReserve, bounds.Top + topReserve, width, height);
@@ -117,27 +121,14 @@ internal sealed class ChartStateTimelineModel {
         return true;
     }
 
-    public string FormatTick(double value) {
-        var axis = Chart.Options.XAxis;
-        foreach (var label in axis.Labels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
-
-        return axis.LabelFormatter != null ? axis.LabelFormatter(value) ?? string.Empty : ChartTimeScale.Format(axis, value);
-    }
+    public string FormatTick(double value) => ChartTimeScale.FormatTick(Chart.Options.XAxis, value);
 
     public string SegmentSummary(ChartStateTimelineLane lane, ChartStateTimelineResolvedSegment segment) {
         var text = lane.Name + " · " + segment.State.Label + " · " + FormatInstant(segment.Start) + " – " + FormatInstant(segment.End) + " (" + FormatDuration(segment.End - segment.Start) + ")";
         return string.IsNullOrWhiteSpace(segment.Detail) ? text : text + " · " + segment.Detail;
     }
 
-    public string FormatInstant(double value) {
-        var axis = Chart.Options.XAxis;
-        var local = ChartTimeScale.ToDisplayTime(axis, value);
-        if (!local.HasValue) return ChartNumericFormatter.FormatCompact(value);
-        var format = local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
-        return local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ChartTimeScale.ZoneDesignator(axis);
-    }
+    public string FormatInstant(double value) => ChartTimeScale.FormatInstant(Chart.Options.XAxis, value);
 
     public static string FormatDuration(double days) {
         var seconds = (long)Math.Round(Math.Max(0, days) * 86400);

@@ -12,6 +12,34 @@ internal static class ReportingExamples {
         WriteTimeAxis(output, pngOutputScale);
         WriteStateTimeline(output, pngOutputScale);
         WriteStatusMatrix(output, pngOutputScale);
+        WriteIncidentLanes(output, pngOutputScale);
+    }
+
+    private static void WriteIncidentLanes(string output, ChartPngOutputScale pngOutputScale) {
+        // Severity colours come from the Graphite palette v1 defaults of VisualStatusTokens.
+        var start = WindowStart;
+        ChartGanttLaneItem Incident(double fromHours, double? toHours, string severity, string label, string? detail = null) =>
+            new(start.AddHours(fromHours), toHours.HasValue ? start.AddHours(toHours.Value) : null, severity, label, detail);
+        var chart = Chart.Create()
+            .WithTitle("Incidents by service")
+            .WithSubtitle("Last 48 hours; overlapping incidents stack within a lane and open incidents run to now")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(1180, 560)
+            .WithPngOutputScale(pngOutputScale)
+            .WithXAxisTimeScale(showTimeZone: true)
+            .WithGanttToday(start.AddHours(44))
+            .WithStateCategories(new VisualStatusTokens().SeverityCategories());
+        chart.Options.LaneSummaryHeader = "Incidents";
+        chart.AddGanttLane("LDAP", new[] { Incident(2, 5.5, "high", "Bind latency", "p95 above 250 ms"), Incident(20, 21, "low", "Slow search") }, "Warsaw", "2")
+            .AddGanttLane("Replication", new[] { Incident(8, 30, "critical", "USN rollback suspected"), Incident(12, 16, "medium", "Queue backlog"), Incident(26, null, "medium", "Link flapping") }, "Warsaw", "3")
+            .AddGanttLane("DNS", Array.Empty<ChartGanttLaneItem>(), "Warsaw", "0")
+            .AddGanttLane("Kerberos", new[] { Incident(33, 36, "high", "KDC errors") }, "Frankfurt", "1")
+            .AddGanttLane("Time sync", new[] { Incident(1, 3, "info", "Drift 2 s"), Incident(40, null, "low", "Drift 4 s") }, "Frankfurt", "2")
+            .AddGanttLane("Certificates", new[] { Incident(14, 38, "medium", "Template expiring") }, "London", "1");
+
+        chart.SaveSvg(Path.Combine(output, "reporting-incident-lanes.svg"));
+        chart.SaveHtml(Path.Combine(output, "reporting-incident-lanes.html"));
+        chart.SavePng(Path.Combine(output, "reporting-incident-lanes.png"));
     }
 
     private static void WriteStatusMatrix(string output, ChartPngOutputScale pngOutputScale) {
@@ -67,7 +95,7 @@ internal static class ReportingExamples {
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(states);
-        chart.Options.StateTimelineSummaryHeader = "Available";
+        chart.Options.LaneSummaryHeader = "Available";
         var start = WindowStart.AddHours(12);
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
         for (var lane = 0; lane < names.Length; lane++) {
