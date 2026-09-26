@@ -125,6 +125,7 @@ public sealed partial class SvgChartRenderer {
         writer
             .StartElement("g")
             .Attribute("data-cfx-role", "heatmap")
+            .Attribute("data-cfx-label-level", chart.Options.Labels.LevelOverride)
             .Attribute("data-cfx-row-count", rows.Length)
             .Attribute("data-cfx-column-count", columns.Length)
             .Attribute("data-cfx-min", min)

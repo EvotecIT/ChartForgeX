@@ -64,6 +64,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, writer => writer
             .StartElement("g")
             .Attribute("data-cfx-role", "hexbin-heatmap")
+            .Attribute("data-cfx-label-level", chart.Options.Labels.LevelOverride)
             .Attribute("data-cfx-row-count", rows.Length)
             .Attribute("data-cfx-column-count", columns.Length)
             .Attribute("data-cfx-min", min)

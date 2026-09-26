@@ -55,5 +55,17 @@ public sealed class NeutralHeatmapScaleTests {
         Assert.NotEqual(chart.Options.Theme.Positive.ToCss(), (string)strongest.Attribute("fill")!);
     }
 
+    [Fact]
+    public void LocalizedLevelLabel_IsEmittedOnlyWhenChangedAndReadByTooltips() {
+        Chart Create() => Chart.Create().WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
+        Assert.Null(ByRole(XDocument.Parse(Create().ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
+        var localized = Create().WithLabels(labels => labels.Level = "Poziom");
+        Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(localized.ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
+        var calendar = Chart.Create().WithLabels(labels => labels.Level = "Poziom").AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 9, 1), 3) });
+        Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(calendar.ToSvg()), "calendar-heatmap").Single().Attribute("data-cfx-label-level"));
+        var script = ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.BuildInteractionScript();
+        Assert.Contains("push(rowName(node, 'level', 'Level'), data.cfxLevel);", script, StringComparison.Ordinal);
+    }
+
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 }

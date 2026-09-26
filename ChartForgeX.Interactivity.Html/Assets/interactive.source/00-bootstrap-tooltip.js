@@ -131,6 +131,10 @@
   const metadataRows = (node) => Array.from(node.attributes || [])
     .filter((attribute) => attribute.name.toLowerCase().indexOf('data-cfx-meta-') === 0 && attribute.value !== '')
     .map((attribute) => ({ name: metaLabel(attribute.name), value: attribute.value }));
+  const rowName = (node, key, fallback) => {
+    const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
+    return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -145,7 +149,7 @@
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
-    push('Level', data.cfxLevel);
+    push(rowName(node, 'level', 'Level'), data.cfxLevel);
     push('Kind', data.cfxKind);
     push('Percent', data.cfxPercent);
     push('Delta', data.cfxDelta);

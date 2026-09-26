@@ -55,6 +55,7 @@ public sealed partial class SvgChartRenderer {
         writer
             .StartElement("g")
             .Attribute("data-cfx-role", "calendar-heatmap")
+            .Attribute("data-cfx-label-level", chart.Options.Labels.LevelOverride)
             .Attribute("data-cfx-label", series.Name)
             .Attribute("data-cfx-start-date", startText)
             .Attribute("data-cfx-end-date", endText)

@@ -11,6 +11,8 @@ public sealed class ChartLabels {
     private string _ongoing = "ongoing";
     private string _soFar = "so far";
     private string _hourOfDay = "Hour of day";
+    private const string DefaultLevel = "Level";
+    private string _level = DefaultLevel;
 
     /// <summary>Gets or sets the label of the current-time line in Gantt lanes. Default <c>Now</c>.</summary>
     public string Now { get => _now; set => _now = Required(value, nameof(value)); }
@@ -26,6 +28,14 @@ public sealed class ChartLabels {
     /// Set it before calling <see cref="Chart.AddHourWeekdayHeatmap"/>. Default <c>Hour of day</c>.
     /// </summary>
     public string HourOfDay { get => _hourOfDay; set => _hourOfDay = Required(value, nameof(value)); }
+
+    /// <summary>
+    /// Gets or sets the interactive tooltip row name for the intensity level of sequential heatmap cells. Default
+    /// <c>Level</c>; a changed value is emitted as <c>data-cfx-label-level</c> on the heatmap for the HTML adapter.
+    /// </summary>
+    public string Level { get => _level; set => _level = Required(value, nameof(value)); }
+
+    internal string? LevelOverride => _level == DefaultLevel ? null : _level;
 
     private static string Required(string value, string parameterName) =>
         string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Label text must not be empty.", parameterName) : value;
