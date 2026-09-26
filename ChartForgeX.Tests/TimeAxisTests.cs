@@ -190,6 +190,40 @@ public sealed class TimeAxisTests {
         Assert.DoesNotContain(">06:00</text>", svg, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void DateTimeInputs_LocalAndUnspecified_NormalizeToUtcInstants() {
+        var utc = new DateTime(2026, 3, 1, 12, 0, 0, DateTimeKind.Utc);
+        var local = utc.ToLocalTime();
+        var unspecified = DateTime.SpecifyKind(utc, DateTimeKind.Unspecified);
+        Assert.Equal(utc.ToOADate(), new ChartPoint(local, 1).X, 9);
+        Assert.Equal(utc.ToOADate(), new ChartPoint(unspecified, 1).X, 9);
+        Assert.Equal(utc.ToOADate(), new ChartAxisLabel(local, "noon").Value, 9);
+        Assert.Equal(utc.ToOADate(), new ChartRangeBand(local, 1, 2).X, 9);
+    }
+
+    [Fact]
+    public void DateTimeInputs_DateBasedCharts_KeepWallClockDates() {
+        var localDay = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Local);
+        var wallClock = DateTime.SpecifyKind(localDay, DateTimeKind.Unspecified).ToOADate();
+        var calendar = Chart.Create().AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(localDay, 3) });
+        Assert.Equal(wallClock, calendar.Series[0].Points[0].X, 9);
+        Assert.Equal(DateTimeKind.Unspecified, new ChartCalendarHeatmapItem(localDay, 1).Date.Kind);
+        Assert.Equal(wallClock, Chart.Create().WithGanttToday(localDay).Options.GanttToday!.Value, 9);
+        Assert.Equal(wallClock, Chart.Create().AddGanttTask("Task", localDay, localDay.AddDays(1)).Series[0].Points[0].X, 9);
+    }
+
+    [Fact]
+    public void Render_MixedLocalAndUtcSeriesWithTimeZone_LineUpWithoutDoubleShift() {
+        var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus0530", TimeSpan.FromMinutes(330), "Test +05:30", "Test +05:30");
+        var utcPoints = HourlyPoints(6);
+        var localPoints = Enumerable.Range(0, 7).Select(hour => new ChartPoint(Day.AddHours(hour).ToLocalTime(), 10 + hour)).ToArray();
+        Assert.Equal(utcPoints.Select(point => point.X), localPoints.Select(point => point.X));
+        var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale(zone).AddLine("UTC", utcPoints).AddLine("Local", localPoints);
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label").Select(element => element.Value).ToArray();
+        Assert.Contains("06:00", labels);
+        Assert.DoesNotContain(labels, label => label.EndsWith(":30", StringComparison.Ordinal));
+    }
+
     private static ChartPoint[] HourlyPoints(int count) =>
         Enumerable.Range(0, count + 1).Select(hour => new ChartPoint(Day.AddHours(hour), 40 + (hour * 7 % 11))).ToArray();
 

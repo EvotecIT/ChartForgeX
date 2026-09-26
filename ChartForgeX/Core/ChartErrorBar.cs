@@ -54,6 +54,6 @@ public readonly struct ChartErrorBar {
     /// <param name="y">The point estimate.</param>
     /// <param name="lower">The lower bound.</param>
     /// <param name="upper">The upper bound.</param>
-    public ChartErrorBar(DateTime x, double y, double lower, double upper) : this(x.ToOADate(), y, lower, upper) {
+    public ChartErrorBar(DateTime x, double y, double lower, double upper) : this(ChartDateTime.ToOADate(x), y, lower, upper) {
     }
 }

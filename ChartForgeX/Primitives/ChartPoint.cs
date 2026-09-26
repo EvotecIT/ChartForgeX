@@ -36,14 +36,16 @@ public readonly struct ChartPoint {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChartPoint"/> struct from a date/time x value.
+    /// Initializes a new instance of the <see cref="ChartPoint"/> struct from a date/time x value. The x value is stored as
+    /// a UTC instant: <see cref="DateTimeKind.Local"/> values are converted to UTC and <see cref="DateTimeKind.Unspecified"/>
+    /// values are treated as UTC.
     /// </summary>
     /// <param name="x">The date/time x value.</param>
     /// <param name="y">The vertical coordinate.</param>
-    public ChartPoint(DateTime x, double y) : this(x.ToOADate(), y) { }
+    public ChartPoint(DateTime x, double y) : this(ChartDateTime.ToOADate(x), y) { }
 
-    /// <summary>Creates a date/time point and optionally starts a disconnected line or area segment.</summary>
-    public ChartPoint(DateTime x, double y, bool breakBefore) : this(x.ToOADate(), y, breakBefore) { }
+    /// <summary>Creates a date/time point (stored as a UTC instant, see <see cref="ChartPoint(DateTime, double)"/>) and optionally starts a disconnected line or area segment.</summary>
+    public ChartPoint(DateTime x, double y, bool breakBefore) : this(ChartDateTime.ToOADate(x), y, breakBefore) { }
 
     /// <summary>
     /// Creates a chart point from a date/time x value.

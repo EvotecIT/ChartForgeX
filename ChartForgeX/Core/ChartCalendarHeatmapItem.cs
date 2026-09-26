@@ -31,7 +31,8 @@ public readonly struct ChartCalendarHeatmapItem {
     public ChartCalendarHeatmapItem(DateTime date, double value, ChartColor? color = null) {
         ChartGuards.Finite(value, nameof(value));
         if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Calendar heatmap values must be zero or greater.");
-        Date = date.Date;
+        // Calendar cells are wall-clock dates, not instants, so the kind is dropped before any UTC normalization.
+        Date = DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified);
         Value = value;
         Color = color;
     }
