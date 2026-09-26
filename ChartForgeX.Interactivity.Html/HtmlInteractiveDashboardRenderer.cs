@@ -38,7 +38,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var scope = options.IdScope ?? HtmlInteractiveChartRenderer.Slugify(title);
         var groupName = options.Interaction.GroupName ?? scope;
 
-        var writer = HtmlInteractivePage.StartDocument(title);
+        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets);
         writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {
@@ -48,7 +48,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
 
         writer.EndElement().Line()
             .EndElement().Line();
-        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce);
+        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
         return writer.Build();
     }
 
