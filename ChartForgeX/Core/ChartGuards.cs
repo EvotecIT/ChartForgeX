@@ -270,6 +270,8 @@ internal static class ChartGuards {
     }
 
     private static void ValidateStateTimeline(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+            throw new InvalidOperationException("StateTimeline charts require a linear or time x-axis to preserve elapsed-time geometry.");
         ValidateStateCategories(chart);
 
         var series = chart.Series;

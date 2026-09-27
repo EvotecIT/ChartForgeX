@@ -43,7 +43,7 @@ public sealed partial class PngChartRenderer {
         var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
             ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: false), plot.Left, plot.Width)
             : Array.Empty<ChartStateCategoryLegendItem>();
-        var legendHeight = ChartStateCategoryLegend.Height(legend);
+        var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
         var legendTop = plot.Bottom - legendHeight + 4;
         var numericScale = chart.Options.ShowHeatmapScale && !categorical;
         var axisBottomBase = numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
@@ -131,7 +131,7 @@ public sealed partial class PngChartRenderer {
 
             DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
         }
-        if (legend.Count > 0) DrawStateCategoryLegend(c, chart, legend, legendTop);
+        if (legend.Count > 0) DrawStateCategoryLegend(c, chart, legend, legendTop, basePlot);
         else if (numericScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
     }
 

@@ -28,9 +28,9 @@ public sealed partial class SvgChartRenderer {
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
         var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
-            ? categories.Layout(text => EstimateSvgStyledTextWidth(chart, text, StyleFontSize(chart.Options.LegendStyle, t.LegendFontSize), chart.Options.LegendStyle), basePlot.Left, basePlot.Width)
+            ? categories.Layout(text => EstimateSvgStyledTextWidth(chart, text, StyleFontSize(chart.Options.LegendStyle, t.LegendFontSize), chart.Options.LegendStyle), basePlot.Left, basePlot.Width, Math.Max(0, basePlot.Height - 18))
             : Array.Empty<ChartStateCategoryLegendItem>();
-        var legendHeight = ChartStateCategoryLegend.Height(legend);
+        var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
         var plot = ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, legendHeight);
         var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, plot.Height / rows.Length) * 0.05));
         var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, plot.Height, columns.Length, rows.Length, chart.Options.HeatmapCellGap ?? autoGap);
@@ -117,7 +117,7 @@ public sealed partial class SvgChartRenderer {
             }
         }
 
-        if (legend.Count > 0) AppendSvg(body, writer => WriteStateCategoryLegend(writer, chart, legend, basePlot.Bottom - legendHeight + 4, hatchId));
+        if (legend.Count > 0) AppendSvg(body, writer => WriteStateCategoryLegend(writer, chart, legend, basePlot.Bottom - legendHeight + 4, hatchId, basePlot));
         else if (chart.Options.ShowHeatmapScale && !categorical) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color);
 
         var writer = new SvgMarkupWriter(body.Length + 128);

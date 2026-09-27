@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -161,6 +162,230 @@ public sealed class StateTimelineTests {
         Assert.Contains("data-cfx-series-key=\"DC01\"", html, StringComparison.Ordinal);
         Assert.Contains("aria-label=\"DC01 · Down · 2026-09-25 06:00 UTC", html, StringComparison.Ordinal);
         Assert.Contains("<script", html, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_XAxisHidden_HidesOnlyTimeAxisAndReclaimsSpace(bool configureAxis)
+    {
+        var shown = CreateChart();
+        var hidden = CreateChart();
+        if (configureAxis) hidden.ConfigureXAxis(axis => axis.Visible = false);
+        else hidden.Options.ShowXAxis = false;
+        var svg = XDocument.Parse(hidden.ToSvg());
+        Assert.Empty(ByRole(svg, "state-timeline-tick-label"));
+        Assert.Empty(ByRole(svg, "state-timeline-axis"));
+        Assert.Empty(ByRole(svg, "state-timeline-x-axis-title"));
+        Assert.Equal(3, ByRole(svg, "state-lane-label").Length);
+        var bounds = new ChartForgeX.Primitives.ChartRect(0, 0, 600, 240);
+        var a = ChartStateTimelineModel.Build(shown).PlotArea(bounds, 30, 30, 12, 20);
+        var z = ChartStateTimelineModel.Build(hidden).PlotArea(bounds, 30, 30, 12, 20);
+        Assert.True(z.Height > a.Height);
+        Assert.NotEqual(shown.ToPng(), hidden.ToPng());
+    }
+
+    [Fact]
+    public void Render_SubSecondTicks_RemainDistinctAndExactLabelsWin()
+    {
+        var end = Day.AddMilliseconds(80);
+        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+            .WithStateCategories(new ChartStateCategory("up", "Up", Up))
+            .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
+        var model = ChartStateTimelineModel.Build(chart);
+        var labels = Texts(XDocument.Parse(chart.ToSvg()), "state-timeline-tick-label");
+        Assert.True(labels.Length > 1);
+        Assert.Equal(labels.Length, labels.Distinct().Count());
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(Day.ToOADate(), "Start"));
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(end.ToOADate(), "End"));
+        Assert.Equal("End", ChartStateTimelineModel.Build(chart).FormatTick(end.ToOADate()));
+    }
+
+    [Fact]
+    public void Render_LongSummaryHeader_FitsReservedColumn()
+    {
+        var chart = CreateChart();
+        chart.Options.StateTimelineSummaryHeader = "Very long summary header that must stay outside the lane plot";
+        var header = Texts(XDocument.Parse(chart.ToSvg()), "state-summary-header").Single();
+        Assert.NotEqual(chart.Options.StateTimelineSummaryHeader, header);
+        Assert.True(header.Length < 25);
+    }
+
+    [Fact]
+    public void Render_ConfiguredVerticalGridStyle_AppliesToBothOutputs()
+    {
+        var chart = CreateChart();
+        chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
+        var lines = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-grid");
+        Assert.NotEmpty(lines);
+        Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal(0.8, Number(line, "opacity")); Assert.Equal("4 6", (string?)line.Attribute("stroke-dasharray")); });
+        Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
+    }
+
+    [Fact]
+    public void Render_VerticalGridDisabled_MatchesGlobalGridDisabled()
+    {
+        var vertical = CreateChart().WithGridStyle(style => style.ShowVerticalLines = false);
+        var global = CreateChart(); global.Options.ShowGrid = false;
+        Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "state-timeline-grid"));
+        Assert.Equal(global.ToPng(), vertical.ToPng());
+    }
+
+    [Fact]
+    public void Render_YAxisHidden_ReclaimsLaneLabelColumnButKeepsTimeAxis() {
+        var shown = CreateChart();
+        var hidden = CreateChart().ConfigureYAxis(axis => axis.Visible = false);
+        var svg = XDocument.Parse(hidden.ToSvg());
+        Assert.Empty(ByRole(svg, "state-lane-label"));
+        Assert.NotEmpty(ByRole(svg, "state-timeline-tick-label"));
+        var a = ByRole(XDocument.Parse(shown.ToSvg()), "state-lane-track")[0];
+        var b = ByRole(svg, "state-lane-track")[0];
+        Assert.True(Number(b, "x") < Number(a, "x"));
+        Assert.NotEqual(shown.ToPng(), hidden.ToPng());
+    }
+
+    [Fact]
+    public void Render_XAxisLineHidden_KeepsTickLabelsAndTitle() {
+        var chart = CreateChart().ConfigureXAxis(axis => axis.ShowLine = false);
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Empty(ByRole(svg, "state-timeline-axis"));
+        Assert.NotEmpty(ByRole(svg, "state-timeline-tick-label"));
+        Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
+    }
+
+    [Fact]
+    public void Render_SubSecondSegment_MetadataRetainsEndpointsAndDuration() {
+        var end = Day.AddMilliseconds(80);
+        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+            .WithStateCategories(new ChartStateCategory("up", "Up", Up))
+            .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
+        var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-segment").Single();
+        Assert.NotEqual((string?)segment.Attribute("data-cfx-start"), (string?)segment.Attribute("data-cfx-end"));
+        Assert.Equal("80ms", (string?)segment.Attribute("data-cfx-meta-duration"));
+    }
+
+    [Fact]
+    public void Render_CompactTimeline_UsesAxisLabelDensity() {
+        var auto = CreateChart().WithSize(390, 300);
+        var all = CreateChart().WithSize(390, 300);
+        all.Options.XAxisLabelDensity = ChartLabelDensity.All;
+        var a = Texts(XDocument.Parse(auto.ToSvg()), "state-timeline-tick-label");
+        var b = Texts(XDocument.Parse(all.ToSvg()), "state-timeline-tick-label");
+        Assert.True(a.Length >= 2 && a.Length < b.Length);
+        Assert.Equal(b[0], a[0]);
+        Assert.Equal(b[b.Length - 1], a[a.Length - 1]);
+        Assert.NotEqual(auto.ToPng(), all.ToPng());
+    }
+
+    [Fact]
+    public void Render_DefaultDateTimeLane_UsesDistinctCalendarLabelsWithoutMutatingAxis() {
+        var chart = Chart.Create().WithSize(720, 300)
+            .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
+        var labels = Texts(XDocument.Parse(chart.ToSvg()), "state-timeline-tick-label");
+        Assert.True(labels.Length > 1);
+        Assert.Equal(labels.Length, labels.Distinct().Count());
+        Assert.Contains(labels, label => label.Contains(":"));
+        Assert.Equal(ChartScaleKind.Linear, chart.Options.XAxis.Scale);
+    }
+
+    [Theory]
+    [InlineData(-45)]
+    [InlineData(45)]
+    public void Render_ConfiguredTickRotation_AppliesToBothOutputsAndReservesHeight(double angle) {
+        var normal = CreateChart();
+        var rotated = CreateChart().ConfigureXAxis(axis => axis.LabelAngle = angle);
+        var svg = XDocument.Parse(rotated.ToSvg());
+        Assert.All(ByRole(svg, "state-timeline-tick-label"), label => Assert.Contains("rotate(" + angle.ToString(CultureInfo.InvariantCulture), (string?)label.Attribute("transform") ?? ""));
+        Assert.True(Number(ByRole(svg, "state-lane-track")[0], "y") < Number(ByRole(XDocument.Parse(normal.ToSvg()), "state-lane-track")[0], "y"));
+        Assert.NotEqual(normal.ToPng(), rotated.ToPng());
+    }
+
+    [Fact]
+    public void Render_DefaultDateTimeLane_SvgEndpointAnchorsMatchActualTextEdges() {
+        var chart = Chart.Create().WithSize(720, 300)
+            .AddStateTimelineLane("Default DateTime lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
+        var svg = XDocument.Parse(chart.ToSvg());
+        var track = ByRole(svg, "state-lane-track").Single();
+        var labels = ByRole(svg, "state-timeline-tick-label");
+        Assert.Equal("start", (string?)labels[0].Attribute("text-anchor"));
+        Assert.Equal(Number(track, "x") + ChartVisualPrimitives.DataLabelPlotInset, Number(labels[0], "x"), 3);
+        Assert.Equal("end", (string?)labels[labels.Length - 1].Attribute("text-anchor"));
+        Assert.Equal(Number(track, "x") + Number(track, "width") - ChartVisualPrimitives.DataLabelPlotInset, Number(labels[labels.Length - 1], "x"), 3);
+    }
+
+    [Theory]
+    [InlineData(390, 300)]
+    [InlineData(720, 400)]
+    public void Render_ManyStateCategories_BudgetsLegendAndKeepsVisibleLane(int width, int height) {
+        var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Up)).ToArray();
+        var chart = Chart.Create().WithSize(width, height).WithStateCategories(states)
+            .AddStateTimelineLane("Lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "s0") });
+        var svg = XDocument.Parse(chart.ToSvg());
+        var overflow = ByRole(svg, "legend-overflow").Single();
+        Assert.True(int.Parse((string)overflow.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
+        var track = ByRole(svg, "state-lane-track").Single();
+        Assert.True(Number(track, "height") >= 18);
+        Assert.All(ByRole(svg, "state-legend-swatch"), item => Assert.InRange(Number(item, "y"), Number(track, "y") + Number(track, "height"), height - 10));
+        Assert.True(Number(overflow, "y") > Number(track, "y") + Number(track, "height"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_OneSidedBoundOutsideSegments_PreservesBoundAndEmptyWindow(bool maximum) {
+        var chart = CreateChart();
+        var bound = maximum ? Day.AddHours(-1).ToOADate() : Day.AddDays(2).ToOADate();
+        if (maximum) chart.Options.XAxis.Maximum = bound;
+        else chart.Options.XAxis.Minimum = bound;
+        var model = ChartStateTimelineModel.Build(chart);
+        Assert.Equal(bound, maximum ? model.Max : model.Min);
+        Assert.True(model.Max > model.Min);
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "state-segment"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_LargeAxisStyles_KeepTicksTitleAndLegendSeparated(bool largeTicks) {
+        var chart = CreateChart().WithSize(720, 500).WithXAxis("Time");
+        if (largeTicks) chart.Options.TickLabelStyle.FontSize = 32;
+        chart.Options.XAxis.LabelFormatter = _ => "T";
+        chart.Options.AxisTitleStyle.FontSize = 42;
+        var svg = XDocument.Parse(chart.ToSvg());
+        var tick = ByRole(svg, "state-timeline-tick-label")[0];
+        var title = ByRole(svg, "state-timeline-x-axis-title").Single();
+        var legend = ByRole(svg, "state-legend-label")[0];
+        Assert.True(Number(tick, "y") + Number(tick, "font-size") * 0.2 < Number(title, "y") - Number(title, "font-size"));
+        Assert.True(Number(title, "y") + Number(title, "font-size") * 0.2 < Number(legend, "y") - Number(legend, "font-size") * 0.6);
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void Render_LargeLegendWithoutAxes_RemainsBelowLastLane() {
+        var chart = CreateChart().WithSize(390, 400).WithAxes(false);
+        chart.Options.LegendStyle.FontSize = 32;
+        var svg = XDocument.Parse(chart.ToSvg());
+        var bottom = ByRole(svg, "state-lane-track").Max(e => Number(e, "y") + Number(e, "height"));
+        var first = ByRole(svg, "state-legend-label")[0];
+        Assert.True(Number(first, "y") - Number(first, "font-size") * 0.6 > bottom);
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(-1e308, 1e308)]
+    [InlineData(null, -1e20)]
+    [InlineData(1e20, null)]
+    public void Render_FiniteNumericBounds_UseFiniteNonzeroWindow(double? minimum, double? maximum) {
+        var chart = CreateChart().ConfigureXAxis(axis => { axis.Minimum = minimum; axis.Maximum = maximum; });
+        var model = ChartStateTimelineModel.Build(chart);
+        Assert.True(model.Max > model.Min);
+        var plot = new ChartRect(10, 10, 500, 100);
+        Assert.Equal(plot.Left, model.X(model.Min, plot), 6);
+        Assert.Equal(plot.Right, model.X(model.Max, plot), 6);
+        Assert.DoesNotContain("NaN", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.NotEmpty(chart.ToPng());
     }
 
     private static Chart CreateChart() {
