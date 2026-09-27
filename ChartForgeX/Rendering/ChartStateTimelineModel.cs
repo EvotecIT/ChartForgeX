@@ -143,8 +143,9 @@ internal sealed class ChartStateTimelineModel {
 
     public string FormatInstant(double value) {
         var axis = Chart.Options.XAxis;
+        if (value < 0) return value.ToString("G17", CultureInfo.InvariantCulture);
         var local = ChartTimeScale.ToDisplayTime(axis, value, roundToSeconds: false);
-        if (!local.HasValue) return ChartNumericFormatter.FormatCompact(value);
+        if (!local.HasValue) return value.ToString("G17", CultureInfo.InvariantCulture);
         var format = local.Value.Millisecond != 0 ? "yyyy-MM-dd HH:mm:ss.fff" : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
         var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ChartTimeScale.ZoneDesignator(axis);
         var zone = axis.TimeZone ?? TimeZoneInfo.Utc;

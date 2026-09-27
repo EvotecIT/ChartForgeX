@@ -624,6 +624,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 - Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- State timelines use a linear or time x-axis; nonlinear scales are rejected to preserve elapsed-time geometry. Numeric endpoints outside the supported date range retain round-trip values in metadata.
 - State timeline DateTime intervals support instants on or after 1899-12-30 UTC; earlier dates are rejected because OLE Automation fractions are not chronologically ordered before that epoch. Explicit x-axis labels define tick positions and support label highlights. During repeated daylight-saving hours, interval metadata and tooltips include UTC offsets.
 - State timelines draw one lane per entity on a real time axis. Segment colours come only from the caller's state map (never the series palette), contiguous buckets in the same state draw as one run, uncovered time stays empty, and hatched states mark not-observable data. Each segment exposes `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-meta-duration`, and a `<title>` tooltip, so `ChartForgeX.Interactivity.Html` hover works without extra configuration.
 - Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.

@@ -153,7 +153,7 @@ internal static class ChartTimeScale {
         return offsets[offsets.Length - 1] - offsets[0];
     }
 
-    private static bool IsRepresentable(double value) => value >= MinimumOaDate && value <= MaximumOaDate;
+    private static bool IsRepresentable(double value) => value > MinimumOaDate && value <= MaximumOaDate;
 
     private static DateTime ToLocal(double value, TimeZoneInfo zone) {
         var utc = DateTime.SpecifyKind(DateTime.FromOADate(value), DateTimeKind.Utc);

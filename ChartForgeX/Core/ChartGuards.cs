@@ -246,6 +246,8 @@ internal static class ChartGuards {
     }
 
     private static void ValidateStateTimeline(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+            throw new InvalidOperationException("StateTimeline charts require a linear or time x-axis to preserve elapsed-time geometry.");
         var keys = new HashSet<string>(StringComparer.Ordinal);
         foreach (var state in chart.Options.StateCategories) {
             if (state == null) throw new InvalidOperationException("State timeline states must not contain null entries.");

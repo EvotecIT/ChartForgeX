@@ -55,6 +55,26 @@ public sealed class StateTimelineAxisContractTests {
         Assert.Contains("+02:00", (string?)segment.Attribute("data-cfx-start"));
         Assert.Contains("+01:00", (string?)segment.Attribute("data-cfx-end"));
     }
+
+    [Theory]
+    [InlineData(ChartScaleKind.Logarithmic)]
+    [InlineData(ChartScaleKind.SymmetricLogarithmic)]
+    public void NonlinearTimeAxisIsRejected(ChartScaleKind scale) {
+        var chart = Create().ConfigureXAxis(axis => axis.Scale = scale);
+        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
+        Assert.Throws<InvalidOperationException>(() => chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(-657434, -657433)]
+    [InlineData(3000000, 3000000.01)]
+    public void NumericFallbackMetadataPreservesEndpoints(double start, double end) {
+        var chart = Chart.Create().WithSize(720, 300).AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, end, "up") });
+        var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-segment");
+        Assert.Equal(start.ToString("G17", System.Globalization.CultureInfo.InvariantCulture), (string?)segment.Attribute("data-cfx-start"));
+        Assert.Equal(end.ToString("G17", System.Globalization.CultureInfo.InvariantCulture), (string?)segment.Attribute("data-cfx-end"));
+        Assert.NotEmpty(chart.ToPng());
+    }
 }
 
 
