@@ -87,7 +87,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var tick in ticks) {
             var y = WaterfallY(plot, bounds, chart.Options.YAxis, tick);
             if (chart.Options.ShowGrid) WriteWaterfallGridLine(sb, plot.Left, y, plot.Right, y, t.Grid, ChartVisualPrimitives.GridStrokeWidth);
-            if (ShowYAxis(chart)) WriteWaterfallYAxisLabel(sb, chart, plot.Left - 12, y + 4, FormatYAxisValue(chart, tick));
+            if (ShowYAxis(chart)) WriteWaterfallYAxisLabel(sb, chart, plot.Left - 12, y + 4, FormatYAxisValue(chart, tick, ticks));
         }
 
         var zeroY = WaterfallY(plot, bounds, chart.Options.YAxis, 0);
@@ -97,7 +97,7 @@ public sealed partial class SvgChartRenderer {
         if (ShowYAxisLine(chart)) WriteWaterfallAxisLine(sb, null, plot.Left, plot.Top, plot.Left, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
         if (ShowXAxis(chart)) DrawSvgXAxisTitle(sb, chart, plot, plot.Bottom + XAxisTitleOffset(chart), "waterfall-x-axis-title");
         if (ShowYAxis(chart) && !string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-            var widestTick = ticks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), chart.Options.TickLabelStyle));
+            var widestTick = ticks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick, ticks), StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), chart.Options.TickLabelStyle));
             var axisX = Math.Max(24, plot.Left - widestTick - 48);
             DrawSvgYAxisTitle(sb, chart, plot, axisX, "waterfall-y-axis-title");
         }

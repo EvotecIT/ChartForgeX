@@ -332,8 +332,8 @@ public sealed partial class SvgChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
-    private static string FormatYAxisValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
+    private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -344,8 +344,8 @@ public sealed partial class SvgChartRenderer {
     private static string SeriesSemanticRole(ChartSeries series, string fallback) =>
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
-    private static string FormatSecondaryValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
+    private static string FormatSecondaryValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
@@ -360,8 +360,8 @@ public sealed partial class SvgChartRenderer {
         if (chart.Options.XAxisLabels.Count == 0) {
             var ticks = ChartTicks.GenerateInside(chart.Options.XAxis, range.MinX, range.MaxX);
             if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || ticks.Count < 3) return ticks;
-            var generatedLabels = ticks.Select(tick => new ChartAxisLabel(tick, FormatXAxisValue(chart, tick))).ToArray();
-            return SelectXAxisTickValues(chart, range, plot, generatedLabels);
+            var generatedLabels = ticks.Select(tick => new ChartAxisLabel(tick, ChartTimeScale.FormatFallbackTick(chart, ticks, tick, true) ?? FormatXAxisValue(chart, tick))).ToArray();
+            return ChartTicks.PreserveFormatting(ticks, SelectXAxisTickValues(chart, range, plot, generatedLabels));
         }
 
         var labels = chart.Options.XAxisLabels
@@ -429,9 +429,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string FormatX(Chart chart, double value) {
-        foreach (var label in chart.Options.XAxisLabels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
+        if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) is { } label) return label;
 
         return FormatXAxisValue(chart, value);
     }

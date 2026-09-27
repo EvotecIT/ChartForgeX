@@ -25,7 +25,7 @@ public sealed partial class PngChartRenderer {
         plot = ApplyPngTimelineReserve(chart, plot, items, tickFontSize);
         var rowHeight = Math.Max(20, Math.Min(34, plot.Height / items.Count * 0.56));
         var slotHeight = plot.Height / items.Count;
-        var ticks = ChartTicks.Generate(min, max, Math.Min(6, Math.Max(3, chart.Options.TickCount)));
+        var ticks = ChartTicks.GenerateInside(min, max, Math.Min(6, Math.Max(3, chart.Options.TickCount)));
         var tickLabelWidth = Math.Max(18, plot.Width / Math.Max(1, ticks.Count - 1) - 6);
         var rowLabelWidth = Math.Max(8, plot.Left - 24);
 
@@ -123,9 +123,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string FormatTimelineTick(Chart chart, double value) {
-        foreach (var label in chart.Options.XAxisLabels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
+        if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) is { } label) return label;
 
         if (chart.Options.XAxisValueFormatter != null) return chart.Options.XAxisValueFormatter(value) ?? string.Empty;
 
