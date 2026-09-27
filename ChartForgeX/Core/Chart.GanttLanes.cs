@@ -5,11 +5,20 @@ using System.Linq;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
+    /// <summary>Sets the current instant for Gantt lanes, converting Local values to UTC and treating Unspecified values as UTC.</summary>
+    /// <param name="now">The current instant, or null to hide the marker and use the latest item time for open items.</param>
+    /// <returns>The current chart.</returns>
+    /// <remarks>Use <see cref="WithGanttToday(DateTime?)"/> for classic Gantt wall-clock dates instead.</remarks>
+    public Chart WithGanttLaneNow(DateTime? now) {
+        Options.GanttToday = now.HasValue ? (now.Value.Kind == DateTimeKind.Local ? now.Value.ToUniversalTime() : now.Value).ToOADate() : null;
+        return this;
+    }
+
     /// <summary>
     /// Adds a Gantt lane: an entity, such as a service or domain controller, with its time-bounded items (for example
     /// incidents). Items are coloured through <see cref="ChartOptions.StateCategories"/>; overlapping items stack into
     /// sub-rows. Lanes render in the order they are added, and consecutive lanes with the same <paramref name="group"/>
-    /// are listed under one group header. Set <see cref="ChartOptions.GanttToday"/> (a UTC instant) to draw a "Now" line and
+    /// are listed under one group header. Call <see cref="WithGanttLaneNow"/> to draw a "Now" line and
     /// end open items there.
     /// </summary>
     /// <param name="name">The lane label.</param>

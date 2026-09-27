@@ -28,7 +28,7 @@ internal static class ReportingExamples {
             .WithSize(1180, 560)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
-            .WithGanttToday(start.AddHours(44))
+            .WithGanttLaneNow(start.AddHours(44))
             .WithStateCategories(new VisualStatusTokens().SeverityCategories());
         chart.Options.LaneSummaryHeader = "Incidents";
         chart.AddGanttLane("LDAP", new[] { Incident(2, 5.5, "high", "Bind latency", "p95 above 250 ms"), Incident(20, 21, "low", "Slow search") }, "Warsaw", "2")

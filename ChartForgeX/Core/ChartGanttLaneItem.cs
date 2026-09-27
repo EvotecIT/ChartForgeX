@@ -11,7 +11,7 @@ public readonly struct ChartGanttLaneItem {
     /// <summary>Initializes an item from OLE Automation date values.</summary>
     /// <param name="start">The start instant.</param>
     /// <param name="end">The end instant, later than <paramref name="start"/>, or null while the item is still open;
-    /// open items run to <see cref="ChartOptions.GanttToday"/> (a UTC instant, for example from <c>DateTime.UtcNow</c>)
+    /// open items run to the UTC instant set by <see cref="Chart.WithGanttLaneNow"/>
     /// or, when that is not set, slightly past the latest time in the chart.</param>
     /// <param name="category">The category key, for example <c>critical</c>.</param>
     /// <param name="label">Optional short text drawn inside the bar when it fits.</param>

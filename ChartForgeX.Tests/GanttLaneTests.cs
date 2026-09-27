@@ -13,6 +13,20 @@ public sealed class GanttLaneTests {
     private static readonly VisualStatusTokens Status = new();
 
     [Fact]
+    public void CurrentInstant_LocalTime_AlignsWithOpenLaneItem() {
+        var start = new DateTime(2026, 9, 24, 10, 0, 0, DateTimeKind.Local);
+        var now = start.AddHours(1);
+        var chart = Chart.Create().WithSize(640, 240).WithGanttLaneNow(now)
+            .WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("A", new[] { new ChartGanttLaneItem(start, null, "low") });
+        Assert.Equal(now.ToUniversalTime().ToOADate(), chart.Options.GanttToday);
+        var item = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
+        Assert.Contains("1h", Title(item), StringComparison.Ordinal);
+        chart.WithGanttLaneNow(null);
+        Assert.Null(chart.Options.GanttToday);
+    }
+
+    [Fact]
     public void ToSvg_GroupsLanesAndColoursItemsBySeverity() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
         Assert.Equal(new[] { "Warsaw", "London" }, Texts(svg, "gantt-lane-group"));
