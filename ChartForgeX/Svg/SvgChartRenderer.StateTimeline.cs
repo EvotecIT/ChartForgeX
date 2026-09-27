@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using ChartForgeX.Core;
@@ -28,7 +29,9 @@ public sealed partial class SvgChartRenderer {
         var legend = chart.Options.ShowLegend
             ? model.LayoutLegend(text => EstimateSvgStyledTextWidth(chart, text, legendFontSize, legendStyle), bounds.Left, bounds.Width)
             : Array.Empty<ChartStateTimelineLegendItem>();
-        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(legend));
+        var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
+        var axisLabelReserve = Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? ChartStateTimelineModel.AxisReserve : Math.Max(ChartStateTimelineModel.AxisReserve, XAxisTitleOffset(chart, tickLabels));
+        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(legend), axisLabelReserve);
         var hatchId = id + "-stateHatch";
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("g").Attribute("data-cfx-role", "state-timeline").EndStartElement().Line();
@@ -37,16 +40,26 @@ public sealed partial class SvgChartRenderer {
             .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", 0).Attribute("y2", ChartStateTimelineModel.HatchSpacing).Attribute("stroke", "#fff").Attribute("stroke-opacity", ChartStateTimelineModel.HatchOpacity).Attribute("stroke-width", 1.5).EndEmptyElement()
             .EndElement().EndElement().Line();
 
+        var range = new ChartRange();
+        range.SetXBounds(model.Min, model.Max);
+        var labels = model.Ticks.Select(tick => new ChartAxisLabel(tick, model.FormatTick(tick))).ToArray();
+        var labelTicks = SelectXAxisTickValues(chart, range, plot, labels);
+
         foreach (var tick in model.Ticks) {
             var x = model.X(tick, plot);
-            if (chart.Options.ShowGrid) {
-                writer.StartElement("line").Attribute("data-cfx-role", "state-timeline-grid").Attribute("x1", x).Attribute("y1", plot.Top).Attribute("x2", x).Attribute("y2", plot.Bottom)
-                    .Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth).Attribute("opacity", ChartVisualPrimitives.TimelineGridOpacity).EndEmptyElement().Line();
+            var gridStyle = chart.Options.GridLineStyle;
+            if (chart.Options.ShowGrid && gridStyle.ShowVerticalLines) {
+                var gridLine = new StringBuilder();
+                WriteSvgGuideLine(gridLine, "state-timeline-grid", x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.VerticalOpacity, gridStyle);
+                writer.Raw(gridLine.ToString());
             }
 
-            if (!chart.Options.ShowAxes) continue;
+            if (!ShowXAxis(chart) || !labelTicks.Contains(tick)) continue;
             var label = model.FormatTick(tick);
-            WriteStateTimelineText(writer, chart, "state-timeline-tick-label", label, EdgeAwareStyledTextX(chart, label, x, plot, tickFontSize, tickStyle), plot.Bottom + 20, EdgeAwareStyledAnchor(chart, label, x, plot, tickFontSize, tickStyle), tickFontSize, tickStyle, "400", false);
+            var labelMarkup = new StringBuilder();
+            var angle = Clamp(chart.Options.XAxisLabelAngle, -80, 80);
+            DrawXAxisLabel(labelMarkup, chart, plot, label, x, plot.Bottom + XAxisLabelOffset(chart, tickLabels), angle, "state-timeline-tick-label", AxisTickLabelMaxWidth(plot, labelTicks.Count, angle));
+            writer.Raw(labelMarkup.ToString());
         }
 
         var band = model.LaneBand(plot);
@@ -56,7 +69,7 @@ public sealed partial class SvgChartRenderer {
             var y = model.LaneTop(plot, laneIndex);
             writer.StartElement("rect").Attribute("data-cfx-role", "state-lane-track").Attribute("x", plot.Left).Attribute("y", y).Attribute("width", plot.Width).Attribute("height", band)
                 .Attribute("rx", ChartStateTimelineModel.SegmentRadius).Attribute("fill", t.Grid.ToCss()).Attribute("opacity", 0.35).EndEmptyElement().Line();
-            if (chart.Options.ShowAxes) {
+            if (ShowYAxis(chart)) {
                 var maxWidth = Math.Max(8, plot.Left - bounds.Left - ChartStateTimelineModel.ColumnGap);
                 var fontSize = TextFontSizeForSvgWidth(chart, lane.Name, maxWidth, tickFontSize, tickStyle, emphasized: true);
                 WriteStateTimelineText(writer, chart, "state-lane-label", TrimSvgLabelToWidth(chart, lane.Name, fontSize, maxWidth, tickStyle, emphasized: true), plot.Left - ChartStateTimelineModel.ColumnGap, y + band / 2, "end", fontSize, tickStyle, "600", true);
@@ -94,15 +107,15 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
-            WriteStateTimelineText(writer, chart, "state-summary-header", model.SummaryHeader!, bounds.Right - 2, plot.Top - 8, "end", tickFontSize, tickStyle, "600", false);
+            WriteStateTimelineText(writer, chart, "state-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - 8, "end", tickFontSize, tickStyle, "600", false);
         }
 
-        if (chart.Options.ShowAxes) {
-            writer.StartElement("line").Attribute("data-cfx-role", "state-timeline-axis").Attribute("x1", plot.Left).Attribute("y1", plot.Bottom).Attribute("x2", plot.Right).Attribute("y2", plot.Bottom)
+        if (ShowXAxis(chart)) {
+            if (ShowXAxisLine(chart)) writer.StartElement("line").Attribute("data-cfx-role", "state-timeline-axis").Attribute("x1", plot.Left).Attribute("y1", plot.Bottom).Attribute("x2", plot.Right).Attribute("y2", plot.Bottom)
                 .Attribute("stroke", t.Axis.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.AxisStrokeWidth).EndEmptyElement().Line();
             var title = XAxisTitleText(chart);
             if (!string.IsNullOrWhiteSpace(title)) {
-                DrawSvgTextCenteredX(writer, chart, "state-timeline-x-axis-title", title, plot.Left + plot.Width / 2, plot.Bottom + ChartStateTimelineModel.AxisReserve + 14, t.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, t.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+                DrawSvgTextCenteredX(writer, chart, "state-timeline-x-axis-title", title, plot.Left + plot.Width / 2, plot.Bottom + axisLabelReserve + 14, t.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, t.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
             }
         }
 

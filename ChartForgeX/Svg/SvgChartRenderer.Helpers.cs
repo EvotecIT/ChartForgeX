@@ -161,7 +161,9 @@ public sealed partial class SvgChartRenderer {
 
     private static double EdgeAwareStyledTextX(Chart chart, string label, double x, ChartRect plot, double fontSize, TextStyleOverride style, bool emphasized = false) {
         var halfWidth = MeasureSvgStyledTextWidth(chart, label, fontSize, style, emphasized) / 2;
-        return Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset + halfWidth, plot.Right - ChartVisualPrimitives.DataLabelPlotInset - halfWidth);
+        if (x - halfWidth < plot.Left + ChartVisualPrimitives.DataLabelPlotInset) return plot.Left + ChartVisualPrimitives.DataLabelPlotInset;
+        if (x + halfWidth > plot.Right - ChartVisualPrimitives.DataLabelPlotInset) return plot.Right - ChartVisualPrimitives.DataLabelPlotInset;
+        return x;
     }
 
     private static string RotatedStyledAnchor(Chart chart, string label, double x, ChartRect plot, double angle, double fontSize, TextStyleOverride style, bool emphasized = false) {
@@ -406,8 +408,8 @@ public sealed partial class SvgChartRenderer {
     private static double LabelGap(Chart chart, ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style) {
         var leftWidth = EstimateSvgStyledTextWidth(chart, left.Text, fontSize, style);
         var rightWidth = EstimateSvgStyledTextWidth(chart, right.Text, fontSize, style);
-        var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
-        var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
+        var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - leftWidth - ChartVisualPrimitives.DataLabelPlotInset);
+        var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - rightWidth - ChartVisualPrimitives.DataLabelPlotInset);
         return rightX - (leftX + leftWidth);
     }
 

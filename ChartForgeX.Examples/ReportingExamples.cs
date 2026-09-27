@@ -31,7 +31,8 @@ internal static class ReportingExamples {
             .WithSize(1180, 520)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
-            .WithStateCategories(states);
+            .WithStateCategories(states)
+            .WithGridStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
         chart.Options.StateTimelineSummaryHeader = "Available";
         var start = WindowStart.AddHours(12);
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };

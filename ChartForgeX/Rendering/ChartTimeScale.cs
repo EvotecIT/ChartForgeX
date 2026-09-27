@@ -120,11 +120,12 @@ internal static class ChartTimeScale {
         return !string.IsNullOrWhiteSpace(axis.TimeZoneLabel) ? axis.TimeZoneLabel!.Trim() : axis.TimeZone == null ? "UTC" : axis.TimeZone.Id;
     }
 
-    /// <summary>Converts an axis value to wall-clock time in the display zone, rounded to whole seconds, or null when not a date.</summary>
-    public static DateTime? ToDisplayTime(ChartAxis axis, double value) {
+    /// <summary>Converts an axis value to wall-clock time in the display zone, optionally rounded to whole seconds, or null when not a date.</summary>
+    public static DateTime? ToDisplayTime(ChartAxis axis, double value, bool roundToSeconds = true) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (!IsRepresentable(value)) return null;
         var local = ToLocal(value, axis.TimeZone ?? TimeZoneInfo.Utc);
+        if (!roundToSeconds) return local;
         return new DateTime((local.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
     }
 
