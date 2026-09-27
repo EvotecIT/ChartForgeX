@@ -24,12 +24,12 @@ public readonly struct ChartStateTimelineSegment {
     }
 
     /// <summary>Initializes a segment from date/time values. <see cref="DateTimeKind.Local"/> values are converted to UTC;
-    /// <see cref="DateTimeKind.Unspecified"/> values are treated as UTC.</summary>
+    /// <see cref="DateTimeKind.Unspecified"/> values are treated as UTC. Both instants must be on or after 1899-12-30 UTC.</summary>
     /// <param name="start">The inclusive start.</param>
     /// <param name="end">The exclusive end; must be later than <paramref name="start"/>.</param>
     /// <param name="state">The key of the state that applies during the interval.</param>
     /// <param name="detail">Optional detail text shown in tooltips.</param>
-    public ChartStateTimelineSegment(DateTime start, DateTime end, string state, string? detail = null) : this(ToUtc(start).ToOADate(), ToUtc(end).ToOADate(), state, detail) {
+    public ChartStateTimelineSegment(DateTime start, DateTime end, string state, string? detail = null) : this(ToOrderedOaDate(start, nameof(start)), ToOrderedOaDate(end, nameof(end)), state, detail) {
     }
 
     /// <summary>Gets the inclusive start instant as an OLE Automation date.</summary>
@@ -43,6 +43,12 @@ public readonly struct ChartStateTimelineSegment {
 
     /// <summary>Gets optional detail text shown in tooltips.</summary>
     public string? Detail { get; }
+
+    private static double ToOrderedOaDate(DateTime value, string parameterName) {
+        var utc = ToUtc(value);
+        if (utc < new DateTime(1899, 12, 30)) throw new ArgumentOutOfRangeException(parameterName, value, "State timeline DateTime intervals must start on or after 1899-12-30 UTC; earlier OLE dates are not chronologically ordered.");
+        return utc.ToOADate();
+    }
 
     private static DateTime ToUtc(DateTime value) => value.Kind == DateTimeKind.Local ? value.ToUniversalTime() : value;
 }

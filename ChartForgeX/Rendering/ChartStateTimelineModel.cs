@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
@@ -89,8 +90,10 @@ internal sealed class ChartStateTimelineModel {
             else max = min + Math.Max(1.0 / 24.0, Math.Abs(min) * 1e-12);
         }
         // Timeline segments are UTC instants even when callers leave the default linear axis.
-        var ticks = ChartTimeScale.Generate(axis, min, max, inside: true)
-            ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
+        IReadOnlyList<double> ticks = axis.Labels.Count > 0
+            ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
+            : ChartTimeScale.Generate(axis, min, max, inside: true)
+                ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
         return new ChartStateTimelineModel(chart, lanes, min, max, ticks, new List<ChartStateCategory>(chart.Options.StateCategories));
     }
 
@@ -143,7 +146,14 @@ internal sealed class ChartStateTimelineModel {
         var local = ChartTimeScale.ToDisplayTime(axis, value, roundToSeconds: false);
         if (!local.HasValue) return ChartNumericFormatter.FormatCompact(value);
         var format = local.Value.Millisecond != 0 ? "yyyy-MM-dd HH:mm:ss.fff" : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
-        return local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ChartTimeScale.ZoneDesignator(axis);
+        var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ChartTimeScale.ZoneDesignator(axis);
+        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
+        if (zone.IsAmbiguousTime(local.Value)) {
+            var utc = DateTime.SpecifyKind(DateTime.FromOADate(value), DateTimeKind.Utc);
+            var offset = zone.GetUtcOffset(utc);
+            text += " " + (offset < TimeSpan.Zero ? "-" : "+") + offset.Duration().ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+        }
+        return text;
     }
 
     public static string FormatDuration(double days) {
@@ -179,7 +189,7 @@ internal sealed class ChartStateTimelineModel {
         LegendRowBudget.Apply(rows, Chart, entry => entry.Count, count => {
             omitted = count;
             return new List<(ChartStateCategory State, double Width)>();
-        }, availableHeight);
+        }, availableHeight, ChartLegendPosition.Bottom);
         var items = new List<ChartStateTimelineLegendItem>();
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             row = rows[rowIndex];

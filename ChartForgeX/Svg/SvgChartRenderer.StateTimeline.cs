@@ -58,7 +58,7 @@ public sealed partial class SvgChartRenderer {
             var label = model.FormatTick(tick);
             var labelMarkup = new StringBuilder();
             var angle = Clamp(chart.Options.XAxisLabelAngle, -80, 80);
-            DrawXAxisLabel(labelMarkup, chart, plot, label, x, plot.Bottom + XAxisLabelOffset(chart, tickLabels), angle, "state-timeline-tick-label", AxisTickLabelMaxWidth(plot, labelTicks.Count, angle));
+            DrawXAxisLabel(labelMarkup, chart, plot, label, x, plot.Bottom + XAxisLabelOffset(chart, tickLabels), angle, "state-timeline-tick-label", AxisTickLabelMaxWidth(plot, labelTicks.Count, angle), chart.Options.TryGetXAxisLabelHighlight(tick, out var highlight) ? highlight : (ChartColor?)null);
             writer.Raw(labelMarkup.ToString());
         }
 
