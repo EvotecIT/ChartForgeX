@@ -103,6 +103,9 @@ internal sealed class GeoJsonValue {
 }
 
 internal sealed class GeoJsonReadLimits {
+    /// <summary>The nesting depth allowed when no explicit limit is set; deep enough for GeoJSON multi-polygons.</summary>
+    public const int DefaultMaximumDepth = 64;
+
     private readonly Dictionary<string, int> _arrayItemsByProperty = new(StringComparer.Ordinal);
     private readonly Dictionary<string, int> _objectPropertiesByProperty = new(StringComparer.Ordinal);
 
@@ -119,6 +122,13 @@ internal sealed class GeoJsonReadLimits {
     public int MaximumArrayItems { get; }
     public int MaximumObjectProperties { get; }
     public bool RejectDuplicateProperties { get; private set; }
+    public int MaximumDepth { get; private set; } = DefaultMaximumDepth;
+
+    public GeoJsonReadLimits LimitDepth(int maximumDepth) {
+        if (maximumDepth <= 0) throw new ArgumentOutOfRangeException(nameof(maximumDepth));
+        MaximumDepth = maximumDepth;
+        return this;
+    }
 
     public GeoJsonReadLimits RejectDuplicates() {
         RejectDuplicateProperties = true;
@@ -177,6 +187,7 @@ internal sealed class GeoJsonReader {
     private readonly GeoJsonReadLimits? _limits;
     private int _position;
     private int _valuesRead;
+    private int _depth;
 
     public GeoJsonReader(string json, IEqualityComparer<string> propertyComparer) {
         _json = json ?? throw new ArgumentNullException(nameof(json));
@@ -212,7 +223,32 @@ internal sealed class GeoJsonReader {
         throw Error("Unexpected JSON token.");
     }
 
+    // The reader is recursive, so nesting is capped for every caller; unbounded input such as 100,000 '[' would otherwise
+    // exhaust small thread stacks (for example macOS secondary threads) and crash the process.
+    private void EnterContainer() {
+        _depth++;
+        if (_depth > (_limits?.MaximumDepth ?? GeoJsonReadLimits.DefaultMaximumDepth)) throw Error("JSON nesting is too deep.");
+    }
+
     private GeoJsonValue ReadObject(string? propertyName) {
+        EnterContainer();
+        try {
+            return ReadObjectBody(propertyName);
+        } finally {
+            _depth--;
+        }
+    }
+
+    private GeoJsonValue ReadArray(bool preserveNumberText, string? propertyName) {
+        EnterContainer();
+        try {
+            return ReadArrayBody(preserveNumberText, propertyName);
+        } finally {
+            _depth--;
+        }
+    }
+
+    private GeoJsonValue ReadObjectBody(string? propertyName) {
         Expect('{');
         var values = new Dictionary<string, GeoJsonValue>(_propertyComparer);
         int propertyCount = 0;
@@ -237,7 +273,7 @@ internal sealed class GeoJsonReader {
         return GeoJsonValue.Object(values);
     }
 
-    private GeoJsonValue ReadArray(bool preserveNumberText, string? propertyName) {
+    private GeoJsonValue ReadArrayBody(bool preserveNumberText, string? propertyName) {
         Expect('[');
         var values = new List<GeoJsonValue>();
         int maximumItems = _limits?.ArrayItems(propertyName) ?? int.MaxValue;
