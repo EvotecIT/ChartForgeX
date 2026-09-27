@@ -149,6 +149,33 @@ public sealed class CategoricalHeatmapTests {
         Assert.NotEmpty(chart.ToPng());
     }
 
+    [Fact]
+    public void ToSvg_RepeatedTooltips_KeepDistinctStableCellIdentities() {
+        var chart = Chart.Create().WithSize(390, 300).WithXLabels("A", "B")
+            .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"))
+            .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"));
+        var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
+        var ids = cells.Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray();
+        Assert.All(ids, id => Assert.False(string.IsNullOrEmpty(id)));
+        Assert.Equal(4, ids.Distinct().Count());
+        Assert.All(cells, cell => Assert.Equal("Open evidence", Title(cell)));
+        Assert.Equal(ids, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray());
+    }
+
+    [Fact]
+    public void ToPng_AutoMode_RetainsShortTextThatFitsDenseCategoricalCells() {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
+        Assert.All(cells, cell => Assert.InRange(Number(cell, "width"), 34, 45));
+        Assert.Equal(12, ByRole(XDocument.Parse(chart.ToSvg()), "data-label").Length);
+        var auto = chart.ToPng();
+        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Always;
+        Assert.Equal(chart.ToPng(), auto);
+    }
+
     private static Chart CreateChart() => Chart.Create().WithSize(720, 320)
         .WithStateCategories(
             new ChartStateCategory("pass", "Passed", Pass),

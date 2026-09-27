@@ -174,6 +174,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("tabindex", href == null ? "0" : null)
             .Attribute("focusable", href == null ? "true" : null)
             .Attribute("data-cfx-role", "heatmap-cell")
+            .Attribute("data-cfx-id", "heatmap:" + rowIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + columnIndex.ToString(System.Globalization.CultureInfo.InvariantCulture))
             .Attribute("data-cfx-meta-state", stateLabel)
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)

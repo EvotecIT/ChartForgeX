@@ -88,7 +88,7 @@ public sealed partial class PngChartRenderer {
                 c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
-                var labelFits = cellWidth >= EstimatePngStyledTextWidth("100%", dataFontSize, dataStyle, emphasized: true) + 12 &&
+                var labelFits = cellWidth >= EstimatePngStyledTextWidth(cell.HasValue ? cell.Value.Text ?? string.Empty : "100%", dataFontSize, dataStyle, emphasized: true) + 12 &&
                     cellHeight >= EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle) + 10;
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
