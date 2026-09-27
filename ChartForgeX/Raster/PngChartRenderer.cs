@@ -218,7 +218,7 @@ public sealed partial class PngChartRenderer {
                 var y = map.Y(yv);
                 if (o.ShowGrid && gridStyle.ShowHorizontalLines) DrawPngGridLine(c, plot.Left, y, plot.Right, y, ApplyOpacity(t.Grid, gridStyle.HorizontalOpacity), gridStyle);
                 if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, yTickHeight, o.YAxisLabelDensity)) {
-                    var label = FormatYAxisValue(chart, yv);
+                    var label = FormatYAxisValue(chart, yv, yTicks);
                     DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, yTickFontSize, o.TickLabelStyle, emphasized: false) - 8), y - yTickHeight + 4, label, o.TickLabelStyle, t.MutedText, yTickFontSize, emphasized: false);
                 }
             }
@@ -538,8 +538,8 @@ public sealed partial class PngChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
-    private static string FormatYAxisValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
+    private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -547,8 +547,8 @@ public sealed partial class PngChartRenderer {
         return FormatValue(chart, value);
     }
 
-    private static string FormatSecondaryValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
+    private static string FormatSecondaryValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter, ticks);
     }
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));

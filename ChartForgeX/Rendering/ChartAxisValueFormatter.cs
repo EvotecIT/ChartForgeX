@@ -13,12 +13,13 @@ internal static class ChartAxisValueFormatter {
         return null;
     }
 
-    public static string Format(ChartAxis axis, double value, Func<double, string>? fallbackFormatter = null) {
+    public static string Format(ChartAxis axis, double value, Func<double, string>? fallbackFormatter = null, IReadOnlyList<double>? ticks = null) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (FindExplicitLabel(axis.Labels, value) is { } label) return label;
 
         var formatter = axis.LabelFormatter ?? fallbackFormatter;
         if (formatter != null) return formatter(value) ?? string.Empty;
+        if (axis.Scale == ChartScaleKind.Time && ticks != null && ChartTicks.IsNumericTimeFallback(ticks)) return value.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
         if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Format(axis, value);
         return ChartNumericFormatter.FormatCompact(value);
     }

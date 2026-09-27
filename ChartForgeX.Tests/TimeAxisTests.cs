@@ -10,6 +10,41 @@ namespace ChartForgeX.Tests;
 public sealed class TimeAxisTests {
     private static readonly DateTime Day = new(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
 
+    [Fact]
+    public void RadialScale_SubSecondRange_PreservesFallbackAndInteriorTicks() {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 200.0 / 86400000;
+        var chart = Chart.Create().AddRadar("Fast", new[] { new ChartPoint(0, start), new ChartPoint(1, end), new ChartPoint(2, start) });
+        var axis = chart.Options.YAxis.WithTimeScale().WithBounds(start, end);
+        var scale = RadialValueScale.Create(axis, chart.Series, "Radar");
+        Assert.True(ChartTicks.IsNumericTimeFallback(scale.Ticks));
+        Assert.False(scale.IsMaximum(scale.Ticks[scale.Ticks.Count - 2]));
+        var labels = scale.Ticks.Select(value => ChartAxisValueFormatter.Format(axis, value, ticks: scale.Ticks)).ToArray();
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_VerticalSubSecondRange_PreservesNumericFallback(bool secondary) {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 200.0 / 86400000;
+        var chart = Chart.Create().WithSize(900, 450).WithLegend(false)
+            .AddLine("Fast", new[] { new ChartPoint(1, start), new ChartPoint(2, end) });
+        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+        axis.WithTimeScale().WithBounds(start, end);
+        var role = secondary ? "secondary-y-axis-tick" : "y-axis-label";
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == role)
+            .Select(element => element.Value).ToArray();
+        Assert.True(labels.Length > 1);
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+        var png = chart.ToPng();
+        axis.LabelFormatter = value => value.ToString("G17", CultureInfo.InvariantCulture);
+        Assert.Equal(png, chart.ToPng());
+    }
+
     [Theory]
     [InlineData(200)]
     [InlineData(0.2)]

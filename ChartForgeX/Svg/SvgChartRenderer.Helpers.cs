@@ -332,8 +332,8 @@ public sealed partial class SvgChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
-    private static string FormatYAxisValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
+    private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -344,8 +344,8 @@ public sealed partial class SvgChartRenderer {
     private static string SeriesSemanticRole(ChartSeries series, string fallback) =>
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
-    private static string FormatSecondaryValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
+    private static string FormatSecondaryValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);

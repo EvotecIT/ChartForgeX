@@ -108,7 +108,7 @@ public sealed partial class PngChartRenderer {
         for (var tickIndex = 0; tickIndex < yTicks.Count; tickIndex++) {
             var tick = yTicks[tickIndex];
             if (!ChartAxisDensity.ShowVerticalLabel(tickIndex, yTicks.Count, plot.Height, preferredTextHeight, chart.Options.SecondaryYAxis.LabelDensity)) continue;
-            var rawLabel = FormatSecondaryValue(chart, tick);
+            var rawLabel = FormatSecondaryValue(chart, tick, yTicks);
             var fontSize = TextFontSizeForWidth(rawLabel, labelMaxWidth, preferredFontSize, chart.Options.TickLabelStyle);
             var label = TrimPngLabelToWidth(rawLabel, fontSize, labelMaxWidth, chart.Options.TickLabelStyle);
             if (label.Length == 0) continue;
@@ -149,7 +149,7 @@ public sealed partial class PngChartRenderer {
         if (!ShowYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
-        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatYAxisValue(chart, tick), fontSize, chart.Options.TickLabelStyle, emphasized: false));
+        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatYAxisValue(chart, tick, yTicks), fontSize, chart.Options.TickLabelStyle, emphasized: false));
         var desiredLeft = Math.Max(plot.Left, widest + 54);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);
@@ -162,7 +162,7 @@ public sealed partial class PngChartRenderer {
         if (!ShowSecondaryYAxis(chart) || chart.Options.IsSparkline || yTicks.Count == 0) return plot;
         var fontSize = PngTickFontSize(chart);
         var widest = 0.0;
-        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatSecondaryValue(chart, tick), fontSize, chart.Options.TickLabelStyle, emphasized: false));
+        foreach (var tick in yTicks) widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatSecondaryValue(chart, tick, yTicks), fontSize, chart.Options.TickLabelStyle, emphasized: false));
         var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : EstimatePngStyledTextHeight(PngAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 18;
         var reserve = Math.Min(150, widest + 30 + titleReserve);
         if (reserve <= 0) return plot;
