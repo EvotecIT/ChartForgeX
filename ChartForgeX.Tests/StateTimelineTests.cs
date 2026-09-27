@@ -313,6 +313,81 @@ public sealed class StateTimelineTests {
         Assert.Equal(Number(track, "x") + Number(track, "width") - ChartVisualPrimitives.DataLabelPlotInset, Number(labels[labels.Length - 1], "x"), 3);
     }
 
+    [Theory]
+    [InlineData(390, 300)]
+    [InlineData(720, 400)]
+    public void Render_ManyStateCategories_BudgetsLegendAndKeepsVisibleLane(int width, int height) {
+        var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Up)).ToArray();
+        var chart = Chart.Create().WithSize(width, height).WithStateCategories(states)
+            .AddStateTimelineLane("Lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "s0") });
+        var svg = XDocument.Parse(chart.ToSvg());
+        var overflow = ByRole(svg, "legend-overflow").Single();
+        Assert.True(int.Parse((string)overflow.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
+        var track = ByRole(svg, "state-lane-track").Single();
+        Assert.True(Number(track, "height") >= 18);
+        Assert.All(ByRole(svg, "state-legend-swatch"), item => Assert.InRange(Number(item, "y"), Number(track, "y") + Number(track, "height"), height - 10));
+        Assert.True(Number(overflow, "y") > Number(track, "y") + Number(track, "height"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_OneSidedBoundOutsideSegments_PreservesBoundAndEmptyWindow(bool maximum) {
+        var chart = CreateChart();
+        var bound = maximum ? Day.AddHours(-1).ToOADate() : Day.AddDays(2).ToOADate();
+        if (maximum) chart.Options.XAxis.Maximum = bound;
+        else chart.Options.XAxis.Minimum = bound;
+        var model = ChartStateTimelineModel.Build(chart);
+        Assert.Equal(bound, maximum ? model.Max : model.Min);
+        Assert.True(model.Max > model.Min);
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "state-segment"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_LargeAxisStyles_KeepTicksTitleAndLegendSeparated(bool largeTicks) {
+        var chart = CreateChart().WithSize(720, 500).WithXAxis("Time");
+        if (largeTicks) chart.Options.TickLabelStyle.FontSize = 32;
+        chart.Options.XAxis.LabelFormatter = _ => "T";
+        chart.Options.AxisTitleStyle.FontSize = 42;
+        var svg = XDocument.Parse(chart.ToSvg());
+        var tick = ByRole(svg, "state-timeline-tick-label")[0];
+        var title = ByRole(svg, "state-timeline-x-axis-title").Single();
+        var legend = ByRole(svg, "state-legend-label")[0];
+        Assert.True(Number(tick, "y") + Number(tick, "font-size") * 0.2 < Number(title, "y") - Number(title, "font-size"));
+        Assert.True(Number(title, "y") + Number(title, "font-size") * 0.2 < Number(legend, "y") - Number(legend, "font-size") * 0.6);
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void Render_LargeLegendWithoutAxes_RemainsBelowLastLane() {
+        var chart = CreateChart().WithSize(390, 400).WithAxes(false);
+        chart.Options.LegendStyle.FontSize = 32;
+        var svg = XDocument.Parse(chart.ToSvg());
+        var bottom = ByRole(svg, "state-lane-track").Max(e => Number(e, "y") + Number(e, "height"));
+        var first = ByRole(svg, "state-legend-label")[0];
+        Assert.True(Number(first, "y") - Number(first, "font-size") * 0.6 > bottom);
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(-1e308, 1e308)]
+    [InlineData(null, -1e20)]
+    [InlineData(1e20, null)]
+    public void Render_FiniteNumericBounds_UseFiniteNonzeroWindow(double? minimum, double? maximum) {
+        var chart = CreateChart().ConfigureXAxis(axis => { axis.Minimum = minimum; axis.Maximum = maximum; });
+        var model = ChartStateTimelineModel.Build(chart);
+        Assert.True(model.Max > model.Min);
+        var plot = new ChartRect(10, 10, 500, 100);
+        Assert.Equal(plot.Left, model.X(model.Min, plot), 6);
+        Assert.Equal(plot.Right, model.X(model.Max, plot), 6);
+        Assert.DoesNotContain("NaN", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.NotEmpty(chart.ToPng());
+    }
+
     private static Chart CreateChart() {
         var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(

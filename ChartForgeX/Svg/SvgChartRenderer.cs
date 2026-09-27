@@ -742,7 +742,9 @@ public sealed partial class SvgChartRenderer {
 
     private static double XAxisTitleOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
-        return XAxisLabelOffset(chart, labels) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10));
+        var titleHeight = SvgXAxisTitleHeight(chart, chart.Options.Size.Width);
+        var gap = Math.Max(Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10), titleHeight + tickHeight * 0.25 + 4);
+        return XAxisLabelOffset(chart, labels) + gap;
     }
 
     private static double SvgXAxisBottomReserve(Chart chart, IReadOnlyList<string>? labels, double maxWidth) {

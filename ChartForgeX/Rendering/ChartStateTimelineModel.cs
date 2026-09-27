@@ -14,7 +14,6 @@ internal sealed class ChartStateTimelineModel {
     public const double SegmentRadius = 1.5;
     public const double AxisReserve = 30;
     public const double AxisTitleReserve = 20;
-    public const double LegendRowHeight = 20;
     public const double LegendSwatch = 10;
     public const double LegendItemGap = 18;
     public const double ColumnGap = 14;
@@ -85,7 +84,10 @@ internal sealed class ChartStateTimelineModel {
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
-        if (!(max > min)) max = min + 1.0 / 24.0;
+        if (!(max > min)) {
+            if (axis.Maximum.HasValue && !axis.Minimum.HasValue) min = max - Math.Max(1.0 / 24.0, Math.Abs(max) * 1e-12);
+            else max = min + Math.Max(1.0 / 24.0, Math.Abs(min) * 1e-12);
+        }
         // Timeline segments are UTC instants even when callers leave the default linear axis.
         var ticks = ChartTimeScale.Generate(axis, min, max, inside: true)
             ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
@@ -93,11 +95,11 @@ internal sealed class ChartStateTimelineModel {
     }
 
     /// <summary>Returns the lane plot area after reserving the label column, summary column, axis, and legend.</summary>
-    public ChartRect PlotArea(ChartRect bounds, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double axisLabelReserve = AxisReserve) {
+    public ChartRect PlotArea(ChartRect bounds, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve) {
         var options = Chart.Options;
         var labelReserve = options.ShowAxes && options.ShowYAxis ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * 0.34) : 0;
         var summaryReserve = HasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
-        var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, Chart.XAxisTitle)) ? 0 : AxisTitleReserve) : 0;
+        var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, Chart.XAxisTitle)) ? 0 : axisTitleReserve) : 0;
         var topReserve = HasSummary && !string.IsNullOrWhiteSpace(SummaryHeader) ? summaryHeaderHeight + 6 : 0;
         var width = Math.Max(1, bounds.Width - labelReserve - summaryReserve);
         var height = Math.Max(1, bounds.Height - axisReserve - legendHeight - topReserve);
@@ -116,7 +118,7 @@ internal sealed class ChartStateTimelineModel {
 
     public double LaneTop(ChartRect plot, int laneIndex) => plot.Top + laneIndex * LaneSlot(plot) + (LaneSlot(plot) - LaneBand(plot)) / 2;
 
-    public double X(double value, ChartRect plot) => plot.Left + (Math.Max(Min, Math.Min(Max, value)) - Min) / (Max - Min) * plot.Width;
+    public double X(double value, ChartRect plot) => plot.Left + ChartMath.Normalize(Math.Max(Min, Math.Min(Max, value)), Min, Max) * plot.Width;
 
     /// <summary>Returns the pixel span of a segment clipped to the axis, or false when it lies outside the visible range.</summary>
     public bool TrySegmentSpan(ChartStateTimelineResolvedSegment segment, ChartRect plot, out double left, out double width) {
@@ -156,40 +158,54 @@ internal sealed class ChartStateTimelineModel {
         return (hours / 24).ToString(CultureInfo.InvariantCulture) + "d" + (hours % 24 == 0 ? string.Empty : " " + (hours % 24).ToString(CultureInfo.InvariantCulture) + "h");
     }
 
-    /// <summary>Wraps legend entries into centered rows using a renderer-specific label measure.</summary>
-    public IReadOnlyList<ChartStateTimelineLegendItem> LayoutLegend(Func<string, double> measure, double left, double width) {
-        var items = new List<ChartStateTimelineLegendItem>();
+    /// <summary>Wraps and budgets legend rows through the shared legend policy.</summary>
+    public IReadOnlyList<ChartStateTimelineLegendItem> LayoutLegend(Func<string, double> measure, double left, double width, double availableHeight) {
+        var rows = new List<List<(ChartStateCategory State, double Width)>>();
         var row = new List<(ChartStateCategory State, double Width)>();
         var rowWidth = 0.0;
-        var rowIndex = 0;
-        void Flush() {
+        foreach (var state in LegendStates) {
+            var itemWidth = Math.Min(width, LegendSwatch + 6 + measure(state.Label));
+            var needed = row.Count == 0 ? itemWidth : rowWidth + LegendItemGap + itemWidth;
+            if (row.Count > 0 && needed > width) {
+                rows.Add(row);
+                row = new List<(ChartStateCategory State, double Width)>();
+                rowWidth = 0;
+            }
+            rowWidth = row.Count == 0 ? itemWidth : rowWidth + LegendItemGap + itemWidth;
+            row.Add((state, itemWidth));
+        }
+        if (row.Count > 0) rows.Add(row);
+        var omitted = 0;
+        LegendRowBudget.Apply(rows, Chart, entry => entry.Count, count => {
+            omitted = count;
+            return new List<(ChartStateCategory State, double Width)>();
+        }, availableHeight);
+        var items = new List<ChartStateTimelineLegendItem>();
+        for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
+            row = rows[rowIndex];
+            if (row.Count == 0) {
+                items.Add(new ChartStateTimelineLegendItem(null, left, rowIndex, omitted));
+                continue;
+            }
+            rowWidth = 0;
+            foreach (var entry in row) rowWidth += entry.Width;
+            rowWidth += Math.Max(0, row.Count - 1) * LegendItemGap;
             var x = left + Math.Max(0, (width - rowWidth) / 2);
             foreach (var entry in row) {
                 items.Add(new ChartStateTimelineLegendItem(entry.State, x, rowIndex));
                 x += entry.Width + LegendItemGap;
             }
-
-            row.Clear();
-            rowWidth = 0;
-            rowIndex++;
         }
-
-        foreach (var state in LegendStates) {
-            var itemWidth = LegendSwatch + 6 + measure(state.Label);
-            var needed = row.Count == 0 ? itemWidth : rowWidth + LegendItemGap + itemWidth;
-            if (row.Count > 0 && needed > width) Flush();
-            rowWidth = row.Count == 0 ? itemWidth : rowWidth + LegendItemGap + itemWidth;
-            row.Add((state, itemWidth));
-        }
-
-        if (row.Count > 0) Flush();
         return items;
     }
 
-    public static double LegendHeight(IReadOnlyList<ChartStateTimelineLegendItem> items) {
+    /// <summary>Adapts the shared row policy's fixed padding to the timeline's compact eight-pixel legend padding.</summary>
+    public static double LegendBudgetHeight(double plotHeight) => Math.Max(0, plotHeight - LaneBandMaximum + 18 + ChartVisualPrimitives.LegendPlotGap - 8);
+
+    public static double LegendHeight(Chart chart, IReadOnlyList<ChartStateTimelineLegendItem> items) {
         var rows = 0;
         foreach (var item in items) rows = Math.Max(rows, item.Row + 1);
-        return rows == 0 ? 0 : rows * LegendRowHeight + 8;
+        return rows == 0 ? 0 : rows * LegendRowBudget.RowHeight(chart) + 8;
     }
 }
 
@@ -234,15 +250,18 @@ internal readonly struct ChartStateTimelineResolvedSegment {
 
 /// <summary>A positioned legend entry; <see cref="Row"/> counts from the top of the legend block.</summary>
 internal readonly struct ChartStateTimelineLegendItem {
-    public ChartStateTimelineLegendItem(ChartStateCategory state, double x, int row) {
+    public ChartStateTimelineLegendItem(ChartStateCategory? state, double x, int row, int omitted = 0) {
         State = state;
         X = x;
         Row = row;
+        Omitted = omitted;
     }
 
-    public ChartStateCategory State { get; }
+    public ChartStateCategory? State { get; }
 
     public double X { get; }
 
     public int Row { get; }
+
+    public int Omitted { get; }
 }

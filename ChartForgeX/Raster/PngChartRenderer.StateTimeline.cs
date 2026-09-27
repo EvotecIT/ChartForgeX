@@ -24,12 +24,13 @@ public sealed partial class PngChartRenderer {
             if (lane.Summary != null) summaryWidth = Math.Max(summaryWidth, EstimatePngStyledTextWidth(lane.Summary, tickFontSize, tickStyle, emphasized: true));
         }
 
-        var legend = chart.Options.ShowLegend
-            ? model.LayoutLegend(text => EstimatePngStyledTextWidth(text, legendFontSize, legendStyle, emphasized: false), bounds.Left, bounds.Width)
-            : Array.Empty<ChartStateTimelineLegendItem>();
         var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
-        var axisLabelReserve = Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? ChartStateTimelineModel.AxisReserve : Math.Max(ChartStateTimelineModel.AxisReserve, PngXAxisTitleOffset(chart, tickLabels));
-        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(legend), axisLabelReserve);
+        var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, PngXAxisTitleOffset(chart, tickLabels)
+            + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 4));
+        var legend = chart.Options.ShowLegend
+            ? model.LayoutLegend(text => EstimatePngStyledTextWidth(text, legendFontSize, legendStyle, emphasized: false), bounds.Left, bounds.Width, ChartStateTimelineModel.LegendBudgetHeight(model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), 0, axisLabelReserve, 0).Height))
+            : Array.Empty<ChartStateTimelineLegendItem>();
+        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(chart, legend), axisLabelReserve, 0);
 
         var range = new ChartRange();
         range.SetXBounds(model.Min, model.Max);
@@ -76,15 +77,25 @@ public sealed partial class PngChartRenderer {
 
         if (ShowXAxis(chart)) {
             if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-            if (!string.IsNullOrWhiteSpace(XAxisTitleText(chart))) DrawPngXAxisTitle(c, chart, plot, plot.Bottom + axisLabelReserve + 14, PngAxisTitleFontSize(chart));
+            if (!string.IsNullOrWhiteSpace(XAxisTitleText(chart))) DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, tickLabels), PngAxisTitleFontSize(chart));
         }
 
-        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(legend) + 4;
+        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(chart, legend) + 4;
         foreach (var item in legend) {
-            var rowY = legendTop + item.Row * ChartStateTimelineModel.LegendRowHeight;
-            c.FillRoundedRect(item.X, rowY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.SegmentRadius, item.State.Color);
-            if (item.State.Hatched) DrawStateTimelineHatch(c, item.X, rowY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
-            DrawStateTimelineText(c, item.State.Label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowY + ChartStateTimelineModel.LegendSwatch / 2, legendStyle, t.MutedText, legendFontSize, false);
+            var rowY = legendTop + item.Row * LegendRowBudget.RowHeight(chart);
+            var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
+            if (item.Omitted > 0) {
+                DrawLegendOverflow(c, chart, new ChartRect(bounds.Left, rowY, bounds.Width, LegendRowBudget.RowHeight(chart)), rowCenter + EstimatePngStyledTextHeight(legendFontSize, legendStyle) / 2, item.Omitted);
+                continue;
+            }
+
+            var state = item.State!;
+            var swatchY = rowCenter - ChartStateTimelineModel.LegendSwatch / 2;
+            c.FillRoundedRect(item.X, swatchY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.SegmentRadius, state.Color);
+            if (state.Hatched) DrawStateTimelineHatch(c, item.X, swatchY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
+            var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateTimelineModel.LegendSwatch - 6);
+            var label = TrimReadablePngLabelToWidth(state.Label, legendFontSize, labelWidth, legendStyle);
+            DrawStateTimelineText(c, label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowCenter, legendStyle, t.MutedText, legendFontSize, false);
         }
     }
 

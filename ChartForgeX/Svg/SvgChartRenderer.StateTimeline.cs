@@ -26,12 +26,12 @@ public sealed partial class SvgChartRenderer {
             if (lane.Summary != null) summaryWidth = Math.Max(summaryWidth, EstimateSvgStyledTextWidth(chart, lane.Summary, tickFontSize, tickStyle, emphasized: true));
         }
 
-        var legend = chart.Options.ShowLegend
-            ? model.LayoutLegend(text => EstimateSvgStyledTextWidth(chart, text, legendFontSize, legendStyle), bounds.Left, bounds.Width)
-            : Array.Empty<ChartStateTimelineLegendItem>();
         var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
-        var axisLabelReserve = Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? ChartStateTimelineModel.AxisReserve : Math.Max(ChartStateTimelineModel.AxisReserve, XAxisTitleOffset(chart, tickLabels));
-        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(legend), axisLabelReserve);
+        var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, SvgXAxisBottomReserve(chart, tickLabels, bounds.Width));
+        var legend = chart.Options.ShowLegend
+            ? model.LayoutLegend(text => EstimateSvgStyledTextWidth(chart, text, legendFontSize, legendStyle), bounds.Left, bounds.Width, ChartStateTimelineModel.LegendBudgetHeight(model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), 0, axisLabelReserve, 0).Height))
+            : Array.Empty<ChartStateTimelineLegendItem>();
+        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(chart, legend), axisLabelReserve, 0);
         var hatchId = id + "-stateHatch";
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("g").Attribute("data-cfx-role", "state-timeline").EndStartElement().Line();
@@ -115,17 +115,27 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("stroke", t.Axis.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.AxisStrokeWidth).EndEmptyElement().Line();
             var title = XAxisTitleText(chart);
             if (!string.IsNullOrWhiteSpace(title)) {
-                DrawSvgTextCenteredX(writer, chart, "state-timeline-x-axis-title", title, plot.Left + plot.Width / 2, plot.Bottom + axisLabelReserve + 14, t.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, t.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+                DrawSvgTextCenteredX(writer, chart, "state-timeline-x-axis-title", title, plot.Left + plot.Width / 2, plot.Bottom + XAxisTitleOffset(chart, tickLabels), t.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, t.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
             }
         }
 
-        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(legend) + 4;
+        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(chart, legend) + 4;
         foreach (var item in legend) {
-            var rowY = legendTop + item.Row * ChartStateTimelineModel.LegendRowHeight;
-            writer.StartElement("rect").Attribute("data-cfx-role", "state-legend-swatch").Attribute("data-cfx-status", item.State.Key).Attribute("x", item.X).Attribute("y", rowY)
-                .Attribute("width", ChartStateTimelineModel.LegendSwatch).Attribute("height", ChartStateTimelineModel.LegendSwatch).Attribute("rx", ChartStateTimelineModel.SegmentRadius).Attribute("fill", item.State.Color.ToCss()).EndEmptyElement().Line();
-            if (item.State.Hatched) WriteStateTimelineHatch(writer, hatchId, item.X, rowY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
-            WriteStateTimelineText(writer, chart, "state-legend-label", item.State.Label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowY + ChartStateTimelineModel.LegendSwatch / 2, "start", legendFontSize, legendStyle, "400", true);
+            var rowY = legendTop + item.Row * LegendRowBudget.RowHeight(chart);
+            var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
+            if (item.Omitted > 0) {
+                DrawLegendOverflow(writer, chart, new ChartRect(bounds.Left, rowY, bounds.Width, LegendRowBudget.RowHeight(chart)), rowCenter + EstimateSvgStyledTextHeight(legendFontSize, legendStyle) / 2, item.Omitted);
+                continue;
+            }
+
+            var state = item.State!;
+            var swatchY = rowCenter - ChartStateTimelineModel.LegendSwatch / 2;
+            writer.StartElement("rect").Attribute("data-cfx-role", "state-legend-swatch").Attribute("data-cfx-status", state.Key).Attribute("x", item.X).Attribute("y", swatchY)
+                .Attribute("width", ChartStateTimelineModel.LegendSwatch).Attribute("height", ChartStateTimelineModel.LegendSwatch).Attribute("rx", ChartStateTimelineModel.SegmentRadius).Attribute("fill", state.Color.ToCss()).EndEmptyElement().Line();
+            if (state.Hatched) WriteStateTimelineHatch(writer, hatchId, item.X, swatchY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
+            var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateTimelineModel.LegendSwatch - 6);
+            var label = TrimSvgLabelToWidth(chart, state.Label, legendFontSize, labelWidth, legendStyle);
+            WriteStateTimelineText(writer, chart, "state-legend-label", label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowCenter, "start", legendFontSize, legendStyle, "400", true);
         }
 
         writer.EndElement().Line();
