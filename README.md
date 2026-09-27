@@ -678,9 +678,11 @@ chart.Series[0]
 - JavaScript belongs in opt-in adapter packages, not in the default static renderer.
 - Public APIs fail fast on invalid sizes, ranges, enum values, and specialized series payloads.
 
-## Website Pilot
+## Website Content
 
-`Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The central Evotec project hub remains the registry page, while the dedicated site is meant for the richer gallery and demo experience at `https://chartforgex.evotec.xyz/`.
+ChartForgeX is presented on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`. There is no separate ChartForgeX website.
+
+`Website/` holds the content the hub ingests: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The PowerForge.Web configuration in `Website/` is kept as a local preview of that content and is not deployed.
 
 Build the examples first with `./Build.ps1`, then build the site from `Website/`:
 
