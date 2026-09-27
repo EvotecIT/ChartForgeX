@@ -902,7 +902,7 @@
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
     else if (detail.action === 'selection') {
-      if (!applySelectionByTarget(root, detail.target, detail.selected === true)) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
       renderCompare(root);
     } else if (detail.action === 'lasso') {
       applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
