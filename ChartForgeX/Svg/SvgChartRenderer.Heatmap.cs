@@ -79,6 +79,8 @@ public sealed partial class SvgChartRenderer {
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (cell.HasValue) drawValueText = cell.Value.Text != null && chart.Options.HeatmapValueTextMode != ChartHeatmapValueTextMode.Hidden && (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || labelFits);
                 if (drawValueText) {
+                    // Labels decorate the mark; pointer events must reach the linked cell below.
+                    body.Append("<g pointer-events=\"none\">");
                     var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
                         DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), fittedCellFontSize, cellWidth - 6, "750", style: dataStyle);
@@ -92,6 +94,7 @@ public sealed partial class SvgChartRenderer {
                     } else {
                         DrawDataLabel(body, chart, label, x + cellWidth / 2, placement == ChartDataLabelPlacement.Above ? y - 8 : y + cellHeight + 12, plot, series: series, pointIndex: pointIndex);
                     }
+                    body.Append("</g>");
                 }
             }
         }

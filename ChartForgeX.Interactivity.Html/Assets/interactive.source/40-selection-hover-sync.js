@@ -347,8 +347,9 @@
     else return false;
     const targetNode = targets[next];
     if (!targetNode) return false;
-    if (targetNode.focus) {
-      try { targetNode.focus({ preventScroll: true }); } catch { targetNode.focus(); }
+    const focusNode = targetFocusNode(targetNode);
+    if (focusNode.focus) {
+      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
     }
     const target = targetIdentity(targetNode);
     emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });

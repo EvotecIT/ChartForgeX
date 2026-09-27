@@ -43,6 +43,15 @@ public sealed class CategoricalHeatmapTests {
     }
 
     [Fact]
+    public void ToSvg_CellText_DoesNotInterceptLinkedCellPointerEvents() {
+        var svg = XDocument.Parse(CreateChart().ToSvg());
+        var labels = ByRole(svg, "data-label");
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => Assert.Contains(label.Ancestors(),
+            ancestor => (string?)ancestor.Attribute("pointer-events") == "none"));
+    }
+
+    [Fact]
     public void ToPng_CellColoursMatchSvgGeometry() {
         var chart = CreateChart();
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell")[1];

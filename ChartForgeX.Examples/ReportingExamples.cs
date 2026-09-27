@@ -47,6 +47,7 @@ internal static class ReportingExamples {
 
         chart.SaveSvg(Path.Combine(output, "reporting-status-matrix.svg"));
         chart.SaveHtml(Path.Combine(output, "reporting-status-matrix.html"));
+        chart.SaveInteractiveHtml(Path.Combine(output, "reporting-status-matrix-interactive.html"));
         chart.SavePng(Path.Combine(output, "reporting-status-matrix.png"));
     }
 
