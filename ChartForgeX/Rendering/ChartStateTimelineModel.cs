@@ -212,4 +212,3 @@ internal readonly struct ChartStateTimelineResolvedSegment {
 
     public string? Detail { get; }
 }
-
