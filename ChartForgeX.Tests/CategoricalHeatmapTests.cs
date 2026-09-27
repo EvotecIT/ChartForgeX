@@ -133,6 +133,22 @@ public sealed class CategoricalHeatmapTests {
 
     private const double ChartStateCategoryLegendHeightOfSwatch = 10;
 
+    [Theory]
+    [InlineData(390)]
+    [InlineData(720)]
+    public void Render_ManyStyledCategories_BudgetLegendAndKeepCellsVisible(int width) {
+        var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Pass)).ToArray();
+        var chart = Chart.Create().WithSize(width, 400).WithStateCategories(states).WithXLabels("A", "B")
+            .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("s0", "1", href: "#evidence"), new ChartHeatmapCell("s1"));
+        chart.Options.LegendStyle.FontSize = 32;
+        var svg = XDocument.Parse(chart.ToSvg());
+        var summary = ByRole(svg, "legend-overflow").Single();
+        Assert.True(int.Parse((string)summary.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
+        Assert.All(ByRole(svg, "heatmap-cell"), cell => Assert.True(Number(cell, "height") >= 18));
+        Assert.All(ByRole(svg, "state-legend-label"), label => Assert.True(Number(label, "y") < 400));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
     private static Chart CreateChart() => Chart.Create().WithSize(720, 320)
         .WithStateCategories(
             new ChartStateCategory("pass", "Passed", Pass),

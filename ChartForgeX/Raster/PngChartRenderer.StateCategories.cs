@@ -13,7 +13,6 @@ public sealed partial class PngChartRenderer {
         var fontSize = PngLegendFontSize(chart);
         var legendFontSize = fontSize;
         var t = chart.Options.Theme;
-        var swatch = ChartStateCategoryLegend.Swatch;
         foreach (var item in legend) {
             var rowY = top + item.Row * LegendRowBudget.RowHeight(chart);
             var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;

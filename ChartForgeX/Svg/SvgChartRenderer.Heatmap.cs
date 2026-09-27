@@ -28,7 +28,7 @@ public sealed partial class SvgChartRenderer {
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
         var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
-            ? categories.Layout(text => EstimateSvgStyledTextWidth(chart, text, StyleFontSize(chart.Options.LegendStyle, t.LegendFontSize), chart.Options.LegendStyle), basePlot.Left, basePlot.Width, Math.Max(0, basePlot.Height - 18))
+            ? categories.Layout(text => EstimateSvgStyledTextWidth(chart, text, StyleFontSize(chart.Options.LegendStyle, t.LegendFontSize), chart.Options.LegendStyle), basePlot.Left, basePlot.Width, Math.Max(0, ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, 0).Height - 18))
             : Array.Empty<ChartStateCategoryLegendItem>();
         var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
         var plot = ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, legendHeight);

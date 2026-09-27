@@ -40,14 +40,15 @@ public sealed partial class PngChartRenderer {
         var labelWidth = chart.Options.ShowAxes ? Math.Min(rawLabelWidth, Math.Max(0, plot.Width - 220)) : 0;
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
-        var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
-            ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: false), plot.Left, plot.Width)
-            : Array.Empty<ChartStateCategoryLegendItem>();
-        var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
-        var legendTop = plot.Bottom - legendHeight + 4;
         var numericScale = chart.Options.ShowHeatmapScale && !categorical;
         var axisBottomBase = numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
         var axesBottomReserve = chart.Options.ShowAxes ? axisBottomBase + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextBoundsHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 8) : 0;
+        var legendBounds = plot;
+        var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
+            ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: false), plot.Left, plot.Width, Math.Max(0, plot.Height - axesBottomReserve - 18))
+            : Array.Empty<ChartStateCategoryLegendItem>();
+        var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
+        var legendTop = plot.Bottom - legendHeight + 4;
         var bottomReserve = (numericScale ? Math.Max(axesBottomReserve, 56) : axesBottomReserve) + legendHeight;
         var labelGap = chart.Options.ShowAxes ? 14 : 0;
         var rowLabelMaxWidth = Math.Max(8, labelWidth);
@@ -131,7 +132,7 @@ public sealed partial class PngChartRenderer {
 
             DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
         }
-        if (legend.Count > 0) DrawStateCategoryLegend(c, chart, legend, legendTop, basePlot);
+        if (legend.Count > 0) DrawStateCategoryLegend(c, chart, legend, legendTop, legendBounds);
         else if (numericScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
     }
 

@@ -26,7 +26,6 @@ public sealed partial class SvgChartRenderer {
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
         var legendFontSize = fontSize;
         var t = chart.Options.Theme;
-        var swatch = ChartStateCategoryLegend.Swatch;
         foreach (var item in legend) {
             var rowY = top + item.Row * LegendRowBudget.RowHeight(chart);
             var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
