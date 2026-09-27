@@ -30,7 +30,7 @@ public sealed partial class SvgChartRenderer {
         var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, SvgXAxisBottomReserve(chart, tickLabels, bounds.Width));
         var legend = chart.Options.ShowLegend
             ? model.LayoutLegend(text => EstimateSvgStyledTextWidth(chart, text, legendFontSize, legendStyle), bounds.Left, bounds.Width, ChartStateTimelineModel.LegendBudgetHeight(model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), 0, axisLabelReserve, 0).Height))
-            : Array.Empty<ChartStateTimelineLegendItem>();
+            : Array.Empty<ChartStateCategoryLegendItem>();
         var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(chart, legend), axisLabelReserve, 0);
         var hatchId = id + "-stateHatch";
         var writer = new SvgMarkupWriter(8192);
@@ -72,7 +72,7 @@ public sealed partial class SvgChartRenderer {
             if (ShowYAxis(chart)) {
                 var maxWidth = Math.Max(8, plot.Left - bounds.Left - ChartStateTimelineModel.ColumnGap);
                 var fontSize = TextFontSizeForSvgWidth(chart, lane.Name, maxWidth, tickFontSize, tickStyle, emphasized: true);
-                WriteStateTimelineText(writer, chart, "state-lane-label", TrimSvgLabelToWidth(chart, lane.Name, fontSize, maxWidth, tickStyle, emphasized: true), plot.Left - ChartStateTimelineModel.ColumnGap, y + band / 2, "end", fontSize, tickStyle, "600", true);
+                WriteStateCategoryText(writer, chart, "state-lane-label", TrimSvgLabelToWidth(chart, lane.Name, fontSize, maxWidth, tickStyle, emphasized: true), plot.Left - ChartStateTimelineModel.ColumnGap, y + band / 2, "end", fontSize, tickStyle, "600", true);
             }
 
             foreach (var segment in lane.Segments) {
@@ -97,17 +97,17 @@ public sealed partial class SvgChartRenderer {
                     .EndStartElement()
                     .StartElement("title").Text(summary).EndElement()
                     .EndElement().Line();
-                if (segment.State.Hatched) WriteStateTimelineHatch(writer, hatchId, left, y, width, band);
+                if (segment.State.Hatched) WriteStateCategoryHatch(writer, hatchId, left, y, width, band);
             }
 
             if (model.HasSummary && !string.IsNullOrWhiteSpace(lane.Summary)) {
                 var summaryText = TrimSvgLabelToWidth(chart, lane.Summary!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true);
-                WriteStateTimelineText(writer, chart, "state-lane-summary", summaryText, bounds.Right - 2, y + band / 2, "end", tickFontSize, tickStyle, "600", true, t.Text);
+                WriteStateCategoryText(writer, chart, "state-lane-summary", summaryText, bounds.Right - 2, y + band / 2, "end", tickFontSize, tickStyle, "600", true, t.Text);
             }
         }
 
         if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
-            WriteStateTimelineText(writer, chart, "state-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - 8, "end", tickFontSize, tickStyle, "600", false);
+            WriteStateCategoryText(writer, chart, "state-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - 8, "end", tickFontSize, tickStyle, "600", false);
         }
 
         if (ShowXAxis(chart)) {
@@ -119,43 +119,10 @@ public sealed partial class SvgChartRenderer {
             }
         }
 
-        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(chart, legend) + 4;
-        foreach (var item in legend) {
-            var rowY = legendTop + item.Row * LegendRowBudget.RowHeight(chart);
-            var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
-            if (item.Omitted > 0) {
-                DrawLegendOverflow(writer, chart, new ChartRect(bounds.Left, rowY, bounds.Width, LegendRowBudget.RowHeight(chart)), rowCenter + EstimateSvgStyledTextHeight(legendFontSize, legendStyle) / 2, item.Omitted);
-                continue;
-            }
-
-            var state = item.State!;
-            var swatchY = rowCenter - ChartStateTimelineModel.LegendSwatch / 2;
-            writer.StartElement("rect").Attribute("data-cfx-role", "state-legend-swatch").Attribute("data-cfx-status", state.Key).Attribute("x", item.X).Attribute("y", swatchY)
-                .Attribute("width", ChartStateTimelineModel.LegendSwatch).Attribute("height", ChartStateTimelineModel.LegendSwatch).Attribute("rx", ChartStateTimelineModel.SegmentRadius).Attribute("fill", state.Color.ToCss()).EndEmptyElement().Line();
-            if (state.Hatched) WriteStateTimelineHatch(writer, hatchId, item.X, swatchY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
-            var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateTimelineModel.LegendSwatch - 6);
-            var label = TrimSvgLabelToWidth(chart, state.Label, legendFontSize, labelWidth, legendStyle);
-            WriteStateTimelineText(writer, chart, "state-legend-label", label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowCenter, "start", legendFontSize, legendStyle, "400", true);
-        }
+        WriteStateCategoryLegend(writer, chart, legend, bounds.Bottom - ChartStateTimelineModel.LegendHeight(chart, legend) + 4, hatchId, bounds);
 
         writer.EndElement().Line();
         sb.Append(writer.Build());
     }
 
-    private static void WriteStateTimelineHatch(SvgMarkupWriter writer, string hatchId, double x, double y, double width, double height) {
-        writer.StartElement("rect").Attribute("data-cfx-role", "state-segment-hatch").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height)
-            .Attribute("rx", Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2)).Attribute("fill", "url(#" + hatchId + ")").Attribute("pointer-events", "none").EndEmptyElement().Line();
-    }
-
-    private static void WriteStateTimelineText(SvgMarkupWriter writer, Chart chart, string role, string text, double x, double y, string anchor, double fontSize, TextStyleOverride style, string weight, bool middle, ChartColor? color = null) {
-        if (text.Length == 0) return;
-        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor);
-        if (middle) writer.Attribute("dominant-baseline", "middle");
-        writer.Attribute("fill", StyleColor(style, color ?? chart.Options.Theme.MutedText).ToCss())
-            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
-            .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, weight));
-        WriteSvgTextStyleAttributes(writer, style);
-        WriteSvgStyledTextContent(writer, style, text).EndElement().Line();
-    }
 }

@@ -6,7 +6,7 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>
-    /// Registers the categorical states used by state timeline lanes. States keep the given order in the legend,
+    /// Registers the categorical states used by state timeline lanes and categorical heatmap cells. States keep the given order in the legend,
     /// and each state's colour is used as supplied; state colours are never taken from the series palette.
     /// </summary>
     /// <param name="states">The states in legend order. Keys must be unique.</param>
@@ -26,7 +26,7 @@ public sealed partial class Chart {
         return this;
     }
 
-    /// <summary>Registers the categorical states used by state timeline lanes, in legend order.</summary>
+    /// <summary>Registers the categorical states used by state timelines and categorical heatmaps, in legend order.</summary>
     /// <param name="states">The states in legend order. Keys must be unique.</param>
     /// <returns>The current chart.</returns>
     public Chart WithStateCategories(params ChartStateCategory[] states) => WithStateCategories((IEnumerable<ChartStateCategory>)states);

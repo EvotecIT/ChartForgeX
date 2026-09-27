@@ -20,7 +20,8 @@
     }
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
-      if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
+      const focusNode = targetFocusNode(node);
+      if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
       node.addEventListener('pointerenter', (event) => {
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
@@ -30,15 +31,15 @@
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      node.addEventListener('focus', (event) => {
+      focusNode.addEventListener('focus', (event) => {
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
       });
-      node.addEventListener('blur', () => {
+      focusNode.addEventListener('blur', () => {
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      node.addEventListener('click', (event) => {
+      focusNode.addEventListener('click', (event) => {
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
@@ -48,7 +49,7 @@
           pinTip(root, tip, node, event);
         }
       });
-      node.addEventListener('keydown', (event) => {
+      focusNode.addEventListener('keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation')) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
@@ -60,7 +61,14 @@
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
+        // Enter on a link must retain native navigation. Space selects the cell without following the link.
+        if (focusNode !== node && event.key === 'Enter') return;
         event.preventDefault();
+        if (focusNode !== node) {
+          toggleSelection(root, node);
+          pinTip(root, tip, node, event);
+          return;
+        }
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
         else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });

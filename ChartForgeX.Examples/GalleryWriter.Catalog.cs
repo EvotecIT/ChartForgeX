@@ -14,6 +14,7 @@ public static partial class GalleryWriter {
             "dense-signal-gaps-light",
             "reporting-time-axis-utc",
             "reporting-state-timeline",
+            "reporting-status-matrix",
             "ct-volume-light",
             "ct-regional-light",
             "monthly-posture-dark",
