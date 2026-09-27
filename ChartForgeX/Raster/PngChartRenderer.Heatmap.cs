@@ -90,6 +90,9 @@ public sealed partial class PngChartRenderer {
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 var labelFits = cellWidth >= EstimatePngStyledTextWidth(cell.HasValue ? cell.Value.Text ?? string.Empty : "100%", dataFontSize, dataStyle, emphasized: true) + 12 &&
                     cellHeight >= EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle) + 10;
+                if (cell.HasValue) labelFits = ChartHeatmapSurface.CategoricalLabelFits(cellWidth, cellHeight,
+                    EstimatePngStyledTextWidth(cell.Value.Text ?? string.Empty, dataFontSize, dataStyle, emphasized: true),
+                    EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle));
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (cell.HasValue) drawValueText = cell.Value.Text != null && chart.Options.HeatmapValueTextMode != ChartHeatmapValueTextMode.Hidden && (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || labelFits);

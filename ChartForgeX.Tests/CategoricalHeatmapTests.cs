@@ -176,6 +176,22 @@ public sealed class CategoricalHeatmapTests {
         Assert.Equal(chart.ToPng(), auto);
     }
 
+    [Theory]
+    [InlineData("1234", 28)]
+    [InlineData("LONG COUNT", 13)]
+    [InlineData("1", 80)]
+    public void AutoMode_HidesCategoricalTextThatDoesNotFitAtConfiguredSize(string text, double fontSize) {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", text)).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.DataLabelStyle.FontSize = fontSize;
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
+        var auto = chart.ToPng();
+        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        Assert.Equal(chart.ToPng(), auto);
+    }
+
     private static Chart CreateChart() => Chart.Create().WithSize(720, 320)
         .WithStateCategories(
             new ChartStateCategory("pass", "Passed", Pass),

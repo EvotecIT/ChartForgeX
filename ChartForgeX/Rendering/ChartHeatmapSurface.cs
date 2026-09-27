@@ -5,6 +5,10 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartHeatmapSurface {
+    // Auto categorical labels keep the configured size in both renderers; Always may explicitly fit smaller text.
+    public static bool CategoricalLabelFits(double cellWidth, double cellHeight, double textWidth, double textHeight) =>
+        cellWidth >= textWidth + 12 && cellHeight >= textHeight + 10;
+
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticColor(chart, ratio);

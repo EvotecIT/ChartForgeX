@@ -75,6 +75,12 @@ public sealed partial class SvgChartRenderer {
                 var preferredLabelFontSize = StyleFontSize(dataStyle, t.DataLabelFontSize);
                 var fittedCellFontSize = TextFontSizeForSvgBounds(styledLabel, Math.Max(1, cellWidth - 6), Math.Max(1, cellHeight - 6), preferredLabelFontSize, dataStyle, minFontSize: 1);
                 var labelFits = cellWidth >= 34 && cellHeight >= 20 && EstimateSvgStyledTextHeight(fittedCellFontSize, dataStyle) <= Math.Max(1, cellHeight - 6);
+                if (cell.HasValue) {
+                    labelFits = ChartHeatmapSurface.CategoricalLabelFits(cellWidth, cellHeight,
+                        EstimateSvgStyledTextWidth(chart, label, preferredLabelFontSize, dataStyle, emphasized: true),
+                        EstimateSvgStyledTextHeight(preferredLabelFontSize, dataStyle));
+                    if (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto) fittedCellFontSize = preferredLabelFontSize;
+                }
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (cell.HasValue) drawValueText = cell.Value.Text != null && chart.Options.HeatmapValueTextMode != ChartHeatmapValueTextMode.Hidden && (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || labelFits);
