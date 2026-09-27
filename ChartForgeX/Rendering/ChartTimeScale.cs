@@ -83,9 +83,7 @@ internal static class ChartTimeScale {
     /// <summary>Formats a time-axis value: dates at midnight, otherwise wall-clock time in the display zone.</summary>
     public static string Format(ChartAxis axis, double value) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (!IsRepresentable(value)) return ChartNumericFormatter.FormatCompact(value);
-        var local = ToLocal(value, axis.TimeZone ?? TimeZoneInfo.Utc);
-        var rounded = new DateTime((local.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
+        if (ToDisplayTime(axis, value) is not { } rounded) return ChartNumericFormatter.FormatCompact(value);
         if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
     }
@@ -112,8 +110,23 @@ internal static class ChartTimeScale {
     public static string DecorateTitle(ChartAxis axis, string title) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (axis.Scale != ChartScaleKind.Time || !axis.ShowTimeZone) return title ?? string.Empty;
-        var label = !string.IsNullOrWhiteSpace(axis.TimeZoneLabel) ? axis.TimeZoneLabel!.Trim() : axis.TimeZone == null ? "UTC" : axis.TimeZone.Id;
+        var label = ZoneDesignator(axis);
         return string.IsNullOrWhiteSpace(title) ? label : title + " (" + label + ")";
+    }
+
+    /// <summary>Returns the time-zone designator for an axis: the explicit label, <c>UTC</c>, or the zone identifier.</summary>
+    public static string ZoneDesignator(ChartAxis axis) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        return !string.IsNullOrWhiteSpace(axis.TimeZoneLabel) ? axis.TimeZoneLabel!.Trim() : axis.TimeZone == null ? "UTC" : axis.TimeZone.Id;
+    }
+
+    /// <summary>Converts an axis value to wall-clock time in the display zone, optionally rounded to whole seconds, or null when not a date.</summary>
+    public static DateTime? ToDisplayTime(ChartAxis axis, double value, bool roundToSeconds = true) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (!IsRepresentable(value)) return null;
+        var local = ToLocal(value, axis.TimeZone ?? TimeZoneInfo.Utc);
+        if (!roundToSeconds) return local;
+        return new DateTime((local.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
     }
 
     private static void ResolveInstants(DateTime local, TimeZoneInfo zone, TimeInterval interval, List<DateTime> instants) {
@@ -140,7 +153,7 @@ internal static class ChartTimeScale {
         return offsets[offsets.Length - 1] - offsets[0];
     }
 
-    private static bool IsRepresentable(double value) => value >= MinimumOaDate && value <= MaximumOaDate;
+    private static bool IsRepresentable(double value) => value > MinimumOaDate && value <= MaximumOaDate;
 
     private static DateTime ToLocal(double value, TimeZoneInfo zone) {
         var utc = DateTime.SpecifyKind(DateTime.FromOADate(value), DateTimeKind.Utc);

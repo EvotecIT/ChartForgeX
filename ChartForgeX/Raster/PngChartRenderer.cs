@@ -148,6 +148,11 @@ public sealed partial class PngChartRenderer {
                 DrawSpecialChart(DrawTileMap);
                 return c;
             }
+            if (IsStateTimelineChart(chart)) {
+                DrawPlotSurface(c, o, t, plot);
+                DrawStateTimeline(c, chart, plot);
+                return c;
+            }
             if (IsTimelineChart(chart)) {
                 DrawSpecialChart(DrawTimeline);
                 return c;

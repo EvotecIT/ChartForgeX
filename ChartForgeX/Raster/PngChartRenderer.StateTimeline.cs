@@ -1,0 +1,112 @@
+using System;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+
+namespace ChartForgeX.Raster;
+
+public sealed partial class PngChartRenderer {
+    private static bool IsStateTimelineChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.StateTimeline);
+
+    private static void DrawStateTimeline(RgbaCanvas c, Chart chart, ChartRect surface) {
+        var model = ChartStateTimelineModel.Build(chart);
+        var bounds = ChartStateTimelineModel.ContentBounds(surface);
+        var t = chart.Options.Theme;
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = PngTickFontSize(chart);
+        var legendStyle = chart.Options.LegendStyle;
+        var legendFontSize = PngLegendFontSize(chart);
+        var laneLabelWidth = 0.0;
+        var summaryWidth = model.SummaryHeader == null ? 0 : EstimatePngStyledTextWidth(model.SummaryHeader, tickFontSize, tickStyle, emphasized: true);
+        foreach (var lane in model.Lanes) {
+            laneLabelWidth = Math.Max(laneLabelWidth, EstimatePngStyledTextWidth(lane.Name, tickFontSize, tickStyle, emphasized: true));
+            if (lane.Summary != null) summaryWidth = Math.Max(summaryWidth, EstimatePngStyledTextWidth(lane.Summary, tickFontSize, tickStyle, emphasized: true));
+        }
+
+        var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
+        var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, PngXAxisTitleOffset(chart, tickLabels)
+            + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 4));
+        var legend = chart.Options.ShowLegend
+            ? model.LayoutLegend(text => EstimatePngStyledTextWidth(text, legendFontSize, legendStyle, emphasized: false), bounds.Left, bounds.Width, ChartStateTimelineModel.LegendBudgetHeight(model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), 0, axisLabelReserve, 0).Height))
+            : Array.Empty<ChartStateTimelineLegendItem>();
+        var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(chart, legend), axisLabelReserve, 0);
+
+        var range = new ChartRange();
+        range.SetXBounds(model.Min, model.Max);
+        var labels = model.Ticks.Select(tick => new ChartAxisLabel(tick, model.FormatTick(tick))).ToArray();
+        var labelTicks = SelectXAxisTickValues(chart, range, plot, labels);
+
+        foreach (var tick in model.Ticks) {
+            var x = model.X(tick, plot);
+            var gridStyle = chart.Options.GridLineStyle;
+            if (chart.Options.ShowGrid && gridStyle.ShowVerticalLines) DrawPngGridLine(c, x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Grid, gridStyle.VerticalOpacity), gridStyle);
+            if (!ShowXAxis(chart) || !labelTicks.Contains(tick)) continue;
+            var label = model.FormatTick(tick);
+            DrawXAxisTickLabel(c, chart, plot, label, x, tick, labelTicks.Select(model.FormatTick).ToArray());
+        }
+
+        var band = model.LaneBand(plot);
+        for (var laneIndex = 0; laneIndex < model.Lanes.Count; laneIndex++) {
+            var lane = model.Lanes[laneIndex];
+            var y = model.LaneTop(plot, laneIndex);
+            c.FillRoundedRect(plot.Left, y, plot.Width, band, ChartStateTimelineModel.SegmentRadius, ApplyOpacity(t.Grid, 0.35));
+            if (ShowYAxis(chart)) {
+                var maxWidth = Math.Max(8, plot.Left - bounds.Left - ChartStateTimelineModel.ColumnGap);
+                var fontSize = TextFontSizeForEmphasizedWidth(lane.Name, maxWidth, tickFontSize, tickStyle);
+                var label = TrimReadablePngLabelToWidth(lane.Name, fontSize, maxWidth, tickStyle);
+                if (label.Length > 0) DrawStateTimelineText(c, label, plot.Left - ChartStateTimelineModel.ColumnGap - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: true), y + band / 2, tickStyle, t.MutedText, fontSize, true);
+            }
+
+            foreach (var segment in lane.Segments) {
+                if (!model.TrySegmentSpan(segment, plot, out var left, out var width)) continue;
+                c.FillRoundedRect(left, y, width, band, Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2), segment.State.Color);
+                if (segment.State.Hatched) DrawStateTimelineHatch(c, left, y, width, band);
+            }
+
+            if (model.HasSummary && !string.IsNullOrWhiteSpace(lane.Summary)) {
+                var summaryText = TrimReadablePngLabelToWidth(lane.Summary!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle);
+                if (summaryText.Length > 0) DrawStateTimelineText(c, summaryText, bounds.Right - 2 - EstimatePngStyledTextWidth(summaryText, tickFontSize, tickStyle, emphasized: true), y + band / 2, tickStyle, t.Text, tickFontSize, true);
+            }
+        }
+
+        if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
+            var header = TrimReadablePngLabelToWidth(model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle);
+            DrawPngTextStyled(c, bounds.Right - 2 - EstimatePngStyledTextWidth(header, tickFontSize, tickStyle, emphasized: true), plot.Top - 8 - PngStyledTextBottomExtent(tickFontSize, tickStyle), header, tickStyle, t.MutedText, tickFontSize, emphasized: true);
+        }
+
+        if (ShowXAxis(chart)) {
+            if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            if (!string.IsNullOrWhiteSpace(XAxisTitleText(chart))) DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, tickLabels), PngAxisTitleFontSize(chart));
+        }
+
+        var legendTop = bounds.Bottom - ChartStateTimelineModel.LegendHeight(chart, legend) + 4;
+        foreach (var item in legend) {
+            var rowY = legendTop + item.Row * LegendRowBudget.RowHeight(chart);
+            var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
+            if (item.Omitted > 0) {
+                DrawLegendOverflow(c, chart, new ChartRect(bounds.Left, rowY, bounds.Width, LegendRowBudget.RowHeight(chart)), rowCenter + EstimatePngStyledTextHeight(legendFontSize, legendStyle) / 2, item.Omitted);
+                continue;
+            }
+
+            var state = item.State!;
+            var swatchY = rowCenter - ChartStateTimelineModel.LegendSwatch / 2;
+            c.FillRoundedRect(item.X, swatchY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.SegmentRadius, state.Color);
+            if (state.Hatched) DrawStateTimelineHatch(c, item.X, swatchY, ChartStateTimelineModel.LegendSwatch, ChartStateTimelineModel.LegendSwatch);
+            var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateTimelineModel.LegendSwatch - 6);
+            var label = TrimReadablePngLabelToWidth(state.Label, legendFontSize, labelWidth, legendStyle);
+            DrawStateTimelineText(c, label, item.X + ChartStateTimelineModel.LegendSwatch + 6, rowCenter, legendStyle, t.MutedText, legendFontSize, false);
+        }
+    }
+
+    private static void DrawStateTimelineHatch(RgbaCanvas c, double x, double y, double width, double height) {
+        var color = ApplyOpacity(ChartColor.White, ChartStateTimelineModel.HatchOpacity);
+        foreach (var line in ChartPatternLineGeometry.Build(ChartFillPattern.DiagonalForward, x, y, width, height, Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2), ChartStateTimelineModel.HatchSpacing * 1.4142)) {
+            c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.5);
+        }
+    }
+
+    private static void DrawStateTimelineText(RgbaCanvas c, string text, double x, double centerY, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {
+        DrawPngTextStyled(c, x, centerY - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), text, style, color, fontSize, emphasized);
+    }
+}

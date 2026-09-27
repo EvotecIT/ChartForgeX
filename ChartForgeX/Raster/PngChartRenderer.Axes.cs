@@ -218,6 +218,8 @@ public sealed partial class PngChartRenderer {
     private static double PngXAxisTitleOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var labelHeight = EstimatePngStyledTextHeight(PngTickFontSize(chart), chart.Options.TickLabelStyle);
         var gap = Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? labelHeight + 10 : Math.Max(48, labelHeight + 10);
+        var titleHeight = string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle);
+        gap = Math.Max(gap, titleHeight + labelHeight * 0.25 + 4);
         return PngXAxisLabelOffset(chart, labels) + gap;
     }
 

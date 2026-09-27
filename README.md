@@ -231,7 +231,7 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
-Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, and radial-bar legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
+Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, radial-bar, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
 For larger reports, apply shared axes to the whole grid, then paginate before rendering:
 
@@ -614,6 +614,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
+| Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `WithStateCategories`, `ChartStateCategory`, `StateTimelineSummaryHeader` |
 
 ## Renderer Contracts
 
@@ -623,6 +624,9 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 - Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- State timelines use a linear or time x-axis; nonlinear scales are rejected to preserve elapsed-time geometry. Numeric endpoints outside the supported date range retain round-trip values in metadata.
+- State timeline DateTime intervals support instants on or after 1899-12-30 UTC; earlier dates are rejected because OLE Automation fractions are not chronologically ordered before that epoch. Explicit x-axis labels define tick positions and support label highlights. During repeated daylight-saving hours, interval metadata and tooltips include UTC offsets.
+- State timelines draw one lane per entity on a real time axis. Segment colours come only from the caller's state map (never the series palette), contiguous buckets in the same state draw as one run, uncovered time stays empty, and hatched states mark not-observable data. Each segment exposes `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-meta-duration`, and a `<title>` tooltip, so `ChartForgeX.Interactivity.Html` hover works without extra configuration.
 - Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
 - Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 

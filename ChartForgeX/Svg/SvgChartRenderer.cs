@@ -317,6 +317,7 @@ public sealed partial class SvgChartRenderer {
         if (IsDottedMapChart(chart)) { DrawDottedMap(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsRegionMapChart(chart)) { DrawRegionMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTileMapChart(chart)) { DrawTileMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
+        if (IsStateTimelineChart(chart)) { DrawStateTimeline(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTimelineChart(chart)) {
             DrawTimeline(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);
@@ -622,7 +623,7 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect PlotArea(Chart chart) {
         var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(chart.Options);
-        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart)) return plot;
+        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart) || IsStateTimelineChart(chart)) return plot;
 
         if (ShouldDrawLegend(chart) && IsTopLegend(chart.Options.LegendPosition)) {
             var reserve = LegendBottomReserve(chart);
@@ -741,7 +742,9 @@ public sealed partial class SvgChartRenderer {
 
     private static double XAxisTitleOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
-        return XAxisLabelOffset(chart, labels) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10));
+        var titleHeight = SvgXAxisTitleHeight(chart, chart.Options.Size.Width);
+        var gap = Math.Max(Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10), titleHeight + tickHeight * 0.25 + 4);
+        return XAxisLabelOffset(chart, labels) + gap;
     }
 
     private static double SvgXAxisBottomReserve(Chart chart, IReadOnlyList<string>? labels, double maxWidth) {
