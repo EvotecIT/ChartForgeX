@@ -2331,6 +2331,40 @@
       }
     },
     {
+      "name": "reporting-classic-wall-clock",
+      "width": 1000,
+      "height": 340,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 620389,
+        "minTransparentPixels": 59611,
+        "minDistinctColors": 841,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "reporting-time-axis-subsecond",
+      "width": 1000,
+      "height": 340,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 620389,
+        "minTransparentPixels": 59611,
+        "minDistinctColors": 1477,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "reporting-time-axis-utc",
       "width": 1180,
       "height": 480,

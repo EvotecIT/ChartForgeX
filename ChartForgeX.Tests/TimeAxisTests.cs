@@ -10,6 +10,73 @@ namespace ChartForgeX.Tests;
 public sealed class TimeAxisTests {
     private static readonly DateTime Day = new(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
 
+    [Theory]
+    [InlineData(200)]
+    [InlineData(0.2)]
+    public void Render_SubSecondRange_UsesDistinctNumericFallbackLabels(double milliseconds) {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + milliseconds / 86400000;
+        var chart = Chart.Create().WithSize(900, 300).WithLegend(false).WithXAxisTimeScale()
+            .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
+        chart.Options.XAxis.WithBounds(start, end);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label")
+            .Select(element => element.Value).ToArray();
+        Assert.True(labels.Length > 1);
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+        Assert.DoesNotContain(labels, label => label.Contains(':'));
+        var defaultPng = chart.ToPng();
+        chart.Options.XAxis.LabelFormatter = value => value.ToString("G17", CultureInfo.InvariantCulture);
+        Assert.Equal(defaultPng, chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_ClassicDateSchedules_DoNotAdvertiseAnUnappliedTimeZone(bool gantt) {
+        var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus5", TimeSpan.FromHours(5), "Test +05", "Test +05");
+        Chart Create(bool show) {
+            var chart = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(zone, show, "UTC+05");
+            return gantt ? chart.AddGanttTask("Maintenance", Day, Day.AddDays(2)) : chart.AddTimelineItem("Maintenance", Day, Day.AddDays(2));
+        }
+        Assert.DoesNotContain("UTC+05", Create(true).ToSvg(), StringComparison.Ordinal);
+        Assert.Equal(Create(false).ToPng(), Create(true).ToPng());
+    }
+
+    [Fact]
+    public void Render_ExplicitSubsecondLabels_PreserveBothMappings() {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 20.0 / 86400000;
+        var chart = Chart.Create().WithSize(900, 300).WithLegend(false).WithXAxisTimeScale()
+            .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
+        chart.Options.XAxis.WithBounds(start, end);
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(start, "Start"));
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(end, "End"));
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label")
+            .Select(element => element.Value).ToArray();
+        Assert.Equal(new[] { "Start", "End" }, labels);
+        Assert.Equal("End", ChartAxisValueFormatter.Format(chart.Options.XAxis, end));
+        var png = chart.ToPng();
+        chart.Options.XAxis.Labels[1] = new ChartAxisLabel(end, "Start");
+        Assert.False(png.SequenceEqual(chart.ToPng()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_ClassicSchedules_KeepTickPositionsDistinct(bool gantt) {
+        var chart = Chart.Create().WithSize(1000, 340).WithTickCount(3);
+        chart = gantt ? chart.AddGanttTask("Work", Day, Day.AddDays(2))
+            : chart.AddTimelineItem("Work", Day, Day.AddDays(2));
+        var svg = XDocument.Parse(chart.ToSvg());
+        var labels = svg.Descendants().Where(element => element.Name.LocalName == "text" && element.Value.StartsWith("Mar ", StringComparison.Ordinal)).ToArray();
+        Assert.NotEmpty(labels);
+        Assert.DoesNotContain(svg.Descendants(), element => element.Name.LocalName == "text" && (element.Value == "Feb 28" || element.Value == "Mar 4"));
+        var positions = labels.Select(element => (string?)element.Attribute("x")).ToArray();
+        Assert.Equal(positions.Length, positions.Distinct().Count());
+    }
+
     [Fact]
     public void GenerateInside_UtcDay_UsesSixHourTicksWithDateAtMidnight() {
         var axis = new ChartAxis().WithTimeScale();
@@ -150,7 +217,7 @@ public sealed class TimeAxisTests {
 
         var timeline = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(showTimeZone: true)
             .AddTimelineItem("Maintenance", Day.AddHours(2), Day.AddHours(5));
-        Assert.Contains(">Window (UTC)</text>", timeline.ToSvg(), StringComparison.Ordinal);
+        Assert.Contains(">Window</text>", timeline.ToSvg(), StringComparison.Ordinal);
     }
 
     [Fact]

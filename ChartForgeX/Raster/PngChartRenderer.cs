@@ -558,8 +558,8 @@ public sealed partial class PngChartRenderer {
             var ticks = ChartTicks.GenerateInside(chart.Options.XAxis, range.MinX, range.MaxX);
             if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || ticks.Count < 3) return ticks;
             var generatedLabels = new List<ChartAxisLabel>(ticks.Count);
-            foreach (var tick in ticks) generatedLabels.Add(new ChartAxisLabel(tick, FormatXAxisValue(chart, tick)));
-            return SelectXAxisTickValues(chart, range, plot, generatedLabels);
+            foreach (var tick in ticks) generatedLabels.Add(new ChartAxisLabel(tick, ChartTimeScale.FormatFallbackTick(chart, ticks, tick, true) ?? FormatXAxisValue(chart, tick)));
+            return ChartTicks.PreserveFormatting(ticks, SelectXAxisTickValues(chart, range, plot, generatedLabels));
         }
 
         var labels = new List<ChartAxisLabel>();
@@ -637,16 +637,14 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string FormatX(Chart chart, double value) {
-        foreach (var label in chart.Options.XAxisLabels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
+        if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) is { } label) return label;
 
         return FormatXAxisValue(chart, value);
     }
 
     private static IReadOnlyList<string> XAxisTickLabels(Chart chart, IReadOnlyList<double> xTicks, bool valueAxisOnly) {
         var labels = new string[xTicks.Count];
-        for (var i = 0; i < xTicks.Count; i++) labels[i] = valueAxisOnly ? FormatXAxisValue(chart, xTicks[i]) : FormatX(chart, xTicks[i]);
+        for (var i = 0; i < xTicks.Count; i++) labels[i] = ChartTimeScale.FormatFallbackTick(chart, xTicks, xTicks[i], valueAxisOnly) ?? (valueAxisOnly ? FormatXAxisValue(chart, xTicks[i]) : FormatX(chart, xTicks[i]));
         return labels;
     }
 

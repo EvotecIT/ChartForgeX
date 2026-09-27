@@ -73,7 +73,7 @@ public sealed partial class PngChartRenderer {
         if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
-    private static string XAxisTitleText(Chart chart) => ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+    private static string XAxisTitleText(Chart chart) => ChartTimeScale.DecorateTitle(chart);
 
     private static void DrawPngXAxisTitle(RgbaCanvas c, Chart chart, ChartRect plot, double baselineY, double preferredFontSize) {
         var style = chart.Options.AxisTitleStyle;

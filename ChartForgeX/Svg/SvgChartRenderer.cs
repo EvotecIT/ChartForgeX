@@ -721,7 +721,7 @@ public sealed partial class SvgChartRenderer {
 
     private static IReadOnlyList<string> XAxisTickLabels(Chart chart, IReadOnlyList<double> xTicks, bool valueAxisOnly) {
         var labels = new string[xTicks.Count];
-        for (var i = 0; i < xTicks.Count; i++) labels[i] = valueAxisOnly ? FormatXAxisValue(chart, xTicks[i]) : FormatX(chart, xTicks[i]);
+        for (var i = 0; i < xTicks.Count; i++) labels[i] = ChartTimeScale.FormatFallbackTick(chart, xTicks, xTicks[i], valueAxisOnly) ?? (valueAxisOnly ? FormatXAxisValue(chart, xTicks[i]) : FormatX(chart, xTicks[i]));
         return labels;
     }
 

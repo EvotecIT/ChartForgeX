@@ -91,6 +91,24 @@ internal static class ChartTimeScale {
     }
 
     /// <summary>Returns the axis title with the time-zone designator appended when the axis requests it.</summary>
+    public static string DecorateTitle(Chart chart) {
+        // Classic schedules store wall-clock dates and do not apply the instant-axis display zone.
+        foreach (var series in chart.Series) {
+            if (series.Kind == ChartSeriesKind.Timeline || series.Kind == ChartSeriesKind.Gantt) return chart.XAxisTitle;
+        }
+        return DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+    }
+
+    /// <summary>Preserves numeric time-tick fallbacks, including sub-second and out-of-range values.</summary>
+    public static string? FormatFallbackTick(Chart chart, IReadOnlyList<double> ticks, double value, bool valueAxisOnly) {
+        if (!ChartTicks.IsNumericTimeFallback(ticks) || chart.Options.XAxisValueFormatter != null) return null;
+        if (!valueAxisOnly) {
+            if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) is { } label) return label;
+        }
+        return value.ToString("G17", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>Returns the axis title with the time-zone designator appended when the axis requests it.</summary>
     public static string DecorateTitle(ChartAxis axis, string title) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (axis.Scale != ChartScaleKind.Time || !axis.ShowTimeZone) return title ?? string.Empty;
