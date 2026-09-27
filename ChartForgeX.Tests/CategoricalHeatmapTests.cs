@@ -192,6 +192,49 @@ public sealed class CategoricalHeatmapTests {
         Assert.Equal(chart.ToPng(), auto);
     }
 
+    [Fact]
+    public void AutoMode_MeasuresPointLabelOverrideInBothRenderers() {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        foreach (var index in Enumerable.Range(0, 12)) chart.Series[0].WithPointLabel(index, "LONG COUNT");
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
+        var auto = chart.ToPng();
+        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        Assert.Equal(chart.ToPng(), auto);
+    }
+
+    [Fact]
+    public void AutoMode_UsesReadableMinimumForTinyConfiguredFonts() {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.DataLabelStyle.FontSize = 2;
+        Assert.All(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"), label => Assert.True(Number(label, "font-size") >= 8));
+        var tiny = chart.ToPng();
+        chart.Options.DataLabelStyle.FontSize = 8;
+        Assert.Equal(chart.ToPng(), tiny);
+    }
+
+    [Theory]
+    [InlineData(ChartDataLabelPlacement.Left)]
+    [InlineData(ChartDataLabelPlacement.Right)]
+    [InlineData(ChartDataLabelPlacement.Outside)]
+    public void CategoricalCenteredLabels_DoNotReserveUnusedSideLanes(ChartDataLabelPlacement placement) {
+        var chart = Chart.Create().WithSize(560, 240).WithDataLabels()
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Center;
+        var centered = chart.ToSvg();
+        var centeredPng = chart.ToPng();
+        chart.Options.DataLabelPlacement = placement;
+        Assert.Equal(centered, chart.ToSvg());
+        Assert.Equal(centeredPng, chart.ToPng());
+    }
+
     private static Chart CreateChart() => Chart.Create().WithSize(720, 320)
         .WithStateCategories(
             new ChartStateCategory("pass", "Passed", Pass),

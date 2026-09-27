@@ -73,7 +73,8 @@ public sealed partial class SvgChartRenderer {
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var styledLabel = StyleText(dataStyle, label);
                 var preferredLabelFontSize = StyleFontSize(dataStyle, t.DataLabelFontSize);
-                var fittedCellFontSize = TextFontSizeForSvgBounds(styledLabel, Math.Max(1, cellWidth - 6), Math.Max(1, cellHeight - 6), preferredLabelFontSize, dataStyle, minFontSize: 1);
+                if (cell.HasValue) preferredLabelFontSize = ChartHeatmapSurface.CategoricalLabelFontSize(preferredLabelFontSize);
+                var fittedCellFontSize = TextFontSizeForSvgBounds(styledLabel, Math.Max(1, cellWidth - 6), Math.Max(1, cellHeight - 6), preferredLabelFontSize, dataStyle, minFontSize: cell.HasValue ? 8 : 1);
                 var labelFits = cellWidth >= 34 && cellHeight >= 20 && EstimateSvgStyledTextHeight(fittedCellFontSize, dataStyle) <= Math.Max(1, cellHeight - 6);
                 if (cell.HasValue) {
                     labelFits = ChartHeatmapSurface.CategoricalLabelFits(cellWidth, cellHeight,
@@ -274,7 +275,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static bool ShouldReserveHeatmapValueLabels(Chart chart, ChartSeries series) {
-        if (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
+        if (series.HeatmapCells.Count > 0 || chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
         return chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || ShouldDrawDataLabels(chart, series);
     }
 
