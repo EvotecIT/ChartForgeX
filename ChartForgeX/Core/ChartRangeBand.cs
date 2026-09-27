@@ -44,6 +44,6 @@ public readonly struct ChartRangeBand {
     /// <param name="x">The date/time x value.</param>
     /// <param name="lower">The lower band value.</param>
     /// <param name="upper">The upper band value.</param>
-    public ChartRangeBand(DateTime x, double lower, double upper) : this(x.ToOADate(), lower, upper) {
+    public ChartRangeBand(DateTime x, double lower, double upper) : this(ChartDateTime.ToOADate(x), lower, upper) {
     }
 }

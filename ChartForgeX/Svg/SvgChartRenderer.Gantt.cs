@@ -28,7 +28,7 @@ public sealed partial class SvgChartRenderer {
         var plot = ApplyGanttReserve(chart, basePlot, items);
         var rowHeight = Math.Max(18, Math.Min(30, plot.Height / items.Count * 0.52));
         var slotHeight = plot.Height / items.Count;
-        var ticks = ChartTicks.Generate(min, max, Math.Min(7, Math.Max(3, chart.Options.TickCount)));
+        var ticks = ChartTicks.GenerateInside(min, max, Math.Min(7, Math.Max(3, chart.Options.TickCount)));
         var tickLabelWidth = Math.Max(18, plot.Width / Math.Max(1, ticks.Count - 1) - 6);
         var rowLabelWidth = Math.Max(8, plot.Left - 24);
         var rowCenters = new double[items.Count];
@@ -348,8 +348,8 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawGanttSvgXAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double y, string role) {
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return;
-        DrawSvgTextCenteredX(writer, chart, role, chart.XAxisTitle, plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
+        if (string.IsNullOrWhiteSpace(XAxisTitleText(chart))) return;
+        DrawSvgTextCenteredX(writer, chart, role, XAxisTitleText(chart), plot.Left + plot.Width / 2, y, chart.Options.Theme.MutedText, StyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize), plot.Width - 4, "600", middleBaseline: false, style: chart.Options.AxisTitleStyle);
     }
 
     private static void DrawGanttSvgYAxisTitle(SvgMarkupWriter writer, Chart chart, ChartRect plot, double axisX, string role) {
@@ -385,7 +385,7 @@ public sealed partial class SvgChartRenderer {
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 220);
         var shift = Math.Max(0, Math.Min(desiredLeft, maxLeft) - plot.Left);
         var topShift = chart.Options.GanttToday.HasValue ? 12 : 0;
-        var bottomReserve = 52 + (string.IsNullOrWhiteSpace(chart.XAxisTitle) ? 0 : 18);
+        var bottomReserve = 52 + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : 18);
         return new ChartRect(plot.X + shift, plot.Y + topShift, Math.Max(1, plot.Width - shift), Math.Max(1, plot.Height - bottomReserve - topShift));
     }
 

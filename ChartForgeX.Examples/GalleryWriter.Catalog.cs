@@ -12,6 +12,7 @@ public static partial class GalleryWriter {
             "dense-legend-pie",
             "dense-legend-radial",
             "dense-signal-gaps-light",
+            "reporting-time-axis-utc",
             "ct-volume-light",
             "ct-regional-light",
             "monthly-posture-dark",

@@ -43,6 +43,6 @@ public readonly struct ChartDumbbell {
     /// <param name="x">The date/time x value.</param>
     /// <param name="start">The first comparison value.</param>
     /// <param name="end">The second comparison value.</param>
-    public ChartDumbbell(DateTime x, double start, double end) : this(x.ToOADate(), start, end) {
+    public ChartDumbbell(DateTime x, double start, double end) : this(ChartDateTime.ToOADate(x), start, end) {
     }
 }
