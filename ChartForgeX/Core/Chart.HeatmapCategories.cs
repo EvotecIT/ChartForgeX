@@ -13,6 +13,7 @@ public sealed partial class Chart {
     /// <param name="cells">The row cells in column order.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell?> cells) {
+        EnsureCanAddHeatmapRow();
         if (name == null) throw new ArgumentNullException(nameof(name));
         if (cells == null) throw new ArgumentNullException(nameof(cells));
         var points = new List<ChartPoint>();

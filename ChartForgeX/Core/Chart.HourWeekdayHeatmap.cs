@@ -9,6 +9,11 @@ namespace ChartForgeX.Core;
 public sealed partial class Chart {
     private const int HoursPerDay = 24;
     private const int DaysPerWeek = 7;
+    private bool _hourWeekdayHeatmapOwned;
+
+    private void EnsureCanAddHeatmapRow() {
+        if (_hourWeekdayHeatmapOwned) throw new InvalidOperationException("An hour-by-weekday heatmap owns its seven rows and cannot be combined with other heatmap rows.");
+    }
 
     /// <summary>
     /// Adds an hour-of-day by weekday heatmap: seven weekday rows by 24 hour columns, each cell aggregating the values
@@ -95,6 +100,8 @@ public sealed partial class Chart {
             var label = !string.IsNullOrWhiteSpace(timeZoneLabel) ? timeZoneLabel!.Trim() : timeZone == null ? "UTC" : timeZone.Id;
             XAxisTitle = Options.Labels.HourOfDay + " (" + label + ")";
         }
+
+        _hourWeekdayHeatmapOwned = true;
 
         return this;
     }

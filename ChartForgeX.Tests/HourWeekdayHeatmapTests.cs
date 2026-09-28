@@ -97,6 +97,22 @@ public sealed class HourWeekdayHeatmapTests {
     }
 
     [Fact]
+    public void ConstantRelativeValues_UseTheObservedMaximumInCellsAndScale() {
+        var values = new[] { new ChartTimedValue(Monday.AddHours(9), 1) };
+        foreach (var aggregation in new[] { ChartTimeAggregation.Mean, ChartTimeAggregation.Maximum }) {
+            var chart = Chart.Create().AddHourWeekdayHeatmap(values, aggregation);
+            var svg = XDocument.Parse(chart.ToSvg());
+            Assert.Equal("positive", (string)ByRole(svg, "heatmap-cell").Single().Attribute("data-cfx-status")!);
+            Assert.Equal(new[] { "1", "1" }, ByRole(svg, "heatmap-scale-label").Select(label => label.Value).ToArray());
+            Assert.True(chart.ToPng().Length > 200);
+        }
+
+        var hexbin = Chart.Create().AddHexbinHeatmapRow("Only", new[] { new ChartPoint(1, 1) });
+        hexbin.Options.HeatmapRelativeScale = true;
+        Assert.Equal("positive", (string)ByRole(XDocument.Parse(hexbin.ToSvg()), "hexbin-cell").Single().Attribute("data-cfx-status")!);
+    }
+
+    [Fact]
     public void Validation_RejectsEmptyInputAndNonFiniteValues() {
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHourWeekdayHeatmap(Array.Empty<ChartTimedValue>()));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartTimedValue(Monday, double.NaN));
@@ -133,6 +149,9 @@ public sealed class HourWeekdayHeatmapTests {
         Assert.Equal(1, Cell(chart, "Pn", 9));
         Assert.Throws<InvalidOperationException>(() => chart.AddHourWeekdayHeatmap(values));
         Assert.Throws<InvalidOperationException>(() => Chart.Create().AddHeatmapRow("Row", new[] { 1d }).AddHourWeekdayHeatmap(values));
+        Assert.Throws<InvalidOperationException>(() => chart.AddHeatmapRow("Extra", new[] { 1d }));
+        Assert.Throws<InvalidOperationException>(() => chart.AddHexbinHeatmapRow("Extra", new[] { 1d }));
+        Assert.Throws<InvalidOperationException>(() => chart.AddHeatmapCategoryRow("Extra", new[] { new ChartHeatmapCell("pass") }));
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHourWeekdayHeatmap(values, dayNames: new[] { "a" }));
         Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().AddHourWeekdayHeatmap(values, firstDayOfWeek: (DayOfWeek)9));
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHourWeekdayHeatmap(new[] { new ChartTimedValue(Monday, double.MaxValue), new ChartTimedValue(Monday, double.MaxValue) }, ChartTimeAggregation.Sum));

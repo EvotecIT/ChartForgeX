@@ -18,7 +18,7 @@ public sealed partial class SvgChartRenderer {
         var values = rows.SelectMany(series => series.Points.Select(point => point.Y)).ToArray();
         var min = values.Length == 0 ? 0 : values.Min();
         var max = values.Length == 0 ? 1 : values.Max();
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
+        if (!chart.Options.HeatmapRelativeScale && Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var plot = ApplyHexbinHeatmapReserve(chart, basePlot, rows, columns);
         var layout = ChartHexbinLayout.Build(plot, rows.Length, columns.Length);
