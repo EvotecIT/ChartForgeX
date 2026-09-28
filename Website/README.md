@@ -15,7 +15,7 @@ The content in this folder is consumed by the Evotec Website project:
 To refresh generated content, run from the ChartForgeX repository root:
 
 ```powershell
-pwsh ./Build.ps1 -Release -SkipAot -SkipPack
+pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
 pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 

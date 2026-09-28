@@ -707,7 +707,7 @@ ChartForgeX is presented on the Evotec project hub at `https://evotec.xyz/projec
 To refresh the gallery from generated examples without publishing packages or a site, run from the repository root:
 
 ```powershell
-pwsh ./Build.ps1 -Release -SkipAot -SkipPack
+pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
 pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 
@@ -730,7 +730,7 @@ ChartForgeX
 |-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
-|-- Website                         # dedicated PowerForge.Web pilot site
+|-- Website                         # content and generated assets for evotec.xyz
 |-- docs                            # focused reference notes
 |-- AGENTS.md                       # contributor/agent expectations
 |-- CONTRIBUTING.md                 # development and release workflow

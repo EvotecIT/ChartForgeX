@@ -22,7 +22,7 @@ The Evotec Website repository owns routing, layout, search, SEO, the project-dem
 From the ChartForgeX repository root, build example output without publishing:
 
 ```powershell
-pwsh ./Build.ps1 -Release -SkipAot -SkipPack
+pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
 ```
 
 Then refresh the checked-in gallery when example output changes:
