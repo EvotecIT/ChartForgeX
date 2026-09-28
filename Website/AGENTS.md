@@ -1,78 +1,44 @@
-# Agents Guide (ChartForgeX Website)
-
-Last updated: 2026-05-09
+# Agent Guide: ChartForgeX hub content
 
 ## Purpose
 
-This folder is the dedicated PowerForge.Web pilot site for ChartForgeX. Its
-presence is intentional: `Website/site.json` and `Website/pipeline.json` mean
-this repo owns a publishable site, not only hub-ingested website data.
+ChartForgeX publishes its project page, curated demos, documentation, and complete gallery through the central Evotec website at https://evotec.xyz/. This folder is a content source for that hub. It does not define or deploy a separate ChartForgeX site.
 
-## Ownership Rules
+## Ownership
 
-- Keep the central Evotec hub page at `https://evotec.xyz/projects/chartforgex/`.
-- Publish the richer visual/demo experience from this folder to
-  `https://chartforgex.evotec.xyz/`.
-- Keep generated demo outputs source-first in the ChartForgeX build:
-  `ChartForgeX.Examples/bin/Release/net8.0/output`.
-- The website may copy those generated outputs under `/examples/generated/`
-  when they exist, but the site pipeline should still build without them.
-- Keep the browsable surfaces data-driven:
-  - `data/showcase.json` feeds curated `/examples/` cases.
-  - `data/gallery.json` feeds the full `/gallery/` catalog.
-  - `build/Sync-GeneratedExamples.ps1` refreshes gallery data from generated
-    SVG/PNG/HTML output and preserves existing metadata by artifact URL.
-- Use shared PowerForge conventions for navigation, docs, search, metadata,
-  and quality gates. Make ChartForgeX-specific visuals through theme tokens,
-  gallery layouts, and examples.
-- Keep the visible shell aligned with the Evotec family when publishing under
-  `*.evotec.xyz`: header rhythm, panel language, theme behavior, and project
-  navigation should feel related to the main site.
-- Promoted examples should connect preview to reproduction: show the rendered
-  HTML/SVG/PNG artifacts and point back to the source file or builder method
-  that creates the same output.
-- Site audit intentionally excludes copied generated example pages under
-  `/examples/generated/` and `/examples/topology/`; those HTML files are product
-  artifacts with demo-internal links, while the website shell audits the pages
-  that browse and explain them.
+- The project page is https://evotec.xyz/projects/chartforgex/.
+- The curated demo tour is https://evotec.xyz/demos/chartforgex/.
+- The complete generated gallery is https://evotec.xyz/demos/chartforgex/gallery/.
+- WebsiteArtifacts/project-manifest.json declares the hub-ingested project docs, examples, and demo manifest.
+- content/project-docs and content/examples hold human-authored hub content.
+- static/examples/promoted-cases.json describes source-linked curated demos. Its schema is owned by the Evotec Website repository at https://evotec.xyz/schemas/project-demos.schema.json.
+- data/gallery.json and static/examples/generated hold the complete generated gallery. Keep these artifacts source-linked and consistent with the example build.
+- build/Sync-GeneratedExamples.ps1 updates gallery metadata and committed examples from ChartForgeX.Examples/bin/Release/net8.0/output, preserving existing metadata by artifact URL.
 
-## Build Commands
+The Evotec Website repository owns routing, layout, search, SEO, the project-demo schema, deployment, and the source lock that selects a ChartForgeX commit. Update the ChartForgeX content before bumping that lock. Do not reintroduce a dedicated site.json, pipeline.json, theme shell, or links to chartforgex.evotec.xyz or the retired GitHub Pages site.
 
-From `C:\Support\GitHub\ChartForgeX\Website`:
+## Validation
+
+From the ChartForgeX repository root, build example output without publishing:
 
 ```powershell
-.\build.ps1 -Dev
-.\build.ps1 -Ci
-.\build.ps1 -Dev -Serve -Port 8021
+pwsh ./Build.ps1 -Release -SkipAot -SkipPack
 ```
 
-The wrapper prefers the sibling local `PSPublishModule` checkout. Direct CLI
-commands are still valid when the executable is on `PATH`:
+Then refresh the checked-in gallery when example output changes:
 
 ```powershell
-powerforge-web pipeline --config .\pipeline.json --mode dev
-powerforge-web pipeline --config .\pipeline.json --mode ci
+pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 
-Before reviewing the generated gallery, run the repo build from the repository
-root so example assets exist:
+Run the repository's focused project-demo smoke tests and validate the resulting manifest against the canonical schema in the Website source. Check the rendered hub at desktop and compact widths when changing user-facing pages. A source PR or local build does not prove that evotec.xyz has deployed the update.
 
-```powershell
-.\Build.ps1
-```
+## Files to know
 
-## Files To Know
-
-- `site.json`
-- `pipeline.json`
-- `build.ps1`
-- `content/pages/index.md`
-- `content/pages/examples.md`
-- `content/pages/gallery.md`
-- `data/showcase.json`
-- `data/gallery.json`
-- `build/Sync-GeneratedExamples.ps1`
-- `content/docs/deployment.md`
-- `themes/chartforgex/theme.manifest.json`
-- `static/css/app.css`
-- `static/js/site.js`
+- WebsiteArtifacts/project-manifest.json
+- Website/content/project-docs/
+- Website/content/examples/
+- Website/static/examples/promoted-cases.json
+- Website/data/gallery.json
+- Website/static/examples/generated/
+- Website/build/Sync-GeneratedExamples.ps1

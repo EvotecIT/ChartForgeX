@@ -702,13 +702,13 @@ chart.Series[0]
 
 ChartForgeX is presented on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`. There is no separate ChartForgeX website.
 
-`Website/` holds the content the hub ingests: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The PowerForge.Web configuration in `Website/` is kept as a local preview of that content and is not deployed.
+`Website/` holds the content the hub ingests: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The Evotec website owns the site build and deployment; ChartForgeX does not maintain a separate site configuration.
 
-Build the examples first with `./Build.ps1`, then build the site from `Website/`:
+To refresh the gallery from generated examples without publishing packages or a site, run from the repository root:
 
 ```powershell
-.\build.ps1 -Dev
-.\build.ps1 -Ci
+pwsh ./Build.ps1 -Release -SkipAot -SkipPack
+pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 
 Promoted website examples should be reproducible cases, not screenshots: show the rendered preview, link the HTML/SVG/PNG artifacts, and point to the source file or builder method that generates the same output.
