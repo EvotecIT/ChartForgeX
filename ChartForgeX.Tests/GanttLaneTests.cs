@@ -164,6 +164,76 @@ public sealed class GanttLaneTests {
         Assert.True(chart.ToPng().Length > 200);
     }
 
+    [Fact]
+    public void Render_AxisVisibilityDensityAndGridStyle_FollowSharedAxisControls() {
+        var chart = CreateChart().WithSize(390, 300);
+        var all = CreateChart().WithSize(390, 300);
+        all.Options.XAxisLabelDensity = ChartLabelDensity.All;
+        var automaticLabels = Texts(XDocument.Parse(chart.ToSvg()), "gantt-lanes-tick-label");
+        var allLabels = Texts(XDocument.Parse(all.ToSvg()), "gantt-lanes-tick-label");
+        Assert.True(automaticLabels.Length >= 2 && automaticLabels.Length < allLabels.Length);
+
+        chart.Options.ShowXAxis = false;
+        var hiddenX = XDocument.Parse(chart.ToSvg());
+        Assert.Empty(ByRole(hiddenX, "gantt-lanes-tick-label"));
+        Assert.Empty(ByRole(hiddenX, "gantt-lanes-axis"));
+        Assert.Empty(ByRole(hiddenX, "gantt-lanes-now-label"));
+        Assert.NotEmpty(ByRole(hiddenX, "gantt-lane-label"));
+        chart.Options.ShowXAxis = true;
+        chart.Options.ShowYAxis = false;
+        chart.ConfigureXAxis(axis => axis.ShowLine = false);
+        var hiddenY = XDocument.Parse(chart.ToSvg());
+        Assert.Empty(ByRole(hiddenY, "gantt-lane-label"));
+        Assert.Empty(ByRole(hiddenY, "gantt-lane-group"));
+        Assert.Empty(ByRole(hiddenY, "gantt-lanes-axis"));
+        Assert.NotEmpty(ByRole(hiddenY, "gantt-lanes-tick-label"));
+
+        chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
+        var grid = ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lanes-grid");
+        Assert.NotEmpty(grid);
+        Assert.All(grid, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal(0.8, Number(line, "opacity")); Assert.Equal("4 6", (string?)line.Attribute("stroke-dasharray")); });
+        Assert.True(chart.ToPng().Length > 200);
+    }
+
+    [Fact]
+    public void Render_ExplicitAndSubsecondTicks_PreserveIdentityAndInteractiveLabels() {
+        var chart = CreateChart();
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(Start.AddHours(5).ToOADate(), "Five hours"));
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Equal(new[] { "Five hours" }, Texts(svg, "gantt-lanes-tick-label"));
+        Assert.All(ByRole(svg, "gantt-lane-item-label"), label =>
+            Assert.Equal("none", (string?)label.Parent?.Attribute("pointer-events")));
+
+        var shortChart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+            .WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddMilliseconds(80), "low", "Brief") });
+        var shortSvg = XDocument.Parse(shortChart.ToSvg());
+        var tickLabels = Texts(shortSvg, "gantt-lanes-tick-label");
+        Assert.True(tickLabels.Length > 1);
+        Assert.Equal(tickLabels.Length, tickLabels.Distinct().Count());
+        var item = Assert.Single(ByRole(shortSvg, "gantt-lane-item"));
+        Assert.NotEqual((string?)item.Attribute("data-cfx-start"), (string?)item.Attribute("data-cfx-end"));
+        Assert.Equal("80ms", (string?)item.Attribute("data-cfx-meta-duration"));
+    }
+
+    [Fact]
+    public void Render_RepeatedHourMetadataAndSummaryHeader_StayUnambiguousAndBounded() {
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+        var start = new DateTime(2026, 10, 25, 0, 30, 0, DateTimeKind.Utc);
+        var chart = Chart.Create().WithSize(390, 300).WithXAxisTimeScale(zone)
+            .WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, start.AddHours(1), "low", "Repeated hour") }, summary: "1");
+        chart.Options.StateTimelineSummaryHeader = "A very long summary header that cannot fit the reserved column";
+        Assert.Equal(chart.Options.StateTimelineSummaryHeader, chart.Options.LaneSummaryHeader);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var item = Assert.Single(ByRole(svg, "gantt-lane-item"));
+        Assert.Contains("+02:00", (string?)item.Attribute("data-cfx-start"));
+        Assert.Contains("+01:00", (string?)item.Attribute("data-cfx-end"));
+        Assert.True(Assert.Single(Texts(svg, "gantt-lanes-summary-header")).Length < chart.Options.LaneSummaryHeader!.Length);
+        chart.Options.LaneSummaryHeader = "Incidents";
+        Assert.Equal("Incidents", chart.Options.StateTimelineSummaryHeader);
+    }
+
     private static Chart CreateChart() {
         ChartGanttLaneItem Incident(double from, double? to, string severity, string label, string? detail = null) =>
             new(Start.AddHours(from), to.HasValue ? Start.AddHours(to.Value) : null, severity, label, detail);

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
@@ -83,7 +85,10 @@ internal sealed class ChartGanttLaneModel {
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
         if (!(max > min)) max = min + 1.0 / 24.0;
-        var ticks = ChartTimeScale.Generate(axis, min, max, true) ?? ChartTicks.GenerateInside(min, max, Math.Max(2, axis.TickCount));
+        IReadOnlyList<double> ticks = axis.Labels.Count > 0
+            ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
+            : ChartTimeScale.Generate(axis, min, max, inside: true)
+                ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
 
         var rows = new List<ChartGanttLaneRow>();
         string? currentGroup = null;
@@ -163,7 +168,8 @@ internal sealed class ChartGanttLaneModel {
         return true;
     }
 
-    public string FormatTick(double value) => ChartTimeScale.FormatTick(Chart.Options.XAxis, value);
+    public string FormatTick(double value) => ChartAxisValueFormatter.Format(Chart.Options.XAxis, value,
+        tick => ChartTicks.IsNumericTimeFallback(Ticks) ? tick.ToString("G17", CultureInfo.InvariantCulture) : ChartTimeScale.Format(Chart.Options.XAxis, tick), Ticks);
 
     public string ItemSummary(ChartGanttLaneRow lane, ChartGanttLanePlacedItem placed) {
         var axis = Chart.Options.XAxis;

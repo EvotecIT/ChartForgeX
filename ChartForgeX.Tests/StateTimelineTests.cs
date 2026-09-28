@@ -205,9 +205,9 @@ public sealed class StateTimelineTests {
     public void Render_LongSummaryHeader_FitsReservedColumn()
     {
         var chart = CreateChart();
-        chart.Options.StateTimelineSummaryHeader = "Very long summary header that must stay outside the lane plot";
+        chart.Options.LaneSummaryHeader = "Very long summary header that must stay outside the lane plot";
         var header = Texts(XDocument.Parse(chart.ToSvg()), "state-summary-header").Single();
-        Assert.NotEqual(chart.Options.StateTimelineSummaryHeader, header);
+        Assert.NotEqual(chart.Options.LaneSummaryHeader, header);
         Assert.True(header.Length < 25);
     }
 

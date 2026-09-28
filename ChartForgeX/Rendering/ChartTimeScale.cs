@@ -88,22 +88,20 @@ internal static class ChartTimeScale {
         return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
-    /// <summary>Formats a tick for a time axis, honouring explicit labels and a configured formatter first.</summary>
-    public static string FormatTick(ChartAxis axis, double value) {
-        if (axis == null) throw new ArgumentNullException(nameof(axis));
-        foreach (var label in axis.Labels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
-
-        return axis.LabelFormatter != null ? axis.LabelFormatter(value) ?? string.Empty : Format(axis, value);
-    }
-
-    /// <summary>Formats a full instant (<c>yyyy-MM-dd HH:mm</c> plus the zone designator) for tooltips and metadata.</summary>
+    /// <summary>Formats a full instant with subsecond precision and disambiguates repeated local hours.</summary>
     public static string FormatInstant(ChartAxis axis, double value) {
-        var local = ToDisplayTime(axis, value);
-        if (!local.HasValue) return ChartNumericFormatter.FormatCompact(value);
-        var format = local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
-        return local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ZoneDesignator(axis);
+        if (value < 0) return value.ToString("G17", CultureInfo.InvariantCulture);
+        var local = ToDisplayTime(axis, value, roundToSeconds: false);
+        if (!local.HasValue) return value.ToString("G17", CultureInfo.InvariantCulture);
+        var format = local.Value.Millisecond != 0 ? "yyyy-MM-dd HH:mm:ss.fff" : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
+        var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ZoneDesignator(axis);
+        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
+        if (zone.IsAmbiguousTime(local.Value)) {
+            var utc = DateTime.SpecifyKind(DateTime.FromOADate(value), DateTimeKind.Utc);
+            var offset = zone.GetUtcOffset(utc);
+            text += " " + (offset < TimeSpan.Zero ? "-" : "+") + offset.Duration().ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+        }
+        return text;
     }
 
     /// <summary>Returns the axis title with the time-zone designator appended when the axis requests it.</summary>

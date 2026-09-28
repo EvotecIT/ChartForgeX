@@ -2331,23 +2331,6 @@
       }
     },
     {
-      "name": "reporting-incident-lanes",
-      "width": 1180,
-      "height": 560,
-      "svg": {
-        "minVisualNodes": 43,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 1242549,
-        "minTransparentPixels": 79051,
-        "minDistinctColors": 1695,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
       "name": "reporting-classic-wall-clock",
       "width": 1000,
       "height": 340,
@@ -2361,6 +2344,23 @@
         "minVisiblePixels": 620389,
         "minTransparentPixels": 59611,
         "minDistinctColors": 841,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "reporting-incident-lanes",
+      "width": 1180,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 43,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1242549,
+        "minTransparentPixels": 79051,
+        "minDistinctColors": 1695,
         "maxEdgeInkPixels": 0
       }
     },
