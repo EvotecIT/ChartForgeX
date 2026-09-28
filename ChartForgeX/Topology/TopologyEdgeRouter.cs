@@ -22,6 +22,9 @@ internal static partial class TopologyEdgeRouter {
 
         var sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), edge.SourcePort);
         var targetPoint = BoundaryPoint(target, CenterX(source), CenterY(source), edge.TargetPort);
+        var readable = TopologyLayoutEngine.UsesReadableDenseLayout(chart);
+        var sourceCaption = CaptionBox(chart, source);
+        var targetCaption = CaptionBox(chart, target);
         var obstacles = RouteObstacles(chart, source.Id, target.Id, edge.Id, includeCaptions: true);
         var existingSegments = RouteSegments(chart, edge);
         var candidates = new List<RouteCandidate> {
@@ -56,16 +59,21 @@ internal static partial class TopologyEdgeRouter {
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
             .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement))
-            .OrderBy(plan => RouteScore(plan, edge))
+            .OrderBy(plan => RouteScore(plan, edge, readable, sourceCaption, targetCaption))
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
             .First();
 
         // The grid search is a fallback for routes that would cut through a card; label and header near-misses keep the
         // corridor route so curated layouts stay as authored.
-        if (TopologyLayoutEngine.UsesReadableDenseLayout(chart) && best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id) && MazeRoute(chart, edge, source, target) is { } maze) {
+        var captionHit = (edge.SourcePort == TopologyEdgePort.Bottom || edge.TargetPort == TopologyEdgePort.Bottom) &&
+            CaptionEndpointHits(best.Points, sourceCaption, targetCaption) > 0;
+        if (readable &&
+            (captionHit || best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id)) &&
+            MazeRoute(chart, edge, source, target) is { } maze) {
             var mazePlan = BuildPlan("ObstacleAvoidingOrthogonal", "maze", maze, obstacles, existingSegments, edge, candidates.Count + 1, chart.TextMeasurement);
-            if (RouteScore(mazePlan, edge) < RouteScore(best, edge)) best = mazePlan;
+            if (mazePlan.Diagnostics.LabelObstacleHits <= best.Diagnostics.LabelObstacleHits &&
+                RouteScore(mazePlan, edge, readable, sourceCaption, targetCaption) < RouteScore(best, edge, readable, sourceCaption, targetCaption)) best = mazePlan;
         }
 
         return best;
@@ -99,19 +107,38 @@ internal static partial class TopologyEdgeRouter {
         return new TopologyRoutePlan(points, new TopologyRouteDiagnostics(strategy, corridor, Math.Max(0, points.Count - 1), obstacles.Count, obstacleHits, labelHits, routeOverlap, candidateCount, FallbackReason(strategy, obstacleHits, labelHits, routeOverlap)));
     }
 
-    private static double RouteScore(TopologyRoutePlan plan, TopologyEdge edge) {
+    private static double RouteScore(TopologyRoutePlan plan, TopologyEdge edge, bool readable, RouteBox sourceCaption, RouteBox targetCaption) {
         return plan.Diagnostics.ObstacleHits * 100000 +
             plan.Diagnostics.LabelObstacleHits * 30000 +
-            PortExitPenalty(plan.Points, edge) +
+            PortExitPenalty(plan.Points, edge, readable, sourceCaption.Height > 0.5, targetCaption.Height > 0.5) +
             plan.Diagnostics.RouteOverlapScore * 220 +
             Math.Max(0, plan.Points.Count - 2) * 80 +
             RouteLength(plan.Points);
     }
 
-    private static double PortExitPenalty(IReadOnlyList<ChartPoint> points, TopologyEdge edge) {
-        var penalty = PortSegmentPenalty(edge.SourcePort, points, 0, 1, true);
-        penalty += PortSegmentPenalty(edge.TargetPort, points, points.Count - 1, points.Count - 2, false);
+    private static double PortExitPenalty(IReadOnlyList<ChartPoint> points, TopologyEdge edge, bool readable, bool sourceHasCaption, bool targetHasCaption) {
+        var sourcePort = readable && (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0 ||
+                         edge.SourcePort == TopologyEdgePort.Bottom && sourceHasCaption
+            ? TopologyEdgePort.Auto : edge.SourcePort;
+        var targetPort = readable && (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0 ||
+                         edge.TargetPort == TopologyEdgePort.Bottom && targetHasCaption
+            ? TopologyEdgePort.Auto : edge.TargetPort;
+        var penalty = PortSegmentPenalty(sourcePort, points, 0, 1, true);
+        penalty += PortSegmentPenalty(targetPort, points, points.Count - 1, points.Count - 2, false);
         return penalty;
+    }
+
+    private static RouteBox CaptionBox(TopologyChart chart, TopologyNode node) {
+        var box = NodeRouteBox(chart, node);
+        return new RouteBox(box.Left, node.Y + node.Height, box.Right, box.Bottom);
+    }
+
+    private static int CaptionEndpointHits(IReadOnlyList<ChartPoint> points, RouteBox sourceCaption, RouteBox targetCaption) {
+        if (points.Count < 2) return 0;
+        var hits = 0;
+        if (sourceCaption.Height > 0.5 && sourceCaption.Intersects(points[0], points[1])) hits++;
+        if (targetCaption.Height > 0.5 && targetCaption.Intersects(points[points.Count - 1], points[points.Count - 2])) hits++;
+        return hits;
     }
 
     private static double PortSegmentPenalty(TopologyEdgePort port, IReadOnlyList<ChartPoint> points, int edgeIndex, int adjacentIndex, bool leaving) {

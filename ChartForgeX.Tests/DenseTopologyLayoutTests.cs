@@ -113,6 +113,68 @@ public sealed class DenseTopologyLayoutTests {
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MazeRoute_BottomPort_DoesNotCrossItsTileCaption(bool sourceBottom) {
+        var chart = CupChart().WithEdgePorts("a-b", sourceBottom ? TopologyEdgePort.Bottom : TopologyEdgePort.Right,
+            sourceBottom ? TopologyEdgePort.Left : TopologyEdgePort.Bottom);
+        var layout = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
+        var report = chart.Prepare(TileOptions).Analyze();
+        var edge = report.Edges.Single();
+        var node = layout.Nodes.Single(item => item.Id == (sourceBottom ? "a" : "b"));
+        var caption = TopologyNodeFootprint.Caption(layout, node);
+        Assert.True(caption.Height > 0);
+        var endpoint = sourceBottom ? 0 : edge.Points.Count - 1;
+        var neighbor = sourceBottom ? 1 : edge.Points.Count - 2;
+        Assert.False(CrossesCaption(edge.Points[endpoint], edge.Points[neighbor], node, caption.Height));
+        Assert.Equal(0, ReplicationTopologyFixture.NodeCardCrossings(report));
+    }
+
+    [Fact]
+    public void MazeRoute_StaysWithinRenderedViewport() {
+        var chart = TopologyChart.Create().WithId("viewport-maze").WithViewport(360, 240, 0).WithLegend(null)
+            .AddNode("a", "A", 20, 100, width: 50, height: 40)
+            .AddNode("b", "B", 290, 100, width: 50, height: 40)
+            .AddNode("barrier", "Barrier", 145, 10, width: 50, height: 220)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var prepared = chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false });
+        var edge = prepared.Analyze().Edges.Single();
+        Assert.All(edge.Points, point => {
+            Assert.InRange(point.X, 0, prepared.Width);
+            Assert.InRange(point.Y, 0, prepared.Height);
+        });
+    }
+
+    [Fact]
+    public void MazeRoute_InferredBlockedPort_UsesClearAlternateSide() {
+        var chart = TopologyChart.Create().WithId("blocked-inferred-port").WithViewport(860, 440, 0).WithLegend(null)
+            .AddNode("a", "Source", 20, 200, width: 60, height: 40)
+            .AddNode("b", "Target", 640, 200, width: 60, height: 40)
+            .AddNode("block", "Block", 570, 190, width: 50, height: 46)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .WithEdgePorts("a-b", TopologyEdgePort.Right, TopologyEdgePort.Left);
+        chart.Edges.Single().LayoutInference = TopologyEdgeLayoutInference.TargetPort;
+        var report = chart.Prepare(TileOptions).Analyze();
+        Assert.Equal("maze", report.Edges.Single().Corridor);
+        Assert.Equal(0, ReplicationTopologyFixture.NodeCardCrossings(report));
+    }
+
+    private static TopologyChart CupChart() => TopologyChart.Create().WithId("cup-caption").WithViewport(860, 440, 0).WithLegend(null)
+        .AddNode("a", "Source", 20, 200, width: 60, height: 40)
+        .AddNode("b", "Target", 640, 200, width: 60, height: 40)
+        .AddNode("left", "L", 560, 130, width: 40, height: 180)
+        .AddNode("top", "T", 560, 90, width: 190, height: 30)
+        .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
+        .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+
+    private static bool CrossesCaption(ChartForgeX.Primitives.ChartPoint a, ChartForgeX.Primitives.ChartPoint b, TopologyNode node, double captionHeight) {
+        var top = node.Y + node.Height;
+        var bottom = top + captionHeight;
+        return Math.Max(a.Y, b.Y) > top && Math.Min(a.Y, b.Y) < bottom &&
+               Math.Max(a.X, b.X) > node.X && Math.Min(a.X, b.X) < node.X + node.Width;
+    }
+
     private static TopologyChart Sites(int sites, int controllers) {
         var chart = TopologyChart.Create().WithId("sites").WithViewport(1400, 900, 24).WithLegend(null)
             .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);

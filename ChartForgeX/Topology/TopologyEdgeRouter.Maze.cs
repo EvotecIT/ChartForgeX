@@ -70,27 +70,32 @@ internal static partial class TopologyEdgeRouter {
     private static List<ChartPoint>? SearchWithSides(TopologyChart chart, List<RouteBox> obstacles, TopologyNode source, TopologyNode target, TopologyEdge edge, bool allSides) {
         var starts = MazeTerminals(chart, source, edge.SourcePort, allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0);
         var ends = MazeTerminals(chart, target, edge.TargetPort, allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0);
-        starts.RemoveAll(terminal => BlockedStub(terminal, obstacles));
-        ends.RemoveAll(terminal => BlockedStub(terminal, obstacles));
+        var viewport = new RouteBox(0, 0, chart.Viewport.Width, chart.Viewport.Height);
+        starts.RemoveAll(terminal => BlockedStub(terminal, obstacles) || !Inside(viewport, terminal.Stub) || !Inside(viewport, terminal.Port));
+        ends.RemoveAll(terminal => BlockedStub(terminal, obstacles) || !Inside(viewport, terminal.Stub) || !Inside(viewport, terminal.Port));
         if (starts.Count == 0 || ends.Count == 0) return null;
 
         var all = starts.Concat(ends).ToList();
-        var region = new RouteBox(all.Min(item => item.Stub.X) - MazeRegionMargin, all.Min(item => item.Stub.Y) - MazeRegionMargin, all.Max(item => item.Stub.X) + MazeRegionMargin, all.Max(item => item.Stub.Y) + MazeRegionMargin);
-        return SearchMaze(obstacles, starts, ends, region) ?? SearchMaze(obstacles, starts, ends, ContentBox(obstacles, all));
+        var region = new RouteBox(
+            Math.Max(viewport.Left, all.Min(item => item.Stub.X) - MazeRegionMargin),
+            Math.Max(viewport.Top, all.Min(item => item.Stub.Y) - MazeRegionMargin),
+            Math.Min(viewport.Right, all.Max(item => item.Stub.X) + MazeRegionMargin),
+            Math.Min(viewport.Bottom, all.Max(item => item.Stub.Y) + MazeRegionMargin));
+        return SearchMaze(obstacles, starts, ends, region) ?? SearchMaze(obstacles, starts, ends, ContentBox(obstacles, all, viewport));
     }
 
-    private static RouteBox ContentBox(IReadOnlyList<RouteBox> obstacles, IReadOnlyList<MazeTerminal> terminals) {
-        var left = Math.Min(obstacles.Min(box => box.Left), terminals.Min(item => item.Stub.X)) - MazeClearance * 4;
-        var top = Math.Min(obstacles.Min(box => box.Top), terminals.Min(item => item.Stub.Y)) - MazeClearance * 4;
-        var right = Math.Max(obstacles.Max(box => box.Right), terminals.Max(item => item.Stub.X)) + MazeClearance * 4;
-        var bottom = Math.Max(obstacles.Max(box => box.Bottom), terminals.Max(item => item.Stub.Y)) + MazeClearance * 4;
+    private static RouteBox ContentBox(IReadOnlyList<RouteBox> obstacles, IReadOnlyList<MazeTerminal> terminals, RouteBox viewport) {
+        var left = Math.Max(viewport.Left, Math.Min(obstacles.Min(box => box.Left), terminals.Min(item => item.Stub.X)) - MazeClearance * 4);
+        var top = Math.Max(viewport.Top, Math.Min(obstacles.Min(box => box.Top), terminals.Min(item => item.Stub.Y)) - MazeClearance * 4);
+        var right = Math.Min(viewport.Right, Math.Max(obstacles.Max(box => box.Right), terminals.Max(item => item.Stub.X)) + MazeClearance * 4);
+        var bottom = Math.Min(viewport.Bottom, Math.Max(obstacles.Max(box => box.Bottom), terminals.Max(item => item.Stub.Y)) + MazeClearance * 4);
         return new RouteBox(left, top, right, bottom);
     }
 
     private static List<MazeTerminal> MazeTerminals(TopologyChart chart, TopologyNode node, TopologyEdgePort port, bool anySide) {
         var box = NodeRouteBox(chart, node);
         var hasCaption = box.Bottom > node.Y + node.Height + 0.5;
-        var sides = anySide || port == TopologyEdgePort.Auto
+        var sides = anySide || port == TopologyEdgePort.Auto || port == TopologyEdgePort.Bottom && hasCaption
             ? new[] { TopologyEdgePort.Top, TopologyEdgePort.Right, TopologyEdgePort.Bottom, TopologyEdgePort.Left }
             : new[] { port };
         var terminals = new List<MazeTerminal>(sides.Length);
@@ -98,7 +103,7 @@ internal static partial class TopologyEdgeRouter {
         var cy = node.Y + node.Height / 2;
         foreach (var side in sides) {
             // Leave tile cards from the sides or top so a route never cuts through the caption below the card.
-            if (side == TopologyEdgePort.Bottom && hasCaption && sides.Length > 1) continue;
+            if (side == TopologyEdgePort.Bottom && hasCaption) continue;
             var (port0, stub) = side switch {
                 // Ends stop the same gap short of the card as corridor routes, so arrowheads stay clear of the border.
                 TopologyEdgePort.Top => (new ChartPoint(cx, node.Y - MazeEndpointGap), new ChartPoint(cx, box.Top - MazeClearance - 1)),

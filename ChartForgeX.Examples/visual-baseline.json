@@ -3215,6 +3215,23 @@
       }
     },
     {
+      "name": "visual-readable-dense-replication",
+      "width": 1400,
+      "height": 1065,
+      "svg": {
+        "minVisualNodes": 234,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 745500,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 950,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "visual-relationship-radial-500-ego-graph",
       "width": 1680,
       "height": 1060,

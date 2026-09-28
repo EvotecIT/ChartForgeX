@@ -1502,6 +1502,13 @@
     },
     {
       "category": "topology",
+      "title": "Readable Dense Replication",
+      "body": "Wrapped site panels, server cards and caption-aware routes in an opt-in dense topology layout.",
+      "tags": [],
+      "image": "/examples/generated/visual-readable-dense-replication.svg"
+    },
+    {
+      "category": "topology",
       "title": "Visual Reusable Regional Topology",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
