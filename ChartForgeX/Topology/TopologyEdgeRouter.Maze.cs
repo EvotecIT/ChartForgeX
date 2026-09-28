@@ -21,7 +21,8 @@ internal static partial class TopologyEdgeRouter {
     /// </summary>
     /// <remarks>
     /// Routes are cached on the prepared chart instance. Labels, display modes, render options, and text measurement are
-    /// fixed once a chart is prepared, so the key only tracks the edge, its ports, and the card and group geometry.
+    /// fixed once a chart is prepared, so the key tracks the edge, its ports, geometry, and the viewport used to bound
+    /// the search. Normalization can expand that viewport after an earlier label-layout routing pass.
     /// </remarks>
     private static List<ChartPoint>? MazeRoute(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target) {
         var key = edge.Id + "|" + edge.SourcePort + "|" + edge.TargetPort + "|" + GeometrySignature(chart).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -39,6 +40,7 @@ internal static partial class TopologyEdgeRouter {
     private static long GeometrySignature(TopologyChart chart) {
         unchecked {
             long hash = chart.Nodes.Count * 397L + chart.Groups.Count;
+            hash = Mix(Mix(hash, chart.Viewport.Width), chart.Viewport.Height);
             foreach (var node in chart.Nodes) hash = Mix(Mix(Mix(Mix(hash, node.X), node.Y), node.Width), node.Height);
             foreach (var group in chart.Groups) hash = Mix(Mix(Mix(Mix(hash, group.X), group.Y), group.Width), group.Height);
             return hash;

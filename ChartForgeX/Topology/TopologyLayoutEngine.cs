@@ -595,7 +595,7 @@ internal static partial class TopologyLayoutEngine {
         }
 
         if (policy == TopologyGroupLayoutPolicy.MiniMesh) {
-            PlaceDenseMiniMesh(nodes, group);
+            PlaceDenseMiniMesh(chart, nodes, group);
             return;
         }
 
@@ -611,24 +611,25 @@ internal static partial class TopologyLayoutEngine {
         var remaining = nodes.Where(node => !ReferenceEquals(node, hub)).ToList();
         var columns = DenseNodeColumns(remaining.Count);
         var cellW = usableW / columns;
-        var startY = hub == null ? innerY : innerY + hub.Height + 40;
+        var startY = hub == null ? innerY : innerY + TopologyNodeFootprint.Height(chart, hub) + 40;
+        var branchRowHeight = nodes.Select(node => TopologyNodeFootprint.Height(chart, node)).DefaultIfEmpty(44).Max();
         for (var i = 0; i < remaining.Count; i++) {
             var node = remaining[i];
             if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;
             var col = i % columns;
             var row = i / columns;
             node.X = innerX + col * cellW + (cellW - node.Width) / 2;
-            node.Y = startY + row * (node.Height + 34);
+            node.Y = startY + row * (branchRowHeight + 34);
         }
     }
 
-    private static void PlaceDenseMiniMesh(IList<TopologyNode> nodes, TopologyGroup group) {
+    private static void PlaceDenseMiniMesh(TopologyChart chart, IList<TopologyNode> nodes, TopologyGroup group) {
         var innerX = group.X + 18;
         var innerY = group.Y + 78;
         var usableW = Math.Max(80, group.Width - 36);
         var columns = Math.Max(1, (int)Math.Ceiling(nodes.Count / 2.0));
         var cellW = usableW / columns;
-        var maxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(44).Max();
+        var maxNodeHeight = nodes.Select(node => TopologyNodeFootprint.Height(chart, node)).DefaultIfEmpty(44).Max();
         for (var i = 0; i < nodes.Count; i++) {
             var node = nodes[i];
             if (!IsUnset(node.X) || !IsUnset(node.Y)) continue;

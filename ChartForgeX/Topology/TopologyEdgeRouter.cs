@@ -66,8 +66,7 @@ internal static partial class TopologyEdgeRouter {
 
         // The grid search is a fallback for routes that would cut through a card; label and header near-misses keep the
         // corridor route so curated layouts stay as authored.
-        var captionHit = (edge.SourcePort == TopologyEdgePort.Bottom || edge.TargetPort == TopologyEdgePort.Bottom) &&
-            CaptionEndpointHits(best.Points, sourceCaption, targetCaption) > 0;
+        var captionHit = CaptionEndpointHits(best.Points, sourceCaption, targetCaption) > 0;
         if (readable &&
             (captionHit || best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id)) &&
             MazeRoute(chart, edge, source, target) is { } maze) {
@@ -108,7 +107,8 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static double RouteScore(TopologyRoutePlan plan, TopologyEdge edge, bool readable, RouteBox sourceCaption, RouteBox targetCaption) {
-        return plan.Diagnostics.ObstacleHits * 100000 +
+        return (readable ? CaptionEndpointHits(plan.Points, sourceCaption, targetCaption) * 150000 : 0) +
+            plan.Diagnostics.ObstacleHits * 100000 +
             plan.Diagnostics.LabelObstacleHits * 30000 +
             PortExitPenalty(plan.Points, edge, readable, sourceCaption.Height > 0.5, targetCaption.Height > 0.5) +
             plan.Diagnostics.RouteOverlapScore * 220 +

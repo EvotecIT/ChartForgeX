@@ -283,7 +283,7 @@ internal static partial class TopologyRenderPrimitives {
     private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
         if (!string.IsNullOrWhiteSpace(edge.SourcePortId)) {
-            ApplyNamedEndpoint(source, edge.SourcePortId!, edge, points, 0, 1);
+            ApplyNamedEndpoint(chart, source, edge.SourcePortId!, edge, points, 0, 1);
         } else if (edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[0], points[1], edge.SourcePort)) {
             var original = points[0];
             var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
@@ -292,7 +292,7 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         if (!string.IsNullOrWhiteSpace(edge.TargetPortId)) {
-            ApplyNamedEndpoint(target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
+            ApplyNamedEndpoint(chart, target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
         } else if (edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
             var targetIndex = points.Count - 1;
             var original = points[targetIndex];

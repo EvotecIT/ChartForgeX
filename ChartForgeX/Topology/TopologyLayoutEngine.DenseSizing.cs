@@ -103,13 +103,13 @@ internal static partial class TopologyLayoutEngine {
 
         if (policy == TopologyGroupLayoutPolicy.MiniMesh) {
             var meshColumns = Math.Max(1, (int)Math.Ceiling(nodes.Count / 2.0));
-            var meshMaxNodeWidth = nodes.Select(node => node.Width).DefaultIfEmpty(90).Max();
+            var meshMaxNodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
             return Math.Max(190, 36 + meshColumns * Math.Max(70, meshMaxNodeWidth + 18));
         }
 
         var remaining = Math.Max(0, nodes.Count - 1);
         var branchColumns = DenseNodeColumns(remaining);
-        var branchMaxNodeWidth = nodes.Select(node => node.Width).DefaultIfEmpty(90).Max();
+        var branchMaxNodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
         return Math.Max(190, 36 + branchColumns * Math.Max(70, branchMaxNodeWidth + 18));
     }
 
@@ -124,19 +124,19 @@ internal static partial class TopologyLayoutEngine {
         }
 
         if (policy == TopologyGroupLayoutPolicy.PairRows) {
-            var pairMaxNodeHeight = nodes.Select(node => TopologyNodeFootprint.Height(chart, node)).DefaultIfEmpty(46).Max();
+            var pairMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max() + DenseCaptionHeight(chart, nodes);
             var pairRows = (int)Math.Ceiling(nodes.Count / 2.0);
             return Math.Max(170, 98 + pairRows * (pairMaxNodeHeight + 34));
         }
 
         if (policy == TopologyGroupLayoutPolicy.Grid && UsesReadableDenseLayout(chart)) {
-            var gridMaxNodeHeight = nodes.Select(node => TopologyNodeFootprint.Height(chart, node)).DefaultIfEmpty(46).Max();
+            var gridMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max() + DenseCaptionHeight(chart, nodes);
             var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(nodes.Count));
             return Math.Max(170, 98 + gridRows * (gridMaxNodeHeight + 34));
         }
 
         if (policy == TopologyGroupLayoutPolicy.MiniMesh) {
-            var meshMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max();
+            var meshMaxNodeHeight = nodes.Select(node => TopologyNodeFootprint.Height(chart, node)).DefaultIfEmpty(46).Max();
             return Math.Max(170, 98 + Math.Min(2, nodes.Count) * (meshMaxNodeHeight + 44));
         }
 
@@ -144,7 +144,8 @@ internal static partial class TopologyLayoutEngine {
         var remaining = nodes.Count(node => !ReferenceEquals(node, hub));
         var branchColumns = DenseNodeColumns(remaining);
         var branchRows = remaining == 0 ? 0 : (int)Math.Ceiling(remaining / (double)branchColumns);
-        var branchMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max();
-        return 98 + (hub?.Height ?? 0) + (branchRows == 0 ? 0 : 40 + branchRows * (branchMaxNodeHeight + 34));
+        var branchMaxNodeHeight = nodes.Select(node => TopologyNodeFootprint.Height(chart, node)).DefaultIfEmpty(46).Max();
+        return 98 + (hub == null ? 0 : TopologyNodeFootprint.Height(chart, hub)) +
+            (branchRows == 0 ? 0 : 40 + branchRows * (branchMaxNodeHeight + 34));
     }
 }

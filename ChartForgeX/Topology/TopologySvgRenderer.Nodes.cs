@@ -338,7 +338,8 @@ public sealed partial class TopologySvgRenderer {
 
     private static SvgElement BuildTileSubtitle(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyRenderOptions options) {
         var (subtitle, width) = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options);
-        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options).Count;
+        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true,
+            options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile)).Count;
         var x = CenterX(node) - width / 2;
         var y = node.Y + node.Height + 7 + labelLineCount * 14;
         var group = new SvgElement("g")

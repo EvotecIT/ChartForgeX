@@ -20,7 +20,8 @@ internal static class TopologyNodeFootprint {
         var height = 0.0;
         var lineCount = 1;
         if (!string.IsNullOrWhiteSpace(node.Label)) {
-            var lines = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), CaptionFontSize, true, options.MaxNodeLabelLines, options);
+            var lines = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), CaptionFontSize, true,
+                options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile));
             lineCount = Math.Max(1, lines.Count);
             foreach (var line in lines) width = Math.Max(width, EstimateTextWidth(line, CaptionFontSize, true, chart.TextMeasurement));
             height = 8 + lineCount * CaptionLineHeight;

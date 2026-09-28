@@ -139,7 +139,7 @@ public sealed class DenseTopologyLayoutTests {
             .AddNode("barrier", "Barrier", 145, 10, width: 50, height: 220)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         var prepared = chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false });
-        var edge = prepared.Analyze().Edges.Single();
+        var edge = chart.Prepare(TileOptions).Analyze().Edges.Single();
         Assert.All(edge.Points, point => {
             Assert.InRange(point.X, 0, prepared.Width);
             Assert.InRange(point.Y, 0, prepared.Height);
@@ -158,6 +158,112 @@ public sealed class DenseTopologyLayoutTests {
         var report = chart.Prepare(TileOptions).Analyze();
         Assert.Equal("maze", report.Edges.Single().Corridor);
         Assert.Equal(0, ReplicationTopologyFixture.NodeCardCrossings(report));
+    }
+
+    [Fact]
+    public void AutomaticVerticalRoute_DoesNotLeaveThroughTileCaption() {
+        var chart = TopologyChart.Create().WithId("automatic-caption").WithViewport(400, 480, 0).WithLegend(null)
+            .AddNode("a", "Source", 160, 80, width: 70, height: 40)
+            .AddNode("b", "Target", 160, 320, width: 70, height: 40)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
+        var edge = chart.Prepare(TileOptions).Analyze().Edges.Single();
+        var source = prepared.Nodes.Single(node => node.Id == "a");
+        var caption = TopologyNodeFootprint.Caption(prepared, source);
+        Assert.True(caption.Height > 0);
+        Assert.False(CrossesCaption(edge.Points[0], edge.Points[1], source, caption.Height));
+    }
+
+    [Fact]
+    public void NamedBottomPort_BeneathReadableTileCaption_IsRejected() {
+        var chart = CupChart().AddNodePort("a", "underside", TopologyEdgePort.Bottom)
+            .WithEdgeNamedPorts("a-b", "underside", null);
+        var error = Assert.Throws<InvalidOperationException>(() => chart.Prepare(TileOptions).Analyze());
+        Assert.Contains("named Bottom port", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MazeCache_RecomputesAfterViewportExpands() {
+        var chart = CupChart().WithId("viewport-cache")
+            .AddNode("roof", "Roof", 560, 0, width: 40, height: 100)
+            .WithEdgePorts("a-b", TopologyEdgePort.Bottom, TopologyEdgePort.Left);
+        chart.RenderOptions = TileOptions;
+        var edge = chart.Edges.Single();
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        chart.Viewport.Height = 280;
+        var narrow = TopologyEdgeRouter.Route(chart, edge, nodes["a"], nodes["b"]);
+        chart.Viewport.Height = 440;
+        var expanded = TopologyEdgeRouter.Route(chart, edge, nodes["a"], nodes["b"]);
+        Assert.NotEqual("maze", narrow.Diagnostics.Corridor);
+        Assert.Equal("maze", expanded.Diagnostics.Corridor);
+        Assert.All(expanded.Points, point => Assert.InRange(point.Y, 0, chart.Viewport.Height));
+    }
+
+    [Fact]
+    public void MixedCardAndCaptionHeights_StayInsideWrappedGroup() {
+        var chart = Sites(7, 5);
+        var firstGroupNodes = chart.Nodes.Where(node => node.GroupId == chart.Groups[0].Id).ToArray();
+        firstGroupNodes[0].Height = 96;
+        firstGroupNodes[1].Label = "A long controller name spanning three caption lines";
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, WrapNodeLabels = true, MaxNodeLabelLines = 3 };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+        var group = prepared.Groups[0];
+        var nodes = prepared.Nodes.Where(node => node.GroupId == group.Id).ToArray();
+        Assert.True(TopologyNodeFootprint.Caption(prepared, nodes[1]).Height >
+            TopologyNodeFootprint.Caption(prepared, nodes[0]).Height);
+        Assert.All(nodes, node => Assert.True(node.Y + node.Height + TopologyNodeFootprint.Caption(prepared, node).Height <=
+            group.Y + group.Height - 16, node.Id + " exceeds its group."));
+    }
+
+    [Fact]
+    public void TileCaption_RespectsNodeCharacterLimitUsedByRenderers() {
+        var chart = TopologyChart.Create().WithId("long-tile-label").WithViewport(420, 280, 0).WithLegend(null)
+            .AddNode("a", "Alpha Bravo Charlie Delta Echo Foxtrot Golf", 360, 70, width: 54, height: 36);
+        chart.Nodes.Single().MaximumLabelCharacters = 64;
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, WrapNodeLabels = true, MaxNodeLabelLines = 3 };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+        var node = prepared.Nodes.Single();
+        Assert.Equal(50, TopologyNodeFootprint.Caption(prepared, node).Height);
+        var captionRight = node.X + node.Width / 2 + TopologyNodeFootprint.Caption(prepared, node).Width / 2;
+        Assert.True(captionRight <= prepared.Viewport.Width,
+            $"The rendered caption extends to {captionRight} beyond the normalized width {prepared.Viewport.Width}.");
+        Assert.Contains("Alpha", chart.ToSvg(options), StringComparison.Ordinal);
+        Assert.True(chart.ToPng(options).Length > 64);
+    }
+
+    [Theory]
+    [InlineData(TopologyGroupLayoutPolicy.HubAndBranch)]
+    [InlineData(TopologyGroupLayoutPolicy.MiniMesh)]
+    public void DenseMixedPolicies_ReserveWrappedTileCaptions(TopologyGroupLayoutPolicy policy) {
+        var chart = TopologyChart.Create().WithId("caption-policy").WithViewport(520, 360, 0)
+            .WithLegend(null).WithLayout(TopologyLayoutMode.DenseGrouped)
+            .AddAutoGroup("site", "Site").WithGroupLayout("site", policy)
+            .AddAutoNode("hub", "Alpha Bravo Charlie Delta Echo Foxtrot Golf", TopologyNodeKind.Hub,
+                TopologyHealthStatus.Healthy, "site", width: 64, height: 40);
+        for (var i = 0; i < 5; i++) chart.AddAutoNode("branch-" + i, "Long branch caption for node " + i,
+            TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "site", width: 64, height: 40);
+        foreach (var node in chart.Nodes) node.MaximumLabelCharacters = 64;
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, WrapNodeLabels = true, MaxNodeLabelLines = 3 };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+        var nodes = prepared.Nodes.ToArray();
+        var group = prepared.Groups.Single();
+        Assert.Equal(policy, group.AppliedLayoutPolicy);
+        foreach (var node in nodes) {
+            var captionWidth = TopologyNodeFootprint.Width(prepared, node);
+            var captionLeft = node.X + node.Width / 2 - captionWidth / 2;
+            Assert.True(captionLeft >= group.X + 10 && captionLeft + captionWidth <= group.X + group.Width - 10,
+                node.Id + " caption extends beyond its group width.");
+            Assert.True(node.Y + TopologyNodeFootprint.Height(prepared, node) <=
+                group.Y + group.Height - 16, node.Id + " caption extends beyond its group height.");
+        }
+        foreach (var upper in nodes) foreach (var lower in nodes) {
+            if (ReferenceEquals(upper, lower) || lower.Y <= upper.Y + 0.001) continue;
+            Assert.True(upper.Y + TopologyNodeFootprint.Height(prepared, upper) < lower.Y,
+                upper.Id + " caption overlaps " + lower.Id);
+        }
     }
 
     private static TopologyChart CupChart() => TopologyChart.Create().WithId("cup-caption").WithViewport(860, 440, 0).WithLegend(null)
