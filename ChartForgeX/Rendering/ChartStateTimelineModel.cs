@@ -81,10 +81,7 @@ internal sealed class ChartStateTimelineModel {
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
-        if (!(max > min)) {
-            if (axis.Maximum.HasValue && !axis.Minimum.HasValue) min = max - Math.Max(1.0 / 24.0, Math.Abs(max) * 1e-12);
-            else max = min + Math.Max(1.0 / 24.0, Math.Abs(min) * 1e-12);
-        }
+        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
         // Timeline segments are UTC instants even when callers leave the default linear axis.
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()

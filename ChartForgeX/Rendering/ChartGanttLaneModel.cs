@@ -88,10 +88,7 @@ internal sealed class ChartGanttLaneModel {
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
-        if (!(max > min)) {
-            if (axis.Maximum.HasValue && !axis.Minimum.HasValue) min = max - Math.Max(1.0 / 24.0, Math.Abs(max) * 1e-12);
-            else max = min + Math.Max(1.0 / 24.0, Math.Abs(min) * 1e-12);
-        }
+        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
             : ChartTimeScale.Generate(axis, min, max, inside: true)
@@ -99,7 +96,7 @@ internal sealed class ChartGanttLaneModel {
 
         // Renderer text metrics differ slightly. Pack against the shared minimum possible plot width so a bar
         // with the two-pixel visual floor never obscures the next item in either SVG or PNG.
-        var contentWidth = Math.Max(1, chart.Options.Size.Width - ChartStateTimelineModel.ContentInset * 2);
+        var contentWidth = ChartStateTimelineModel.ContentBounds(ChartLayout.PlotArea(chart.Options)).Width;
         var hasSummary = !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) ||
             chart.Series.Any(series => series.Kind == ChartSeriesKind.GanttLane && !string.IsNullOrWhiteSpace(series.LaneSummary));
         var labelReserve = chart.Options.ShowAxes && chart.Options.ShowYAxis ? contentWidth * 0.34 : 0;

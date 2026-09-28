@@ -121,6 +121,30 @@ public sealed class GanttLaneTests {
     }
 
     [Fact]
+    public void Render_PaddedNarrowPlot_DoesNotOverlapMinimumWidthItems() {
+        var boundary = 2.0 / 300;
+        var chart = Chart.Create().WithSize(640, 280).WithPadding(220, 10, 220, 10).WithAxes(false)
+            .WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(0, boundary, "low"), new ChartGanttLaneItem(boundary, boundary + 0.001, "high") });
+        chart.Options.XAxis.WithBounds(0, 1);
+        var bars = ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item");
+        Assert.Equal(new[] { "0", "1" }, bars.Select(item => (string?)item.Attribute("data-cfx-sub-row")).ToArray());
+        Assert.True(Number(bars[1], "y") >= Number(bars[0], "y") + Number(bars[0], "height"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_OneSidedNumericLimit_RejectsAnUnrepresentableWindow(bool lowerBound) {
+        var chart = CreateChart();
+        if (lowerBound) chart.Options.XAxis.Minimum = double.MaxValue;
+        else chart.Options.XAxis.Maximum = -double.MaxValue;
+        Assert.Throws<ArgumentOutOfRangeException>(() => ChartGanttLaneModel.Build(chart));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ToSvg());
+    }
+
+    [Fact]
     public void Render_OpenItemWithExtremeFiniteRange_KeepsAutomaticBoundsFinite() {
         var chart = Chart.Create().WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Range", new[] { new ChartGanttLaneItem(-1e308, 1e308, "low"), new ChartGanttLaneItem(0, null, "high") });

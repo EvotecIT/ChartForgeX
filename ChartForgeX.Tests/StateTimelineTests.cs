@@ -388,6 +388,17 @@ public sealed class StateTimelineTests {
         Assert.NotEmpty(chart.ToPng());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_OneSidedNumericLimit_RejectsAnUnrepresentableWindow(bool lowerBound) {
+        var chart = CreateChart();
+        if (lowerBound) chart.Options.XAxis.Minimum = double.MaxValue;
+        else chart.Options.XAxis.Maximum = -double.MaxValue;
+        Assert.Throws<ArgumentOutOfRangeException>(() => ChartStateTimelineModel.Build(chart));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ToSvg());
+    }
+
     private static Chart CreateChart() {
         var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
