@@ -699,15 +699,17 @@ chart.Series[0]
 - JavaScript belongs in opt-in adapter packages, not in the default static renderer.
 - Public APIs fail fast on invalid sizes, ranges, enum values, and specialized series payloads.
 
-## Website Pilot
+## Website Content
 
-`Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The central Evotec project hub remains the registry page, while the dedicated site is meant for the richer gallery and demo experience at `https://chartforgex.evotec.xyz/`.
+ChartForgeX is presented on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`. There is no separate ChartForgeX website.
 
-Build the examples first with `./Build.ps1`, then build the site from `Website/`:
+`Website/` holds the content the hub ingests: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The Evotec website owns the site build and deployment; ChartForgeX does not maintain a separate site configuration.
+
+To refresh the gallery from generated examples without publishing packages or a site, run from the repository root:
 
 ```powershell
-.\build.ps1 -Dev
-.\build.ps1 -Ci
+pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
+pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 
 Promoted website examples should be reproducible cases, not screenshots: show the rendered preview, link the HTML/SVG/PNG artifacts, and point to the source file or builder method that generates the same output.
@@ -729,7 +731,7 @@ ChartForgeX
 |-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
-|-- Website                         # dedicated PowerForge.Web pilot site
+|-- Website                         # content and generated assets for evotec.xyz
 |-- docs                            # focused reference notes
 |-- AGENTS.md                       # contributor/agent expectations
 |-- CONTRIBUTING.md                 # development and release workflow
