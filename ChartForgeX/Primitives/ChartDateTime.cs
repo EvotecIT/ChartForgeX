@@ -48,6 +48,19 @@ internal static class ChartDateTime {
         return new DateTime(RoundToDisplayResolution(ticks), DateTimeKind.Utc);
     }
 
+    /// <summary>Whether two representable double instants have identical time-axis metadata.</summary>
+    public static bool CollapsesAtDisplayResolution(double start, double end) {
+        // Negative or out-of-range OLE values use numeric metadata instead of formatted instants.
+        if (start < 0 || end < 0) return false;
+        try {
+            return FromOrderedOaDate(start) == FromOrderedOaDate(end);
+        } catch (ArgumentException) {
+            return false;
+        } catch (OverflowException) {
+            return false;
+        }
+    }
+
     private static long RoundToDisplayResolution(long ticks) {
         long whole = ticks - ticks % DisplayResolutionTicks;
         return ticks - whole >= DisplayResolutionTicks / 2 && whole <= DateTime.MaxValue.Ticks - DisplayResolutionTicks

@@ -9,7 +9,8 @@ namespace ChartForgeX.Core;
 /// Times are OLE Automation dates holding UTC instants.
 /// </summary>
 public readonly struct ChartGanttLaneItem {
-    /// <summary>Initializes an item from OLE Automation date values.</summary>
+    /// <summary>Initializes an item from OLE Automation date values. Representable intervals must span
+    /// distinct instants at the 100-microsecond time-axis display resolution.</summary>
     /// <param name="start">The start instant.</param>
     /// <param name="end">The end instant, later than <paramref name="start"/>, or null while the item is still open;
     /// open items run to the UTC instant set by <see cref="Chart.WithGanttLaneNow"/>
@@ -22,6 +23,8 @@ public readonly struct ChartGanttLaneItem {
         if (end.HasValue) {
             ChartGuards.Finite(end.Value, nameof(end));
             if (end.Value <= start) throw new ArgumentOutOfRangeException(nameof(end), end, "Item end must be later than its start.");
+            if (ChartDateTime.CollapsesAtDisplayResolution(start, end.Value))
+                throw new ArgumentOutOfRangeException(nameof(end), end, "The interval is shorter than the time axis's 100-microsecond display resolution.");
         }
 
         if (string.IsNullOrWhiteSpace(category)) throw new ArgumentException("Item category must not be empty.", nameof(category));

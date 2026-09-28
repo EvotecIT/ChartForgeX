@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 using Xunit;
@@ -149,6 +150,35 @@ public sealed class GanttLaneTests {
         Assert.Throws<InvalidOperationException>(() => empty.ToPng());
         var local = new DateTime(2026, 9, 24, 12, 0, 0, DateTimeKind.Local);
         Assert.Equal(local.ToUniversalTime().ToOADate(), new ChartGanttLaneItem(local, null, "low").Start, 9);
+    }
+
+    [Fact]
+    public void Validation_DoubleIntervalBelowDisplayResolution_RejectsMisleadingMetadata() {
+        double start = Start.ToOADate();
+        double shortEnd = start + TimeSpan.FromTicks(200).TotalDays;
+        Assert.True(shortEnd > start);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartGanttLaneItem(start, shortEnd, "low"));
+
+        double visibleEnd = start + TimeSpan.FromTicks(2_000).TotalDays;
+        var chart = Chart.Create().WithXAxisTimeScale().WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, visibleEnd, "low") });
+        var item = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
+        Assert.NotEqual((string?)item.Attribute("data-cfx-start"), (string?)item.Attribute("data-cfx-end"));
+        Assert.True(chart.ToPng().Length > 200);
+    }
+
+    [Fact]
+    public void Validation_ReplacedPublicPoint_CannotDisagreeWithLaneItem() {
+        var chart = CreateChart();
+        ChartSeries lane = chart.Series[1];
+        ChartPoint original = lane.Points[0];
+        lane.Points[0] = new ChartPoint(original.X + 1, original.Y);
+        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
+        Assert.Throws<InvalidOperationException>(() => chart.ToPng());
+
+        lane.Points[0] = original;
+        lane.Points.Reverse();
+        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
     }
 
     [Fact]
