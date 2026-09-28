@@ -226,6 +226,24 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
+    public void SingleRowGroups_DeclaredSmallSizes_ContainCardsWithoutOverlappingNeighbors() {
+        var chart = Sites(6, 5);
+        foreach (var group in chart.Groups) { group.Width = 190; group.Height = 170; }
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
+        Assert.Single(prepared.Groups.Select(group => group.Y).Distinct());
+        foreach (var group in prepared.Groups) {
+            Assert.True(group.Width > 190 && group.Height > 170);
+            foreach (var node in prepared.Nodes.Where(node => node.GroupId == group.Id)) {
+                Assert.True(node.X + node.Width <= group.X + group.Width);
+                Assert.True(node.Y + TopologyNodeFootprint.Height(prepared, node) <= group.Y + group.Height);
+            }
+        }
+        for (var i = 1; i < prepared.Groups.Count; i++)
+            Assert.True(prepared.Groups[i].X >= prepared.Groups[i - 1].X + prepared.Groups[i - 1].Width + 24);
+    }
+
+    [Fact]
     public void WrappedGroups_ReservePanelSurfaceInsetWithinViewport() {
         var chart = Sites(7, 1).WithViewport(490, 1800, 24);
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,

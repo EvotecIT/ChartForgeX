@@ -521,8 +521,13 @@ internal static partial class TopologyLayoutEngine {
             var col = i % columns;
             var row = i / columns;
             var policy = ResolveDenseGroupPolicy(chart, group, nodes);
-            if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
-            if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
+            if (UsesReadableDenseLayout(chart)) {
+                group.Width = Math.Max(group.Width, Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy)));
+                group.Height = Math.Max(group.Height, Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy)));
+            } else {
+                if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
+                if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
+            }
             columnWidths[col] = Math.Max(columnWidths[col], group.Width);
             rowHeights[row] = Math.Max(rowHeights[row], group.Height);
             placements.Add((group, nodes, col, row));
