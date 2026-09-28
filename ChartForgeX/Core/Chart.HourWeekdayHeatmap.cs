@@ -40,21 +40,33 @@ public sealed partial class Chart {
         var zone = timeZone ?? TimeZoneInfo.Utc;
         var count = new int[DaysPerWeek, HoursPerDay];
         var sum = new double[DaysPerWeek, HoursPerDay];
+        var mean = new double[DaysPerWeek, HoursPerDay];
         var maximum = new double[DaysPerWeek, HoursPerDay];
         var observed = 0;
         foreach (var value in values) {
             var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(value.Timestamp, DateTimeKind.Utc), zone);
             var day = (int)local.DayOfWeek;
             var hour = local.Hour;
-            maximum[day, hour] = count[day, hour] == 0 ? value.Value : Math.Max(maximum[day, hour], value.Value);
-            count[day, hour]++;
-            sum[day, hour] += value.Value;
+            var n = ++count[day, hour];
+            switch (aggregation) {
+                case ChartTimeAggregation.Sum:
+                    sum[day, hour] += value.Value;
+                    break;
+                case ChartTimeAggregation.Mean:
+                    mean[day, hour] = mean[day, hour] * ((n - 1d) / n) + value.Value / n;
+                    break;
+                case ChartTimeAggregation.Maximum:
+                    maximum[day, hour] = n == 1 ? value.Value : Math.Max(maximum[day, hour], value.Value);
+                    break;
+            }
             observed++;
         }
 
         if (observed == 0) throw new ArgumentException("Hour-by-weekday heatmaps require at least one value.", nameof(values));
-        foreach (var total in sum) {
-            if (double.IsInfinity(total)) throw new ArgumentException("Hour-by-weekday bucket sums must stay finite.", nameof(values));
+        if (aggregation == ChartTimeAggregation.Sum) {
+            foreach (var total in sum) {
+                if (double.IsInfinity(total)) throw new ArgumentException("Hour-by-weekday bucket sums must stay finite.", nameof(values));
+            }
         }
 
         var names = dayNames ?? CultureInfo.InvariantCulture.DateTimeFormat.AbbreviatedDayNames;
@@ -66,7 +78,7 @@ public sealed partial class Chart {
                 double? cell = aggregation switch {
                     ChartTimeAggregation.Count => n,
                     ChartTimeAggregation.Sum => sum[day, hour],
-                    ChartTimeAggregation.Mean => n == 0 ? null : sum[day, hour] / n,
+                    ChartTimeAggregation.Mean => n == 0 ? null : mean[day, hour],
                     _ => n == 0 ? null : maximum[day, hour]
                 };
                 if (cell.HasValue) points.Add(new ChartPoint(hour + 1, cell.Value));

@@ -49,6 +49,16 @@ public sealed class HourWeekdayHeatmapTests {
     }
 
     [Fact]
+    public void CountAndMean_DoNotOverflowOnFiniteSampleValues() {
+        var values = new[] {
+            new ChartTimedValue(Monday.AddHours(2), double.MaxValue),
+            new ChartTimedValue(Monday.AddHours(2).AddMinutes(30), double.MaxValue)
+        };
+        Assert.Equal(2, Cell(Chart.Create().AddHourWeekdayHeatmap(values), "Mon", 2));
+        Assert.Equal(double.MaxValue, Cell(Chart.Create().AddHourWeekdayHeatmap(values, ChartTimeAggregation.Mean), "Mon", 2));
+    }
+
+    [Fact]
     public void AddHourWeekdayHeatmap_TimeZoneAndFirstDay_ShiftBuckets() {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus2", TimeSpan.FromHours(2), "Test +02", "Test +02");
         var sundayLate = new ChartTimedValue(Monday.AddHours(-1).AddMinutes(-30));
