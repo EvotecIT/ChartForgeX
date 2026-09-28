@@ -13,6 +13,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional base color. When null, the theme palette colors the tiles.</param>
     /// <returns>The current chart.</returns>
     public Chart AddTreemap(string name, IEnumerable<ChartTreemapItem> items, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));
         var points = new List<ChartPoint>();
         var labels = new List<ChartAxisLabel>();

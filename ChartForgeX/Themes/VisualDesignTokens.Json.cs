@@ -7,8 +7,9 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Themes;
 
 public sealed partial class VisualDesignTokens {
-    // A token file holds about 120 values nested four levels deep: the caps bound the value count, array and object sizes,
-    // and nesting depth (32), and duplicate keys are rejected.
+    private const int MaximumJsonCharacters = 1024 * 1024;
+    // A token file holds about 120 values nested four levels deep. Bound its text size, value count,
+    // array and object sizes, and nesting depth (32); reject duplicate keys.
     private static readonly GeoJsonReadLimits TokenJsonLimits = new GeoJsonReadLimits(4096, 256, 256).LimitDepth(32).RejectDuplicates();
 
     /// <summary>
@@ -34,6 +35,7 @@ public sealed partial class VisualDesignTokens {
     /// or holds a colour that is not <c>#rrggbb</c> or <c>#rrggbbaa</c>. Keys are case-sensitive.</exception>
     public static VisualDesignTokens FromJson(string json, VisualThemeMode mode = VisualThemeMode.Light) {
         if (json == null) throw new ArgumentNullException(nameof(json));
+        if (json.Length > MaximumJsonCharacters) throw new ArgumentException("Design-token JSON exceeds the maximum supported size.", nameof(json));
         if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown theme mode.");
         var name = mode == VisualThemeMode.Dark ? "dark" : "light";
         var root = GeoJsonValue.Parse(json, StringComparer.Ordinal, TokenJsonLimits).AsObject("design tokens");
@@ -81,7 +83,16 @@ public sealed partial class VisualDesignTokens {
     /// <exception cref="IOException">The file cannot be read.</exception>
     public static VisualDesignTokens FromJsonFile(string path, VisualThemeMode mode = VisualThemeMode.Light) {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Token file path must not be empty.", nameof(path));
-        return FromJson(File.ReadAllText(path), mode);
+        using var reader = new StreamReader(path);
+        var buffer = new char[MaximumJsonCharacters + 1];
+        var length = 0;
+        while (length < buffer.Length) {
+            var count = reader.Read(buffer, length, buffer.Length - length);
+            if (count == 0) break;
+            length += count;
+        }
+        if (length > MaximumJsonCharacters) throw new ArgumentException("Design-token JSON exceeds the maximum supported size.", nameof(path));
+        return FromJson(new string(buffer, 0, length), mode);
     }
 
     private static Dictionary<string, GeoJsonValue> Member(Dictionary<string, GeoJsonValue> parent, string name, string path) {

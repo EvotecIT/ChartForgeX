@@ -13,6 +13,11 @@
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
   const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const targetFocusNode = (node) => {
+    // Only the renderer-owned cell link is a mark's alternate keyboard target.
+    const link = node.parentElement;
+    return link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]') ? link : node;
+  };
   const seriesLegend = (node) => {
     const data = node.dataset || {};
     if (data.cfxSeries === undefined) return null;
@@ -822,8 +827,9 @@
     else return false;
     const targetNode = targets[next];
     if (!targetNode) return false;
-    if (targetNode.focus) {
-      try { targetNode.focus({ preventScroll: true }); } catch { targetNode.focus(); }
+    const focusNode = targetFocusNode(targetNode);
+    if (focusNode.focus) {
+      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
     }
     const target = targetIdentity(targetNode);
     emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });
@@ -839,8 +845,8 @@
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
-    if (target.targetKind && target.targetId && renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId) return true;
-    if (target.id && (node.id === target.id || data.cfxId === target.id)) return true;
+    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.id) return node.id === target.id || data.cfxId === target.id;
     if (target.seriesKey) {
       if (seriesKey(node) !== target.seriesKey) return false;
       if (target.point !== undefined) return data.cfxPoint === String(target.point);
@@ -901,7 +907,7 @@
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
     else if (detail.action === 'selection') {
-      if (!applySelectionByTarget(root, detail.target, detail.selected === true)) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
       renderCompare(root);
     } else if (detail.action === 'lasso') {
       applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
@@ -1264,7 +1270,8 @@
     }
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
-      if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
+      const focusNode = targetFocusNode(node);
+      if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
       node.addEventListener('pointerenter', (event) => {
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
@@ -1274,15 +1281,15 @@
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      node.addEventListener('focus', (event) => {
+      focusNode.addEventListener('focus', (event) => {
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
       });
-      node.addEventListener('blur', () => {
+      focusNode.addEventListener('blur', () => {
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      node.addEventListener('click', (event) => {
+      focusNode.addEventListener('click', (event) => {
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
@@ -1292,7 +1299,7 @@
           pinTip(root, tip, node, event);
         }
       });
-      node.addEventListener('keydown', (event) => {
+      focusNode.addEventListener('keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation')) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
@@ -1304,7 +1311,14 @@
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
+        // Enter on a link must retain native navigation. Space selects the cell without following the link.
+        if (focusNode !== node && event.key === 'Enter') return;
         event.preventDefault();
+        if (focusNode !== node) {
+          toggleSelection(root, node);
+          pinTip(root, tip, node, event);
+          return;
+        }
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
         else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });

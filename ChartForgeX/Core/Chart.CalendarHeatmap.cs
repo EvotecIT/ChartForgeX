@@ -14,6 +14,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional high-intensity cell color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddCalendarHeatmap(string name, IEnumerable<ChartCalendarHeatmapItem> items, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));
         var byDate = new SortedDictionary<DateTime, CalendarAggregate>();
         foreach (var item in items) {

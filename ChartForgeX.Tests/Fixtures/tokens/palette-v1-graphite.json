@@ -1,7 +1,5 @@
 {
   "name": "Evotec palette v1 (Graphite)",
-  "decision": "D14, owner, 2026-09-26",
-  "source": "Palette study candidate C; contrast and CVD checks in plan section 8.3",
   "notes": [
     "Severity has a fill (marks, bars, dots) and an ink (text on surfaces and tinted chips). Every ink is at least 4.5:1 on the card surface and on a 13% tint of its fill.",
     "Outcome 'fail' has no colour of its own: a failed result is coloured by its severity.",

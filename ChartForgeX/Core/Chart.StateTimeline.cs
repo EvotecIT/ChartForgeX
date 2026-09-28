@@ -62,7 +62,7 @@ public sealed partial class Chart {
             series.StateTimelineDetails.Add(segment.Detail);
         }
 
-        Series.Add(series);
+        AppendSeries(series);
         return this;
     }
 }

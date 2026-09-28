@@ -9,6 +9,21 @@ namespace ChartForgeX.Core;
 public sealed partial class Chart {
     private const int HoursPerDay = 24;
     private const int DaysPerWeek = 7;
+    private bool _hourWeekdayHeatmapOwned;
+    private ChartSeries[]? _hourWeekdayHeatmapRows;
+
+    private void EnsureCanAddSeries() {
+        if (_hourWeekdayHeatmapOwned) throw new InvalidOperationException("An hour-by-weekday heatmap owns the whole chart and cannot be combined with other series.");
+    }
+
+    internal void ValidateHourWeekdayHeatmapOwnership() {
+        if (!_hourWeekdayHeatmapOwned) return;
+        var rows = _hourWeekdayHeatmapRows;
+        if (rows == null || Series.Count != DaysPerWeek) throw new InvalidOperationException("An hour-by-weekday heatmap must retain its seven owned rows.");
+        for (var index = 0; index < DaysPerWeek; index++) {
+            if (!ReferenceEquals(Series[index], rows[index])) throw new InvalidOperationException("An hour-by-weekday heatmap must retain its seven owned rows in order.");
+        }
+    }
 
     /// <summary>
     /// Adds an hour-of-day by weekday heatmap: seven weekday rows by 24 hour columns, each cell aggregating the values
@@ -28,33 +43,45 @@ public sealed partial class Chart {
     /// IANA systems, so pass a label when output must match across platforms.</param>
     /// <returns>The current chart.</returns>
     /// <remarks>The heatmap owns the whole chart: it sets the <c>00</c>–<c>23</c> column labels and
-    /// <see cref="ChartOptions.HeatmapRelativeScale"/>, and it cannot be combined with other heatmap rows. When the x-axis
+    /// <see cref="ChartOptions.HeatmapRelativeScale"/>, and it cannot be combined with other series. When the x-axis
     /// title is empty it becomes <see cref="ChartLabels.HourOfDay"/> (default <c>Hour of day</c>) followed by the zone
     /// designator in parentheses.</remarks>
     public Chart AddHourWeekdayHeatmap(IEnumerable<ChartTimedValue> values, ChartTimeAggregation aggregation = ChartTimeAggregation.Count, TimeZoneInfo? timeZone = null, DayOfWeek firstDayOfWeek = DayOfWeek.Monday, ChartColor? color = null, IReadOnlyList<string>? dayNames = null, string? timeZoneLabel = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         if (dayNames != null && (dayNames.Count != DaysPerWeek || dayNames.Any(string.IsNullOrWhiteSpace))) throw new ArgumentException("Day names must contain seven non-empty entries indexed by DayOfWeek.", nameof(dayNames));
-        if (Series.Any(series => series.Kind == ChartSeriesKind.Heatmap || series.Kind == ChartSeriesKind.HexbinHeatmap)) throw new InvalidOperationException("An hour-by-weekday heatmap owns the whole chart and cannot be added to a chart that already has heatmap rows.");
+        if (_hourWeekdayHeatmapOwned || Series.Count != 0) throw new InvalidOperationException("An hour-by-weekday heatmap owns the whole chart and requires an empty chart.");
         if (!Enum.IsDefined(typeof(ChartTimeAggregation), aggregation)) throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, "Unknown aggregation.");
         if (!Enum.IsDefined(typeof(DayOfWeek), firstDayOfWeek)) throw new ArgumentOutOfRangeException(nameof(firstDayOfWeek), firstDayOfWeek, "Unknown weekday.");
         var zone = timeZone ?? TimeZoneInfo.Utc;
-        var count = new int[DaysPerWeek, HoursPerDay];
+        var count = new long[DaysPerWeek, HoursPerDay];
         var sum = new double[DaysPerWeek, HoursPerDay];
+        var mean = new double[DaysPerWeek, HoursPerDay];
         var maximum = new double[DaysPerWeek, HoursPerDay];
-        var observed = 0;
+        long observed = 0;
         foreach (var value in values) {
             var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(value.Timestamp, DateTimeKind.Utc), zone);
             var day = (int)local.DayOfWeek;
             var hour = local.Hour;
-            maximum[day, hour] = count[day, hour] == 0 ? value.Value : Math.Max(maximum[day, hour], value.Value);
-            count[day, hour]++;
-            sum[day, hour] += value.Value;
-            observed++;
+            var n = checked(++count[day, hour]);
+            switch (aggregation) {
+                case ChartTimeAggregation.Sum:
+                    sum[day, hour] += value.Value;
+                    break;
+                case ChartTimeAggregation.Mean:
+                    mean[day, hour] = mean[day, hour] * ((n - 1d) / n) + value.Value / n;
+                    break;
+                case ChartTimeAggregation.Maximum:
+                    maximum[day, hour] = n == 1 ? value.Value : Math.Max(maximum[day, hour], value.Value);
+                    break;
+            }
+            observed = checked(observed + 1);
         }
 
         if (observed == 0) throw new ArgumentException("Hour-by-weekday heatmaps require at least one value.", nameof(values));
-        foreach (var total in sum) {
-            if (double.IsInfinity(total)) throw new ArgumentException("Hour-by-weekday bucket sums must stay finite.", nameof(values));
+        if (aggregation == ChartTimeAggregation.Sum) {
+            foreach (var total in sum) {
+                if (double.IsInfinity(total)) throw new ArgumentException("Hour-by-weekday bucket sums must stay finite.", nameof(values));
+            }
         }
 
         var names = dayNames ?? CultureInfo.InvariantCulture.DateTimeFormat.AbbreviatedDayNames;
@@ -66,13 +93,13 @@ public sealed partial class Chart {
                 double? cell = aggregation switch {
                     ChartTimeAggregation.Count => n,
                     ChartTimeAggregation.Sum => sum[day, hour],
-                    ChartTimeAggregation.Mean => n == 0 ? null : sum[day, hour] / n,
+                    ChartTimeAggregation.Mean => n == 0 ? null : mean[day, hour],
                     _ => n == 0 ? null : maximum[day, hour]
                 };
                 if (cell.HasValue) points.Add(new ChartPoint(hour + 1, cell.Value));
             }
 
-            Series.Add(new ChartSeries(names[day], ChartSeriesKind.Heatmap, points) { Color = color, HeatmapColumnCount = HoursPerDay, ShowInLegend = false });
+            AppendSeries(new ChartSeries(names[day], ChartSeriesKind.Heatmap, points) { Color = color, HeatmapColumnCount = HoursPerDay, ShowInLegend = false });
         }
 
         var labels = new string[HoursPerDay];
@@ -83,6 +110,9 @@ public sealed partial class Chart {
             var label = !string.IsNullOrWhiteSpace(timeZoneLabel) ? timeZoneLabel!.Trim() : timeZone == null ? "UTC" : timeZone.Id;
             XAxisTitle = Options.Labels.HourOfDay + " (" + label + ")";
         }
+
+        _hourWeekdayHeatmapRows = Series.ToArray();
+        _hourWeekdayHeatmapOwned = true;
 
         return this;
     }

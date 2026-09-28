@@ -25,7 +25,6 @@ public sealed partial class PngChartRenderer {
             if (item.Value < min) min = item.Value;
             if (item.Value > max) max = item.Value;
         }
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var start = CalendarWeekStart(minDate);
         var end = CalendarWeekEnd(maxDate);
@@ -105,7 +104,7 @@ public sealed partial class PngChartRenderer {
 
         DrawCalendarHeatmapPngTick(c, chart, lessLabelX, y + size / 2, "Less", rightAligned: false, emphasized: false);
         for (var i = 0; i < 5; i++) {
-            var value = min + (max - min) * (i / 4.0);
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, i / 4.0);
             var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, Math.Min(3, size * 0.22), color);
         }
