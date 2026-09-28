@@ -205,9 +205,9 @@ public sealed class StateTimelineTests {
     public void Render_LongSummaryHeader_FitsReservedColumn()
     {
         var chart = CreateChart();
-        chart.Options.StateTimelineSummaryHeader = "Very long summary header that must stay outside the lane plot";
+        chart.Options.LaneSummaryHeader = "Very long summary header that must stay outside the lane plot";
         var header = Texts(XDocument.Parse(chart.ToSvg()), "state-summary-header").Single();
-        Assert.NotEqual(chart.Options.StateTimelineSummaryHeader, header);
+        Assert.NotEqual(chart.Options.LaneSummaryHeader, header);
         Assert.True(header.Length < 25);
     }
 
@@ -388,6 +388,17 @@ public sealed class StateTimelineTests {
         Assert.NotEmpty(chart.ToPng());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_OneSidedNumericLimit_RejectsAnUnrepresentableWindow(bool lowerBound) {
+        var chart = CreateChart();
+        if (lowerBound) chart.Options.XAxis.Minimum = double.MaxValue;
+        else chart.Options.XAxis.Maximum = -double.MaxValue;
+        Assert.Throws<ArgumentOutOfRangeException>(() => ChartStateTimelineModel.Build(chart));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ToSvg());
+    }
+
     private static Chart CreateChart() {
         var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
@@ -404,7 +415,7 @@ public sealed class StateTimelineTests {
                 new ChartStateTimelineSegment(Day.AddHours(12), Day.AddHours(24), "notObservable")
             }, "100%")
             .AddStateTimelineLane("DC03", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(24), "up") });
-        chart.Options.StateTimelineSummaryHeader = "Available";
+        chart.Options.LaneSummaryHeader = "Available";
         return chart;
     }
 

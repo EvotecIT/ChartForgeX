@@ -55,7 +55,7 @@ public sealed partial class Chart {
             .Select(item => item.Segment).ToList();
         var series = new ChartSeries(name, ChartSeriesKind.StateTimeline, ordered.ConvertAll(segment => new ChartPoint(segment.Start, segment.End))) {
             ShowInLegend = false,
-            StateTimelineSummary = summary
+            LaneSummary = summary
         };
         foreach (var segment in ordered) {
             series.PointLabels.Add(segment.State);

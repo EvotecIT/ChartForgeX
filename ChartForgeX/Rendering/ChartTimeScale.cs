@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
@@ -88,6 +89,25 @@ internal static class ChartTimeScale {
         return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Formats a full instant with subsecond precision and disambiguates repeated local hours.</summary>
+    public static string FormatInstant(ChartAxis axis, double value) {
+        if (value < 0) return value.ToString("G17", CultureInfo.InvariantCulture);
+        var local = ToDisplayTime(axis, value, roundToSeconds: false);
+        if (!local.HasValue) return value.ToString("G17", CultureInfo.InvariantCulture);
+        long fractionalTicks = local.Value.Ticks % TimeSpan.TicksPerSecond;
+        var format = fractionalTicks != 0
+            ? fractionalTicks % TimeSpan.TicksPerMillisecond == 0 ? "yyyy-MM-dd HH:mm:ss.fff" : "yyyy-MM-dd HH:mm:ss.ffff"
+            : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
+        var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ZoneDesignator(axis);
+        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
+        if (zone.IsAmbiguousTime(local.Value)) {
+            var utc = ChartDateTime.FromOrderedOaDate(value);
+            var offset = zone.GetUtcOffset(utc);
+            text += " " + (offset < TimeSpan.Zero ? "-" : "+") + offset.Duration().ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+        }
+        return text;
+    }
+
     /// <summary>Returns the axis title with the time-zone designator appended when the axis requests it.</summary>
     public static string DecorateTitle(Chart chart) {
         // Classic schedules store wall-clock dates and do not apply the instant-axis display zone.
@@ -124,8 +144,16 @@ internal static class ChartTimeScale {
     public static DateTime? ToDisplayTime(ChartAxis axis, double value, bool roundToSeconds = true) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (!IsRepresentable(value)) return null;
-        var local = ToLocal(value, axis.TimeZone ?? TimeZoneInfo.Utc);
-        if (!roundToSeconds) return local;
+        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
+        if (!roundToSeconds) {
+            try {
+                return DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(
+                    ChartDateTime.FromOrderedOaDate(value), zone), DateTimeKind.Unspecified);
+            } catch (Exception exception) when (exception is ArgumentOutOfRangeException || exception is OverflowException) {
+                return null;
+            }
+        }
+        var local = ToLocal(value, zone);
         return new DateTime((local.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
     }
 

@@ -30,7 +30,7 @@ internal sealed class ChartStateTimelineModel {
         Ticks = ticks;
         Legend = legend;
         foreach (var lane in lanes) HasSummary |= !string.IsNullOrWhiteSpace(lane.Summary);
-        HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.StateTimelineSummaryHeader) && lanes.Count > 0;
+        HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) && lanes.Count > 0;
     }
 
     public Chart Chart { get; }
@@ -47,7 +47,7 @@ internal sealed class ChartStateTimelineModel {
 
     public bool HasSummary { get; }
 
-    public string? SummaryHeader => Chart.Options.StateTimelineSummaryHeader;
+    public string? SummaryHeader => Chart.Options.LaneSummaryHeader;
 
     public static ChartStateTimelineModel Build(Chart chart) {
         var legend = new ChartStateCategoryLegend(chart);
@@ -75,16 +75,13 @@ internal sealed class ChartStateTimelineModel {
                 max = Math.Max(max, series.Points[i].Y);
             }
 
-            lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.StateTimelineSummary, segments));
+            lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments));
         }
 
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
-        if (!(max > min)) {
-            if (axis.Maximum.HasValue && !axis.Minimum.HasValue) min = max - Math.Max(1.0 / 24.0, Math.Abs(max) * 1e-12);
-            else max = min + Math.Max(1.0 / 24.0, Math.Abs(min) * 1e-12);
-        }
+        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
         // Timeline segments are UTC instants even when callers leave the default linear axis.
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
@@ -94,12 +91,16 @@ internal sealed class ChartStateTimelineModel {
     }
 
     /// <summary>Returns the lane plot area after reserving the label column, summary column, axis, and legend.</summary>
-    public ChartRect PlotArea(ChartRect bounds, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve) {
-        var options = Chart.Options;
+    public ChartRect PlotArea(ChartRect bounds, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve) =>
+        LanePlotArea(Chart, bounds, HasSummary, SummaryHeader, laneLabelWidth, summaryWidth, summaryHeaderHeight, legendHeight, 0, axisLabelReserve, axisTitleReserve);
+
+    /// <summary>Shared lane-chart layout: label column, summary column, time axis, legend, and an optional top reserve.</summary>
+    public static ChartRect LanePlotArea(Chart chart, ChartRect bounds, bool hasSummary, string? summaryHeader, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double topLabelHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve) {
+        var options = chart.Options;
         var labelReserve = options.ShowAxes && options.ShowYAxis ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * 0.34) : 0;
-        var summaryReserve = HasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
-        var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, Chart.XAxisTitle)) ? 0 : axisTitleReserve) : 0;
-        var topReserve = HasSummary && !string.IsNullOrWhiteSpace(SummaryHeader) ? summaryHeaderHeight + 6 : 0;
+        var summaryReserve = hasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
+        var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, chart.XAxisTitle)) ? 0 : axisTitleReserve) : 0;
+        var topReserve = Math.Max(hasSummary && !string.IsNullOrWhiteSpace(summaryHeader) ? summaryHeaderHeight + 6 : 0, topLabelHeight);
         var width = Math.Max(1, bounds.Width - labelReserve - summaryReserve);
         var height = Math.Max(1, bounds.Height - axisReserve - legendHeight - topReserve);
         return new ChartRect(bounds.Left + labelReserve, bounds.Top + topReserve, width, height);
@@ -137,24 +138,19 @@ internal sealed class ChartStateTimelineModel {
         return string.IsNullOrWhiteSpace(segment.Detail) ? text : text + " · " + segment.Detail;
     }
 
-    public string FormatInstant(double value) {
-        var axis = Chart.Options.XAxis;
-        if (value < 0) return value.ToString("G17", CultureInfo.InvariantCulture);
-        var local = ChartTimeScale.ToDisplayTime(axis, value, roundToSeconds: false);
-        if (!local.HasValue) return value.ToString("G17", CultureInfo.InvariantCulture);
-        var format = local.Value.Millisecond != 0 ? "yyyy-MM-dd HH:mm:ss.fff" : local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss";
-        var text = local.Value.ToString(format, CultureInfo.InvariantCulture) + " " + ChartTimeScale.ZoneDesignator(axis);
-        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
-        if (zone.IsAmbiguousTime(local.Value)) {
-            var utc = DateTime.SpecifyKind(DateTime.FromOADate(value), DateTimeKind.Utc);
-            var offset = zone.GetUtcOffset(utc);
-            text += " " + (offset < TimeSpan.Zero ? "-" : "+") + offset.Duration().ToString(@"hh\:mm", CultureInfo.InvariantCulture);
-        }
-        return text;
-    }
+    public string FormatInstant(double value) => ChartTimeScale.FormatInstant(Chart.Options.XAxis, value);
 
     public static string FormatDuration(double days) {
+        if (!ChartMath.IsFinite(days)) return "duration exceeds numeric range";
         var totalSeconds = Math.Max(0, days) * 86400;
+        if (!ChartMath.IsFinite(totalSeconds) || totalSeconds > long.MaxValue)
+            return days.ToString("G4", CultureInfo.InvariantCulture) + "d";
+        if (totalSeconds > 0 && totalSeconds < 0.001) {
+            double hundredMicroseconds = Math.Round(totalSeconds * 10_000, MidpointRounding.AwayFromZero);
+            if (hundredMicroseconds < 1) return "<100µs";
+            if (hundredMicroseconds >= 10) return "1ms";
+            return (hundredMicroseconds * 100).ToString("0", CultureInfo.InvariantCulture) + "µs";
+        }
         if (totalSeconds > 0 && totalSeconds < 1) return Math.Round(totalSeconds * 1000).ToString(CultureInfo.InvariantCulture) + "ms";
         var seconds = (long)Math.Round(totalSeconds);
         if (seconds < 60) return seconds.ToString(CultureInfo.InvariantCulture) + "s";
