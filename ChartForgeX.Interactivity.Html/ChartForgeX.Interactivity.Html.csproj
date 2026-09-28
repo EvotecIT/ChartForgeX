@@ -84,6 +84,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.26-box-selection.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.26-box-selection.js" />
     <EmbeddedResource Include="Assets\graph-explorer.27-pointer-interactions.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.27-pointer-interactions.js" />
     <EmbeddedResource Include="Assets\graph-explorer.28-svg-export.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.28-svg-export.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.29-export-styles.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-export-styles.js" />
     <EmbeddedResource Include="Assets\graph-explorer.29-selection.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js" />
     <EmbeddedResource Include="Assets\graph-explorer.30-bindings.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js" />
     <EmbeddedResource Include="Assets\graph-explorer.31-physics-configurator.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js" />

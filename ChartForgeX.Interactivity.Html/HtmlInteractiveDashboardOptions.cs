@@ -51,6 +51,12 @@ public sealed class HtmlInteractiveDashboardOptions {
     }
 
     /// <summary>
+    /// Gets or sets shared asset references. When set, the page links the chart runtime and stylesheet from
+    /// <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them (see <see cref="HtmlInteractiveAssetFiles.Charts"/>).
+    /// </summary>
+    public HtmlAssetReferences? ExternalAssets { get; set; }
+
+    /// <summary>
     /// Gets or sets the preferred dashboard column count.
     /// </summary>
     public int Columns {
