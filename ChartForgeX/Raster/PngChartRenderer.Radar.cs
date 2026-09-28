@@ -61,7 +61,7 @@ public sealed partial class PngChartRenderer {
             var isOuterTick = scale.IsMaximum(tick);
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !isOuterTick) {
                 var ringLabelMaxWidth = Math.Max(28, chart.Options.Size.Width - chart.Options.Padding.Right - cx - 14);
-                var ringLabel = FormatYAxisValue(chart, tick);
+                var ringLabel = FormatYAxisValue(chart, tick, scale.Ticks);
                 var ringFontSize = TextFontSizeForWidth(ringLabel, ringLabelMaxWidth, tickFontSize, tickStyle);
                 ringLabel = TrimPngLabelToWidth(ringLabel, ringFontSize, ringLabelMaxWidth, tickStyle);
                 if (ringLabel.Length > 0) DrawPngTextStyled(c, cx + 7, cy - ringRadius + 14 - PngStyledTextBottomExtent(ringFontSize, tickStyle), ringLabel, tickStyle, chart.Options.Theme.MutedText, ringFontSize, emphasized: false);

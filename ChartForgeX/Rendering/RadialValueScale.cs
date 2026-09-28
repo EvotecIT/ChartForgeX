@@ -38,8 +38,9 @@ internal sealed class RadialValueScale {
         var maximum = axis.Maximum ?? values.Max();
         if (maximum <= minimum) maximum = axis.Scale == ChartScaleKind.Logarithmic ? minimum * 10 : minimum + 1;
 
-        var ticks = ChartTicks.Generate(axis, minimum, maximum).Where(tick => tick >= minimum).ToArray();
-        if (ticks.Length > 0) maximum = Math.Max(maximum, ticks[ticks.Length - 1]);
+        var generatedTicks = ChartTicks.Generate(axis, minimum, maximum);
+        var ticks = ChartTicks.PreserveFormatting(generatedTicks, generatedTicks.Where(tick => tick >= minimum).ToArray());
+        if (ticks.Count > 0) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
         return new RadialValueScale(axis, minimum, maximum, ticks);
     }
 
@@ -49,7 +50,7 @@ internal sealed class RadialValueScale {
         return ChartScaleTransform.Normalize(bounded, Minimum, Maximum, _axis);
     }
 
-    public bool IsMaximum(double value) => Math.Abs(value - Maximum) <= Math.Max(0.000001, Math.Abs(Maximum) * 0.000001);
+    public bool IsMaximum(double value) => ChartTicks.IsNumericTimeFallback(Ticks) ? value == Maximum : Math.Abs(value - Maximum) <= Math.Max(0.000001, Math.Abs(Maximum) * 0.000001);
 
     private static double AutomaticMinimum(ChartAxis axis, IReadOnlyList<double> values) {
         if (axis.Scale == ChartScaleKind.Logarithmic) {

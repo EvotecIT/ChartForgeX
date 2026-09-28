@@ -161,7 +161,9 @@ public sealed partial class SvgChartRenderer {
 
     private static double EdgeAwareStyledTextX(Chart chart, string label, double x, ChartRect plot, double fontSize, TextStyleOverride style, bool emphasized = false) {
         var halfWidth = MeasureSvgStyledTextWidth(chart, label, fontSize, style, emphasized) / 2;
-        return Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset + halfWidth, plot.Right - ChartVisualPrimitives.DataLabelPlotInset - halfWidth);
+        if (x - halfWidth < plot.Left + ChartVisualPrimitives.DataLabelPlotInset) return plot.Left + ChartVisualPrimitives.DataLabelPlotInset;
+        if (x + halfWidth > plot.Right - ChartVisualPrimitives.DataLabelPlotInset) return plot.Right - ChartVisualPrimitives.DataLabelPlotInset;
+        return x;
     }
 
     private static string RotatedStyledAnchor(Chart chart, string label, double x, ChartRect plot, double angle, double fontSize, TextStyleOverride style, bool emphasized = false) {
@@ -332,8 +334,8 @@ public sealed partial class SvgChartRenderer {
         return formatter(value) ?? string.Empty;
     }
 
-    private static string FormatYAxisValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter);
+    private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatDataLabel(Chart chart, ChartSeries series, int pointIndex, double value) {
@@ -344,8 +346,8 @@ public sealed partial class SvgChartRenderer {
     private static string SeriesSemanticRole(ChartSeries series, string fallback) =>
         string.IsNullOrWhiteSpace(series.SemanticRole) ? fallback : series.SemanticRole!;
 
-    private static string FormatSecondaryValue(Chart chart, double value) {
-        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter);
+    private static string FormatSecondaryValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
+        return ChartAxisValueFormatter.Format(chart.Options.SecondaryYAxis, value, chart.Options.ValueFormatter, ticks);
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
@@ -360,8 +362,8 @@ public sealed partial class SvgChartRenderer {
         if (chart.Options.XAxisLabels.Count == 0) {
             var ticks = ChartTicks.GenerateInside(chart.Options.XAxis, range.MinX, range.MaxX);
             if (chart.Options.XAxisLabelDensity == ChartLabelDensity.All || ticks.Count < 3) return ticks;
-            var generatedLabels = ticks.Select(tick => new ChartAxisLabel(tick, FormatXAxisValue(chart, tick))).ToArray();
-            return SelectXAxisTickValues(chart, range, plot, generatedLabels);
+            var generatedLabels = ticks.Select(tick => new ChartAxisLabel(tick, ChartTimeScale.FormatFallbackTick(chart, ticks, tick, true) ?? FormatXAxisValue(chart, tick))).ToArray();
+            return ChartTicks.PreserveFormatting(ticks, SelectXAxisTickValues(chart, range, plot, generatedLabels));
         }
 
         var labels = chart.Options.XAxisLabels
@@ -406,8 +408,8 @@ public sealed partial class SvgChartRenderer {
     private static double LabelGap(Chart chart, ChartAxisLabel left, ChartAxisLabel right, ChartRange range, ChartRect plot, ChartAxis axis, double fontSize, TextStyleOverride style) {
         var leftWidth = EstimateSvgStyledTextWidth(chart, left.Text, fontSize, style);
         var rightWidth = EstimateSvgStyledTextWidth(chart, right.Text, fontSize, style);
-        var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + 2, plot.Right - leftWidth - 2);
-        var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + 2, plot.Right - rightWidth - 2);
+        var leftX = Clamp(ProjectX(left.Value, range, plot, axis) - leftWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - leftWidth - ChartVisualPrimitives.DataLabelPlotInset);
+        var rightX = Clamp(ProjectX(right.Value, range, plot, axis) - rightWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - rightWidth - ChartVisualPrimitives.DataLabelPlotInset);
         return rightX - (leftX + leftWidth);
     }
 
@@ -429,9 +431,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string FormatX(Chart chart, double value) {
-        foreach (var label in chart.Options.XAxisLabels) {
-            if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        }
+        if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) is { } label) return label;
 
         return FormatXAxisValue(chart, value);
     }

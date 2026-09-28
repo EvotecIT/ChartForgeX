@@ -10,7 +10,7 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.Generate(axis, min, max, false) is { } timeTicks) return timeTicks;
+        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, false) ?? new NumericTimeTicks(Generate(min, max, axis.TickCount));
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, false);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return Generate(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, false);
@@ -18,7 +18,7 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> GenerateInside(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.Generate(axis, min, max, true) is { } timeTicks) return timeTicks;
+        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, true);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return GenerateInside(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, true);
@@ -45,6 +45,15 @@ internal static class ChartTicks {
         PreserveUpperEndpoint(ticks, Denormalize(NormalizeZero(niceMax, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
 
         return ticks.Count >= 2 ? ticks : DistinctEndpoints(min, max);
+    }
+
+    internal static bool IsNumericTimeFallback(IReadOnlyList<double> ticks) => ticks is NumericTimeTicks;
+
+    internal static IReadOnlyList<double> PreserveFormatting(IReadOnlyList<double> source, IReadOnlyList<double> selected) =>
+        IsNumericTimeFallback(source) ? new NumericTimeTicks(selected) : selected;
+
+    private sealed class NumericTimeTicks : List<double> {
+        public NumericTimeTicks(IEnumerable<double> ticks) : base(ticks) { }
     }
 
     public static IReadOnlyList<double> GenerateInside(double min, double max, int desiredCount) {

@@ -44,7 +44,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static string XAxisTitleText(Chart chart) => ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+    private static string XAxisTitleText(Chart chart) => ChartTimeScale.DecorateTitle(chart);
 
     private static void DrawSvgXAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double y, string role = "") {
         var title = XAxisTitleText(chart);

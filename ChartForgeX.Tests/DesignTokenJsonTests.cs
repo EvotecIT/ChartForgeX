@@ -6,9 +6,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class DesignTokenJsonTests {
-    // Fixture copied verbatim from TestimoX docs/roadmaps/evidence/palette-v1-graphite.json (decision D14): the shape
-    // HtmlForgeX tokens v1 generates.
+    // Fixture exercises the documented light and dark design-token JSON contract.
     private static readonly string GraphiteJson = File.ReadAllText(FixturePath("tokens", "palette-v1-graphite.json"));
+
+    [Fact]
+    public void FromJson_RejectsOversizedIgnoredMetadata_InStringsAndFiles() {
+        var json = GraphiteJson.Replace("Evotec palette v1 (Graphite)", new string('x', 1024 * 1024 + 1));
+        Assert.Contains("maximum supported size", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(json)).Message, StringComparison.Ordinal);
+
+        var path = Path.GetTempFileName();
+        try {
+            File.WriteAllText(path, json);
+            Assert.Contains("maximum supported size", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJsonFile(path)).Message, StringComparison.Ordinal);
+        } finally {
+            File.Delete(path);
+        }
+    }
 
     [Fact]
     public void FromJson_GraphiteLight_MapsSurfacesTextAccentsSeriesAndStatus() {

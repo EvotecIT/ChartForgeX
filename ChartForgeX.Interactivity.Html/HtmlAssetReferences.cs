@@ -31,6 +31,14 @@ public sealed class HtmlAssetReferences {
             throw new ArgumentException("Asset base path must be relative or an http/https URL.", nameof(basePath));
         }
 
+        if ((value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+             value.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) &&
+            (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) ||
+             string.IsNullOrEmpty(uri.Host))) {
+            throw new ArgumentException("Asset base URL must be a valid http/https URL with a host.", nameof(basePath));
+        }
+
         BasePath = value.EndsWith("/", StringComparison.Ordinal) ? value : value + "/";
     }
 

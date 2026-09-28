@@ -7,15 +7,27 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
-    private static void DrawStateCategoryLegend(RgbaCanvas c, Chart chart, IReadOnlyList<ChartStateCategoryLegendItem> legend, double top) {
+    private static void DrawStateCategoryLegend(RgbaCanvas c, Chart chart, IReadOnlyList<ChartStateCategoryLegendItem> legend, double top, ChartRect bounds) {
         var style = chart.Options.LegendStyle;
+        var legendStyle = style;
         var fontSize = PngLegendFontSize(chart);
-        var swatch = ChartStateCategoryLegend.Swatch;
+        var legendFontSize = fontSize;
+        var t = chart.Options.Theme;
         foreach (var item in legend) {
-            var rowY = top + item.Row * ChartStateCategoryLegend.RowHeight;
-            c.FillRoundedRect(item.X, rowY, swatch, swatch, ChartStateCategoryLegend.SwatchRadius, item.Category.Color);
-            if (item.Category.Hatched) DrawStateCategoryHatch(c, item.X, rowY, swatch, swatch);
-            DrawStateCategoryText(c, item.Category.Label, item.X + swatch + ChartStateCategoryLegend.LabelGap, rowY + swatch / 2, style, chart.Options.Theme.MutedText, fontSize, false);
+            var rowY = top + item.Row * LegendRowBudget.RowHeight(chart);
+            var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
+            if (item.Omitted > 0) {
+                DrawLegendOverflow(c, chart, new ChartRect(bounds.Left, rowY, bounds.Width, LegendRowBudget.RowHeight(chart)), rowCenter + EstimatePngStyledTextHeight(legendFontSize, legendStyle) / 2, item.Omitted);
+                continue;
+            }
+
+            var state = item.Category!;
+            var swatchY = rowCenter - ChartStateCategoryLegend.Swatch / 2;
+            c.FillRoundedRect(item.X, swatchY, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.SwatchRadius, state.Color);
+            if (state.Hatched) DrawStateCategoryHatch(c, item.X, swatchY, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.Swatch);
+            var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateCategoryLegend.Swatch - 6);
+            var label = TrimReadablePngLabelToWidth(state.Label, legendFontSize, labelWidth, legendStyle);
+            DrawStateCategoryText(c, label, item.X + ChartStateCategoryLegend.Swatch + 6, rowCenter, legendStyle, t.MutedText, legendFontSize, false);
         }
     }
 

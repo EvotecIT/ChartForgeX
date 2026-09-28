@@ -10,6 +10,7 @@ internal static class ReportingExamples {
 
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
         WriteTimeAxis(output, pngOutputScale);
+        WriteTimeAxisRegressions(output, pngOutputScale);
         WriteStateTimeline(output, pngOutputScale);
         WriteStatusMatrix(output, pngOutputScale);
         WriteIncidentLanes(output, pngOutputScale);
@@ -74,6 +75,7 @@ internal static class ReportingExamples {
 
         chart.SaveSvg(Path.Combine(output, "reporting-status-matrix.svg"));
         chart.SaveHtml(Path.Combine(output, "reporting-status-matrix.html"));
+        chart.SaveInteractiveHtml(Path.Combine(output, "reporting-status-matrix-interactive.html"));
         chart.SavePng(Path.Combine(output, "reporting-status-matrix.png"));
     }
 
@@ -94,7 +96,8 @@ internal static class ReportingExamples {
             .WithSize(1180, 520)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
-            .WithStateCategories(states);
+            .WithStateCategories(states)
+            .WithGridStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
         chart.Options.LaneSummaryHeader = "Available";
         var start = WindowStart.AddHours(12);
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
@@ -131,6 +134,31 @@ internal static class ReportingExamples {
         if (lane == 6 && bucket is >= 70 and < 80) return "notObservable";
         var hash = (lane * 7919 + bucket * 104729) % 97;
         return hash < 4 ? "degraded" : "up";
+    }
+
+    private static void WriteTimeAxisRegressions(string output, ChartPngOutputScale pngOutputScale) {
+        var start = WindowStart.ToOADate();
+        var end = start + 200.0 / 86400000;
+        var fast = Chart.Create().WithTitle("Sub-second time-axis fallback")
+            .WithSubtitle("Fractional OLE Automation dates keep distinct values below one second")
+            .WithTheme(ChartTheme.ReportLight()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
+            .WithXAxisTimeScale().WithXAxis("Observed (OLE Automation days)").WithYAxis("Sample")
+            .AddLine("Signal", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
+        fast.Options.XAxis.WithBounds(start, end);
+        fast.SaveSvg(Path.Combine(output, "reporting-time-axis-subsecond.svg"));
+        fast.SaveHtml(Path.Combine(output, "reporting-time-axis-subsecond.html"));
+        fast.SavePng(Path.Combine(output, "reporting-time-axis-subsecond.png"));
+
+        var zone = TimeZoneInfo.CreateCustomTimeZone("Example/Plus5", TimeSpan.FromHours(5), "UTC+05", "UTC+05");
+        var schedule = Chart.Create().WithTitle("Classic wall-clock schedule")
+            .WithSubtitle("Date-based schedules retain wall-clock dates and do not advertise an unapplied display zone")
+            .WithTheme(ChartTheme.ReportLight()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
+            .WithXAxis("Window").WithXAxisTimeScale(zone, showTimeZone: true, label: "UTC+05")
+            .WithTickCount(3)
+            .AddGanttTask("Maintenance", WindowStart.Date, WindowStart.Date.AddDays(2));
+        schedule.SaveSvg(Path.Combine(output, "reporting-classic-wall-clock.svg"));
+        schedule.SaveHtml(Path.Combine(output, "reporting-classic-wall-clock.html"));
+        schedule.SavePng(Path.Combine(output, "reporting-classic-wall-clock.png"));
     }
 
     private static void WriteTimeAxis(string output, ChartPngOutputScale pngOutputScale) {
