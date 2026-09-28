@@ -7,6 +7,7 @@ namespace ChartForgeX.Themes;
 /// Defines colors, typography, and surface styling used by chart renderers.
 /// </summary>
 public sealed partial class ChartTheme {
+    private ChartColor[]? _sequentialRamp;
     private ChartColor[] _palette = ChartPalettes.Report;
     private double _cornerRadius = 12;
     private double _plotCornerRadius = 8;
@@ -80,6 +81,23 @@ public sealed partial class ChartTheme {
     /// Gets or sets the semantic color used for negative status indicators.
     /// </summary>
     public ChartColor Negative { get; set; } = ChartColor.FromRgb(239,68,68);
+
+    /// <summary>
+    /// Gets or sets an optional sequential ramp (weakest to strongest) for count and intensity heatmaps. When set, heatmap,
+    /// hexbin, and calendar cells without an explicit colour interpolate along it instead of blending the first palette
+    /// colour into the plot background. It applies to the sequential heatmap scale only, not the semantic status scale.
+    /// Design tokens with <c>ramps.sequential</c> set it.
+    /// </summary>
+    public ChartColor[]? SequentialRamp {
+        get => _sequentialRamp == null ? null : (ChartColor[])_sequentialRamp.Clone();
+        set {
+            if (value != null && value.Length < 2) throw new ArgumentException("A sequential ramp needs at least two colours.", nameof(value));
+            _sequentialRamp = value == null ? null : (ChartColor[])value.Clone();
+        }
+    }
+
+    /// <summary>Gets the stored ramp without copying, for renderers.</summary>
+    internal ChartColor[]? SequentialRampValue => _sequentialRamp;
 
     /// <summary>
     /// Gets or sets the default series palette.
@@ -219,6 +237,7 @@ public sealed partial class ChartTheme {
         Warning = Warning,
         Negative = Negative,
         Palette = Palette,
+        SequentialRamp = SequentialRamp,
         UseCard = UseCard,
         CornerRadius = CornerRadius,
         PlotCornerRadius = PlotCornerRadius,

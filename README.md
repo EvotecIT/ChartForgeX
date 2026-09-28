@@ -291,7 +291,7 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
 
 ### Generated design tokens
 
-Hosts that generate design tokens (the HtmlForgeX tokens v1 JSON, with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
+Hosts that generate design tokens (the HtmlForgeX design tokens 1.x — 1.1.0 adds optional `ramps` — with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
 
 ```csharp
 var tokens = VisualDesignTokens.FromJsonFile("tokens.json", VisualThemeMode.Dark);
@@ -300,7 +300,7 @@ var availability = Chart.Create()
     .WithStateCategories(tokens.Status.OperationalStateCategories());
 ```
 
-`SeverityCategories()`, `OutcomeCategories()`, and `OperationalStateCategories()` return the keys `critical`…`info`, `pass`/`notEvaluated`/`couldNotEvaluate`, and `up`/`degraded`/`down`/`recovering`/`maintenance`/`notObservable`/`unknown`. Missing members fail with the JSON path, for example `light.severity.high.ink`.
+`SeverityCategories()`, `OutcomeCategories()`, and `OperationalStateCategories()` return the keys `critical`…`info`, `pass`/`notEvaluated`/`couldNotEvaluate`, and `up`/`degraded`/`down`/`recovering`/`maintenance`/`notObservable`/`unknown`. Missing members fail with the JSON path, for example `light.severity.high.ink`. Optional `ramps` (a one-hue `sequential` array and a `diverging` object with `negative`/`positive` arms around a `neutral` colour, each weakest to strongest) become `SequentialRamp` and `DivergingRamp`. `WithDesignTokens` applies the sequential ramp to `ChartTheme.SequentialRamp`, which colours count heatmaps, hexbins, and calendars without an explicit colour; `DivergingRamp.ToMapColorScale(midpoint)` and `ToSequentialMapColorScale()` build map scales from the end colours (map scales blend linearly between two or three stops). The weakest ramp colour is used for the smallest value, since the tokens guarantee it stays visible on the card surface. Files without ramps still load.
 
 ## Composition
 

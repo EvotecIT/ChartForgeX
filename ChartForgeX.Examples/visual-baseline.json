@@ -1379,6 +1379,23 @@
       }
     },
     {
+      "name": "foundation-sequential-ramp-heatmap",
+      "width": 920,
+      "height": 420,
+      "svg": {
+        "minVisualNodes": 32,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 712229,
+        "minTransparentPixels": 60571,
+        "minDistinctColors": 2033,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "foundation-typed-facets",
       "width": 926,
       "height": 444,

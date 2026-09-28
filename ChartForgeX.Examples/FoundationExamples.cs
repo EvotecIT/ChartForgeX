@@ -44,6 +44,27 @@ internal static class FoundationExamples {
             .AddLine("London", samples.Filter(sample => sample.Site == "London"), sample => sample.Index, sample => sample.Value);
         SaveChart(logScale, output, "foundation-typed-log-scale", pngOutputScale);
 
+        var rampTokens = new VisualDesignTokens();
+        rampTokens.SequentialRamp = new[] {
+            ChartColor.FromHex("#86B6EF"), ChartColor.FromHex("#5598E7"),
+            ChartColor.FromHex("#2A78D6"), ChartColor.FromHex("#1C5CAB"),
+            ChartColor.FromHex("#104281")
+        };
+        var rampHeatmap = Chart.Create()
+            .WithTitle("Sequential Design Token Ramp")
+            .WithSubtitle("Count intensity uses the token ramp, from the weakest to strongest shade")
+            .WithSize(920, 420)
+            .WithDesignTokens(rampTokens)
+            .WithLegend(false)
+            .WithXAxis("Weekday")
+            .WithYAxis("Service")
+            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+            .AddHeatmapRow("API", new[] { 4d, 12d, 27d, 53d, 82d, 46d, 9d })
+            .AddHeatmapRow("Worker", new[] { 1d, 7d, 21d, 39d, 68d, 97d, 18d })
+            .AddHeatmapRow("Queue", new[] { 14d, 33d, 56d, 74d, 100d, 61d, 24d });
+        rampHeatmap.Options.HeatmapRelativeScale = true;
+        SaveChart(rampHeatmap, output, "foundation-sequential-ramp-heatmap", pngOutputScale);
+
         var facets = ChartGrid.FromFacets(
                 samples,
                 sample => sample.Site,
