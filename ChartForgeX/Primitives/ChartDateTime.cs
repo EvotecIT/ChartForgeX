@@ -13,7 +13,12 @@ internal static class ChartDateTime {
 
     public static DateTime ToUtc(DateTime value) => value.Kind == DateTimeKind.Local ? value.ToUniversalTime() : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
-    public static double ToOADate(DateTime value) => ToUtc(value).ToOADate();
+    public static double ToOADate(DateTime value) {
+        DateTime utc = ToUtc(value);
+        // Match DateTime axis labels at the documented display resolution. DateTime.ToOADate()
+        // discards submillisecond ticks even when the resulting double can represent them.
+        return utc.Ticks >= OaEpochTicks ? ToOrderedOaDate(utc, nameof(value)) : utc.ToOADate();
+    }
 
     /// <summary>Converts an ordered UTC instant at the time-axis display resolution of 100 microseconds.</summary>
     public static double ToOrderedOaDate(DateTime value, string parameterName) {
