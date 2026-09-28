@@ -100,9 +100,12 @@ public sealed partial class PngChartRenderer {
             var x = model.X(model.Now!.Value, plot);
             c.DrawDashedLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(t.Text, 0.7), ChartVisualPrimitives.GanttTodayStrokeWidth, 6, 5);
             if (ShowXAxis(chart)) {
-                var width = EstimatePngStyledTextWidth(chart.Options.Labels.Now, tickFontSize, tickStyle, emphasized: true);
-                var labelX = Math.Max(plot.Left + 2, Math.Min(plot.Right - 2 - width, x - width / 2));
-                DrawPngTextStyled(c, labelX, plot.Top - 6 - PngStyledTextBottomExtent(tickFontSize, tickStyle), chart.Options.Labels.Now, tickStyle, t.Text, tickFontSize, emphasized: true);
+                var label = TrimReadablePngLabelToWidth(chart.Options.Labels.Now, tickFontSize, Math.Max(0, plot.Width - 4), tickStyle);
+                if (label.Length > 0) {
+                    var width = EstimatePngStyledTextWidth(label, tickFontSize, tickStyle, emphasized: true);
+                    var labelX = Math.Max(plot.Left + 2, Math.Min(plot.Right - 2 - width, x - width / 2));
+                    DrawPngTextStyled(c, labelX, plot.Top - 6 - PngStyledTextBottomExtent(tickFontSize, tickStyle), label, tickStyle, t.Text, tickFontSize, emphasized: true);
+                }
             }
         }
 

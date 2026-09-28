@@ -234,6 +234,54 @@ public sealed class GanttLaneTests {
         Assert.Equal("Incidents", chart.Options.StateTimelineSummaryHeader);
     }
 
+    [Fact]
+    public void Render_UpperBoundOnly_BeforeAllItems_KeepsTheRequestedEmptyWindow() {
+        var chart = Chart.Create().WithSize(640, 240).WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddHours(2), "low") });
+        chart.Options.XAxis.Maximum = Start.AddHours(-1).ToOADate();
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
+        Assert.True(chart.ToPng().Length > 200);
+    }
+
+    [Fact]
+    public void Validation_RejectsNonlinearGanttLaneAxes() {
+        var chart = CreateChart();
+        chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
+        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
+        Assert.Throws<InvalidOperationException>(() => chart.ToPng());
+        chart.Options.XAxis.Scale = ChartScaleKind.SymmetricLogarithmic;
+        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
+    }
+
+    [Fact]
+    public void Render_OpenItemStartingAtNow_IsAnInstantMark() {
+        var now = Start.AddHours(1);
+        var chart = Chart.Create().WithSize(720, 300).WithGanttLaneNow(now).WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Service", new[] {
+                new ChartGanttLaneItem(Start, Start.AddHours(4), "low"),
+                new ChartGanttLaneItem(now, null, "high")
+            });
+        var svg = XDocument.Parse(chart.ToSvg());
+        var marker = Assert.Single(ByRole(svg, "gantt-lanes-now"));
+        var open = Assert.Single(ByRole(svg, "gantt-lane-item"), item => (string?)item.Attribute("data-cfx-meta-ongoing") == "true");
+        Assert.Equal(Number(marker, "x1"), Number(open, "x"), 2);
+        Assert.InRange(Number(open, "width"), 2, 3);
+        Assert.Equal("0s", (string?)open.Attribute("data-cfx-meta-duration"));
+        Assert.Contains("0s", Title(open), StringComparison.Ordinal);
+        Assert.True(chart.ToPng().Length > 200);
+    }
+
+    [Fact]
+    public void Render_CompactPlot_TrimsLongLocalizedNowLabel() {
+        var label = new string('N', 160);
+        var chart = CreateChart().WithSize(390, 300).WithLabels(labels => labels.Now = label);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var shown = Assert.Single(Texts(svg, "gantt-lanes-now-label"));
+        Assert.NotEmpty(shown);
+        Assert.True(shown.Length < label.Length);
+        Assert.True(chart.ToPng().Length > 200);
+    }
+
     private static Chart CreateChart() {
         ChartGanttLaneItem Incident(double from, double? to, string severity, string label, string? detail = null) =>
             new(Start.AddHours(from), to.HasValue ? Start.AddHours(to.Value) : null, severity, label, detail);

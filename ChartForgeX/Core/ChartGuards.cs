@@ -271,6 +271,8 @@ internal static class ChartGuards {
     }
 
     private static void ValidateGanttLanes(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+            throw new InvalidOperationException("GanttLane charts require a linear or time x-axis to preserve elapsed-time geometry.");
         ValidateStateCategories(chart);
         var items = 0;
         foreach (var lane in chart.Series) {

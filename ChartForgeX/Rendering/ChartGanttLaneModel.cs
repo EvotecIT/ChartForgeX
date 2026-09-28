@@ -84,7 +84,10 @@ internal sealed class ChartGanttLaneModel {
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
-        if (!(max > min)) max = min + 1.0 / 24.0;
+        if (!(max > min)) {
+            if (axis.Maximum.HasValue && !axis.Minimum.HasValue) min = max - Math.Max(1.0 / 24.0, Math.Abs(max) * 1e-12);
+            else max = min + Math.Max(1.0 / 24.0, Math.Abs(min) * 1e-12);
+        }
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
             : ChartTimeScale.Generate(axis, min, max, inside: true)
@@ -114,8 +117,9 @@ internal sealed class ChartGanttLaneModel {
         var subRowEnds = new List<double>();
         for (var i = 0; i < series.GanttLaneItems.Count; i++) {
             var item = series.GanttLaneItems[i];
-            var end = item.End ?? (now.HasValue && now.Value > item.Start ? now.Value : Math.Max(max, item.Start));
-            if (end <= min || item.Start >= max) {
+            var end = item.End ?? (now.HasValue && now.Value >= item.Start ? now.Value : Math.Max(max, item.Start));
+            var instant = item.IsOpen && now.HasValue && now.Value == item.Start;
+            if (instant ? item.Start < min || item.Start > max : end <= min || item.Start >= max) {
                 placed.Add(new ChartGanttLanePlacedItem(i, item, end, -1, legend.Resolve(item.Category)));
                 continue;
             }
@@ -162,7 +166,8 @@ internal sealed class ChartGanttLaneModel {
     public bool TrySpan(ChartGanttLanePlacedItem item, ChartRect plot, out double left, out double width) {
         left = 0;
         width = 0;
-        if (item.SubRow < 0 || item.End <= Min || item.Item.Start >= Max) return false;
+        var instant = item.Item.IsOpen && item.End == item.Item.Start;
+        if (item.SubRow < 0 || (instant ? item.Item.Start < Min || item.Item.Start > Max : item.End <= Min || item.Item.Start >= Max)) return false;
         left = Math.Min(X(item.Item.Start, plot), plot.Right - 2);
         width = Math.Max(2, X(item.End, plot) - left);
         return true;
