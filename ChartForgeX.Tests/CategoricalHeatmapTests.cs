@@ -43,6 +43,15 @@ public sealed class CategoricalHeatmapTests {
     }
 
     [Fact]
+    public void ToSvg_CellText_DoesNotInterceptLinkedCellPointerEvents() {
+        var svg = XDocument.Parse(CreateChart().ToSvg());
+        var labels = ByRole(svg, "data-label");
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => Assert.Contains(label.Ancestors(),
+            ancestor => (string?)ancestor.Attribute("pointer-events") == "none"));
+    }
+
+    [Fact]
     public void ToPng_CellColoursMatchSvgGeometry() {
         var chart = CreateChart();
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell")[1];
@@ -123,6 +132,108 @@ public sealed class CategoricalHeatmapTests {
     }
 
     private const double ChartStateCategoryLegendHeightOfSwatch = 10;
+
+    [Theory]
+    [InlineData(390)]
+    [InlineData(720)]
+    public void Render_ManyStyledCategories_BudgetLegendAndKeepCellsVisible(int width) {
+        var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Pass)).ToArray();
+        var chart = Chart.Create().WithSize(width, 400).WithStateCategories(states).WithXLabels("A", "B")
+            .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("s0", "1", href: "#evidence"), new ChartHeatmapCell("s1"));
+        chart.Options.LegendStyle.FontSize = 32;
+        var svg = XDocument.Parse(chart.ToSvg());
+        var summary = ByRole(svg, "legend-overflow").Single();
+        Assert.True(int.Parse((string)summary.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
+        Assert.All(ByRole(svg, "heatmap-cell"), cell => Assert.True(Number(cell, "height") >= 18));
+        Assert.All(ByRole(svg, "state-legend-label"), label => Assert.True(Number(label, "y") < 400));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void ToSvg_RepeatedTooltips_KeepDistinctStableCellIdentities() {
+        var chart = Chart.Create().WithSize(390, 300).WithXLabels("A", "B")
+            .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"))
+            .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"));
+        var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
+        var ids = cells.Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray();
+        Assert.All(ids, id => Assert.False(string.IsNullOrEmpty(id)));
+        Assert.Equal(4, ids.Distinct().Count());
+        Assert.All(cells, cell => Assert.Equal("Open evidence", Title(cell)));
+        Assert.Equal(ids, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray());
+    }
+
+    [Fact]
+    public void ToPng_AutoMode_RetainsShortTextThatFitsDenseCategoricalCells() {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
+        Assert.All(cells, cell => Assert.InRange(Number(cell, "width"), 34, 45));
+        Assert.Equal(12, ByRole(XDocument.Parse(chart.ToSvg()), "data-label").Length);
+        var auto = chart.ToPng();
+        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Always;
+        Assert.Equal(chart.ToPng(), auto);
+    }
+
+    [Theory]
+    [InlineData("1234", 28)]
+    [InlineData("LONG COUNT", 13)]
+    [InlineData("1", 80)]
+    public void AutoMode_HidesCategoricalTextThatDoesNotFitAtConfiguredSize(string text, double fontSize) {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", text)).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.DataLabelStyle.FontSize = fontSize;
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
+        var auto = chart.ToPng();
+        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        Assert.Equal(chart.ToPng(), auto);
+    }
+
+    [Fact]
+    public void AutoMode_MeasuresPointLabelOverrideInBothRenderers() {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        foreach (var index in Enumerable.Range(0, 12)) chart.Series[0].WithPointLabel(index, "LONG COUNT");
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
+        var auto = chart.ToPng();
+        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        Assert.Equal(chart.ToPng(), auto);
+    }
+
+    [Fact]
+    public void AutoMode_UsesReadableMinimumForTinyConfiguredFonts() {
+        var chart = Chart.Create().WithSize(560, 240)
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.DataLabelStyle.FontSize = 2;
+        Assert.All(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"), label => Assert.True(Number(label, "font-size") >= 8));
+        var tiny = chart.ToPng();
+        chart.Options.DataLabelStyle.FontSize = 8;
+        Assert.Equal(chart.ToPng(), tiny);
+    }
+
+    [Theory]
+    [InlineData(ChartDataLabelPlacement.Left)]
+    [InlineData(ChartDataLabelPlacement.Right)]
+    [InlineData(ChartDataLabelPlacement.Outside)]
+    public void CategoricalCenteredLabels_DoNotReserveUnusedSideLanes(ChartDataLabelPlacement placement) {
+        var chart = Chart.Create().WithSize(560, 240).WithDataLabels()
+            .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowLegend = false;
+        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Center;
+        var centered = chart.ToSvg();
+        var centeredPng = chart.ToPng();
+        chart.Options.DataLabelPlacement = placement;
+        Assert.Equal(centered, chart.ToSvg());
+        Assert.Equal(centeredPng, chart.ToPng());
+    }
 
     private static Chart CreateChart() => Chart.Create().WithSize(720, 320)
         .WithStateCategories(

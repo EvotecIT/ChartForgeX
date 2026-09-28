@@ -89,7 +89,7 @@ public sealed partial class PngChartRenderer {
             var y = WaterfallY(plot, bounds, chart.Options.YAxis, tick);
             if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
             if (ShowYAxis(chart)) {
-                var label = FormatYAxisValue(chart, tick);
+                var label = FormatYAxisValue(chart, tick, ticks);
                 var tickStyle = chart.Options.TickLabelStyle;
                 var labelHeight = EstimatePngStyledTextHeight(fontSize, tickStyle);
                 DrawPngTextStyled(c, Math.Max(2, plot.Left - EstimatePngStyledTextWidth(label, fontSize, tickStyle, emphasized: false) - 8), y - labelHeight / 2.0, label, tickStyle, chart.Options.Theme.MutedText, fontSize, emphasized: false);

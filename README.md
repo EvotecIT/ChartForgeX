@@ -231,7 +231,7 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
-Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, and radial-bar legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
+Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, radial-bar, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
 For larger reports, apply shared axes to the whole grid, then paginate before rendering:
 
@@ -248,7 +248,7 @@ Pages preserve chart order, panel spans, heading styles, and export settings. Th
 
 `ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
 
-`Time` axes treat values as UTC instants. Ticks snap to whole seconds, minutes, hours, days, Monday-aligned weeks, months, or years chosen from the visible range and `TickCount`; midnight ticks show `yyyy-MM-dd` and other ticks show `HH:mm`. `chart.WithXAxisTimeScale(timeZone, showTimeZone: true)` moves alignment and labels to a display zone (skipping missing daylight-saving hours) and appends the designator to the x-axis title, for example `Observed (UTC)`. Points with `breakBefore` keep their gaps. Instant entry points (`ChartPoint`, `ChartAxisLabel`, and the range, interval, bubble, box-plot, and financial types) store UTC instants: `DateTimeKind.Local` values are converted to UTC and `Unspecified` values are treated as UTC, so series built from local and UTC timestamps line up. Date-based charts (calendar heatmaps, the classic timeline and Gantt, and `WithGanttToday`) keep wall-clock dates unchanged. `WithXDateLabels` follows the instant rule, so it lines up with date/time points; pair it with Unspecified dates on timeline or Gantt charts.
+`Time` axes treat values as UTC instants. Ticks snap to whole seconds, minutes, hours, days, Monday-aligned weeks, months, or years chosen from the visible range and `TickCount`; midnight ticks show `yyyy-MM-dd` and other ticks show `HH:mm`. `chart.WithXAxisTimeScale(timeZone, showTimeZone: true)` moves alignment and labels to a display zone (skipping missing daylight-saving hours) and appends the designator to the x-axis title, for example `Observed (UTC)`. Subsecond or unrepresentable ranges use distinct numeric OLE-date labels; explicit label mappings retain their exact values. Classic timeline and Gantt schedules retain wall-clock dates, omit an unapplied time-zone designator, and keep ticks inside the visible bounds. Points with `breakBefore` keep their gaps. Instant entry points (`ChartPoint`, `ChartAxisLabel`, and the range, interval, bubble, box-plot, and financial types) store UTC instants: `DateTimeKind.Local` values are converted to UTC and `Unspecified` values are treated as UTC, so series built from local and UTC timestamps line up. Date-based charts (calendar heatmaps, the classic timeline and Gantt, and `WithGanttToday`) keep wall-clock dates unchanged. `WithXDateLabels` follows the instant rule, so it lines up with date/time points; pair it with Unspecified dates on timeline or Gantt charts.
 
 ## Project Status
 
@@ -635,11 +635,13 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 - Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
 - Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely.
 - Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
-- Gantt lanes (`AddGanttLane`) list time-bounded items such as incidents per entity, colour them through the same `WithStateCategories` map (for example `VisualStatusTokens.SeverityCategories()`), stack overlapping items into sub-rows, list consecutive lanes with the same group under one group header, run open items (`end: null`) to `WithGanttToday` or the latest time, and draw a neutral "Now" line. Items expose `data-cfx-status`, `data-cfx-meta-state`, `data-cfx-meta-ongoing`, `data-cfx-sub-row`, and a `<title>` tooltip.
+- Gantt lanes (`AddGanttLane`) list time-bounded items such as incidents per entity, colour them through the same `WithStateCategories` map (for example `VisualStatusTokens.SeverityCategories()`), stack overlapping items into sub-rows, list consecutive lanes with the same group under one group header, run open items (`end: null`) to `WithGanttLaneNow` or the latest time, and draw a neutral "Now" line. `WithGanttLaneNow(DateTime?)` converts Local timestamps to UTC like lane items; classic `WithGanttToday(DateTime?)` keeps wall-clock dates. DateTime lane endpoints and Now are rounded to 100 µs on the shared time axis; an interval that collapses at this resolution is rejected, while a Now value within the same interval is displayed at that rounded instant. Items expose `data-cfx-status`, `data-cfx-meta-state`, `data-cfx-meta-ongoing`, `data-cfx-sub-row`, and a `<title>` tooltip.
 - Hour-by-weekday heatmaps (`AddHourWeekdayHeatmap`) bucket `ChartTimedValue` samples into seven weekday rows by 24 hour columns in UTC or a supplied time zone, aggregate with count, sum, mean, or maximum (count and sum show empty buckets as zero, mean and maximum mask them), keep weekday rows with no samples, and colour by the observed range (`HeatmapRelativeScale`) instead of reading 0–100 values as percentages.
-- Categorical heatmaps (`AddHeatmapCategoryRow`) colour each cell through the same `WithStateCategories` map as state timelines, draw a swatch legend in category order instead of the numeric scale, keep masked (null) cells empty, draw optional cell text, and emit `data-cfx-status` with the category key. Cell tooltips default to `row, column: label`; cell links render as SVG `<a href>` and accept only relative, fragment, `http`, `https`, and `mailto` targets.
+- Categorical heatmaps (`AddHeatmapCategoryRow`) colour each cell through the same `WithStateCategories` map as state timelines, draw a swatch legend in category order instead of the numeric scale, keep masked (null) cells empty, draw optional cell text, and emit `data-cfx-status` with the category key. Cell identities remain stable by row and column even when custom tooltips repeat. Automatic SVG and PNG labels measure the formatted cell text at a readable minimum of 8 px and hide labels that do not fit; explicit Always mode retains its fit behavior. Categorical labels stay centered without reserving unused side lanes. Cell tooltips default to `row, column: label`; cell links render as SVG `<a href>` and accept only relative, fragment, `http`, `https`, and `mailto` targets.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- State timelines use a linear or time x-axis; nonlinear scales are rejected to preserve elapsed-time geometry. Numeric endpoints outside the supported date range retain round-trip values in metadata.
+- State timeline DateTime intervals support instants on or after 1899-12-30 UTC; earlier dates are rejected because OLE Automation fractions are not chronologically ordered before that epoch. DateTime endpoints and explicit labels use the same 100 µs time-axis resolution; intervals shorter than that resolution are rejected when their endpoints coincide after rounding. Explicit x-axis labels define tick positions and support label highlights. During repeated daylight-saving hours, interval metadata and tooltips include UTC offsets.
 - State timelines draw one lane per entity on a real time axis. Segment colours come only from the caller's state map (never the series palette), contiguous buckets in the same state draw as one run, uncovered time stays empty, and hatched states mark not-observable data. Each segment exposes `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-meta-duration`, and a `<title>` tooltip, so `ChartForgeX.Interactivity.Html` hover works without extra configuration.
 - Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
 - Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
@@ -698,15 +700,17 @@ chart.Series[0]
 - JavaScript belongs in opt-in adapter packages, not in the default static renderer.
 - Public APIs fail fast on invalid sizes, ranges, enum values, and specialized series payloads.
 
-## Website Pilot
+## Website Content
 
-`Website/` contains the dedicated PowerForge.Web pilot site for ChartForgeX. The central Evotec project hub remains the registry page, while the dedicated site is meant for the richer gallery and demo experience at `https://chartforgex.evotec.xyz/`.
+ChartForgeX is presented on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`. There is no separate ChartForgeX website.
 
-Build the examples first with `./Build.ps1`, then build the site from `Website/`:
+`Website/` holds the content the hub ingests: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The Evotec website owns the site build and deployment; ChartForgeX does not maintain a separate site configuration.
+
+To refresh the gallery from generated examples without publishing packages or a site, run from the repository root:
 
 ```powershell
-.\build.ps1 -Dev
-.\build.ps1 -Ci
+pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
+pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 
 Promoted website examples should be reproducible cases, not screenshots: show the rendered preview, link the HTML/SVG/PNG artifacts, and point to the source file or builder method that generates the same output.
@@ -728,7 +732,7 @@ ChartForgeX
 |-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
-|-- Website                         # dedicated PowerForge.Web pilot site
+|-- Website                         # content and generated assets for evotec.xyz
 |-- docs                            # focused reference notes
 |-- AGENTS.md                       # contributor/agent expectations
 |-- CONTRIBUTING.md                 # development and release workflow

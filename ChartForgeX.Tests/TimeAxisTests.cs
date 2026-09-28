@@ -11,6 +11,108 @@ public sealed class TimeAxisTests {
     private static readonly DateTime Day = new(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
 
     [Fact]
+    public void RadialScale_SubSecondRange_PreservesFallbackAndInteriorTicks() {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 200.0 / 86400000;
+        var chart = Chart.Create().AddRadar("Fast", new[] { new ChartPoint(0, start), new ChartPoint(1, end), new ChartPoint(2, start) });
+        var axis = chart.Options.YAxis.WithTimeScale().WithBounds(start, end);
+        var scale = RadialValueScale.Create(axis, chart.Series, "Radar");
+        Assert.True(ChartTicks.IsNumericTimeFallback(scale.Ticks));
+        Assert.False(scale.IsMaximum(scale.Ticks[scale.Ticks.Count - 2]));
+        var labels = scale.Ticks.Select(value => ChartAxisValueFormatter.Format(axis, value, ticks: scale.Ticks)).ToArray();
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_VerticalSubSecondRange_PreservesNumericFallback(bool secondary) {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 200.0 / 86400000;
+        var chart = Chart.Create().WithSize(900, 450).WithLegend(false)
+            .AddLine("Fast", new[] { new ChartPoint(1, start), new ChartPoint(2, end) });
+        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+        axis.WithTimeScale().WithBounds(start, end);
+        var role = secondary ? "secondary-y-axis-tick" : "y-axis-label";
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == role)
+            .Select(element => element.Value).ToArray();
+        Assert.True(labels.Length > 1);
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+        var png = chart.ToPng();
+        axis.LabelFormatter = value => value.ToString("G17", CultureInfo.InvariantCulture);
+        Assert.Equal(png, chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(200)]
+    [InlineData(0.2)]
+    public void Render_SubSecondRange_UsesDistinctNumericFallbackLabels(double milliseconds) {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + milliseconds / 86400000;
+        var chart = Chart.Create().WithSize(900, 300).WithLegend(false).WithXAxisTimeScale()
+            .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
+        chart.Options.XAxis.WithBounds(start, end);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label")
+            .Select(element => element.Value).ToArray();
+        Assert.True(labels.Length > 1);
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+        Assert.DoesNotContain(labels, label => label.Contains(':'));
+        var defaultPng = chart.ToPng();
+        chart.Options.XAxis.LabelFormatter = value => value.ToString("G17", CultureInfo.InvariantCulture);
+        Assert.Equal(defaultPng, chart.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_ClassicDateSchedules_DoNotAdvertiseAnUnappliedTimeZone(bool gantt) {
+        var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus5", TimeSpan.FromHours(5), "Test +05", "Test +05");
+        Chart Create(bool show) {
+            var chart = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(zone, show, "UTC+05");
+            return gantt ? chart.AddGanttTask("Maintenance", Day, Day.AddDays(2)) : chart.AddTimelineItem("Maintenance", Day, Day.AddDays(2));
+        }
+        Assert.DoesNotContain("UTC+05", Create(true).ToSvg(), StringComparison.Ordinal);
+        Assert.Equal(Create(false).ToPng(), Create(true).ToPng());
+    }
+
+    [Fact]
+    public void Render_ExplicitSubsecondLabels_PreserveBothMappings() {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 20.0 / 86400000;
+        var chart = Chart.Create().WithSize(900, 300).WithLegend(false).WithXAxisTimeScale()
+            .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
+        chart.Options.XAxis.WithBounds(start, end);
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(start, "Start"));
+        chart.Options.XAxis.Labels.Add(new ChartAxisLabel(end, "End"));
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label")
+            .Select(element => element.Value).ToArray();
+        Assert.Equal(new[] { "Start", "End" }, labels);
+        Assert.Equal("End", ChartAxisValueFormatter.Format(chart.Options.XAxis, end));
+        var png = chart.ToPng();
+        chart.Options.XAxis.Labels[1] = new ChartAxisLabel(end, "Start");
+        Assert.False(png.SequenceEqual(chart.ToPng()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_ClassicSchedules_KeepTickPositionsDistinct(bool gantt) {
+        var chart = Chart.Create().WithSize(1000, 340).WithTickCount(3);
+        chart = gantt ? chart.AddGanttTask("Work", Day, Day.AddDays(2))
+            : chart.AddTimelineItem("Work", Day, Day.AddDays(2));
+        var svg = XDocument.Parse(chart.ToSvg());
+        var labels = svg.Descendants().Where(element => element.Name.LocalName == "text" && element.Value.StartsWith("Mar ", StringComparison.Ordinal)).ToArray();
+        Assert.NotEmpty(labels);
+        Assert.DoesNotContain(svg.Descendants(), element => element.Name.LocalName == "text" && (element.Value == "Feb 28" || element.Value == "Mar 4"));
+        var positions = labels.Select(element => (string?)element.Attribute("x")).ToArray();
+        Assert.Equal(positions.Length, positions.Distinct().Count());
+    }
+
+    [Fact]
     public void GenerateInside_UtcDay_UsesSixHourTicksWithDateAtMidnight() {
         var axis = new ChartAxis().WithTimeScale();
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, Day.ToOADate(), Day.AddDays(1).ToOADate()));
@@ -150,7 +252,7 @@ public sealed class TimeAxisTests {
 
         var timeline = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(showTimeZone: true)
             .AddTimelineItem("Maintenance", Day.AddHours(2), Day.AddHours(5));
-        Assert.Contains(">Window (UTC)</text>", timeline.ToSvg(), StringComparison.Ordinal);
+        Assert.Contains(">Window</text>", timeline.ToSvg(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -199,6 +301,27 @@ public sealed class TimeAxisTests {
         Assert.Equal(utc.ToOADate(), new ChartPoint(unspecified, 1).X, 9);
         Assert.Equal(utc.ToOADate(), new ChartAxisLabel(local, "noon").Value, 9);
         Assert.Equal(utc.ToOADate(), new ChartRangeBand(local, 1, 2).X, 9);
+    }
+
+    [Fact]
+    public void DateTimeAxisLabels_AtSubmillisecondPoints_KeepTheSamePosition() {
+        var origin = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var first = origin.AddTicks(1_000);
+        var second = origin.AddTicks(2_000);
+        var firstPoint = new ChartPoint(first, 1);
+        var secondPoint = new ChartPoint(second, 2);
+
+        Assert.Equal(firstPoint.X, new ChartAxisLabel(first, "first").Value);
+        Assert.Equal(secondPoint.X, new ChartAxisLabel(second, "second").Value);
+        Assert.True(firstPoint.X < secondPoint.X);
+
+        var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale()
+            .WithXDateLabels(new[] { first, second }, "HH:mm:ss.ffff")
+            .AddLine("Submillisecond", new[] { firstPoint, secondPoint });
+        string svg = chart.ToSvg();
+        Assert.Contains("00:00:00.0001", svg, StringComparison.Ordinal);
+        Assert.Contains("00:00:00.0002", svg, StringComparison.Ordinal);
+        Assert.True(PngReader.Decode(chart.ToPng()).Width > 0);
     }
 
     [Fact]

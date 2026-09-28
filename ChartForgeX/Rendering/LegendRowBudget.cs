@@ -9,8 +9,8 @@ namespace ChartForgeX.Rendering;
 internal static class LegendRowBudget {
     private const double PortableLineHeightEm = 1.2;
 
-    internal static List<T> Apply<T>(List<T> rows, Chart chart, Func<T, int> count, Func<int, T> summary, double? availableHeight = null) {
-        var maximumRows = MaximumRows(chart, availableHeight);
+    internal static List<T> Apply<T>(List<T> rows, Chart chart, Func<T, int> count, Func<int, T> summary, double? availableHeight = null, ChartLegendPosition? position = null) {
+        var maximumRows = MaximumRows(chart, availableHeight, position);
         if (maximumRows <= 0) {
             rows.Clear();
             return rows;
@@ -23,12 +23,12 @@ internal static class LegendRowBudget {
         return rows;
     }
 
-    internal static int MaximumRows(Chart chart, double? availableHeight = null) {
+    internal static int MaximumRows(Chart chart, double? availableHeight = null, ChartLegendPosition? position = null) {
         var height = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
         if (availableHeight.HasValue) height = Math.Min(height, Math.Max(0, availableHeight.Value));
         var rowHeight = RowHeight(chart);
         if (height < rowHeight) return 0;
-        var fixedSpacing = IsHorizontal(chart.Options.LegendPosition)
+        var fixedSpacing = IsHorizontal(position ?? chart.Options.LegendPosition)
             ? Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
             : Math.Min(18, Math.Max(0, height - rowHeight));
         var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - fixedSpacing) / rowHeight));

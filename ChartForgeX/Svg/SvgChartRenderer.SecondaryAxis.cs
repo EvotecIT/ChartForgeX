@@ -26,7 +26,7 @@ public sealed partial class SvgChartRenderer {
             var yv = yTicks[yIndex];
             if (!ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.SecondaryYAxis.LabelDensity)) continue;
             var y = map.Y(yv);
-            var rawLabel = FormatSecondaryValue(chart, yv);
+            var rawLabel = FormatSecondaryValue(chart, yv, yTicks);
             var labelFontSize = TextFontSizeForSvgWidth(chart, rawLabel, tickLabelMaxWidth, tickFontSize, tickStyle);
             var label = TrimSvgLabelToWidth(chart, rawLabel, labelFontSize, tickLabelMaxWidth, tickStyle);
             if (label.Length == 0) continue;
@@ -118,7 +118,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
-        var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatSecondaryValue(chart, tick), tickFontSize, tickStyle));
+        var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatSecondaryValue(chart, tick, yTicks), tickFontSize, tickStyle));
         var titleReserve = string.IsNullOrWhiteSpace(chart.SecondaryYAxisTitle) ? 0 : SvgSecondaryYAxisTitleHeight(chart, plot.Height) + 18;
         var reserve = Math.Min(150, widest + 30 + titleReserve);
         if (reserve <= 0) return plot;

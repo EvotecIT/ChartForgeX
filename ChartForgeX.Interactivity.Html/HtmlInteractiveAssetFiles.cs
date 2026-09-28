@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using ChartForgeX.Html;
@@ -15,7 +14,7 @@ public static class HtmlInteractiveAssetFiles {
     private static readonly Lazy<HtmlAssetFile> ChartStyleFile = new(() => new HtmlAssetFile("cfx-interactive", "css", HtmlInteractiveAssets.Style));
     private static readonly Lazy<HtmlAssetFile> ChartScriptFile = new(() => new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.Script));
     private static readonly Lazy<HtmlAssetFile> GraphStyleFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "css", HtmlGraphExplorerAssets.Style));
-    private static readonly ConcurrentDictionary<string, HtmlAssetFile> TopologyScriptFiles = new(StringComparer.Ordinal);
+    private static readonly Lazy<HtmlAssetFile> DefaultTopologyScriptFile = new(() => CreateTopologyScript(null));
     private static readonly Lazy<HtmlAssetFile> GraphScriptFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "js", HtmlGraphExplorerRenderer.WrappedInteractionScript()));
 
     /// <summary>Gets the stylesheet used by interactive chart and dashboard pages.</summary>
@@ -37,8 +36,12 @@ public static class HtmlInteractiveAssetFiles {
     /// <param name="options">The topology render options used for the pages; null uses the defaults.</param>
     /// <returns>The topology runtime file.</returns>
     public static HtmlAssetFile TopologyScript(TopologyRenderOptions? options = null) {
+        return options == null ? DefaultTopologyScriptFile.Value : CreateTopologyScript(options);
+    }
+
+    private static HtmlAssetFile CreateTopologyScript(TopologyRenderOptions? options) {
         var script = HtmlInteractiveTopologyRenderer.BuildInteractionScript(HtmlInteractiveTopologyRenderer.Prepare(options));
-        return TopologyScriptFiles.GetOrAdd(script, content => new HtmlAssetFile("cfx-topology", "js", content));
+        return new HtmlAssetFile("cfx-topology", "js", script);
     }
 
     /// <summary>Returns the files referenced by interactive chart and dashboard pages.</summary>
@@ -59,6 +62,7 @@ public static class HtmlInteractiveAssetFiles {
     public static IReadOnlyList<string> WriteTo(string directory, IEnumerable<HtmlAssetFile> files) {
         if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException("Asset directory must not be empty.", nameof(directory));
         if (files == null) throw new ArgumentNullException(nameof(files));
+        directory = Path.GetFullPath(directory);
         Directory.CreateDirectory(directory);
         var paths = new List<string>();
         foreach (var file in files) {
@@ -72,8 +76,9 @@ public static class HtmlInteractiveAssetFiles {
         return paths;
     }
 
-    internal static void WriteStylesheet(HtmlMarkupWriter writer, HtmlAssetReferences assets, HtmlAssetFile file) {
+    internal static void WriteStylesheet(HtmlMarkupWriter writer, HtmlAssetReferences assets, HtmlAssetFile file, bool graphExplorer = false) {
         writer.StartElement("link").Attribute("rel", "stylesheet").Attribute("href", assets.Href(file));
+        if (graphExplorer) writer.Attribute("data-cfx-graph-assets", "true");
         WriteIntegrity(writer, assets, file);
         writer.EndVoidElement().Line();
     }

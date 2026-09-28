@@ -20,16 +20,28 @@ public sealed partial class SvgChartRenderer {
             .Attribute("rx", Math.Min(radius, width / 2)).Attribute("fill", "url(#" + hatchId + ")").Attribute("pointer-events", "none").EndEmptyElement().Line();
     }
 
-    private static void WriteStateCategoryLegend(SvgMarkupWriter writer, Chart chart, IReadOnlyList<ChartStateCategoryLegendItem> legend, double top, string hatchId) {
+    private static void WriteStateCategoryLegend(SvgMarkupWriter writer, Chart chart, IReadOnlyList<ChartStateCategoryLegendItem> legend, double top, string hatchId, ChartRect bounds) {
         var style = chart.Options.LegendStyle;
+        var legendStyle = style;
         var fontSize = StyleFontSize(style, chart.Options.Theme.LegendFontSize);
-        var swatch = ChartStateCategoryLegend.Swatch;
+        var legendFontSize = fontSize;
+        var t = chart.Options.Theme;
         foreach (var item in legend) {
-            var rowY = top + item.Row * ChartStateCategoryLegend.RowHeight;
-            writer.StartElement("rect").Attribute("data-cfx-role", "state-legend-swatch").Attribute("data-cfx-status", item.Category.Key).Attribute("x", item.X).Attribute("y", rowY)
-                .Attribute("width", swatch).Attribute("height", swatch).Attribute("rx", ChartStateCategoryLegend.SwatchRadius).Attribute("fill", item.Category.Color.ToCss()).EndEmptyElement().Line();
-            if (item.Category.Hatched) WriteStateCategoryHatch(writer, hatchId, item.X, rowY, swatch, swatch);
-            WriteStateCategoryText(writer, chart, "state-legend-label", item.Category.Label, item.X + swatch + ChartStateCategoryLegend.LabelGap, rowY + swatch / 2, "start", fontSize, style, "400", true);
+            var rowY = top + item.Row * LegendRowBudget.RowHeight(chart);
+            var rowCenter = rowY + LegendRowBudget.RowHeight(chart) / 2;
+            if (item.Omitted > 0) {
+                DrawLegendOverflow(writer, chart, new ChartRect(bounds.Left, rowY, bounds.Width, LegendRowBudget.RowHeight(chart)), rowCenter + EstimateSvgStyledTextHeight(legendFontSize, legendStyle) / 2, item.Omitted);
+                continue;
+            }
+
+            var state = item.Category!;
+            var swatchY = rowCenter - ChartStateCategoryLegend.Swatch / 2;
+            writer.StartElement("rect").Attribute("data-cfx-role", "state-legend-swatch").Attribute("data-cfx-status", state.Key).Attribute("x", item.X).Attribute("y", swatchY)
+                .Attribute("width", ChartStateCategoryLegend.Swatch).Attribute("height", ChartStateCategoryLegend.Swatch).Attribute("rx", ChartStateCategoryLegend.SwatchRadius).Attribute("fill", state.Color.ToCss()).EndEmptyElement().Line();
+            if (state.Hatched) WriteStateCategoryHatch(writer, hatchId, item.X, swatchY, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.Swatch);
+            var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateCategoryLegend.Swatch - 6);
+            var label = TrimSvgLabelToWidth(chart, state.Label, legendFontSize, labelWidth, legendStyle);
+            WriteStateCategoryText(writer, chart, "state-legend-label", label, item.X + ChartStateCategoryLegend.Swatch + 6, rowCenter, "start", legendFontSize, legendStyle, "400", true);
         }
     }
 

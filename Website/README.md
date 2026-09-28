@@ -1,58 +1,22 @@
-# ChartForgeX Website
+# ChartForgeX content for the Evotec website
 
-This folder is the dedicated PowerForge.Web pilot for visual-heavy project
-sites. It is intentionally different from a project repo that only has
-`Website/content` or `WebsiteArtifacts` for hub ingestion: this folder contains
-`site.json` and `pipeline.json`, so it owns a publishable site.
+ChartForgeX is presented on the [Evotec project page](https://evotec.xyz/projects/chartforgex/). The hub also hosts the [curated demo tour](https://evotec.xyz/demos/chartforgex/) and [complete generated gallery](https://evotec.xyz/demos/chartforgex/gallery/). ChartForgeX does not publish a separate website.
 
-Target host:
+The content in this folder is consumed by the Evotec Website project:
 
-```text
-https://chartforgex.evotec.xyz/
-```
+- `content/project-docs/` contains project documentation.
+- `content/examples/` contains source-linked examples.
+- `static/examples/promoted-cases.json` supplies curated demos and points to `data/gallery.json`.
+- `data/gallery.json` indexes the complete visual catalog; `static/examples/generated/` contains its SVG, PNG, and HTML artifacts.
+- `build/Sync-GeneratedExamples.ps1` refreshes the gallery from the repository's example output while preserving existing metadata by artifact URL.
 
-Local build:
+`WebsiteArtifacts/project-manifest.json` declares the hub-ingested paths. The Evotec Website repository owns the page shell, routes, project-demo schema, source lock, deployment, and live availability. Its source lock must select a ChartForgeX commit containing the updated manifest before the gallery can appear on the hub.
 
-```powershell
-.\build.ps1 -Dev
-.\build.ps1 -Ci
-```
-
-Local preview:
+To refresh generated content, run from the ChartForgeX repository root:
 
 ```powershell
-.\build.ps1 -Dev -Serve -Port 8021
+pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
+pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 
-The wrapper prefers the sibling `PSPublishModule` checkout when it is available
-and falls back to `powerforge-web` from `PATH`.
-
-The generated examples are copied opportunistically from:
-
-```text
-..\ChartForgeX.Examples\bin\Release\net8.0\output
-..\artifacts\topology-demo
-```
-
-Those folders are produced by the repository build and are not the source of
-truth for the site.
-
-The browsable examples are data-driven:
-
-- `data/showcase.json` controls the curated examples on `/examples/`.
-- `data/gallery.json` controls the full catalog on `/gallery/`.
-- `static/examples/generated/` contains committed seed artifacts and can be
-  refreshed from generated output.
-
-To fold newly generated SVG/PNG/HTML artifacts into the gallery data, run:
-
-```powershell
-.\build\Sync-GeneratedExamples.ps1
-```
-
-The sync script preserves existing gallery metadata by artifact URL and creates
-reasonable placeholder entries for new SVG files. Promote the best new cases to
-`data/showcase.json` when they deserve the richer code-and-preview treatment.
-
-See `content/docs/deployment.md` for the publish shape and route ownership
-rules.
+The example build and sync do not publish a package or deploy the site. Validate the project-demo manifest, generated artifact paths, and the hub-rendered pages before claiming the update is live.

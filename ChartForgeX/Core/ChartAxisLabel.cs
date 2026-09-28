@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
 
@@ -35,7 +36,9 @@ public readonly struct ChartAxisLabel {
     /// <param name="value">The date/time axis value.</param>
     /// <param name="text">The label text.</param>
     public ChartAxisLabel(DateTime value, string text) {
-        Value = ChartDateTime.ToOADate(value);
+        var utc = ChartDateTime.ToUtc(value);
+        Value = utc >= new DateTime(1899, 12, 30, 0, 0, 0, DateTimeKind.Utc)
+            ? ChartDateTime.ToOrderedOaDate(utc, nameof(value)) : ChartDateTime.ToOADate(utc);
         Text = text ?? throw new ArgumentNullException(nameof(text));
     }
 }
