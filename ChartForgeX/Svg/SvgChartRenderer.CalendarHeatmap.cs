@@ -54,6 +54,7 @@ public sealed partial class SvgChartRenderer {
         writer
             .StartElement("g")
             .Attribute("data-cfx-role", "calendar-heatmap")
+            .Attribute("data-cfx-label-level", chart.Options.Labels.LevelOverride)
             .Attribute("data-cfx-label", series.Name)
             .Attribute("data-cfx-start-date", startText)
             .Attribute("data-cfx-end-date", endText)
@@ -73,8 +74,8 @@ public sealed partial class SvgChartRenderer {
             var hasValue = byDate.TryGetValue(day, out var entry);
             var value = hasValue ? entry.Value : 0;
             var ratio = hasValue ? ChartHeatmapSurface.CalendarRatio(value, min, max) : 0;
-            var level = hasValue ? (int)Math.Ceiling(ratio * 4) : 0;
-            var status = hasValue ? ChartHeatmapSurface.Status(ratio) : "empty";
+            int? level = hasValue ? ChartHeatmapSurface.Level(ratio) : null;
+            var status = hasValue ? null : "empty";
             var color = hasValue ? ChartHeatmapSurface.CalendarColor(chart, series, entry.Color, value, min, max) : ChartHeatmapSurface.CalendarEmptyColor(chart);
             var x = x0 + column * (cell + gap);
             var y = y0 + row * (cell + gap);
@@ -90,7 +91,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-week-index", column)
                 .Attribute("data-cfx-weekday-index", row)
                 .Attribute("data-cfx-value", value)
-                .Attribute("data-cfx-level", level)
+                .OptionalAttribute("data-cfx-level", level)
                 .Attribute("data-cfx-empty", !hasValue)
                 .Attribute("data-cfx-status", status)
                 .Attribute("role", "img")
@@ -175,14 +176,12 @@ public sealed partial class SvgChartRenderer {
         WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "Less", lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
         for (var i = 0; i < 5; i++) {
             var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, i / 4.0);
-            var ratio = ChartHeatmapSurface.CalendarRatio(value, min, max);
             var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
             writer
                 .StartElement("rect")
                 .Attribute("data-cfx-role", "calendar-heatmap-scale-step")
                 .Attribute("data-cfx-level", i)
                 .Attribute("data-cfx-value", value)
-                .Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio))
                 .Attribute("x", x + i * (size + gap))
                 .Attribute("y", y)
                 .Attribute("width", size)
