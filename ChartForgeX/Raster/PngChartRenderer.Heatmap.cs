@@ -186,7 +186,7 @@ public sealed partial class PngChartRenderer {
 
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
-            var value = min + (max - min) * ratio;
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
             c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.Color(chart, highColor, value, min, max));
         }
 

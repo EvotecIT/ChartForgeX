@@ -26,7 +26,6 @@ public sealed partial class SvgChartRenderer {
         var max = cells.Max(item => item.Value);
         var sourceMin = min;
         var sourceMax = max;
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
@@ -175,7 +174,7 @@ public sealed partial class SvgChartRenderer {
 
         WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "Less", lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
         for (var i = 0; i < 5; i++) {
-            var value = min + (max - min) * (i / 4.0);
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, i / 4.0);
             var ratio = ChartHeatmapSurface.CalendarRatio(value, min, max);
             var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
             writer

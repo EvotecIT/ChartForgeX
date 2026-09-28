@@ -290,7 +290,7 @@ public sealed partial class SvgChartRenderer {
         var y = plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
-            var value = min + (max - min) * ratio;
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
             var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
             WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max)), color);
         }

@@ -39,7 +39,7 @@ public sealed partial class Chart {
     public Chart AddHourWeekdayHeatmap(IEnumerable<ChartTimedValue> values, ChartTimeAggregation aggregation = ChartTimeAggregation.Count, TimeZoneInfo? timeZone = null, DayOfWeek firstDayOfWeek = DayOfWeek.Monday, ChartColor? color = null, IReadOnlyList<string>? dayNames = null, string? timeZoneLabel = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         if (dayNames != null && (dayNames.Count != DaysPerWeek || dayNames.Any(string.IsNullOrWhiteSpace))) throw new ArgumentException("Day names must contain seven non-empty entries indexed by DayOfWeek.", nameof(dayNames));
-        if (Series.Any(series => series.Kind == ChartSeriesKind.Heatmap || series.Kind == ChartSeriesKind.HexbinHeatmap)) throw new InvalidOperationException("An hour-by-weekday heatmap owns the whole chart and cannot be added to a chart that already has heatmap rows.");
+        if (Series.Any(series => series.Kind == ChartSeriesKind.Heatmap || series.Kind == ChartSeriesKind.HexbinHeatmap || series.Kind == ChartSeriesKind.CalendarHeatmap)) throw new InvalidOperationException("An hour-by-weekday heatmap owns the whole chart and cannot be added to a chart that already has heatmap rows.");
         if (!Enum.IsDefined(typeof(ChartTimeAggregation), aggregation)) throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, "Unknown aggregation.");
         if (!Enum.IsDefined(typeof(DayOfWeek), firstDayOfWeek)) throw new ArgumentOutOfRangeException(nameof(firstDayOfWeek), firstDayOfWeek, "Unknown weekday.");
         var zone = timeZone ?? TimeZoneInfo.Utc;
