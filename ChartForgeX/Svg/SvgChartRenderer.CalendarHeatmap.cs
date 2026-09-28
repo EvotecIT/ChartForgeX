@@ -74,7 +74,7 @@ public sealed partial class SvgChartRenderer {
             var hasValue = byDate.TryGetValue(day, out var entry);
             var value = hasValue ? entry.Value : 0;
             var ratio = hasValue ? ChartHeatmapSurface.CalendarRatio(value, min, max) : 0;
-            var level = hasValue ? ChartHeatmapSurface.Level(ratio) : 0;
+            int? level = hasValue ? ChartHeatmapSurface.Level(ratio) : null;
             var status = hasValue ? null : "empty";
             var color = hasValue ? ChartHeatmapSurface.CalendarColor(chart, series, entry.Color, value, min, max) : ChartHeatmapSurface.CalendarEmptyColor(chart);
             var x = x0 + column * (cell + gap);
@@ -91,7 +91,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-week-index", column)
                 .Attribute("data-cfx-weekday-index", row)
                 .Attribute("data-cfx-value", value)
-                .Attribute("data-cfx-level", level)
+                .OptionalAttribute("data-cfx-level", level)
                 .Attribute("data-cfx-empty", !hasValue)
                 .Attribute("data-cfx-status", status)
                 .Attribute("role", "img")
