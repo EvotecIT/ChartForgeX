@@ -304,6 +304,27 @@ public sealed class TimeAxisTests {
     }
 
     [Fact]
+    public void DateTimeAxisLabels_AtSubmillisecondPoints_KeepTheSamePosition() {
+        var origin = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var first = origin.AddTicks(1_000);
+        var second = origin.AddTicks(2_000);
+        var firstPoint = new ChartPoint(first, 1);
+        var secondPoint = new ChartPoint(second, 2);
+
+        Assert.Equal(firstPoint.X, new ChartAxisLabel(first, "first").Value);
+        Assert.Equal(secondPoint.X, new ChartAxisLabel(second, "second").Value);
+        Assert.True(firstPoint.X < secondPoint.X);
+
+        var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale()
+            .WithXDateLabels(new[] { first, second }, "HH:mm:ss.ffff")
+            .AddLine("Submillisecond", new[] { firstPoint, secondPoint });
+        string svg = chart.ToSvg();
+        Assert.Contains("00:00:00.0001", svg, StringComparison.Ordinal);
+        Assert.Contains("00:00:00.0002", svg, StringComparison.Ordinal);
+        Assert.True(PngReader.Decode(chart.ToPng()).Width > 0);
+    }
+
+    [Fact]
     public void DateTimeInputs_DateBasedCharts_KeepWallClockDates() {
         var localDay = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Local);
         var wallClock = DateTime.SpecifyKind(localDay, DateTimeKind.Unspecified).ToOADate();

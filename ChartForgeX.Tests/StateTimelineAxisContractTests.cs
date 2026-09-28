@@ -46,6 +46,26 @@ public sealed class StateTimelineAxisContractTests {
     }
 
     [Fact]
+    public void DateTimeIntervalBelowDisplayResolution_IsRejectedClearly() {
+        var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new ChartStateTimelineSegment(start, start.AddTicks(1), "up"));
+        Assert.Contains("100-microsecond", error.Message);
+    }
+
+    [Fact]
+    public void DateTimeAxisLabelAtSubmillisecondStart_RemainsVisible() {
+        var start = Day.AddTicks(1_000);
+        var chart = Chart.Create().WithSize(720, 300)
+            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+            .WithXLabels(new[] { new ChartAxisLabel(start, "Start") })
+            .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, start.AddMinutes(1), "up") });
+        Assert.Contains("Start", XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-tick-label")
+            .Select(e => e.Value));
+    }
+
+    [Fact]
     public void RepeatedLocalHourMetadataIncludesDistinctOffsets() {
         var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
         var start = new DateTime(2026, 10, 25, 0, 30, 0, DateTimeKind.Utc);

@@ -209,6 +209,7 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.Bullet) ValidateBullets(chart.Series);
         else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart);
+        else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
         else if (kind == ChartSeriesKind.Sankey) ValidateSankey(chart.Series[0]);
         else if (kind == ChartSeriesKind.Tree) ValidateTree(chart.Series[0]);
@@ -267,6 +268,25 @@ internal static class ChartGuards {
         if (categorical == 0) return;
         if (categorical != chart.Series.Count) throw new InvalidOperationException("A heatmap must use either numeric rows or categorical rows, not both.");
         ValidateStateCategories(chart);
+    }
+
+    private static void ValidateGanttLanes(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+            throw new InvalidOperationException("GanttLane charts require a linear or time x-axis to preserve elapsed-time geometry.");
+        ValidateStateCategories(chart);
+        var items = 0;
+        foreach (var lane in chart.Series) {
+            if (lane.GanttLaneItems.Count != lane.Points.Count) throw new InvalidOperationException("Gantt lanes require one item per point.");
+            for (var i = 0; i < lane.Points.Count; i++) {
+                var item = lane.GanttLaneItems[i];
+                var point = lane.Points[i];
+                if (point.X != item.Start || point.Y != (item.End ?? item.Start))
+                    throw new InvalidOperationException("Gantt lane points must match their items; rebuild the lane after changing its data.");
+            }
+            items += lane.Points.Count;
+        }
+
+        if (items == 0) throw new InvalidOperationException("GanttLane charts require at least one item.");
     }
 
     private static void ValidateStateTimeline(Chart chart) {
