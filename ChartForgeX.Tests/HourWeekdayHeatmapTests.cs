@@ -189,7 +189,10 @@ public sealed class HourWeekdayHeatmapTests {
         Assert.Throws<InvalidOperationException>(() => chart.AddGauge("Extra", 50));
         var hourLabels = chart.Options.XAxisLabels.Select(label => label.Text).ToArray();
         Assert.Throws<InvalidOperationException>(() => chart.AddDottedMap("Extra", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
+        Assert.Throws<InvalidOperationException>(() => chart.AddHistogram("Extra", new[] { 1d, 2d }));
+        Assert.Throws<InvalidOperationException>(() => chart.AddProgressBars("Extra", new[] { new ChartProgressItem("Done", 1) }, maximum: 10));
         Assert.Equal(hourLabels, chart.Options.XAxisLabels.Select(label => label.Text).ToArray());
+        Assert.Equal(100, chart.Options.ProgressMaximum);
         Assert.Equal(7, chart.Series.Count);
         Assert.Equal(24, chart.Options.XAxisLabels.Count);
         Assert.True(Chart.Create().AddBar("Bars", line).AddLine("Line", line).ToSvg().Length > 200);

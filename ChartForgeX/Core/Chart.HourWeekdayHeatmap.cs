@@ -43,7 +43,7 @@ public sealed partial class Chart {
     /// IANA systems, so pass a label when output must match across platforms.</param>
     /// <returns>The current chart.</returns>
     /// <remarks>The heatmap owns the whole chart: it sets the <c>00</c>–<c>23</c> column labels and
-    /// <see cref="ChartOptions.HeatmapRelativeScale"/>, and it cannot be combined with other heatmap rows. When the x-axis
+    /// <see cref="ChartOptions.HeatmapRelativeScale"/>, and it cannot be combined with other series. When the x-axis
     /// title is empty it becomes <see cref="ChartLabels.HourOfDay"/> (default <c>Hour of day</c>) followed by the zone
     /// designator in parentheses.</remarks>
     public Chart AddHourWeekdayHeatmap(IEnumerable<ChartTimedValue> values, ChartTimeAggregation aggregation = ChartTimeAggregation.Count, TimeZoneInfo? timeZone = null, DayOfWeek firstDayOfWeek = DayOfWeek.Monday, ChartColor? color = null, IReadOnlyList<string>? dayNames = null, string? timeZoneLabel = null) {
@@ -53,16 +53,16 @@ public sealed partial class Chart {
         if (!Enum.IsDefined(typeof(ChartTimeAggregation), aggregation)) throw new ArgumentOutOfRangeException(nameof(aggregation), aggregation, "Unknown aggregation.");
         if (!Enum.IsDefined(typeof(DayOfWeek), firstDayOfWeek)) throw new ArgumentOutOfRangeException(nameof(firstDayOfWeek), firstDayOfWeek, "Unknown weekday.");
         var zone = timeZone ?? TimeZoneInfo.Utc;
-        var count = new int[DaysPerWeek, HoursPerDay];
+        var count = new long[DaysPerWeek, HoursPerDay];
         var sum = new double[DaysPerWeek, HoursPerDay];
         var mean = new double[DaysPerWeek, HoursPerDay];
         var maximum = new double[DaysPerWeek, HoursPerDay];
-        var observed = 0;
+        long observed = 0;
         foreach (var value in values) {
             var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(value.Timestamp, DateTimeKind.Utc), zone);
             var day = (int)local.DayOfWeek;
             var hour = local.Hour;
-            var n = ++count[day, hour];
+            var n = checked(++count[day, hour]);
             switch (aggregation) {
                 case ChartTimeAggregation.Sum:
                     sum[day, hour] += value.Value;
@@ -74,7 +74,7 @@ public sealed partial class Chart {
                     maximum[day, hour] = n == 1 ? value.Value : Math.Max(maximum[day, hour], value.Value);
                     break;
             }
-            observed++;
+            observed = checked(observed + 1);
         }
 
         if (observed == 0) throw new ArgumentException("Hour-by-weekday heatmaps require at least one value.", nameof(values));

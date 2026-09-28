@@ -26,7 +26,7 @@ internal static class ChartHeatmapSurface {
 
     public static double MapRatio(Chart chart, double value, double min, double max) {
         var scale = chart.Options.MapColorScale;
-        if (scale == null) return Ratio(value, min, max);
+        if (scale == null) return Ratio(chart, value, min, max);
         var effectiveMin = scale.EffectiveMinimum(min);
         var effectiveMax = scale.EffectiveMaximum(max);
         return ContinuousRatio(value, effectiveMin, effectiveMax);
@@ -34,6 +34,8 @@ internal static class ChartHeatmapSurface {
 
     public static double MapScaleValue(Chart chart, double min, double max, double ratio) {
         var scale = chart.Options.MapColorScale;
+        if (scale == null && chart.Options.HeatmapRelativeScale)
+            return InterpolateObservedRange(Math.Min(0, min), max, Clamp(ratio, 0, 1));
         var effectiveMin = scale?.EffectiveMinimum(min) ?? min;
         var effectiveMax = scale?.EffectiveMaximum(max) ?? max;
         if (effectiveMax <= effectiveMin + 0.000001) effectiveMax = effectiveMin + 1;

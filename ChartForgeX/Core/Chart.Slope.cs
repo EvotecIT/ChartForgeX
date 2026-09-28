@@ -13,6 +13,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddSlope(string name, double start, double end, ChartColor? color = null) {
+        EnsureCanAddSeries();
         EnsureSlopeAxisLabels("Start", "End");
         return AddSlopeCore(name, start, end, color);
     }
@@ -28,6 +29,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddSlope(string name, double start, double end, string startLabel, string endLabel, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (startLabel == null) throw new ArgumentNullException(nameof(startLabel));
         if (endLabel == null) throw new ArgumentNullException(nameof(endLabel));
         EnsureSlopeAxisLabels(startLabel, endLabel);
