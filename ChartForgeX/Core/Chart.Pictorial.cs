@@ -14,6 +14,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional base color. When null, the theme palette colors each row.</param>
     /// <returns>The current chart.</returns>
     public Chart AddPictorial(string name, IEnumerable<ChartPictorialItem> items, ChartPictorialShape shape = ChartPictorialShape.Circle, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));
         if (!Enum.IsDefined(typeof(ChartPictorialShape), shape)) throw new ArgumentOutOfRangeException(nameof(shape), shape, "Unknown pictorial shape.");
         var points = new List<ChartPoint>();

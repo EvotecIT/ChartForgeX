@@ -18,7 +18,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(min, nameof(min));
         ChartGuards.Finite(max, nameof(max));
         if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Circle maximum must be greater than minimum.");
-        Series.Add(new ChartSeries(name, ChartSeriesKind.Circle, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
+        AppendSeries(new ChartSeries(name, ChartSeriesKind.Circle, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
         return this;
     }
 }

@@ -23,7 +23,7 @@ public sealed partial class SvgChartRenderer {
         var values = rows.SelectMany(series => series.Points.Select(point => point.Y)).ToArray();
         var min = values.Length == 0 ? 0 : values.Min();
         var max = values.Length == 0 ? 1 : values.Max();
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
+        if (!chart.Options.HeatmapRelativeScale && Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
@@ -59,7 +59,7 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, column);
                 var x = plot.Left + columnIndex * (cellWidth + gap);
-                var ratio = ChartHeatmapSurface.Ratio(value, min, max);
+                var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
                 var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
                 var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
                 var status = category?.Key ?? ChartHeatmapSurface.Status(ratio);
@@ -290,9 +290,9 @@ public sealed partial class SvgChartRenderer {
         var y = plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
-            var value = min + (max - min) * ratio;
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
             var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
-            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(value, min, max)), color);
+            WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max)), color);
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);

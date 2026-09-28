@@ -41,4 +41,13 @@ public sealed partial class ChartOptions {
             _heatmapValueTextMode = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether heatmap intensity is relative to the observed value range (from zero for
+    /// non-negative data). By default, heatmaps whose values all fall between 0 and 100 are read as percentages; enable
+    /// this for counts and other magnitudes. <see cref="Chart.AddHourWeekdayHeatmap"/> enables it. Cell status
+    /// (<c>data-cfx-status</c>) and <see cref="ChartHeatmapScale.Semantic"/> colours then describe relative intensity only,
+    /// not whether a value is good or bad.
+    /// </summary>
+    public bool HeatmapRelativeScale { get; set; }
 }

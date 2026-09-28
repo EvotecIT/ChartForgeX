@@ -41,6 +41,7 @@ internal static class ChartGuards {
 
     public static void RenderCompatibility(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart);
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
@@ -187,7 +188,9 @@ internal static class ChartGuards {
 
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind) {
         if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
-            ValidateMinimumPointCount(chart.Series, kind, 1);
+            // Fully masked rows keep their position (for example a weekday with no samples) when the column span is known.
+            ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
+            if (!chart.Series.Any(series => series.Points.Count > 0)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
         }
         else if (kind == ChartSeriesKind.CalendarHeatmap) {

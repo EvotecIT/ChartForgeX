@@ -18,7 +18,7 @@ public sealed partial class SvgChartRenderer {
         var values = rows.SelectMany(series => series.Points.Select(point => point.Y)).ToArray();
         var min = values.Length == 0 ? 0 : values.Min();
         var max = values.Length == 0 ? 1 : values.Max();
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
+        if (!chart.Options.HeatmapRelativeScale && Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var plot = ApplyHexbinHeatmapReserve(chart, basePlot, rows, columns);
         var layout = ChartHexbinLayout.Build(plot, rows.Length, columns.Length);
@@ -35,7 +35,7 @@ public sealed partial class SvgChartRenderer {
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
                 var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
-                var status = ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(value, min, max));
+                var status = ChartHeatmapSurface.Status(ChartHeatmapSurface.Ratio(chart, value, min, max));
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, summary);

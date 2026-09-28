@@ -12,7 +12,7 @@ internal static class ChartHeatmapSurface {
         cellWidth >= textWidth + 12 && cellHeight >= textHeight + 10;
 
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) {
-        var ratio = Ratio(value, min, max);
+        var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticColor(chart, ratio);
         return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, highColor ?? chart.Options.Theme.Palette[0], 0.18 + ratio * 0.82);
     }
@@ -26,7 +26,7 @@ internal static class ChartHeatmapSurface {
 
     public static double MapRatio(Chart chart, double value, double min, double max) {
         var scale = chart.Options.MapColorScale;
-        if (scale == null) return Ratio(value, min, max);
+        if (scale == null) return Ratio(chart, value, min, max);
         var effectiveMin = scale.EffectiveMinimum(min);
         var effectiveMax = scale.EffectiveMaximum(max);
         return ContinuousRatio(value, effectiveMin, effectiveMax);
@@ -34,6 +34,8 @@ internal static class ChartHeatmapSurface {
 
     public static double MapScaleValue(Chart chart, double min, double max, double ratio) {
         var scale = chart.Options.MapColorScale;
+        if (scale == null && chart.Options.HeatmapRelativeScale)
+            return InterpolateObservedRange(Math.Min(0, min), max, Clamp(ratio, 0, 1));
         var effectiveMin = scale?.EffectiveMinimum(min) ?? min;
         var effectiveMax = scale?.EffectiveMaximum(max) ?? max;
         if (effectiveMax <= effectiveMin + 0.000001) effectiveMax = effectiveMin + 1;
@@ -57,6 +59,18 @@ internal static class ChartHeatmapSurface {
         if (ratio < 0.60) return ChartColorMath.Blend(t.Negative, t.Warning, ratio / 0.60 * 0.42);
         if (ratio < 0.80) return ChartColorMath.Blend(t.Warning, t.Positive, (ratio - 0.60) / 0.20 * 0.5);
         return ChartColorMath.Blend(t.Warning, t.Positive, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
+    }
+
+    /// <summary>
+    /// Returns the colour ratio for a heatmap value. With <see cref="ChartOptions.HeatmapRelativeScale"/> the ratio is
+    /// relative to the observed range (from zero for non-negative data) instead of treating 0–100 values as percentages.
+    /// </summary>
+    public static double Ratio(Chart chart, double value, double min, double max) {
+        if (!chart.Options.HeatmapRelativeScale) return Ratio(value, min, max);
+        var floor = Math.Min(0, min);
+        var span = max - floor;
+        if (span <= 0) return max == 0 ? 0 : 1;
+        return ObservedRangeRatio(value, floor, max);
     }
 
     public static double Ratio(double value, double min, double max) {
@@ -83,7 +97,22 @@ internal static class ChartHeatmapSurface {
     }
 
     public static double CalendarRatio(double value, double min, double max) =>
-        Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
+        max <= min ? 0 : ObservedRangeRatio(value, min, max);
+
+    public static double InterpolateObservedRange(double min, double max, double ratio) {
+        if (ratio <= 0) return min;
+        if (ratio >= 1) return max;
+        var span = max - min;
+        return double.IsInfinity(span) ? min * (1 - ratio) + max * ratio : min + span * ratio;
+    }
+
+    private static double ObservedRangeRatio(double value, double min, double max) {
+        var span = max - min;
+        // Scale both operands before subtraction when the finite observed range exceeds double.MaxValue.
+        return double.IsInfinity(span)
+            ? Clamp((value / 2 - min / 2) / (max / 2 - min / 2), 0, 1)
+            : Clamp((value - min) / span, 0, 1);
+    }
 
     public static ChartColor MapNoDataColor(Chart chart) =>
         chart.Options.MapColorScale?.NoDataColor ?? ChartColorMath.Blend(chart.Options.Theme.PlotBackground, chart.Options.Theme.Grid, 0.46);

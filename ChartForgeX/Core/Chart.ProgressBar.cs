@@ -14,6 +14,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional base color. When null, the theme palette colors each row.</param>
     /// <returns>The current chart.</returns>
     public Chart AddProgressBars(string name, IEnumerable<ChartProgressItem> items, double maximum = 100, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));
         ChartGuards.Finite(maximum, nameof(maximum));
         if (maximum <= 0) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Progress maximum must be greater than zero.");

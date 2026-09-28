@@ -28,7 +28,7 @@ public sealed partial class PngChartRenderer {
 
         if (columns.Count == 0) return;
         if (double.IsInfinity(min)) { min = 0; max = 1; }
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
+        if (!chart.Options.HeatmapRelativeScale && Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var columnValues = new List<double>();
         foreach (var column in columns) columnValues.Add(column);
@@ -186,7 +186,7 @@ public sealed partial class PngChartRenderer {
 
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
-            var value = min + (max - min) * ratio;
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
             c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.Color(chart, highColor, value, min, max));
         }
 
