@@ -282,6 +282,48 @@ public sealed class GanttLaneTests {
         Assert.True(chart.ToPng().Length > 200);
     }
 
+    [Fact]
+    public void DateTimeBeforeOaEpoch_IsRejectedForItemsAndNow() {
+        var beforeEpoch = new DateTime(1899, 12, 29, 6, 0, 0, DateTimeKind.Utc);
+        Assert.Contains("1899-12-30", Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new ChartGanttLaneItem(beforeEpoch, beforeEpoch.AddHours(6), "low")).Message);
+        Assert.Contains("1899-12-30", Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Chart.Create().WithGanttLaneNow(beforeEpoch)).Message);
+    }
+
+    [Fact]
+    public void Render_SubmillisecondEndpoints_KeepDistinctMetadataAndDuration() {
+        var first = Start.AddHours(12).AddTicks(1_000);
+        var second = Start.AddHours(12).AddTicks(2_000);
+        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+            .WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(first, second, "low") });
+        var item = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
+        Assert.NotEqual((string?)item.Attribute("data-cfx-start"), (string?)item.Attribute("data-cfx-end"));
+        Assert.Contains("12:00:00.0001", (string?)item.Attribute("data-cfx-start"));
+        Assert.Contains("12:00:00.0002", (string?)item.Attribute("data-cfx-end"));
+        Assert.Equal("100µs", (string?)item.Attribute("data-cfx-meta-duration"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void DateTimeIntervalBelowDisplayResolution_IsRejectedClearly() {
+        var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new ChartGanttLaneItem(start, start.AddTicks(1), "low"));
+        Assert.Contains("100-microsecond", error.Message);
+    }
+
+    [Fact]
+    public void DateTimeAxisLabelAtSubmillisecondStart_RemainsVisible() {
+        var start = Start.AddTicks(1_000);
+        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+            .WithStateCategories(Status.SeverityCategories())
+            .WithXLabels(new[] { new ChartAxisLabel(start, "Start") })
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, start.AddMinutes(1), "low") });
+        Assert.Contains("Start", Texts(XDocument.Parse(chart.ToSvg()), "gantt-lanes-tick-label"));
+    }
+
     private static Chart CreateChart() {
         ChartGanttLaneItem Incident(double from, double? to, string severity, string label, string? detail = null) =>
             new(Start.AddHours(from), to.HasValue ? Start.AddHours(to.Value) : null, severity, label, detail);

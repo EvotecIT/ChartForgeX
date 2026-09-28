@@ -145,6 +145,12 @@ internal sealed class ChartStateTimelineModel {
 
     public static string FormatDuration(double days) {
         var totalSeconds = Math.Max(0, days) * 86400;
+        if (totalSeconds > 0 && totalSeconds < 0.001) {
+            double hundredMicroseconds = Math.Round(totalSeconds * 10_000, MidpointRounding.AwayFromZero);
+            if (hundredMicroseconds < 1) return "<100µs";
+            if (hundredMicroseconds >= 10) return "1ms";
+            return (hundredMicroseconds * 100).ToString("0", CultureInfo.InvariantCulture) + "µs";
+        }
         if (totalSeconds > 0 && totalSeconds < 1) return Math.Round(totalSeconds * 1000).ToString(CultureInfo.InvariantCulture) + "ms";
         var seconds = (long)Math.Round(totalSeconds);
         if (seconds < 60) return seconds.ToString(CultureInfo.InvariantCulture) + "s";
