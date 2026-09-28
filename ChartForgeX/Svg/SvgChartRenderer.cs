@@ -300,7 +300,7 @@ public sealed partial class SvgChartRenderer {
             return sb.ToString();
         }
         if (IsHeatmapChart(chart)) {
-            DrawHeatmap(sb, chart, plot);
+            DrawHeatmap(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
@@ -317,6 +317,7 @@ public sealed partial class SvgChartRenderer {
         if (IsDottedMapChart(chart)) { DrawDottedMap(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsRegionMapChart(chart)) { DrawRegionMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTileMapChart(chart)) { DrawTileMap(sb, chart, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
+        if (IsStateTimelineChart(chart)) { DrawStateTimeline(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTimelineChart(chart)) {
             DrawTimeline(sb, chart, plot, id);
             DrawLegend(sb, chart, w, h);
@@ -453,7 +454,7 @@ public sealed partial class SvgChartRenderer {
             if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
-                    var label = StyleText(tickStyle, FormatYAxisValue(chart, yv));
+                    var label = StyleText(tickStyle, FormatYAxisValue(chart, yv, yTicks));
                     writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
                     WriteSvgTextStyleAttributes(writer, tickStyle);
                     WriteSvgStyledTextContent(writer, tickStyle, label).EndElement().Line();
@@ -622,7 +623,7 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect PlotArea(Chart chart) {
         var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(chart.Options);
-        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart)) return plot;
+        if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart) || IsStateTimelineChart(chart)) return plot;
 
         if (ShouldDrawLegend(chart) && IsTopLegend(chart.Options.LegendPosition)) {
             var reserve = LegendBottomReserve(chart);
@@ -654,7 +655,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
-        var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick), tickFontSize, tickStyle));
+        var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick, yTicks), tickFontSize, tickStyle));
         var titleHeight = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : SvgYAxisTitleHeight(chart, plot.Height);
         var desiredLeft = Math.Max(plot.Left, widest + 54 + Math.Max(0, titleHeight - t.AxisTitleFontSize));
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
@@ -721,7 +722,7 @@ public sealed partial class SvgChartRenderer {
 
     private static IReadOnlyList<string> XAxisTickLabels(Chart chart, IReadOnlyList<double> xTicks, bool valueAxisOnly) {
         var labels = new string[xTicks.Count];
-        for (var i = 0; i < xTicks.Count; i++) labels[i] = valueAxisOnly ? FormatXAxisValue(chart, xTicks[i]) : FormatX(chart, xTicks[i]);
+        for (var i = 0; i < xTicks.Count; i++) labels[i] = ChartTimeScale.FormatFallbackTick(chart, xTicks, xTicks[i], valueAxisOnly) ?? (valueAxisOnly ? FormatXAxisValue(chart, xTicks[i]) : FormatX(chart, xTicks[i]));
         return labels;
     }
 
@@ -741,12 +742,14 @@ public sealed partial class SvgChartRenderer {
 
     private static double XAxisTitleOffset(Chart chart, IReadOnlyList<string>? labels = null) {
         var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
-        return XAxisLabelOffset(chart, labels) + (Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10));
+        var titleHeight = SvgXAxisTitleHeight(chart, chart.Options.Size.Width);
+        var gap = Math.Max(Math.Abs(chart.Options.XAxisLabelAngle) < 0.001 ? tickHeight + 10 : Math.Max(48, tickHeight + 10), titleHeight + tickHeight * 0.25 + 4);
+        return XAxisLabelOffset(chart, labels) + gap;
     }
 
     private static double SvgXAxisBottomReserve(Chart chart, IReadOnlyList<string>? labels, double maxWidth) {
         var tickHeight = EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize), chart.Options.TickLabelStyle);
-        if (string.IsNullOrWhiteSpace(chart.XAxisTitle)) return XAxisLabelOffset(chart, labels) + tickHeight + 10;
+        if (string.IsNullOrWhiteSpace(XAxisTitleText(chart))) return XAxisLabelOffset(chart, labels) + tickHeight + 10;
         return XAxisTitleOffset(chart, labels) + SvgXAxisTitleHeight(chart, maxWidth) + 4;
     }
 

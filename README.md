@@ -231,7 +231,7 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
-Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, and radial-bar legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
+Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, radial-bar, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
 For larger reports, apply shared axes to the whole grid, then paginate before rendering:
 
@@ -247,6 +247,8 @@ foreach (var page in report.Paginate(maximumChartsPerPage: 6)) {
 Pages preserve chart order, panel spans, heading styles, and export settings. Their grids share the original chart and theme objects; changing a chart affects every grid containing it. Grid-level settings and styles are copied independently. Page metadata records the original partition. Empty columns remain in composed exports, keeping the last page aligned. Set `PanelSize` for consistent panel dimensions; automatic sizing uses each page's charts. The limit counts charts, not rows or pixels occupied by spanned panels. Empty grids return no pages.
 
 `ChartAxis` owns bounds, tick count, label density, formatting, and `Linear`, `Logarithmic`, `SymmetricLogarithmic`, or `Time` scaling. Direct helpers such as `ChartPoints.FromValues(...)` and `ChartBubbles.FromXYSize(...)` remain available when a typed data pipeline is unnecessary.
+
+`Time` axes treat values as UTC instants. Ticks snap to whole seconds, minutes, hours, days, Monday-aligned weeks, months, or years chosen from the visible range and `TickCount`; midnight ticks show `yyyy-MM-dd` and other ticks show `HH:mm`. `chart.WithXAxisTimeScale(timeZone, showTimeZone: true)` moves alignment and labels to a display zone (skipping missing daylight-saving hours) and appends the designator to the x-axis title, for example `Observed (UTC)`. Subsecond or unrepresentable ranges use distinct numeric OLE-date labels; explicit label mappings retain their exact values. Classic timeline and Gantt schedules retain wall-clock dates, omit an unapplied time-zone designator, and keep ticks inside the visible bounds. Points with `breakBefore` keep their gaps. Instant entry points (`ChartPoint`, `ChartAxisLabel`, and the range, interval, bubble, box-plot, and financial types) store UTC instants: `DateTimeKind.Local` values are converted to UTC and `Unspecified` values are treated as UTC, so series built from local and UTC timestamps line up. Date-based charts (calendar heatmaps, the classic timeline and Gantt, and `WithGanttToday`) keep wall-clock dates unchanged. `WithXDateLabels` follows the instant rule, so it lines up with date/time points; pair it with Unspecified dates on timeline or Gantt charts.
 
 ## Project Status
 
@@ -286,6 +288,19 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
     }
 }
 ```
+
+### Generated design tokens
+
+Hosts that generate design tokens (the HtmlForgeX tokens v1 JSON, with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
+
+```csharp
+var tokens = VisualDesignTokens.FromJsonFile("tokens.json", VisualThemeMode.Dark);
+var availability = Chart.Create()
+    .WithDesignTokens(tokens)
+    .WithStateCategories(tokens.Status.OperationalStateCategories());
+```
+
+`SeverityCategories()`, `OutcomeCategories()`, and `OperationalStateCategories()` return the keys `critical`…`info`, `pass`/`notEvaluated`/`couldNotEvaluate`, and `up`/`degraded`/`down`/`recovering`/`maintenance`/`notObservable`/`unknown`. Missing members fail with the JSON path, for example `light.severity.high.ink`.
 
 ## Composition
 
@@ -604,7 +619,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Cartesian lines and areas | `AddLine`, `AddSmoothLine`, `AddStepLine`, `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea`, `AddScatter`, `AddDecimatedLine`, `AddDecimatedArea`, `AddDecimatedScatter`, `ChartDecimator.Decimate`, `AddTrendLine`, `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole`, `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand`, `AddSlope` |
 | Combo charts | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo` |
 | Bars and distributions | `AddBar`, `AddHistogram`, `AddLollipop`, `AddBubble`, `AddErrorBar`, `AddCandlestick`, `AddOhlc`, `AddRangeBand`, `AddRangeArea`, `AddDumbbell`, `AddPareto`, `AddRangeBar`, `AddBoxPlot`, `AddHorizontalBar`, `WithStackedHorizontalBars` |
-| Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem` |
+| Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem`, `AddHeatmapCategoryRow`, `ChartHeatmapCell` |
 | Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `ChartMapCatalogEntryKind`, `EmbeddedEntries`, `ExternalEntries`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `AddMapBaseLayer`, `AddMapBoundaryLayer` |
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartSankeyLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
@@ -612,6 +627,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
+| Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `WithStateCategories`, `ChartStateCategory`, `StateTimelineSummaryHeader` |
 
 ## Renderer Contracts
 
@@ -619,8 +635,12 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 - Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
 - Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely.
 - Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
+- Categorical heatmaps (`AddHeatmapCategoryRow`) colour each cell through the same `WithStateCategories` map as state timelines, draw a swatch legend in category order instead of the numeric scale, keep masked (null) cells empty, draw optional cell text, and emit `data-cfx-status` with the category key. Cell identities remain stable by row and column even when custom tooltips repeat. Automatic SVG and PNG labels measure the formatted cell text at a readable minimum of 8 px and hide labels that do not fit; explicit Always mode retains its fit behavior. Categorical labels stay centered without reserving unused side lanes. Cell tooltips default to `row, column: label`; cell links render as SVG `<a href>` and accept only relative, fragment, `http`, `https`, and `mailto` targets.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts.
+- State timelines use a linear or time x-axis; nonlinear scales are rejected to preserve elapsed-time geometry. Numeric endpoints outside the supported date range retain round-trip values in metadata.
+- State timeline DateTime intervals support instants on or after 1899-12-30 UTC; earlier dates are rejected because OLE Automation fractions are not chronologically ordered before that epoch. Explicit x-axis labels define tick positions and support label highlights. During repeated daylight-saving hours, interval metadata and tooltips include UTC offsets.
+- State timelines draw one lane per entity on a real time axis. Segment colours come only from the caller's state map (never the series palette), contiguous buckets in the same state draw as one run, uncovered time stays empty, and hatched states mark not-observable data. Each segment exposes `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-meta-duration`, and a `<title>` tooltip, so `ChartForgeX.Interactivity.Html` hover works without extra configuration.
 - Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
 - Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 

@@ -347,8 +347,9 @@
     else return false;
     const targetNode = targets[next];
     if (!targetNode) return false;
-    if (targetNode.focus) {
-      try { targetNode.focus({ preventScroll: true }); } catch { targetNode.focus(); }
+    const focusNode = targetFocusNode(targetNode);
+    if (focusNode.focus) {
+      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
     }
     const target = targetIdentity(targetNode);
     emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });
@@ -364,8 +365,8 @@
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
-    if (target.targetKind && target.targetId && renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId) return true;
-    if (target.id && (node.id === target.id || data.cfxId === target.id)) return true;
+    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.id) return node.id === target.id || data.cfxId === target.id;
     if (target.seriesKey) {
       if (seriesKey(node) !== target.seriesKey) return false;
       if (target.point !== undefined) return data.cfxPoint === String(target.point);
@@ -426,7 +427,7 @@
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
     else if (detail.action === 'selection') {
-      if (!applySelectionByTarget(root, detail.target, detail.selected === true)) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
       renderCompare(root);
     } else if (detail.action === 'lasso') {
       applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);

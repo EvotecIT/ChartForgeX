@@ -74,6 +74,6 @@ public readonly struct ChartBoxPlot {
     /// <param name="median">The median value.</param>
     /// <param name="q3">The third quartile value.</param>
     /// <param name="maximum">The maximum whisker value.</param>
-    public ChartBoxPlot(DateTime x, double minimum, double q1, double median, double q3, double maximum) : this(x.ToOADate(), minimum, q1, median, q3, maximum) {
+    public ChartBoxPlot(DateTime x, double minimum, double q1, double median, double q3, double maximum) : this(ChartDateTime.ToOADate(x), minimum, q1, median, q3, maximum) {
     }
 }

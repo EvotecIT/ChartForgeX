@@ -63,6 +63,6 @@ public readonly struct ChartCandlestick {
     /// <param name="high">The highest value.</param>
     /// <param name="low">The lowest value.</param>
     /// <param name="close">The closing value.</param>
-    public ChartCandlestick(DateTime x, double open, double high, double low, double close) : this(x.ToOADate(), open, high, low, close) {
+    public ChartCandlestick(DateTime x, double open, double high, double low, double close) : this(ChartDateTime.ToOADate(x), open, high, low, close) {
     }
 }

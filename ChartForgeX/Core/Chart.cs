@@ -439,7 +439,9 @@ public sealed partial class Chart {
     }
 
     /// <summary>
-    /// Sets x-axis labels from date/time values.
+    /// Sets x-axis labels from date/time values. Positions follow the instant rule of <see cref="ChartPoint(DateTime, double)"/>
+    /// (Local converted to UTC), so they line up with date/time points; for classic timeline and Gantt charts built from
+    /// Local dates, pass Unspecified dates or use <see cref="WithXLabels(IEnumerable{ChartAxisLabel})"/> with <c>ToOADate()</c> values.
     /// </summary>
     /// <param name="dates">The date/time values to label.</param>
     /// <param name="format">The date/time format string used for labels.</param>

@@ -39,6 +39,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.26-box-selection.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.27-pointer-interactions.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.28-svg-export.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-export-styles.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js",

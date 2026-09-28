@@ -28,12 +28,14 @@ public readonly struct ChartAxisLabel {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChartAxisLabel"/> struct from a date/time axis value.
+    /// Initializes a new instance of the <see cref="ChartAxisLabel"/> struct from a date/time axis value, stored as a UTC
+    /// instant (<see cref="DateTimeKind.Local"/> values are converted; <see cref="DateTimeKind.Unspecified"/> values are
+    /// treated as UTC). The label text is not changed.
     /// </summary>
     /// <param name="value">The date/time axis value.</param>
     /// <param name="text">The label text.</param>
     public ChartAxisLabel(DateTime value, string text) {
-        Value = value.ToOADate();
+        Value = ChartDateTime.ToOADate(value);
         Text = text ?? throw new ArgumentNullException(nameof(text));
     }
 }

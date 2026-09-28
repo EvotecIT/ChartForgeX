@@ -44,6 +44,6 @@ public readonly struct ChartBubble {
     /// <param name="x">The date/time x value.</param>
     /// <param name="y">The vertical coordinate.</param>
     /// <param name="size">The positive size value.</param>
-    public ChartBubble(DateTime x, double y, double size) : this(x.ToOADate(), y, size) {
+    public ChartBubble(DateTime x, double y, double size) : this(ChartDateTime.ToOADate(x), y, size) {
     }
 }

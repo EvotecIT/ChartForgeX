@@ -8,12 +8,13 @@ namespace ChartForgeX.Themes;
 /// <summary>
 /// Defines product-neutral brand, semantic color, typography, and shape tokens that can be applied across ChartForgeX visual surfaces.
 /// </summary>
-public sealed class VisualDesignTokens {
+public sealed partial class VisualDesignTokens {
     private ChartColor[] _palette = ChartPalettes.Report;
     private string _fontFamily = ChartFontStacks.SystemSans;
     private string _monospaceFontFamily = "Cascadia Mono, Consolas, monospace";
     private double _cornerRadius = 12;
     private double _strokeWidth = 2;
+    private VisualStatusTokens _status = new();
 
     /// <summary>Gets or sets the page or canvas background color.</summary>
     public ChartColor Background { get; set; } = ChartColor.FromHex("#FFFFFF");
@@ -77,6 +78,16 @@ public sealed class VisualDesignTokens {
         }
     }
 
+    /// <summary>
+    /// Gets or sets the severity, outcome, and operational-state colours. Use
+    /// <see cref="VisualStatusTokens.OperationalStateCategories"/> and related methods with
+    /// <see cref="ChartForgeX.Core.Chart.WithStateCategories(ChartForgeX.Core.ChartStateCategory[])"/>.
+    /// </summary>
+    public VisualStatusTokens Status {
+        get => _status;
+        set => _status = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
     /// <summary>Creates an independent copy.</summary>
     public VisualDesignTokens Clone() => new() {
         Background = Background,
@@ -95,7 +106,8 @@ public sealed class VisualDesignTokens {
         FontFamily = FontFamily,
         MonospaceFontFamily = MonospaceFontFamily,
         CornerRadius = CornerRadius,
-        StrokeWidth = StrokeWidth
+        StrokeWidth = StrokeWidth,
+        Status = Status.Clone()
     };
 
     /// <summary>Applies the shared tokens to a chart renderer theme.</summary>
@@ -183,7 +195,18 @@ public sealed class VisualDesignTokens {
         Positive = ChartColor.FromHex("#34D399"),
         Warning = ChartColor.FromHex("#FBBF24"),
         Negative = ChartColor.FromHex("#F87171"),
-        Palette = ChartPalettes.Report
+        Palette = ChartPalettes.Report,
+        // Status colours are the Graphite palette v1 dark set, validated together for colour-vision deficiency.
+        Status = new VisualStatusTokens {
+            Critical = VisualStatusTokens.Pair("#F47171", "#F47171"),
+            High = VisualStatusTokens.Pair("#F7924F", "#F7924F"),
+            Medium = VisualStatusTokens.Pair("#EEB640", "#EEB640"),
+            Low = VisualStatusTokens.Pair("#3EC3DD", "#3EC3DD"),
+            Info = VisualStatusTokens.Pair("#74A2F7", "#74A2F7"),
+            Pass = VisualStatusTokens.Pair("#4CC78A", "#4CC78A"),
+            Neutral = VisualStatusTokens.Pair("#8A8F98", "#A0A5AE"),
+            Maintenance = VisualStatusTokens.Pair("#A497F2", "#A497F2")
+        }
     };
 
     private static string RequiredText(string value, string parameterName) => string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Value must not be empty.", parameterName) : value.Trim();
