@@ -103,14 +103,18 @@ public sealed class HourWeekdayHeatmapTests {
         foreach (var aggregation in new[] { ChartTimeAggregation.Mean, ChartTimeAggregation.Maximum }) {
             var chart = Chart.Create().AddHourWeekdayHeatmap(values, aggregation);
             var svg = XDocument.Parse(chart.ToSvg());
-            Assert.Equal("positive", (string)ByRole(svg, "heatmap-cell").Single().Attribute("data-cfx-status")!);
+            var cell = ByRole(svg, "heatmap-cell").Single();
+            Assert.Null(cell.Attribute("data-cfx-status"));
+            Assert.Equal("4", (string)cell.Attribute("data-cfx-level")!);
             Assert.Equal(new[] { "1", "1" }, ByRole(svg, "heatmap-scale-label").Select(label => label.Value).ToArray());
             Assert.True(chart.ToPng().Length > 200);
         }
 
         var hexbin = Chart.Create().AddHexbinHeatmapRow("Only", new[] { new ChartPoint(1, 1) });
         hexbin.Options.HeatmapRelativeScale = true;
-        Assert.Equal("positive", (string)ByRole(XDocument.Parse(hexbin.ToSvg()), "hexbin-cell").Single().Attribute("data-cfx-status")!);
+        var hexbinCell = ByRole(XDocument.Parse(hexbin.ToSvg()), "hexbin-cell").Single();
+        Assert.Null(hexbinCell.Attribute("data-cfx-status"));
+        Assert.Equal("4", (string)hexbinCell.Attribute("data-cfx-level")!);
     }
 
     [Fact]
@@ -118,7 +122,9 @@ public sealed class HourWeekdayHeatmapTests {
         var values = new[] { new ChartTimedValue(Monday.AddHours(9), 1e-9) };
         foreach (var aggregation in new[] { ChartTimeAggregation.Mean, ChartTimeAggregation.Maximum }) {
             var chart = Chart.Create().AddHourWeekdayHeatmap(values, aggregation);
-            Assert.Equal("positive", (string)ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Single().Attribute("data-cfx-status")!);
+            var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Single();
+            Assert.Null(cell.Attribute("data-cfx-status"));
+            Assert.Equal("4", (string)cell.Attribute("data-cfx-level")!);
         }
     }
 
@@ -132,11 +138,16 @@ public sealed class HourWeekdayHeatmapTests {
             var chart = Chart.Create().AddHourWeekdayHeatmap(values, aggregation);
             var svg = XDocument.Parse(chart.ToSvg());
             var cells = ByRole(svg, "heatmap-cell");
-            Assert.Equal("negative", (string)cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 09:", StringComparison.Ordinal)).Attribute("data-cfx-status")!);
-            Assert.Equal("positive", (string)cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal)).Attribute("data-cfx-status")!);
+            var low = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 09:", StringComparison.Ordinal));
+            var high = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 10:", StringComparison.Ordinal));
+            Assert.Null(low.Attribute("data-cfx-status"));
+            Assert.Null(high.Attribute("data-cfx-status"));
+            Assert.Equal("0", (string)low.Attribute("data-cfx-level")!);
+            Assert.Equal("4", (string)high.Attribute("data-cfx-level")!);
             var steps = ByRole(svg, "heatmap-scale-step");
-            Assert.Equal("negative", (string)steps.First().Attribute("data-cfx-status")!);
-            Assert.Equal("positive", (string)steps.Last().Attribute("data-cfx-status")!);
+            Assert.All(steps, step => Assert.Null(step.Attribute("data-cfx-status")));
+            Assert.Equal("0", (string)steps.First().Attribute("data-cfx-level")!);
+            Assert.Equal("4", (string)steps.Last().Attribute("data-cfx-level")!);
             Assert.True(chart.ToPng().Length > 200);
         }
     }
