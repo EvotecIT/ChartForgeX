@@ -144,7 +144,10 @@ internal sealed class ChartStateTimelineModel {
     public string FormatInstant(double value) => ChartTimeScale.FormatInstant(Chart.Options.XAxis, value);
 
     public static string FormatDuration(double days) {
+        if (!ChartMath.IsFinite(days)) return "duration exceeds numeric range";
         var totalSeconds = Math.Max(0, days) * 86400;
+        if (!ChartMath.IsFinite(totalSeconds) || totalSeconds > long.MaxValue)
+            return days.ToString("G4", CultureInfo.InvariantCulture) + "d";
         if (totalSeconds > 0 && totalSeconds < 0.001) {
             double hundredMicroseconds = Math.Round(totalSeconds * 10_000, MidpointRounding.AwayFromZero);
             if (hundredMicroseconds < 1) return "<100µs";

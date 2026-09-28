@@ -80,7 +80,11 @@ internal sealed class ChartGanttLaneModel {
         }
 
         // Without an explicit current time, open items run slightly past the latest data so they still read as open.
-        if (hasOpen && !today.HasValue && max > double.NegativeInfinity) max += Math.Max(1.0 / 1440.0, (max - min) * OpenEndExtension);
+        if (hasOpen && !today.HasValue && max > double.NegativeInfinity) {
+            // Scale before subtracting: even a finite span can overflow when its endpoints have opposite signs.
+            var extension = Math.Max(1.0 / 1440.0, max * OpenEndExtension - min * OpenEndExtension);
+            max = extension < double.MaxValue - max ? max + extension : double.MaxValue;
+        }
         var axis = chart.Options.XAxis;
         if (axis.Minimum.HasValue) min = axis.Minimum.Value;
         if (axis.Maximum.HasValue) max = axis.Maximum.Value;
@@ -93,6 +97,14 @@ internal sealed class ChartGanttLaneModel {
             : ChartTimeScale.Generate(axis, min, max, inside: true)
                 ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
 
+        // Renderer text metrics differ slightly. Pack against the shared minimum possible plot width so a bar
+        // with the two-pixel visual floor never obscures the next item in either SVG or PNG.
+        var contentWidth = Math.Max(1, chart.Options.Size.Width - ChartStateTimelineModel.ContentInset * 2);
+        var hasSummary = !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) ||
+            chart.Series.Any(series => series.Kind == ChartSeriesKind.GanttLane && !string.IsNullOrWhiteSpace(series.LaneSummary));
+        var labelReserve = chart.Options.ShowAxes && chart.Options.ShowYAxis ? contentWidth * 0.34 : 0;
+        var summaryReserve = hasSummary ? Math.Max(8, contentWidth * 0.2 - ChartStateTimelineModel.ColumnGap) + ChartStateTimelineModel.ColumnGap : 0;
+        var packingPlot = new ChartRect(0, 0, Math.Max(1, contentWidth - labelReserve - summaryReserve), 1);
         var rows = new List<ChartGanttLaneRow>();
         string? currentGroup = null;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
@@ -101,7 +113,7 @@ internal sealed class ChartGanttLaneModel {
             if (series.LaneGroup != null && !string.Equals(series.LaneGroup, currentGroup, StringComparison.Ordinal)) rows.Add(ChartGanttLaneRow.Group(series.LaneGroup));
             else if (series.LaneGroup == null && currentGroup != null) rows.Add(ChartGanttLaneRow.Group(string.Empty));
             currentGroup = series.LaneGroup;
-            rows.Add(ChartGanttLaneRow.Lane(seriesIndex, series.Name, series.LaneSummary, Pack(series, legend, today, min, max)));
+            rows.Add(ChartGanttLaneRow.Lane(seriesIndex, series.Name, series.LaneSummary, Pack(series, legend, today, min, max, packingPlot)));
         }
 
         return new ChartGanttLaneModel(chart, rows, min, max, today, ticks, legend);
@@ -112,7 +124,7 @@ internal sealed class ChartGanttLaneModel {
     /// the axis range get sub-row -1 and take no space. Open items end at the current time, or at the axis end when the
     /// current time is unset or earlier than their start.
     /// </summary>
-    private static List<ChartGanttLanePlacedItem> Pack(ChartSeries series, ChartStateCategoryLegend legend, double? now, double min, double max) {
+    private static List<ChartGanttLanePlacedItem> Pack(ChartSeries series, ChartStateCategoryLegend legend, double? now, double min, double max, ChartRect plot) {
         var placed = new List<ChartGanttLanePlacedItem>(series.GanttLaneItems.Count);
         var subRowEnds = new List<double>();
         for (var i = 0; i < series.GanttLaneItems.Count; i++) {
@@ -124,12 +136,14 @@ internal sealed class ChartGanttLaneModel {
                 continue;
             }
 
-            var subRow = subRowEnds.FindIndex(rowEnd => rowEnd <= item.Start);
+            var start = DisplayLeft(item.Start, min, max, plot);
+            var displayedEnd = DisplayRight(item.Start, end, min, max, plot);
+            var subRow = subRowEnds.FindIndex(rowEnd => rowEnd <= start);
             if (subRow < 0) {
                 subRow = subRowEnds.Count;
-                subRowEnds.Add(end);
+                subRowEnds.Add(displayedEnd);
             } else {
-                subRowEnds[subRow] = end;
+                subRowEnds[subRow] = displayedEnd;
             }
 
             placed.Add(new ChartGanttLanePlacedItem(i, item, end, subRow, legend.Resolve(item.Category)));
@@ -160,7 +174,16 @@ internal sealed class ChartGanttLaneModel {
 
     public double BarTop(ChartRect plot, double rowTop, int subRow) => rowTop + subRow * UnitHeight(plot) + (UnitHeight(plot) - Band(plot)) / 2;
 
-    public double X(double value, ChartRect plot) => plot.Left + (Math.Max(Min, Math.Min(Max, value)) - Min) / (Max - Min) * plot.Width;
+    public double X(double value, ChartRect plot) => plot.Left + ChartMath.Normalize(Math.Max(Min, Math.Min(Max, value)), Min, Max) * plot.Width;
+
+    private static double DisplayLeft(double start, double min, double max, ChartRect plot) =>
+        Math.Min(plot.Left + ChartMath.Normalize(Math.Max(min, Math.Min(max, start)), min, max) * plot.Width, plot.Right - 2);
+
+    private static double DisplayRight(double start, double end, double min, double max, ChartRect plot) {
+        var left = DisplayLeft(start, min, max, plot);
+        var endX = plot.Left + ChartMath.Normalize(Math.Max(min, Math.Min(max, end)), min, max) * plot.Width;
+        return Math.Max(left + 2, endX);
+    }
 
     /// <summary>Returns the pixel span of an item clipped to the axis, or false when it lies outside the visible range.</summary>
     public bool TrySpan(ChartGanttLanePlacedItem item, ChartRect plot, out double left, out double width) {
@@ -168,8 +191,8 @@ internal sealed class ChartGanttLaneModel {
         width = 0;
         var instant = item.Item.IsOpen && item.End == item.Item.Start;
         if (item.SubRow < 0 || (instant ? item.Item.Start < Min || item.Item.Start > Max : item.End <= Min || item.Item.Start >= Max)) return false;
-        left = Math.Min(X(item.Item.Start, plot), plot.Right - 2);
-        width = Math.Max(2, X(item.End, plot) - left);
+        left = DisplayLeft(item.Item.Start, Min, Max, plot);
+        width = DisplayRight(item.Item.Start, item.End, Min, Max, plot) - left;
         return true;
     }
 

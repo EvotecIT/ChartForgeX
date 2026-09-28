@@ -4,6 +4,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Xunit;
 
@@ -56,6 +57,7 @@ public sealed class GanttLaneTests {
     public void ToSvg_OpenItem_RunsToNowAndIsMarkedOngoing() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
         var now = ByRole(svg, "gantt-lanes-now").Single();
+        Assert.Equal("none", (string?)now.Attribute("pointer-events"));
         var open = ByRole(svg, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-meta-ongoing") == "true");
         Assert.Equal(Number(now, "x1"), Number(open, "x") + Number(open, "width"), 3);
         Assert.Null(open.Attribute("data-cfx-end"));
@@ -74,6 +76,63 @@ public sealed class GanttLaneTests {
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(6), "low"), new ChartGanttLaneItem(Start.AddHours(4), null, "high") });
         var late = ByRole(XDocument.Parse(lateStart.ToSvg()), "gantt-lane-item");
         Assert.Equal(Number(late[0], "x") + Number(late[0], "width"), Number(late[1], "x") + Number(late[1], "width"), 3);
+    }
+
+    [Fact]
+    public void Render_WideFiniteBounds_KeepLaneCoordinatesFinite()
+    {
+        var chart = CreateChart().ConfigureXAxis(axis => axis.WithBounds(-1e308, 1e308));
+        var model = ChartGanttLaneModel.Build(chart);
+        var plot = new ChartRect(10, 10, 500, 100);
+        Assert.Equal(plot.Left, model.X(model.Min, plot), 6);
+        Assert.Equal(plot.Left + plot.Width / 2, model.X(0, plot), 6);
+        Assert.Equal(plot.Right, model.X(model.Max, plot), 6);
+        Assert.DoesNotContain("NaN", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void ToSvg_SubpixelTouchingItems_UseSeparateVisibleRows() {
+        var first = Start;
+        var second = first.AddTicks(1000);
+        var third = second.AddTicks(1000);
+        var chart = Chart.Create().WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(first, second, "low"), new ChartGanttLaneItem(second, third, "high") });
+        chart.Options.XAxis.WithBounds(first.ToOADate(), first.AddDays(1).ToOADate());
+        var bars = ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item");
+        Assert.Equal(2, bars.Length);
+        Assert.NotEqual((string?)bars[0].Attribute("data-cfx-sub-row"), (string?)bars[1].Attribute("data-cfx-sub-row"));
+        Assert.True(Number(bars[1], "y") >= Number(bars[0], "y") + Number(bars[0], "height"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void Render_NearPixelThreshold_UsesSharedSubRowsForSvgAndPng() {
+        var boundary = 2.0 / 467.9;
+        var chart = Chart.Create().WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(0, boundary, "low"), new ChartGanttLaneItem(boundary, boundary + 0.001, "high") });
+        chart.Options.ShowLegend = false;
+        chart.Options.XAxis.WithBounds(0, 1);
+        var rows = ChartGanttLaneModel.Build(chart).Rows.Single().Items.Select(item => item.SubRow).ToArray();
+        Assert.Equal(new[] { 0, 1 }, rows);
+        Assert.Equal(new[] { "0", "1" }, ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item")
+            .Select(item => (string?)item.Attribute("data-cfx-sub-row")).ToArray());
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void Render_OpenItemWithExtremeFiniteRange_KeepsAutomaticBoundsFinite() {
+        var chart = Chart.Create().WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+            .AddGanttLane("Range", new[] { new ChartGanttLaneItem(-1e308, 1e308, "low"), new ChartGanttLaneItem(0, null, "high") });
+        var model = ChartGanttLaneModel.Build(chart);
+        Assert.True(double.IsFinite(model.Min));
+        Assert.True(double.IsFinite(model.Max));
+        Assert.True(model.Max > 1e308);
+        var svg = chart.ToSvg();
+        Assert.DoesNotContain("Infinity", svg, StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", svg, StringComparison.Ordinal);
+        Assert.Contains("duration exceeds numeric range", svg, StringComparison.Ordinal);
+        Assert.NotEmpty(chart.ToPng());
     }
 
     [Fact]

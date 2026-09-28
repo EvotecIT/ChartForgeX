@@ -133,7 +133,7 @@ public sealed partial class SvgChartRenderer {
 
         if (model.NowVisible) {
             var x = model.X(model.Now!.Value, plot);
-            writer.StartElement("line").Attribute("data-cfx-role", "gantt-lanes-now").Attribute("x1", x).Attribute("y1", plot.Top).Attribute("x2", x).Attribute("y2", plot.Bottom)
+            writer.StartElement("line").Attribute("data-cfx-role", "gantt-lanes-now").Attribute("pointer-events", "none").Attribute("x1", x).Attribute("y1", plot.Top).Attribute("x2", x).Attribute("y2", plot.Bottom)
                 .Attribute("stroke", t.Text.ToCss()).Attribute("stroke-opacity", 0.7).Attribute("stroke-width", ChartVisualPrimitives.GanttTodayStrokeWidth).Attribute("stroke-dasharray", "6 5").EndEmptyElement().Line();
             if (ShowXAxis(chart)) {
                 var label = TrimSvgLabelToWidth(chart, chart.Options.Labels.Now, tickFontSize, Math.Max(0, plot.Width - 4), tickStyle, emphasized: true);
