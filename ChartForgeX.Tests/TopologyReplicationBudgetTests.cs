@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Xml.Linq;
 using ChartForgeX.Topology;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,13 +48,21 @@ public sealed class TopologyReplicationBudgetTests {
         var report = prepared.Analyze();
         var crossings = ReplicationTopologyFixture.NodeCardCrossings(report);
         var collisions = report.Collisions.Count(collision => collision.Kind == "node-node");
+        var svgElements = XDocument.Parse(svg).Descendants().ToArray();
+        var renderedNodes = svgElements.Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node").ToArray();
+        var renderedEdges = svgElements.Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge").ToArray();
         _output.WriteLine($"dcs={expectedControllers} edges={prepared.EdgeCount} prepare={prepareMs}ms svg={svgMs}ms/{svg.Length}B png={pngMs}ms/{png.Length}B size={prepared.Width}x{prepared.Height} cardCrossings={crossings} nodeCollisions={collisions}");
         SaveSample(svg, png, expectedControllers);
 
         Assert.Equal(expectedControllers, prepared.NodeCount);
         Assert.InRange(expectedControllers, 70, 150);
         Assert.Equal(chart.Edges.Count, prepared.EdgeCount);
-        Assert.Equal(new HashSet<string>(chart.Edges.Select(edge => edge.Id)), RenderedEdgeIds(svg));
+        Assert.Equal(expectedControllers, renderedNodes.Length);
+        Assert.Equal(chart.Edges.Count, renderedEdges.Length);
+        Assert.Equal(chart.Nodes.Select(node => node.Id).OrderBy(id => id, StringComparer.Ordinal),
+            renderedNodes.Select(element => (string?)element.Attribute("data-node-id") ?? throw new InvalidOperationException("Rendered node has no ID.")).OrderBy(id => id, StringComparer.Ordinal));
+        Assert.Equal(chart.Edges.Select(edge => edge.Id).OrderBy(id => id, StringComparer.Ordinal),
+            renderedEdges.Select(element => (string?)element.Attribute("data-edge-id") ?? throw new InvalidOperationException("Rendered edge has no ID.")).OrderBy(id => id, StringComparer.Ordinal));
         Assert.True(png.Length > 10_000, "The PNG export should contain the rendered topology.");
         Assert.True(prepareMs + svgMs + pngMs <= RenderTimeBudgetMilliseconds, $"Layout plus SVG and PNG export took {prepareMs + svgMs + pngMs} ms; budget {RenderTimeBudgetMilliseconds} ms.");
         Assert.True(svg.Length <= svgByteBudget, $"SVG is {svg.Length} bytes; budget {svgByteBudget}.");
@@ -96,8 +105,6 @@ public sealed class TopologyReplicationBudgetTests {
         _output.WriteLine("saved " + Path.Combine(directory, name + ".png"));
     }
 
-    private static HashSet<string> RenderedEdgeIds(string svg) =>
-        new(System.Text.RegularExpressions.Regex.Matches(svg, "data-edge-id=\"([^\"]+)\"").Cast<System.Text.RegularExpressions.Match>().Select(match => match.Groups[1].Value));
 }
 
 /// <summary>Runs the replication budget tests without parallel neighbours so timing budgets stay meaningful.</summary>
