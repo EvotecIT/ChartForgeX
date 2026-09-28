@@ -30,7 +30,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(Text(title));
         writer.Append("</title>");
         if (options.ExternalAssets == null) writer.Append("<style>").Append(BuildFragmentStyle()).Append("</style>");
-        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteStylesheet(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerStyle)));
+        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteStylesheet(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerStyle, graphExplorer: true)));
         writer.Append("</head><body class=\"cfx-graph-shell");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
         if (options.FillAvailableHeight) writer.Append(" cfx-graph-shell-embedded");

@@ -128,16 +128,7 @@
     ['cfx-graph-lod-compact', 'cfx-graph-lod-hide-edge-labels', 'cfx-graph-neighborhood-active', 'cfx-graph-performance-gated', 'cfx-graph-priority-overview'].forEach(name => {
       if (root.classList.contains(name)) clone.classList.add(name);
     });
-    const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]')
-      || Array.from(root.ownerDocument.querySelectorAll('style')).find(style => (style.textContent || '').includes('.cfx-graph-explorer'));
-    if (styleSource?.textContent) {
-      const style = root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', 'style');
-      style.setAttribute('data-cfx-export-style', 'true');
-      style.textContent = styleSource.textContent;
-      const defs = clone.querySelector('defs');
-      if (defs) defs.insertBefore(style, defs.firstChild);
-      else clone.insertBefore(style, clone.firstChild);
-    }
+    applyGraphExportStyles(root, svg, clone);
     return new XMLSerializer().serializeToString(clone);
   };
   const syncPhysicsControls = (root) => {
@@ -317,4 +308,3 @@
   const start = () => roots().forEach(bind);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
-

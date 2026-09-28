@@ -60,7 +60,10 @@ public sealed class ExternalAssetTests {
         Assert.Contains(script.Content, inline, StringComparison.Ordinal);
         Assert.Contains("<script src=\"../shared/" + script.FileName + "\" nonce=\"abc\"></script>", external, StringComparison.Ordinal);
         Assert.Contains("href=\"../shared/" + HtmlInteractiveAssetFiles.GraphExplorerStyle.FileName + "\"", external, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-graph-assets=\"true\"", external, StringComparison.Ordinal);
         Assert.DoesNotContain(RuntimeSnippet(script), external, StringComparison.Ordinal);
+        Assert.Contains("externalStyle.sheet.cssRules", script.Content, StringComparison.Ordinal);
+        Assert.Contains("applyGraphExportStyles(root, svg, clone)", script.Content, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -78,7 +81,11 @@ public sealed class ExternalAssetTests {
         var customFile = HtmlInteractiveAssetFiles.TopologyScript(custom);
         Assert.NotEqual(file.FileName, customFile.FileName);
         Assert.Contains("src=\"assets/" + customFile.FileName + "\"", renderer.RenderPage(chart, custom, new HtmlAssetReferences("assets/")), StringComparison.Ordinal);
-        Assert.Same(customFile, HtmlInteractiveAssetFiles.TopologyScript(custom));
+        var repeatedCustomFile = HtmlInteractiveAssetFiles.TopologyScript(custom);
+        Assert.NotSame(customFile, repeatedCustomFile);
+        Assert.Equal(customFile.FileName, repeatedCustomFile.FileName);
+        Assert.Equal(customFile.Content, repeatedCustomFile.Content);
+        Assert.Same(file, HtmlInteractiveAssetFiles.TopologyScript());
     }
 
     [Fact]
@@ -105,6 +112,18 @@ public sealed class ExternalAssetTests {
         }
     }
 
+    [Fact]
+    public void WriteTo_RelativeDirectory_ReturnsFullPaths() {
+        var directory = "cfx-assets-" + Guid.NewGuid().ToString("N");
+        try {
+            var path = Assert.Single(HtmlInteractiveAssetFiles.WriteTo(directory, new[] { HtmlInteractiveAssetFiles.ChartStyle }));
+            Assert.True(Path.IsPathFullyQualified(path));
+            Assert.Equal(Path.Combine(Path.GetFullPath(directory), HtmlInteractiveAssetFiles.ChartStyle.FileName), path);
+        } finally {
+            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData("assets", "assets/")]
     [InlineData(@"..\shared\cfx", "../shared/cfx/")]
@@ -122,6 +141,9 @@ public sealed class ExternalAssetTests {
     [InlineData(@"\\server\share")]
     [InlineData("assets?v=1")]
     [InlineData("assets#top")]
+    [InlineData("https://")]
+    [InlineData("https://host.test:bad/assets")]
+    [InlineData("http://:81/assets")]
     public void AssetReferences_RejectUnsafeBasePath(string input) => Assert.Throws<ArgumentException>(() => new HtmlAssetReferences(input));
 
     private static Chart CreateChart() => Chart.Create().WithSize(480, 240).AddLine("Series", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) });
