@@ -17,6 +17,7 @@ public static partial class GalleryWriter {
             "reporting-status-matrix",
             "reporting-incident-lanes",
             "reporting-hour-weekday",
+            "foundation-sequential-ramp-heatmap",
             "ct-volume-light",
             "ct-regional-light",
             "monthly-posture-dark",

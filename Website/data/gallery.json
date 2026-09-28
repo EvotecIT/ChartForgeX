@@ -662,6 +662,15 @@
     },
     {
       "category": "charts",
+      "title": "Sequential Design Token Ramp",
+      "body": "A design-token ramp colors count intensity consistently in SVG and PNG.",
+      "tags": [
+        "Heatmap"
+      ],
+      "image": "/examples/generated/foundation-sequential-ramp-heatmap.svg"
+    },
+    {
+      "category": "charts",
       "title": "Foundation Typed Facets",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
