@@ -15,10 +15,10 @@ public sealed partial class Chart {
     /// <param name="color">An optional high-intensity cell color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
-        EnsureCanAddHeatmapRow();
+        EnsureCanAddSeries();
         var materialized = ChartGuards.Points(points, nameof(points));
         if (materialized.Count == 0) throw new ArgumentException("Heatmap rows must contain at least one cell value.", nameof(points));
-        Series.Add(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.Heatmap, materialized) { Color = color });
+        AppendSeries(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.Heatmap, materialized) { Color = color });
         return this;
     }
 
@@ -70,10 +70,10 @@ public sealed partial class Chart {
     /// <param name="color">An optional high-intensity hexagon color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHexbinHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
-        EnsureCanAddHeatmapRow();
+        EnsureCanAddSeries();
         var materialized = ChartGuards.Points(points, nameof(points));
         if (materialized.Count == 0) throw new ArgumentException("Hexbin heatmap rows must contain at least one cell value.", nameof(points));
-        Series.Add(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.HexbinHeatmap, materialized) { Color = color });
+        AppendSeries(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.HexbinHeatmap, materialized) { Color = color });
         return this;
     }
 

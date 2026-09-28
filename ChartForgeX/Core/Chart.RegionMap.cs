@@ -44,6 +44,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional high-intensity region color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddRegionMap(string name, ChartMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (definition == null) throw new ArgumentNullException(nameof(definition));
         Options.RegionMapDefinition = definition;
         return AddRegionMap(name, definition, regions, ChartSeriesKind.RegionMap, "Region maps", color);
@@ -58,6 +59,7 @@ public sealed partial class Chart {
     /// <param name="scale">An optional map color scale used to color the regions.</param>
     /// <returns>The current chart.</returns>
     public Chart AddRegionHeatmap(string name, ChartMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartMapColorScale? scale = null) {
+        EnsureCanAddSeries();
         if (scale != null) Options.MapColorScale = scale;
         return AddRegionMap(name, definition, regions);
     }

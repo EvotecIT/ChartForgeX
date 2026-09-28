@@ -45,7 +45,7 @@ public sealed partial class Chart {
             LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
         };
         series.GanttLaneItems.AddRange(ordered);
-        Series.Add(series);
+        AppendSeries(series);
         return this;
     }
 }

@@ -36,7 +36,7 @@ public sealed partial class Chart {
         var taskCount = 0;
         foreach (var series in Series) if (series.Kind == ChartSeriesKind.Gantt) taskCount++;
         if (dependsOn < -1 || dependsOn >= taskCount) throw new ArgumentOutOfRangeException(nameof(dependsOn), dependsOn, "Gantt dependency must reference an earlier zero-based Gantt task index.");
-        Series.Add(new ChartSeries(name, ChartSeriesKind.Gantt, new[] {
+        AppendSeries(new ChartSeries(name, ChartSeriesKind.Gantt, new[] {
             new ChartPoint(start, end),
             new ChartPoint(progress, dependsOn),
             new ChartPoint(milestone ? 1 : 0, 0)

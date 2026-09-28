@@ -10,6 +10,7 @@ public sealed partial class Chart {
     /// Adds a dependency-free Sankey flow chart from weighted source-to-target links.
     /// </summary>
     public Chart AddSankey(string name, IEnumerable<ChartSankeyLink> links, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (links == null) throw new ArgumentNullException(nameof(links));
         var materialized = links.ToList();
         if (materialized.Count == 0) throw new ArgumentException("Sankey charts require at least one link.", nameof(links));

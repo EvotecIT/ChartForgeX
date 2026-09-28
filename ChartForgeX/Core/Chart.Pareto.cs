@@ -15,6 +15,7 @@ public sealed partial class Chart {
     /// <param name="cumulativeColor">An optional cumulative line color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddPareto(string name, IEnumerable<ChartParetoItem> items, ChartColor? barColor = null, ChartColor? cumulativeColor = null) {
+        EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));
         var materialized = items.ToArray();
         if (materialized.Length == 0) throw new ArgumentException("Pareto charts must contain at least one item.", nameof(items));

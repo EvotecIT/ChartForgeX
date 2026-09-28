@@ -576,7 +576,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(min, nameof(min));
         ChartGuards.Finite(max, nameof(max));
         if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Gauge maximum must be greater than minimum.");
-        Series.Add(new ChartSeries(name, ChartSeriesKind.Gauge, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
+        AppendSeries(new ChartSeries(name, ChartSeriesKind.Gauge, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
         return this;
     }
 
@@ -608,7 +608,7 @@ public sealed partial class Chart {
             }
         }
 
-        Series.Add(new ChartSeries(name, ChartSeriesKind.Bullet, points) { Color = color });
+        AppendSeries(new ChartSeries(name, ChartSeriesKind.Bullet, points) { Color = color });
         return this;
     }
 
@@ -670,7 +670,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         if (end < start) throw new ArgumentOutOfRangeException(nameof(end), end, "Timeline end must be greater than or equal to start.");
-        Series.Add(new ChartSeries(name, ChartSeriesKind.Timeline, new[] { new ChartPoint(start, end) }) { Color = color });
+        AppendSeries(new ChartSeries(name, ChartSeriesKind.Timeline, new[] { new ChartPoint(start, end) }) { Color = color });
         return this;
     }
 
@@ -751,7 +751,12 @@ public sealed partial class Chart {
     }
 
     private Chart Add(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points, ChartColor? color, bool smooth = false) {
-        Series.Add(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), kind, ChartGuards.Points(points, nameof(points))) { Color = color, Smooth = smooth });
+        AppendSeries(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), kind, ChartGuards.Points(points, nameof(points))) { Color = color, Smooth = smooth });
         return this;
+    }
+
+    private void AppendSeries(ChartSeries series) {
+        EnsureCanAddSeries();
+        Series.Add(series);
     }
 }

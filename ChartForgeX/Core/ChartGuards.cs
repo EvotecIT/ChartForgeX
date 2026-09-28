@@ -41,6 +41,7 @@ internal static class ChartGuards {
 
     public static void RenderCompatibility(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart);
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;

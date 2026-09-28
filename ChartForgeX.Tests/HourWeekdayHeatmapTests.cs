@@ -183,9 +183,35 @@ public sealed class HourWeekdayHeatmapTests {
         var calendarItems = new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1) };
         Assert.Throws<InvalidOperationException>(() => chart.AddCalendarHeatmap("Extra", calendarItems));
         Assert.Throws<InvalidOperationException>(() => Chart.Create().AddCalendarHeatmap("Days", calendarItems).AddHourWeekdayHeatmap(values));
+        var line = new[] { new ChartPoint(1, 1) };
+        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLine("Existing", line).AddHourWeekdayHeatmap(values));
+        Assert.Throws<InvalidOperationException>(() => chart.AddLine("Extra", line));
+        Assert.Throws<InvalidOperationException>(() => chart.AddGauge("Extra", 50));
+        var hourLabels = chart.Options.XAxisLabels.Select(label => label.Text).ToArray();
+        Assert.Throws<InvalidOperationException>(() => chart.AddDottedMap("Extra", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
+        Assert.Equal(hourLabels, chart.Options.XAxisLabels.Select(label => label.Text).ToArray());
+        Assert.Equal(7, chart.Series.Count);
+        Assert.Equal(24, chart.Options.XAxisLabels.Count);
+        Assert.True(Chart.Create().AddBar("Bars", line).AddLine("Line", line).ToSvg().Length > 200);
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHourWeekdayHeatmap(values, dayNames: new[] { "a" }));
         Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().AddHourWeekdayHeatmap(values, firstDayOfWeek: (DayOfWeek)9));
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHourWeekdayHeatmap(new[] { new ChartTimedValue(Monday, double.MaxValue), new ChartTimedValue(Monday, double.MaxValue) }, ChartTimeAggregation.Sum));
+    }
+
+    [Fact]
+    public void OwnedRows_RejectDirectStructuralChangesAtRender() {
+        var values = new[] { new ChartTimedValue(Monday.AddHours(9)) };
+        var appended = Chart.Create().AddHourWeekdayHeatmap(values);
+        appended.Series.Add(new ChartSeries("Extra", ChartSeriesKind.Heatmap, new[] { new ChartPoint(1, 1) }));
+        Assert.Throws<InvalidOperationException>(() => appended.ToSvg());
+
+        var removed = Chart.Create().AddHourWeekdayHeatmap(values);
+        removed.Series.RemoveAt(0);
+        Assert.Throws<InvalidOperationException>(() => removed.ToPng());
+
+        var cleared = Chart.Create().AddHourWeekdayHeatmap(values);
+        cleared.Series.Clear();
+        Assert.Throws<InvalidOperationException>(() => cleared.AddHourWeekdayHeatmap(values));
     }
 
     private static double Cell(Chart chart, string day, int hour) {
