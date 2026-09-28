@@ -13,6 +13,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional point color. When null, the positive theme color is used.</param>
     /// <returns>The current chart.</returns>
     public Chart AddDottedMap(string name, IEnumerable<ChartMapPoint> points, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (points == null) throw new ArgumentNullException(nameof(points));
         var chartPoints = new List<ChartPoint>();
         var labels = new List<ChartAxisLabel>();

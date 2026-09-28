@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
 
@@ -24,12 +25,13 @@ public readonly struct ChartStateTimelineSegment {
     }
 
     /// <summary>Initializes a segment from date/time values. <see cref="DateTimeKind.Local"/> values are converted to UTC;
-    /// <see cref="DateTimeKind.Unspecified"/> values are treated as UTC.</summary>
+    /// <see cref="DateTimeKind.Unspecified"/> values are treated as UTC. Both instants must be on or after 1899-12-30 UTC.
+    /// DateTime inputs are rounded to 100-microsecond time-axis resolution; shorter intervals are rejected.</summary>
     /// <param name="start">The inclusive start.</param>
     /// <param name="end">The exclusive end; must be later than <paramref name="start"/>.</param>
     /// <param name="state">The key of the state that applies during the interval.</param>
     /// <param name="detail">Optional detail text shown in tooltips.</param>
-    public ChartStateTimelineSegment(DateTime start, DateTime end, string state, string? detail = null) : this(ToUtc(start).ToOADate(), ToUtc(end).ToOADate(), state, detail) {
+    public ChartStateTimelineSegment(DateTime start, DateTime end, string state, string? detail = null) : this(ChartDateTime.ToOrderedOaDate(start, nameof(start)), ChartDateTime.ToOrderedOaEnd(start, end, nameof(end)), state, detail) {
     }
 
     /// <summary>Gets the inclusive start instant as an OLE Automation date.</summary>
@@ -44,5 +46,4 @@ public readonly struct ChartStateTimelineSegment {
     /// <summary>Gets optional detail text shown in tooltips.</summary>
     public string? Detail { get; }
 
-    private static DateTime ToUtc(DateTime value) => value.Kind == DateTimeKind.Local ? value.ToUniversalTime() : value;
 }

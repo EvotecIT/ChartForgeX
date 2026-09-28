@@ -49,7 +49,10 @@ public sealed class NeutralHeatmapScaleTests {
         var chart = Chart.Create().WithSize(720, 260).AddCalendarHeatmap("Commits", Enumerable.Range(0, 20).Select(day => new ChartCalendarHeatmapItem(start.AddDays(day), day % 5)));
         var svg = XDocument.Parse(chart.ToSvg());
         var valued = ByRole(svg, "calendar-heatmap-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "false").ToArray();
+        var empty = ByRole(svg, "calendar-heatmap-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "true").ToArray();
         Assert.All(valued, cell => Assert.Null(cell.Attribute("data-cfx-status")));
+        Assert.NotEmpty(empty);
+        Assert.All(empty, cell => Assert.Null(cell.Attribute("data-cfx-level")));
         Assert.All(ByRole(svg, "calendar-heatmap-scale-step"), step => Assert.Null(step.Attribute("data-cfx-status")));
         var strongest = valued.First(cell => (string?)cell.Attribute("data-cfx-level") == "4");
         Assert.NotEqual(chart.Options.Theme.Positive.ToCss(), (string)strongest.Attribute("fill")!);

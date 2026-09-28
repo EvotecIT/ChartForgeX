@@ -23,14 +23,14 @@ public sealed partial class SvgChartRenderer {
         var values = rows.SelectMany(series => series.Points.Select(point => point.Y)).ToArray();
         var min = values.Length == 0 ? 0 : values.Min();
         var max = values.Length == 0 ? 1 : values.Max();
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
+        if (!chart.Options.HeatmapRelativeScale && Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
         var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
-            ? categories.Layout(text => EstimateSvgStyledTextWidth(chart, text, StyleFontSize(chart.Options.LegendStyle, t.LegendFontSize), chart.Options.LegendStyle), basePlot.Left, basePlot.Width)
+            ? categories.Layout(text => EstimateSvgStyledTextWidth(chart, text, StyleFontSize(chart.Options.LegendStyle, t.LegendFontSize), chart.Options.LegendStyle), basePlot.Left, basePlot.Width, Math.Max(0, ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, 0).Height - 18))
             : Array.Empty<ChartStateCategoryLegendItem>();
-        var legendHeight = ChartStateCategoryLegend.Height(legend);
+        var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
         var plot = ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, legendHeight);
         var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, plot.Height / rows.Length) * 0.05));
         var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, plot.Height, columns.Length, rows.Length, chart.Options.HeatmapCellGap ?? autoGap);
@@ -74,12 +74,21 @@ public sealed partial class SvgChartRenderer {
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var styledLabel = StyleText(dataStyle, label);
                 var preferredLabelFontSize = StyleFontSize(dataStyle, t.DataLabelFontSize);
-                var fittedCellFontSize = TextFontSizeForSvgBounds(styledLabel, Math.Max(1, cellWidth - 6), Math.Max(1, cellHeight - 6), preferredLabelFontSize, dataStyle, minFontSize: 1);
+                if (cell.HasValue) preferredLabelFontSize = ChartHeatmapSurface.CategoricalLabelFontSize(preferredLabelFontSize);
+                var fittedCellFontSize = TextFontSizeForSvgBounds(styledLabel, Math.Max(1, cellWidth - 6), Math.Max(1, cellHeight - 6), preferredLabelFontSize, dataStyle, minFontSize: cell.HasValue ? 8 : 1);
                 var labelFits = cellWidth >= 34 && cellHeight >= 20 && EstimateSvgStyledTextHeight(fittedCellFontSize, dataStyle) <= Math.Max(1, cellHeight - 6);
+                if (cell.HasValue) {
+                    labelFits = ChartHeatmapSurface.CategoricalLabelFits(cellWidth, cellHeight,
+                        EstimateSvgStyledTextWidth(chart, label, preferredLabelFontSize, dataStyle, emphasized: true),
+                        EstimateSvgStyledTextHeight(preferredLabelFontSize, dataStyle));
+                    if (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto) fittedCellFontSize = preferredLabelFontSize;
+                }
                 var drawValueText = chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always ||
                     chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Auto && ShouldDrawDataLabels(chart, series) && labelFits;
                 if (cell.HasValue) drawValueText = cell.Value.Text != null && chart.Options.HeatmapValueTextMode != ChartHeatmapValueTextMode.Hidden && (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || labelFits);
                 if (drawValueText) {
+                    // Labels decorate the mark; pointer events must reach the linked cell below.
+                    body.Append("<g pointer-events=\"none\">");
                     var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
                         DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), fittedCellFontSize, cellWidth - 6, "750", style: dataStyle);
@@ -93,6 +102,7 @@ public sealed partial class SvgChartRenderer {
                     } else {
                         DrawDataLabel(body, chart, label, x + cellWidth / 2, placement == ChartDataLabelPlacement.Above ? y - 8 : y + cellHeight + 12, plot, series: series, pointIndex: pointIndex);
                     }
+                    body.Append("</g>");
                 }
             }
         }
@@ -118,7 +128,7 @@ public sealed partial class SvgChartRenderer {
             }
         }
 
-        if (legend.Count > 0) AppendSvg(body, writer => WriteStateCategoryLegend(writer, chart, legend, basePlot.Bottom - legendHeight + 4, hatchId));
+        if (legend.Count > 0) AppendSvg(body, writer => WriteStateCategoryLegend(writer, chart, legend, basePlot.Bottom - legendHeight + 4, hatchId, basePlot));
         else if (chart.Options.ShowHeatmapScale && !categorical) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color);
 
         var writer = new SvgMarkupWriter(body.Length + 128);
@@ -174,6 +184,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("focusable", href == null ? "true" : null)
             .Attribute("data-cfx-role", "heatmap-cell")
             .OptionalAttribute("data-cfx-level", level)
+            .Attribute("data-cfx-id", "heatmap:" + rowIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + columnIndex.ToString(System.Globalization.CultureInfo.InvariantCulture))
             .Attribute("data-cfx-meta-state", stateLabel)
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)
@@ -267,7 +278,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static bool ShouldReserveHeatmapValueLabels(Chart chart, ChartSeries series) {
-        if (chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
+        if (series.HeatmapCells.Count > 0 || chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
         return chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || ShouldDrawDataLabels(chart, series);
     }
 
@@ -282,7 +293,7 @@ public sealed partial class SvgChartRenderer {
         var y = plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
-            var value = min + (max - min) * ratio;
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
             var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
             var stepRatio = ChartHeatmapSurface.Ratio(chart, value, min, max);
             WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.CellStatus(chart, stepRatio), ChartHeatmapSurface.Level(stepRatio), color);

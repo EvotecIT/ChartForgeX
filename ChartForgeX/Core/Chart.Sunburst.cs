@@ -10,6 +10,7 @@ public sealed partial class Chart {
     /// Adds a dependency-free sunburst partition chart from parent-child links.
     /// </summary>
     public Chart AddSunburst(string name, IEnumerable<ChartTreeLink> links, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (links == null) throw new ArgumentNullException(nameof(links));
         var materialized = links.ToList();
         if (materialized.Count == 0) throw new ArgumentException("Sunburst charts require at least one link.", nameof(links));

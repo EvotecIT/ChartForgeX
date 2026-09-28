@@ -14,6 +14,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional high-intensity region color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddTileMap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color = null) {
+        EnsureCanAddSeries();
         if (definition == null) throw new ArgumentNullException(nameof(definition));
         Options.TileMapDefinition = definition;
         return AddTileMapCore(name, definition, regions, color);
@@ -28,6 +29,7 @@ public sealed partial class Chart {
     /// <param name="scale">An optional map color scale used to color the tiles.</param>
     /// <returns>The current chart.</returns>
     public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartMapColorScale? scale = null) {
+        EnsureCanAddSeries();
         if (scale != null) Options.MapColorScale = scale;
         return AddTileMap(name, definition, regions);
     }

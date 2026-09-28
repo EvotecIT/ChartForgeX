@@ -76,7 +76,7 @@ public sealed partial class SvgChartRenderer {
             }
 
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !geometry.IsOuterRadius(tick)) {
-                DrawSvgTextLeft(sb, chart, "polar-radius-label", FormatYAxisValue(chart, tick), geometry.CenterX + 7, geometry.CenterY - radius + 14, theme.MutedText, StyleFontSize(chart.Options.TickLabelStyle, theme.TickLabelFontSize), Math.Max(28, plot.Right - geometry.CenterX - 14), "400", style: chart.Options.TickLabelStyle);
+                DrawSvgTextLeft(sb, chart, "polar-radius-label", FormatYAxisValue(chart, tick, geometry.RadiusTicks), geometry.CenterX + 7, geometry.CenterY - radius + 14, theme.MutedText, StyleFontSize(chart.Options.TickLabelStyle, theme.TickLabelFontSize), Math.Max(28, plot.Right - geometry.CenterX - 14), "400", style: chart.Options.TickLabelStyle);
             }
         }
 

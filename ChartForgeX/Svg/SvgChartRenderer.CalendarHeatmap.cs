@@ -26,7 +26,6 @@ public sealed partial class SvgChartRenderer {
         var max = cells.Max(item => item.Value);
         var sourceMin = min;
         var sourceMax = max;
-        if (Math.Abs(max - min) < 0.000001) max = min + 1;
 
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
@@ -75,7 +74,7 @@ public sealed partial class SvgChartRenderer {
             var hasValue = byDate.TryGetValue(day, out var entry);
             var value = hasValue ? entry.Value : 0;
             var ratio = hasValue ? ChartHeatmapSurface.CalendarRatio(value, min, max) : 0;
-            var level = hasValue ? ChartHeatmapSurface.Level(ratio) : 0;
+            int? level = hasValue ? ChartHeatmapSurface.Level(ratio) : null;
             var status = hasValue ? null : "empty";
             var color = hasValue ? ChartHeatmapSurface.CalendarColor(chart, series, entry.Color, value, min, max) : ChartHeatmapSurface.CalendarEmptyColor(chart);
             var x = x0 + column * (cell + gap);
@@ -92,7 +91,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-week-index", column)
                 .Attribute("data-cfx-weekday-index", row)
                 .Attribute("data-cfx-value", value)
-                .Attribute("data-cfx-level", level)
+                .OptionalAttribute("data-cfx-level", level)
                 .Attribute("data-cfx-empty", !hasValue)
                 .Attribute("data-cfx-status", status)
                 .Attribute("role", "img")
@@ -176,7 +175,7 @@ public sealed partial class SvgChartRenderer {
 
         WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "Less", lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
         for (var i = 0; i < 5; i++) {
-            var value = min + (max - min) * (i / 4.0);
+            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, i / 4.0);
             var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
             writer
                 .StartElement("rect")

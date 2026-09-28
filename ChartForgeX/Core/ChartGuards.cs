@@ -41,6 +41,7 @@ internal static class ChartGuards {
 
     public static void RenderCompatibility(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart);
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
@@ -276,10 +277,18 @@ internal static class ChartGuards {
     }
 
     private static void ValidateGanttLanes(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+            throw new InvalidOperationException("GanttLane charts require a linear or time x-axis to preserve elapsed-time geometry.");
         ValidateStateCategories(chart);
         var items = 0;
         foreach (var lane in chart.Series) {
             if (lane.GanttLaneItems.Count != lane.Points.Count) throw new InvalidOperationException("Gantt lanes require one item per point.");
+            for (var i = 0; i < lane.Points.Count; i++) {
+                var item = lane.GanttLaneItems[i];
+                var point = lane.Points[i];
+                if (point.X != item.Start || point.Y != (item.End ?? item.Start))
+                    throw new InvalidOperationException("Gantt lane points must match their items; rebuild the lane after changing its data.");
+            }
             items += lane.Points.Count;
         }
 
@@ -287,6 +296,8 @@ internal static class ChartGuards {
     }
 
     private static void ValidateStateTimeline(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+            throw new InvalidOperationException("StateTimeline charts require a linear or time x-axis to preserve elapsed-time geometry.");
         ValidateStateCategories(chart);
 
         var series = chart.Series;

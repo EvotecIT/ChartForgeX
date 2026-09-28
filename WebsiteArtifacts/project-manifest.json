@@ -11,8 +11,7 @@
   "links": {
     "source": "https://github.com/EvotecIT/ChartForgeX",
     "nuget": "https://www.nuget.org/packages/ChartForgeX",
-    "releases": "https://github.com/EvotecIT/ChartForgeX/releases",
-    "website": "https://evotecit.github.io/ChartForgeX/"
+    "releases": "https://github.com/EvotecIT/ChartForgeX/releases"
   },
   "surfaces": {
     "docs": true,

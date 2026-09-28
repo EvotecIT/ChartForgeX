@@ -42,6 +42,7 @@ public sealed partial class Chart {
     }
 
     private Chart AddHistogramCore(string name, double[] values, ChartHistogramBinLayout layout, ChartColor? color) {
+        EnsureCanAddSeries();
         var counts = new int[layout.Count];
         foreach (var value in values) counts[layout.GetIndex(value)]++;
 

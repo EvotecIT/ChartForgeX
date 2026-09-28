@@ -47,7 +47,7 @@ public sealed partial class PngChartRenderer {
             if (chart.Options.ShowGrid) canvas.DrawCircleOutline(geometry.CenterX, geometry.CenterY, radius, ApplyOpacity(theme.Grid, ChartVisualPrimitives.PolarRingOpacity), ChartVisualPrimitives.GridStrokeWidth);
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !geometry.IsOuterRadius(tick)) {
                 var maxWidth = Math.Max(28, chart.Options.Size.Width - chart.Options.Padding.Right - geometry.CenterX - 14);
-                var label = FormatYAxisValue(chart, tick);
+                var label = FormatYAxisValue(chart, tick, geometry.RadiusTicks);
                 var fontSize = TextFontSizeForWidth(label, maxWidth, tickFontSize, tickStyle);
                 label = TrimPngLabelToWidth(label, fontSize, maxWidth, tickStyle);
                 if (label.Length > 0) DrawPngTextStyled(canvas, geometry.CenterX + 7, geometry.CenterY - radius + 14 - PngStyledTextBottomExtent(fontSize, tickStyle), label, tickStyle, theme.MutedText, fontSize, emphasized: false);
