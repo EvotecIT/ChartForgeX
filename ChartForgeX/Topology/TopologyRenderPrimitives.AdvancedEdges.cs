@@ -67,7 +67,9 @@ internal static partial class TopologyRenderPrimitives {
     private static void ApplyNamedEndpoint(TopologyChart chart, TopologyNode node, string portId, TopologyEdge edge, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
         var port = node.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
         if (port == null) return;
-        if (port.Side == TopologyEdgePort.Bottom && TopologyNodeFootprint.Caption(chart, node).Height > 0.5) {
+        if (TopologyLayoutEngine.UsesReadableDenseLayout(chart) &&
+            edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
+            port.Side == TopologyEdgePort.Bottom && TopologyNodeFootprint.Caption(chart, node).Height > 0.5) {
             throw new InvalidOperationException("Readable dense tile '" + node.Id + "' cannot use named Bottom port '" +
                 port.Id + "' beneath its visible caption. Use a top or side port, or hide the node label.");
         }

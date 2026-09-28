@@ -10,14 +10,15 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyEdgeRouter {
     public static TopologyRoutePlan Route(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target, double? routeLaneOverride = null) {
         var routeLane = routeLaneOverride ?? edge.RouteLane;
+        var includeLabels = chart.RenderOptions?.IncludeEdgeLabels != false;
         if (edge.Waypoints.Count > 0) {
             var points = EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement);
+            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
         }
 
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
             var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
-            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement);
+            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
         }
 
         var sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), edge.SourcePort);
@@ -58,7 +59,7 @@ internal static partial class TopologyEdgeRouter {
         var best = candidates
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
-            .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement))
+            .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement, includeLabels))
             .OrderBy(plan => RouteScore(plan, edge, readable, sourceCaption, targetCaption))
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
@@ -70,7 +71,7 @@ internal static partial class TopologyEdgeRouter {
         if (readable &&
             (captionHit || best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id)) &&
             MazeRoute(chart, edge, source, target) is { } maze) {
-            var mazePlan = BuildPlan("ObstacleAvoidingOrthogonal", "maze", maze, obstacles, existingSegments, edge, candidates.Count + 1, chart.TextMeasurement);
+            var mazePlan = BuildPlan("ObstacleAvoidingOrthogonal", "maze", maze, obstacles, existingSegments, edge, candidates.Count + 1, chart.TextMeasurement, includeLabels);
             if (mazePlan.Diagnostics.LabelObstacleHits <= best.Diagnostics.LabelObstacleHits &&
                 RouteScore(mazePlan, edge, readable, sourceCaption, targetCaption) < RouteScore(best, edge, readable, sourceCaption, targetCaption)) best = mazePlan;
         }
@@ -86,7 +87,7 @@ internal static partial class TopologyEdgeRouter {
         var obstacles = RouteObstacles(chart, edge.SourceNodeId, edge.TargetNodeId, edge.Id, includeCaptions: edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0);
         var obstacleHits = RouteObstacleHits(renderedPoints, obstacles);
         var routeOverlap = RouteOverlapScore(renderedPoints, RouteSegments(chart, edge));
-        var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles, chart.TextMeasurement);
+        var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles, chart.TextMeasurement, chart.RenderOptions?.IncludeEdgeLabels != false);
         return new TopologyRouteDiagnostics(
             plan.Diagnostics.Strategy,
             plan.Diagnostics.Corridor,
@@ -99,10 +100,10 @@ internal static partial class TopologyEdgeRouter {
             FallbackReason(plan.Diagnostics.Strategy, obstacleHits, labelHits, routeOverlap));
     }
 
-    private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount, TextMeasurementContext? measurement) {
+    private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount, TextMeasurementContext? measurement, bool includeLabels) {
         var obstacleHits = RouteObstacleHits(points, obstacles);
         var routeOverlap = RouteOverlapScore(points, existingSegments);
-        var labelHits = LabelObstacleHits(points, edge, obstacles, measurement);
+        var labelHits = LabelObstacleHits(points, edge, obstacles, measurement, includeLabels);
         return new TopologyRoutePlan(points, new TopologyRouteDiagnostics(strategy, corridor, Math.Max(0, points.Count - 1), obstacles.Count, obstacleHits, labelHits, routeOverlap, candidateCount, FallbackReason(strategy, obstacleHits, labelHits, routeOverlap)));
     }
 
@@ -375,7 +376,8 @@ internal static partial class TopologyEdgeRouter {
         return hits;
     }
 
-    private static int LabelObstacleHits(IReadOnlyList<ChartPoint> points, TopologyEdge edge, IReadOnlyList<RouteBox> obstacles, TextMeasurementContext? measurement) {
+    private static int LabelObstacleHits(IReadOnlyList<ChartPoint> points, TopologyEdge edge, IReadOnlyList<RouteBox> obstacles, TextMeasurementContext? measurement, bool includeLabels) {
+        if (!includeLabels) return 0;
         if (string.IsNullOrWhiteSpace(edge.Label) && string.IsNullOrWhiteSpace(edge.SecondaryLabel) && string.IsNullOrWhiteSpace(edge.TertiaryLabel)) return 0;
         var center = EdgeLabelPoint(points);
         var lineCount = (string.IsNullOrWhiteSpace(edge.Label) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.SecondaryLabel) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.TertiaryLabel) ? 0 : 1);

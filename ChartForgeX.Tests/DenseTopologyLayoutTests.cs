@@ -182,6 +182,60 @@ public sealed class DenseTopologyLayoutTests {
         Assert.Contains("named Bottom port", error.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(TopologyEdgeRouting.Straight, false)]
+    [InlineData(TopologyEdgeRouting.Orthogonal, true)]
+    public void NamedBottomPort_OnAuthoredRoute_RemainsAvailable(TopologyEdgeRouting routing, bool manual) {
+        var chart = CupChart().AddNodePort("a", "underside", TopologyEdgePort.Bottom)
+            .WithEdgeNamedPorts("a-b", "underside", null);
+        chart.Edges.Single().Routing = routing;
+        if (manual) chart.WithEdgeWaypoints("a-b", new ChartForgeX.Primitives.ChartPoint(330, 360));
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
+        var points = chart.Prepare(TileOptions).Analyze().Edges.Single().Points;
+        Assert.True(points.Count >= 2);
+        Assert.True(points[0].Y > prepared.Nodes.Single(node => node.Id == "a").Y + 40);
+    }
+
+    [Fact]
+    public void HiddenEdgeLabels_DoNotPenalizeRoutes() {
+        var chart = TopologyChart.Create().WithId("hidden-label-route").WithViewport(450, 260, 0).WithLegend(null)
+            .AddNode("a", "Source", 20, 100, width: 60, height: 40)
+            .AddNode("b", "Target", 350, 100, width: 60, height: 40)
+            .AddNode("obstacle", "Obstacle", 180, 90, width: 50, height: 60)
+            .AddEdge("a-b", "a", "b", "Replication", routing: TopologyEdgeRouting.Straight);
+        var shown = chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false }).Analyze().Edges.Single();
+        var hidden = chart.Prepare(new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, IncludeEdgeLabels = false }).Analyze().Edges.Single();
+        Assert.True(shown.LabelObstacleHits > 0);
+        Assert.Equal(0, hidden.LabelObstacleHits);
+    }
+
+    [Fact]
+    public void WrappedGroups_DeclaredSmallSizes_AreRaisedBeforeRowPlacement() {
+        var chart = Sites(7, 5).WithViewport(900, 1200, 24);
+        foreach (var group in chart.Groups) { group.Width = 190; group.Height = 170; }
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
+        Assert.All(prepared.Groups, group => {
+            Assert.True(group.Width > 190 && group.Height > 170);
+            foreach (var node in prepared.Nodes.Where(node => node.GroupId == group.Id))
+                Assert.True(node.Y + TopologyNodeFootprint.Height(prepared, node) <= group.Y + group.Height);
+        });
+        var rows = prepared.Groups.GroupBy(group => group.Y).OrderBy(row => row.Key).ToArray();
+        Assert.True(rows.Length > 1);
+        for (var i = 1; i < rows.Length; i++)
+            Assert.True(rows[i].Key >= rows[i - 1].Max(group => group.Y + group.Height) + 40);
+    }
+
+    [Fact]
+    public void WrappedGroups_ReservePanelSurfaceInsetWithinViewport() {
+        var chart = Sites(7, 1).WithViewport(490, 1800, 24);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Panel };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+        Assert.True(prepared.Viewport.Width <= chart.Viewport.Width,
+            $"Surface inset expanded width from {chart.Viewport.Width} to {prepared.Viewport.Width}.");
+        Assert.True(prepared.Groups[1].Y > prepared.Groups[0].Y);
+    }
+
     [Fact]
     public void MazeCache_RecomputesAfterViewportExpands() {
         var chart = CupChart().WithId("viewport-cache")

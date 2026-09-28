@@ -33,18 +33,20 @@ internal static partial class TopologyLayoutEngine {
         foreach (var group in chart.Groups) {
             var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
             var policy = ResolveDenseGroupPolicy(chart, group, nodes);
-            if (group.Width <= 0) group.Width = DenseGroupWidth(chart, nodes, policy);
-            if (group.Height <= 0) group.Height = DenseGroupHeight(chart, nodes, policy);
+            group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy));
+            group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy));
             sized.Add((group, nodes));
         }
 
-        var rowWidth = Math.Max(chart.Viewport.Width - pad * 2, sized.Max(item => item.Group.Width));
-        var x = pad;
+        var surfaceInset = TopologyRenderPrimitives.CanvasSurfaceInset(chart, chart.RenderOptions!);
+        var rowWidth = Math.Max(chart.Viewport.Width - (pad + surfaceInset) * 2, sized.Max(item => item.Group.Width));
+        var rowStartX = pad + surfaceInset;
+        var x = rowStartX;
         var y = pad + titleOffset;
         var rowHeight = 0.0;
         foreach (var (group, nodes) in sized) {
-            if (x > pad && x + group.Width > pad + rowWidth) {
-                x = pad;
+            if (x > rowStartX && x + group.Width > rowStartX + rowWidth) {
+                x = rowStartX;
                 y += rowHeight + DenseWrappedGroupGap;
                 rowHeight = 0;
             }
