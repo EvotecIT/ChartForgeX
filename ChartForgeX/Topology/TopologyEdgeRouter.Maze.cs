@@ -78,7 +78,8 @@ internal static partial class TopologyEdgeRouter {
         var ends = MazeTerminals(chart, target, edge.TargetPort, edge.TargetPortId,
             allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0);
         var pad = chart.Viewport.Padding;
-        var top = pad + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
+        var top = pad + (chart.RenderOptions?.IncludeTitle == false ||
+            string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
         var bottom = chart.Viewport.Height - pad - TopologyRenderPrimitives.LegendReservedHeight(chart.Legend, chart.Viewport);
         if (bottom <= top || chart.Viewport.Width <= pad * 2) return null;
         var viewport = new RouteBox(pad, top, chart.Viewport.Width - pad, bottom);

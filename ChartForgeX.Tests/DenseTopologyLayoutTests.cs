@@ -445,6 +445,24 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
+    public void MazeRoute_HiddenTitle_UsesTheAvailableTopCorridor() {
+        var chart = TopologyChart.Create().WithId("hidden-title-corridor").WithViewport(500, 220, 0)
+            .WithTitle("This title is not rendered").WithLegend(null)
+            .AddNode("a", "A", 30, 80, width: 60, height: 30)
+            .AddNode("b", "B", 350, 80, width: 60, height: 30)
+            .AddNode("wall", "Wall", 175, 36, width: 80, height: 184)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeTitle = false,
+            IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
+        chart.RenderOptions = options;
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var route = TopologyEdgeRouter.Route(chart, chart.Edges.Single(), nodes["a"], nodes["b"]);
+        Assert.Equal("maze", route.Diagnostics.Corridor);
+        Assert.Equal(0, route.Diagnostics.ObstacleHits);
+        Assert.Contains(route.Points, point => point.Y < 36);
+    }
+
+    [Fact]
     public void MixedCardAndCaptionHeights_StayInsideWrappedGroup() {
         var chart = Sites(7, 5);
         var firstGroupNodes = chart.Nodes.Where(node => node.GroupId == chart.Groups[0].Id).ToArray();

@@ -72,8 +72,18 @@ internal static partial class TopologyEdgeRouter {
             (captionHit || best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id)) &&
             MazeRoute(chart, edge, source, target) is { } maze) {
             var mazePlan = BuildPlan("ObstacleAvoidingOrthogonal", "maze", maze, obstacles, existingSegments, edge, candidates.Count + 1, chart.TextMeasurement, includeLabels);
-            if (mazePlan.Diagnostics.LabelObstacleHits <= best.Diagnostics.LabelObstacleHits &&
-                RouteScore(mazePlan, edge, readable, sourceCaption, targetCaption) < RouteScore(best, edge, readable, sourceCaption, targetCaption)) best = mazePlan;
+            var labelNotWorse = mazePlan.Diagnostics.LabelObstacleHits <= best.Diagnostics.LabelObstacleHits;
+            var captionCleared = captionHit &&
+                CaptionEndpointHits(mazePlan.Points, sourceCaption, targetCaption) <
+                CaptionEndpointHits(best.Points, sourceCaption, targetCaption);
+            // A single caption crossing may outweigh one displaced label. Larger label
+            // regressions can cover several cards in dense maps even when the route clears.
+            var oneCaptionForOneLabel = captionCleared && best.Diagnostics.ObstacleHits == 1 &&
+                mazePlan.Diagnostics.ObstacleHits == 0 &&
+                mazePlan.Diagnostics.LabelObstacleHits == best.Diagnostics.LabelObstacleHits + 1;
+            if ((labelNotWorse || oneCaptionForOneLabel) &&
+                RouteScore(mazePlan, edge, readable, sourceCaption, targetCaption) <
+                RouteScore(best, edge, readable, sourceCaption, targetCaption)) best = mazePlan;
         }
 
         return best;
