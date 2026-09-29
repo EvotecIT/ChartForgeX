@@ -136,10 +136,13 @@ internal static partial class TopologyEdgeRouter {
 
     private static int CaptionEndpointHits(IReadOnlyList<ChartPoint> points, RouteBox sourceCaption, RouteBox targetCaption) {
         if (points.Count < 2) return 0;
-        var hits = 0;
-        if (sourceCaption.Height > 0.5 && sourceCaption.Intersects(points[0], points[1])) hits++;
-        if (targetCaption.Height > 0.5 && targetCaption.Intersects(points[points.Count - 1], points[points.Count - 2])) hits++;
-        return hits;
+        var sourceHit = false;
+        var targetHit = false;
+        for (var i = 0; i + 1 < points.Count; i++) {
+            if (sourceCaption.Height > 0.5 && sourceCaption.Intersects(points[i], points[i + 1])) sourceHit = true;
+            if (targetCaption.Height > 0.5 && targetCaption.Intersects(points[i], points[i + 1])) targetHit = true;
+        }
+        return (sourceHit ? 1 : 0) + (targetHit ? 1 : 0);
     }
 
     private static double PortSegmentPenalty(TopologyEdgePort port, IReadOnlyList<ChartPoint> points, int edgeIndex, int adjacentIndex, bool leaving) {
@@ -312,6 +315,22 @@ internal static partial class TopologyEdgeRouter {
         return false;
     }
 
+    internal static bool SpreadingIntroducesObstacle(TopologyChart chart, TopologyEdge edge, TopologyNode source,
+        TopologyNode target, IReadOnlyList<ChartPoint> original, IReadOnlyList<ChartPoint> spread) {
+        var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true);
+        var sourceCaption = CaptionBox(chart, source);
+        var targetCaption = CaptionBox(chart, target);
+        if (sourceCaption.Height > 0.5) obstacles.Add(sourceCaption);
+        if (targetCaption.Height > 0.5) obstacles.Add(targetCaption);
+        return obstacles.Any(box => !IntersectsRoute(original, box) && IntersectsRoute(spread, box));
+    }
+
+    private static bool IntersectsRoute(IReadOnlyList<ChartPoint> points, RouteBox box) {
+        for (var i = 0; i + 1 < points.Count; i++)
+            if (box.Intersects(points[i], points[i + 1])) return true;
+        return false;
+    }
+
     // Tile captions are drawn below the card, so routes treat them as part of it.
     private static RouteBox NodeRouteBox(TopologyChart chart, TopologyNode node) {
         var caption = TopologyNodeFootprint.Caption(chart, node);
@@ -324,6 +343,7 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static IEnumerable<RouteBox> EstimatedLabelBoxes(TopologyChart chart, TopologyEdge routedEdge) {
+        if (chart.RenderOptions?.IncludeEdgeLabels == false) yield break;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
             if (ReferenceEquals(edge, routedEdge)) continue;

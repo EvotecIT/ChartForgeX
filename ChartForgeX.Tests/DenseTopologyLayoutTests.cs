@@ -175,6 +175,28 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
+    public void OrthogonalRoute_AvoidsSourceCaptionBeyondItsFirstLeg() {
+        var chart = TopologyChart.Create().WithId("wide-endpoint-caption").WithViewport(600, 440, 0).WithLegend(null)
+            .AddNode("a", "Source caption extends far beyond its narrow card", 80, 100, width: 60, height: 40)
+            .AddNode("b", "Target", 145, 160, width: 60, height: 40)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .WithEdgePorts("a-b", TopologyEdgePort.Right, TopologyEdgePort.Left);
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
+        var source = prepared.Nodes.Single(node => node.Id == "a");
+        var caption = TopologyNodeFootprint.Caption(prepared, source);
+        Assert.True(caption.Width > source.Width + 10);
+        var captionLeft = source.X + source.Width / 2 - caption.Width / 2;
+        var captionRight = captionLeft + caption.Width;
+        var points = chart.Prepare(TileOptions).Analyze().Edges.Single().Points;
+        for (var i = 0; i + 1 < points.Count; i++)
+            Assert.False(Math.Max(points[i].X, points[i + 1].X) > captionLeft &&
+                         Math.Min(points[i].X, points[i + 1].X) < captionRight &&
+                         Math.Max(points[i].Y, points[i + 1].Y) > source.Y + source.Height &&
+                         Math.Min(points[i].Y, points[i + 1].Y) < source.Y + source.Height + caption.Height,
+                "The route crosses its source caption after the first segment.");
+    }
+
+    [Fact]
     public void NamedBottomPort_BeneathReadableTileCaption_IsRejected() {
         var chart = CupChart().AddNodePort("a", "underside", TopologyEdgePort.Bottom)
             .WithEdgeNamedPorts("a-b", "underside", null);
@@ -295,6 +317,9 @@ public sealed class DenseTopologyLayoutTests {
         var plan = TopologyEdgeRouter.Route(chart, chart.Edges[0], nodes["a"], nodes["b"]);
         Assert.True(plan.Diagnostics.ObstacleHits > 0, "The sibling label must remain a route obstacle despite sharing an edge ID.");
         Assert.True(plan.Diagnostics.RouteOverlapScore > 0, "The sibling route must count as a crossing despite sharing an edge ID.");
+        chart.RenderOptions = new TopologyRenderOptions { IncludeEdgeLabels = false };
+        var hidden = TopologyEdgeRouter.Route(chart, chart.Edges[0], nodes["a"], nodes["b"]);
+        Assert.Equal(0, hidden.Diagnostics.ObstacleHits);
     }
 
     [Fact]
@@ -323,6 +348,36 @@ public sealed class DenseTopologyLayoutTests {
                 "Named-port placement introduced a diagonal maze segment.");
         Assert.Equal(0, ReplicationTopologyFixture.NodeCardCrossings(report));
         Assert.Equal(0, report.Edges.Single().ObstacleHits);
+    }
+
+    [Fact]
+    public void MazeRoute_FanSpreading_DoesNotIntroduceCardCrossing() {
+        const double blockerX = 85;
+        const double blockerY = 195;
+        var chart = TopologyChart.Create().WithId("fan-obstacle").WithViewport(860, 440, 0).WithLegend(null)
+            .AddNode("a", "A", 20, 200, width: 60, height: 60)
+            .AddNode("b", "B", 640, 220, width: 60, height: 40)
+            .AddNode("block", "Block", blockerX, blockerY, width: 25, height: 20)
+            .AddNode("left", "L", 560, 130, width: 40, height: 180)
+            .AddNode("top", "T", 560, 90, width: 190, height: 30)
+            .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .WithEdgePorts("a-b", TopologyEdgePort.Right, TopologyEdgePort.Left);
+        for (var i = 0; i < 7; i++)
+            chart.AddEdge("peer" + i, "a", "b", routing: TopologyEdgeRouting.Straight)
+                .WithEdgePorts("peer" + i, TopologyEdgePort.Right, TopologyEdgePort.Left);
+        chart.RenderOptions = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var route = TopologyEdgeRouter.Route(chart, chart.Edges[0], nodes["a"], nodes["b"]);
+        Assert.Equal("maze", route.Diagnostics.Corridor);
+        var rendered = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges[0], nodes);
+        for (var i = 0; i + 1 < rendered.Count; i++)
+            Assert.False(Math.Max(rendered[i].X, rendered[i + 1].X) > blockerX &&
+                         Math.Min(rendered[i].X, rendered[i + 1].X) < blockerX + 25 &&
+                         Math.Max(rendered[i].Y, rendered[i + 1].Y) > blockerY &&
+                         Math.Min(rendered[i].Y, rendered[i + 1].Y) < blockerY + 20,
+                "Fan spreading moved the maze endpoint through a foreign card.");
     }
 
     [Fact]
