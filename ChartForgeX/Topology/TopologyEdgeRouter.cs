@@ -13,12 +13,12 @@ internal static partial class TopologyEdgeRouter {
         var includeLabels = chart.RenderOptions?.IncludeEdgeLabels != false;
         if (edge.Waypoints.Count > 0) {
             var points = EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
+            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
         }
 
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
             var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
-            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge.Id), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
+            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
         }
 
         var sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), edge.SourcePort);
@@ -26,7 +26,7 @@ internal static partial class TopologyEdgeRouter {
         var readable = TopologyLayoutEngine.UsesReadableDenseLayout(chart);
         var sourceCaption = CaptionBox(chart, source);
         var targetCaption = CaptionBox(chart, target);
-        var obstacles = RouteObstacles(chart, source.Id, target.Id, edge.Id, includeCaptions: true);
+        var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true);
         var existingSegments = RouteSegments(chart, edge);
         var candidates = new List<RouteCandidate> {
             new("orthogonal-default", EdgePoints(source, target, TopologyEdgeRouting.Orthogonal, edge.SourcePort, edge.TargetPort, routeLane))
@@ -84,7 +84,7 @@ internal static partial class TopologyEdgeRouter {
         var plan = Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], EdgeRouteLane(chart, edge));
         var points = EdgePoints(chart, edge, nodes);
         var renderedPoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
-        var obstacles = RouteObstacles(chart, edge.SourceNodeId, edge.TargetNodeId, edge.Id, includeCaptions: edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0);
+        var obstacles = RouteObstacles(chart, edge.SourceNodeId, edge.TargetNodeId, edge, includeCaptions: edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0);
         var obstacleHits = RouteObstacleHits(renderedPoints, obstacles);
         var routeOverlap = RouteOverlapScore(renderedPoints, RouteSegments(chart, edge));
         var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles, chart.TextMeasurement, chart.RenderOptions?.IncludeEdgeLabels != false);
@@ -281,7 +281,7 @@ internal static partial class TopologyEdgeRouter {
     }
 
     // Obstacle-avoiding routes also keep clear of tile captions; fixed and manual routes are scored against the cards only.
-    private static List<RouteBox> RouteObstacles(TopologyChart chart, string sourceNodeId, string targetNodeId, string? routedEdgeId, bool includeCaptions = false) {
+    private static List<RouteBox> RouteObstacles(TopologyChart chart, string sourceNodeId, string targetNodeId, TopologyEdge routedEdge, bool includeCaptions = false) {
         const double nodePadding = 10;
         var obstacles = chart.Nodes
             .Where(node => !string.Equals(node.Id, sourceNodeId, StringComparison.Ordinal) && !string.Equals(node.Id, targetNodeId, StringComparison.Ordinal))
@@ -295,7 +295,7 @@ internal static partial class TopologyEdgeRouter {
             if (header.Width > 0 && header.Height > 0) obstacles.Add(header);
         }
 
-        foreach (var box in EstimatedLabelBoxes(chart, routedEdgeId)) obstacles.Add(box.Expand(4));
+        foreach (var box in EstimatedLabelBoxes(chart, routedEdge)) obstacles.Add(box.Expand(4));
         return obstacles;
     }
 
@@ -323,10 +323,10 @@ internal static partial class TopologyEdgeRouter {
         return node.DisplayMode == TopologyNodeDisplayMode.Artwork || (!node.DisplayMode.HasValue && HasRenderableNodeArtwork(node));
     }
 
-    private static IEnumerable<RouteBox> EstimatedLabelBoxes(TopologyChart chart, string? routedEdgeId) {
+    private static IEnumerable<RouteBox> EstimatedLabelBoxes(TopologyChart chart, TopologyEdge routedEdge) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
-            if (!string.IsNullOrWhiteSpace(routedEdgeId) && string.Equals(edge.Id, routedEdgeId, StringComparison.Ordinal)) continue;
+            if (ReferenceEquals(edge, routedEdge)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var label = edge.Label ?? string.Empty;
             var secondary = edge.SecondaryLabel ?? string.Empty;
@@ -348,7 +348,7 @@ internal static partial class TopologyEdgeRouter {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var segments = new List<RouteSegment>();
         foreach (var edge in chart.Edges) {
-            if (ReferenceEquals(edge, routedEdge) || string.Equals(edge.Id, routedEdge.Id, StringComparison.Ordinal)) continue;
+            if (ReferenceEquals(edge, routedEdge)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var points = edge.Routing == TopologyEdgeRouting.Curved
                 ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))

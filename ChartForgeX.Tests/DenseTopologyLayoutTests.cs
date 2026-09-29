@@ -272,6 +272,81 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
+    public void MazeCache_DuplicateEdgeIds_KeepOppositeEndpoints() {
+        var chart = CupChart().AddEdge("a-b", "b", "a", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        chart.RenderOptions = TileOptions;
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var forward = TopologyEdgeRouter.Route(chart, chart.Edges[0], nodes["a"], nodes["b"]);
+        var reverse = TopologyEdgeRouter.Route(chart, chart.Edges[1], nodes["b"], nodes["a"]);
+        Assert.Equal("maze", forward.Diagnostics.Corridor);
+        Assert.Equal("maze", reverse.Diagnostics.Corridor);
+        Assert.True(forward.Points[0].X < forward.Points[^1].X);
+        Assert.True(reverse.Points[0].X > reverse.Points[^1].X);
+    }
+
+    [Fact]
+    public void DuplicateEdgeIds_StillCountSiblingLabelsAndRouteCrossings() {
+        var chart = TopologyChart.Create().WithId("duplicate-edge-obstacles").WithViewport(400, 260, 0).WithLegend(null)
+            .AddNode("a", "A", 20, 100, width: 40, height: 40)
+            .AddNode("b", "B", 320, 100, width: 40, height: 40)
+            .AddEdge("link", "a", "b", routing: TopologyEdgeRouting.Straight)
+            .AddEdge("link", "a", "b", "Sibling", routing: TopologyEdgeRouting.Straight);
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var plan = TopologyEdgeRouter.Route(chart, chart.Edges[0], nodes["a"], nodes["b"]);
+        Assert.True(plan.Diagnostics.ObstacleHits > 0, "The sibling label must remain a route obstacle despite sharing an edge ID.");
+        Assert.True(plan.Diagnostics.RouteOverlapScore > 0, "The sibling route must count as a crossing despite sharing an edge ID.");
+    }
+
+    [Fact]
+    public void MazeRoute_NamedOffset_AvoidsCardAfterEndpointPlacement() {
+        var chart = TopologyChart.Create().WithId("named-maze").WithViewport(860, 440, 0).WithLegend(null)
+            .AddNode("a", "A", 20, 200, width: 60, height: 40)
+            .AddNode("b", "B", 640, 200, width: 60, height: 40)
+            .AddNode("left", "L", 560, 130, width: 40, height: 180)
+            .AddNode("top", "T", 560, 90, width: 190, height: 30)
+            .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddNodePort("a", "upper", TopologyEdgePort.Right, 0.15)
+            .WithEdgeNamedPorts("a-b", "upper", null);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false };
+        var preparedChart = TopologyLayoutEngine.Prepare(chart, options: options);
+        var routed = TopologyEdgeRouter.Route(preparedChart, preparedChart.Edges.Single(),
+            preparedChart.Nodes.Single(node => node.Id == "a"), preparedChart.Nodes.Single(node => node.Id == "b"));
+        Assert.Equal("maze", routed.Diagnostics.Corridor);
+        Assert.Equal(preparedChart.Nodes.Single(node => node.Id == "a").Y + 40 * 0.15, routed.Points[0].Y, 3);
+        var report = chart.Prepare(options).Analyze();
+        Assert.Equal("maze", report.Edges.Single().Corridor);
+        var points = report.Edges.Single().Points;
+        for (var i = 1; i < points.Count; i++)
+            Assert.True(Math.Abs(points[i].X - points[i - 1].X) < 0.001 ||
+                        Math.Abs(points[i].Y - points[i - 1].Y) < 0.001,
+                "Named-port placement introduced a diagonal maze segment.");
+        Assert.Equal(0, ReplicationTopologyFixture.NodeCardCrossings(report));
+        Assert.Equal(0, report.Edges.Single().ObstacleHits);
+    }
+
+    [Fact]
+    public void MazeRoute_RespectsTitleAndLegendContentBounds() {
+        var chart = TopologyChart.Create().WithId("header-footer-maze").WithViewport(860, 440, 0)
+            .WithTitle("Replication topology")
+            .WithLegend(TopologyLegend.Default().AddNodeKind("Server", TopologyNodeKind.Server, symbol: "S"))
+            .AddNode("a", "A", 20, 200, width: 60, height: 40)
+            .AddNode("b", "B", 640, 200, width: 60, height: 40)
+            .AddNode("left", "L", 560, 130, width: 40, height: 180)
+            .AddNode("top", "T", 560, 80, width: 190, height: 30)
+            .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = true };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+        var route = chart.Prepare(options).Analyze().Edges.Single();
+        var top = prepared.Viewport.Padding + 72;
+        var bottom = prepared.Viewport.Height - prepared.Viewport.Padding -
+            TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport);
+        Assert.NotEqual("maze", route.Corridor);
+        Assert.All(route.Points, point => Assert.InRange(point.Y, top, bottom));
+    }
+
+    [Fact]
     public void MixedCardAndCaptionHeights_StayInsideWrappedGroup() {
         var chart = Sites(7, 5);
         var firstGroupNodes = chart.Nodes.Where(node => node.GroupId == chart.Groups[0].Id).ToArray();

@@ -12,7 +12,9 @@ internal static partial class TopologyEdgeRouter {
     private const double MazeBendPenalty = 36;
     private const double MazeRegionMargin = 180;
     private const int MazeMaximumGridPoints = 250_000;
-    private static readonly ConditionalWeakTable<TopologyChart, Dictionary<string, List<ChartPoint>?>> MazeCache = new();
+    private static readonly ConditionalWeakTable<TopologyChart, Dictionary<(TopologyEdge Edge, string SourceId, string TargetId,
+        TopologyEdgePort SourcePort, TopologyEdgePort TargetPort, string? SourcePortId, string? TargetPortId,
+        long Geometry), List<ChartPoint>?>> MazeCache = new();
 
     /// <summary>
     /// Finds an orthogonal route that avoids every foreign card, caption, and group header by searching a sparse grid
@@ -25,7 +27,8 @@ internal static partial class TopologyEdgeRouter {
     /// the search. Normalization can expand that viewport after an earlier label-layout routing pass.
     /// </remarks>
     private static List<ChartPoint>? MazeRoute(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target) {
-        var key = edge.Id + "|" + edge.SourcePort + "|" + edge.TargetPort + "|" + GeometrySignature(chart).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var key = (edge, edge.SourceNodeId, edge.TargetNodeId, edge.SourcePort, edge.TargetPort,
+            edge.SourcePortId, edge.TargetPortId, GeometrySignature(chart));
         var cache = MazeCache.GetOrCreateValue(chart);
         lock (cache) {
             if (cache.TryGetValue(key, out var cached)) return cached == null ? null : new List<ChartPoint>(cached);
@@ -59,7 +62,7 @@ internal static partial class TopologyEdgeRouter {
             if (header.Width > 0 && header.Height > 0) obstacles.Add(header);
         }
 
-        foreach (var box in EstimatedLabelBoxes(chart, edge.Id)) obstacles.Add(box.Expand(4));
+        foreach (var box in EstimatedLabelBoxes(chart, edge)) obstacles.Add(box.Expand(4));
 
         // Keep the declared or inferred ports first so endpoint spreading and diagnostics stay consistent; other sides
         // are tried only when no route leaves through them.
@@ -70,9 +73,15 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static List<ChartPoint>? SearchWithSides(TopologyChart chart, List<RouteBox> obstacles, TopologyNode source, TopologyNode target, TopologyEdge edge, bool allSides) {
-        var starts = MazeTerminals(chart, source, edge.SourcePort, allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0);
-        var ends = MazeTerminals(chart, target, edge.TargetPort, allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0);
-        var viewport = new RouteBox(0, 0, chart.Viewport.Width, chart.Viewport.Height);
+        var starts = MazeTerminals(chart, source, edge.SourcePort, edge.SourcePortId,
+            allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0);
+        var ends = MazeTerminals(chart, target, edge.TargetPort, edge.TargetPortId,
+            allSides && (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0);
+        var pad = chart.Viewport.Padding;
+        var top = pad + (string.IsNullOrWhiteSpace(chart.Title) && string.IsNullOrWhiteSpace(chart.Subtitle) ? 0 : 72);
+        var bottom = chart.Viewport.Height - pad - TopologyRenderPrimitives.LegendReservedHeight(chart.Legend, chart.Viewport);
+        if (bottom <= top || chart.Viewport.Width <= pad * 2) return null;
+        var viewport = new RouteBox(pad, top, chart.Viewport.Width - pad, bottom);
         starts.RemoveAll(terminal => BlockedStub(terminal, obstacles) || !Inside(viewport, terminal.Stub) || !Inside(viewport, terminal.Port));
         ends.RemoveAll(terminal => BlockedStub(terminal, obstacles) || !Inside(viewport, terminal.Stub) || !Inside(viewport, terminal.Port));
         if (starts.Count == 0 || ends.Count == 0) return null;
@@ -94,18 +103,23 @@ internal static partial class TopologyEdgeRouter {
         return new RouteBox(left, top, right, bottom);
     }
 
-    private static List<MazeTerminal> MazeTerminals(TopologyChart chart, TopologyNode node, TopologyEdgePort port, bool anySide) {
+    private static List<MazeTerminal> MazeTerminals(TopologyChart chart, TopologyNode node, TopologyEdgePort port,
+        string? namedPortId, bool anySide) {
         var box = NodeRouteBox(chart, node);
         var hasCaption = box.Bottom > node.Y + node.Height + 0.5;
-        var sides = anySide || port == TopologyEdgePort.Auto || port == TopologyEdgePort.Bottom && hasCaption
+        var namedPort = node.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, namedPortId, StringComparison.Ordinal));
+        var sides = namedPort == null && (anySide || port == TopologyEdgePort.Auto || port == TopologyEdgePort.Bottom && hasCaption)
             ? new[] { TopologyEdgePort.Top, TopologyEdgePort.Right, TopologyEdgePort.Bottom, TopologyEdgePort.Left }
-            : new[] { port };
+            : new[] { namedPort?.Side ?? port };
         var terminals = new List<MazeTerminal>(sides.Length);
-        var cx = node.X + node.Width / 2;
-        var cy = node.Y + node.Height / 2;
         foreach (var side in sides) {
             // Leave tile cards from the sides or top so a route never cuts through the caption below the card.
             if (side == TopologyEdgePort.Bottom && hasCaption) continue;
+            var namedOffset = namedPort != null && namedPort.Side == side;
+            var cx = node.X + node.Width * (namedOffset && (side is TopologyEdgePort.Top or TopologyEdgePort.Bottom)
+                ? namedPort!.Offset : 0.5);
+            var cy = node.Y + node.Height * (namedOffset && (side is TopologyEdgePort.Left or TopologyEdgePort.Right)
+                ? namedPort!.Offset : 0.5);
             var (port0, stub) = side switch {
                 // Ends stop the same gap short of the card as corridor routes, so arrowheads stay clear of the border.
                 TopologyEdgePort.Top => (new ChartPoint(cx, node.Y - MazeEndpointGap), new ChartPoint(cx, box.Top - MazeClearance - 1)),
@@ -114,7 +128,7 @@ internal static partial class TopologyEdgeRouter {
                 TopologyEdgePort.Right => (new ChartPoint(node.X + node.Width + MazeEndpointGap, cy), new ChartPoint(box.Right + MazeClearance + 1, cy)),
                 _ => (new ChartPoint(cx, cy), new ChartPoint(cx, cy))
             };
-            terminals.Add(new MazeTerminal(port0, stub, side == port ? 0 : MazeBendPenalty));
+            terminals.Add(new MazeTerminal(port0, stub, side == port ? 0 : MazeBendPenalty, namedOffset));
         }
 
         return terminals;
@@ -140,8 +154,8 @@ internal static partial class TopologyEdgeRouter {
         }
 
         foreach (var terminal in starts.Concat(ends)) {
-            AddLine(xs, terminal.Stub.X, double.NegativeInfinity, double.PositiveInfinity);
-            AddLine(ys, terminal.Stub.Y, double.NegativeInfinity, double.PositiveInfinity);
+            xs.Add(terminal.Stub.X);
+            ys.Add(terminal.Stub.Y);
         }
 
         var xa = xs.ToArray();
@@ -280,8 +294,8 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private readonly struct MazeTerminal {
-        public MazeTerminal(ChartPoint port, ChartPoint stub, double penalty) {
-            Stub = new ChartPoint(Math.Round(stub.X * 2) / 2, Math.Round(stub.Y * 2) / 2);
+        public MazeTerminal(ChartPoint port, ChartPoint stub, double penalty, bool preserveAxis) {
+            Stub = preserveAxis ? stub : new ChartPoint(Math.Round(stub.X * 2) / 2, Math.Round(stub.Y * 2) / 2);
             // Keep the first leg exactly orthogonal: the port slides along the card edge onto the rounded stub axis.
             Port = Math.Abs(port.X - stub.X) < 0.001 ? new ChartPoint(Stub.X, port.Y) : new ChartPoint(port.X, Stub.Y);
             Penalty = penalty;
