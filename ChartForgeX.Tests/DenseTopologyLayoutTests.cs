@@ -381,6 +381,49 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
+    public void NamedPortPlacement_NearCard_IsRejectedInsteadOfResetToSideMidpoint() {
+        var chart = TopologyChart.Create().WithId("named-near-card").WithViewport(500, 300, 0).WithLegend(null)
+            .AddNode("a", "A", 80, 100, width: 60, height: 40)
+            .AddNode("b", "B", 330, 100, width: 60, height: 40)
+            .AddNode("block", "Block", 150, 125, width: 10, height: 20)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddNodePort("a", "lower", TopologyEdgePort.Right, 0.8)
+            .WithEdgeNamedPorts("a-b", "lower", null);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
+        chart.RenderOptions = options;
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var plan = TopologyEdgeRouter.Route(chart, chart.Edges.Single(), nodes["a"], nodes["b"]);
+        Assert.Equal("aligned-direct", plan.Diagnostics.Corridor);
+        var error = Assert.Throws<InvalidOperationException>(() => TopologyRenderPrimitives.EdgePoints(chart, chart.Edges.Single(), nodes));
+        Assert.Contains("named port", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AlignedRoute_TwoNamedPorts_RetainIndependentOffsets() {
+        var chart = TopologyChart.Create().WithId("two-named-ports").WithViewport(500, 300, 0).WithLegend(null)
+            .AddNode("a", "A", 80, 100, width: 60, height: 40)
+            .AddNode("b", "B", 330, 100, width: 60, height: 40)
+            .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddNodePort("a", "lower", TopologyEdgePort.Right, 0.8)
+            .AddNodePort("b", "upper", TopologyEdgePort.Left, 0.2)
+            .WithEdgeNamedPorts("a-b", "lower", "upper");
+        chart.RenderOptions = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
+            NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var route = TopologyEdgeRouter.Route(chart, chart.Edges.Single(), nodes["a"], nodes["b"]);
+        Assert.Equal("aligned-direct", route.Diagnostics.Corridor);
+
+        var points = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges.Single(), nodes);
+        Assert.Equal(132, points[0].Y, 3);
+        Assert.Equal(108, points[^1].Y, 3);
+        Assert.All(Enumerable.Range(1, points.Count - 1), index =>
+            Assert.True(Math.Abs(points[index].X - points[index - 1].X) < 0.001 ||
+                        Math.Abs(points[index].Y - points[index - 1].Y) < 0.001,
+                "Named-port placement introduced a diagonal segment."));
+    }
+
+    [Fact]
     public void MazeRoute_RespectsTitleAndLegendContentBounds() {
         var chart = TopologyChart.Create().WithId("header-footer-maze").WithViewport(860, 440, 0)
             .WithTitle("Replication topology")

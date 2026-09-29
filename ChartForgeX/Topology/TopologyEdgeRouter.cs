@@ -317,6 +317,13 @@ internal static partial class TopologyEdgeRouter {
 
     internal static bool SpreadingIntroducesObstacle(TopologyChart chart, TopologyEdge edge, TopologyNode source,
         TopologyNode target, IReadOnlyList<ChartPoint> original, IReadOnlyList<ChartPoint> spread) {
+        // A route may already touch an obstacle's search padding without touching the actual card.
+        // Still reject an endpoint move that crosses the card itself.
+        foreach (var node in chart.Nodes) {
+            if (node.Id == source.Id || node.Id == target.Id || IsRouteBackdropArtwork(node)) continue;
+            var card = NodeRouteBox(chart, node);
+            if (!IntersectsRoute(original, card) && IntersectsRoute(spread, card)) return true;
+        }
         var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true);
         var sourceCaption = CaptionBox(chart, source);
         var targetCaption = CaptionBox(chart, target);

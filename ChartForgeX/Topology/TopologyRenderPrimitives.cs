@@ -261,13 +261,7 @@ internal static partial class TopologyRenderPrimitives {
                 ? TopologyEdgeRouter.Route(chart, edge, source, target, routeLane).Points
                 : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane)
             : EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-        var readableObstacleRoute = edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal &&
-            edge.Waypoints.Count == 0 && TopologyLayoutEngine.UsesReadableDenseLayout(chart);
-        var originalPoints = readableObstacleRoute ? new List<ChartPoint>(points) : null;
-        ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
-        if (originalPoints != null && !points.SequenceEqual(originalPoints) &&
-            TopologyEdgeRouter.SpreadingIntroducesObstacle(chart, edge, source, target, originalPoints, points))
-            points = originalPoints;
+        points = ApplySafeEndpointSpreading(chart, edge, nodes, source, target, points);
         if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return points;
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
@@ -286,11 +280,27 @@ internal static partial class TopologyRenderPrimitives {
         edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal ||
         edge.Waypoints.Count > 0;
 
-    private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
+    private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points, bool namedOnly = false) {
         if (points.Count < 2) return;
+        // A direct segment has no independent legs for two named ports: adjusting either
+        // endpoint would otherwise move the opposite endpoint through its adjacent point.
+        if (UsesOrthogonalRoute(edge) && points.Count == 2 &&
+            !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) {
+            var start = points[0];
+            var end = points[1];
+            if (Math.Abs(start.Y - end.Y) < 0.001) {
+                var middleX = (start.X + end.X) / 2;
+                points.Insert(1, new ChartPoint(middleX, start.Y));
+                points.Insert(2, new ChartPoint(middleX, end.Y));
+            } else if (Math.Abs(start.X - end.X) < 0.001) {
+                var middleY = (start.Y + end.Y) / 2;
+                points.Insert(1, new ChartPoint(start.X, middleY));
+                points.Insert(2, new ChartPoint(end.X, middleY));
+            }
+        }
         if (!string.IsNullOrWhiteSpace(edge.SourcePortId)) {
             ApplyNamedEndpoint(chart, source, edge.SourcePortId!, edge, points, 0, 1);
-        } else if (edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[0], points[1], edge.SourcePort)) {
+        } else if (!namedOnly && edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[0], points[1], edge.SourcePort)) {
             var original = points[0];
             var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
             points[0] = spread;
@@ -299,7 +309,7 @@ internal static partial class TopologyRenderPrimitives {
 
         if (!string.IsNullOrWhiteSpace(edge.TargetPortId)) {
             ApplyNamedEndpoint(chart, target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
-        } else if (edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
+        } else if (!namedOnly && edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
             var targetIndex = points.Count - 1;
             var original = points[targetIndex];
             var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);
