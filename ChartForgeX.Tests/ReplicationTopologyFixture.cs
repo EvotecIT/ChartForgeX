@@ -75,6 +75,36 @@ internal static class ReplicationTopologyFixture {
         return crossings;
     }
 
+    /// <summary>
+    /// Measures the rendered edge labels: how many overlap a node card or its caption, and how many label pairs overlap.
+    /// </summary>
+    public static (int CardOverlaps, int LabelOverlaps) EdgeLabelQuality(TopologyChart chart, TopologyRenderOptions options) {
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+        var labels = TopologyRenderPrimitives.EdgeLabelLayouts(prepared, options);
+        var cardOverlaps = 0;
+        foreach (var label in labels) {
+            foreach (var node in prepared.Nodes) {
+                var caption = TopologyNodeFootprint.Caption(prepared, node);
+                var center = node.X + node.Width / 2;
+                var left = Math.Min(node.X, center - caption.Width / 2);
+                var right = Math.Max(node.X + node.Width, center + caption.Width / 2);
+                if (Overlaps(label.CenterX, label.CenterY, label.Width, label.Height, (left + right) / 2, node.Y + (node.Height + caption.Height) / 2, right - left, node.Height + caption.Height)) cardOverlaps++;
+            }
+        }
+
+        var labelOverlaps = 0;
+        for (var i = 0; i < labels.Count; i++) {
+            for (var j = i + 1; j < labels.Count; j++) {
+                if (Overlaps(labels[i].CenterX, labels[i].CenterY, labels[i].Width, labels[i].Height, labels[j].CenterX, labels[j].CenterY, labels[j].Width, labels[j].Height)) labelOverlaps++;
+            }
+        }
+
+        return (cardOverlaps, labelOverlaps);
+    }
+
+    private static bool Overlaps(double ax, double ay, double aw, double ah, double bx, double by, double bw, double bh) =>
+        Math.Abs(ax - bx) * 2 < aw + bw && Math.Abs(ay - by) * 2 < ah + bh;
+
     private static bool SegmentCrossesRect(ChartPoint a, ChartPoint b, double left, double top, double right, double bottom) {
         if (right <= left || bottom <= top) return false;
         // Liang-Barsky clipping: the segment crosses the open rectangle when a non-empty parameter interval remains.

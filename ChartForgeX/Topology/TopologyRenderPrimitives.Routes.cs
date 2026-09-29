@@ -1,10 +1,34 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
+    private static List<ChartPoint> ApplySafeEndpointSpreading(TopologyChart chart, TopologyEdge edge,
+        IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
+        var readableObstacleRoute = edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal &&
+            edge.Waypoints.Count == 0 && TopologyLayoutEngine.UsesReadableDenseLayout(chart);
+        if (!readableObstacleRoute) {
+            ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
+            return points;
+        }
+
+        var original = new List<ChartPoint>(points);
+        ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
+        if (points.SequenceEqual(original) ||
+            !TopologyEdgeRouter.SpreadingIntroducesObstacle(chart, edge, source, target, original, points)) return points;
+
+        // Roll back anonymous fan offsets, but retain the caller's explicit named-port positions.
+        var named = new List<ChartPoint>(original);
+        ApplyEndpointPortSpreading(chart, edge, nodes, source, target, named, namedOnly: true);
+        if (TopologyEdgeRouter.SpreadingIntroducesObstacle(chart, edge, source, target, original, named))
+            throw new InvalidOperationException("Readable obstacle-avoiding edge '" + edge.Id +
+                "' cannot place its named port without crossing a card or caption. Choose a different port offset or route.");
+        return named;
+    }
+
     public static bool ShouldRoundEdgeCorners(TopologyEdge edge, IReadOnlyList<ChartPoint> points, TopologyRenderOptions options) {
         if (options.EdgeCornerStyle != TopologyEdgeCornerStyle.Rounded || options.EdgeCornerRadius <= 0 || points.Count < 3) return false;
         return edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0;

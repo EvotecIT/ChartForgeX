@@ -261,7 +261,7 @@ internal static partial class TopologyRenderPrimitives {
                 ? TopologyEdgeRouter.Route(chart, edge, source, target, routeLane).Points
                 : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane)
             : EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-        ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
+        points = ApplySafeEndpointSpreading(chart, edge, nodes, source, target, points);
         if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return points;
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
@@ -280,11 +280,27 @@ internal static partial class TopologyRenderPrimitives {
         edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal ||
         edge.Waypoints.Count > 0;
 
-    private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
+    private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points, bool namedOnly = false) {
         if (points.Count < 2) return;
+        // A direct segment has no independent legs for two named ports: adjusting either
+        // endpoint would otherwise move the opposite endpoint through its adjacent point.
+        if (UsesOrthogonalRoute(edge) && points.Count == 2 &&
+            !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) {
+            var start = points[0];
+            var end = points[1];
+            if (Math.Abs(start.Y - end.Y) < 0.001) {
+                var middleX = (start.X + end.X) / 2;
+                points.Insert(1, new ChartPoint(middleX, start.Y));
+                points.Insert(2, new ChartPoint(middleX, end.Y));
+            } else if (Math.Abs(start.X - end.X) < 0.001) {
+                var middleY = (start.Y + end.Y) / 2;
+                points.Insert(1, new ChartPoint(start.X, middleY));
+                points.Insert(2, new ChartPoint(end.X, middleY));
+            }
+        }
         if (!string.IsNullOrWhiteSpace(edge.SourcePortId)) {
-            ApplyNamedEndpoint(source, edge.SourcePortId!, edge, points, 0, 1);
-        } else if (edge.SourcePort != TopologyEdgePort.Auto) {
+            ApplyNamedEndpoint(chart, source, edge.SourcePortId!, edge, points, 0, 1);
+        } else if (!namedOnly && edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[0], points[1], edge.SourcePort)) {
             var original = points[0];
             var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
             points[0] = spread;
@@ -292,14 +308,24 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         if (!string.IsNullOrWhiteSpace(edge.TargetPortId)) {
-            ApplyNamedEndpoint(target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
-        } else if (edge.TargetPort != TopologyEdgePort.Auto) {
+            ApplyNamedEndpoint(chart, target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
+        } else if (!namedOnly && edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
             var targetIndex = points.Count - 1;
             var original = points[targetIndex];
             var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);
             points[targetIndex] = spread;
             PreserveOrthogonalEndpointLeg(edge, points, targetIndex - 1, edge.TargetPort, original, spread);
         }
+    }
+
+    // A grid-searched route may leave through a different side than the inferred port; spreading along the recorded side
+    // would then push the endpoint off the card, so it only applies when the end leg runs along the port's axis.
+    private static bool LegMatchesPort(TopologyChart chart, TopologyEdge edge, ChartPoint end, ChartPoint next, TopologyEdgePort port) {
+        if (!TopologyLayoutEngine.UsesReadableDenseLayout(chart) || edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0) return true;
+        var horizontal = Math.Abs(end.Y - next.Y) < 0.01;
+        var vertical = Math.Abs(end.X - next.X) < 0.01;
+        if (horizontal == vertical) return true;
+        return port is TopologyEdgePort.Left or TopologyEdgePort.Right ? horizontal : vertical;
     }
 
     private static ChartPoint SpreadEndpoint(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode node, TopologyEdgePort port, ChartPoint point) {
@@ -729,29 +755,6 @@ internal static partial class TopologyRenderPrimitives {
         public ChartPoint End { get; }
     }
 
-    private static string Blend(string foreground, string background, double alpha) {
-        if (!TryParseHex(foreground, out var fr, out var fg, out var fb) || !TryParseHex(background, out var br, out var bg, out var bb)) return background;
-        var r = (int)Math.Round(fr * alpha + br * (1 - alpha));
-        var g = (int)Math.Round(fg * alpha + bg * (1 - alpha));
-        var b = (int)Math.Round(fb * alpha + bb * (1 - alpha));
-        return "#" + r.ToString("X2", CultureInfo.InvariantCulture) + g.ToString("X2", CultureInfo.InvariantCulture) + b.ToString("X2", CultureInfo.InvariantCulture);
-    }
-
-    private static bool TryParseHex(string value, out int r, out int g, out int b) {
-        r = 0;
-        g = 0;
-        b = 0;
-        if (string.IsNullOrWhiteSpace(value) || value[0] != '#') return false;
-        var hex = value.Substring(1);
-        if (hex.Length == 3) {
-            hex = string.Concat(hex[0], hex[0], hex[1], hex[1], hex[2], hex[2]);
-        }
-
-        if (hex.Length != 6 && hex.Length != 8) return false;
-        return int.TryParse(hex.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out r)
-            && int.TryParse(hex.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out g)
-            && int.TryParse(hex.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out b);
-    }
 }
 
 internal sealed class TopologyEdgeLabelLayout {

@@ -64,9 +64,15 @@ internal static partial class TopologyRenderPrimitives {
         return edge.TargetMarker ?? (includeDirectionMarkers ? EffectiveTargetMarker(edge) : TopologyMarkerKind.None);
     }
 
-    private static void ApplyNamedEndpoint(TopologyNode node, string portId, TopologyEdge edge, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
+    private static void ApplyNamedEndpoint(TopologyChart chart, TopologyNode node, string portId, TopologyEdge edge, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
         var port = node.Ports.FirstOrDefault(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
         if (port == null) return;
+        if (TopologyLayoutEngine.UsesReadableDenseLayout(chart) &&
+            edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
+            port.Side == TopologyEdgePort.Bottom && TopologyNodeFootprint.Caption(chart, node).Height > 0.5) {
+            throw new InvalidOperationException("Readable dense tile '" + node.Id + "' cannot use named Bottom port '" +
+                port.Id + "' beneath its visible caption. Use a top or side port, or hide the node label.");
+        }
         var original = points[endpointIndex];
         var gap = EdgeEndpointGap;
         var point = port.Side switch {

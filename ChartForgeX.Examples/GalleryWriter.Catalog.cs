@@ -223,6 +223,7 @@ public static partial class GalleryWriter {
             "visual-nested-user-hierarchy-right-left",
             "visual-replication-health-hub",
             "visual-replication-mesh-route-motion",
+            "visual-readable-dense-replication",
             "visual-reusable-regional-topology",
             "visual-service-dependency-map",
             "visual-site-distribution-map",

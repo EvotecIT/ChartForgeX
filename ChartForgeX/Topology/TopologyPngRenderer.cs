@@ -451,7 +451,8 @@ public sealed partial class TopologyPngRenderer {
 
     private static void DrawTileSubtitle(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyRenderOptions options) {
         var (subtitle, width) = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options);
-        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options).Count;
+        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true,
+            options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile)).Count;
         var x = CenterX(node) - width / 2;
         var y = node.Y + node.Height + 7 + labelLineCount * 14;
         canvas.FillRoundedRect(x, y, width, 17, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
