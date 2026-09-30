@@ -108,20 +108,16 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var size = Math.Max(8, Math.Min(13, tileSize * 0.32));
         var gap = Math.Max(2, size * 0.3);
-        var width = 5 * size + 4 * gap;
+        var steps = ChartHeatmapSurface.MapScaleStepCount(chart);
+        var width = steps * size + (steps - 1) * gap;
         var x = right - width;
         if (hasMissing) DrawMapSvgNoDataScale(sb, chart, "tile-map", x, y, size, plot);
         WriteMapSvgTick(sb, chart, "tile-map-scale-label", ChartHeatmapSurface.MapLowLabel(chart), x - 8, y + size / 2, "end", middleBaseline: true);
-        for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
-            var ratio = ChartHeatmapSurface.MapRatio(chart, value, min, max);
-            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
-            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", "tile-map-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", Math.Min(3, size * 0.22)).Attribute("fill", color.ToCss()).EndEmptyElement().Line());
-        }
+        WriteMapSvgScaleSteps(sb, chart, series, min, max, "tile-map", x, y, size, gap, Math.Min(3, size * 0.22));
         WriteMapSvgTick(sb, chart, "tile-map-scale-label", ChartHeatmapSurface.MapHighLabel(chart), x + width + 8, y + size / 2, "start", middleBaseline: true);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            WriteMapSvgTick(sb, chart, "tile-map-scale-midpoint-label", midpointLabel, x + 2 * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
+            WriteMapSvgTick(sb, chart, "tile-map-scale-midpoint-label", midpointLabel, x + ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps) * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
         }
     }
 

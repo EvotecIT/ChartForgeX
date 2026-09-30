@@ -52,6 +52,51 @@ internal static class ChartHeatmapSurface {
         return effectiveMin + (effectiveMax - effectiveMin) * Clamp(ratio, 0, 1);
     }
 
+    /// <summary>The most swatches a horizontal map scale draws; scales with more stops are sampled evenly.</summary>
+    public const int MaximumMapScaleSteps = 11;
+
+    /// <summary>
+    /// Returns the values of the swatches in a horizontal map scale. Two- and three-colour scales draw five evenly spaced
+    /// swatches; a scale with more stops draws one swatch per stop (up to <see cref="MaximumMapScaleSteps"/>), each at the
+    /// value where its stop is exact, so every step of a many-step ramp shows in the legend. When the midpoint of a
+    /// diverging scale sits at the minimum or maximum, one arm has no range, so the swatches are spaced evenly instead.
+    /// </summary>
+    public static double[] MapScaleSteps(Chart chart, double min, double max) {
+        var count = MapScaleStepCount(chart);
+        var values = new double[count];
+        if (SwatchPerStop(chart, min, max, out var scale)) {
+            for (var i = 0; i < count; i++) values[i] = scale!.StopValue(i, min, max);
+            return values;
+        }
+
+        for (var i = 0; i < count; i++) values[i] = MapScaleValue(chart, min, max, i / (double)(count - 1));
+        return values;
+    }
+
+    /// <summary>Returns how many swatches a horizontal map scale draws (see <see cref="MapScaleSteps"/>).</summary>
+    public static int MapScaleStepCount(Chart chart) {
+        var stops = chart.Options.MapColorScale?.Colors.Count ?? 0;
+        return stops <= 3 ? 5 : Math.Min(stops, MaximumMapScaleSteps);
+    }
+
+    /// <summary>
+    /// Returns the swatch under the midpoint label of a horizontal map scale: the midpoint stop when each stop has its
+    /// own swatch, the end swatch when a many-step scale's midpoint sits at that end, otherwise the middle swatch.
+    /// </summary>
+    public static int MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
+        if (SwatchPerStop(chart, min, max, out var scale) && scale!.MidpointIndex is int midpoint) return midpoint;
+        if (scale != null && scale.Colors.Count > 3 && scale.MidpointCollapses(min, max)) {
+            return scale.EffectiveMidpoint(min, max) <= scale.EffectiveMinimum(min) + 0.000001 ? 0 : stepCount - 1;
+        }
+
+        return stepCount / 2;
+    }
+
+    private static bool SwatchPerStop(Chart chart, double min, double max, out ChartMapColorScale? scale) {
+        scale = chart.Options.MapColorScale;
+        return scale != null && scale.Colors.Count > 3 && scale.Colors.Count <= MaximumMapScaleSteps && !scale.MidpointCollapses(min, max);
+    }
+
     public static double MapScaleMidpoint(Chart chart, double min, double max) {
         var scale = chart.Options.MapColorScale;
         if (scale == null) return MapScaleValue(chart, min, max, 0.5);

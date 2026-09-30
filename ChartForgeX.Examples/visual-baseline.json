@@ -2824,6 +2824,23 @@
       }
     },
     {
+      "name": "target-tile-map-diverging-steps-light",
+      "width": 980,
+      "height": 500,
+      "svg": {
+        "minVisualNodes": 67,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 912589,
+        "minTransparentPixels": 67411,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "text-style-showcase-editorial",
       "width": 860,
       "height": 480,

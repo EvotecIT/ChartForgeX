@@ -78,7 +78,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var layer in chart.Options.MapOverlayLayers) DrawRegionMapSvgLayer(sb, layer, sourceBounds, map);
         if (chart.Options.ShowMapScaleLegend) {
             if (rightLegend) DrawRegionMapSvgRightScale(sb, chart, series, min, max, hasMissing, Math.Min(basePlot.Right - 124, plot.Right + 52), map.Top + Math.Max(48, map.Height * 0.28), map, rolePrefix);
-            else DrawRegionMapSvgScale(sb, chart, series, min, max, hasMissing, RegionMapScaleX(map, plot), plot.Bottom - 14, plot, rolePrefix);
+            else DrawRegionMapSvgScale(sb, chart, series, min, max, hasMissing, RegionMapScaleX(chart, map, plot), plot.Bottom - 14, plot, rolePrefix);
         }
         sb.AppendLine("</g>");
     }
@@ -128,17 +128,26 @@ public sealed partial class SvgChartRenderer {
         var gap = 3.0;
         if (hasMissing) DrawMapSvgNoDataScale(sb, chart, rolePrefix, x, y, size, plot);
         WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapLowLabel(chart), x - 8, y + size / 2, "end", middleBaseline: true);
-        for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
-            var ratio = ChartHeatmapSurface.MapRatio(chart, value, min, max);
-            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
-            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", "2").Attribute("fill", color.ToCss()).EndEmptyElement().Line());
-        }
-        WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapHighLabel(chart), x + 5 * size + 4 * gap + 8, y + size / 2, "start", middleBaseline: true);
+        var steps = WriteMapSvgScaleSteps(sb, chart, series, min, max, rolePrefix, x, y, size, gap, 2);
+        WriteMapSvgTick(sb, chart, rolePrefix + "-scale-label", ChartHeatmapSurface.MapHighLabel(chart), x + steps * size + (steps - 1) * gap + 8, y + size / 2, "start", middleBaseline: true);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-midpoint-label", midpointLabel, x + 2 * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
+            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-midpoint-label", midpointLabel, x + ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps) * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
         }
+    }
+
+    private static int WriteMapSvgScaleSteps(StringBuilder sb, Chart chart, ChartSeries series, double min, double max, string rolePrefix, double x, double y, double size, double gap, double radius) {
+        var t = chart.Options.Theme;
+        var values = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
+        for (var i = 0; i < values.Length; i++) {
+            var value = values[i];
+            var ratio = ChartHeatmapSurface.MapRatio(chart, value, min, max);
+            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
+            var stepX = x + i * (size + gap);
+            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", stepX).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", radius).Attribute("fill", color.ToCss()).EndEmptyElement().Line());
+        }
+
+        return values.Length;
     }
 
     private static void DrawRegionMapSvgRightScale(StringBuilder sb, Chart chart, ChartSeries series, double min, double max, bool hasMissing, double x, double y, ChartRect map, string rolePrefix) {
@@ -200,8 +209,9 @@ public sealed partial class SvgChartRenderer {
         return new[] { title };
     }
 
-    private static double RegionMapScaleX(ChartRect map, ChartRect plot) {
-        const double scaleWidth = 5 * 11.0 + 4 * 3.0;
+    private static double RegionMapScaleX(Chart chart, ChartRect map, ChartRect plot) {
+        var steps = ChartHeatmapSurface.MapScaleStepCount(chart);
+        var scaleWidth = steps * 11.0 + (steps - 1) * 3.0;
         return Clamp(map.Right - scaleWidth - 48, plot.Left + 70, plot.Right - scaleWidth - 44);
     }
 

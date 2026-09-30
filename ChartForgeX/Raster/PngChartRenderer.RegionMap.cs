@@ -66,7 +66,7 @@ public sealed partial class PngChartRenderer {
         foreach (var layer in chart.Options.MapOverlayLayers) DrawRegionMapPngLayer(c, layer, sourceBounds, map);
         if (chart.Options.ShowMapScaleLegend) {
             if (rightLegend) DrawRegionMapPngRightScale(c, chart, series, min, max, hasMissing, Math.Min(basePlot.Right - 124, plot.Right + 52), map.Top + Math.Max(48, map.Height * 0.28), map);
-            else DrawRegionMapPngScale(c, chart, series, min, max, hasMissing, RegionMapScaleX(map, plot), plot.Bottom - 14, plot);
+            else DrawRegionMapPngScale(c, chart, series, min, max, hasMissing, RegionMapScaleX(chart, map, plot), plot.Bottom - 14, plot);
         }
     }
 
@@ -93,24 +93,30 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawRegionMapPngScale(RgbaCanvas c, Chart chart, ChartSeries series, double min, double max, bool hasMissing, double x, double y, ChartRect plot) {
-        var t = chart.Options.Theme;
         var size = 11.0;
         var gap = 3.0;
         var fontSize = PngTickFontSize(chart);
         if (hasMissing) DrawMapPngNoDataScale(c, chart, x, y, size, fontSize, plot);
         var lowLabel = ChartHeatmapSurface.MapLowLabel(chart);
         DrawMapPngTick(c, chart, x - EstimatePngStyledTextWidth(lowLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) - 8, y + size / 2, lowLabel, emphasized: false);
-        for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
-            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
-            c.FillRoundedRect(x + i * (size + gap), y, size, size, 2, color);
-        }
+        var steps = DrawMapPngScaleSteps(c, chart, series, min, max, x, y, size, gap, 2);
         var highLabel = ChartHeatmapSurface.MapHighLabel(chart);
-        DrawMapPngTick(c, chart, x + 5 * size + 4 * gap + 8, y + size / 2, highLabel, emphasized: false);
+        DrawMapPngTick(c, chart, x + steps * size + (steps - 1) * gap + 8, y + size / 2, highLabel, emphasized: false);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            DrawMapPngTick(c, chart, x + 2 * (size + gap) + size / 2 - EstimatePngStyledTextWidth(midpointLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) / 2, y + size + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, midpointLabel, emphasized: false);
+            DrawMapPngTick(c, chart, x + ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps) * (size + gap) + size / 2 - EstimatePngStyledTextWidth(midpointLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) / 2, y + size + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, midpointLabel, emphasized: false);
         }
+    }
+
+    private static int DrawMapPngScaleSteps(RgbaCanvas c, Chart chart, ChartSeries series, double min, double max, double x, double y, double size, double gap, double radius) {
+        var t = chart.Options.Theme;
+        var values = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
+        for (var i = 0; i < values.Length; i++) {
+            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], values[i], min, max);
+            c.FillRoundedRect(x + i * (size + gap), y, size, size, radius, color);
+        }
+
+        return values.Length;
     }
 
     private static void DrawRegionMapPngRightScale(RgbaCanvas c, Chart chart, ChartSeries series, double min, double max, bool hasMissing, double x, double y, ChartRect map) {
@@ -164,8 +170,9 @@ public sealed partial class PngChartRenderer {
         return new[] { title };
     }
 
-    private static double RegionMapScaleX(ChartRect map, ChartRect plot) {
-        const double scaleWidth = 5 * 11.0 + 4 * 3.0;
+    private static double RegionMapScaleX(Chart chart, ChartRect map, ChartRect plot) {
+        var steps = ChartHeatmapSurface.MapScaleStepCount(chart);
+        var scaleWidth = steps * 11.0 + (steps - 1) * 3.0;
         return Clamp(map.Right - scaleWidth - 48, plot.Left + 70, plot.Right - scaleWidth - 44);
     }
 

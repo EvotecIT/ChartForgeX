@@ -162,6 +162,12 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal("#B8292A", scale.LowColor.ToHex());
         Assert.Equal("#1C5CAB", scale.HighColor.ToHex());
         Assert.Equal(0, scale.MidpointValue);
+        Assert.Equal(new[] { "#B8292A", "#E0645B", "#F0A39D", "#ECEEF0" }, scale.Colors.Take(4).Select(color => color.ToHex()).ToArray());
+        Assert.Equal(7, scale.Colors.Count);
+        Assert.Equal("#ECEEF0", scale.MidpointColor!.Value.ToHex());
+        Assert.Equal("#E0645B", scale.ColorFor(-2, -3, 3).ToHex());
+        Assert.Equal(light.SequentialRamp!.Select(color => color.ToHex()), light.ToSequentialMapColorScale()!.Colors.Select(color => color.ToHex()));
+        Assert.Equal("#2A78D6", light.ToSequentialMapColorScale()!.ColorFor(50, 0, 100).ToHex());
         Assert.Equal("#104281", light.ToSequentialMapColorScale()!.HighColor.ToHex());
         Assert.Equal(light.SequentialRamp![0], light.Clone().SequentialRamp![0]);
     }
