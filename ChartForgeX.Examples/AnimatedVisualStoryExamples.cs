@@ -17,7 +17,7 @@ internal static class AnimatedVisualStoryExamples {
             .WithGrid(false)
             .WithLegend(false)
             .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun")
-            .AddSmoothArea("Releases", Points(8, 11, 9, 16, 18, 23), ChartColor.FromRgb(56, 189, 248));
+            .AddSmoothArea("Releases", ChartPoints.FromValues(8, 11, 9, 16, 18, 23), ChartColor.FromRgb(56, 189, 248));
 
         var portfolio = ChartTable.Create()
             .WithTitle("Active portfolio")
@@ -64,10 +64,4 @@ internal static class AnimatedVisualStoryExamples {
         .WithCaption(caption)
         .WithTheme(ChartTheme.ReportDark())
         .WithSize(250, 150);
-
-    private static IEnumerable<ChartPoint> Points(params double[] values) {
-        for (var index = 0; index < values.Length; index++) {
-            yield return new ChartPoint(index, values[index]);
-        }
-    }
 }
