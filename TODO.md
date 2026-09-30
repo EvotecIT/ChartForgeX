@@ -8,6 +8,8 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
 - Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
+- Static SVG and PNG charts are drawn in one time zone (UTC or `ChartAxis.TimeZone`) and cannot follow the reader's zone; hosts with a local/UTC switch label them as fixed. Following the reader needs a browser-side redraw of time-axis ticks, labels, and tooltips (for example from the `data-cfx-start`/`data-cfx-end` instants) in `ChartForgeX.Interactivity.Html`.
+- `SvgColorVariables` matches token colours by value on the finished SVG, so shades ChartForgeX derives (blends, gradients, ramp interpolation) stay literal and do not follow a host theme switch. Following them would need renderer-level colour roles, for example writing derived shades as `color-mix()` of their token variables.
 
 ## Interactivity
 
