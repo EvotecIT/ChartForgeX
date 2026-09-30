@@ -61,16 +61,16 @@ internal sealed partial class RgbaCanvas {
         var gradientX = end.X - start.X;
         var gradientY = end.Y - start.Y;
         var gradientLengthSquared = gradientX * gradientX + gradientY * gradientY;
+        var table = GradientTable(contours, stops, spreadMethod, opacity);
 
-        ScanFillSpans(contours, fillRule, (y, scanY, left, right) => {
-            var xStart = Math.Max(0, (int)Math.Floor(left));
-            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+        ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
+            var scanY = y + 0.5;
             for (var x = xStart; x <= xEnd; x++) {
-                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
+                var coverage = rowCoverage[x];
                 if (coverage <= 0) continue;
                 var amount = gradientLengthSquared <= 0.000001 ? 0 : ((x + 0.5 - start.X) * gradientX + (scanY - start.Y) * gradientY) / gradientLengthSquared;
-                var color = WithOpacity(SampleGradient(stops, amount, spreadMethod), opacity);
-                BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+                var color = table != null ? table[TableIndex(amount, spreadMethod)] : WithOpacity(SampleGradient(stops, amount, spreadMethod), opacity);
+                BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }
         });
     }
@@ -82,22 +82,47 @@ internal sealed partial class RgbaCanvas {
         var axisYY = radiusY.Y - center.Y;
         var determinant = axisXX * axisYY - axisYX * axisXY;
         if (Math.Abs(determinant) <= 0.000001) return;
+        var table = GradientTable(contours, stops, spreadMethod, opacity);
 
-        ScanFillSpans(contours, fillRule, (y, scanY, left, right) => {
-            var xStart = Math.Max(0, (int)Math.Floor(left));
-            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+        ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
+            var dy = y + 0.5 - center.Y;
             for (var x = xStart; x <= xEnd; x++) {
-                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
+                var coverage = rowCoverage[x];
                 if (coverage <= 0) continue;
                 var dx = x + 0.5 - center.X;
-                var dy = scanY - center.Y;
                 var localX = (dx * axisYY - axisYX * dy) / determinant;
                 var localY = (axisXX * dy - dx * axisXY) / determinant;
-                var color = WithOpacity(SampleGradient(stops, Math.Sqrt(localX * localX + localY * localY), spreadMethod), opacity);
-                BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+                var amount = Math.Sqrt(localX * localX + localY * localY);
+                var color = table != null ? table[TableIndex(amount, spreadMethod)] : WithOpacity(SampleGradient(stops, amount, spreadMethod), opacity);
+                BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }
         });
     }
+
+    private const int GradientTableSize = 4096;
+    private const double GradientTableMinimumArea = 16384;
+
+    /// <summary>
+    /// Precomputes the gradient ramp for a fill large enough to repay it, so each pixel costs one
+    /// lookup instead of a stop search and two color mixes. Small fills return null and sample directly.
+    /// </summary>
+    private static ChartColor[]? GradientTable(IReadOnlyList<List<ChartPoint>> contours, IReadOnlyList<RasterGradientStop> stops, RasterGradientSpreadMethod spreadMethod, double opacity) {
+        double minX = double.PositiveInfinity, minY = double.PositiveInfinity, maxX = double.NegativeInfinity, maxY = double.NegativeInfinity;
+        foreach (var contour in contours) foreach (var point in contour) {
+            minX = Math.Min(minX, point.X);
+            maxX = Math.Max(maxX, point.X);
+            minY = Math.Min(minY, point.Y);
+            maxY = Math.Max(maxY, point.Y);
+        }
+
+        if (!((maxX - minX) * (maxY - minY) >= GradientTableMinimumArea)) return null;
+        var table = new ChartColor[GradientTableSize];
+        for (var i = 0; i < table.Length; i++) table[i] = WithOpacity(SampleGradient(stops, i / (double)(table.Length - 1), RasterGradientSpreadMethod.Pad), opacity);
+        return table;
+    }
+
+    private static int TableIndex(double amount, RasterGradientSpreadMethod spreadMethod) =>
+        (int)(ApplySpread(amount, spreadMethod) * (GradientTableSize - 1) + 0.5);
 
     private static ChartColor SampleGradient(IReadOnlyList<RasterGradientStop> stops, double amount, RasterGradientSpreadMethod spreadMethod) {
         amount = ApplySpread(amount, spreadMethod);

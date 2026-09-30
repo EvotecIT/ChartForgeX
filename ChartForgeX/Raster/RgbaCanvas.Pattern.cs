@@ -20,19 +20,17 @@ internal sealed partial class RgbaCanvas {
     }
 
     private void FillContoursPatternPixels(IReadOnlyList<List<ChartPoint>> contours, int tileWidth, int tileHeight, byte[] tilePixels, double tileA, double tileB, double tileC, double tileD, double tileE, double tileF, RasterFillRule fillRule, double opacity) {
-        ScanFillSpans(contours, fillRule, (y, scanY, left, right) => {
-            var xStart = Math.Max(0, (int)Math.Floor(left));
-            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+        ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
+            var logicalY = (y + 0.5) / _scale;
             for (var x = xStart; x <= xEnd; x++) {
-                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
+                var coverage = rowCoverage[x];
                 if (coverage <= 0) continue;
                 var logicalX = (x + 0.5) / _scale;
-                var logicalY = scanY / _scale;
                 var sampleX = logicalX * tileA + logicalY * tileC + tileE;
                 var sampleY = logicalX * tileB + logicalY * tileD + tileF;
                 var color = WithOpacity(SamplePattern(tilePixels, tileWidth, tileHeight, sampleX, sampleY), opacity);
                 if (color.A == 0) continue;
-                BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+                BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }
         });
     }

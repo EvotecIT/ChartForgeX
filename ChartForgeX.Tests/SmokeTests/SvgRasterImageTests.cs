@@ -192,7 +192,7 @@ internal static partial class SmokeTests {
         const string automaticHorizontalRadius = "<rect width='100' height='40' rx='auto' ry='5' fill='#16a34a'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(automaticHorizontalRadius, "0 0 100 40", "none", 100, 40, out var automaticHorizontalRadiusPixels) && IsPixelNear(automaticHorizontalRadiusPixels, 100, 5, 2, 22, 163, 74), "An automatic rounded-rectangle rx should copy the resolved ry value.");
         const string automaticVerticalClipRadius = "<defs><clipPath id='automatic-radius'><rect width='100' height='40' rx='20' ry='auto'/></clipPath></defs><rect width='100' height='40' fill='#8b5cf6' clip-path='url(#automatic-radius)'/>";
-        Assert(SvgRasterRenderer.TryRenderFragment(automaticVerticalClipRadius, "0 0 100 40", "none", 100, 40, out var automaticVerticalRadiusPixels) && PixelAlpha(automaticVerticalRadiusPixels, 100, 5, 5) == 0, "An automatic rounded-rectangle ry should copy rx before clip-path geometry is constructed.");
+        Assert(SvgRasterRenderer.TryRenderFragment(automaticVerticalClipRadius, "0 0 100 40", "none", 100, 40, out var automaticVerticalRadiusPixels) && PixelAlpha(automaticVerticalRadiusPixels, 100, 4, 4) == 0, "An automatic rounded-rectangle ry should copy rx before clip-path geometry is constructed.");
 
         const string openFilledPath = "<path d='M5 5 L35 5 L35 35' fill='#16a34a' stroke='#2563eb' stroke-width='2'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(openFilledPath, "0 0 40 40", "none", 40, 40, out var openFilledPathPixels), "SVG rasterization should fill an open path while keeping its stroke open.");
