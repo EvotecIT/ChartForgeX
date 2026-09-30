@@ -1,7 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
-using ChartForgeX.Typography;
 
 namespace ChartForgeX.Composition;
 
@@ -53,6 +54,20 @@ internal readonly struct VisualCanvasTextFace {
         var top = y + fontSize - (_face.Font?.Ascent(fontSize) ?? fontSize);
         if (_face.SynthesizeBold) canvas.DrawTextEmphasized(x, top, text, color, fontSize, _face.Font);
         else canvas.DrawText(x, top, text, color, fontSize, _face.Font);
+    }
+
+    /// <summary>The largest size up to <paramref name="fontSize"/> at which the runs, set side by side, fit the width.</summary>
+    public double FitSize(IEnumerable<string> runs, double fontSize, double maxWidth) {
+        var size = fontSize;
+        for (var attempt = 0; attempt < 40; attempt++) {
+            var width = 0.0;
+            foreach (var run in runs) width += Measure(run, size);
+            if (width <= maxWidth || size <= 1) return size;
+            // Widths scale almost linearly with size; step a little past the ratio so rounding cannot loop.
+            size = Math.Max(1, Math.Min(size * 0.99, size * maxWidth / width));
+        }
+
+        return size;
     }
 
     /// <summary>Returns the text, or its longest prefix followed by an ellipsis, that fits the width.</summary>

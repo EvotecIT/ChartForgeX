@@ -167,13 +167,14 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
         var anchor = Anchor(hero.Alignment);
         var x = AlignedX(hero.X, hero.Width, hero.Alignment);
+        var fontSize = hero.FittedFontSize(VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle));
         writer.StartElement("text")
             .Attribute("data-cfx-role", "visual-canvas-hero-title")
             .Attribute("x", x)
-            .Attribute("y", hero.Y + hero.FontSize)
+            .Attribute("y", hero.Y + (hero.FontSize + fontSize) / 2)
             .Attribute("text-anchor", anchor)
             .Attribute("font-family", theme.FontFamily)
-            .Attribute("font-size", hero.FontSize)
+            .Attribute("font-size", fontSize)
             .Attribute("font-weight", VisualCanvasFontWeights.Css(VisualCanvasFontWeights.HeroTitle))
             .Attribute("letter-spacing", "0")
             .EndStartElement();

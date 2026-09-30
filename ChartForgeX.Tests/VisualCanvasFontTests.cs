@@ -57,6 +57,18 @@ public sealed class VisualCanvasFontTests {
     }
 
     [Fact]
+    public void HeroTitlesShrinkToTheirWidthInBothOutputs() {
+        const double left = 100, width = 300;
+        var canvas = VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddHeroTitle(left, 10, width, 82, new[] { new VisualCanvasTextRun("Power", ChartColors.White), new VisualCanvasTextRun("BGInfo", ChartColors.White) });
+        foreach (var image in new[] { Png(canvas), SvgRasterizer.ToImage(canvas.ToSvg()) }) {
+            var bounds = InkBounds(image, 0, image.Height);
+            Assert.True(bounds.Right <= left + width + 1, "A hero title wider than its layer must be shrunk to fit it.");
+            Assert.True(bounds.Right >= left + width - 12, "A shrunk hero title should still fill its layer.");
+        }
+    }
+
+    [Fact]
     public void InfoTileTextFitsTheTileWithTheDrawnFace() {
         var family = HasFace("Verdana", 700) ? "Verdana" : "sans-serif";
         var canvas = Canvas(family).AddInfoTile(10, 10, 360, 100, "CPU", "Processor", "Intel Xeon Platinum 8380 @ 2.30GHz", "40 cores, 80 threads", textFitPolicy: VisualCanvasTextFitPolicy.SingleLineEllipsis);

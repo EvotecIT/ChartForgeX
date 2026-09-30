@@ -609,10 +609,16 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
 
     /// <summary>Gets the colored title runs.</summary>
     public IReadOnlyList<VisualCanvasTextRun> Runs => _runs;
-    /// <summary>Gets or sets the title font size.</summary>
+    /// <summary>Gets or sets the largest title font size; SVG and PNG output shrink the title when its runs are wider than <see cref="VisualCanvasLayer.Width"/>.</summary>
     public double FontSize { get => _fontSize; set { ValidatePositive(value, nameof(value)); _fontSize = value; Height = Math.Max(Height, value * 1.25); } }
     /// <summary>Gets or sets the title alignment.</summary>
     public TextAlignment Alignment { get; set; } = TextAlignment.Center;
+
+    internal double FittedFontSize(VisualCanvasTextFace face) {
+        var texts = new string[_runs.Count];
+        for (var i = 0; i < texts.Length; i++) texts[i] = _runs[i].Text;
+        return face.FitSize(texts, FontSize, Width);
+    }
 }
 
 /// <summary>Reusable information tile layer.</summary>

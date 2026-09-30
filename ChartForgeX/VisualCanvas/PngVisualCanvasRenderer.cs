@@ -96,12 +96,15 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
         var face = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle);
+        var fontSize = hero.FittedFontSize(face);
         var totalWidth = 0.0;
-        foreach (var run in hero.Runs) totalWidth += face.Measure(run.Text, hero.FontSize);
+        foreach (var run in hero.Runs) totalWidth += face.Measure(run.Text, fontSize);
         var x = AlignedX(hero.X, hero.Width, totalWidth, hero.Alignment);
+        // A title shrunk to fit stays centered on the line it was placed on.
+        var y = hero.Y + (hero.FontSize - fontSize) / 2;
         foreach (var run in hero.Runs) {
-            face.Draw(canvas, x, hero.Y, run.Text, run.Color, hero.FontSize);
-            x += face.Measure(run.Text, hero.FontSize);
+            face.Draw(canvas, x, y, run.Text, run.Color, fontSize);
+            x += face.Measure(run.Text, fontSize);
         }
     }
 
