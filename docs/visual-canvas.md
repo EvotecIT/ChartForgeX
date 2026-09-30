@@ -199,7 +199,7 @@ Stroked SVG circles, ellipses, arcs, rounded rectangles, and curved paths are fl
 Text drawn from a `FontSpec` (`ImageComposition.DrawText` and `TextLayoutEngine`) picks its face in this order:
 
 1. `FontSpec.FromFile(path)` — that TrueType file, always. This is the only choice that renders identically on every host, so ship the font with the application when the output must not vary.
-2. `FontSpec.FromFamily("Inter, Segoe UI, sans-serif")` — the first family of the stack that is installed, at the installed face closest to `Weight` and `Italic` (Segoe UI at 700 is Segoe UI Bold). Installed families are read from the operating system's font folders the first time a named family is requested; only TrueType outlines (`.ttf`, `.ttc`) are considered.
+2. `FontSpec.FromFamily("Inter, Segoe UI, sans-serif")` — the first family of the stack that is registered with `FontRegistry` (below) or installed, at the face closest to `Weight` and `Italic` (Segoe UI at 700 is Segoe UI Bold). Installed families are read from the operating system's font folders the first time a named family is requested; only TrueType outlines (`.ttf`, `.ttc`) are considered.
 3. The generic fallback for the stack — a serif, monospace, or sans-serif face known to ship with Windows, macOS, or common Linux distributions — with its bold or italic sibling when one is installed.
 
 When no real bold or italic face exists, bold is synthesized by emboldening and italic by shearing the regular face. A variable font renders its default instance; its axes are not applied.
@@ -208,7 +208,20 @@ SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its 
 
 `VisualCanvas` text follows the same rules in both outputs. `VisualCanvasTheme.FontFamily` (set directly or through `VisualDesignTokens`), a key/value block's `FontFamilyName`, and `MonospaceFontFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. PNG output draws the matching installed face (Segoe UI 850 is Segoe UI Black), and fitting, wrapping, ellipsis, key/value column widths, row heights, and tile text fitting are measured with that face in both outputs, so fitted PNG text does not overflow its box and the SVG output breaks lines where the PNG does. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas.Theme)` to measure a key/value block with the family it will draw with.
 
-On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship a `.ttf` and use `FontSpec.FromFile`.
+On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship `.ttf` files with the application and register them.
+
+`FontRegistry` registers font files once, process-wide and thread-safely, and every raster path then finds them by family name: chart, grid, topology, and visual block themes, VisualCanvas themes and design tokens, `FontSpec.FromFamily`, and SVG `font-family`:
+
+```csharp
+FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Regular.ttf"));
+FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Bold.ttf"), weight: 700);
+FontRegistry.RegisterDirectory(Path.Combine(fonts, "brand")); // each file under its own family, weight, and slant
+FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); // fallback for stacks ending in sans-serif, and for hosts with no fonts
+
+var chart = Chart.Create().WithTheme(ChartTheme.ReportDark().WithFontFamily("Inter, sans-serif"));
+```
+
+A registered family is matched before an installed family of the same name, with the same weight and slant rules, and only its registered faces are considered, so register each weight you use; a missing bold is synthesized. `RegisterFile` and `RegisterDirectory` read the family, weight, and italic flag from each file's own tables. `FontRegistry.Clear()` removes every registration.
 
 Chart, grid, topology, and visual block PNG renderers resolve their theme font stack (and a text style's `FontFamily`) the same way, at regular weight, and draw emphasized text such as titles, legends, and data labels with that family's real bold face, measuring it with the same face, so `ChartFontStacks.SystemSans` draws Segoe UI on Windows as the SVG does in a browser. An explicit `PngFontPath` keeps its synthesized emphasis. `chart.GetPngFontInfo()` reports the resolved face. `TextMeasurementMode.InstalledFonts` measures with the same regular and bold faces, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
 

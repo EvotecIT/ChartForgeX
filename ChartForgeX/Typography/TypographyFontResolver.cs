@@ -25,6 +25,7 @@ internal readonly struct ResolvedTypeface {
 internal static class TypographyFontResolver {
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
+    private static int _cacheVersion;
     private static readonly System.Collections.Generic.Dictionary<string, ResolvedTypeface> FamilyCache = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
@@ -49,13 +50,16 @@ internal static class TypographyFontResolver {
         family = string.IsNullOrWhiteSpace(family) ? "sans-serif" : family!.Trim();
         weight = Math.Max(1, Math.Min(1000, weight));
         var key = family + "|" + weight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (italic ? "|i" : "|n");
+        int version;
         lock (CacheLock) {
             if (FamilyCache.TryGetValue(key, out var cached)) return cached;
+            version = _cacheVersion;
         }
 
         var resolved = ResolveFamily(family, weight, italic);
         lock (CacheLock) {
-            if (FamilyCache.Count < MaximumCachedFamilies) FamilyCache[key] = resolved;
+            // A registration that landed while this stack was resolving may have changed the answer.
+            if (version == _cacheVersion && FamilyCache.Count < MaximumCachedFamilies) FamilyCache[key] = resolved;
         }
 
         return resolved;
@@ -83,15 +87,20 @@ internal static class TypographyFontResolver {
         foreach (var part in family.Split(',')) {
             var name = part.Trim().Trim('"', '\'').Trim();
             if (name.Length == 0 || IsPlatformAlias(name)) continue;
-            // A generic keyword ends the named part of the stack; the fallback below picks its face.
-            if (IsGenericFamily(name)) break;
-            var face = InstalledFontCatalog.Find(name, weight, italic);
-            if (face == null) continue;
-            var loaded = TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
-            if (loaded != null && loaded.IsTextFace) return new ResolvedTypeface(loaded, weight >= 600 && face.Weight < 600, italic && !face.Italic, face.Path);
+            // A generic keyword ends the named part of the stack: a face registered under the keyword
+            // answers it, otherwise the fallback below picks one.
+            if (IsGenericFamily(name)) {
+                if (TryLoad(FontRegistry.Find(name, weight, italic), weight, italic, out var registered)) return registered;
+                break;
+            }
+
+            // Registered faces take precedence over installed faces of the same family.
+            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved)) return resolved;
         }
 
         var fallback = TrueTypeFont.TryLoadForFamily(family, out var path);
+        // A host with no usable fonts, such as a bare container, still has any registered sans-serif face.
+        if (fallback == null && TryLoad(FontRegistry.Find("sans-serif", weight, italic), weight, italic, out var lastResort)) return lastResort;
         if (fallback != null && path != null && (weight != 400 || italic)) {
             var sibling = InstalledFontCatalog.FindSibling(path, weight, italic);
             var loaded = sibling == null ? null : TrueTypeFont.TryLoadFromPath(sibling.Path, sibling.CollectionIndex);
@@ -99,6 +108,20 @@ internal static class TypographyFontResolver {
         }
 
         return new ResolvedTypeface(fallback, weight >= 600, italic, path);
+    }
+
+    private static bool TryLoad(InstalledFontFace? face, int weight, bool italic, out ResolvedTypeface resolved) {
+        var loaded = face == null ? null : TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
+        resolved = loaded != null && loaded.IsTextFace ? new ResolvedTypeface(loaded, weight >= 600 && face!.Weight < 600, italic && !face!.Italic, face!.Path) : default;
+        return loaded != null && loaded.IsTextFace;
+    }
+
+    /// <summary>Forgets resolved stacks after the registered fonts change.</summary>
+    internal static void ClearCache() {
+        lock (CacheLock) {
+            FamilyCache.Clear();
+            _cacheVersion++;
+        }
     }
 
     private static bool IsGenericFamily(string name) {
