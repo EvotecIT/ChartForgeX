@@ -169,6 +169,45 @@ using var output = File.Create("wallpaper-output.png");
 wallpaper.Write(output, RasterImageFormat.Png, new RasterImageOptions { PngCompressionLevel = 9 });
 ```
 
+### Shapes, gradients, and SVG backdrops
+
+`ImageComposition` draws antialiased circles, ellipses, arcs, and gradient rectangles directly, with the same coverage model the SVG rasterizer uses for fills and strokes:
+
+```csharp
+var card = ImageComposition.Create(1200, 630, ChartColor.FromHex("#0A0D12"))
+    .FillRectangleRadialGradient(0, 0, 1200, 630, 1200, 0, 700, ChartColor.FromRgba(44, 95, 240, 51), ChartColor.FromRgba(44, 95, 240, 0))
+    .FillRectangleLinearGradient(84, 538, 260, 42, ChartColor.FromHex("#3BCBB5"), ChartColor.FromHex("#7399FF"), angle: 0, radius: 21)
+    .FillCircle(120, 90, 26, ChartColor.FromHex("#2C5FF0"))
+    .StrokeCircle(120, 90, 34, ChartColors.White, thickness: 1.5)
+    .DrawProgressRing(965, 270, 96, 18, fraction: 0.72, trackColor: ChartColor.FromHex("#222A38"), color: ChartColor.FromHex("#FF6D7A"))
+    .DrawArc(965, 270, 120, startAngle: -90, sweepAngle: 90, ChartColors.White, thickness: 2, ImageLineCap.Butt);
+```
+
+Angles are in degrees, clockwise on screen from three o'clock, so `-90` starts at twelve o'clock. `DrawArc` takes `ImageLineCap.Butt`, `Round` (the default), or `Square`. `DrawProgressRing` paints a full track and a round-capped arc for `fraction` of it; a fraction of one or more fills the ring. Linear gradient angles follow the same convention: `0` runs left to right and `90` top to bottom. A radial gradient's center is in composition coordinates and may sit outside the rectangle, which is how a corner glow is drawn; fade to the same color with zero alpha to avoid a gray fringe.
+
+When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:
+
+```csharp
+var composition = ImageComposition.FromImage(SvgRasterizer.ToImage(backdropSvg));
+composition.DrawText(84, 196, 650, title, titleStyle, TextWrapMode.Word, maximumLines: 3);
+```
+
+Stroked SVG circles, ellipses, arcs, rounded rectangles, and curved paths are flattened to the output resolution and outlined as one shape, so they are as smooth as fills at any stroke width. `stroke-linecap` (`butt`, `round`, `square`), `stroke-linejoin` (`miter`, `round`, `bevel`), `stroke-miterlimit`, and `stroke-dasharray` are honoured. A gradient used as a stroke paint is drawn in its first stop color.
+
+### Fonts for composed text
+
+Text drawn from a `FontSpec` (`ImageComposition.DrawText` and `TextLayoutEngine`) picks its face in this order:
+
+1. `FontSpec.FromFile(path)` — that TrueType file, always. This is the only choice that renders identically on every host, so ship the font with the application when the output must not vary.
+2. `FontSpec.FromFamily("Inter, Segoe UI, sans-serif")` — the first family of the stack that is installed, at the installed face closest to `Weight` and `Italic` (Segoe UI at 700 is Segoe UI Bold). Installed families are read from the operating system's font folders the first time a named family is requested; only TrueType outlines (`.ttf`, `.ttc`) are considered.
+3. The generic fallback for the stack — a serif, monospace, or sans-serif face known to ship with Windows, macOS, or common Linux distributions — with its bold or italic sibling when one is installed.
+
+When no real bold or italic face exists, bold is synthesized by emboldening and italic by shearing the regular face. A variable font renders its default instance; its axes are not applied.
+
+On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship a `.ttf` and use `FontSpec.FromFile`.
+
+Chart, grid, and topology PNG renderers keep resolving their theme font stack through the generic fallback only, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
+
 For user-supplied files, use `RasterImageDecoder.TryRead(...)`, `RasterImageDecoder.TryDecode(...)`, `ImageComposition.TryFromFile(...)`, or `ImageComposition.TryFromBytes(...)` when unsupported or corrupt images should be handled as a normal validation result instead of an exception.
 
 `VisualCanvasPlacement` resolves layer coordinates from a named anchor. For `TopLeft`, offsets move right and down from the top-left edge. For `BottomRight`, positive offsets are insets from the right and bottom edges, so `VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 20, 20)` places a layer 20 pixels from the bottom-right corner. Center anchors use offsets as signed nudges from the centered position.
