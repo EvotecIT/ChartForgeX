@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ChartForgeX.Raster;
 
-/// <summary>One installed TrueType face, as described by its own name and OS/2 tables.</summary>
+/// <summary>One installed OpenType face (TrueType or CFF outlines), as described by its own name and OS/2 tables.</summary>
 internal sealed class InstalledFontFace {
     public InstalledFontFace(string path, int? collectionIndex, string family, string? legacyFamily, int weight, int width, bool italic) {
         Path = path;
@@ -29,7 +29,7 @@ internal sealed class InstalledFontFace {
 }
 
 /// <summary>
-/// Indexes the TrueType faces installed on the host by family name, so a family and weight can
+/// Indexes the OpenType faces (<c>.ttf</c>, <c>.ttc</c>, <c>.otf</c>, <c>.otc</c>) installed on the host by family name, so a family and weight can
 /// be matched to a file. The font folders are read once, on the first lookup of a named family;
 /// only each file's directory, name, OS/2, and head tables are read. A host with no font
 /// folders simply has an empty catalog.
@@ -111,13 +111,17 @@ internal static class InstalledFontCatalog {
         faces.Add(face);
     }
 
+    private static bool IsFontFile(string extension) =>
+        extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) || extension.Equals(".ttc", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".otf", StringComparison.OrdinalIgnoreCase) || extension.Equals(".otc", StringComparison.OrdinalIgnoreCase);
+
     private static void AddFontFiles(string directory, List<string> files, int depth) {
         if (depth > 6 || files.Count >= MaximumFiles) return;
         try {
             if (!Directory.Exists(directory)) return;
             foreach (var file in Directory.GetFiles(directory)) {
                 var extension = Path.GetExtension(file);
-                if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".ttc", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!IsFontFile(extension)) continue;
                 if (files.Count >= MaximumFiles) return;
                 files.Add(file);
             }
@@ -127,7 +131,7 @@ internal static class InstalledFontCatalog {
         }
     }
 
-    /// <summary>Reads the faces a font file declares. A file that is not a readable glyf-outline font adds nothing.</summary>
+    /// <summary>Reads the faces a font file declares. A file without TrueType or CFF outlines adds nothing.</summary>
     internal static void ReadFaces(string path, List<InstalledFontFace> faces) {
         try {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -154,7 +158,7 @@ internal static class InstalledFontCatalog {
         var directory = Read(stream, directoryOffset, 12);
         if (directory == null) return null;
         var scaler = UInt32(directory, 0);
-        if (scaler != 0x00010000 && scaler != 0x74727565) return null;
+        if (scaler != 0x00010000 && scaler != 0x74727565 && scaler != 0x4F54544F) return null;
         var tableCount = UInt16(directory, 4);
         var records = Read(stream, directoryOffset + 12, tableCount * 16);
         if (records == null) return null;
@@ -169,7 +173,7 @@ internal static class InstalledFontCatalog {
             if (tag == "name") { nameOffset = offset; nameLength = length; }
             else if (tag == "OS/2") { os2Offset = offset; os2Length = length; }
             else if (tag == "head") headOffset = offset;
-            else if (tag == "glyf") hasOutlines = true;
+            else if (tag == "glyf" || tag == "CFF " || tag == "CFF2") hasOutlines = true;
         }
 
         if (!hasOutlines || nameOffset < 0 || nameLength < 6 || nameLength > MaximumNameTableBytes) return null;

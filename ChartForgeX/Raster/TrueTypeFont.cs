@@ -1,29 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
+/// <summary>
+/// An OpenType face read without a platform font engine: TrueType (<c>glyf</c>) or CFF/CFF2
+/// outlines, <c>kern</c> and GPOS pair kerning.
+/// </summary>
 internal sealed partial class TrueTypeFont {
     /// <summary>Shares immutable font data while giving a rendering context its own face identity.</summary>
     internal TrueTypeFont WithRenderingIdentity() => (TrueTypeFont)MemberwiseClone();
     internal const double ObliqueShear = 0.22;
+    private const string CoverageProbe = "ChartForgeX 0123456789";
     private static readonly object FontCacheLock = new();
     private static readonly Dictionary<string, TrueTypeFont?> FontCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly byte[] _data;
-    private readonly int _cmap;
+    private readonly Dictionary<string, int> _tables;
+    private readonly FontCmap _cmap;
+    private readonly CompactFontOutlines? _compact;
     private readonly int _glyf;
     private readonly int _head;
-    private readonly int _hhea;
     private readonly int _hmtx;
     private readonly int _gpos;
     private readonly int _kern;
     private readonly int _loca;
-    private readonly int _maxp;
     private readonly int _name;
+    private readonly int _os2;
     private readonly int _unitsPerEm;
     private readonly short _ascender;
     private readonly short _descender;
@@ -31,26 +37,36 @@ internal sealed partial class TrueTypeFont {
     private readonly ushort _numHMetrics;
     private readonly short _indexToLocFormat;
     private readonly int? _collectionIndex;
+    private readonly string[] _fallbackFamilies;
+    private readonly TrueTypeFont _root;
+    private readonly object _viewLock = new();
+    private Dictionary<string, TrueTypeFont>? _views;
+    private double? _xHeight;
+    private double? _capHeight;
 
-    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, int? collectionIndex) {
+    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies) {
         _data = data;
+        _tables = tables;
         _collectionIndex = collectionIndex;
-        _cmap = tables["cmap"];
-        _glyf = tables["glyf"];
+        _compact = compact;
+        _root = root ?? this;
+        _fallbackFamilies = fallbackFamilies;
+        _cmap = FontCmap.Read(data, tables["cmap"]);
+        _glyf = tables.TryGetValue("glyf", out var glyf) ? glyf : -1;
+        _loca = tables.TryGetValue("loca", out var loca) ? loca : -1;
         _head = tables["head"];
-        _hhea = tables["hhea"];
+        var hhea = tables["hhea"];
         _hmtx = tables["hmtx"];
         _gpos = tables.TryGetValue("GPOS", out var gpos) ? gpos : -1;
         _kern = tables.TryGetValue("kern", out var kern) ? kern : -1;
-        _loca = tables["loca"];
-        _maxp = tables["maxp"];
         _name = tables.TryGetValue("name", out var name) ? name : -1;
+        _os2 = tables.TryGetValue("OS/2", out var os2) && os2 + 64 <= data.Length ? os2 : -1;
         _unitsPerEm = ReadUInt16(_data, _head + 18);
         _indexToLocFormat = ReadInt16(_data, _head + 50);
-        _ascender = ReadInt16(_data, _hhea + 4);
-        _descender = ReadInt16(_data, _hhea + 6);
-        _numHMetrics = ReadUInt16(_data, _hhea + 34);
-        _numGlyphs = ReadUInt16(_data, _maxp + 4);
+        _ascender = ReadInt16(_data, hhea + 4);
+        _descender = ReadInt16(_data, hhea + 6);
+        _numHMetrics = ReadUInt16(_data, hhea + 34);
+        _numGlyphs = ReadUInt16(_data, tables["maxp"] + 4);
     }
 
     public static TrueTypeFont? TryLoadDefault() {
@@ -64,7 +80,7 @@ internal sealed partial class TrueTypeFont {
     internal static TrueTypeFont? TryLoadForFamily(string? fontFamily, out string? resolvedPath) {
         foreach (var path in CandidatePaths(fontFamily)) {
             var font = TryLoadFromPath(path);
-            if (font != null && font.HasGlyphs("ChartForgeX 0123456789")) {
+            if (font != null && font.HasGlyphs(CoverageProbe)) {
                 resolvedPath = path;
                 return font;
             }
@@ -100,7 +116,12 @@ internal sealed partial class TrueTypeFont {
             }
 
             var font = File.Exists(fullPath) ? TryLoad(File.ReadAllBytes(fullPath), collectionIndex, faceName) : null;
-            lock (FontCacheLock) FontCache[cacheKey] = font;
+            lock (FontCacheLock) {
+                // Two threads may read the same file; both get the instance cached first.
+                if (FontCache.TryGetValue(cacheKey, out var raced)) return raced;
+                FontCache[cacheKey] = font;
+            }
+
             return font;
         } catch (IOException) {
         } catch (UnauthorizedAccessException) {
@@ -131,7 +152,7 @@ internal sealed partial class TrueTypeFont {
                 for (var i = 0; i < fontCount; i++) {
                     var directoryOffset = CheckedOffset(data, ReadUInt32(data, 12 + i * 4));
                     var font = TryLoad(data, directoryOffset, (int)i);
-                    if (font != null && font.HasGlyphs("ChartForgeX 0123456789") && font.MatchesName(faceName)) return font;
+                    if (font != null && font.HasGlyphs(CoverageProbe) && font.MatchesName(faceName)) return font;
                 }
 
                 return null;
@@ -150,19 +171,74 @@ internal sealed partial class TrueTypeFont {
     private static TrueTypeFont? TryLoad(byte[] data, int directoryOffset, int? collectionIndex) {
         if (directoryOffset < 0 || directoryOffset + 12 > data.Length) return null;
         var scaler = ReadUInt32(data, directoryOffset);
-        if (scaler != 0x00010000 && scaler != 0x74727565) return null;
+        // TrueType outlines (0x00010000, 'true') or CFF outlines ('OTTO').
+        if (scaler != 0x00010000 && scaler != 0x74727565 && scaler != 0x4F54544F) return null;
         var count = ReadUInt16(data, directoryOffset + 4);
         var tables = new Dictionary<string, int>(StringComparer.Ordinal);
+        var lengths = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var i = 0; i < count; i++) {
             var record = directoryOffset + 12 + i * 16;
             if (record + 16 > data.Length) return null;
             var tag = ((char)data[record]).ToString() + (char)data[record + 1] + (char)data[record + 2] + (char)data[record + 3];
-            var offset = CheckedOffset(data, ReadUInt32(data, record + 8));
-            tables[tag] = offset;
+            tables[tag] = CheckedOffset(data, ReadUInt32(data, record + 8));
+            lengths[tag] = (int)Math.Min(int.MaxValue, ReadUInt32(data, record + 12));
         }
 
-        foreach (var required in new[] { "cmap", "glyf", "head", "hhea", "hmtx", "loca", "maxp" }) if (!tables.ContainsKey(required)) return null;
-        return new TrueTypeFont(data, tables, collectionIndex);
+        foreach (var required in new[] { "cmap", "head", "hhea", "hmtx", "maxp" }) if (!tables.ContainsKey(required)) return null;
+        if (tables.ContainsKey("glyf") && tables.ContainsKey("loca")) return new TrueTypeFont(data, tables, collectionIndex, null, null, Array.Empty<string>());
+        CompactFontOutlines? compact = null;
+        var unitsPerEm = ReadUInt16(data, tables["head"] + 18);
+        if (tables.TryGetValue("CFF ", out var cff)) compact = CompactFontOutlines.TryRead(data, cff, lengths["CFF "], cff2: false, unitsPerEm);
+        else if (tables.TryGetValue("CFF2", out var cff2)) compact = CompactFontOutlines.TryRead(data, cff2, lengths["CFF2"], cff2: true, unitsPerEm);
+        return compact == null ? null : new TrueTypeFont(data, tables, collectionIndex, compact, null, Array.Empty<string>());
+    }
+
+    /// <summary>
+    /// This face bound to the families that follow it in a CSS stack: characters it does not cover
+    /// are looked up in those families before the registered and platform fallback faces. The same
+    /// family list always returns the same instance.
+    /// </summary>
+    internal TrueTypeFont WithFallbackFamilies(IReadOnlyList<string> families) {
+        if (families.Count == 0) return _root;
+        var key = string.Join("\n", families);
+        lock (_root._viewLock) {
+            _root._views ??= new Dictionary<string, TrueTypeFont>(StringComparer.OrdinalIgnoreCase);
+            if (_root._views.TryGetValue(key, out var view)) return view;
+            var names = new string[families.Count];
+            for (var i = 0; i < names.Length; i++) names[i] = families[i];
+            view = new TrueTypeFont(_data, _tables, _collectionIndex, _compact, _root, names);
+            _root._views[key] = view;
+            return view;
+        }
+    }
+
+    /// <summary>The stack families consulted first for characters this face does not cover.</summary>
+    internal IReadOnlyList<string> FallbackFamilies => _fallbackFamilies;
+
+    /// <summary>The face as loaded from its file, without a bound fallback stack.</summary>
+    internal TrueTypeFont Root => _root;
+
+    /// <summary>The CSS weight the face declares in its OS/2 table (or its <c>head</c> style bits).</summary>
+    internal int Weight => _os2 >= 0 ? Math.Max(1, Math.Min(1000, (int)ReadUInt16(_data, _os2 + 4))) : (ReadUInt16(_data, _head + 44) & 1) != 0 ? 700 : 400;
+
+    /// <summary>True when the face declares itself italic or oblique.</summary>
+    internal bool IsItalic => _os2 >= 0 ? (ReadUInt16(_data, _os2 + 62) & 0x0201) != 0 : (ReadUInt16(_data, _head + 44) & 2) != 0;
+
+    /// <summary>True when the face draws CFF (cubic) outlines rather than TrueType ones.</summary>
+    internal bool HasCompactOutlines => _compact != null;
+
+    internal int UnitsPerEm => Math.Max(1, _unitsPerEm);
+
+    /// <summary>The x-height in font units: the OS/2 value, or the top of <c>x</c>.</summary>
+    internal double XHeight => _xHeight ??= Os2Height(86) ?? GlyphTop('x') ?? _unitsPerEm * 0.5;
+
+    /// <summary>The cap height in font units: the OS/2 value, or the top of <c>H</c>.</summary>
+    internal double CapHeight => _capHeight ??= Os2Height(88) ?? GlyphTop('H') ?? _unitsPerEm * 0.7;
+
+    private double? Os2Height(int offset) {
+        if (_os2 < 0 || ReadUInt16(_data, _os2) < 2 || !InBounds(_os2 + offset, 2)) return null;
+        var value = ReadInt16(_data, _os2 + offset);
+        return value > 0 ? value : null;
     }
 
     public double Measure(string text, double fontSize) => Measure(text, fontSize, italic: false);
@@ -200,8 +276,8 @@ internal sealed partial class TrueTypeFont {
             if (previous.HasValue) cursor += Kerning(previous.Value, glyph) * scale;
             var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, cursor, baseline), 0);
             if (contours.Count > 0) {
-                // TrueType outlines are non-zero wound: variable fonts and composites overlap their
-                // contours, and an even-odd fill would punch the overlaps out as holes.
+                // Outlines are non-zero wound: variable fonts and composites overlap their contours,
+                // and an even-odd fill would punch the overlaps out as holes.
                 canvas.FillContours(contours, color, RasterFillRule.NonZero);
                 rendered = true;
             }
@@ -212,15 +288,12 @@ internal sealed partial class TrueTypeFont {
 
         return rendered;
     }
-
     internal static double ItalicOverhang(double fontSize) => Math.Max(0.5, Math.Max(1, fontSize) * ObliqueShear);
-
-    internal string? DisplayName => FirstName(4) ?? FirstName(1) ?? FirstName(6) ?? FirstName(2);
 
     internal int? CollectionIndex => _collectionIndex;
 
     /// <summary>True when the face covers basic Latin text, which symbol and icon fonts do not.</summary>
-    internal bool IsTextFace => HasGlyphs("ChartForgeX 0123456789");
+    internal bool IsTextFace => HasGlyphs(CoverageProbe);
 
     private bool HasGlyphs(string value) {
         for (var index = 0; index < value.Length;) {
@@ -237,130 +310,13 @@ internal sealed partial class TrueTypeFont {
         return MapGlyph(codePoint) != 0;
     }
 
-    private bool MatchesName(string? faceName) {
-        if (string.IsNullOrWhiteSpace(faceName)) return true;
-        var requested = faceName!;
-        foreach (var name in ReadNames()) {
-            if (name.Equals(requested, StringComparison.OrdinalIgnoreCase)) return true;
-            if (name.IndexOf(requested, StringComparison.OrdinalIgnoreCase) >= 0) return true;
-        }
-
-        return false;
-    }
-
-    private IEnumerable<string> ReadNames() {
-        if (_name < 0 || _name + 6 > _data.Length) yield break;
-        var count = ReadUInt16(_data, _name + 2);
-        var stringOffset = _name + ReadUInt16(_data, _name + 4);
-        for (var i = 0; i < count; i++) {
-            var record = _name + 6 + i * 12;
-            if (record + 12 > _data.Length) yield break;
-            var nameId = ReadUInt16(_data, record + 6);
-            if (nameId != 1 && nameId != 2 && nameId != 4 && nameId != 6) continue;
-            var platform = ReadUInt16(_data, record);
-            var length = ReadUInt16(_data, record + 8);
-            var offset = stringOffset + ReadUInt16(_data, record + 10);
-            if (offset < 0 || length == 0 || offset + length > _data.Length) continue;
-            var value = DecodeName(platform, offset, length).Trim();
-            if (value.Length > 0) yield return value;
-        }
-    }
-
-    private string DecodeName(ushort platform, int offset, int length) {
-        if (platform == 0 || platform == 3) return Encoding.BigEndianUnicode.GetString(_data, offset, length);
-        return Encoding.ASCII.GetString(_data, offset, length);
-    }
-
-    private string? FirstName(ushort requestedNameId) {
-        if (_name < 0 || _name + 6 > _data.Length) return null;
-        var count = ReadUInt16(_data, _name + 2);
-        var stringOffset = _name + ReadUInt16(_data, _name + 4);
-        for (var i = 0; i < count; i++) {
-            var record = _name + 6 + i * 12;
-            if (record + 12 > _data.Length) return null;
-            if (ReadUInt16(_data, record + 6) != requestedNameId) continue;
-            var platform = ReadUInt16(_data, record);
-            var length = ReadUInt16(_data, record + 8);
-            var offset = stringOffset + ReadUInt16(_data, record + 10);
-            if (offset < 0 || length == 0 || offset + length > _data.Length) continue;
-            var value = DecodeName(platform, offset, length).Trim();
-            if (value.Length > 0) return value;
-        }
-
-        return null;
-    }
-
-    private double ScaleFor(double fontSize) {
+    internal double ScaleFor(double fontSize) {
         return fontSize / Math.Max(1, _unitsPerEm);
     }
 
-    private ushort MapGlyph(int codePoint) {
-        var cmapOffset = _cmap;
-        var subtableCount = ReadUInt16(_data, cmapOffset + 2);
-        var best = 0;
-        var bestScore = 0;
-        for (var i = 0; i < subtableCount; i++) {
-            var record = cmapOffset + 4 + i * 8;
-            var platform = ReadUInt16(_data, record);
-            var encoding = ReadUInt16(_data, record + 2);
-            var offset = CheckedOffset(_data, ReadUInt32(_data, record + 4));
-            var absolute = cmapOffset + offset;
-            if (absolute < 0 || absolute + 2 > _data.Length) continue;
-            var format = ReadUInt16(_data, absolute);
-            var score = (platform == 3 && encoding == 10 ? 4 : platform == 3 && encoding == 1 ? 3 : platform == 0 ? 2 : 1);
-            if ((format == 4 || format == 12) && score > bestScore) {
-                best = absolute;
-                bestScore = score;
-            }
-        }
+    internal ushort MapGlyph(int codePoint) => _cmap.Map(codePoint);
 
-        if (best == 0) return 0;
-        var selectedFormat = ReadUInt16(_data, best);
-        return selectedFormat == 12 ? MapFormat12(best, codePoint) : MapFormat4(best, codePoint);
-    }
-
-    private ushort MapFormat4(int table, int code) {
-        if (code > ushort.MaxValue) {
-            return 0;
-        }
-        var segCount = ReadUInt16(_data, table + 6) / 2;
-        var endCodes = table + 14;
-        var startCodes = endCodes + segCount * 2 + 2;
-        var idDeltas = startCodes + segCount * 2;
-        var idRangeOffsets = idDeltas + segCount * 2;
-
-        for (var i = 0; i < segCount; i++) {
-            var end = ReadUInt16(_data, endCodes + i * 2);
-            if (code > end) continue;
-            var start = ReadUInt16(_data, startCodes + i * 2);
-            if (code < start) return 0;
-            var delta = ReadInt16(_data, idDeltas + i * 2);
-            var rangeOffset = ReadUInt16(_data, idRangeOffsets + i * 2);
-            if (rangeOffset == 0) return (ushort)((code + delta) & 0xffff);
-            var glyphOffset = idRangeOffsets + i * 2 + rangeOffset + (code - start) * 2;
-            if (glyphOffset < 0 || glyphOffset + 2 > _data.Length) return 0;
-            var glyph = ReadUInt16(_data, glyphOffset);
-            return glyph == 0 ? (ushort)0 : (ushort)((glyph + delta) & 0xffff);
-        }
-
-        return 0;
-    }
-
-    private ushort MapFormat12(int table, int code) {
-        var groups = ReadUInt32(_data, table + 12);
-        var groupOffset = table + 16;
-        for (var i = 0; i < groups; i++) {
-            var start = ReadUInt32(_data, groupOffset + i * 12);
-            var end = ReadUInt32(_data, groupOffset + i * 12 + 4);
-            if (code < start || code > end) continue;
-            var glyph = ReadUInt32(_data, groupOffset + i * 12 + 8) + code - start;
-            return glyph > ushort.MaxValue ? (ushort)0 : (ushort)glyph;
-        }
-
-        return 0;
-    }
-
-    private static int ReadCodePoint(string value, ref int index) {
+    internal static int ReadCodePoint(string value, ref int index) {
         var first = value[index++];
         if (!char.IsHighSurrogate(first) || index >= value.Length || !char.IsLowSurrogate(value[index])) {
             return first;
@@ -368,12 +324,13 @@ internal sealed partial class TrueTypeFont {
         return char.ConvertToUtf32(first, value[index++]);
     }
 
-    private int AdvanceWidth(ushort glyph) {
-        if (glyph < _numHMetrics) return ReadUInt16(_data, _hmtx + glyph * 4);
-        return ReadUInt16(_data, _hmtx + (_numHMetrics - 1) * 4);
+    internal int AdvanceWidth(ushort glyph) {
+        if (_numHMetrics == 0) return 0;
+        var record = _hmtx + Math.Min(glyph, _numHMetrics - 1) * 4;
+        return InBounds(record, 2) ? ReadUInt16(_data, record) : 0;
     }
 
-    private int Kerning(ushort left, ushort right) {
+    internal int Kerning(ushort left, ushort right) {
         return KernPairAdjustment(left, right) + GposPairAdjustment(left, right);
     }
 
@@ -548,182 +505,6 @@ internal sealed partial class TrueTypeFont {
         return InBounds(offset, 4) && _data[offset] == tag[0] && _data[offset + 1] == tag[1] && _data[offset + 2] == tag[2] && _data[offset + 3] == tag[3];
     }
 
-    private List<List<ChartPoint>> ReadGlyphContours(ushort glyph, FontTransform transform, int depth) {
-        var contours = new List<List<ChartPoint>>();
-        if (glyph == 0 || glyph >= _numGlyphs || depth > 8) return contours;
-        var glyphStart = GlyphOffset(glyph);
-        var glyphEnd = GlyphOffset((ushort)(glyph + 1));
-        if (glyphStart == glyphEnd) return contours;
-        var offset = _glyf + glyphStart;
-        if (offset + 10 > _data.Length) return contours;
-        var contourCount = ReadInt16(_data, offset);
-        if (contourCount < 0) {
-            ReadCompositeGlyphContours(offset, transform, depth, contours);
-            return contours;
-        }
-
-        if (contourCount <= 0) return contours;
-
-        var endPts = new ushort[contourCount];
-        for (var i = 0; i < contourCount; i++) endPts[i] = ReadUInt16(_data, offset + 10 + i * 2);
-        var pointCount = endPts[contourCount - 1] + 1;
-        var instructionLengthOffset = offset + 10 + contourCount * 2;
-        var instructionLength = ReadUInt16(_data, instructionLengthOffset);
-        var p = instructionLengthOffset + 2 + instructionLength;
-        var flags = new byte[pointCount];
-        for (var i = 0; i < pointCount; i++) {
-            var flag = _data[p++];
-            flags[i] = flag;
-            if ((flag & 8) == 0) continue;
-            var repeat = _data[p++];
-            for (var r = 0; r < repeat && i + 1 < pointCount; r++) flags[++i] = flag;
-        }
-
-        var xs = new short[pointCount];
-        DecodeCoordinates(_data, flags, xs, ref p, true);
-        var ys = new short[pointCount];
-        DecodeCoordinates(_data, flags, ys, ref p, false);
-
-        var start = 0;
-        for (var c = 0; c < contourCount; c++) {
-            var end = endPts[c];
-            var points = new List<GlyphPoint>();
-            for (var i = start; i <= end; i++) {
-                var point = transform.Apply(xs[i], ys[i]);
-                points.Add(new GlyphPoint(point.X, point.Y, (flags[i] & 1) != 0));
-            }
-
-            AddFlattenedContour(points, contours);
-            start = end + 1;
-        }
-
-        return contours;
-    }
-
-    private void ReadCompositeGlyphContours(int glyphOffset, FontTransform transform, int depth, List<List<ChartPoint>> contours) {
-        const ushort argWords = 1;
-        const ushort argsAreXy = 2;
-        const ushort haveScale = 8;
-        const ushort moreComponents = 32;
-        const ushort haveXyScale = 64;
-        const ushort haveTwoByTwo = 128;
-
-        var p = glyphOffset + 10;
-        ushort flags;
-        do {
-            if (p + 4 > _data.Length) return;
-            flags = ReadUInt16(_data, p);
-            var componentGlyph = ReadUInt16(_data, p + 2);
-            p += 4;
-            double arg1;
-            double arg2;
-            if ((flags & argWords) != 0) {
-                if (p + 4 > _data.Length) return;
-                arg1 = ReadInt16(_data, p);
-                arg2 = ReadInt16(_data, p + 2);
-                p += 4;
-            } else {
-                if (p + 2 > _data.Length) return;
-                arg1 = (sbyte)_data[p];
-                arg2 = (sbyte)_data[p + 1];
-                p += 2;
-            }
-
-            var dx = (flags & argsAreXy) != 0 ? arg1 : 0;
-            var dy = (flags & argsAreXy) != 0 ? arg2 : 0;
-            var a = 1.0;
-            var b = 0.0;
-            var c = 0.0;
-            var d = 1.0;
-            if ((flags & haveScale) != 0) {
-                if (p + 2 > _data.Length) return;
-                a = d = ReadF2Dot14(_data, p);
-                p += 2;
-            } else if ((flags & haveXyScale) != 0) {
-                if (p + 4 > _data.Length) return;
-                a = ReadF2Dot14(_data, p);
-                d = ReadF2Dot14(_data, p + 2);
-                p += 4;
-            } else if ((flags & haveTwoByTwo) != 0) {
-                if (p + 8 > _data.Length) return;
-                a = ReadF2Dot14(_data, p);
-                b = ReadF2Dot14(_data, p + 2);
-                c = ReadF2Dot14(_data, p + 4);
-                d = ReadF2Dot14(_data, p + 6);
-                p += 8;
-            }
-
-            contours.AddRange(ReadGlyphContours(componentGlyph, transform.Compose(a, b, c, d, dx, dy), depth + 1));
-        } while ((flags & moreComponents) != 0);
-    }
-
-    private int GlyphOffset(ushort glyph) {
-        if (_indexToLocFormat == 0) return ReadUInt16(_data, _loca + glyph * 2) * 2;
-        return CheckedOffset(_data, ReadUInt32(_data, _loca + glyph * 4));
-    }
-
-    private static void DecodeCoordinates(byte[] data, byte[] flags, short[] values, ref int p, bool xAxis) {
-        var shortFlag = xAxis ? 2 : 4;
-        var sameOrPositiveFlag = xAxis ? 16 : 32;
-        var current = 0;
-        for (var i = 0; i < flags.Length; i++) {
-            var flag = flags[i];
-            int delta;
-            if ((flag & shortFlag) != 0) {
-                delta = data[p++];
-                if ((flag & sameOrPositiveFlag) == 0) delta = -delta;
-            } else if ((flag & sameOrPositiveFlag) != 0) {
-                delta = 0;
-            } else {
-                delta = ReadInt16(data, p);
-                p += 2;
-            }
-
-            current += delta;
-            values[i] = (short)current;
-        }
-    }
-
-    private static void AddFlattenedContour(List<GlyphPoint> source, List<List<ChartPoint>> contours) {
-        if (source.Count == 0) return;
-        var result = new List<ChartPoint>();
-        var last = source[source.Count - 1];
-        var first = source[0];
-        var current = first.OnCurve ? first : last.OnCurve ? last : Mid(last, first);
-        result.Add(current.Point);
-        var index = first.OnCurve ? 1 : 0;
-
-        while (index < source.Count) {
-            var point = source[index % source.Count];
-            if (point.OnCurve) {
-                result.Add(point.Point);
-                current = point;
-                index++;
-                continue;
-            }
-
-            var next = source[(index + 1) % source.Count];
-            var end = next.OnCurve ? next : Mid(point, next);
-            FlattenQuadratic(current, point, end, result);
-            current = end;
-            index += next.OnCurve ? 2 : 1;
-        }
-
-        if (result.Count >= 3) contours.Add(result);
-    }
-
-    private static void FlattenQuadratic(GlyphPoint start, GlyphPoint control, GlyphPoint end, List<ChartPoint> output) {
-        // Sized to the glyph on the page: a small letter needs two or three chords per curve, a headline more.
-        var steps = Math.Max(2, ChartCurveFlattening.QuadraticSegments(start.Point, control.Point, end.Point, 1));
-        for (var i = 1; i <= steps; i++) {
-            var t = i / (double)steps;
-            var mt = 1 - t;
-            output.Add(new ChartPoint(mt * mt * start.X + 2 * mt * t * control.X + t * t * end.X, mt * mt * start.Y + 2 * mt * t * control.Y + t * t * end.Y));
-        }
-    }
-
-    private static GlyphPoint Mid(GlyphPoint left, GlyphPoint right) => new((left.X + right.X) / 2.0, (left.Y + right.Y) / 2.0, true);
-
     private static ushort ReadUInt16(byte[] data, int offset) => (ushort)((data[offset] << 8) | data[offset + 1]);
     private static short ReadInt16(byte[] data, int offset) => (short)ReadUInt16(data, offset);
     private static double ReadF2Dot14(byte[] data, int offset) => ReadInt16(data, offset) / 16384.0;
@@ -743,49 +524,5 @@ internal sealed partial class TrueTypeFont {
         }
 
         return path;
-    }
-
-    private readonly struct FontTransform {
-        public FontTransform(double xx, double xy, double yx, double yy, double dx, double dy) {
-            Xx = xx;
-            Xy = xy;
-            Yx = yx;
-            Yy = yy;
-            Dx = dx;
-            Dy = dy;
-        }
-
-        private double Xx { get; }
-        private double Xy { get; }
-        private double Yx { get; }
-        private double Yy { get; }
-        private double Dx { get; }
-        private double Dy { get; }
-
-        public ChartPoint Apply(double x, double y) => new(Dx + Xx * x + Xy * y, Dy + Yx * x + Yy * y);
-
-        public FontTransform Compose(double xx, double xy, double yx, double yy, double dx, double dy) {
-            return new FontTransform(
-                Xx * xx + Xy * yx,
-                Xx * xy + Xy * yy,
-                Yx * xx + Yy * yx,
-                Yx * xy + Yy * yy,
-                Dx + Xx * dx + Xy * dy,
-                Dy + Yx * dx + Yy * dy);
-        }
-    }
-
-    private readonly struct GlyphPoint {
-        public GlyphPoint(double x, double y, bool onCurve) {
-            X = x;
-            Y = y;
-            OnCurve = onCurve;
-            Point = new ChartPoint(x, y);
-        }
-
-        public double X { get; }
-        public double Y { get; }
-        public bool OnCurve { get; }
-        public ChartPoint Point { get; }
     }
 }

@@ -15,8 +15,8 @@ namespace ChartForgeX.Typography;
 /// are chosen by the same weight and slant matching; installed faces of that family are not mixed
 /// in. Registering a generic family name (<c>sans-serif</c>, <c>serif</c>, <c>monospace</c>) sets the
 /// face that stacks ending in that keyword fall back to, and a registered <c>sans-serif</c> is also
-/// the last resort on a host with no usable fonts, such as a bare Linux container. Only TrueType
-/// outlines (<c>.ttf</c>, <c>.ttc</c>) are supported. All members are thread-safe.
+/// the last resort on a host with no usable fonts, such as a bare Linux container. TrueType and CFF
+/// outlines are supported (<c>.ttf</c>, <c>.otf</c>, <c>.ttc</c>, <c>.otc</c>). All members are thread-safe.
 /// </remarks>
 public static class FontRegistry {
     private static readonly object Gate = new();
@@ -34,34 +34,34 @@ public static class FontRegistry {
 
     /// <summary>Registers one face of a font file under a family name.</summary>
     /// <param name="family">The family name stacks will use, such as <c>Inter</c> or <c>sans-serif</c>.</param>
-    /// <param name="path">The TrueType font or collection file.</param>
+    /// <param name="path">The OpenType font or collection file (<c>.ttf</c>, <c>.otf</c>, <c>.ttc</c>, <c>.otc</c>).</param>
     /// <param name="weight">The CSS weight of this face, 1 through 1000.</param>
     /// <param name="italic">True when this face is the italic of the family.</param>
-    /// <param name="collectionIndex">The face within a <c>.ttc</c> collection; the first text face when omitted.</param>
-    /// <exception cref="ArgumentException">The family is empty or the file is not a readable TrueType text font.</exception>
+    /// <param name="collectionIndex">The face within a <c>.ttc</c> or <c>.otc</c> collection; the first text face when omitted.</param>
+    /// <exception cref="ArgumentException">The family is empty or the file is not a readable OpenType text font.</exception>
     public static void Register(string family, string path, int weight = 400, bool italic = false, int? collectionIndex = null) {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("Font family must not be empty.", nameof(family));
         if (weight < 1 || weight > 1000) throw new ArgumentOutOfRangeException(nameof(weight), weight, "Font weight must be from 1 through 1000.");
         var fullPath = FullPath(path);
         var font = TrueTypeFont.TryLoadFromPath(fullPath, collectionIndex);
-        if (font == null || !font.IsTextFace) throw new ArgumentException("The file is not a readable TrueType text font: " + path, nameof(path));
+        if (font == null || !font.IsTextFace) throw new ArgumentException("The file is not a readable OpenType text font: " + path, nameof(path));
         Add(new[] { new InstalledFontFace(fullPath, font.CollectionIndex, family.Trim(), null, weight, 5, italic) });
     }
 
     /// <summary>Registers every face of a font file under the family, weight, and slant the file itself declares.</summary>
     /// <returns>The number of faces registered.</returns>
-    /// <exception cref="ArgumentException">The file declares no readable TrueType face.</exception>
+    /// <exception cref="ArgumentException">The file declares no readable OpenType face.</exception>
     public static int RegisterFile(string path) {
         var faces = new List<InstalledFontFace>();
         InstalledFontCatalog.ReadFaces(FullPath(path), faces);
         faces.RemoveAll(face => TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex)?.IsTextFace != true);
-        if (faces.Count == 0) throw new ArgumentException("The file declares no readable TrueType text face: " + path, nameof(path));
+        if (faces.Count == 0) throw new ArgumentException("The file declares no readable OpenType text face: " + path, nameof(path));
         Add(faces);
         return faces.Count;
     }
 
-    /// <summary>Registers every readable <c>.ttf</c> and <c>.ttc</c> face in a folder and its subfolders under their own family names.</summary>
-    /// <returns>The number of faces registered; files that are not readable TrueType text fonts are skipped.</returns>
+    /// <summary>Registers every readable <c>.ttf</c>, <c>.otf</c>, <c>.ttc</c>, and <c>.otc</c> face in a folder and its subfolders under their own family names.</summary>
+    /// <returns>The number of faces registered; files that are not readable OpenType text fonts are skipped.</returns>
     public static int RegisterDirectory(string directory) {
         if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException("Font directory must not be empty.", nameof(directory));
         if (!Directory.Exists(directory)) throw new DirectoryNotFoundException("Font directory was not found: " + directory);
