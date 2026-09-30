@@ -185,6 +185,16 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the CSS class prefix.</summary>
     public string? CssClassPrefix { get; set; } = "cfx-topology";
 
+    /// <summary>
+    /// Gets or sets an optional scope put in front of every SVG id the render emits (title, description, filters, arrow
+    /// and endpoint markers, groups, nodes, edges, callouts, motion paths, and the <c>cfxi-</c> ids of icon artwork
+    /// imported from SVG packs) and of the CSS rules scoped to the root id, so several renders of the same chart can
+    /// share one document. Null or white space (the default) keeps the ids based on the chart id alone. Class names and
+    /// <c>data-*</c> attributes do not change, and ids inside hand-written <see cref="TopologyIconArtwork.InlineSvg"/>
+    /// artwork without the <c>cfxi-</c> prefix are not scoped.
+    /// </summary>
+    public string? IdScope { get; set; }
+
     /// <summary>Gets or sets an optional focused topology view.</summary>
     public TopologyView? View { get; set; }
 

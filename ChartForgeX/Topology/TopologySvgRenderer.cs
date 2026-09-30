@@ -47,7 +47,7 @@ public sealed partial class TopologySvgRenderer {
     internal string RenderPrepared(TopologyChart prepared, TopologyRenderOptions options, double requestedWidth, double requestedHeight) {
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var prefix = NormalizeCssClassPrefix(options.CssClassPrefix, "cfx-topology");
-        var id = SanitizeId(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!);
+        var id = TopologySvgIds.Root(prepared, options);
         var sourceW = prepared.Viewport.Width;
         var sourceH = prepared.Viewport.Height;
         var w = options.FitContentToViewport ? requestedWidth : sourceW;
@@ -355,7 +355,7 @@ public sealed partial class TopologySvgRenderer {
             var parent = AddOptionalLink(layer, group.Href, prefix, options);
             var groupElement = parent.Element("g", element => {
                 element
-                    .Attribute("id", SafeElementId(chart.Id, "group", group.Id))
+                    .Attribute("id", TopologySvgIds.Element(chart, options, "group", group.Id))
                     .Class(prefix + "__group " + prefix + "__group--" + CssToken(group.Status.ToString()) + (selected ? " " + prefix + "--selected" : string.Empty) + highlight.CssClass(prefix, highlighted) + CustomCssClasses(group.CssClass))
                     .Attribute("data-cfx-role", "topology-group")
                     .Attribute("data-group-id", group.Id)
@@ -525,7 +525,7 @@ public sealed partial class TopologySvgRenderer {
             var parent = AddOptionalLink(layer, edge.Href, prefix, options);
             var edgeGroup = parent.Element("g", group => {
                 group
-                    .Attribute("id", SafeElementId(chart.Id, "edge", edge.Id))
+                    .Attribute("id", TopologySvgIds.Element(chart, options, "edge", edge.Id))
                     .Class(prefix + "__edge-wrap " + prefix + "__edge-wrap--" + CssToken(edge.Status.ToString()) + (edge.IsMuted ? " " + prefix + "__edge-wrap--muted" : string.Empty) + (selected ? " " + prefix + "--selected" : string.Empty) + highlight.CssClass(prefix, highlighted) + CustomCssClasses(edge.CssClass))
                     .Attribute("data-cfx-role", "topology-edge")
                     .Attribute("data-edge-id", edge.Id)

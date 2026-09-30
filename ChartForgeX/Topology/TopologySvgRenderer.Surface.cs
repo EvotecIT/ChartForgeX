@@ -23,7 +23,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("rx", IsMonitoringDashboardStyle(options) ? 12 : 14)
             .Attribute("fill", theme.Card)
             .Attribute("stroke", theme.Border)
-            .Attribute("filter", "url(#" + SanitizeId(chart.Id ?? "topology") + "-shadow)"));
+            .Attribute("filter", "url(#" + TopologySvgIds.Root(chart, options) + "-shadow)"));
         if (options.CanvasSurfaceStyle == TopologyCanvasSurfaceStyle.PanelGrid) AddCanvasGrid(layer, x, y, width, height, theme);
         root.AddElement(layer);
     }

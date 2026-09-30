@@ -27,7 +27,7 @@ public sealed partial class TopologySvgRenderer {
             if (displayMode == TopologyNodeDisplayMode.Hidden) continue;
             var group = parent.Element("g", element => {
                 element
-                    .Attribute("id", SafeElementId(chart.Id, "node", node.Id))
+                    .Attribute("id", TopologySvgIds.Element(chart, options, "node", node.Id))
                     .Class(prefix + "__node " + prefix + "__node--" + CssToken(node.Kind.ToString()) + " " + prefix + "__node--" + CssToken(node.Status.ToString()) + " " + prefix + "__node--" + CssToken(displayMode.ToString()) + (selected ? " " + prefix + "--selected" : string.Empty) + highlight.CssClass(prefix, highlighted) + CustomCssClasses(node.CssClass))
                     .Attribute("data-cfx-role", "topology-node")
                     .Attribute("data-node-id", node.Id)
@@ -64,7 +64,7 @@ public sealed partial class TopologySvgRenderer {
             });
 
             if (options.IncludeTooltips && !string.IsNullOrWhiteSpace(node.Tooltip)) group.Element("title", title => title.Text(node.Tooltip!));
-            group.AddElement(BuildNodeBody(node, prefix, theme, color, options, chart.Id, selected));
+            group.AddElement(BuildNodeBody(node, prefix, theme, color, options, TopologySvgIds.Root(chart, options), selected));
             group.AddElement(BuildNodeBadge(node, prefix, theme, color, displayMode, options));
         }
 
@@ -77,7 +77,7 @@ public sealed partial class TopologySvgRenderer {
         return !string.IsNullOrWhiteSpace(icon?.Color) ? icon!.Color!.Trim() : theme.StatusColor(node.Status);
     }
 
-    private static SvgElement BuildNodeBody(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyRenderOptions options, string? chartId, bool selected) {
+    private static SvgElement BuildNodeBody(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyRenderOptions options, string rootId, bool selected) {
         var displayMode = EffectiveNodeDisplayMode(node, options);
         var body = new SvgElement("g")
             .Class(prefix + "__node-body")
@@ -122,7 +122,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("fill", color)
                 .Attribute("stroke", theme.Background)
                 .Attribute("stroke-width", selected ? 4 : 3)
-                .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
+                .Attribute("filter", "url(#" + rootId + "-shadow)"));
             DrawNodeIcon(body, node, prefix, theme, color, displayMode, options);
             return body;
         }
@@ -141,7 +141,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("stroke", color)
             .Attribute("stroke-width", selected ? 2.8 : 1.5)
             .Attribute("data-node-surface-style", EffectiveNodeSurfaceStyle(options).ToString())
-            .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
+            .Attribute("filter", "url(#" + rootId + "-shadow)"));
         if (UseNodeAccentBand(displayMode, options)) {
             body.Element("rect", rect => rect
                 .Class(prefix + "__node-accent-band")
@@ -239,7 +239,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-node-id", node.Id)
             .Attribute("data-node-surface-style", "Artwork");
         var artwork = ResolveRenderableNodeArtwork(node, options);
-        if (TryDrawIconArtwork(body, artwork, prefix, node.X, node.Y, node.Width, node.Height)) {
+        if (TryDrawIconArtwork(body, artwork, prefix, options, node.X, node.Y, node.Width, node.Height)) {
             return body;
         }
 
@@ -405,7 +405,7 @@ public sealed partial class TopologySvgRenderer {
             .Class(prefix + "__node-icon")
             .Attribute("data-node-kind", node.Kind.ToString()));
         var artwork = ResolveRenderableNodeArtwork(node, options);
-        if (TryDrawIconArtwork(icon, artwork, prefix, cx, cy, size)) return;
+        if (TryDrawIconArtwork(icon, artwork, prefix, options, cx, cy, size)) return;
         var shape = EffectiveIconShape(node, options);
         if (shape == TopologyIconShape.Cloud) {
             var cloudStroke = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? "#FFFFFF" : color;
@@ -459,11 +459,11 @@ public sealed partial class TopologySvgRenderer {
         }
     }
 
-    private static bool TryDrawIconArtwork(SvgElement parent, TopologyIconArtwork? artwork, string prefix, double cx, double cy, double size) {
-        return TryDrawIconArtwork(parent, artwork, prefix, cx - size / 2, cy - size / 2, size, size);
+    private static bool TryDrawIconArtwork(SvgElement parent, TopologyIconArtwork? artwork, string prefix, TopologyRenderOptions options, double cx, double cy, double size) {
+        return TryDrawIconArtwork(parent, artwork, prefix, options, cx - size / 2, cy - size / 2, size, size);
     }
 
-    private static bool TryDrawIconArtwork(SvgElement parent, TopologyIconArtwork? artwork, string prefix, double x, double y, double width, double height) {
+    private static bool TryDrawIconArtwork(SvgElement parent, TopologyIconArtwork? artwork, string prefix, TopologyRenderOptions options, double x, double y, double width, double height) {
         if (artwork == null || !artwork.IsSafe) return false;
         if (artwork.HasSvgBody) {
             parent.Element("svg", svg => svg
@@ -475,7 +475,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("height", height)
                 .Attribute("viewBox", artwork.SvgViewBox)
                 .Attribute("preserveAspectRatio", artwork.PreserveAspectRatio)
-                .Raw(artwork.SvgBody));
+                .Raw(TopologySvgIds.ScopeIconArtwork(artwork.SvgBody!, options)));
             return true;
         }
 

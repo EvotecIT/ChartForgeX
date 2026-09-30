@@ -200,6 +200,11 @@ var metricSvg = chart.ToSvg(new TopologyRenderOptions {
     LegendMode = TopologyLegendMode.Merge
 });
 
+// The same chart twice in one page: scope every SVG id (markers, filters, groups, nodes, edges, and the ids of
+// icon artwork imported from SVG packs; ids in hand-written inline artwork are not rewritten).
+var overviewPanel = chart.ToSvg("overview");
+var detailPanel = chart.ToSvg("detail", new TopologyRenderOptions { View = TopologyView.AroundNode("api", depth: 1) });
+
 var vendorCatalog = TopologyIconCatalog.Default()
     .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam")
         .WithMetadata("website", "https://www.veeam.com")

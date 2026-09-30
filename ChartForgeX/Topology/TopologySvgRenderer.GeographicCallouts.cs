@@ -22,7 +22,7 @@ public sealed partial class TopologySvgRenderer {
             var parent = AddOptionalLink(layer, group.Href, prefix, options);
             var element = parent.Element("g", item => {
                 item
-                    .Attribute("id", SafeElementId(chart.Id, "geo-callout", group.Id))
+                    .Attribute("id", TopologySvgIds.Element(chart, options, "geo-callout", group.Id))
                     .Class(prefix + "__geo-callout " + prefix + "__group " + prefix + "__group--" + CssToken(group.Status.ToString()) + (selected ? " " + prefix + "--selected" : string.Empty) + highlight.CssClass(prefix, highlighted) + CustomCssClasses(group.CssClass))
                     .Attribute("data-cfx-role", "topology-group")
                     .Attribute("data-cfx-visual-role", "topology-geographic-callout")
@@ -50,13 +50,13 @@ public sealed partial class TopologySvgRenderer {
             });
 
             if (options.IncludeTooltips && !string.IsNullOrWhiteSpace(group.Tooltip)) element.Element("title", title => title.Text(group.Tooltip!));
-            AddGeographicCalloutBody(element, callout, prefix, theme, selected, chart.Id);
+            AddGeographicCalloutBody(element, callout, prefix, theme, selected, TopologySvgIds.Root(chart, options));
         }
 
         root.AddElement(layer);
     }
 
-    private static void AddGeographicCalloutBody(SvgElement element, TopologyGeographicCallout callout, string prefix, TopologyTheme theme, bool selected, string? chartId) {
+    private static void AddGeographicCalloutBody(SvgElement element, TopologyGeographicCallout callout, string prefix, TopologyTheme theme, bool selected, string rootId) {
         var x = callout.X;
         var y = callout.Y;
         var leader = TopologyGeographicCalloutPrimitives.LeaderPoints(callout);
@@ -108,7 +108,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("stroke", callout.AccentColor)
             .Attribute("stroke-width", selected ? TopologyGeographicCalloutPrimitives.CardSelectedStrokeWidth : TopologyGeographicCalloutPrimitives.CardStrokeWidth)
             .Attribute("stroke-opacity", selected ? TopologyGeographicCalloutPrimitives.CardSelectedStrokeOpacity : TopologyGeographicCalloutPrimitives.CardStrokeOpacity)
-            .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
+            .Attribute("filter", "url(#" + rootId + "-shadow)"));
         element.Element("rect", rect => rect
             .Attribute("x", x)
             .Attribute("y", y)

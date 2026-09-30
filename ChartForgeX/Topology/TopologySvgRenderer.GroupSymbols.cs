@@ -49,7 +49,7 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static bool AddGroupIconSymbol(SvgElement parent, TopologyIconDefinition icon, double cx, double cy, string color, string prefix, TopologyRenderOptions options) {
-        if (TryDrawIconArtwork(parent, icon.Artwork, prefix, cx, cy, GroupSymbolArtworkSize)) return true;
+        if (TryDrawIconArtwork(parent, icon.Artwork, prefix, options, cx, cy, GroupSymbolArtworkSize)) return true;
         if (icon.Shape == TopologyIconShape.Cloud) {
             parent.Element("circle", circle => circle
                 .Attribute("cx", cx + GroupSymbolCloudLeftOffsetX)

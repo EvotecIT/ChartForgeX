@@ -18,7 +18,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-cfx-motion-source", plan.SourceId)
             .Attribute("data-cfx-motion-kind", "route-pulse");
         var duration = MotionDuration(options.Motion!);
-        var tourPathId = SafeElementId(chart.Id, "motion-tour", plan.SourceId);
+        var tourPathId = TopologySvgIds.Element(chart, options, "motion-tour", plan.SourceId);
         layer.Element("path", path => path
             .Attribute("id", tourPathId)
             .Class(prefix + "__motion-tour-path")
@@ -32,7 +32,7 @@ public sealed partial class TopologySvgRenderer {
             var edge = entry.Edge;
             var points = EdgePoints(chart, edge, nodes);
             var color = MotionColor(entry, plan, options, theme);
-            var pathId = SafeElementId(chart.Id, "motion-route", edge.Id + "-" + index.ToString(CultureInfo.InvariantCulture));
+            var pathId = TopologySvgIds.Element(chart, options, "motion-route", edge.Id + "-" + index.ToString(CultureInfo.InvariantCulture));
             layer.Element("path", path => {
                 path
                     .Attribute("id", pathId)
@@ -68,7 +68,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-cfx-motion-source", plan.SourceId)
             .Attribute("data-cfx-motion-kind", "route-pulse");
         var duration = MotionDuration(options.Motion!);
-        var tourPathId = SafeElementId(chart.Id, "motion-tour", plan.SourceId);
+        var tourPathId = TopologySvgIds.Element(chart, options, "motion-tour", plan.SourceId);
         layer.Element("circle", circle => {
             circle
                 .Class(prefix + "__motion-marker")

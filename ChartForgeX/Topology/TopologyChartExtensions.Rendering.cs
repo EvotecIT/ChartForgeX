@@ -16,6 +16,22 @@ public static partial class TopologyChartExtensions {
     public static string ToSvg(this TopologyChart chart, TopologyRenderOptions? options = null) => new TopologySvgRenderer().Render(chart, options);
 
     /// <summary>
+    /// Renders the topology chart to SVG with every SVG id scoped, so several renders of the same chart can be embedded
+    /// in one document (see <see cref="TopologyRenderOptions.IdScope"/>).
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="idScope">A caller-provided scope put in front of every SVG id.</param>
+    /// <param name="options">Optional render options; null uses the options carried by the chart. They are not modified.</param>
+    /// <returns>Complete SVG markup.</returns>
+    public static string ToSvg(this TopologyChart chart, string idScope, TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        if (string.IsNullOrWhiteSpace(idScope)) throw new ArgumentException("The id scope must not be empty.", nameof(idScope));
+        var scoped = chart.ResolveRenderOptions(options).Clone();
+        scoped.IdScope = idScope;
+        return new TopologySvgRenderer().Render(chart, scoped);
+    }
+
+    /// <summary>
     /// Renders the topology chart to an HTML fragment.
     /// </summary>
     /// <param name="chart">The topology chart.</param>

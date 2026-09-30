@@ -73,7 +73,7 @@ public sealed partial class TopologySvgRenderer {
                     var iconDefinition = ResolveNodeIcon(legendNode, options);
                     if (iconDefinition != null) group.Attribute("data-legend-icon-shape", iconDefinition.Shape.ToString());
                     var artwork = iconDefinition?.Artwork;
-                    if (!TryDrawIconArtwork(group, artwork, prefix, itemX + 11, markerCenterY, 18) && !AddInfrastructureGlyph(group, legendNode, itemX + 11, markerCenterY, color, options)) {
+                    if (!TryDrawIconArtwork(group, artwork, prefix, options, itemX + 11, markerCenterY, 18) && !AddInfrastructureGlyph(group, legendNode, itemX + 11, markerCenterY, color, options)) {
                         group.Element("text", text => text
                             .Attribute("x", itemX + 11)
                             .Attribute("y", markerCenterY)
