@@ -125,8 +125,7 @@ public sealed partial class PngChartRenderer {
                 new ChartPoint(cx - radius * 0.82, cy - radius * 0.55)
             }, color);
         } else if (shape == ChartPictorialShape.Check) {
-            c.DrawLine(cx - radius * 0.72, cy - radius * 0.02, cx - radius * 0.22, cy + radius * 0.52, color, Math.Max(2, radius * 0.34));
-            c.DrawLine(cx - radius * 0.22, cy + radius * 0.52, cx + radius * 0.76, cy - radius * 0.56, color, Math.Max(2, radius * 0.34));
+            c.DrawPolyline(new[] { new ChartPoint(cx - radius * 0.72, cy - radius * 0.02), new ChartPoint(cx - radius * 0.22, cy + radius * 0.52), new ChartPoint(cx + radius * 0.76, cy - radius * 0.56) }, color, Math.Max(2, radius * 0.34));
         } else if (shape == ChartPictorialShape.Person) {
             c.DrawCircle(cx, cy - radius * 0.48, radius * 0.34, color);
             c.FillRoundedRect(cx - radius * 0.54, cy - radius * 0.05, radius * 1.08, radius * 0.92, radius * 0.36, color);

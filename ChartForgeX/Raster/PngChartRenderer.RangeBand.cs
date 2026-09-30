@@ -27,10 +27,8 @@ public sealed partial class PngChartRenderer {
         DrawPngLinePath(c, upper, PngStrokeHalo(color), ChartVisualPrimitives.RangeBandPngHaloStrokeWidth);
         DrawPngLinePath(c, lower, PngStrokeHalo(color), ChartVisualPrimitives.RangeBandPngHaloStrokeWidth);
         var boundary = ApplyOpacity(color, ChartVisualPrimitives.RangeBandBoundaryOpacity);
-        for (var i = 1; i < upper.Count; i++) {
-            c.DrawLine(upper[i - 1].X, upper[i - 1].Y, upper[i].X, upper[i].Y, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
-            c.DrawLine(lower[i - 1].X, lower[i - 1].Y, lower[i].X, lower[i].Y, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
-        }
+        c.DrawPolyline(upper, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
+        c.DrawPolyline(lower, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
 
         if (ShouldDrawDataLabels(chart, series)) {
             var reserved = new List<ChartLabelBounds>();

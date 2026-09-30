@@ -38,7 +38,7 @@ public sealed partial class PngChartRenderer {
 
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
-            if (chart.Options.ShowGrid) c.DrawLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.TimelineGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
+            if (chart.Options.ShowGrid) c.DrawLine(x, plot.Top, x, plot.Bottom, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.TimelineGridOpacity), ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt);
             if (chart.Options.ShowAxes) {
                 var rawLabel = FormatTimelineTick(chart, tick);
                 var labelFontSize = TextFontSizeForWidth(rawLabel, tickLabelWidth, tickFontSize, tickStyle);
@@ -54,7 +54,7 @@ public sealed partial class PngChartRenderer {
             rowCenters[i] = centerY;
             startXs[i] = ProjectTimelineX(item.Start, min, max, plot);
             endXs[i] = ProjectTimelineX(item.End, min, max, plot);
-            if (chart.Options.ShowGrid) c.DrawLine(plot.Left, centerY, plot.Right, centerY, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.TimelineRowGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
+            if (chart.Options.ShowGrid) c.DrawLine(plot.Left, centerY, plot.Right, centerY, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.TimelineRowGridOpacity), ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt);
             if (chart.Options.ShowAxes) {
                 var rowLabelFontSize = TextFontSizeForEmphasizedWidth(item.Name, rowLabelWidth, tickFontSize, tickStyle);
                 var rowLabel = TrimReadablePngLabelToWidth(item.Name, rowLabelFontSize, rowLabelWidth, tickStyle);
@@ -81,7 +81,7 @@ public sealed partial class PngChartRenderer {
         }
 
         if (chart.Options.ShowAxes) {
-            c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth, RasterLineCap.Butt);
             DrawTimelineAxisTitles(c, chart, plot);
         }
     }
@@ -126,10 +126,7 @@ public sealed partial class PngChartRenderer {
             new ChartPoint(x - size, centerY)
         };
         c.FillPolygonVerticalGradient(points, GanttTaskGradientTop(item.Color), GanttTaskGradientBottom(item.Color));
-        c.DrawLine(x, centerY - size, x + size, centerY, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.GanttTaskBorderOpacity), ChartVisualPrimitives.GanttTaskBorderStrokeWidth);
-        c.DrawLine(x + size, centerY, x, centerY + size, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.GanttTaskBorderOpacity), ChartVisualPrimitives.GanttTaskBorderStrokeWidth);
-        c.DrawLine(x, centerY + size, x - size, centerY, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.GanttTaskBorderOpacity), ChartVisualPrimitives.GanttTaskBorderStrokeWidth);
-        c.DrawLine(x - size, centerY, x, centerY - size, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.GanttTaskBorderOpacity), ChartVisualPrimitives.GanttTaskBorderStrokeWidth);
+        c.DrawPolyline(new[] { points[0], points[1], points[2], points[3], points[0] }, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.GanttTaskBorderOpacity), ChartVisualPrimitives.GanttTaskBorderStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter, null);
     }
 
     private static void DrawGanttDependency(RgbaCanvas c, Chart chart, ChartRect plot, double fromX, double fromY, double toX, double toY) {
@@ -137,11 +134,11 @@ public sealed partial class PngChartRenderer {
         var midX = Clamp(fromX + Math.Max(ChartVisualPrimitives.GanttDependencyMinMidOffset, (toX - fromX) / 2), plot.Left, plot.Right);
         var startX = Clamp(fromX + ChartVisualPrimitives.GanttDependencyEndpointInset, plot.Left, plot.Right);
         var endX = Clamp(toX - ChartVisualPrimitives.GanttDependencyEndpointInset, plot.Left, plot.Right);
-        c.DrawDashedLine(startX, fromY, midX, fromY, color, ChartVisualPrimitives.GanttDependencyStrokeWidth, ChartVisualPrimitives.GanttDependencyDash, ChartVisualPrimitives.GanttDependencyGap);
-        c.DrawDashedLine(midX, fromY, midX, toY, color, ChartVisualPrimitives.GanttDependencyStrokeWidth, ChartVisualPrimitives.GanttDependencyDash, ChartVisualPrimitives.GanttDependencyGap);
-        c.DrawDashedLine(midX, toY, endX, toY, color, ChartVisualPrimitives.GanttDependencyStrokeWidth, ChartVisualPrimitives.GanttDependencyDash, ChartVisualPrimitives.GanttDependencyGap);
-        c.DrawLine(endX, toY - ChartVisualPrimitives.GanttDependencyArrowSize, Clamp(toX, plot.Left, plot.Right), toY, color, ChartVisualPrimitives.GanttDependencyStrokeWidth);
-        c.DrawLine(endX, toY + ChartVisualPrimitives.GanttDependencyArrowSize, Clamp(toX, plot.Left, plot.Right), toY, color, ChartVisualPrimitives.GanttDependencyStrokeWidth);
+        // One continuous dash pattern around the elbow, then the arrow head, as the SVG paths draw them.
+        var elbow = new[] { new ChartPoint(startX, fromY), new ChartPoint(midX, fromY), new ChartPoint(midX, toY), new ChartPoint(endX, toY) };
+        c.DrawPolyline(elbow, color, ChartVisualPrimitives.GanttDependencyStrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, RgbaCanvas.DashPattern(ChartVisualPrimitives.GanttDependencyDash, ChartVisualPrimitives.GanttDependencyGap));
+        var tipX = Clamp(toX, plot.Left, plot.Right);
+        c.DrawPolyline(new[] { new ChartPoint(endX, toY - ChartVisualPrimitives.GanttDependencyArrowSize), new ChartPoint(tipX, toY), new ChartPoint(endX, toY + ChartVisualPrimitives.GanttDependencyArrowSize) }, color, ChartVisualPrimitives.GanttDependencyStrokeWidth);
     }
 
     private static void DrawGanttToday(RgbaCanvas c, Chart chart, ChartRect plot, double min, double max) {

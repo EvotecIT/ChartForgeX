@@ -45,12 +45,7 @@ public sealed partial class PngChartRenderer {
             var rings = ProjectMapRings(region.Path, sourceBounds, map, out var regionBounds);
             c.FillCompoundPolygon(rings, color);
             if (regionStrokeWidth > 0) {
-                foreach (var points in rings) {
-                    for (var i = 0; i < points.Count; i++) {
-                        var next = points[(i + 1) % points.Count];
-                        c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, regionStroke, regionStrokeWidth);
-                    }
-                }
+                c.StrokeClosedPolylines(rings, regionStroke, regionStrokeWidth, RasterLineJoin.Miter);
             }
             if (chart.Options.ShowMapLabels) {
                 var label = region.HasLabel ? ProjectMapPoint(region.Label, sourceBounds, map) : new ChartPoint(regionBounds.Left + regionBounds.Width / 2, regionBounds.Top + regionBounds.Height / 2);
@@ -75,12 +70,7 @@ public sealed partial class PngChartRenderer {
             var rings = ProjectMapRings(region.Path, sourceBounds, map, out _);
             if (layer.FillColor.HasValue) c.FillCompoundPolygon(rings, layer.FillColor.Value);
             if (!layer.StrokeColor.HasValue || layer.StrokeWidth <= 0) continue;
-            foreach (var points in rings) {
-                for (var i = 0; i < points.Count; i++) {
-                    var next = points[(i + 1) % points.Count];
-                    c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, layer.StrokeColor.Value, layer.StrokeWidth);
-                }
-            }
+            c.StrokeClosedPolylines(rings, layer.StrokeColor.Value, layer.StrokeWidth, RasterLineJoin.Miter);
         }
     }
 
