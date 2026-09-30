@@ -51,19 +51,28 @@ internal static class InstalledFontCatalog {
     }
 
     internal static InstalledFontFace? Find(Dictionary<string, List<InstalledFontFace>> families, string family, int weight, bool italic) {
-        if (string.IsNullOrWhiteSpace(family) || !families.TryGetValue(family.Trim(), out var faces)) return null;
-        InstalledFontFace? best = null;
-        var bestScore = int.MaxValue;
-        foreach (var face in faces) {
-            var score = WeightDistance(weight, face.Weight) + Math.Abs(face.Width - 5) * 2000 + (face.Italic == italic ? 0 : 20000);
-            if (score < bestScore || (score == bestScore && best != null && string.CompareOrdinal(face.Path, best.Path) < 0)) {
-                best = face;
-                bestScore = score;
-            }
-        }
-
-        return best;
+        var ranked = Ranked(families, family, weight, italic);
+        return ranked.Count == 0 ? null : ranked[0];
     }
+
+    /// <summary>Every installed face of <paramref name="family"/>, closest to the weight and slant first.</summary>
+    internal static IReadOnlyList<InstalledFontFace> Ranked(string family, int weight, bool italic) => Ranked(Families.Value, family, weight, italic);
+
+    internal static List<InstalledFontFace> Ranked(Dictionary<string, List<InstalledFontFace>> families, string family, int weight, bool italic) {
+        if (string.IsNullOrWhiteSpace(family) || !families.TryGetValue(family.Trim(), out var faces)) return new List<InstalledFontFace>();
+        var ranked = new List<InstalledFontFace>(faces);
+        // Stable and deterministic: ties go to the lower path.
+        ranked.Sort((left, right) => {
+            var byScore = Score(left, weight, italic).CompareTo(Score(right, weight, italic));
+            if (byScore != 0) return byScore;
+            var byPath = string.CompareOrdinal(left.Path, right.Path);
+            return byPath != 0 ? byPath : (left.CollectionIndex ?? 0).CompareTo(right.CollectionIndex ?? 0);
+        });
+        return ranked;
+    }
+
+    private static int Score(InstalledFontFace face, int weight, bool italic) =>
+        WeightDistance(weight, face.Weight) + Math.Abs(face.Width - 5) * 2000 + (face.Italic == italic ? 0 : 20000);
 
     /// <summary>Builds the family index for a set of font folders; folders and files that cannot be read are skipped.</summary>
     internal static Dictionary<string, List<InstalledFontFace>> Index(IEnumerable<string> directories) {

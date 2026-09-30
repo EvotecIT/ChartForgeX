@@ -279,7 +279,7 @@ public sealed partial class PngChartRenderer {
             else high = mid - 1;
         }
 
-        return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+        return low == 0 ? suffix : value.Substring(0, Typography.TextElementBoundary.Snap(value, low)).TrimEnd() + suffix;
     }
 
     private static string TrimReadablePngLabelToWidth(string value, double fontSize, double maxWidth, TextStyleOverride style) =>
@@ -298,7 +298,7 @@ public sealed partial class PngChartRenderer {
             else high = mid - 1;
         }
 
-        return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+        return low == 0 ? suffix : value.Substring(0, Typography.TextElementBoundary.Snap(value, low)).TrimEnd() + suffix;
     }
 
     private static string TrimPngLabelToWidth(string value, double fontSize, double maxWidth, TextStyleOverride style) =>
@@ -317,7 +317,7 @@ public sealed partial class PngChartRenderer {
             else high = mid - 1;
         }
 
-        return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+        return low == 0 ? suffix : value.Substring(0, Typography.TextElementBoundary.Snap(value, low)).TrimEnd() + suffix;
     }
 
     private readonly struct PngStyledTextFit {

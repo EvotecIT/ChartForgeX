@@ -264,7 +264,7 @@ internal static class VisualCanvasInfoTileTextLayout {
             else high = mid - 1;
         }
 
-        return new FitResult(value.Substring(0, low).TrimEnd() + suffix, true);
+        return new FitResult(value.Substring(0, Typography.TextElementBoundary.Snap(value, low)).TrimEnd() + suffix, true);
     }
 
     private readonly struct TileFaces {

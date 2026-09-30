@@ -188,18 +188,20 @@ public static class TextLayoutEngine {
         var start = 0;
         while (start < text.Length) {
             if (maximumLines.HasValue && output.Count >= maximumLines.Value) break;
-            var length = 1;
-            var bestLength = 1;
-            while (start + length <= text.Length) {
-                var candidate = text.Substring(start, length);
+            // Lines break between whole characters: a surrogate pair or a base and its marks stay together.
+            var end = TextElementBoundary.Next(text, start);
+            var bestEnd = end;
+            while (end <= text.Length) {
+                var candidate = text.Substring(start, end - start);
                 if (MeasureWidth(candidate, style, font) > maximumWidth) break;
-                bestLength = length;
-                length++;
+                bestEnd = end;
+                if (end == text.Length) break;
+                end = TextElementBoundary.Next(text, end);
             }
 
-            var line = text.Substring(start, bestLength);
+            var line = text.Substring(start, bestEnd - start);
             output.Add(new TextLayoutLine(line, MeasureWidth(line, style, font)));
-            start += bestLength;
+            start = bestEnd;
         }
 
         trimmed = start < text.Length;
@@ -210,7 +212,7 @@ public static class TextLayoutEngine {
         const string ellipsis = "…";
         if (MeasureWidth(ellipsis, style, font) > maximumWidth) return new TextLayoutLine(string.Empty, 0);
         var candidate = text.TrimEnd();
-        while (candidate.Length > 0 && MeasureWidth(candidate + ellipsis, style, font) > maximumWidth) candidate = candidate.Substring(0, candidate.Length - 1).TrimEnd();
+        while (candidate.Length > 0 && MeasureWidth(candidate + ellipsis, style, font) > maximumWidth) candidate = candidate.Substring(0, TextElementBoundary.Snap(candidate, candidate.Length - 1)).TrimEnd();
         var result = candidate + ellipsis;
         return new TextLayoutLine(result, MeasureWidth(result, style, font));
     }

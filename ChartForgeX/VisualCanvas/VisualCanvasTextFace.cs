@@ -112,6 +112,6 @@ internal readonly struct VisualCanvasTextFace {
             else high = mid - 1;
         }
 
-        return value.Substring(0, low) + Ellipsis;
+        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + Ellipsis;
     }
 }

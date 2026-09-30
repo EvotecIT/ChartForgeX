@@ -84,12 +84,13 @@ internal static class TypographyFontResolver {
     }
 
     private static ResolvedTypeface ResolveFamily(string family, int weight, bool italic) {
-        foreach (var part in family.Split(',')) {
-            var name = part.Trim().Trim('"', '\'').Trim();
+        var parts = family.Split(',');
+        for (var index = 0; index < parts.Length; index++) {
+            var name = FamilyName(parts[index]);
             if (name.Length == 0) continue;
             if (IsPlatformAlias(name)) {
-                if (TryLoad(FontRegistry.Find(name, weight, italic), weight, italic, out var registeredAlias)) return registeredAlias;
-                if (name.Equals("-apple-system", StringComparison.OrdinalIgnoreCase) && TryAppleSystemFace(weight, italic, out var systemFace)) return systemFace;
+                if (TryLoad(FontRegistry.Find(name, weight, italic), weight, italic, out var registeredAlias)) return WithStackFallback(registeredAlias, parts, index + 1, weight, italic);
+                if (name.Equals("-apple-system", StringComparison.OrdinalIgnoreCase) && TryAppleSystemFace(weight, italic, out var systemFace)) return WithStackFallback(systemFace, parts, index + 1, weight, italic);
                 continue;
             }
             // A generic keyword ends the named part of the stack: a face registered under the keyword
@@ -100,7 +101,9 @@ internal static class TypographyFontResolver {
             }
 
             // Registered faces take precedence over installed faces of the same family.
-            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved)) return resolved;
+            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved)) {
+                return WithStackFallback(resolved, parts, index + 1, weight, italic);
+            }
         }
 
         var fallback = TrueTypeFont.TryLoadForFamily(family, out var path);
@@ -114,6 +117,25 @@ internal static class TypographyFontResolver {
 
         return new ResolvedTypeface(fallback, weight >= 600, italic, path);
     }
+
+    // Characters the chosen face does not cover are looked up first in the families that follow it
+    // in the stack, as a browser does; only installed or registered families other than the chosen
+    // one take part, so a stack without them keeps the shared face instance.
+    private static ResolvedTypeface WithStackFallback(ResolvedTypeface resolved, string[] parts, int start, int weight, bool italic) {
+        var families = new System.Collections.Generic.List<string>();
+        for (var index = start; index < parts.Length; index++) {
+            var name = FamilyName(parts[index]);
+            if (name.Length == 0 || IsPlatformAlias(name) || IsGenericFamily(name)) continue;
+            var face = FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic);
+            if (face != null && !string.Equals(face.Path, resolved.Path, StringComparison.OrdinalIgnoreCase) && !families.Contains(name)) families.Add(name);
+        }
+
+        return families.Count == 0 || resolved.Font == null
+            ? resolved
+            : new ResolvedTypeface(resolved.Font.WithFallbackFamilies(families), resolved.SynthesizeBold, resolved.SynthesizeItalic, resolved.Path);
+    }
+
+    private static string FamilyName(string part) => part.Trim().Trim('"', '\'').Trim();
 
     private static bool TryLoad(InstalledFontFace? face, int weight, bool italic, out ResolvedTypeface resolved) {
         var loaded = face == null ? null : TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
@@ -137,12 +159,14 @@ internal static class TypographyFontResolver {
         return false;
     }
 
-    /// <summary>Forgets resolved stacks after the registered fonts change.</summary>
+    /// <summary>Forgets resolved stacks and fallback chains after the registered fonts change.</summary>
     internal static void ClearCache() {
         lock (CacheLock) {
             FamilyCache.Clear();
             _cacheVersion++;
         }
+
+        FontFallbackChain.Reset();
     }
 
     private static bool IsGenericFamily(string name) {

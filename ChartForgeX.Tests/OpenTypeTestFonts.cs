@@ -11,6 +11,7 @@ namespace ChartForgeX.Tests;
 internal static class OpenTypeTestFonts {
     internal const string FamilyName = "CFX Test Compact";
     internal const int UnitsPerEm = 1000;
+    internal const int PrivateUseCharacter = 0xEFFF;
 
     // Glyph ids of the name-keyed and CID-keyed fonts.
     internal const int H = 1, O = 2, X = 3, E = 4, Acute = 5, EAcute = 6, Flex = 7, Box = 8;
@@ -169,6 +170,8 @@ internal static class OpenTypeTestFonts {
         var glyphCount = Advances.Length;
         var map = new SortedDictionary<int, int> { ['H'] = H, ['O'] = O, ['x'] = X, ['e'] = E, [0x00B4] = Acute, [0x00E9] = EAcute, ['F'] = Flex };
         foreach (var ch in "ChartForgeX 0123456789") if (!map.ContainsKey(ch)) map[ch] = Box;
+        // A private-use character no platform font draws, for fallback tests.
+        map[PrivateUseCharacter] = Box;
         var tables = new SortedDictionary<string, byte[]>(StringComparer.Ordinal) {
             [outlineTag] = outlines,
             ["OS/2"] = Os2(),

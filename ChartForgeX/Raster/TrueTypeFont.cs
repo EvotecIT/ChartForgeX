@@ -9,7 +9,9 @@ namespace ChartForgeX.Raster;
 
 /// <summary>
 /// An OpenType face read without a platform font engine: TrueType (<c>glyf</c>) or CFF/CFF2
-/// outlines, <c>kern</c> and GPOS pair kerning.
+/// outlines, <c>kern</c> and GPOS pair kerning. Text that needs more than the face itself, such as
+/// characters it does not cover, right-to-left runs, or Arabic joining, is shaped by
+/// <see cref="TextShaper"/> into glyphs from this face and its fallback faces.
 /// </summary>
 internal sealed partial class TrueTypeFont {
     /// <summary>Shares immutable font data while giving a rendering context its own face identity.</summary>
@@ -248,7 +250,13 @@ internal sealed partial class TrueTypeFont {
         var width = 0.0;
         ushort? previous = null;
         for (var index = 0; index < text.Length;) {
-            var glyph = MapGlyph(ReadCodePoint(text, ref index));
+            var codePoint = ReadCodePoint(text, ref index);
+            var glyph = TextShaper.IsSimple(codePoint) ? MapGlyph(codePoint) : (ushort)0;
+            if (glyph == 0) {
+                width = MeasureShaped(text, fontSize);
+                break;
+            }
+
             if (previous.HasValue) width += Kerning(previous.Value, glyph) * scale;
             width += AdvanceWidth(glyph) * scale;
             previous = glyph;
@@ -270,24 +278,70 @@ internal sealed partial class TrueTypeFont {
         var cursor = x;
         var baseline = y + _ascender * scale;
         var rendered = false;
+        if (!IsSimpleRun(text)) {
+            TrueTypeFont? previousFace = null;
+            ushort previousGlyph = 0;
+            foreach (var shaped in TextShaper.Shape(this, text)) {
+                var face = shaped.Face;
+                var faceScale = face.ScaleFor(fontSize);
+                if (ReferenceEquals(face, previousFace)) cursor += face.Kerning(previousGlyph, shaped.Glyph) * faceScale;
+                rendered |= face.DrawGlyph(canvas, shaped.Glyph, cursor, baseline, faceScale, italic, color);
+                cursor += face.AdvanceWidth(shaped.Glyph) * faceScale;
+                previousFace = face;
+                previousGlyph = shaped.Glyph;
+            }
+
+            return rendered;
+        }
+
         ushort? previous = null;
         for (var index = 0; index < text.Length;) {
             var glyph = MapGlyph(ReadCodePoint(text, ref index));
             if (previous.HasValue) cursor += Kerning(previous.Value, glyph) * scale;
-            var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, cursor, baseline), 0);
-            if (contours.Count > 0) {
-                // Outlines are non-zero wound: variable fonts and composites overlap their contours,
-                // and an even-odd fill would punch the overlaps out as holes.
-                canvas.FillContours(contours, color, RasterFillRule.NonZero);
-                rendered = true;
-            }
-
+            rendered |= DrawGlyph(canvas, glyph, cursor, baseline, scale, italic, color);
             cursor += AdvanceWidth(glyph) * scale;
             previous = glyph;
         }
 
         return rendered;
     }
+
+    private bool DrawGlyph(RgbaCanvas canvas, ushort glyph, double x, double baseline, double scale, bool italic, ChartColor color) {
+        var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, x, baseline), 0);
+        if (contours.Count == 0) return false;
+        // Outlines are non-zero wound: variable fonts and composites overlap their contours, and an
+        // even-odd fill would punch the overlaps out as holes.
+        canvas.FillContours(contours, color, RasterFillRule.NonZero);
+        return true;
+    }
+
+    private double MeasureShaped(string text, double fontSize) {
+        var width = 0.0;
+        TrueTypeFont? previousFace = null;
+        ushort previousGlyph = 0;
+        foreach (var shaped in TextShaper.Shape(this, text)) {
+            var face = shaped.Face;
+            var faceScale = face.ScaleFor(fontSize);
+            if (ReferenceEquals(face, previousFace)) width += face.Kerning(previousGlyph, shaped.Glyph) * faceScale;
+            width += face.AdvanceWidth(shaped.Glyph) * faceScale;
+            previousFace = face;
+            previousGlyph = shaped.Glyph;
+        }
+
+        return width;
+    }
+
+    // True when every character is drawn by this face exactly as written: no fallback, reordering,
+    // joining, or composition. Plain Latin text never leaves this path.
+    private bool IsSimpleRun(string text) {
+        for (var index = 0; index < text.Length;) {
+            var codePoint = ReadCodePoint(text, ref index);
+            if (!TextShaper.IsSimple(codePoint) || MapGlyph(codePoint) == 0) return false;
+        }
+
+        return true;
+    }
+
     internal static double ItalicOverhang(double fontSize) => Math.Max(0.5, Math.Max(1, fontSize) * ObliqueShear);
 
     internal int? CollectionIndex => _collectionIndex;

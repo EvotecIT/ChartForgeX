@@ -285,7 +285,7 @@ internal static partial class VisualBlockRendering {
             else high = mid - 1;
         }
 
-        return value.Substring(0, low) + suffix;
+        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 
     public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize) {

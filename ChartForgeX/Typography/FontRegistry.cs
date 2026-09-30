@@ -90,6 +90,12 @@ public static class FontRegistry {
         return families.Count == 0 ? null : InstalledFontCatalog.Find(families, family, weight, italic);
     }
 
+    /// <summary>Every registered face of <paramref name="family"/>, closest to the weight and slant first.</summary>
+    internal static IReadOnlyList<InstalledFontFace> Ranked(string family, int weight, bool italic) {
+        var families = _families;
+        return families.Count == 0 ? Array.Empty<InstalledFontFace>() : InstalledFontCatalog.Ranked(families, family, weight, italic);
+    }
+
     private static void Add(IEnumerable<InstalledFontFace> faces) {
         lock (Gate) {
             // Readers see either the old or the new snapshot, never one being edited.

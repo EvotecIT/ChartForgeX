@@ -198,8 +198,8 @@ Stroked SVG circles, ellipses, arcs, rounded rectangles, and curved paths are fl
 
 Text drawn from a `FontSpec` (`ImageComposition.DrawText` and `TextLayoutEngine`) picks its face in this order:
 
-1. `FontSpec.FromFile(path)` — that TrueType file, always. This is the only choice that renders identically on every host, so ship the font with the application when the output must not vary.
-2. `FontSpec.FromFamily("Inter, Segoe UI, sans-serif")` — the first family of the stack that is registered with `FontRegistry` (below) or installed, at the face closest to `Weight` and `Italic` (Segoe UI at 700 is Segoe UI Bold). Installed families are read from the operating system's font folders the first time a named family is requested; only TrueType outlines (`.ttf`, `.ttc`) are considered.
+1. `FontSpec.FromFile(path)` — that font file, always. This is the only choice that renders identically on every host, so ship the font with the application when the output must not vary.
+2. `FontSpec.FromFamily("Inter, Segoe UI, sans-serif")` — the first family of the stack that is registered with `FontRegistry` (below) or installed, at the face closest to `Weight` and `Italic` (Segoe UI at 700 is Segoe UI Bold). Installed families are read from the operating system's font folders the first time a named family is requested. TrueType and CFF outlines are both read: `.ttf`, `.otf`, and `.ttc`/`.otc` collections, including CID-keyed CJK fonts such as Noto Sans CJK; CFF2 variable fonts draw their default instance.
 3. The generic fallback for the stack — a serif, monospace, or sans-serif face known to ship with Windows, macOS, or common Linux distributions — with its bold or italic sibling when one is installed.
 
 When no real bold or italic face exists, bold is synthesized by emboldening and italic by shearing the regular face. A variable font renders its default instance; its axes are not applied.
@@ -209,6 +209,23 @@ SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its 
 `VisualCanvas` uses `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.PortableEstimate` by default. Registered fonts provide exact fitting and line metrics; other families use portable estimates so fitting, wrapping, ellipsis, column widths, and row heights do not depend on the generating host's installed fonts. Register the application's font files to combine deterministic layout with accurate measurement. Set `TextMeasurementMode.InstalledFonts` explicitly when layout should use fonts installed on the current host.
 
 `VisualCanvasTheme.FontFamily` (set directly or through `VisualDesignTokens`), a key/value block's `FontFamilyName`, and `MonospaceFontFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. PNG draws the matching registered or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas.Theme)` to measure a key/value block with the canvas's measurement mode.
+
+#### Characters the face does not have, right-to-left text, and Arabic
+
+A face rarely covers every script a server name, user name, or vendor title can contain. Raster text is therefore drawn per character cluster (a base character with its combining marks, joiners, and variation selectors), each by the first face that has all of it:
+
+1. the face chosen above;
+2. the families that follow it in the requested stack (`"Inter, Noto Sans JP, sans-serif"` draws Japanese in Noto Sans JP);
+3. every family registered with `FontRegistry`;
+4. the platform's broad-coverage fonts, where installed: on Windows Segoe UI, Segoe UI Symbol, Segoe UI Emoji, Microsoft YaHei, Microsoft JhengHei, Yu Gothic, Malgun Gothic, Nirmala UI, Leelawadee UI, Ebrima, Gadugi, and Arial Unicode MS; on Linux the Noto families and DejaVu Sans; on macOS PingFang, Hiragino, Apple SD Gothic Neo, Geeza Pro, and similar.
+
+Each fallback family is matched to the run's weight and slant, and when that face lacks the character its other faces are tried, so bold Arabic in a Segoe UI Black headline comes from Segoe UI Bold or Regular. A character no face has takes the chosen face's `.notdef` advance and draws nothing. Coverage is answered from each file's `cmap` alone and cached per code point, so a fallback face is read only when it draws something, and text that the chosen face covers entirely never consults the chain. Measuring, wrapping, fitting, and drawing all use the same clusters, so fitted text with fallback characters stays inside its box. A combining sequence such as `e` + U+0301 is drawn as the precomposed `é` when the face has it.
+
+Lines are reordered for display with the Unicode Bidirectional Algorithm (UAX #9): explicit embeddings, overrides, and isolates, weak and neutral types, paired brackets, whitespace reset, and mirrored brackets at right-to-left levels. The paragraph direction is left-to-right, as SVG and CSS default to, so PNG output orders `Server שרת-01 (ראשי)` exactly as a browser shows the SVG. Arabic letters take their initial, medial, final, or isolated forms from their neighbours' Unicode joining types, drawn with the face's Arabic Presentation Forms (Forms-B, and Forms-A for common Persian and Urdu letters), and lam followed by alef becomes the lam-alef ligature. Hebrew needs only reordering.
+
+Emoji are drawn from the emoji font's monochrome outlines (Segoe UI Emoji on Windows) in the text color; a cluster with U+FE0F, or a pictograph that defaults to emoji presentation, tries the emoji font first. Colour layers and bitmap emoji are not drawn.
+
+Not handled yet: complex-script shaping beyond Arabic joining (Indic conjuncts and vowel reordering, Thai and Khmer clusters), mark positioning from GPOS (marks use their default offset), and emoji ZWJ sequences, which draw as their separate pictographs.
 
 On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship `.ttf` files with the application and register them.
 
