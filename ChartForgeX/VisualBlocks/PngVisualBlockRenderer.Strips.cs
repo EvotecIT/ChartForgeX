@@ -18,7 +18,7 @@ public sealed partial class PngVisualBlockRenderer {
             if (block.Header.Length > 0) {
                 canvas.FillRoundedRect(content.X, y + 3, 22, 22, 6, theme.Text.WithAlpha(24));
                 canvas.StrokeRoundedRect(content.X, y + 3, 22, 22, 6, theme.Text.WithAlpha(85));
-                canvas.DrawLine(content.X + 5, y + 9, content.X + 17, y + 9, theme.Text, 1.4);
+                canvas.DrawLine(content.X + 5, y + 9, content.X + 17, y + 9, theme.Text, 1.4, RasterLineCap.Butt);
                 canvas.DrawCircle(content.X + 8, y + 15, 1.5, theme.Text);
                 canvas.DrawCircle(content.X + 14, y + 15, 1.5, theme.Text);
                 DrawAlignedText(canvas, block.Header, content.X + 32, y + 7, Math.Max(1, content.Width - 32 - navReserve), TextAlignment.Left, theme.Text, Math.Max(13, theme.SubtitleFontSize + 1), true);

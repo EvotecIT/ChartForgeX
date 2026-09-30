@@ -30,11 +30,11 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.StrokeRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotBorder, 1);
         for (var index = 1; index < 4; index++) {
             var x = plot.X + plot.Width * index / 4.0;
-            canvas.DrawLine(x, plot.Y, x, plot.Bottom, theme.Grid, 1);
+            canvas.DrawLine(x, plot.Y, x, plot.Bottom, theme.Grid, 1, RasterLineCap.Butt);
         }
 
-        canvas.DrawLine(plot.X, plot.Bottom, plot.Right, plot.Bottom, theme.Axis, 1.4);
-        canvas.DrawLine(plot.X, plot.Y, plot.X, plot.Bottom, theme.Axis, 1.4);
+        canvas.DrawLine(plot.X, plot.Bottom, plot.Right, plot.Bottom, theme.Axis, 1.4, RasterLineCap.Butt);
+        canvas.DrawLine(plot.X, plot.Y, plot.X, plot.Bottom, theme.Axis, 1.4, RasterLineCap.Butt);
         DrawAlignedText(canvas, "Visibility", Math.Max(0, plot.X - 54), plot.Y + plot.Height * 0.50 - 8, 48, TextAlignment.Center, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
         DrawAlignedText(canvas, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + 28, plot.Width * 0.24, TextAlignment.Center, theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
         var stages = map.Stages.Count == 0 ? new[] { "Genesis", "Custom", "Product", "Commodity" } : map.Stages;
@@ -48,7 +48,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (!layout.NodeLookup.TryGetValue(link.FromId, out var from) || !layout.NodeLookup.TryGetValue(link.ToId, out var to)) return;
         var color = ApplyOpacity(ChartColor.Black, 0.44);
         if (link.Dashed) canvas.DrawDashedLine(from.X, from.Y, to.X, to.Y, color, 1.2, 5, 5);
-        else canvas.DrawLine(from.X, from.Y, to.X, to.Y, color, 1.2);
+        else canvas.DrawLine(from.X, from.Y, to.X, to.Y, color, 1.2, RasterLineCap.Butt);
         DrawWardleyFlowHint(canvas, link, from.X, from.Y, to.X, to.Y, color);
         if (link.Label.Length > 0) DrawAlignedText(canvas, link.Label, (from.X + to.X) / 2 - 50, (from.Y + to.Y) / 2 - 11, 100, TextAlignment.Center, color, 8.5, true);
     }
@@ -81,7 +81,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (!layout.NodeLookup.TryGetValue(evolution.NodeId, out var from)) return;
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, evolution.TargetEvolution);
         var color = ChartColor.FromRgb(220, 53, 69);
-        canvas.DrawLine(from.X, from.Y, x, from.Y, color, 1.8);
+        canvas.DrawDashedLine(from.X, from.Y, x, from.Y, color, 1.8, 4, 4);
         canvas.DrawLine(x, from.Y, x - 7, from.Y - 4, color, 1.8);
         canvas.DrawLine(x, from.Y, x - 7, from.Y + 4, color, 1.8);
     }
@@ -109,7 +109,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (!string.IsNullOrWhiteSpace(node.Strategy)) canvas.DrawCircle(placement.X, placement.Y, radius + 7, ApplyOpacity(color, 0.32));
         canvas.DrawCircle(placement.X, placement.Y, radius + 2, theme.PlotBackground);
         canvas.DrawCircle(placement.X, placement.Y, radius, color);
-        if (node.Inertia) canvas.DrawLine(placement.X + 16, placement.Y - 9, placement.X + 16, placement.Y + 9, theme.Text, 4);
+        if (node.Inertia) canvas.DrawLine(placement.X + 16, placement.Y - 9, placement.X + 16, placement.Y + 9, theme.Text, 4, RasterLineCap.Butt);
         var labelX = placement.X + (node.LabelOffsetX ?? (node.Kind == WardleyMapNodeKind.Anchor ? -45 : 10));
         var labelY = placement.Y + (node.LabelOffsetY ?? -18);
         DrawAlignedText(canvas, node.Label, labelX, labelY, 120, node.Kind == WardleyMapNodeKind.Anchor ? TextAlignment.Center : TextAlignment.Left, theme.Text, Math.Max(8.5, theme.SubtitleFontSize - 2), true);
