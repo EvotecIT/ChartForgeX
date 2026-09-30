@@ -108,7 +108,13 @@ public static class TextLayoutEngine {
             return new List<TextLayoutLine>();
         }
         if (paragraph.Length == 0) return new List<TextLayoutLine> { new(string.Empty, 0) };
-        if (wrapMode == TextWrapMode.NoWrap) return new List<TextLayoutLine> { new(paragraph, MeasureWidth(paragraph, style, font)) };
+        if (wrapMode == TextWrapMode.NoWrap) {
+            // A line wider than the region is trimmed like a wrapped one past its last line: Ellipsis ends it with a
+            // marker, None clips it. Before, the full width was returned and Ellipsis never applied.
+            var width = MeasureWidth(paragraph, style, font);
+            trimmed = width > maximumWidth;
+            return new List<TextLayoutLine> { new(paragraph, width) };
+        }
         if (wrapMode == TextWrapMode.Character) {
             return WrapCharacters(
                 paragraph,
