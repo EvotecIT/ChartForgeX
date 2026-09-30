@@ -254,7 +254,7 @@ internal static class MapExamples {
             .Diverging(
                 new[] { ChartColor.FromHex("#B8292A"), ChartColor.FromHex("#E0645B"), ChartColor.FromHex("#F0A39D") },
                 ChartColor.FromHex("#ECEEF0"),
-                new[] { ChartColor.FromHex("#86B6EF"), ChartColor.FromHex("#2A78D6"), ChartColor.FromHex("#1C5CAB") },
+                new[] { ChartColor.FromHex("#9AB8DC"), ChartColor.FromHex("#2A78D6"), ChartColor.FromHex("#1C5CAB") },
                 100)
             .WithValueRange(70, 130)
             .WithLabels("70%", "Target", "130%");

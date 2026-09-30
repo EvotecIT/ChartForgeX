@@ -1,5 +1,7 @@
 {
   "name": "Evotec palette v1 (Graphite)",
+  "decision": "D14, owner, 2026-09-26",
+  "source": "HtmlForgeX HtmlForgeX/Resources/Tokens/evotec.tokens.json 1.1.2 (generated, do not edit)",
   "notes": [
     "Severity has a fill (marks, bars, dots) and an ink (text on surfaces and tinted chips). Every ink is at least 4.5:1 on the card surface and on a 13% tint of its fill.",
     "Outcome 'fail' has no colour of its own: a failed result is coloured by its severity.",
@@ -78,7 +80,7 @@
     ],
     "ramps": {
       "sequential": [
-        "#86b6ef",
+        "#9ab8dc",
         "#5598e7",
         "#2a78d6",
         "#1c5cab",
@@ -92,8 +94,8 @@
         ],
         "neutral": "#eceef0",
         "positive": [
-          "#86b6ef",
-          "#3f8be3",
+          "#9ab8dc",
+          "#2a78d6",
           "#1c5cab"
         ]
       }
@@ -170,7 +172,7 @@
     ],
     "ramps": {
       "sequential": [
-        "#184f95",
+        "#324c6e",
         "#2a78d6",
         "#5598e7",
         "#86b6ef",
@@ -184,8 +186,8 @@
         ],
         "neutral": "#2b2e34",
         "positive": [
-          "#1d4f8f",
-          "#3f8be3",
+          "#324c6e",
+          "#3987e5",
           "#9ec5f4"
         ]
       }

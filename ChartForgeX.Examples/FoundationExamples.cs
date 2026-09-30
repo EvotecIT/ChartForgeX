@@ -46,7 +46,7 @@ internal static class FoundationExamples {
 
         var rampTokens = new VisualDesignTokens();
         rampTokens.SequentialRamp = new[] {
-            ChartColor.FromHex("#86B6EF"), ChartColor.FromHex("#5598E7"),
+            ChartColor.FromHex("#9AB8DC"), ChartColor.FromHex("#5598E7"),
             ChartColor.FromHex("#2A78D6"), ChartColor.FromHex("#1C5CAB"),
             ChartColor.FromHex("#104281")
         };

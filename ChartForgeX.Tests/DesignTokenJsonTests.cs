@@ -150,12 +150,13 @@ public sealed class DesignTokenJsonTests {
     [Fact]
     public void FromJson_Ramps_MapSequentialAndDivergingPerMode() {
         var light = VisualDesignTokens.FromJson(GraphiteJson);
-        Assert.Equal(new[] { "#86B6EF", "#5598E7", "#2A78D6", "#1C5CAB", "#104281" }, light.SequentialRamp!.Select(color => color.ToHex()).ToArray());
+        Assert.Equal(new[] { "#9AB8DC", "#5598E7", "#2A78D6", "#1C5CAB", "#104281" }, light.SequentialRamp!.Select(color => color.ToHex()).ToArray());
         Assert.Equal(new[] { "#F0A39D", "#E0645B", "#B8292A" }, light.DivergingRamp!.Negative.Select(color => color.ToHex()).ToArray());
         Assert.Equal("#ECEEF0", light.DivergingRamp.Neutral.ToHex());
-        Assert.Equal("#1C5CAB", light.DivergingRamp.Positive[2].ToHex());
+        Assert.Equal(new[] { "#9AB8DC", "#2A78D6", "#1C5CAB" }, light.DivergingRamp.Positive.Select(color => color.ToHex()).ToArray());
         var dark = VisualDesignTokens.FromJson(GraphiteJson, VisualThemeMode.Dark);
-        Assert.Equal("#184F95", dark.SequentialRamp![0].ToHex());
+        Assert.Equal("#324C6E", dark.SequentialRamp![0].ToHex());
+        Assert.Equal("#3987E5", dark.DivergingRamp!.Positive[1].ToHex());
         Assert.Equal("#2B2E34", dark.DivergingRamp!.Neutral.ToHex());
 
         var scale = light.DivergingRamp.ToMapColorScale(0);
@@ -187,7 +188,7 @@ public sealed class DesignTokenJsonTests {
 
     [Fact]
     public void FromJson_InvalidRamps_NameThePath() {
-        var shortRamp = Regex.Replace(GraphiteJson, @"""sequential"": \[\s*""#86b6ef"",(?:\s*""#[0-9a-f]{6}"",?)*\s*\]","\"sequential\": [\"#86b6ef\"]");
+        var shortRamp = Regex.Replace(GraphiteJson, @"""sequential"": \[\s*""#9ab8dc"",(?:\s*""#[0-9a-f]{6}"",?)*\s*\]","\"sequential\": [\"#9ab8dc\"]");
         Assert.Contains("light.ramps.sequential", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(shortRamp)).Message, StringComparison.Ordinal);
         var badArm = GraphiteJson.Replace("\"#e0645b\"", "\"red\"");
         Assert.Contains("light.ramps.diverging.negative[1]", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(badArm)).Message, StringComparison.Ordinal);
