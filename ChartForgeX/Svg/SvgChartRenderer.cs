@@ -89,7 +89,7 @@ public sealed partial class SvgChartRenderer {
         var t = o.Theme;
         var w = o.Size.Width;
         var h = o.Size.Height;
-        var plot = PlotArea(chart);
+        var plot = CalendarFrame(chart, PlotArea(chart));
         var barCoordinateMap = ChartBarCoordinateMap.Create(chart);
         var range = ChartRange.FromChart(chart, barCoordinateMap);
         IReadOnlyList<double> xTicks = Array.Empty<double>();

@@ -11,16 +11,8 @@ public sealed partial class PngChartRenderer {
         if (model == null) return;
 
         var t = chart.Options.Theme;
-        var tickStyle = chart.Options.TickLabelStyle;
-        var tickFontSize = PngTickFontSize(chart);
-        var tickHeight = EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle);
-        var widestDay = 0.0;
-        for (var row = 0; row < 7; row++) widestDay = Math.Max(widestDay, EstimatePngStyledTextWidth(model.DayName(row), tickFontSize, tickStyle, emphasized: false));
-        var leftReserve = chart.Options.ShowAxes ? Math.Max(34, widestDay + 12) : 6;
-        var topReserve = chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6;
-        var bottomReserve = chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8;
-        var plot = new ChartRect(basePlot.Left + leftReserve, basePlot.Top + topReserve, Math.Max(1, basePlot.Width - leftReserve - 8), Math.Max(1, basePlot.Height - topReserve - bottomReserve));
-        var layout = model.Layout(plot);
+        var (leftReserve, topReserve, bottomReserve) = PngCalendarReserves(chart, model);
+        var layout = model.Layout(basePlot, leftReserve, topReserve, bottomReserve);
 
         DrawCalendarHeatmapPngAxes(c, chart, model, layout);
         var hasZero = false;
@@ -35,6 +27,18 @@ public sealed partial class PngChartRenderer {
         }
 
         if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapPngScale(c, chart, model, layout.X0 + layout.GridWidth, layout.Y0 + layout.GridHeight + 20, layout.Cell, model.EmptyDays > 0, hasZero);
+    }
+
+    /// <summary>Returns the space a calendar keeps for weekday labels, month labels, and its scale.</summary>
+    private static (double Left, double Top, double Bottom) PngCalendarReserves(Chart chart, ChartCalendarHeatmapModel model) {
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = PngTickFontSize(chart);
+        var tickHeight = EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle);
+        var widestDay = 0.0;
+        for (var row = 0; row < 7; row++) widestDay = Math.Max(widestDay, EstimatePngStyledTextWidth(model.DayName(row), tickFontSize, tickStyle, emphasized: false));
+        return (chart.Options.ShowAxes ? Math.Max(34, widestDay + 12) : 6,
+            chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6,
+            chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8);
     }
 
     private static void DrawCalendarHeatmapPngAxes(RgbaCanvas c, Chart chart, ChartCalendarHeatmapModel model, ChartCalendarLayout layout) {

@@ -24,7 +24,7 @@ internal static class MapExamples {
     private static Chart CreateCalendarHeatmap() {
         return Chart.Create()
             .WithTitle("Developer Consistency Calendar")
-            .WithSubtitle("Contribution-style day grid with focusable SVG regions and native hover titles")
+            .WithSubtitle("Contribution-style day grid with named SVG regions and native hover titles")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(980, 420)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
@@ -274,7 +274,7 @@ internal static class MapExamples {
     private static Chart CreateRegionMap() {
         return Chart.Create()
             .WithTitle("Revenue Region Map")
-            .WithSubtitle("Catalog-backed SVG geometry with keyboard-focusable regions")
+            .WithSubtitle("Catalog-backed SVG geometry with named regions")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(980, 560)
             .WithLegend(false)

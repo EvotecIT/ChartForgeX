@@ -66,6 +66,19 @@ public sealed class ChartLabels {
     /// </summary>
     public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }
 
+    /// <summary>
+    /// Gets or sets a function that writes a day in the accessible name and hover title of a calendar heatmap cell, for
+    /// example <c>day =&gt; day.ToString("D", culture)</c>. Null (the default), or a function returning null or white
+    /// space, writes the ISO date (<c>yyyy-MM-dd</c>). The machine-readable <c>data-cfx-date</c> attribute always stays ISO.
+    /// Exceptions thrown by the function are not caught; they surface from the render call.
+    /// </summary>
+    public Func<DateTime, string?>? DateFormatter { get; set; }
+
+    internal string FormatDate(DateTime day) {
+        var text = DateFormatter?.Invoke(day);
+        return string.IsNullOrWhiteSpace(text) ? day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : text!;
+    }
+
     internal string Describe(ChartDescriptionFacts description) {
         var text = AccessibleTextFormatter?.Invoke(description);
         return string.IsNullOrWhiteSpace(text) ? description.EnglishText : text!;

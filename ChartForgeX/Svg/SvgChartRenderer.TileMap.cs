@@ -55,8 +55,6 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, 768, writer => {
                 writer.StartElement("polygon")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", "tile-map-region")
                     .Attribute("data-cfx-region", tile.Code)
                     .Attribute("data-cfx-region-name", regionName)

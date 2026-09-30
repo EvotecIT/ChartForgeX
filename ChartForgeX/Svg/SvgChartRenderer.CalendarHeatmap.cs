@@ -14,16 +14,8 @@ public sealed partial class SvgChartRenderer {
 
         var t = chart.Options.Theme;
         var labels = chart.Options.Labels;
-        var tickStyle = chart.Options.TickLabelStyle;
-        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
-        var tickHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
-        var widestDay = 0.0;
-        for (var row = 0; row < 7; row++) widestDay = Math.Max(widestDay, EstimateSvgStyledTextWidth(chart, model.DayName(row), tickFontSize, tickStyle));
-        var leftReserve = chart.Options.ShowAxes ? Math.Max(34, widestDay + 12) : 6;
-        var topReserve = chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6;
-        var bottomReserve = chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8;
-        var plot = new ChartRect(basePlot.Left + leftReserve, basePlot.Top + topReserve, Math.Max(1, basePlot.Width - leftReserve - 8), Math.Max(1, basePlot.Height - topReserve - bottomReserve));
-        var layout = model.Layout(plot);
+        var (leftReserve, topReserve, bottomReserve) = CalendarReserves(chart, model);
+        var layout = model.Layout(basePlot, leftReserve, topReserve, bottomReserve);
         var startText = model.DateText(model.Start);
         var endText = model.DateText(model.End);
 
@@ -57,12 +49,11 @@ public sealed partial class SvgChartRenderer {
             int? level = hasValue ? model.Level(value) : null;
             var color = hasValue ? model.Color(value, entry.Color) : ChartHeatmapSurface.CalendarEmptyColor(chart);
             var dateText = model.DateText(day);
-            var summary = model.Series.Name + ", " + dateText + ": " + (hasValue ? FormatValue(chart, value) : labels.NoData);
+            var summary = model.Series.Name + ", " + labels.FormatDate(day) + ": " + (hasValue ? FormatValue(chart, value) : labels.NoData);
+            // A static cell carries an accessible name but is not a tab stop; the interactive HTML adapter adds focus.
             writer
                 .StartElement("rect")
                 .Attribute("class", "cfx-interactive-region")
-                .Attribute("tabindex", "0")
-                .Attribute("focusable", "true")
                 .Attribute("data-cfx-role", "calendar-heatmap-cell")
                 .Attribute("data-cfx-date", dateText)
                 .Attribute("data-cfx-week-index", column)
@@ -95,6 +86,22 @@ public sealed partial class SvgChartRenderer {
         writer.EndElement().Line();
         sb.Append(writer.Build());
     }
+
+    /// <summary>Returns the space a calendar keeps for weekday labels, month labels, and its scale.</summary>
+    private static (double Left, double Top, double Bottom) CalendarReserves(Chart chart, ChartCalendarHeatmapModel model) {
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, chart.Options.Theme.TickLabelFontSize);
+        var tickHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
+        var widestDay = 0.0;
+        for (var row = 0; row < 7; row++) widestDay = Math.Max(widestDay, EstimateSvgStyledTextWidth(chart, model.DayName(row), tickFontSize, tickStyle));
+        return (chart.Options.ShowAxes ? Math.Max(34, widestDay + 12) : 6,
+            chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6,
+            chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8);
+    }
+
+    /// <summary>Returns the frame of a calendar chart (see <see cref="ChartCalendarHeatmapModel.Frame"/>), or the plot of other charts.</summary>
+    private static ChartRect CalendarFrame(Chart chart, ChartRect plot) =>
+        IsCalendarHeatmapChart(chart) ? ChartCalendarHeatmapModel.Frame(chart, plot) : plot;
 
     private static void DrawCalendarHeatmapSvgAxes(SvgMarkupWriter writer, Chart chart, ChartCalendarHeatmapModel model, ChartCalendarLayout layout) {
         if (!chart.Options.ShowAxes) return;

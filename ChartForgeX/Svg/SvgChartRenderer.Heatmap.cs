@@ -210,13 +210,12 @@ public sealed partial class SvgChartRenderer {
     private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, ChartColor color, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null, string? tooltip = null) {
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(768);
-        // A linked cell takes focus through its <a>, so the rect itself is not a second tab stop.
+        // Static cells carry accessible names but are not tab stops (the interactive HTML adapter adds focus); a
+        // linked cell takes focus through its <a>.
         if (href != null) writer.StartElement("a").Attribute("data-cfx-role", "heatmap-cell-link").Attribute("href", href).EndStartElement();
         writer
             .StartElement("rect")
             .Attribute("class", "cfx-interactive-region")
-            .Attribute("tabindex", href == null ? "0" : null)
-            .Attribute("focusable", href == null ? "true" : null)
             .Attribute("data-cfx-role", "heatmap-cell")
             .OptionalAttribute("data-cfx-level", level)
             .Attribute("data-cfx-id", "heatmap:" + rowIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + columnIndex.ToString(System.Globalization.CultureInfo.InvariantCulture))

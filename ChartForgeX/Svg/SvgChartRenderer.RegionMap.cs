@@ -49,8 +49,6 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, 1024, writer => {
                 writer.StartElement("path")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", rolePrefix + "-region")
                     .Attribute("data-cfx-region", region.Code)
                     .Attribute("data-cfx-region-name", region.Name)

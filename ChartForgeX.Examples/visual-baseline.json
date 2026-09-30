@@ -2348,6 +2348,23 @@
       }
     },
     {
+      "name": "report-host-short-calendar",
+      "width": 760,
+      "height": 230,
+      "svg": {
+        "minVisualNodes": 68,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 306009,
+        "minTransparentPixels": 43591,
+        "minDistinctColors": 821,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "report-summary-metric-strip",
       "width": 980,
       "height": 294,

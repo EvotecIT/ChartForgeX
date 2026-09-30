@@ -79,8 +79,6 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, writer => writer
             .StartElement("polygon")
             .Attribute("class", "cfx-interactive-region")
-            .Attribute("tabindex", "0")
-            .Attribute("focusable", "true")
             .Attribute("data-cfx-role", "hexbin-cell")
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)

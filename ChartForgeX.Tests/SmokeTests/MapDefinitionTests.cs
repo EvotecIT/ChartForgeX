@@ -33,7 +33,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-region=\"CA\" data-cfx-region-name=\"California\" data-cfx-value=\"95\"", StringComparison.Ordinal), "Region maps should resolve full names through the map definition.");
         Assert(svg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"12\"", StringComparison.Ordinal), "Region maps should resolve custom aliases through the map definition.");
         Assert(svg.Contains("<title>California (CA): 95</title>", StringComparison.Ordinal), "Region map regions should expose native SVG hover titles.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"region-map-region\"", StringComparison.Ordinal), "Region map regions should be keyboard-focusable interactive SVG regions.");
+        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"region-map-region\"", StringComparison.Ordinal), "Region map regions should be named interactive SVG regions without a tab stop of their own.");
         Assert(svg.Contains("data-cfx-role=\"region-map-scale-step\"", StringComparison.Ordinal), "Region maps should render a value scale.");
         Assert(svg.Contains("data-cfx-role=\"region-map-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Region maps should tag missing-data scale swatches as empty.");
         Assert(svg.Contains("fill=\"#2E69EC\"", StringComparison.Ordinal), "Region maps should honor per-region colors inside the choropleth scale.");
@@ -68,7 +68,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"tile-map-region\"") == 51, "Tile maps should render every region in the definition.");
         Assert(svg.Contains("data-cfx-region=\"CA\" data-cfx-region-name=\"California\" data-cfx-value=\"100\"", StringComparison.Ordinal), "Tile maps should resolve aliases and aggregate duplicate values.");
         Assert(svg.Contains("<title>California (CA): 100</title>", StringComparison.Ordinal), "Tile map regions should expose native SVG hover titles.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"tile-map-region\"", StringComparison.Ordinal), "Tile map regions should be keyboard-focusable interactive SVG regions.");
+        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"tile-map-region\"", StringComparison.Ordinal), "Tile map regions should be named interactive SVG regions without a tab stop of their own.");
         Assert(svg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"0\" data-cfx-empty=\"true\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Tile maps should expose empty status metadata for missing regions.");
         Assert(svg.Contains("data-cfx-role=\"tile-map-label\"", StringComparison.Ordinal), "Tile maps should label tiles when there is enough room.");
         Assert(svg.Contains("data-cfx-role=\"tile-map-scale-step\"", StringComparison.Ordinal), "Tile maps should render a value scale.");

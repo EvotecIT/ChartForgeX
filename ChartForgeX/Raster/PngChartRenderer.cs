@@ -133,7 +133,11 @@ public sealed partial class PngChartRenderer {
                 return c;
             }
             if (IsCalendarHeatmapChart(chart)) {
-                DrawSpecialChart(DrawCalendarHeatmap);
+                // A calendar with the default padding takes the chart area (ChartCalendarHeatmapModel.Frame); its plot surface follows.
+                var frame = ChartCalendarHeatmapModel.Frame(chart, ApplyPngLegendReserve(chart, plot));
+                DrawPlotSurface(c, o, t, frame);
+                DrawCalendarHeatmap(c, chart, frame);
+                DrawLegend(c, chart);
                 return c;
             }
             if (IsDottedMapChart(chart)) {
@@ -351,13 +355,13 @@ public sealed partial class PngChartRenderer {
         var titleStyle = chart.Options.TitleStyle;
         var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize), titleStyle);
         var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth, titleStyle);
-        if (title.Length > 0) DrawPngTextStyled(c, 40, 52 - EstimatePngStyledTextHeight(titleFontSize, titleStyle) + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
+        if (title.Length > 0) DrawPngTextStyled(c, 40, ChartLayout.HeaderTitleBaseline - EstimatePngStyledTextHeight(titleFontSize, titleStyle) + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
             var subtitleStyle = chart.Options.SubtitleStyle;
             var subtitleMaxWidth = Math.Max(24, chart.Options.Size.Width - 84);
             var subtitleFontSize = TextFontSizeForWidth(chart.Subtitle, subtitleMaxWidth, PngStyleFontSize(subtitleStyle, theme.SubtitleFontSize), subtitleStyle);
             var subtitle = TrimPngLabelToWidth(chart.Subtitle, subtitleFontSize, subtitleMaxWidth, subtitleStyle);
-            if (subtitle.Length > 0) DrawPngTextStyled(c, 42, 79 - EstimatePngStyledTextHeight(subtitleFontSize, subtitleStyle) + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
+            if (subtitle.Length > 0) DrawPngTextStyled(c, 42, ChartLayout.HeaderSubtitleBaseline - EstimatePngStyledTextHeight(subtitleFontSize, subtitleStyle) + 1, subtitle, subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
     }
 

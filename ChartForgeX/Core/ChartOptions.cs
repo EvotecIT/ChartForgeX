@@ -57,7 +57,8 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets the chart padding around the plot area.
+    /// Gets or sets the chart padding around the plot area. The default suits cartesian axes and legends; a calendar
+    /// heatmap with the default padding lays itself out over the chart area instead, and honours padding that is set.
     /// </summary>
     public ChartPadding Padding {
         get => _padding;
@@ -68,8 +69,12 @@ public sealed partial class ChartOptions {
             ChartGuards.Finite(value.Bottom, nameof(value));
             if (value.Left < 0 || value.Top < 0 || value.Right < 0 || value.Bottom < 0) throw new ArgumentOutOfRangeException(nameof(value), "Chart padding values must be non-negative.");
             _padding = value;
+            HasExplicitPadding = true;
         }
     }
+
+    /// <summary>Gets whether <see cref="Padding"/> was set, by the caller or by a builder, rather than left at its default.</summary>
+    internal bool HasExplicitPadding { get; private set; }
 
     /// <summary>
     /// Gets or sets the visual theme used by renderers.

@@ -140,6 +140,31 @@ internal sealed class ChartCalendarHeatmapModel {
     /// <summary>Returns the accessible name of the calendar group, through <see cref="ChartLabels.AccessibleTextFormatter"/>.</summary>
     public string Summary() => Chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmapGroup, Chart.Title, new[] { Series.Name }, FilledDays, EmptyDays, Start, End));
 
+    /// <summary>Gap the calendar keeps from the chart edge, or from the card when one is drawn.</summary>
+    private const double EdgeInset = 8;
+
+    /// <summary>
+    /// Returns the frame a calendar is drawn in. The default padding is sized for cartesian axes and legends that a
+    /// calendar does not draw (a short card would shrink the days to a pixel), so with it the calendar takes the chart
+    /// area instead: below the header when one is drawn, inside the card when one is drawn, and a small gap from the
+    /// edge. Padding set on the chart (<see cref="ChartOptions.Padding"/>, <c>WithPadding</c>, or a builder that sets it)
+    /// is honoured and the frame is <paramref name="basePlot"/>. Renderers draw the plot surface in this frame too.
+    /// </summary>
+    public static ChartRect Frame(Chart chart, ChartRect basePlot) {
+        var options = chart.Options;
+        if (options.HasExplicitPadding) return basePlot;
+        var inset = (options.ShowCard && options.Theme.UseCard ? ChartVisualPrimitives.CardSurfaceInset : 0) + EdgeInset;
+        var top = options.ShowHeader ? Math.Max(inset, ChartLayout.HeaderBottom(chart)) : inset;
+        return new ChartRect(inset, top, Math.Max(1, options.Size.Width - inset * 2), Math.Max(1, options.Size.Height - top - inset));
+    }
+
+    /// <summary>Returns the cell geometry in a <paramref name="frame"/> from <see cref="Frame"/>, inside the reserves.</summary>
+    public ChartCalendarLayout Layout(ChartRect frame, double leftReserve, double topReserve, double bottomReserve) =>
+        Layout(Inner(frame, leftReserve, topReserve, bottomReserve));
+
+    private static ChartRect Inner(ChartRect area, double leftReserve, double topReserve, double bottomReserve) =>
+        new(area.Left + leftReserve, area.Top + topReserve, Math.Max(1, area.Width - leftReserve - 8), Math.Max(1, area.Height - topReserve - bottomReserve));
+
     /// <summary>
     /// Returns the cell geometry inside <paramref name="plot"/>: cells fill the plot, limited by its width or height,
     /// unless a preferred size fits or a maximum size applies; the grid is centred.

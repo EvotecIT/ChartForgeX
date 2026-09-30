@@ -73,8 +73,6 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, 768, writer => {
                 writer.StartElement("circle")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", "dotted-map-point")
                     .Attribute("data-cfx-point", i)
                     .Attribute("data-cfx-label", label);
@@ -168,8 +166,6 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, 1024, writer => {
                 writer.StartElement("path")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", "dotted-map-connector")
                     .Attribute("data-cfx-connector", i)
                     .Attribute("data-cfx-label", connector.Label)

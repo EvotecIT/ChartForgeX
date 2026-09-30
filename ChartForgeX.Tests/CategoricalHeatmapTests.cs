@@ -111,11 +111,13 @@ public sealed class CategoricalHeatmapTests {
     }
 
     [Fact]
-    public void ToSvg_LinkedCells_UseOneTabStopAndExposeStateLabel() {
+    public void ToSvg_OnlyLinkedCellsAreTabStopsAndCellsExposeStateLabel() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
         var cells = ByRole(svg, "heatmap-cell");
-        Assert.Null(cells[1].Attribute("tabindex"));
-        Assert.Equal("0", (string?)cells[0].Attribute("tabindex"));
+        // A static cell is named for screen readers but is not a tab stop; a linked cell is reached through its link.
+        Assert.All(cells, cell => Assert.Null(cell.Attribute("tabindex")));
+        Assert.Equal("DC01, LDAP: Critical", (string?)cells[1].Attribute("aria-label"));
+        Assert.NotEmpty(ByRole(svg, "heatmap-cell-link"));
         Assert.Equal("Not evaluated", (string?)cells[2].Attribute("data-cfx-meta-state"));
     }
 

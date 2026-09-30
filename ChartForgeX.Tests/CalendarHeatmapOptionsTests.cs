@@ -30,7 +30,8 @@ public sealed class CalendarHeatmapOptionsTests {
 
     [Fact]
     public void DayAndMonthNamesAndScaleWords_AreLocalized() {
-        var chart = TwoWeeks(DayOfWeek.Monday, GermanDays, GermanMonths).WithLabels(labels => {
+        // Small cells: weekday labels go on Monday, Wednesday, and Friday only.
+        var chart = TwoWeeks(DayOfWeek.Monday, GermanDays, GermanMonths).WithCalendarHeatmapCells(maximumSize: 9).WithLabels(labels => {
             labels.Less = "Weniger";
             labels.More = "Mehr";
             labels.NoData = "Keine Daten";
@@ -115,7 +116,7 @@ public sealed class CalendarHeatmapOptionsTests {
     [InlineData(DayOfWeek.Wednesday)]
     [InlineData(DayOfWeek.Saturday)]
     public void AnyFirstDay_KeepsWholeWeeksAndLabelsTheSameRowsInSvgAndPng(DayOfWeek firstDay) {
-        var chart = TwoWeeks(firstDay);
+        var chart = TwoWeeks(firstDay).WithCalendarHeatmapCells(maximumSize: 9);
         var svg = XDocument.Parse(chart.ToSvg());
         var cells = ByRole(svg, "calendar-heatmap-cell");
         Assert.Equal(0, cells.Length % 7);
@@ -127,11 +128,63 @@ public sealed class CalendarHeatmapOptionsTests {
     [Fact]
     public void WindowStartingAtTheEndOfAMonth_NamesTheNextMonthInstead() {
         var items = Enumerable.Range(0, 60).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 31).AddDays(day), day % 4)).ToArray();
-        var svg = XDocument.Parse(Chart.Create().WithSize(760, 300).AddCalendarHeatmap("C", items).ToSvg());
+        var svg = XDocument.Parse(Chart.Create().WithSize(760, 300).WithCalendarHeatmapCells(maximumSize: 10).AddCalendarHeatmap("C", items).ToSvg());
         var months = ByRole(svg, "calendar-heatmap-month-label").Select(label => label.Value).ToArray();
         Assert.Equal("Feb", months[0]);
         Assert.Contains("Mar", months);
         Assert.DoesNotContain("Jan", months);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShortCard_TakesThePaddingSoCellsStayReadable(bool header) {
+        // A 230 px card with the default padding used to leave the calendar 1 px cells.
+        var items = Enumerable.Range(0, 90).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 6, 1).AddDays(day), day % 5)).ToArray();
+        var chart = Chart.Create().WithSize(760, 230).WithHeader(header).WithTitle("Changes").AddCalendarHeatmap("Changes", items);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var cells = ByRole(svg, "calendar-heatmap-cell");
+        var size = double.Parse((string)cells[0].Attribute("width")!, CultureInfo.InvariantCulture);
+        Assert.True(size >= 8, "Cells should stay readable, got " + size.ToString(CultureInfo.InvariantCulture) + " px.");
+        var bottom = cells.Max(cell => double.Parse((string)cell.Attribute("y")!, CultureInfo.InvariantCulture)) + size;
+        var scale = ByRole(svg, "calendar-heatmap-scale-step").Max(step => double.Parse((string)step.Attribute("y")!, CultureInfo.InvariantCulture) + double.Parse((string)step.Attribute("height")!, CultureInfo.InvariantCulture));
+        Assert.True(bottom < scale && scale <= 230, "The scale stays below the days and inside the chart.");
+        if (header) Assert.True(cells.Min(cell => double.Parse((string)cell.Attribute("y")!, CultureInfo.InvariantCulture)) > 60, "The days stay below the title.");
+
+        // The PNG lays the days out in the same frame: the darkest day is at the same place.
+        var darkest = cells.Where(cell => (string?)cell.Attribute("data-cfx-level") == "4").First();
+        var image = ChartForgeX.Raster.PngReader.Decode(chart.ToPng());
+        var scaleFactor = image.Width / 760.0;
+        var x = (int)((double.Parse((string)darkest.Attribute("x")!, CultureInfo.InvariantCulture) + size / 2) * scaleFactor);
+        var y = (int)((double.Parse((string)darkest.Attribute("y")!, CultureInfo.InvariantCulture) + size / 2) * scaleFactor);
+        var fill = ChartColor.Parse((string)darkest.Attribute("fill")!);
+        var offset = (y * image.Width + x) * 4;
+        Assert.True(Math.Abs(image.Pixels[offset] - fill.R) < 16 && Math.Abs(image.Pixels[offset + 1] - fill.G) < 16 && Math.Abs(image.Pixels[offset + 2] - fill.B) < 16, "The PNG draws the same day at the same place.");
+    }
+
+    [Fact]
+    public void PaddingSetOnTheChart_IsHonouredByTheCalendar() {
+        var items = Enumerable.Range(0, 90).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 6, 1).AddDays(day), day % 5)).ToArray();
+        double Top(Chart chart) => ByRole(XDocument.Parse(chart.ToSvg()), "calendar-heatmap-cell").Min(cell => double.Parse((string)cell.Attribute("y")!, CultureInfo.InvariantCulture));
+        var padded = Chart.Create().WithSize(760, 360).WithHeader(false).WithPadding(40, 120, 40, 20).AddCalendarHeatmap("Changes", items);
+        Assert.True(Top(padded) >= 120 + 24, "The calendar starts below the padding and its month labels.");
+        var automatic = Chart.Create().WithSize(760, 360).WithHeader(false).AddCalendarHeatmap("Changes", items);
+        Assert.True(Top(automatic) < 78, "With the default padding the calendar uses the chart area.");
+    }
+
+    [Fact]
+    public void DateFormatter_NamesDaysInTheLabelsLanguage_AndKeepsIsoData() {
+        var german = CultureInfo.GetCultureInfo("de-DE");
+        var chart = TwoWeeks(DayOfWeek.Monday).WithLabels(labels => labels.DateFormatter = day => day.ToString("D", german));
+        var cell = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-date") == "2026-09-07");
+        var name = new DateTime(2026, 9, 7).ToString("D", german);
+        Assert.Equal("Changes, " + name + ": 1", (string?)cell.Attribute("aria-label"));
+        Assert.Equal("Changes, " + name + ": 1", cell.Elements().Single(child => child.Name.LocalName == "title").Value);
+        Assert.Null(cell.Attribute("tabindex"));
+
+        var iso = ByRole(XDocument.Parse(TwoWeeks(DayOfWeek.Monday).WithLabels(labels => labels.DateFormatter = _ => " ").ToSvg()), "calendar-heatmap-cell")
+            .Single(element => (string?)element.Attribute("data-cfx-date") == "2026-09-07");
+        Assert.Equal("Changes, 2026-09-07: 1", (string?)iso.Attribute("aria-label"));
     }
 
     [Fact]
