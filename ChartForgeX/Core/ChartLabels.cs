@@ -14,7 +14,7 @@ public sealed class ChartLabels {
     private string _less = "Less";
     private string _more = "More";
     private string _noData = "No data";
-    private string _calendarSummary = "{0} calendar heatmap from {1} to {2} with {3} filled days and {4} empty days";
+    private string _untitledChart = "ChartForgeX chart";
     private const string DefaultLevel = "Level";
     private string _level = DefaultLevel;
 
@@ -51,22 +51,24 @@ public sealed class ChartLabels {
     public string NoData { get => _noData; set => _noData = Required(value, nameof(value)); }
 
     /// <summary>
-    /// Gets or sets the accessible summary of a calendar heatmap: <c>{0}</c> the series name, <c>{1}</c> and <c>{2}</c>
-    /// the first and last day, <c>{3}</c> the days with a value, and <c>{4}</c> the days without one. Default
-    /// <c>{0} calendar heatmap from {1} to {2} with {3} filled days and {4} empty days</c>.
+    /// Gets or sets the accessible name of a chart without a title (the SVG <c>title</c> element and the HTML page title).
+    /// Default <c>ChartForgeX chart</c>.
     /// </summary>
-    public string CalendarSummary {
-        get => _calendarSummary;
-        set {
-            var text = Required(value, nameof(value));
-            try {
-                _ = string.Format(System.Globalization.CultureInfo.InvariantCulture, text, "a", "b", "c", 1, 2);
-            } catch (FormatException error) {
-                throw new ArgumentException("The calendar summary must be a composite format using placeholders {0} to {4}.", nameof(value), error);
-            }
+    public string UntitledChart { get => _untitledChart; set => _untitledChart = Required(value, nameof(value)); }
 
-            _calendarSummary = text;
-        }
+    /// <summary>
+    /// Gets or sets a function that writes the automatic accessible sentences from their <see cref="ChartDescriptionFacts"/>:
+    /// the chart description (the SVG <c>desc</c> element) and the accessible names of calendar, dotted map, region map,
+    /// and tile map groups; <see cref="ChartDescriptionFacts.Kind"/> says which. Null (the default), or a function
+    /// returning null or white space for a sentence, writes <see cref="ChartDescriptionFacts.EnglishText"/>. A description
+    /// set through <see cref="Chart.WithAccessibility"/> still wins and the function is not called for it. Exceptions
+    /// thrown by the function are not caught; they surface from the render call.
+    /// </summary>
+    public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }
+
+    internal string Describe(ChartDescriptionFacts description) {
+        var text = AccessibleTextFormatter?.Invoke(description);
+        return string.IsNullOrWhiteSpace(text) ? description.EnglishText : text!;
     }
 
     private static string Required(string value, string parameterName) =>

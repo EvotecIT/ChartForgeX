@@ -28,7 +28,7 @@ public sealed partial class SvgChartRenderer {
         var maxLongitude = series.Points.Max(point => point.X);
         var minLatitude = series.Points.Min(point => point.Y);
         var maxLatitude = series.Points.Max(point => point.Y);
-        var containerSummary = series.Name + " dotted map with " + series.Points.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " highlighted " + (series.Points.Count == 1 ? "point" : "points");
+        var containerSummary = chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.DottedMapGroup, chart.Title, new[] { series.Name }, series.Points.Count));
 
         var valueAttributes = valueRange.HasValue ? $" data-cfx-valued-point-count=\"{valuedPointCount}\" data-cfx-min-value=\"{F(valueRange.Value.Min)}\" data-cfx-max-value=\"{F(valueRange.Value.Max)}\"" : string.Empty;
         sb.AppendLine($"<g data-cfx-role=\"dotted-map\" data-cfx-map-kind=\"world-dotted\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-projection=\"equirectangular\" data-cfx-point-count=\"{series.Points.Count}\" data-cfx-visible-point-count=\"{visiblePoints}\" data-cfx-connector-count=\"{visibleConnectors}\"{valueAttributes} data-cfx-viewport=\"{Escape(viewport.Name)}\" data-cfx-viewport-min-longitude=\"{F(viewport.MinimumLongitude)}\" data-cfx-viewport-max-longitude=\"{F(viewport.MaximumLongitude)}\" data-cfx-viewport-min-latitude=\"{F(viewport.MinimumLatitude)}\" data-cfx-viewport-max-latitude=\"{F(viewport.MaximumLatitude)}\" data-cfx-min-longitude=\"{F(minLongitude)}\" data-cfx-max-longitude=\"{F(maxLongitude)}\" data-cfx-min-latitude=\"{F(minLatitude)}\" data-cfx-max-latitude=\"{F(maxLatitude)}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");

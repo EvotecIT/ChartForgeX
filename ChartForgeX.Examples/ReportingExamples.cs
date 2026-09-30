@@ -18,6 +18,8 @@ internal static class ReportingExamples {
         WriteChangeCalendar(output, pngOutputScale);
     }
 
+    private static string Days(int count) => count + (count == 1 ? " Tag" : " Tage");
+
     private static void WriteChangeCalendar(string output, ChartPngOutputScale pngOutputScale) {
         // Two weeks of configuration changes in a report localized to German: weeks start on Monday, the days, months,
         // and scale words come from the host, days without changes are neutral, and cells grow to fill the card.
@@ -35,7 +37,11 @@ internal static class ReportingExamples {
                 labels.Less = "Weniger";
                 labels.More = "Mehr";
                 labels.NoData = "Keine Daten";
-                labels.CalendarSummary = "{0} von {1} bis {2}: {3} Tage mit Werten, {4} ohne";
+                labels.AccessibleTextFormatter = facts => facts.Kind switch {
+                    ChartDescriptionKind.CalendarHeatmapGroup => facts.SeriesNames[0] + " vom " + facts.FirstDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + " bis " + facts.LastDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + ": " + Days(facts.Count) + " mit Werten, " + Days(facts.MissingCount) + " ohne",
+                    ChartDescriptionKind.CalendarHeatmap => (facts.Title ?? "Diagramm") + ": Kalender mit " + facts.Count + (facts.Count == 1 ? " Wert" : " Werten"),
+                    _ => null
+                };
             })
             .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"), DayOfWeek.Monday,
                 new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" },

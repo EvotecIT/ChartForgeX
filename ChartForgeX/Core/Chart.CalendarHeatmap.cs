@@ -20,7 +20,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     /// <remarks>The scale words and the accessible summary come from <see cref="ChartOptions.Labels"/>
     /// (<see cref="ChartLabels.Less"/>, <see cref="ChartLabels.More"/>, <see cref="ChartLabels.NoData"/>,
-    /// <see cref="ChartLabels.CalendarSummary"/>); cell sizing comes from <see cref="WithCalendarHeatmapCells"/>.</remarks>
+    /// <see cref="ChartLabels.AccessibleTextFormatter"/>); cell sizing comes from <see cref="WithCalendarHeatmapCells"/>.</remarks>
     public Chart AddCalendarHeatmap(string name, IEnumerable<ChartCalendarHeatmapItem> items, ChartColor? color = null, DayOfWeek firstDayOfWeek = DayOfWeek.Sunday, IReadOnlyList<string>? dayNames = null, IReadOnlyList<string>? monthNames = null) {
         EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));

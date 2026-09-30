@@ -37,7 +37,7 @@ public sealed partial class SvgChartRenderer {
         var regionStrokeWidth = Math.Max(0, chart.Options.MapRegionStrokeWidth);
         var hasMissing = definition.Regions.Any(tile => !data.ContainsKey(tile.Code));
         var missingCount = definition.Regions.Count(tile => !data.ContainsKey(tile.Code));
-        var containerSummary = series.Name + " tile map with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missingCount.ToString(CultureInfo.InvariantCulture) + " missing regions";
+        var containerSummary = chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.TileMapGroup, chart.Title, new[] { series.Name }, data.Count, missingCount, mapName: definition.Name));
 
         sb.AppendLine($"<g data-cfx-role=\"tile-map\" data-cfx-map-kind=\"{Escape(definition.Id)}\" data-cfx-map-id=\"{Escape(definition.Id)}\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-region-count=\"{definition.Regions.Count}\" data-cfx-filled-region-count=\"{data.Count}\" data-cfx-missing-region-count=\"{missingCount}\" data-cfx-min-value=\"{F(sourceMin)}\" data-cfx-max-value=\"{F(sourceMax)}\" data-cfx-map-color-scale=\"{(chart.Options.MapColorScale == null ? "default" : "custom")}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");
         if (chart.Options.ShowMapSurface) DrawTileMapSvgSurface(sb, chart, x0, y0, width, height, tileSize);

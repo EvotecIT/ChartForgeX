@@ -10,10 +10,10 @@ namespace ChartForgeX.Svg;
 public sealed partial class SvgChartRenderer {
     private static void DrawRegionMap(StringBuilder sb, Chart chart, ChartRect basePlot) {
         var definition = chart.Options.RegionMapDefinition ?? throw new InvalidOperationException("Region maps require a map definition.");
-        DrawRegionMap(sb, chart, basePlot, ChartSeriesKind.RegionMap, definition, "region-map", definition.Id, "region map");
+        DrawRegionMap(sb, chart, basePlot, ChartSeriesKind.RegionMap, definition, "region-map", definition.Id);
     }
 
-    private static void DrawRegionMap(StringBuilder sb, Chart chart, ChartRect basePlot, ChartSeriesKind kind, ChartMapDefinition definition, string rolePrefix, string mapKind, string summaryLabel) {
+    private static void DrawRegionMap(StringBuilder sb, Chart chart, ChartRect basePlot, ChartSeriesKind kind, ChartMapDefinition definition, string rolePrefix, string mapKind) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == kind);
         if (series == null || series.Points.Count == 0) return;
         var data = MapValues(chart, series);
@@ -33,7 +33,7 @@ public sealed partial class SvgChartRenderer {
         var regionStrokeWidth = chart.Options.MapRegionStrokeWidth;
         var hasMissing = definition.Regions.Any(region => !data.ContainsKey(region.Code));
         var missingCount = definition.Regions.Count(region => !data.ContainsKey(region.Code));
-        var containerSummary = series.Name + " " + summaryLabel + " with " + data.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " filled regions and " + missingCount.ToString(System.Globalization.CultureInfo.InvariantCulture) + " missing regions";
+        var containerSummary = chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.RegionMapGroup, chart.Title, new[] { series.Name }, data.Count, missingCount, mapName: definition.Name));
 
         sb.AppendLine($"<g data-cfx-role=\"{rolePrefix}\" data-cfx-map-kind=\"{Escape(mapKind)}\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-region-count=\"{definition.Regions.Count}\" data-cfx-filled-region-count=\"{data.Count}\" data-cfx-missing-region-count=\"{missingCount}\" data-cfx-min-value=\"{F(sourceMin)}\" data-cfx-max-value=\"{F(sourceMax)}\" data-cfx-map-id=\"{Escape(definition.Id)}\" data-cfx-map-color-scale=\"{(chart.Options.MapColorScale == null ? "default" : "custom")}\" data-cfx-source-left=\"{F(sourceBounds.Left)}\" data-cfx-source-top=\"{F(sourceBounds.Top)}\" data-cfx-source-width=\"{F(sourceBounds.Width)}\" data-cfx-source-height=\"{F(sourceBounds.Height)}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");
         if (chart.Options.ShowMapSurface) DrawRegionMapSvgSurface(sb, chart, map, rolePrefix);

@@ -34,7 +34,9 @@ public sealed class CalendarHeatmapOptionsTests {
             labels.Less = "Weniger";
             labels.More = "Mehr";
             labels.NoData = "Keine Daten";
-            labels.CalendarSummary = "{0}: {1} bis {2}, {3} Tage mit Werten, {4} ohne";
+            labels.AccessibleTextFormatter = facts => facts.Kind == ChartDescriptionKind.CalendarHeatmapGroup
+                ? string.Format(CultureInfo.InvariantCulture, "{0}: {1:yyyy-MM-dd} bis {2:yyyy-MM-dd}, {3} Tage mit Werten, {4} ohne", facts.SeriesNames[0], facts.FirstDate, facts.LastDate, facts.Count, facts.MissingCount)
+                : null;
         });
         var svg = chart.ToSvg();
         var document = XDocument.Parse(svg);
@@ -55,7 +57,6 @@ public sealed class CalendarHeatmapOptionsTests {
     public void Names_MustCoverEveryDayAndMonth() {
         Assert.Throws<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("C", Items(), dayNames: new[] { "Mo" }));
         Assert.Throws<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("C", Items(), monthNames: GermanDays));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithLabels(labels => labels.CalendarSummary = "{5}"));
         Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().WithCalendarHeatmapCells(size: 1));
     }
 

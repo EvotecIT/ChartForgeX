@@ -7,19 +7,21 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static string BuildDescription(Chart chart) {
-        var title = string.IsNullOrWhiteSpace(chart.Title) ? "Chart" : chart.Title;
-        if (chart.Series.Count == 0) return title + " with no data series.";
+    private static string BuildDescription(Chart chart) => chart.Options.Labels.Describe(DescriptionFacts(chart));
+
+    private static ChartDescriptionFacts DescriptionFacts(Chart chart) {
+        var title = chart.Title;
+        if (chart.Series.Count == 0) return new ChartDescriptionFacts(ChartDescriptionKind.NoSeries, title, Array.Empty<string>(), 0);
         var calendar = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.CalendarHeatmap);
         if (calendar != null && calendar.Points.Count > 0) {
-            var minDate = calendar.Points.Min(point => DateTime.FromOADate(point.X).Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var maxDate = calendar.Points.Max(point => DateTime.FromOADate(point.X).Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            return title + " calendar heatmap for " + calendar.Name + " from " + minDate + " to " + maxDate + " with " + calendar.Points.Count.ToString(CultureInfo.InvariantCulture) + " dated " + (calendar.Points.Count == 1 ? "value" : "values") + ".";
+            var minDate = calendar.Points.Min(point => DateTime.FromOADate(point.X).Date);
+            var maxDate = calendar.Points.Max(point => DateTime.FromOADate(point.X).Date);
+            return new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmap, title, new[] { calendar.Name }, calendar.Points.Count, firstDate: minDate, lastDate: maxDate);
         }
 
         var dottedMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.DottedMap);
         if (dottedMap != null && dottedMap.Points.Count > 0) {
-            return title + " dotted world map for " + dottedMap.Name + " with " + dottedMap.Points.Count.ToString(CultureInfo.InvariantCulture) + " highlighted " + (dottedMap.Points.Count == 1 ? "point" : "points") + ".";
+            return new ChartDescriptionFacts(ChartDescriptionKind.DottedMap, title, new[] { dottedMap.Name }, dottedMap.Points.Count);
         }
 
         var regionMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.RegionMap);
@@ -27,8 +29,7 @@ public sealed partial class SvgChartRenderer {
             var definition = chart.Options.RegionMapDefinition;
             var data = MapValues(chart, regionMap);
             var missing = definition == null ? 0 : Math.Max(0, definition.Regions.Count - data.Count);
-            var mapName = definition == null ? "region" : definition.Name;
-            return title + " region map for " + regionMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
+            return new ChartDescriptionFacts(ChartDescriptionKind.RegionMap, title, new[] { regionMap.Name }, data.Count, missing, mapName: definition?.Name);
         }
 
         var tileMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.TileMap);
@@ -36,14 +37,12 @@ public sealed partial class SvgChartRenderer {
             var definition = chart.Options.TileMapDefinition;
             var data = MapValues(chart, tileMap);
             var missing = definition == null ? 0 : Math.Max(0, definition.Regions.Count - data.Count);
-            var mapName = definition == null ? "tile" : definition.Name;
-            return title + " tile map for " + tileMap.Name + " on " + mapName + " with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missing.ToString(CultureInfo.InvariantCulture) + " missing regions.";
+            return new ChartDescriptionFacts(ChartDescriptionKind.TileMap, title, new[] { tileMap.Name }, data.Count, missing, mapName: definition?.Name);
         }
 
-        var describedSeries = chart.Series.Where(series => series.Points.Count > 0 && !IsPointCalloutSeries(series)).ToArray();
-        if (describedSeries.Length == 0) return title + " with no data points.";
-        var names = string.Join(", ", describedSeries.Select(series => series.Name).ToArray());
-        return title + " with " + describedSeries.Length.ToString(CultureInfo.InvariantCulture) + " data series: " + names + ".";
+        var describedSeries = chart.Series.Where(series => series.Points.Count > 0 && !IsPointCalloutSeries(series)).Select(series => series.Name).ToArray();
+        if (describedSeries.Length == 0) return new ChartDescriptionFacts(ChartDescriptionKind.NoPoints, title, Array.Empty<string>(), 0);
+        return new ChartDescriptionFacts(ChartDescriptionKind.Series, title, describedSeries, describedSeries.Length);
     }
 
     private static bool IsPieLike(Chart chart) => chart.Series.Count > 0 && ChartSeriesKindTraits.IsPieLikeKind(chart.Series[0].Kind);

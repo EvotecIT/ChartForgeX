@@ -147,7 +147,7 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, writer => writer
                 .StartElement("title")
                 .Attribute("id", $"{id}-title")
-                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX chart" : chart.Title))
+                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Labels.UntitledChart : chart.Title))
                 .EndElement()
                 .Line());
             AppendSvg(sb, writer => writer

@@ -137,8 +137,8 @@ internal sealed class ChartCalendarHeatmapModel {
 
     public string DateText(DateTime day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    public string Summary() => string.Format(CultureInfo.InvariantCulture, Chart.Options.Labels.CalendarSummary,
-        Series.Name, DateText(Start), DateText(End), FilledDays, EmptyDays);
+    /// <summary>Returns the accessible name of the calendar group, through <see cref="ChartLabels.AccessibleTextFormatter"/>.</summary>
+    public string Summary() => Chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmapGroup, Chart.Title, new[] { Series.Name }, FilledDays, EmptyDays, Start, End));
 
     /// <summary>
     /// Returns the cell geometry inside <paramref name="plot"/>: cells fill the plot, limited by its width or height,
