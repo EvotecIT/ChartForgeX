@@ -187,7 +187,7 @@ public sealed partial class TopologySvgRenderer {
         }
 
         if (displayMode == TopologyNodeDisplayMode.Tile) {
-            AddNodeTextLines(body, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, displayMode)), CenterX(node), node.Y + node.Height + 15, theme.Foreground, 11, "700", "middle", 14);
+            AddNodeTextLines(body, TileCaptionLines(node, options), CenterX(node), node.Y + node.Height + 15, theme.Foreground, 11, "700", "middle", 14);
             if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) body.AddElement(BuildTileSubtitle(node, prefix, theme, color, options));
             return body;
         }
@@ -338,8 +338,7 @@ public sealed partial class TopologySvgRenderer {
 
     private static SvgElement BuildTileSubtitle(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyRenderOptions options) {
         var (subtitle, width) = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options);
-        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true,
-            options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile)).Count;
+        var labelLineCount = TileCaptionLines(node, options).Count;
         var x = CenterX(node) - width / 2;
         var y = node.Y + node.Height + 7 + labelLineCount * 14;
         var group = new SvgElement("g")

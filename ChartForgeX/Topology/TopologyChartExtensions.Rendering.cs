@@ -87,7 +87,7 @@ public static partial class TopologyChartExtensions {
 
     private static AnimatedRasterFrames BuildMotionFrames(TopologyChart chart, TopologyRenderOptions? options, string formatName) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        var effective = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var motion = (effective.Motion ?? TopologyMotionOptions.RoutePulse()).Clone();
         motion.Validate();
         effective.Motion = motion;

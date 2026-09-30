@@ -32,6 +32,69 @@ internal static partial class TopologyRenderPrimitives {
         return lines;
     }
 
+    /// <summary>
+    /// Returns the caption lines drawn below a tile. Readable dense layouts wrap a caption that does not fit on one
+    /// line, at spaces and after separators first and inside a word as a last resort, and only shorten the last
+    /// allowed line; other layouts keep one shortened line unless wrapping is switched on.
+    /// </summary>
+    public static List<string> TileCaptionLines(TopologyNode node, TopologyRenderOptions options) {
+        var maxWidth = Math.Max(node.Width + 34, 54);
+        var limit = NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile);
+        var label = node.Label ?? string.Empty;
+        if (!options.ReadableDenseLayout || options.WrapNodeLabels || label.IndexOfAny(new[] { '\r', '\n' }) >= 0) {
+            return NodeTextLines(label, maxWidth, 11, true, options.MaxNodeLabelLines, options, limit);
+        }
+
+        var lines = new List<string>();
+        var maxLines = Math.Max(1, options.MaxNodeLabelLines);
+        // The character limit cuts the text without an ellipsis here; the ellipsis is added to the last line after
+        // wrapping, so it never takes part in choosing a break.
+        var rest = label.Trim();
+        var boundaries = System.Globalization.StringInfo.ParseCombiningCharacters(rest);
+        var shortened = boundaries.Length > limit * maxLines;
+        if (shortened) rest = rest.Substring(0, boundaries[limit * maxLines]).TrimEnd();
+        while (rest.Length > 0 && lines.Count < maxLines) {
+            if (lines.Count == maxLines - 1 || EstimateTextWidth(shortened ? rest + "..." : rest, 11, true, options.TextMeasurement) <= maxWidth) {
+                lines.Add(shortened ? EndWithEllipsis(rest, maxWidth, options.TextMeasurement) : TrimToEstimatedWidth(rest, maxWidth, 11, true, options.TextMeasurement));
+                break;
+            }
+
+            var cut = CaptionBreak(rest, maxWidth, options.TextMeasurement);
+            lines.Add(rest.Substring(0, cut).TrimEnd());
+            rest = rest.Substring(cut).TrimStart();
+        }
+
+        return lines;
+    }
+
+    // Shortens the text until it fits with an ellipsis after it.
+    private static string EndWithEllipsis(string text, double maxWidth, TextMeasurementContext? measurement) {
+        var boundaries = System.Globalization.StringInfo.ParseCombiningCharacters(text);
+        for (var count = boundaries.Length; count > 0; count--) {
+            var candidate = text.Substring(0, count == boundaries.Length ? text.Length : boundaries[count]).TrimEnd().TrimEnd('.').TrimEnd() + "...";
+            if (EstimateTextWidth(candidate, 11, true, measurement) <= maxWidth) return candidate;
+        }
+
+        return string.Empty;
+    }
+
+    // Returns how many characters of the text go on the current line: up to the last separator that fits, else as many
+    // characters as fit.
+    private static int CaptionBreak(string text, double maxWidth, TextMeasurementContext? measurement) {
+        var boundaries = System.Globalization.StringInfo.ParseCombiningCharacters(text);
+        var fits = boundaries.Length > 1 ? boundaries[1] : text.Length;
+        var separator = 0;
+        for (var i = 1; i <= boundaries.Length; i++) {
+            var end = i == boundaries.Length ? text.Length : boundaries[i];
+            if (EstimateTextWidth(text.Substring(0, end), 11, true, measurement) > maxWidth) break;
+            fits = end;
+            var last = text[end - 1];
+            if (end < text.Length && (char.IsWhiteSpace(last) || last == '-' || last == '_' || last == '.' || last == '/')) separator = end;
+        }
+
+        return separator > 0 ? separator : fits;
+    }
+
     public static string NodeTextFitProbe(string value, TopologyRenderOptions options) {
         if (string.IsNullOrWhiteSpace(value) || !options.AllowMultilineNodeLabels) return value;
         var best = string.Empty;

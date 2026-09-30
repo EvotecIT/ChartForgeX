@@ -219,8 +219,7 @@ internal static class TopologyLayoutNormalizer {
         }
 
         if (displayMode == TopologyNodeDisplayMode.Tile) {
-            var labelLines = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true,
-                options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile));
+            var labelLines = TileCaptionLines(node, options);
             var labelCenter = CenterX(node);
             var labelTop = node.Y + node.Height + 4;
             var lineCount = Math.Max(1, labelLines.Count);

@@ -11,7 +11,7 @@ public static partial class TopologyLayoutDiagnostics {
     /// <summary>Prepares a topology through the normal layout pipeline and returns its geometry diagnostics.</summary>
     public static TopologyLayoutDiagnosticReport Analyze(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        var effective = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var validator = new TopologyChartValidator();
         var sourceValidation = validator.ValidateScenarioReferences(chart);
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);

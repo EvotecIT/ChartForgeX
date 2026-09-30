@@ -58,7 +58,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("y2", markerCenterY)
                         .Attribute("stroke", color)
                         .Attribute("stroke-width", 2)
-                        .Attribute("stroke-dasharray", EdgeDash(item.LineStyle)));
+                        .Attribute("stroke-dasharray", EdgeDash(LegendLineStyle(chart, item))));
                 } else if (item.Kind == TopologyLegendItemKind.Node) {
                     var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(color, theme.Background) : item.BackgroundColor!.Trim();
                     group.Element("rect", rect => rect

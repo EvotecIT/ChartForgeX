@@ -20,6 +20,8 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>An HTML fragment.</returns>
     public string RenderFragment(TopologyChart chart, TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         return RenderFragmentCore(chart, options, includeAssets: true, assetSource: "inline");
     }
@@ -31,6 +33,8 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>An HTML fragment that expects the caller to register topology HTML assets.</returns>
     public string RenderFragmentWithoutAssets(TopologyChart chart, TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         return RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host");
     }
@@ -41,7 +45,7 @@ public sealed partial class TopologyHtmlRenderer {
 
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        options = chart.ResolveRenderOptions(options).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
         var theme = chart.Theme ?? TopologyTheme.Light();
@@ -155,6 +159,7 @@ public sealed partial class TopologyHtmlRenderer {
     /// <returns>A complete HTML page.</returns>
     public string RenderPage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         options ??= new TopologyRenderOptions();
         var theme = chart.Theme ?? TopologyTheme.Light();

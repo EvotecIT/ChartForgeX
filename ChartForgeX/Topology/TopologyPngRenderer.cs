@@ -23,7 +23,7 @@ public sealed partial class TopologyPngRenderer {
 
     internal RgbaImage RenderImage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        options = chart.ResolveRenderOptions(options).CloneForRendering();
         var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
         var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
         var validator = new TopologyChartValidator();
@@ -378,7 +378,7 @@ public sealed partial class TopologyPngRenderer {
                 DrawCentered(canvas, CenterX(node), plateY + 3, label, Color(theme.Foreground), 10.5, true);
             } else if (options.IncludeNodeLabels && displayMode != TopologyNodeDisplayMode.Icon) {
                 if (displayMode == TopologyNodeDisplayMode.Tile) {
-                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true, options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, displayMode)), Color(theme.Foreground), 11, true, 14);
+                    DrawCenteredLines(canvas, CenterX(node), node.Y + node.Height + 4, TileCaptionLines(node, options), Color(theme.Foreground), 11, true, 14);
                     if (options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle)) DrawTileSubtitle(canvas, node, theme, accent, options);
                     DrawNodeBadge(canvas, node, theme, accent, displayMode, options);
                     continue;
@@ -451,8 +451,7 @@ public sealed partial class TopologyPngRenderer {
 
     private static void DrawTileSubtitle(RgbaCanvas canvas, TopologyNode node, TopologyTheme theme, ChartColor accent, TopologyRenderOptions options) {
         var (subtitle, width) = SubtitleChip(node, TopologyNodeDisplayMode.Tile, options);
-        var labelLineCount = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), 11, true,
-            options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile)).Count;
+        var labelLineCount = TileCaptionLines(node, options).Count;
         var x = CenterX(node) - width / 2;
         var y = node.Y + node.Height + 7 + labelLineCount * 14;
         canvas.FillRoundedRect(x, y, width, 17, 8.5, Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background)));
@@ -701,7 +700,7 @@ public sealed partial class TopologyPngRenderer {
             var markerCenterY = itemY - 5;
             var color = Color(item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent));
             if (item.Kind == TopologyLegendItemKind.Edge) {
-                var dash = EdgePngDash(item.LineStyle);
+                var dash = EdgePngDash(LegendLineStyle(chart, item));
                 if (dash.Dashed) canvas.DrawDashedLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2, dash.Dash, dash.Gap);
                 else canvas.DrawLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2);
             }

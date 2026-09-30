@@ -30,7 +30,7 @@ public sealed partial class TopologySvgRenderer {
     /// <returns>Complete SVG markup.</returns>
     public string Render(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        options = chart.ResolveRenderOptions(options).CloneForRendering();
         var requestedWidth = chart.Viewport.Width;
         var requestedHeight = chart.Viewport.Height;
         var validator = new TopologyChartValidator();
