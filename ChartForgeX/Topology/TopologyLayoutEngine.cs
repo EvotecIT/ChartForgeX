@@ -590,12 +590,13 @@ internal static partial class TopologyLayoutEngine {
         }
 
         if (policy == TopologyGroupLayoutPolicy.Grid || policy == TopologyGroupLayoutPolicy.CollapsedDots) {
-            PlaceDenseGrid(nodes, group, policy == TopologyGroupLayoutPolicy.CollapsedDots ? DenseCollapsedDotColumns(nodes.Count) : 4, policy == TopologyGroupLayoutPolicy.CollapsedDots ? 12 : 34 + DenseCaptionHeight(chart, nodes), useRequestedColumns: policy == TopologyGroupLayoutPolicy.CollapsedDots);
+            var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(nodes.Count));
+            PlaceDenseGrid(nodes, group, policy == TopologyGroupLayoutPolicy.CollapsedDots ? DenseCollapsedDotColumns(nodes.Count) : 4, policy == TopologyGroupLayoutPolicy.CollapsedDots ? 12 : DenseRowGap(chart, nodes, gridRows) + DenseCaptionHeight(chart, nodes), useRequestedColumns: policy == TopologyGroupLayoutPolicy.CollapsedDots);
             return;
         }
 
         if (policy == TopologyGroupLayoutPolicy.PairRows) {
-            PlaceDenseGrid(nodes, group, 2, 34 + DenseCaptionHeight(chart, nodes));
+            PlaceDenseGrid(nodes, group, 2, DenseRowGap(chart, nodes, (int)Math.Ceiling(nodes.Count / 2.0)) + DenseCaptionHeight(chart, nodes));
             return;
         }
 

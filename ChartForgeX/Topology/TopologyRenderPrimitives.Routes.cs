@@ -15,6 +15,9 @@ internal static partial class TopologyRenderPrimitives {
             return points;
         }
 
+        // Planned routes already have separate lanes, attachment points, and named-port positions.
+        if (TopologyDenseRoutePlanner.IsPlanned(chart, edge)) return points;
+
         var original = new List<ChartPoint>(points);
         ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
         if (points.SequenceEqual(original) ||

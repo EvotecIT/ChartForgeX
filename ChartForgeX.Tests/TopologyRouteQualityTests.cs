@@ -14,34 +14,92 @@ public sealed class TopologyRouteQualityTests {
 
     public TopologyRouteQualityTests(ITestOutputHelper output) => _output = output;
 
-    // fixture, then ceilings: card + caption + header crossings, overlapping route pairs, detached route ends,
-    // farthest label from its route (px), overlapping label pairs. These are the values measured before the dense
-    // router was reworked; they record the starting point and only ever go down.
     public static IEnumerable<object[]> Fixtures => new[] {
-        new object[] { "small", 0, 9, 10, 0, 0 },
-        new object[] { "mesh", 100, 220, 36, 0, 0 },
-        new object[] { "overview", 1, 530, 24, 0, 0 },
-        new object[] { "drill", 1, 5, 12, 0, 0 },
-        new object[] { "replication-76", 22, 115, 68, 101, 1 },
-        new object[] { "replication-121", 36, 130, 54, 86, 2 },
-        new object[] { "replication-144", 33, 179, 66, 101, 2 }
+        new object[] { "small" },
+        new object[] { "mesh" },
+        new object[] { "overview" },
+        new object[] { "drill" },
+        new object[] { "replication-76" },
+        new object[] { "replication-121" },
+        new object[] { "replication-144" }
     };
 
     [Theory]
     [MemberData(nameof(Fixtures))]
-    public void DenseFixture_RouteDefectsStayWithinCeilings(string fixture, int crossingCeiling, int overlapCeiling, int detachedCeiling, int labelDistanceCeiling, int labelOverlapCeiling) {
+    public void DenseFixture_RoutesStayClearSeparateAndAttached(string fixture) {
         var (chart, options) = Build(fixture);
         var prepared = chart.Prepare(options);
         var quality = RouteQuality.Measure(prepared.Analyze());
         _output.WriteLine(fixture + ": " + quality);
         Save(fixture, prepared);
 
-        Assert.Equal(0, quality.NodeCrossings);
-        Assert.True(quality.CaptionCrossings + quality.HeaderCrossings <= crossingCeiling, fixture + ": " + quality);
-        Assert.True(quality.Overlaps <= overlapCeiling, fixture + ": " + quality);
-        Assert.True(quality.DetachedEnds <= detachedCeiling, fixture + ": " + quality);
-        Assert.True(quality.FarthestLabel <= labelDistanceCeiling, fixture + ": " + quality);
-        Assert.True(quality.LabelOverlaps <= labelOverlapCeiling, fixture + ": " + quality);
+        Assert.True(quality.NodeCrossings + quality.CaptionCrossings + quality.HeaderCrossings == 0, "Routes run through cards, captions or group headers. " + quality);
+        Assert.True(quality.Overlaps == 0, "Routes are drawn on top of each other. " + quality);
+        Assert.True(quality.DetachedEnds == 0, "Route ends do not point at their node. " + quality);
+        Assert.True(quality.FarthestLabel == 0, "An edge label is not on its route. " + quality);
+        Assert.True(quality.LabelOverlaps == 0, "Edge labels overlap. " + quality);
+    }
+
+    [Theory]
+    [MemberData(nameof(Fixtures))]
+    public void DenseFixture_AllRoutesArePlannedTogether(string fixture) {
+        var (chart, options) = Build(fixture);
+        var report = chart.Prepare(options).Analyze();
+        Assert.All(report.Edges, edge => Assert.Equal(TopologyEdgeRouter.PlannedCorridor, edge.Corridor));
+        Assert.All(report.Edges, edge => {
+            for (var i = 1; i < edge.Points.Count; i++) {
+                Assert.True(Math.Abs(edge.Points[i].X - edge.Points[i - 1].X) < 0.001 || Math.Abs(edge.Points[i].Y - edge.Points[i - 1].Y) < 0.001, edge.Id + " has a diagonal segment.");
+                Assert.InRange(edge.Points[i].X, 0, report.Width);
+                Assert.InRange(edge.Points[i].Y, 0, report.Height);
+            }
+        });
+    }
+
+    [Fact]
+    public void ScatteredCards_AreStillPlannedWhenGridLinesAreMerged() {
+        // 150 cards that share no rows or columns produce far more grid lines than the search holds.
+        var chart = TopologyChart.Create().WithId("scattered").WithViewport(4200, 3200, 24).WithLegend(null);
+        for (var i = 0; i < 150; i++) {
+            chart.AddNode("n" + i, "N" + i, 60 + i % 15 * 270 + i * 0.7, 60 + i / 15 * 300 + i % 15 * 9.3, width: 60, height: 40);
+        }
+
+        for (var i = 0; i + 16 < 150; i += 3) chart.AddEdge("e" + i, "n" + i, "n" + (i + 16), routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var report = chart.Prepare(DenseRouteFixture.Options(legend: false)).Analyze();
+        var quality = RouteQuality.Measure(report);
+        Assert.All(report.Edges, edge => Assert.Equal(TopologyEdgeRouter.PlannedCorridor, edge.Corridor));
+        Assert.True(quality.NodeCrossings + quality.CaptionCrossings + quality.Overlaps + quality.DetachedEnds == 0, quality.ToString());
+    }
+
+    [Fact]
+    public void NamedPort_KeepsItsPositionWhenLanesAreSeparated() {
+        var chart = TopologyChart.Create().WithId("named-lanes").WithViewport(900, 520, 24).WithLegend(null)
+            .AddNode("hub", "Hub", 120, 220, width: 60, height: 44)
+            .AddNodePort("hub", "upper", TopologyEdgePort.Right, 0.2);
+        for (var i = 0; i < 4; i++) {
+            chart.AddNode("leaf" + i, "Leaf " + i, 640, 60 + i * 110, width: 60, height: 44)
+                .AddEdge("link" + i, "hub", "leaf" + i, routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+                .WithEdgePorts("link" + i, TopologyEdgePort.Right, TopologyEdgePort.Left);
+        }
+
+        chart.WithEdgeNamedPorts("link0", "upper", null);
+        var report = chart.Prepare(DenseRouteFixture.Options(legend: false)).Analyze();
+        var hub = report.Nodes.Single(node => node.Id == "hub").Bounds;
+        var starts = report.Edges.Select(edge => edge.Points[0]).ToArray();
+        Assert.Equal(hub.Top + hub.Height * 0.2, starts[0].Y, 3);
+        Assert.All(starts, start => Assert.InRange(start.Y, hub.Top, hub.Bottom));
+        Assert.Equal(starts.Length, starts.Select(start => Math.Round(start.Y, 1)).Distinct().Count());
+        Assert.Empty(report.RouteOverlaps);
+    }
+
+    [Fact]
+    public void RoutedEdges_WidenTheRowsTheyRunBetween() {
+        var quiet = DenseRouteFixture.Overview(links: 0);
+        var busy = DenseRouteFixture.Overview(links: 90);
+        var options = DenseRouteFixture.Options(subtitles: true);
+        var quietReport = quiet.Prepare(options).Analyze();
+        var busyReport = busy.Prepare(options).Analyze();
+        Assert.True(busyReport.Groups[0].Bounds.Height > quietReport.Groups[0].Bounds.Height, "Groups with many routed edges should reserve taller row gaps.");
+        Assert.Equal(quietReport.Groups[0].Bounds.Width, busyReport.Groups[0].Bounds.Width);
     }
 
     internal static (TopologyChart Chart, TopologyRenderOptions Options) Build(string fixture) => fixture switch {

@@ -24,6 +24,7 @@ internal static partial class TopologyRenderPrimitives {
         var edgeRenderOrders = EdgeRenderOrderMap(chart, options);
         var placed = new List<LabelBox>();
         var layouts = new List<TopologyEdgeLabelLayout>();
+        List<LabelBox>? routeObstacles = null;
 
         foreach (var edge in OrderedEdgesForLabelPlacement(chart, options)) {
             var label = EdgeLabel(edge, options.EdgeLabelMetricKey, edge.Label);
@@ -40,6 +41,14 @@ internal static partial class TopologyRenderPrimitives {
             var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 0;
             var height = EdgeLabelHeight(lineCount, options);
+            if (PlacesLabelOnRoute(chart, edge)) {
+                routeObstacles ??= RouteLabelObstacles(chart, options);
+                if (PlaceLabelOnRoute(chart, options, edge, points, width, height, routeObstacles, placed, edgeSegments) is { } onRoute) {
+                    placed.Add(LabelBox.FromCenter(onRoute.X, onRoute.Y, width, height));
+                    layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, onRoute.X, onRoute.Y, width, height, onRoute.X, onRoute.Y));
+                    continue;
+                }
+            }
             var obstacles = new List<LabelBox>(nodeBoxes.Count + (options.IncludeGroups && options.IncludeGroupLabels ? groupHeaderBoxes.Count : 0) + (options.IncludeGroups ? groupBoxes.Count : 0));
             obstacles.AddRange(nodeBoxes);
             if (options.IncludeGroups && options.IncludeGroupLabels) obstacles.AddRange(groupHeaderBoxes);

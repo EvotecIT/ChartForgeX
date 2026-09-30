@@ -8,6 +8,9 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyEdgeRouter {
+    /// <summary>Corridor token reported for routes found by the dense route planner's grid search.</summary>
+    internal const string PlannedCorridor = "maze";
+
     public static TopologyRoutePlan Route(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target, double? routeLaneOverride = null) {
         var routeLane = routeLaneOverride ?? edge.RouteLane;
         var includeLabels = chart.RenderOptions?.IncludeEdgeLabels != false;
@@ -19,6 +22,13 @@ internal static partial class TopologyEdgeRouter {
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
             var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
             return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
+        }
+
+        // Readable dense layouts route all obstacle-avoiding edges together; the corridor candidates below remain the
+        // fallback for an edge the planner cannot connect inside the content area.
+        if (TopologyDenseRoutePlanner.Route(chart, edge) is { } planned) {
+            return BuildPlan("ObstacleAvoidingOrthogonal", PlannedCorridor, planned, RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true, includeLabels: false),
+                RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels);
         }
 
         var sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), edge.SourcePort);
@@ -56,7 +66,7 @@ internal static partial class TopologyEdgeRouter {
             if (ported != null) candidates.Add(new RouteCandidate(corridor.Name + "-ported", ported));
         }
 
-        var best = candidates
+        return candidates
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
             .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement, includeLabels))
@@ -64,29 +74,6 @@ internal static partial class TopologyEdgeRouter {
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
             .First();
-
-        // The grid search is a fallback for routes that would cut through a card; label and header near-misses keep the
-        // corridor route so curated layouts stay as authored.
-        var captionHit = CaptionEndpointHits(best.Points, sourceCaption, targetCaption) > 0;
-        if (readable &&
-            (captionHit || best.Diagnostics.ObstacleHits > 0 && CrossesForeignCard(chart, best.Points, source.Id, target.Id)) &&
-            MazeRoute(chart, edge, source, target) is { } maze) {
-            var mazePlan = BuildPlan("ObstacleAvoidingOrthogonal", "maze", maze, obstacles, existingSegments, edge, candidates.Count + 1, chart.TextMeasurement, includeLabels);
-            var labelNotWorse = mazePlan.Diagnostics.LabelObstacleHits <= best.Diagnostics.LabelObstacleHits;
-            var captionCleared = captionHit &&
-                CaptionEndpointHits(mazePlan.Points, sourceCaption, targetCaption) <
-                CaptionEndpointHits(best.Points, sourceCaption, targetCaption);
-            // A single caption crossing may outweigh one displaced label. Larger label
-            // regressions can cover several cards in dense maps even when the route clears.
-            var oneCaptionForOneLabel = captionCleared && best.Diagnostics.ObstacleHits == 1 &&
-                mazePlan.Diagnostics.ObstacleHits == 0 &&
-                mazePlan.Diagnostics.LabelObstacleHits == best.Diagnostics.LabelObstacleHits + 1;
-            if ((labelNotWorse || oneCaptionForOneLabel) &&
-                RouteScore(mazePlan, edge, readable, sourceCaption, targetCaption) <
-                RouteScore(best, edge, readable, sourceCaption, targetCaption)) best = mazePlan;
-        }
-
-        return best;
     }
 
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
@@ -294,7 +281,8 @@ internal static partial class TopologyEdgeRouter {
     }
 
     // Obstacle-avoiding routes also keep clear of tile captions; fixed and manual routes are scored against the cards only.
-    private static List<RouteBox> RouteObstacles(TopologyChart chart, string sourceNodeId, string targetNodeId, TopologyEdge routedEdge, bool includeCaptions = false) {
+    // Planned routes are not scored against other edges' labels: those are placed on their routes afterwards.
+    private static List<RouteBox> RouteObstacles(TopologyChart chart, string sourceNodeId, string targetNodeId, TopologyEdge routedEdge, bool includeCaptions = false, bool includeLabels = true) {
         const double nodePadding = 10;
         var obstacles = chart.Nodes
             .Where(node => !string.Equals(node.Id, sourceNodeId, StringComparison.Ordinal) && !string.Equals(node.Id, targetNodeId, StringComparison.Ordinal))
@@ -304,25 +292,13 @@ internal static partial class TopologyEdgeRouter {
 
         const double groupPadding = 10;
         foreach (var group in chart.Groups) {
-            var header = GroupHeaderBox(group, chart.TextMeasurement).Expand(groupPadding);
-            if (header.Width > 0 && header.Height > 0) obstacles.Add(header);
+            var header = GroupHeaderBox(chart, group);
+            if (header.Width > 0 && header.Height > 0) obstacles.Add(header.Expand(groupPadding));
         }
 
+        if (!includeLabels) return obstacles;
         foreach (var box in EstimatedLabelBoxes(chart, routedEdge)) obstacles.Add(box.Expand(4));
         return obstacles;
-    }
-
-    private static bool CrossesForeignCard(TopologyChart chart, IReadOnlyList<ChartPoint> points, string sourceId, string targetId) {
-        foreach (var node in chart.Nodes) {
-            if (node.Id == sourceId || node.Id == targetId || IsRouteBackdropArtwork(node)) continue;
-            var box = NodeRouteBox(chart, node).Expand(-1);
-            if (box.Width <= 0 || box.Height <= 0) continue;
-            for (var i = 0; i + 1 < points.Count; i++) {
-                if (box.Intersects(points[i], points[i + 1])) return true;
-            }
-        }
-
-        return false;
     }
 
     internal static bool SpreadingIntroducesObstacle(TopologyChart chart, TopologyEdge edge, TopologyNode source,
@@ -384,12 +360,13 @@ internal static partial class TopologyEdgeRouter {
     private static List<RouteSegment> RouteSegments(TopologyChart chart, TopologyEdge routedEdge) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var segments = new List<RouteSegment>();
+        var plan = TopologyDenseRoutePlanner.Plan(chart);
         foreach (var edge in chart.Edges) {
             if (ReferenceEquals(edge, routedEdge)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var points = edge.Routing == TopologyEdgeRouting.Curved
                 ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))
-                : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
+                : plan != null && plan.TryGetValue(edge, out var plannedPoints) && plannedPoints != null ? plannedPoints : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
             for (var i = 0; i < points.Count - 1; i++) segments.Add(new RouteSegment(points[i], points[i + 1]));
         }
 
@@ -440,11 +417,21 @@ internal static partial class TopologyEdgeRouter {
 
     private static string RouteKey(IReadOnlyList<ChartPoint> points) => string.Join(";", points.Select(point => F(point.X) + "," + F(point.Y)));
 
-    private static RouteBox GroupHeaderBox(TopologyGroup group, TextMeasurementContext? measurement) {
+    /// <summary>
+    /// Readable dense layouts use the header block the renderers draw. Other layouts keep the earlier estimate, a
+    /// left-aligned block sized from the untrimmed label, so curated charts keep the routes they were authored with.
+    /// </summary>
+    private static RouteBox GroupHeaderBox(TopologyChart chart, TopologyGroup group) {
+        if (TopologyLayoutEngine.UsesReadableDenseLayout(chart)) {
+            if (!TopologyGroupHeader.IsDrawn(chart.RenderOptions!)) return new RouteBox(0, 0, 0, 0);
+            var bounds = TopologyGroupHeader.Bounds(group, chart.RenderOptions!, chart.TextMeasurement);
+            return new RouteBox(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+        }
+
         const double groupPadding = 24;
         const double topPadding = 14;
-        var labelWidth = EstimateTextWidth(group.Label, 16, true, measurement);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, measurement);
+        var labelWidth = EstimateTextWidth(group.Label, 16, true, chart.TextMeasurement);
+        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, chart.TextMeasurement);
         var width = Math.Min(Math.Max(96, Math.Max(labelWidth, subtitleWidth) + 12), Math.Max(96, group.Width - groupPadding * 2));
         var height = string.IsNullOrWhiteSpace(group.Subtitle) ? 40 : 60;
         return new RouteBox(group.X + groupPadding, group.Y + topPadding, group.X + groupPadding + width, group.Y + topPadding + height);

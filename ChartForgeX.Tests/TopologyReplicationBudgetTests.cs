@@ -11,7 +11,9 @@ namespace ChartForgeX.Tests;
 /// budgets for render time, SVG size, and routing quality. The time budget is generous for small CI runners and a JIT
 /// warm-up render runs first. SVG size budgets sit about 15% above the values measured on Windows. Dense layouts wrap site
 /// panels into rows no wider than the viewport, keep readable cards, and route around every card, so the fixtures require
-/// zero route/foreign-card crossings, zero card overlaps, and the viewport width.
+/// zero route/foreign-card crossings, zero card overlaps, zero edge-label overlaps, and the viewport width.
+/// <see cref="TopologyRouteQualityTests"/> holds the same fixtures to zero caption and group-header crossings, zero
+/// overdrawn routes, attached route ends, and labels on their routes.
 /// </summary>
 [Collection(nameof(TopologyReplicationBudgetCollection))]
 public sealed class TopologyReplicationBudgetTests {
@@ -22,10 +24,10 @@ public sealed class TopologyReplicationBudgetTests {
 
     public static IEnumerable<object[]> Tiers => new[] {
         // branches per region, DCs per hub site, SVG byte budget, edge/foreign-card crossing ceiling, node collision ceiling,
-        // edge-label overlap ceiling (label placement is tracked in TODO.md)
-        new object[] { 3, 10, 480_000, 0, 0, 2 },
-        new object[] { 5, 15, 760_000, 0, 0, 2 },
-        new object[] { 6, 18, 900_000, 0, 0, 2 }
+        // edge-label overlap ceiling
+        new object[] { 3, 10, 480_000, 0, 0, 0 },
+        new object[] { 5, 15, 760_000, 0, 0, 0 },
+        new object[] { 6, 18, 900_000, 0, 0, 0 }
     };
 
     [Theory]

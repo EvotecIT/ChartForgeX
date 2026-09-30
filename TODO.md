@@ -30,9 +30,12 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Topology
 
-- Give grid-searched (maze) topology routes route-lane separation and overlap scoring against other maze routes; today parallel edges that both fall back to the maze share one middle path.
+- Reduce crossings between planned dense routes: the planner charges for a crossing during the search and orders lanes by where routes turn, but it does not yet re-route earlier edges or swap lanes after all routes are known.
+- Let planned dense routes share a trunk on request (edges of one kind into one node), for hosts that prefer a bus to separate lanes.
+- Widen column gutters, not only row gaps, when many routed edges end in a group; this needs a width budget so wrapped panels still fit the viewport.
+- Outside `ReadableDenseLayout`, obstacle-avoiding routes still avoid a left-aligned estimate of the group header instead of the centered block the renderers draw (`TopologyGroupHeader`); switching changes curated examples, so do it together with a gallery review.
+- The dense route planner does not see fixed (`Orthogonal`, `Straight`, `Curved`) or waypoint edges; count them as occupied corridors when a chart mixes them with obstacle-avoiding edges.
 - Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
-- Tune label-clearance and route-overlap weights with real dense examples. The wrapped replication fixtures place most site-link labels more than 60 px from their route and allow up to two label overlaps per tier; keep labels next to their routes and lower `labelOverlapCeiling` in `TopologyReplicationBudgetTests`.
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
