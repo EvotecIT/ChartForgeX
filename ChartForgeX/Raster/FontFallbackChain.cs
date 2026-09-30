@@ -149,6 +149,7 @@ internal sealed class FontFallbackChain {
         _candidates[index] = candidates;
         return candidates;
     }
+
     private static IEnumerable<string> PlatformFamilies() {
         if (Path.DirectorySeparatorChar == '\\') return WindowsFamilies;
         return Directory.Exists("/System/Library/Fonts") ? MacFamilies : LinuxFamilies;
