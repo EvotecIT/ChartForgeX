@@ -30,7 +30,8 @@ public sealed class SvgChartGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-grid", idScope, grid.Title, grid.Charts.Count.ToString(CultureInfo.InvariantCulture));
         var svg = RenderCore(grid, provisionalId);
-        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-grid", idScope);
+        var bound = SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-grid", idScope);
+        return grid.SvgColorVariables?.Apply(bound) ?? bound;
     }
 
     private string RenderCore(ChartGrid grid, string id) {

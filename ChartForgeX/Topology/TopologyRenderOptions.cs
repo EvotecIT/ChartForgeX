@@ -195,6 +195,13 @@ public sealed class TopologyRenderOptions {
     /// </summary>
     public string? IdScope { get; set; }
 
+    /// <summary>
+    /// Gets or sets the CSS custom properties the SVG writes for mapped colours, with the literal colour as fallback
+    /// (see <see cref="ChartForgeX.Themes.SvgColorVariables"/>); null (the default) writes literal colours. PNG output
+    /// always uses literal colours.
+    /// </summary>
+    public ChartForgeX.Themes.SvgColorVariables? SvgColorVariables { get; set; }
+
     /// <summary>Gets or sets an optional focused topology view.</summary>
     public TopologyView? View { get; set; }
 
@@ -356,6 +363,7 @@ public sealed class TopologyRenderOptions {
         snapshot.Motion = Motion?.Clone();
         snapshot.View = View?.Clone();
         snapshot.IconCatalog = IconCatalog?.Clone();
+        snapshot.SvgColorVariables = SvgColorVariables?.Clone();
         snapshot.HighlightStatuses = new List<TopologyHealthStatus>(HighlightStatuses);
         snapshot.HighlightGroupIds = new List<string>(HighlightGroupIds);
         snapshot.HighlightNodeIds = new List<string>(HighlightNodeIds);

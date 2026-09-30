@@ -80,7 +80,8 @@ public sealed partial class SvgChartRenderer {
         ChartGuards.RenderCompatibility(chart);
         var provisionalId = BuildProvisionalId(chart, idScope);
         var svg = RenderCore(chart, provisionalId, includeInteractionTargets);
-        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx", idScope, string.Empty);
+        var bound = SvgRenderedIdentity.Bind(svg, provisionalId, "cfx", idScope, string.Empty);
+        return chart.Options.SvgColorVariables?.Apply(bound) ?? bound;
     }
 
     private string RenderCore(Chart chart, string id, bool includeInteractionTargets) {

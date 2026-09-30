@@ -99,7 +99,8 @@ public sealed partial class TopologySvgRenderer {
             AddBodyElements(root, prepared, prefix, theme, options, id, highlight);
         });
 
-        return document.ToMarkup();
+        var markup = document.ToMarkup();
+        return options.SvgColorVariables?.Apply(markup) ?? markup;
     }
 
     private static void AddBodyElements(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string id, TopologyHighlightState highlight) {
