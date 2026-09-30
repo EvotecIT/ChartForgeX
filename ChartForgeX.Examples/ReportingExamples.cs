@@ -15,6 +15,35 @@ internal static class ReportingExamples {
         WriteStatusMatrix(output, pngOutputScale);
         WriteIncidentLanes(output, pngOutputScale);
         WriteHourWeekday(output, pngOutputScale);
+        WriteChangeCalendar(output, pngOutputScale);
+    }
+
+    private static void WriteChangeCalendar(string output, ChartPngOutputScale pngOutputScale) {
+        // Two weeks of configuration changes in a report localized to German: weeks start on Monday, the days, months,
+        // and scale words come from the host, days without changes are neutral, and cells grow to fill the card.
+        var counts = new[] { 3, 0, 5, 2, 7, 0, 0, 1, 4, 0, 9, 2, 0, 0 };
+        var start = new DateTime(2026, 9, 7);
+        var items = counts.Select((count, day) => new ChartCalendarHeatmapItem(start.AddDays(day), count)).ToArray();
+        var chart = Chart.Create()
+            .WithTitle("Konfigurationsänderungen pro Tag")
+            .WithSubtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(760, 360)
+            .WithPngOutputScale(pngOutputScale)
+            .WithCalendarHeatmapCells(maximumSize: 30)
+            .WithLabels(labels => {
+                labels.Less = "Weniger";
+                labels.More = "Mehr";
+                labels.NoData = "Keine Daten";
+                labels.CalendarSummary = "{0} von {1} bis {2}: {3} Tage mit Werten, {4} ohne";
+            })
+            .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"), DayOfWeek.Monday,
+                new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" },
+                new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" });
+
+        chart.SaveSvg(Path.Combine(output, "reporting-change-calendar.svg"));
+        chart.SaveHtml(Path.Combine(output, "reporting-change-calendar.html"));
+        chart.SavePng(Path.Combine(output, "reporting-change-calendar.png"));
     }
 
     private static void WriteHourWeekday(string output, ChartPngOutputScale pngOutputScale) {

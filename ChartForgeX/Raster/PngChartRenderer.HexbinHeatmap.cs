@@ -45,7 +45,7 @@ public sealed partial class PngChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columnValues[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
-                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var color = ChartHeatmapSurface.CellColor(chart, series.Color, value, min, max);
                 var points = ChartHexbinLayout.Points(cx, cy, layout.Radius);
                 c.FillPolygon(points, color);
                 DrawPolygonOutline(c, points, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), Math.Max(1, ChartVisualPrimitives.HeatmapCellBorderStrokeWidth + 0.8));

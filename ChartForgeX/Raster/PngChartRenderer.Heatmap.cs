@@ -94,7 +94,7 @@ public sealed partial class PngChartRenderer {
                 var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
                 var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
                 ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
-                var color = mark?.Surface ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var color = mark?.Surface ?? ChartHeatmapSurface.CellColor(chart, series.Color, value, min, max);
                 if (mark.HasValue) DrawStateMark(c, mark.Value, x, y, cellWidth, cellHeight, radius);
                 else c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
                 // An outlined state draws its own border in the state colour instead of the card-coloured cell border.
@@ -200,7 +200,7 @@ public sealed partial class PngChartRenderer {
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
-            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.Color(chart, highColor, value, min, max));
+            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.CellColor(chart, highColor, value, min, max));
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);

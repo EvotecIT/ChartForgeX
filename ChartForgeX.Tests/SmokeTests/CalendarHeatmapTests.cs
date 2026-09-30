@@ -39,7 +39,8 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-month-label\"", StringComparison.Ordinal), "Calendar heatmaps should render month labels.");
         Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\"", StringComparison.Ordinal), "Calendar heatmaps should render a contribution scale.");
         Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Calendar heatmap scales should explain missing days separately from the value scale.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"0\" data-cfx-value=\"0\" x=", StringComparison.Ordinal), "Calendar heatmap scale steps should expose the low value as data, not as no-data.");
+        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-zero\"", StringComparison.Ordinal), "Calendar heatmap scales should show the neutral zero separately from the value ramp.");
+        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"1\" data-cfx-value=\"1\" x=", StringComparison.Ordinal), "Calendar heatmap value ramps should start at the smallest non-zero value.");
         Assert(svg.Contains("data-cfx-date=\"2026-01-04\"", StringComparison.Ordinal) && svg.Contains("fill=\"#CCD2DA\"", StringComparison.Ordinal), "Calendar heatmap empty cells should use a visible neutral fill on light themes.");
         var lessLabelX = GetAttribute(svg, "data-cfx-role=\"calendar-heatmap-scale-label\"", "x");
         var noDataX = GetAttribute(svg, "data-cfx-role=\"calendar-heatmap-scale-no-data\"", "x");
@@ -80,7 +81,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-filled-day-count=\"7\" data-cfx-empty-day-count=\"0\"", StringComparison.Ordinal), "Complete calendar heatmaps should expose zero empty days at container level.");
         Assert(svg.Contains("data-cfx-min-value=\"0\" data-cfx-max-value=\"6\"", StringComparison.Ordinal), "Complete calendar heatmaps should expose the true source value range.");
         Assert(!svg.Contains("data-cfx-role=\"calendar-heatmap-scale-no-data\"", StringComparison.Ordinal), "Complete calendar heatmaps should not reserve a missing-data scale swatch.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"0\" data-cfx-value=\"0\" x=", StringComparison.Ordinal), "Complete calendar heatmap value scales should start with the real low value.");
+        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"1\" data-cfx-value=\"1\" x=", StringComparison.Ordinal), "Complete calendar heatmap value scales should start with the smallest non-zero value.");
     }
 
     private static void CalendarHeatmapUsesLocalContributionRange() {

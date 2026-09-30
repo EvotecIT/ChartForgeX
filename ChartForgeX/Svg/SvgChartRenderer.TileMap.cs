@@ -51,7 +51,7 @@ public sealed partial class SvgChartRenderer {
             var y = y0 + tile.Row * (tileSize + gap);
             var points = HexTilePoints(x, y, tileSize);
             var regionName = tile.Name;
-            var summary = regionName + " (" + tile.Code + "): " + (hasValue ? FormatValue(chart, value) : "No data");
+            var summary = regionName + " (" + tile.Code + "): " + (hasValue ? FormatValue(chart, value) : chart.Options.Labels.NoData);
             AppendSvg(sb, 768, writer => {
                 writer.StartElement("polygon")
                     .Attribute("class", "cfx-interactive-region")
@@ -128,7 +128,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawMapSvgNoDataScale(StringBuilder sb, Chart chart, string rolePrefix, double valueScaleX, double y, double size, ChartRect plot) {
         var t = chart.Options.Theme;
         var noData = ChartHeatmapSurface.MapNoDataColor(chart);
-        const string label = "No data";
+        var label = chart.Options.Labels.NoData;
         var labelWidth = EstimateSvgStyledTextWidth(chart, label, StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), chart.Options.TickLabelStyle);
         var width = size + 5 + labelWidth;
         var x = valueScaleX - width - 18;

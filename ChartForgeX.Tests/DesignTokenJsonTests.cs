@@ -195,7 +195,9 @@ public sealed class DesignTokenJsonTests {
         var chart = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 200d, 400d });
         chart.Options.HeatmapRelativeScale = true;
         var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell").Select(element => (string)element.Attribute("fill")!).ToArray();
-        Assert.Equal(new[] { tokens.SequentialRamp![0].ToCss(), tokens.SequentialRamp[2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills);
+        // A zero count takes the neutral surface; the ramp colours the counts above it.
+        Assert.Equal(new[] { tokens.SequentialRamp![2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills.Skip(1).ToArray());
+        Assert.DoesNotContain(fills[0], tokens.SequentialRamp.Select(colour => colour.ToCss()));
         var explicitColour = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 400d }, ChartColor.FromHex("#0f9f8c"));
         Assert.DoesNotContain(tokens.SequentialRamp[4].ToCss(), explicitColour.ToSvg(), StringComparison.OrdinalIgnoreCase);
         var withRamp = chart.ToPng();

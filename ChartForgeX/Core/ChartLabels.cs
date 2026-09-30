@@ -11,6 +11,10 @@ public sealed class ChartLabels {
     private string _ongoing = "ongoing";
     private string _soFar = "so far";
     private string _hourOfDay = "Hour of day";
+    private string _less = "Less";
+    private string _more = "More";
+    private string _noData = "No data";
+    private string _calendarSummary = "{0} calendar heatmap from {1} to {2} with {3} filled days and {4} empty days";
     private const string DefaultLevel = "Level";
     private string _level = DefaultLevel;
 
@@ -36,6 +40,34 @@ public sealed class ChartLabels {
     public string Level { get => _level; set => _level = Required(value, nameof(value)); }
 
     internal string? LevelOverride => _level == DefaultLevel ? null : _level;
+
+    /// <summary>Gets or sets the word at the weak end of calendar and map colour scales. Default <c>Less</c>.</summary>
+    public string Less { get => _less; set => _less = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the word at the strong end of calendar and map colour scales. Default <c>More</c>.</summary>
+    public string More { get => _more; set => _more = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the word for calendar days and map regions without a value, in the scale and in tooltips. Default <c>No data</c>.</summary>
+    public string NoData { get => _noData; set => _noData = Required(value, nameof(value)); }
+
+    /// <summary>
+    /// Gets or sets the accessible summary of a calendar heatmap: <c>{0}</c> the series name, <c>{1}</c> and <c>{2}</c>
+    /// the first and last day, <c>{3}</c> the days with a value, and <c>{4}</c> the days without one. Default
+    /// <c>{0} calendar heatmap from {1} to {2} with {3} filled days and {4} empty days</c>.
+    /// </summary>
+    public string CalendarSummary {
+        get => _calendarSummary;
+        set {
+            var text = Required(value, nameof(value));
+            try {
+                _ = string.Format(System.Globalization.CultureInfo.InvariantCulture, text, "a", "b", "c", 1, 2);
+            } catch (FormatException error) {
+                throw new ArgumentException("The calendar summary must be a composite format using placeholders {0} to {4}.", nameof(value), error);
+            }
+
+            _calendarSummary = text;
+        }
+    }
 
     private static string Required(string value, string parameterName) =>
         string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Label text must not be empty.", parameterName) : value;

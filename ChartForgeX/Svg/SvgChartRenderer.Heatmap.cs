@@ -82,7 +82,7 @@ public sealed partial class SvgChartRenderer {
                 var status = category?.Key ?? ChartHeatmapSurface.CellStatus(chart, ratio);
                 int? level = category == null && status == null ? ChartHeatmapSurface.Level(ratio) : null;
                 ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
-                var color = mark?.Surface ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var color = mark?.Surface ?? ChartHeatmapSurface.CellColor(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 // The accessible name always says which cell this is; a caller's tooltip adds to it instead of replacing it.
@@ -321,7 +321,7 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
-            var color = ChartHeatmapSurface.Color(chart, highColor, value, min, max);
+            var color = ChartHeatmapSurface.CellColor(chart, highColor, value, min, max);
             var stepRatio = ChartHeatmapSurface.Ratio(chart, value, min, max);
             WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.CellStatus(chart, stepRatio), ChartHeatmapSurface.Level(stepRatio), color);
         }

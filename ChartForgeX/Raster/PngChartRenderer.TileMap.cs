@@ -104,7 +104,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawMapPngNoDataScale(RgbaCanvas c, Chart chart, double valueScaleX, double y, double size, double fontSize, ChartRect plot) {
-        const string label = "No data";
+        var label = chart.Options.Labels.NoData;
         var width = size + 5 + EstimatePngTextWidth(label, fontSize);
         var x = valueScaleX - width - 18;
         if (x < plot.Left) {

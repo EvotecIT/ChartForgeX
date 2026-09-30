@@ -2348,6 +2348,23 @@
       }
     },
     {
+      "name": "reporting-change-calendar",
+      "width": 760,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496589,
+        "minTransparentPixels": 50611,
+        "minDistinctColors": 907,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "reporting-classic-wall-clock",
       "width": 1000,
       "height": 340,

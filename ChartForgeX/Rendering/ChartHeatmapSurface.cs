@@ -12,6 +12,14 @@ internal static class ChartHeatmapSurface {
     public static bool CategoricalLabelFits(double cellWidth, double cellHeight, double textWidth, double textHeight) =>
         cellWidth >= textWidth + 12 && cellHeight >= textHeight + 10;
 
+    /// <summary>
+    /// Returns the colour of a matrix or hexbin heatmap cell. In a count heatmap (<see cref="ChartOptions.HeatmapRelativeScale"/>)
+    /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor"/> instead of the weakest ramp step.
+    /// Maps keep using <see cref="Color"/>, where zero can be a real magnitude.
+    /// </summary>
+    public static ChartColor CellColor(Chart chart, ChartColor? highColor, double value, double min, double max) =>
+        chart.Options.HeatmapRelativeScale && value == 0 && min >= 0 ? ZeroColor(chart) : Color(chart, highColor, value, min, max);
+
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticColor(chart, ratio);
@@ -50,11 +58,11 @@ internal static class ChartHeatmapSurface {
         return scale.EffectiveMidpoint(min, max);
     }
 
-    public static string MapLowLabel(Chart chart) => chart.Options.MapColorScale?.LowLabel ?? "Less";
+    public static string MapLowLabel(Chart chart) => chart.Options.MapColorScale?.LowLabel ?? chart.Options.Labels.Less;
 
     public static string? MapMidpointLabel(Chart chart) => chart.Options.MapColorScale?.MidpointLabel;
 
-    public static string MapHighLabel(Chart chart) => chart.Options.MapColorScale?.HighLabel ?? "More";
+    public static string MapHighLabel(Chart chart) => chart.Options.MapColorScale?.HighLabel ?? chart.Options.Labels.More;
 
     public static ChartColor SemanticColor(Chart chart, double ratio) {
         var t = chart.Options.Theme;
@@ -109,6 +117,21 @@ internal static class ChartHeatmapSurface {
         // Counts use a neutral single-hue ramp from the first categorical colour; status colours stay reserved for status.
         var high = pointColor ?? series.Color ?? chart.Options.Theme.Palette[0];
         return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, high, 0.30 + ratio * 0.70);
+    }
+
+    /// <summary>
+    /// Returns the colour of a zero count: the surface behind the cells, shifted a little towards the muted text colour so
+    /// the cell stays visible without reading as activity. It differs from <see cref="CalendarEmptyColor"/>, which marks
+    /// days without data.
+    /// </summary>
+    public static ChartColor ZeroColor(Chart chart) {
+        var ink = chart.Options.Theme.MutedText;
+        var backdrop = ChartStateMark.Backdrop(chart);
+        var amount = 0.14 * ink.A / 255.0;
+        return ChartColor.FromRgb(
+            (byte)Math.Round(backdrop.R + (ink.R - backdrop.R) * amount),
+            (byte)Math.Round(backdrop.G + (ink.G - backdrop.G) * amount),
+            (byte)Math.Round(backdrop.B + (ink.B - backdrop.B) * amount));
     }
 
     public static ChartColor CalendarEmptyColor(Chart chart) {

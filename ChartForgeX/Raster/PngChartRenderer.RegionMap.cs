@@ -142,7 +142,7 @@ public sealed partial class PngChartRenderer {
         if (hasMissing) {
             var missingY = y + height + 24;
             c.FillRoundedRect(x, missingY - 9, 11, 11, 2, ChartHeatmapSurface.MapNoDataColor(chart));
-            DrawMapPngTick(c, chart, x + 16, missingY, "No data", emphasized: false);
+            DrawMapPngTick(c, chart, x + 16, missingY, chart.Options.Labels.NoData, emphasized: false);
         }
     }
 

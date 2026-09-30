@@ -45,7 +45,7 @@ public sealed partial class SvgChartRenderer {
             var status = hasValue ? ChartHeatmapSurface.Status(ratio) : "empty";
             var color = hasValue ? ChartHeatmapSurface.MapColor(chart, entry.Color, series.Color ?? t.Palette[0], value, min, max) : ChartHeatmapSurface.MapNoDataColor(chart);
             var path = ScaleMapPath(region.Path, sourceBounds, map, out var regionBounds);
-            var summary = region.Name + " (" + region.Code + "): " + (hasValue ? FormatValue(chart, value) : "No data");
+            var summary = region.Name + " (" + region.Code + "): " + (hasValue ? FormatValue(chart, value) : chart.Options.Labels.NoData);
             AppendSvg(sb, 1024, writer => {
                 writer.StartElement("path")
                     .Attribute("class", "cfx-interactive-region")
@@ -171,7 +171,7 @@ public sealed partial class SvgChartRenderer {
         if (hasMissing) {
             var missingY = y + height + 24;
             AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", rolePrefix + "-scale-no-data").Attribute("data-cfx-status", "empty").Attribute("x", x).Attribute("y", missingY - 9).Attribute("width", 11).Attribute("height", 11).Attribute("rx", "2").Attribute("fill", ChartHeatmapSurface.MapNoDataColor(chart).ToCss()).EndEmptyElement().Line());
-            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-no-data-label", "No data", x + 16, missingY, "start");
+            WriteMapSvgTick(sb, chart, rolePrefix + "-scale-no-data-label", chart.Options.Labels.NoData, x + 16, missingY, "start");
         }
     }
 

@@ -34,7 +34,7 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
-                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var color = ChartHeatmapSurface.CellColor(chart, series.Color, value, min, max);
                 var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
                 var status = ChartHeatmapSurface.CellStatus(chart, ratio);
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
