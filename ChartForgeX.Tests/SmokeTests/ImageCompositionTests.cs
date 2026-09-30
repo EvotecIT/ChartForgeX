@@ -135,8 +135,9 @@ internal static partial class SmokeTests {
         // Most of the box is its dark fill. One sampled pixel is not enough: where the label's glyphs land depends on the
         // host's fonts (Arial on Windows, DejaVu or none on a Linux runner), and the label can cover any single pixel.
         int filled = 0, sampled = 0;
-        for (int y = 10; y <= 24; y++) {
-            for (int x = 56; x <= 86; x++) {
+        // The fill inside the 1.5 px border of the 34 by 18 box at (54, 8).
+        for (int y = 12; y <= 22; y++) {
+            for (int x = 58; x <= 83; x++) {
                 var pixel = PixelAt(annotated, x, y);
                 sampled++;
                 if (pixel.A > 180 && pixel.R < 80 && pixel.G < 80 && pixel.B < 80) filled++;
