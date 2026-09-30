@@ -182,6 +182,8 @@ internal sealed partial class TrueTypeFont {
         return Math.Max(1, _ascender - _descender) * ScaleFor(fontSize);
     }
 
+    internal double Ascent(double fontSize) => _ascender * ScaleFor(fontSize);
+
     public bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize) =>
         Draw(canvas, x, y, text, color, fontSize, italic: false);
 

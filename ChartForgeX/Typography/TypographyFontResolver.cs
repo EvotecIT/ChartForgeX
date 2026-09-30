@@ -36,17 +36,45 @@ internal static class TypographyFontResolver {
             if (requested != null) return new ResolvedTypeface(requested, font.Weight >= 600, font.Italic);
         }
 
-        var key = font.Family + "|" + font.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (font.Italic ? "|i" : "|n");
+        return ResolveFace(font.Family, font.Weight, font.Italic);
+    }
+
+    /// <summary>
+    /// Resolves a CSS family stack at any CSS weight from 1 through 1000 (SVG and HTML output use
+    /// values such as 650 or 850 that <see cref="FontSpec.Weight"/> does not accept).
+    /// </summary>
+    internal static ResolvedTypeface ResolveFace(string? family, int weight, bool italic) {
+        family = string.IsNullOrWhiteSpace(family) ? "sans-serif" : family!.Trim();
+        weight = Math.Max(1, Math.Min(1000, weight));
+        var key = family + "|" + weight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (italic ? "|i" : "|n");
         lock (CacheLock) {
             if (FamilyCache.TryGetValue(key, out var cached)) return cached;
         }
 
-        var resolved = ResolveFamily(font.Family, font.Weight, font.Italic);
+        var resolved = ResolveFamily(family, weight, italic);
         lock (CacheLock) {
             if (FamilyCache.Count < MaximumCachedFamilies) FamilyCache[key] = resolved;
         }
 
         return resolved;
+    }
+
+    /// <summary>
+    /// Reads a CSS <c>font-weight</c> value: a number from 1 through 1000, <c>normal</c>, <c>bold</c>,
+    /// or <c>bolder</c>/<c>lighter</c> relative to the inherited weight. Anything else keeps the inherited weight.
+    /// </summary>
+    internal static int ParseCssWeight(string? value, int inherited) {
+        var text = (value ?? string.Empty).Trim();
+        if (text.Equals("normal", StringComparison.OrdinalIgnoreCase)) return 400;
+        if (text.Equals("bold", StringComparison.OrdinalIgnoreCase)) return 700;
+        // CSS Fonts 4 relative weights.
+        if (text.Equals("bolder", StringComparison.OrdinalIgnoreCase)) return inherited < 350 ? 400 : inherited < 550 ? 700 : 900;
+        if (text.Equals("lighter", StringComparison.OrdinalIgnoreCase)) return inherited < 550 ? 100 : inherited < 750 ? 400 : 700;
+        if (double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var numeric) && numeric >= 1 && numeric <= 1000) {
+            return (int)Math.Round(numeric);
+        }
+
+        return inherited;
     }
 
     private static ResolvedTypeface ResolveFamily(string family, int weight, bool italic) {

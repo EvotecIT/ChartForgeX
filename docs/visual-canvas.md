@@ -204,6 +204,8 @@ Text drawn from a `FontSpec` (`ImageComposition.DrawText` and `TextLayoutEngine`
 
 When no real bold or italic face exists, bold is synthesized by emboldening and italic by shearing the regular face. A variable font renders its default instance; its axes are not applied.
 
+SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its computed `font-family` stack, `font-weight` (numbers from 1 to 1000, `normal`, `bold`, and `bolder`/`lighter` relative to the parent), and `font-style` (`italic` or `oblique`), whether they come from attributes, `style="..."`, a stylesheet, an ancestor `<g>`, or a `<tspan>`. Text without a `font-family` uses the sans-serif fallback. Each run is placed so its face's own baseline sits on the `y` coordinate, as a browser places it.
+
 On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship a `.ttf` and use `FontSpec.FromFile`.
 
 Chart, grid, and topology PNG renderers keep resolving their theme font stack through the generic fallback only, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.

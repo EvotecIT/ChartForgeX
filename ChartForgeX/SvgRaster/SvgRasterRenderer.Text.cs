@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -134,21 +135,24 @@ internal static partial class SvgRasterRenderer {
         return advance;
     }
 
-    private static double MeasureTextAdvance(string text, SvgRasterStyle style) {
-        if (text.Length == 0) return 0;
-        var font = SvgTextFont(style);
-        return IsBold(style.FontWeight)
-            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, font, italic: false)
-            : RgbaCanvas.MeasureTextWidth(text, style.FontSize, font, italic: false);
-    }
+    private static double MeasureTextAdvance(string text, SvgRasterStyle style) =>
+        text.Length == 0 ? 0 : TextAdvanceWidth(text, style.FontSize, SvgTextFace(style));
 
-    private static double MeasureTextPaintWidth(string text, SvgRasterStyle style) {
-        if (text.Length == 0) return 0;
-        var font = SvgTextFont(style);
-        var italic = IsItalic(style.FontStyle);
-        return IsBold(style.FontWeight)
-            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, style.FontSize, font, italic)
-            : RgbaCanvas.MeasureTextWidth(text, style.FontSize, font, italic);
+    private static double MeasureTextPaintWidth(string text, SvgRasterStyle style) =>
+        text.Length == 0 ? 0 : TextPaintWidth(text, style.FontSize, SvgTextFace(style), IsItalic(style.FontStyle));
+
+    // The pen advance: what the next run starts after. A synthesized bold adds its offset, a slant does not.
+    private static double TextAdvanceWidth(string text, double fontSize, ResolvedTypeface face) =>
+        face.SynthesizeBold
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, face.Font, italic: false)
+            : RgbaCanvas.MeasureTextWidth(text, fontSize, face.Font, italic: false);
+
+    // The inked extent: a sheared face and a real italic face both lean past the last advance.
+    private static double TextPaintWidth(string text, double fontSize, ResolvedTypeface face, bool italic) {
+        var width = face.SynthesizeBold
+            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, face.Font, face.SynthesizeItalic)
+            : RgbaCanvas.MeasureTextWidth(text, fontSize, face.Font, face.SynthesizeItalic);
+        return italic && !face.SynthesizeItalic && text.Length > 0 ? width + TrueTypeFont.ItalicOverhang(fontSize) : width;
     }
 
     private static double TextAnchorOffset(string anchor, double width) {
@@ -161,36 +165,39 @@ internal static partial class SvgRasterRenderer {
         if (text.Length == 0) return 0;
         if (measureOnly) {
             var measuredAdvance = MeasureTextAdvance(text, style);
-            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline) + BaselineShiftOffset(style), MeasureTextPaintWidth(text, style), SvgTextPaintHeight(style, SvgTextFont(style)), matrix);
+            if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline, SvgTextFace(style).Font) + BaselineShiftOffset(style), MeasureTextPaintWidth(text, style), SvgTextPaintHeight(style, SvgTextFace(style).Font), matrix);
             return measuredAdvance;
         }
         if (canvas == null) throw new InvalidOperationException("SVG text rendering requires a target canvas.");
         var renderScale = ResolveTextRenderScale(canvas, text, style, matrix.ScaleFactor);
         var fontSize = Math.Max(1, style.FontSize * renderScale);
-        var font = SvgTextFont(style);
-        var emphasized = IsBold(style.FontWeight);
-        var italic = IsItalic(style.FontStyle);
+        var face = SvgTextFace(style);
+        var font = face.Font;
+        // A real bold or italic face draws as it is; only a missing one is synthesized on the nearest face.
+        var emphasized = face.SynthesizeBold;
+        var italic = face.SynthesizeItalic;
         var underline = HasUnderline(style.TextDecoration);
         var strikethrough = HasLineThrough(style.TextDecoration);
         var underlineStyle = DecorationStyle(style.UnderlineDecorationStyle);
         var strikethroughStyle = DecorationStyle(style.StrikethroughDecorationStyle);
-        var width = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic);
-        var advanceWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic: false) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic: false);
-        var advance = advanceWidth / renderScale;
+        var width = TextPaintWidth(text, fontSize, face, IsItalic(style.FontStyle));
+        var advance = TextAdvanceWidth(text, fontSize, face) / renderScale;
         if (!style.VisibilityVisible) return advance;
         var fillColor = style.FillColor();
         var strokeColor = style.StrokeWidth > 0 ? ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions) : ChartColor.Transparent;
         if (style.Fill.IsNone && strokeColor.A == 0) return advance;
 
         var drawX = x;
-        var drawY = TextTop(y, style.FontSize, style.DominantBaseline) + BaselineShiftOffset(style);
+        var drawY = TextTop(y, style.FontSize, style.DominantBaseline, font) + BaselineShiftOffset(style);
         var strokeRadius = strokeColor.A == 0 ? 0 : Math.Max(1, (int)Math.Ceiling(style.StrokeWidth * renderScale / 2.0));
         var padding = Math.Max(2, (int)Math.Ceiling(fontSize * 0.2) + strokeRadius);
         var textHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, font));
         var underlineThickness = Math.Max(1, fontSize / 13.0);
-        var underlineY = padding + fontSize + 2;
-        var strikeY = padding + fontSize * 0.55;
-        var contentHeight = underline ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, underlineThickness)) : textHeight;
+        // Decorations sit relative to the face's own baseline, which is its ascent below the buffer top.
+        var ascent = TextAscent(fontSize, font);
+        var underlineY = padding + ascent + fontSize * 0.1 + 2;
+        var strikeY = padding + ascent - fontSize * 0.35;
+        var contentHeight = underline ? Math.Max(textHeight, ascent + fontSize * 0.1 + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, underlineThickness)) : textHeight;
         var localWidth = Math.Max(1, (int)Math.Ceiling(width + padding * 2.0));
         var localHeight = Math.Max(1, (int)Math.Ceiling(contentHeight + padding * 2.0));
         var buffer = new RgbaCanvas(localWidth, localHeight, 1, font);
@@ -240,12 +247,12 @@ internal static partial class SvgRasterRenderer {
     private static double ResolveTextRenderScale(RgbaCanvas canvas, string text, SvgRasterStyle style, double requestedScale) {
         const double minimumScale = 0.000000000001;
         var scale = Math.Max(minimumScale, requestedScale);
-        var font = SvgTextFont(style);
+        var face = SvgTextFace(style);
         var italic = IsItalic(style.FontStyle);
         for (var attempt = 0; attempt < 8; attempt++) {
             var fontSize = Math.Max(1, style.FontSize * scale);
-            var width = Math.Max(1, IsBold(style.FontWeight) ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, italic) : RgbaCanvas.MeasureTextWidth(text, fontSize, font, italic));
-            var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, font));
+            var width = Math.Max(1, TextPaintWidth(text, fontSize, face, italic));
+            var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, face.Font));
             if (HasUnderline(style.TextDecoration)) {
                 var thickness = Math.Max(1, fontSize / 13.0);
                 height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.UnderlineDecorationStyle), thickness));
@@ -267,8 +274,11 @@ internal static partial class SvgRasterRenderer {
     private static bool HasVisibleTextFillAndStroke(SvgRasterStyle style) =>
         !style.Fill.IsNone && style.FillOpacity > 0 && !style.Stroke.IsNone && style.StrokeOpacity > 0 && style.StrokeWidth > 0;
 
-    private static TrueTypeFont? SvgTextFont(SvgRasterStyle style) =>
-        string.IsNullOrWhiteSpace(style.FontFamily) ? null : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _);
+    // The same family, weight, and slant matching as FontSpec text, so SVG rasterized here and text
+    // drawn through ImageComposition or VisualCanvas pick the same installed or registered face.
+    // Without a font-family the stack is plain sans-serif, the face unstyled SVG text always used.
+    private static ResolvedTypeface SvgTextFace(SvgRasterStyle style) =>
+        TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, IsItalic(style.FontStyle));
 
     private static bool IsItalic(string value) =>
         value.IndexOf("italic", StringComparison.OrdinalIgnoreCase) >= 0 || value.IndexOf("oblique", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -428,11 +438,18 @@ internal static partial class SvgRasterRenderer {
         return result.ToString();
     }
 
-    private static double TextTop(double y, double fontSize, string baseline) {
-        if (string.Equals(baseline, "middle", StringComparison.OrdinalIgnoreCase) || string.Equals(baseline, "central", StringComparison.OrdinalIgnoreCase)) return y - fontSize * 0.5;
-        if (string.Equals(baseline, "hanging", StringComparison.OrdinalIgnoreCase) || string.Equals(baseline, "text-before-edge", StringComparison.OrdinalIgnoreCase)) return y;
-        if (string.Equals(baseline, "text-after-edge", StringComparison.OrdinalIgnoreCase) || string.Equals(baseline, "ideographic", StringComparison.OrdinalIgnoreCase)) return y - fontSize;
-        return y - fontSize * 0.82;
+    // Glyphs are drawn from the top of the face's ascent, so the top is the alphabetic baseline minus
+    // that ascent: faces with tall ascenders (Segoe UI) or short ones (Calibri) still sit on y.
+    private static double TextTop(double y, double fontSize, string baseline, TrueTypeFont? font) =>
+        TextBaseline(y, fontSize, baseline) - TextAscent(fontSize, font);
+
+    private static double TextAscent(double fontSize, TrueTypeFont? font) => font?.Ascent(fontSize) ?? fontSize * 0.82;
+
+    private static double TextBaseline(double y, double fontSize, string baseline) {
+        if (string.Equals(baseline, "middle", StringComparison.OrdinalIgnoreCase) || string.Equals(baseline, "central", StringComparison.OrdinalIgnoreCase)) return y + fontSize * 0.32;
+        if (string.Equals(baseline, "hanging", StringComparison.OrdinalIgnoreCase) || string.Equals(baseline, "text-before-edge", StringComparison.OrdinalIgnoreCase)) return y + fontSize * 0.82;
+        if (string.Equals(baseline, "text-after-edge", StringComparison.OrdinalIgnoreCase) || string.Equals(baseline, "ideographic", StringComparison.OrdinalIgnoreCase)) return y - fontSize * 0.18;
+        return y;
     }
 
     private struct TextWhitespaceState {

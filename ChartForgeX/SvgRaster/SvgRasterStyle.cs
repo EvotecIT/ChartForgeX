@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -23,7 +24,7 @@ internal sealed class SvgRasterStyle {
         ClipRule = "nonzero",
         FontSize = 16,
         FontFamily = null,
-        FontWeight = "normal",
+        FontWeight = 400,
         FontStyle = "normal",
         TextDecoration = "none",
         TextDecorationStyle = "solid",
@@ -61,7 +62,8 @@ internal sealed class SvgRasterStyle {
     public string? ClipPath { get; set; }
     public double FontSize { get; set; }
     public string? FontFamily { get; set; }
-    public string FontWeight { get; set; } = "normal";
+    /// <summary>The computed CSS weight from 1 through 1000; <c>bolder</c> and <c>lighter</c> are resolved against the parent.</summary>
+    public int FontWeight { get; set; } = 400;
     public string FontStyle { get; set; } = "normal";
     public string TextDecoration { get; set; } = "none";
     public string TextDecorationStyle { get; set; } = "solid";
@@ -309,7 +311,7 @@ internal sealed class SvgRasterStyle {
                 style.FontFamily = value.Trim();
                 break;
             case "font-weight":
-                style.FontWeight = value.Trim();
+                style.FontWeight = TypographyFontResolver.ParseCssWeight(value, style.FontWeight);
                 break;
             case "font-style":
                 style.FontStyle = value.Trim();
