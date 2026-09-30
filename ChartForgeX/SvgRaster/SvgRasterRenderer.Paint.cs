@@ -11,7 +11,7 @@ internal static partial class SvgRasterRenderer {
         SvgRasterDefinitions definitions, SvgRasterViewport viewport, Action? renderMarkers = null) {
         for (int layer = 0; layer < 3; layer++) {
             if (layer == style.FillOrder) Fill(canvas, fills, style, matrix, definitions, viewport);
-            else if (layer == style.StrokeOrder) foreach (var contour in strokes) Stroke(canvas, contour, style, matrix.ScaleFactor, definitions);
+            else if (layer == style.StrokeOrder) Stroke(canvas, strokes, style, matrix.ScaleFactor, definitions);
             else renderMarkers?.Invoke();
         }
     }
