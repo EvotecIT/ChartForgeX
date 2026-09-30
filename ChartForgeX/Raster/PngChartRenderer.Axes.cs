@@ -64,10 +64,10 @@ public sealed partial class PngChartRenderer {
         if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));
     }
 
-    private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale) {
+    private static void DrawDetailAxisTitles(RgbaCanvas c, Chart chart, ChartRect plot, int textScale, double? xTitleBaseline = null) {
         if (ShowXAxis(chart) && !string.IsNullOrWhiteSpace(XAxisTitleText(chart))) {
             var tickHeight = EstimatePngStyledTextBoundsHeight(PngTickFontSize(chart), chart.Options.TickLabelStyle);
-            DrawPngXAxisTitle(c, chart, plot, plot.Bottom + 22 + tickHeight + 12, PngAxisTitleFontSize(chart));
+            DrawPngXAxisTitle(c, chart, plot, xTitleBaseline ?? plot.Bottom + 22 + tickHeight + 12, PngAxisTitleFontSize(chart));
         }
 
         if (ShowYAxis(chart)) DrawYAxisTitle(c, chart, plot, PngAxisTitleFontSize(chart));

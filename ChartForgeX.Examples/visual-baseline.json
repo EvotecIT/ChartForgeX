@@ -2331,6 +2331,23 @@
       }
     },
     {
+      "name": "report-host-rotated-matrix",
+      "width": 620,
+      "height": 440,
+      "svg": {
+        "minVisualNodes": 63,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496549,
+        "minTransparentPixels": 49051,
+        "minDistinctColors": 1275,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "report-summary-metric-strip",
       "width": 980,
       "height": 294,

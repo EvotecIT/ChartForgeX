@@ -127,20 +127,35 @@ public sealed partial class SvgChartRenderer {
             }
         }
 
+        var columnLabelsReserve = ChartHeatmapColumnLabels.Reserve(chart, HeatmapWidestColumnLabel(chart, columns), EstimateSvgStyledTextHeight(tickFontSize, tickStyle));
         if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels) {
-            for (var columnIndex = 0; columnIndex < columns.Length; columnIndex++) {
+            var rotated = ChartHeatmapColumnLabels.IsRotated(chart);
+            var angle = ChartHeatmapColumnLabels.Angle(chart);
+            var columnTextHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
+            var step = rotated ? ChartHeatmapColumnLabels.Step(chart, cellWidth + gap, columnTextHeight, HeatmapWidestColumnLabel(chart, columns)) : 1;
+            for (var columnIndex = 0; columnIndex < columns.Length; columnIndex += step) {
                 var x = plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2;
                 var label = FormatX(chart, columns[columnIndex]);
+                if (rotated) {
+                    label = TrimSvgLabelToWidth(chart, label, tickFontSize, ChartHeatmapColumnLabels.MaximumLength(chart, x, columnTextHeight), tickStyle, emphasized: true);
+                    if (label.Length == 0) continue;
+                    WriteHeatmapColumnLabel(body, chart, x, plot.Bottom + ChartHeatmapColumnLabels.RotatedOffset, ChartHeatmapColumnLabels.EndsAtColumn(chart) ? "end" : "start", tickFontSize, label, angle);
+                    continue;
+                }
+
                 var labelWidth = Math.Max(8, cellWidth + gap);
                 var labelFontSize = TextFontSizeForSvgWidth(chart, label, labelWidth, tickFontSize, tickStyle, emphasized: true);
                 label = TrimSvgLabelToWidth(chart, label, labelFontSize, labelWidth, tickStyle, emphasized: true);
                 if (label.Length == 0) continue;
                 var anchor = EdgeAwareStyledAnchor(chart, label, x, plot, labelFontSize, tickStyle, emphasized: true);
                 var labelX = EdgeAwareStyledTextX(chart, label, x, plot, labelFontSize, tickStyle, emphasized: true);
-                WriteHeatmapColumnLabel(body, chart, labelX, plot.Bottom + 22, anchor, labelFontSize, label);
+                WriteHeatmapColumnLabel(body, chart, labelX, plot.Bottom + ChartHeatmapColumnLabels.LabelOffset, anchor, labelFontSize, label);
             }
 
-            DrawSvgXAxisTitle(body, chart, plot, plot.Bottom + 22 + EstimateSvgStyledTextHeight(tickFontSize, tickStyle) + 12, "heatmap-x-axis-title");
+            var titleY = rotated
+                ? plot.Bottom + columnLabelsReserve + EstimateSvgStyledTextHeight(StyleFontSize(chart.Options.AxisTitleStyle, t.AxisTitleFontSize), chart.Options.AxisTitleStyle)
+                : plot.Bottom + ChartHeatmapColumnLabels.LabelOffset + EstimateSvgStyledTextHeight(tickFontSize, tickStyle) + 12;
+            DrawSvgXAxisTitle(body, chart, plot, titleY, "heatmap-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
                 var widestRowLabel = rows.Max(series => EstimateSvgStyledTextWidth(chart, series.Name, tickFontSize, tickStyle, emphasized: true));
                 var axisX = Math.Max(24, plot.Left - widestRowLabel - SvgYAxisTitleHeight(chart, plot.Height) - 28);
@@ -149,7 +164,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (legend.Count > 0) AppendSvg(body, writer => WriteStateCategoryLegend(writer, chart, legend, basePlot.Bottom - legendHeight + 4, hatchId, basePlot));
-        else if (chart.Options.ShowHeatmapScale && !categorical) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color);
+        else if (chart.Options.ShowHeatmapScale && !categorical) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color, HeatmapScaleTop(chart, plot, columnLabelsReserve, SvgXAxisTitleHeight(chart, plot.Width)));
 
         var writer = new SvgMarkupWriter(body.Length + 128);
         writer
@@ -237,7 +252,11 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteHeatmapColumnLabel(StringBuilder sb, Chart chart, double x, double y, string anchor, double fontSize, string label) {
+    /// <summary>
+    /// Writes a column label: on the baseline <paramref name="y"/>, or, with an <paramref name="angle"/>, rotated about
+    /// its anchor point as rotated x-axis labels are.
+    /// </summary>
+    private static void WriteHeatmapColumnLabel(StringBuilder sb, Chart chart, double x, double y, string anchor, double fontSize, string label, double angle = 0) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
         var writer = new SvgMarkupWriter(384);
@@ -246,7 +265,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-role", "heatmap-column-label")
             .Attribute("x", x)
             .Attribute("y", y)
-            .Attribute("text-anchor", anchor)
+            .Attribute("text-anchor", anchor);
+        if (Math.Abs(angle) >= 0.001) writer.Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(x)} {F(y)})");
+        writer
             .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
@@ -270,14 +291,25 @@ public sealed partial class SvgChartRenderer {
         var sideLabelWidth = HeatmapSideLabelWidth(chart, rows, columns);
         var leftLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Left) ? sideLabelWidth + 22 : 0;
         var rightLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Right) || HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Outside) ? sideLabelWidth + 22 : 0;
-        var axisBottomBase = numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
+        var maxColumnLabel = chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels ? HeatmapWidestColumnLabel(chart, columns) : 0;
+        var rotatedLabels = chart.Options.ShowHeatmapColumnLabels && ChartHeatmapColumnLabels.IsRotated(chart);
+        var columnLabelsReserve = ChartHeatmapColumnLabels.Reserve(chart, maxColumnLabel, tickHeight);
+        var axisBottomBase = rotatedLabels
+            ? columnLabelsReserve + (numericScale ? HeatmapRotatedScaleReserve : 0)
+            : numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? columnLabelsReserve : 10;
         var bottomReserve = chart.Options.ShowAxes ? axisBottomBase + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : SvgXAxisTitleHeight(chart, plot.Width) + 8) : 0;
         var desiredLeft = Math.Max(plot.Left, leftReserve + leftLabelReserve);
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 220);
         var shift = Math.Max(0, Math.Min(desiredLeft, maxLeft) - plot.Left);
-        var maxColumnLabel = chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels ? columns.Max(column => EstimateSvgStyledTextWidth(chart, FormatX(chart, column), tickFontSize, tickStyle, emphasized: true)) : 0;
-        var axesBottom = Math.Max(bottomReserve, maxColumnLabel > 68 ? 70 : bottomReserve);
+        // Long unrotated labels shrink to their column; the extra band keeps the shrunken text clear of the scale.
+        var axesBottom = rotatedLabels ? bottomReserve : Math.Max(bottomReserve, maxColumnLabel > 68 ? 70 : bottomReserve);
         var bottom = (numericScale ? Math.Max(axesBottom, 56) : axesBottom) + legendHeight;
+        // Rotated labels slant beyond their column; the plot moves in on that side so the outermost label fits.
+        if (rotatedLabels && chart.Options.ShowAxes) {
+            if (ChartHeatmapColumnLabels.EndsAtColumn(chart)) shift += ChartHeatmapColumnLabels.SideReserve(chart, maxColumnLabel, tickHeight, plot.X + shift);
+            else rightLabelReserve += ChartHeatmapColumnLabels.SideReserve(chart, maxColumnLabel, tickHeight, chart.Options.Size.Width - (plot.Right - rightLabelReserve));
+        }
+
         return new ChartRect(plot.X + shift, plot.Y, Math.Max(1, plot.Width - shift - rightLabelReserve), Math.Max(1, plot.Height - bottom));
     }
 
@@ -309,7 +341,25 @@ public sealed partial class SvgChartRenderer {
         return chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || ShouldDrawDataLabels(chart, series);
     }
 
-    private static void DrawHeatmapScale(StringBuilder sb, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor) {
+    /// <summary>Height the numeric scale takes under rotated column labels: the swatches and their value labels.</summary>
+    private const double HeatmapRotatedScaleReserve = 34;
+
+    private static double HeatmapWidestColumnLabel(Chart chart, IReadOnlyList<double> columns) {
+        var style = chart.Options.TickLabelStyle;
+        var fontSize = StyleFontSize(style, chart.Options.Theme.TickLabelFontSize);
+        return columns.Count == 0 ? 0 : columns.Max(column => EstimateSvgStyledTextWidth(chart, FormatX(chart, column), fontSize, style, emphasized: true));
+    }
+
+    /// <summary>
+    /// Returns the top of the numeric heatmap scale: at its usual offset under unrotated labels, or below rotated labels
+    /// and the axis title.
+    /// </summary>
+    private static double HeatmapScaleTop(Chart chart, ChartRect plot, double columnLabelsReserve, double titleHeight) {
+        if (!chart.Options.ShowAxes || !chart.Options.ShowHeatmapColumnLabels || !ChartHeatmapColumnLabels.IsRotated(chart)) return plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
+        return plot.Bottom + columnLabelsReserve + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : titleHeight + 8) + 4;
+    }
+
+    private static void DrawHeatmapScale(StringBuilder sb, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor, double top) {
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
         var preferredFontSize = StyleFontSize(style, t.TickLabelFontSize);
@@ -317,7 +367,7 @@ public sealed partial class SvgChartRenderer {
         const double width = ChartVisualPrimitives.HeatmapScaleWidth;
         const double height = ChartVisualPrimitives.HeatmapScaleHeight;
         var x = plot.Right - width;
-        var y = plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
+        var y = top;
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);

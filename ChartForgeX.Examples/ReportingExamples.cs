@@ -16,6 +16,7 @@ internal static class ReportingExamples {
         WriteIncidentLanes(output, pngOutputScale);
         WriteHourWeekday(output, pngOutputScale);
         WriteChangeCalendar(output, pngOutputScale);
+        ReportHostExamples.Write(output, pngOutputScale);
     }
 
     private static string Days(int count) => count + (count == 1 ? " Tag" : " Tage");

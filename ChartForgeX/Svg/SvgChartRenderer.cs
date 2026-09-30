@@ -641,7 +641,8 @@ public sealed partial class SvgChartRenderer {
         }
 
         var bottomReserve = 0.0;
-        if (ShowXAxis(chart)) {
+        // A matrix heatmap reserves the band under it for its own column labels (see ApplyHeatmapLabelReserve).
+        if (ShowXAxis(chart) && !IsHeatmapChart(chart)) {
             bottomReserve += SvgXAxisBottomReserve(chart, null, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right);
         }
 

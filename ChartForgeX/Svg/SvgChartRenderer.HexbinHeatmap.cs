@@ -59,7 +59,7 @@ public sealed partial class SvgChartRenderer {
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) DrawSvgYAxisTitle(body, chart, plot, Math.Max(24, plot.Left - 86), "hexbin-heatmap-y-axis-title");
         }
 
-        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color);
+        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color, plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY);
 
         AppendSvg(sb, writer => writer
             .StartElement("g")

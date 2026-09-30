@@ -72,7 +72,7 @@ public sealed partial class PngChartRenderer {
             DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
         }
 
-        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
+        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize, plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY);
     }
 
     private static ChartRect ApplyHexbinHeatmapReserve(Chart chart, ChartRect plot, IReadOnlyList<ChartSeries> rows) {
