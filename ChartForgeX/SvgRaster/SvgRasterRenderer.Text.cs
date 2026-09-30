@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -199,10 +200,10 @@ internal static partial class SvgRasterRenderer {
         var contentHeight = underline ? Math.Max(textHeight, ascent + fontSize * 0.1 + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, underlineThickness)) : textHeight;
         var localWidth = Math.Max(1, (int)Math.Ceiling(width + padding * 2.0));
         var localHeight = Math.Max(1, (int)Math.Ceiling(contentHeight + padding * 2.0));
-        var buffer = new RgbaCanvas(localWidth, localHeight, 1, font);
+        var buffer = new RgbaCanvas(localWidth, localHeight, 1, font) { TextHinting = canvas.TextHinting };
         RgbaCanvas? glyphMask = null;
         if (style.Fill.IsReference || strokeColor.A > 0) {
-            glyphMask = new RgbaCanvas(localWidth, localHeight, 1, font);
+            glyphMask = new RgbaCanvas(localWidth, localHeight, 1, font) { TextHinting = canvas.TextHinting };
             DrawTextGlyphs(glyphMask, padding, padding, text, ChartColor.White, fontSize, emphasized, italic);
             if (underline) RasterTextDecoration.Draw(glyphMask, padding, padding + width, underlineY, underlineStyle, ChartColor.White, underlineThickness);
             if (strikethrough) RasterTextDecoration.Draw(glyphMask, padding, padding + width, strikeY, strikethroughStyle, ChartColor.White, underlineThickness);
@@ -239,8 +240,17 @@ internal static partial class SvgRasterRenderer {
         var textMatrix = matrix
             .Multiply(SvgRasterMatrix.Translate(drawX - padding / renderScale, drawY - padding / renderScale))
             .Multiply(SvgRasterMatrix.Scale(1 / renderScale, 1 / renderScale));
+        textMatrix = AlignHintedRows(textMatrix, canvas, fontSize);
         canvas.DrawImageTransformed(localWidth, localHeight, buffer.Pixels, textMatrix.A, textMatrix.B, textMatrix.C, textMatrix.D, textMatrix.E, textMatrix.F);
         return advance;
+    }
+
+    // A hinted glyph buffer keeps its whole-pixel rows only when it lands on whole canvas rows, so an
+    // unrotated, unscaled placement moves to the nearest row; horizontal positions keep their fractions.
+    private static SvgRasterMatrix AlignHintedRows(SvgRasterMatrix matrix, RgbaCanvas canvas, double fontSize) {
+        if (canvas.TextHinting == TextHinting.None || fontSize > GlyphGridFit.MaximumPixelSize) return matrix;
+        if (Math.Abs(matrix.B) > 1e-9 || Math.Abs(matrix.C) > 1e-9 || Math.Abs(matrix.A - 1) > 1e-9 || Math.Abs(matrix.D - 1) > 1e-9) return matrix;
+        return new SvgRasterMatrix(matrix.A, matrix.B, matrix.C, matrix.D, matrix.E, Math.Round(matrix.F, MidpointRounding.AwayFromZero));
     }
 
     private static double ResolveTextRenderScale(RgbaCanvas canvas, string text, SvgRasterStyle style, double requestedScale) {

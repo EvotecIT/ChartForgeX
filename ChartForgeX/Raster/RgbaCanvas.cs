@@ -250,7 +250,7 @@ internal sealed partial class RgbaCanvas {
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
         contentHeight += Math.Abs(baselineOffset);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(contentHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false);
+        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(contentHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
         var textY = padding + baselineOffset;
         if (emphasized) buffer.DrawTextEmphasized(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
         else buffer.DrawText(padding, textY, text, color, fontSize, buffer._outlineFont, italic);

@@ -50,7 +50,7 @@ public sealed partial class PngChartRenderer {
         CurrentOutlineFont = outlineFont;
         CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         try {
-            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale);
+            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale) { TextHinting = o.PngTextHinting };
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
             if (o.ShowCard && t.UseCard) DrawCardSurface(c, o, t);
             var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(o);

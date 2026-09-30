@@ -1,9 +1,19 @@
 using System;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
+    /// <summary>How text drawn on this canvas is fitted to the output pixel grid; buffers it draws text through inherit it.</summary>
+    internal TextHinting TextHinting { get; set; }
+
+    /// <summary>Output pixels per canvas unit, the grid text is fitted to.</summary>
+    internal int OutputScale => _outputScale;
+
+    // A text buffer has one pixel per canvas unit; its grid is this canvas's only at an output scale of one.
+    private TextHinting BufferHinting => _outputScale == 1 ? TextHinting : TextHinting.None;
+
     public void DrawTextTiny(double x, double y, string text, ChartColor color, int scale = 2) {
         DrawTextTiny(x, y, text, color, scale, italic: false);
     }
@@ -62,7 +72,7 @@ internal sealed partial class RgbaCanvas {
             ? TinyFont.Height * FallbackScaleForFontSize(fontSize)
             : font.LineHeight(Math.Max(1, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
-        var buffer = new RgbaCanvas(bufferWidth, naturalHeight, _supersamplingScale, font, 1, useDefaultOutlineFont: false);
+        var buffer = new RgbaCanvas(bufferWidth, naturalHeight, _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
         if (emphasized) buffer.DrawTextEmphasized(0, 0, text, color, fontSize, font);
         else buffer.DrawText(0, 0, text, color, fontSize, font);
         var pixels = buffer.ToOutputPixels();

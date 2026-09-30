@@ -276,7 +276,9 @@ internal sealed partial class TrueTypeFont {
     internal bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool italic) {
         var scale = ScaleFor(fontSize);
         var cursor = x;
-        var baseline = y + _ascender * scale;
+        // Small text sits on a whole pixel and has its x-height and cap height fitted to the grid.
+        var fit = GlyphGridFit.Create(canvas, fontSize, y + _ascender * scale);
+        var baseline = fit?.Baseline ?? y + _ascender * scale;
         var rendered = false;
         if (!IsSimpleRun(text)) {
             TrueTypeFont? previousFace = null;
@@ -285,7 +287,7 @@ internal sealed partial class TrueTypeFont {
                 var face = shaped.Face;
                 var faceScale = face.ScaleFor(fontSize);
                 if (ReferenceEquals(face, previousFace)) cursor += face.Kerning(previousGlyph, shaped.Glyph) * faceScale;
-                rendered |= face.DrawGlyph(canvas, shaped.Glyph, cursor, baseline, faceScale, italic, color);
+                rendered |= face.DrawGlyph(canvas, shaped.Glyph, cursor, baseline, faceScale, italic, color, fit);
                 cursor += face.AdvanceWidth(shaped.Glyph) * faceScale;
                 previousFace = face;
                 previousGlyph = shaped.Glyph;
@@ -298,7 +300,7 @@ internal sealed partial class TrueTypeFont {
         for (var index = 0; index < text.Length;) {
             var glyph = MapGlyph(ReadCodePoint(text, ref index));
             if (previous.HasValue) cursor += Kerning(previous.Value, glyph) * scale;
-            rendered |= DrawGlyph(canvas, glyph, cursor, baseline, scale, italic, color);
+            rendered |= DrawGlyph(canvas, glyph, cursor, baseline, scale, italic, color, fit);
             cursor += AdvanceWidth(glyph) * scale;
             previous = glyph;
         }
@@ -306,9 +308,10 @@ internal sealed partial class TrueTypeFont {
         return rendered;
     }
 
-    private bool DrawGlyph(RgbaCanvas canvas, ushort glyph, double x, double baseline, double scale, bool italic, ChartColor color) {
+    private bool DrawGlyph(RgbaCanvas canvas, ushort glyph, double x, double baseline, double scale, bool italic, ChartColor color, GlyphGridFit? fit) {
         var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, x, baseline), 0);
         if (contours.Count == 0) return false;
+        fit?.Apply(contours, XHeight * scale, CapHeight * scale);
         // Outlines are non-zero wound: variable fonts and composites overlap their contours, and an
         // even-odd fill would punch the overlaps out as holes.
         canvas.FillContours(contours, color, RasterFillRule.NonZero);

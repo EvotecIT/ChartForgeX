@@ -227,6 +227,10 @@ Emoji are drawn from the emoji font's monochrome outlines (Segoe UI Emoji on Win
 
 Not handled yet: complex-script shaping beyond Arabic joining (Indic conjuncts and vowel reordering, Thai and Khmer clusters), mark positioning from GPOS (marks use their default offset), and emoji ZWJ sequences, which draw as their separate pictographs.
 
+#### Small text
+
+Text drawn at 12 output pixels or smaller is lightly hinted, independently of the font: the run's baseline moves to a whole pixel and each glyph is stretched vertically so its face's x-height and cap height also land on whole pixels. Nothing moves horizontally, so advances, widths, wrapping, and fitting are exactly those of unhinted text. Larger text is drawn as designed. Set `TextStyle.Hinting = TextHinting.None` for composed text, or `ChartOptions.PngTextHinting = TextHinting.None` for chart PNGs, where exact outline geometry matters more than crisp rows, such as frames of an animation that moves text by fractions of a pixel. SVG `<text>` is hinted in its own glyph buffer, which is then placed on a whole pixel row when it is only translated. Stems are not darkened, and horizontal positions keep their fractions.
+
 On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship `.ttf` files with the application and register them.
 
 `FontRegistry` registers font files once, process-wide and thread-safely, and every raster path then finds them by family name: chart, grid, topology, and visual block themes, VisualCanvas themes and design tokens, `FontSpec.FromFamily`, and SVG `font-family`:
