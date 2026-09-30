@@ -190,7 +190,8 @@ internal static class ChartGuards {
         if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
             // Fully masked rows keep their position (for example a weekday with no samples) when the column span is known.
             ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
-            if (!chart.Series.Any(series => series.Points.Count > 0)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
+            // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
+            if (!chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
             if (chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
@@ -266,7 +267,7 @@ internal static class ChartGuards {
     private static void ValidateHeatmapCategories(Chart chart) {
         var categorical = 0;
         foreach (var row in chart.Series) {
-            if (row.HeatmapCells.Count == 0) continue;
+            if (!row.IsCategoricalHeatmapRow) continue;
             if (row.HeatmapCells.Count != row.Points.Count) throw new InvalidOperationException("Categorical heatmap rows require one cell per point.");
             categorical++;
         }

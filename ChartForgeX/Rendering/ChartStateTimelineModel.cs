@@ -19,8 +19,14 @@ internal sealed class ChartStateTimelineModel {
     public const double LegendItemGap = 18;
     public const double ColumnGap = 14;
     public const double ContentInset = 12;
-    public const double HatchSpacing = 6;
-    public const double HatchOpacity = 0.45;
+    /// <summary>Room kept above the lanes for the summary header or the "Now" label, so the text sits inside the plot frame.</summary>
+    public const double TopLabelGap = 9;
+    /// <summary>Distance from the top of the lanes up to the baseline of the summary header and the "Now" label.</summary>
+    public const double SummaryHeaderOffset = 5;
+    /// <summary>Height of a group header row, in lanes.</summary>
+    public const double GroupRowUnits = 0.9;
+    /// <summary>Height of the gap that closes a group when ungrouped lanes follow, in lanes.</summary>
+    public const double SeparatorRowUnits = 0.4;
 
     private ChartStateTimelineModel(Chart chart, List<ChartStateTimelineLane> lanes, double min, double max, IReadOnlyList<double> ticks, ChartStateCategoryLegend legend) {
         Chart = chart;
@@ -31,7 +37,39 @@ internal sealed class ChartStateTimelineModel {
         Legend = legend;
         foreach (var lane in lanes) HasSummary |= !string.IsNullOrWhiteSpace(lane.Summary);
         HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) && lanes.Count > 0;
+
+        // A header row precedes the first lane of each group; a smaller gap closes a group when ungrouped lanes follow.
+        var offsets = new double[lanes.Count];
+        var groups = new List<ChartStateTimelineGroup>();
+        var units = 0.0;
+        string? current = null;
+        for (var i = 0; i < lanes.Count; i++) {
+            var group = lanes[i].Group;
+            if (group != null && !string.Equals(group, current, StringComparison.Ordinal)) {
+                groups.Add(new ChartStateTimelineGroup(group, units, GroupRowUnits));
+                units += GroupRowUnits;
+            } else if (group == null && current != null) {
+                groups.Add(new ChartStateTimelineGroup(string.Empty, units, SeparatorRowUnits));
+                units += SeparatorRowUnits;
+            }
+
+            current = group;
+            offsets[i] = units;
+            units += 1;
+        }
+
+        _laneOffsets = offsets;
+        Groups = groups;
+        Units = Math.Max(1, units);
     }
+
+    private readonly double[] _laneOffsets;
+
+    /// <summary>Gets the group header rows and separators, top to bottom.</summary>
+    public IReadOnlyList<ChartStateTimelineGroup> Groups { get; }
+
+    /// <summary>Gets the layout height in lanes: one per lane plus a smaller share per group header or separator.</summary>
+    public double Units { get; }
 
     public Chart Chart { get; }
 
@@ -75,7 +113,7 @@ internal sealed class ChartStateTimelineModel {
                 max = Math.Max(max, series.Points[i].Y);
             }
 
-            lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments));
+            lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments, series.LaneGroup));
         }
 
         var axis = chart.Options.XAxis;
@@ -100,7 +138,7 @@ internal sealed class ChartStateTimelineModel {
         var labelReserve = options.ShowAxes && options.ShowYAxis ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * 0.34) : 0;
         var summaryReserve = hasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
         var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, chart.XAxisTitle)) ? 0 : axisTitleReserve) : 0;
-        var topReserve = Math.Max(hasSummary && !string.IsNullOrWhiteSpace(summaryHeader) ? summaryHeaderHeight + 6 : 0, topLabelHeight);
+        var topReserve = Math.Max(hasSummary && !string.IsNullOrWhiteSpace(summaryHeader) ? summaryHeaderHeight + TopLabelGap : 0, topLabelHeight);
         var width = Math.Max(1, bounds.Width - labelReserve - summaryReserve);
         var height = Math.Max(1, bounds.Height - axisReserve - legendHeight - topReserve);
         return new ChartRect(bounds.Left + labelReserve, bounds.Top + topReserve, width, height);
@@ -112,11 +150,17 @@ internal sealed class ChartStateTimelineModel {
     /// <summary>Insets the plot surface so lane labels and the summary column do not touch its border.</summary>
     public static ChartRect ContentBounds(ChartRect surface) => new(surface.Left + ContentInset, surface.Top, Math.Max(1, surface.Width - ContentInset * 2), surface.Height);
 
-    public double LaneSlot(ChartRect plot) => plot.Height / Math.Max(1, Lanes.Count);
+    public double LaneSlot(ChartRect plot) => plot.Height / Units;
 
     public double LaneBand(ChartRect plot) => Math.Min(LaneSlot(plot) * 0.9, Math.Max(LaneBandMinimum, Math.Min(LaneBandMaximum, LaneSlot(plot) * 0.72)));
 
-    public double LaneTop(ChartRect plot, int laneIndex) => plot.Top + laneIndex * LaneSlot(plot) + (LaneSlot(plot) - LaneBand(plot)) / 2;
+    public double LaneTop(ChartRect plot, int laneIndex) => plot.Top + _laneOffsets[laneIndex] * LaneSlot(plot) + (LaneSlot(plot) - LaneBand(plot)) / 2;
+
+    /// <summary>Returns the top of a group header row or separator.</summary>
+    public double GroupTop(ChartRect plot, ChartStateTimelineGroup group) => plot.Top + group.Offset * LaneSlot(plot);
+
+    /// <summary>Returns the height of a group header row or separator.</summary>
+    public double GroupHeight(ChartRect plot, ChartStateTimelineGroup group) => group.Units * LaneSlot(plot);
 
     public double X(double value, ChartRect plot) => plot.Left + ChartMath.Normalize(Math.Max(Min, Math.Min(Max, value)), Min, Max) * plot.Width;
 
@@ -172,12 +216,16 @@ internal sealed class ChartStateTimelineModel {
 
 /// <summary>One lane of a state timeline with its resolved segments.</summary>
 internal sealed class ChartStateTimelineLane {
-    public ChartStateTimelineLane(int seriesIndex, string name, string? summary, IReadOnlyList<ChartStateTimelineResolvedSegment> segments) {
+    public ChartStateTimelineLane(int seriesIndex, string name, string? summary, IReadOnlyList<ChartStateTimelineResolvedSegment> segments, string? group = null) {
         SeriesIndex = seriesIndex;
         Name = name;
         Summary = summary;
         Segments = segments;
+        Group = group;
     }
+
+    /// <summary>Gets the group the lane is listed under, or null for an ungrouped lane.</summary>
+    public string? Group { get; }
 
     public int SeriesIndex { get; }
 
@@ -186,6 +234,23 @@ internal sealed class ChartStateTimelineLane {
     public string? Summary { get; }
 
     public IReadOnlyList<ChartStateTimelineResolvedSegment> Segments { get; }
+}
+
+/// <summary>A group header row above the lanes of a group, or a separator (empty name) that closes a group.</summary>
+internal readonly struct ChartStateTimelineGroup {
+    public ChartStateTimelineGroup(string name, double offset, double units) {
+        Name = name;
+        Offset = offset;
+        Units = units;
+    }
+
+    public string Name { get; }
+
+    /// <summary>Gets the distance from the top of the plot, in lanes.</summary>
+    public double Offset { get; }
+
+    /// <summary>Gets the row height, in lanes.</summary>
+    public double Units { get; }
 }
 
 /// <summary>A lane segment with its state definition resolved from the chart's state map.</summary>

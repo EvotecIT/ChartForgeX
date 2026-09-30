@@ -85,7 +85,7 @@ internal sealed class ChartStateCategoryLegend {
         pointIndex >= 0 && pointIndex < series.HeatmapCells.Count ? series.HeatmapCells[pointIndex] : null;
 
     /// <summary>Returns true when the heatmap rows carry categorical cells.</summary>
-    public static bool IsCategoricalHeatmap(IReadOnlyList<ChartSeries> rows) => rows.Count > 0 && rows[0].HeatmapCells.Count > 0;
+    public static bool IsCategoricalHeatmap(IReadOnlyList<ChartSeries> rows) => rows.Count > 0 && rows[0].IsCategoricalHeatmapRow;
 
     public static double Height(Chart chart, IReadOnlyList<ChartStateCategoryLegendItem> items) {
         var rows = 0;

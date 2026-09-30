@@ -2401,24 +2401,7 @@
     {
       "name": "reporting-state-timeline",
       "width": 1180,
-      "height": 520,
-      "svg": {
-        "minVisualNodes": 82,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 1150309,
-        "minTransparentPixels": 76891,
-        "minDistinctColors": 1673,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "reporting-status-matrix",
-      "width": 1180,
-      "height": 520,
+      "height": 620,
       "svg": {
         "minVisualNodes": 89,
         "maxClippedTextNodes": 0,
@@ -2426,8 +2409,25 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1150309,
-        "minTransparentPixels": 76891,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
+        "minDistinctColors": 1678,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "reporting-status-matrix",
+      "width": 1180,
+      "height": 620,
+      "svg": {
+        "minVisualNodes": 89,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }

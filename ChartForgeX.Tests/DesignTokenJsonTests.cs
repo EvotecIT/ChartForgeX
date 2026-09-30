@@ -72,7 +72,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal(status.Medium.Fill, states[1].Color);
         Assert.Equal(status.Critical.Fill, states[2].Color);
         Assert.Equal(status.Low.Fill, states[3].Color);
-        Assert.True(states[5].Hatched && states[6].Hatched && !states[0].Hatched);
+        Assert.Equal(new[] { ChartStatePattern.Solid, ChartStatePattern.Hatched, ChartStatePattern.CrossHatched }, new[] { states[0].Pattern, states[5].Pattern, states[6].Pattern });
         Assert.Equal(new[] { "critical", "high", "medium", "low", "info" }, status.SeverityCategories().Select(state => state.Key).ToArray());
         Assert.Equal(new[] { "pass", "notEvaluated", "couldNotEvaluate" }, status.OutcomeCategories().Select(state => state.Key).ToArray());
     }

@@ -32,19 +32,36 @@ public sealed partial class SvgChartRenderer {
             : Array.Empty<ChartStateCategoryLegendItem>();
         var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
         var plot = ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, legendHeight);
-        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, plot.Height / rows.Length) * 0.05));
-        var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, plot.Height, columns.Length, rows.Length, chart.Options.HeatmapCellGap ?? autoGap);
+        var rowLayout = ChartHeatmapRowLayout.Build(chart, rows, plot.Height);
+        var rowsHeight = Math.Max(1, plot.Height - rowLayout.HeadersHeight);
+        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, rowsHeight / rows.Length) * 0.05));
+        var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, rowsHeight, columns.Length, rows.Length, chart.Options.HeatmapCellGap ?? autoGap);
         var cellWidth = Math.Max(1, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
-        var cellHeight = Math.Max(1, (plot.Height - gap * (rows.Length - 1)) / rows.Length);
+        var cellHeight = rowLayout.CellHeight(plot.Height, gap, rows.Length);
         var autoRadius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
         var radius = Math.Min(chart.Options.HeatmapCellRadius ?? autoRadius, Math.Min(cellWidth, cellHeight) / 2);
 
         var hatchId = id + "-heatmapHatch";
         var body = new StringBuilder();
-        if (categorical) AppendSvg(body, writer => WriteStateCategoryHatchPattern(writer, hatchId));
+        if (categorical) AppendSvg(body, writer => WriteStateCategoryHatchPattern(writer, hatchId, chart));
+        if (rowLayout.Groups.Count > 0) {
+            var widestRowLabel = chart.Options.ShowAxes ? rows.Max(series => EstimateSvgStyledTextWidth(chart, series.Name, tickFontSize, tickStyle, emphasized: true)) : 0;
+            var groupLeft = chart.Options.ShowAxes ? Math.Max(4, plot.Left - 12 - Math.Min(widestRowLabel, Math.Max(8, plot.Left - 24))) : plot.Left;
+            foreach (var group in rowLayout.Groups) {
+                var top = rowLayout.GroupTop(plot.Top, group, cellHeight, gap);
+                AppendSvg(body, writer => {
+                    if (group.BeforeRow > 0) {
+                        writer.StartElement("line").Attribute("data-cfx-role", "heatmap-row-group-rule").Attribute("x1", groupLeft).Attribute("y1", top - gap / 2).Attribute("x2", plot.Right).Attribute("y2", top - gap / 2)
+                            .Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth).EndEmptyElement().Line();
+                    }
+
+                    if (group.Name.Length > 0 && group.Height >= tickFontSize) WriteStateCategoryText(writer, chart, "heatmap-row-group", TrimSvgLabelToWidth(chart, group.Name, tickFontSize, Math.Max(8, plot.Right - groupLeft), tickStyle, emphasized: true), groupLeft, top + group.Height / 2, "start", tickFontSize, tickStyle, "700", true, t.Text);
+                });
+            }
+        }
         for (var rowIndex = 0; rowIndex < rows.Length; rowIndex++) {
             var series = rows[rowIndex];
-            var y = plot.Top + rowIndex * (cellHeight + gap);
+            var y = rowLayout.RowTop(plot.Top, rowIndex, cellHeight, gap);
             if (chart.Options.ShowAxes) {
                 var rowLabelWidth = Math.Max(8, plot.Left - 24);
                 var rowLabelFontSize = TextFontSizeForSvgWidth(chart, series.Name, rowLabelWidth, tickFontSize, tickStyle, emphasized: true);
@@ -64,12 +81,15 @@ public sealed partial class SvgChartRenderer {
                 var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
                 var status = category?.Key ?? ChartHeatmapSurface.CellStatus(chart, ratio);
                 int? level = category == null && status == null ? ChartHeatmapSurface.Level(ratio) : null;
-                var color = category?.Color ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
+                var color = mark?.Surface ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
-                if (cell?.Tooltip != null) summary = cell.Value.Tooltip!;
-                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, summary, x, y, cellWidth, cellHeight, radius, color, cell?.Href, category?.Label, level);
-                if (category?.Hatched == true) AppendSvg(body, writer => WriteStateCategoryHatch(writer, hatchId, x, y, cellWidth, cellHeight, radius, "heatmap-cell-hatch"));
+                // The accessible name always says which cell this is; a caller's tooltip adds to it instead of replacing it.
+                var tooltip = cell?.Tooltip;
+                var name = string.IsNullOrWhiteSpace(tooltip) || string.Equals(tooltip, summary, StringComparison.Ordinal) ? summary : summary + ". " + tooltip;
+                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, color, cell?.Href, category?.Label, level, mark, string.IsNullOrWhiteSpace(tooltip) ? summary : tooltip!);
+                if (mark.HasValue) AppendSvg(body, writer => WriteStateMarkLines(writer, hatchId, mark.Value, x, y, cellWidth, cellHeight, radius, "heatmap-cell-hatch"));
                 var label = FormatDataLabel(chart, series, pointIndex, value);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var styledLabel = StyleText(dataStyle, label);
@@ -172,7 +192,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, ChartColor color, string? href = null, string? stateLabel = null, int? level = null) {
+    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, ChartColor color, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null, string? tooltip = null) {
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(768);
         // A linked cell takes focus through its <a>, so the rect itself is not a second tab stop.
@@ -195,14 +215,21 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", y)
             .Attribute("width", width)
             .Attribute("height", height)
-            .Attribute("rx", radius)
-            .Attribute("fill", color.ToCss())
-            .Attribute("stroke", t.CardBackground.ToCss())
-            .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
-            .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)
+            .Attribute("rx", radius);
+        if (mark.HasValue) WriteStateMarkFill(writer, mark.Value);
+        else writer.Attribute("fill", color.ToCss());
+        // An outlined state draws its own border in the state colour instead of the card-coloured cell border.
+        if (mark?.Outlined != true) {
+            writer
+                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
+                .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
+        }
+
+        writer
             .EndStartElement()
             .StartElement("title")
-            .Text(summary)
+            .Text(tooltip ?? summary)
             .EndElement()
             .EndElement();
         if (href != null) writer.EndElement();
@@ -278,7 +305,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static bool ShouldReserveHeatmapValueLabels(Chart chart, ChartSeries series) {
-        if (series.HeatmapCells.Count > 0 || chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
+        if (series.IsCategoricalHeatmapRow || chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
         return chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || ShouldDrawDataLabels(chart, series);
     }
 

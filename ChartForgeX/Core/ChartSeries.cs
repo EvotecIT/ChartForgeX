@@ -116,6 +116,9 @@ public sealed class ChartSeries {
     /// <summary>Gets categorical heatmap cells aligned with <see cref="Points"/>; empty for numeric heatmap rows.</summary>
     internal List<ChartHeatmapCell> HeatmapCells { get; } = new();
 
+    /// <summary>Gets or sets whether this heatmap row holds categorical cells; such a row may have no cells at all.</summary>
+    internal bool IsCategoricalHeatmapRow { get; set; }
+
     /// <summary>Gets optional per-segment tooltip details for state timeline lanes.</summary>
     internal List<string?> StateTimelineDetails { get; } = new();
 

@@ -49,19 +49,19 @@ public sealed class VisualStatusTokens {
 
     /// <summary>
     /// Returns the outcomes that have their own colour, keyed <c>pass</c>, <c>notEvaluated</c> (hatched), and
-    /// <c>couldNotEvaluate</c>. A failed result has no colour of its own; colour it by its severity.
+    /// <c>couldNotEvaluate</c> (outlined). A failed result has no colour of its own; colour it by its severity.
     /// </summary>
     /// <param name="labels">Optional localized labels by key; missing keys keep the English label.</param>
     public IReadOnlyList<ChartStateCategory> OutcomeCategories(IReadOnlyDictionary<string, string>? labels = null) => new[] {
         new ChartStateCategory("pass", Label(labels, "pass", "Passed"), Pass.Fill),
-        new ChartStateCategory("notEvaluated", Label(labels, "notEvaluated", "Not evaluated"), Neutral.Fill, hatched: true),
-        new ChartStateCategory("couldNotEvaluate", Label(labels, "couldNotEvaluate", "Could not evaluate"), Neutral.Fill)
+        new ChartStateCategory("notEvaluated", Label(labels, "notEvaluated", "Not evaluated"), Neutral.Fill, ChartStatePattern.Hatched),
+        new ChartStateCategory("couldNotEvaluate", Label(labels, "couldNotEvaluate", "Could not evaluate"), Neutral.Fill, ChartStatePattern.Outlined)
     };
 
     /// <summary>
     /// Returns the operational states keyed <c>up</c>, <c>degraded</c>, <c>down</c>, <c>recovering</c>,
     /// <c>maintenance</c>, <c>notObservable</c>, and <c>unknown</c>. Up uses the pass colour, degraded medium,
-    /// down critical, recovering low; not observable and unknown are neutral and hatched.
+    /// down critical, recovering low; not observable (hatched) and unknown (cross-hatched) are neutral.
     /// </summary>
     /// <param name="labels">Optional localized labels by key; missing keys keep the English label.</param>
     public IReadOnlyList<ChartStateCategory> OperationalStateCategories(IReadOnlyDictionary<string, string>? labels = null) => new[] {
@@ -70,8 +70,8 @@ public sealed class VisualStatusTokens {
         new ChartStateCategory("down", Label(labels, "down", "Down"), Critical.Fill),
         new ChartStateCategory("recovering", Label(labels, "recovering", "Recovering"), Low.Fill),
         new ChartStateCategory("maintenance", Label(labels, "maintenance", "Maintenance"), Maintenance.Fill),
-        new ChartStateCategory("notObservable", Label(labels, "notObservable", "Not observable"), Neutral.Fill, hatched: true),
-        new ChartStateCategory("unknown", Label(labels, "unknown", "Unknown"), Neutral.Fill, hatched: true)
+        new ChartStateCategory("notObservable", Label(labels, "notObservable", "Not observable"), Neutral.Fill, ChartStatePattern.Hatched),
+        new ChartStateCategory("unknown", Label(labels, "unknown", "Unknown"), Neutral.Fill, ChartStatePattern.CrossHatched)
     };
 
     /// <summary>Creates a copy of these status colours.</summary>

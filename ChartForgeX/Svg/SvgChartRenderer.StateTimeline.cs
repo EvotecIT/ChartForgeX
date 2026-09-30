@@ -35,10 +35,7 @@ public sealed partial class SvgChartRenderer {
         var hatchId = id + "-stateHatch";
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("g").Attribute("data-cfx-role", "state-timeline").EndStartElement().Line();
-        writer.StartElement("defs").EndStartElement()
-            .StartElement("pattern").Attribute("id", hatchId).Attribute("width", ChartStateTimelineModel.HatchSpacing).Attribute("height", ChartStateTimelineModel.HatchSpacing).Attribute("patternUnits", "userSpaceOnUse").Attribute("patternTransform", "rotate(45)").EndStartElement()
-            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", 0).Attribute("y2", ChartStateTimelineModel.HatchSpacing).Attribute("stroke", "#fff").Attribute("stroke-opacity", ChartStateTimelineModel.HatchOpacity).Attribute("stroke-width", 1.5).EndEmptyElement()
-            .EndElement().EndElement().Line();
+        WriteStateCategoryHatchPattern(writer, hatchId, chart);
 
         var range = new ChartRange();
         range.SetXBounds(model.Min, model.Max);
@@ -62,6 +59,16 @@ public sealed partial class SvgChartRenderer {
             writer.Raw(labelMarkup.ToString());
         }
 
+        foreach (var group in model.Groups) {
+            var top = model.GroupTop(plot, group);
+            if (group.Offset > 0) {
+                writer.StartElement("line").Attribute("data-cfx-role", "state-lane-group-rule").Attribute("x1", bounds.Left).Attribute("y1", top).Attribute("x2", bounds.Right).Attribute("y2", top)
+                    .Attribute("stroke", t.Grid.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth).EndEmptyElement().Line();
+            }
+
+            if (ShowYAxis(chart) && group.Name.Length > 0) WriteStateCategoryText(writer, chart, "state-lane-group", TrimSvgLabelToWidth(chart, group.Name, tickFontSize, bounds.Width, tickStyle, emphasized: true), bounds.Left, top + model.GroupHeight(plot, group) / 2, "start", tickFontSize, tickStyle, "700", true, t.Text);
+        }
+
         var band = model.LaneBand(plot);
         for (var laneIndex = 0; laneIndex < model.Lanes.Count; laneIndex++) {
             var lane = model.Lanes[laneIndex];
@@ -78,6 +85,7 @@ public sealed partial class SvgChartRenderer {
             foreach (var segment in lane.Segments) {
                 if (!model.TrySegmentSpan(segment, plot, out var left, out var width)) continue;
                 var summary = model.SegmentSummary(lane, segment);
+                var mark = ChartStateMark.For(chart, segment.State);
                 writer.StartElement("rect")
                     .Attribute("data-cfx-role", "state-segment")
                     .Attribute("data-cfx-series", lane.SeriesIndex)
@@ -92,12 +100,12 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("role", "img")
                     .Attribute("aria-label", summary)
                     .Attribute("x", left).Attribute("y", y).Attribute("width", width).Attribute("height", band)
-                    .Attribute("rx", Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2))
-                    .Attribute("fill", segment.State.Color.ToCss())
+                    .Attribute("rx", Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2));
+                WriteStateMarkFill(writer, mark)
                     .EndStartElement()
                     .StartElement("title").Text(summary).EndElement()
                     .EndElement().Line();
-                if (segment.State.Hatched) WriteStateCategoryHatch(writer, hatchId, left, y, width, band);
+                WriteStateMarkLines(writer, hatchId, mark, left, y, width, band);
             }
 
             if (model.HasSummary && !string.IsNullOrWhiteSpace(lane.Summary)) {
@@ -107,7 +115,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
-            WriteStateCategoryText(writer, chart, "state-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - 8, "end", tickFontSize, tickStyle, "600", false);
+            WriteStateCategoryText(writer, chart, "state-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - ChartStateTimelineModel.SummaryHeaderOffset, "end", tickFontSize, tickStyle, "600", false);
         }
 
         if (ShowXAxis(chart)) {

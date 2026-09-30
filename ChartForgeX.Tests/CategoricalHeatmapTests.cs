@@ -83,8 +83,7 @@ public sealed class CategoricalHeatmapTests {
     public void Cell_UnsafeHref_IsRejected(string href) => Assert.Throws<ArgumentException>(() => new ChartHeatmapCell("pass", href: href));
 
     [Fact]
-    public void Validation_RejectsEmptyRowsMixedRowsAndDuplicateCategories() {
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddHeatmapCategoryRow("DC01", null, null));
+    public void Validation_RejectsStatelessCellsMixedRowsAndDuplicateCategories() {
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHeatmapCategoryRow("DC01", default(ChartHeatmapCell)));
         Assert.Throws<ArgumentException>(() => new ChartHeatmapCell(" "));
 
@@ -239,7 +238,7 @@ public sealed class CategoricalHeatmapTests {
         .WithStateCategories(
             new ChartStateCategory("pass", "Passed", Pass),
             new ChartStateCategory("critical", "Critical", Critical),
-            new ChartStateCategory("notEvaluated", "Not evaluated", Neutral, hatched: true))
+            new ChartStateCategory("notEvaluated", "Not evaluated", Neutral, ChartStatePattern.Hatched))
         .WithXLabels("Replication", "LDAP", "Backup")
         .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass"), new ChartHeatmapCell("critical", "3", href: "#dc01-ldap"), new ChartHeatmapCell("notEvaluated"))
         .AddHeatmapCategoryRow("DC02", new ChartHeatmapCell("pass"), null, new ChartHeatmapCell("critical", "1", "Backup is 9 days old", "evidence/dc02.html#backup"));

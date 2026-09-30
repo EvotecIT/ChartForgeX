@@ -1,0 +1,101 @@
+using System;
+using ChartForgeX.Core;
+
+namespace ChartForgeX.Rendering;
+
+/// <summary>
+/// Resolves how a mark of a state category is drawn (fill strength, outline, and line pattern) once, so state
+/// timelines, Gantt lanes, categorical heatmaps, and their legend draw it the same way in SVG and PNG.
+/// </summary>
+internal readonly struct ChartStateMark {
+    public const double OutlineWidth = 1.5;
+    public const double PatternLineWidth = 1.5;
+    private const double QuietFill = 0.38;
+    private const double QuietPatternFill = 0.55;
+    private const double OutlinedFill = 0.12;
+    private const double QuietOutlinedFill = 0.06;
+    private const double QuietOutline = 0.6;
+
+    private ChartStateMark(ChartColor color, double fillOpacity, bool outlined, double outlineOpacity, ChartFillPattern lines, ChartColor lineColor, ChartColor background, ChartStateCategory state) {
+        Color = color;
+        FillOpacity = fillOpacity;
+        Outlined = outlined;
+        OutlineOpacity = outlineOpacity;
+        Lines = lines;
+        LineColor = lineColor;
+        Background = background;
+        State = state;
+    }
+
+    public ChartStateCategory State { get; }
+
+    /// <summary>Gets the category colour used for the fill and the outline.</summary>
+    public ChartColor Color { get; }
+
+    public double FillOpacity { get; }
+
+    public bool Outlined { get; }
+
+    public double OutlineOpacity { get; }
+
+    /// <summary>Gets the lines drawn over the fill: none, forward diagonals, or crossed diagonals.</summary>
+    public ChartFillPattern Lines { get; }
+
+    /// <summary>Gets the pattern line colour: the surface behind the marks, so lines read as cuts on light and dark themes.</summary>
+    public ChartColor LineColor { get; }
+
+    private ChartColor Background { get; }
+
+    /// <summary>Gets the fill as it appears on the plot background, for choosing a readable text colour on the mark.</summary>
+    public ChartColor Surface => FillOpacity >= 0.999 ? Color : ChartColorMath.Blend(Background, Color, FillOpacity);
+
+    /// <summary>Gets the pattern token written to <c>data-cfx-pattern</c>, or null for a solid mark.</summary>
+    public string? PatternToken => State.Pattern switch {
+        ChartStatePattern.Hatched => "hatched",
+        ChartStatePattern.CrossHatched => "cross-hatched",
+        ChartStatePattern.Outlined => "outlined",
+        _ => null
+    };
+
+    /// <summary>Gets the emphasis token written to <c>data-cfx-emphasis</c>, or null at normal emphasis.</summary>
+    public string? EmphasisToken => State.Emphasis == ChartStateEmphasis.Quiet ? "quiet" : null;
+
+    /// <summary>
+    /// Returns the opaque colour behind the marks: the chart background, then the card, then the plot background,
+    /// each composited only where it is drawn. A theme with no opaque surface at all (a transparent overlay) falls back
+    /// to white or black, whichever contrasts with the text colour, so pattern lines never disappear.
+    /// </summary>
+    public static ChartColor Backdrop(Chart chart) {
+        var options = chart.Options;
+        var theme = options.Theme;
+        var backdrop = ChartColorMath.RelativeLuminance(theme.Text) > 0.5 ? ChartColor.FromRgb(0, 0, 0) : ChartColor.White;
+        backdrop = Over(theme.Background, backdrop);
+        if (options.ShowCard) backdrop = Over(theme.CardBackground, backdrop);
+        if (options.ShowPlotBackground) backdrop = Over(theme.PlotBackground, backdrop);
+        return backdrop;
+    }
+
+    private static ChartColor Over(ChartColor top, ChartColor bottom) {
+        var alpha = top.A / 255.0;
+        return ChartColor.FromRgb(
+            (byte)Math.Round(top.R * alpha + bottom.R * (1 - alpha)),
+            (byte)Math.Round(top.G * alpha + bottom.G * (1 - alpha)),
+            (byte)Math.Round(top.B * alpha + bottom.B * (1 - alpha)));
+    }
+
+    public static ChartStateMark For(Chart chart, ChartStateCategory state) {
+        var quiet = state.Emphasis == ChartStateEmphasis.Quiet;
+        var background = Backdrop(chart);
+        switch (state.Pattern) {
+            case ChartStatePattern.Outlined:
+                return new ChartStateMark(state.Color, quiet ? QuietOutlinedFill : OutlinedFill, true, quiet ? QuietOutline : 1, ChartFillPattern.None, background, background, state);
+            case ChartStatePattern.Hatched:
+            case ChartStatePattern.CrossHatched:
+                // A quiet patterned mark keeps enough fill for the background-coloured lines to show.
+                return new ChartStateMark(state.Color, quiet ? QuietPatternFill : 1, false, 0,
+                    state.Pattern == ChartStatePattern.Hatched ? ChartFillPattern.DiagonalForward : ChartFillPattern.Crosshatch, background, background, state);
+            default:
+                return new ChartStateMark(state.Color, quiet ? QuietFill : 1, false, 0, ChartFillPattern.None, background, background, state);
+        }
+    }
+}
