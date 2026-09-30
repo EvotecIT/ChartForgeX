@@ -79,8 +79,8 @@ internal sealed partial class TrueTypeFont {
             if (requested != null) return new PngFontInfo(PngFontSource.Requested, themeFontFamily, requestedPath, collectionIndex, faceName, requestedPath, requested.CollectionIndex, requested.DisplayName);
         }
 
-        var automatic = TryLoadForFamily(themeFontFamily, out var automaticPath);
-        if (automatic != null) return new PngFontInfo(PngFontSource.Automatic, themeFontFamily, requestedPath, collectionIndex, faceName, automaticPath, automatic.CollectionIndex, automatic.DisplayName);
+        var automatic = TypographyFontResolver.ResolveFace(themeFontFamily, 400, italic: false);
+        if (automatic.Font != null) return new PngFontInfo(PngFontSource.Automatic, themeFontFamily, requestedPath, collectionIndex, faceName, automatic.Path, automatic.Font.CollectionIndex, automatic.Font.DisplayName);
         return new PngFontInfo(PngFontSource.BuiltIn, themeFontFamily, requestedPath, collectionIndex, faceName, null, null, "ChartForgeX Tiny");
     }
 

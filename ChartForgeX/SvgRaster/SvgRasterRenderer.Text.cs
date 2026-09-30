@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
-using ChartForgeX.Typography;
 
 namespace ChartForgeX.SvgRaster;
 

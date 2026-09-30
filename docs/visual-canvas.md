@@ -210,7 +210,7 @@ SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its 
 
 On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship a `.ttf` and use `FontSpec.FromFile`.
 
-Chart, grid, and topology PNG renderers keep resolving their theme font stack through the generic fallback only, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
+Chart, grid, topology, and visual block PNG renderers resolve their theme font stack (and a text style's `FontFamily`) the same way, at regular weight, and draw emphasized text such as titles, legends, and data labels with that family's real bold face, measuring it with the same face, so `ChartFontStacks.SystemSans` draws Segoe UI on Windows as the SVG does in a browser. An explicit `PngFontPath` keeps its synthesized emphasis. `chart.GetPngFontInfo()` reports the resolved face. `TextMeasurementMode.InstalledFonts` measures with the same regular and bold faces, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
 
 For user-supplied files, use `RasterImageDecoder.TryRead(...)`, `RasterImageDecoder.TryDecode(...)`, `ImageComposition.TryFromFile(...)`, or `ImageComposition.TryFromBytes(...)` when unsupported or corrupt images should be handled as a normal validation result instead of an exception.
 

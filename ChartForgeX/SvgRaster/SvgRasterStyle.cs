@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
-using ChartForgeX.Typography;
 
 namespace ChartForgeX.SvgRaster;
 

@@ -51,8 +51,7 @@ internal sealed partial class RgbaCanvas {
 
     private void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth, bool emphasized, TrueTypeFont? font) {
         if (string.IsNullOrEmpty(text) || color.A == 0 || maximumWidth <= 0) return;
-        var naturalWidth = MeasureTextWidthWithFont(text, fontSize, font);
-        if (emphasized && text.Length > 0) naturalWidth += EmphasisOffset(fontSize);
+        var naturalWidth = emphasized ? MeasureTextEmphasizedWidthWithFont(text, fontSize, font, italic: false) : MeasureTextWidthWithFont(text, fontSize, font);
         if (naturalWidth <= maximumWidth) {
             if (emphasized) DrawTextEmphasized(x, y, text, color, fontSize, font);
             else DrawText(x, y, text, color, fontSize, font);
@@ -87,6 +86,12 @@ internal sealed partial class RgbaCanvas {
 
     internal void DrawTextEmphasized(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font, bool italic) {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
+        var bold = EmphasisFace(font);
+        if (bold != null) {
+            DrawText(x, y, text, color, fontSize, bold, italic);
+            return;
+        }
+
         DrawText(x, y, text, color, fontSize, font, italic);
         DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize, font, italic);
     }
@@ -122,11 +127,19 @@ internal sealed partial class RgbaCanvas {
             ? font.Measure(text, Math.Max(1, fontSize), italic)
             : MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize)) + (italic && text.Length > 0 ? TrueTypeFont.ItalicOverhang(fontSize) : 0);
 
-    public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) =>
-        string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
+    public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => MeasureTextEmphasizedWidth(text, fontSize, outlineFont, italic: false);
 
-    internal static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) =>
-        string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont, italic) + EmphasisOffset(fontSize);
+    internal static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) {
+        if (string.IsNullOrEmpty(text)) return 0;
+        var bold = EmphasisFace(outlineFont ?? DefaultOutlineFont);
+        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidth(text, fontSize, outlineFont, italic) + EmphasisOffset(fontSize);
+    }
+
+    private static double MeasureTextEmphasizedWidthWithFont(string text, double fontSize, TrueTypeFont? font, bool italic) {
+        if (string.IsNullOrEmpty(text)) return 0;
+        var bold = EmphasisFace(font);
+        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidthWithFont(text, fontSize, font, italic) + EmphasisOffset(fontSize);
+    }
 
     internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);
 

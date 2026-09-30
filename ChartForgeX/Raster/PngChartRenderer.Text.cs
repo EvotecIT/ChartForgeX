@@ -174,7 +174,7 @@ public sealed partial class PngChartRenderer {
         var size = style.FontSize ?? fallback;
         return style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript ? size * 0.65 : size;
     }
-    private static TrueTypeFont? PngStyleFont(TextStyleOverride style) => CurrentOutlineFontIsExplicit || style.FontFamily == null ? CurrentOutlineFont : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _) ?? CurrentOutlineFont;
+    private static TrueTypeFont? PngStyleFont(TextStyleOverride style) => CurrentOutlineFontIsExplicit || style.FontFamily == null ? CurrentOutlineFont : TypographyFontResolver.ResolveThemeFont(style.FontFamily) ?? CurrentOutlineFont;
     private static bool PngStyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
     private static TextStyleOverride SeriesDataLabelStyle(Chart chart, ChartSeries? series) => DataLabelStyle(chart, series);
 
