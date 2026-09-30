@@ -34,16 +34,17 @@ public sealed partial class SvgChartRenderer {
 
     /// <summary>
     /// Writes what a state mark draws over its fill: the line pattern of a hatched or cross-hatched mark, or the
-    /// outline of an outlined one. The outline is a separate rectangle inset by half its width, so it stays inside the
-    /// mark as it does in the raster output. The outline role is <paramref name="role"/> with <c>-outline</c> in place
-    /// of <c>-hatch</c>.
+    /// dashed outline of an outlined one. The outline is a separate rectangle inset by half its width, so it stays
+    /// inside the mark as it does in the raster output. The outline role is <paramref name="role"/> with
+    /// <c>-outline</c> in place of <c>-hatch</c>.
     /// </summary>
     private static void WriteStateMarkLines(SvgMarkupWriter writer, string hatchId, ChartStateMark mark, double x, double y, double width, double height, double radius = ChartStateCategoryLegend.SwatchRadius, string role = "state-segment-hatch") {
         if (mark.Outlined) {
             var inset = Math.Min(ChartStateMark.OutlineWidth / 2, Math.Min(width, height) / 2);
             writer.StartElement("rect").Attribute("data-cfx-role", role.Replace("-hatch", "-outline")).Attribute("x", x + inset).Attribute("y", y + inset)
                 .Attribute("width", Math.Max(0, width - inset * 2)).Attribute("height", Math.Max(0, height - inset * 2)).Attribute("rx", Math.Max(0, Math.Min(radius, width / 2) - inset))
-                .Attribute("fill", "none").Attribute("stroke", mark.Color.ToCss()).Attribute("stroke-width", ChartStateMark.OutlineWidth);
+                .Attribute("fill", "none").Attribute("stroke", mark.Color.ToCss()).Attribute("stroke-width", ChartStateMark.OutlineWidth)
+                .Attribute("stroke-dasharray", SvgMarkupWriter.FormatNumber(ChartStateMark.OutlineDash) + " " + SvgMarkupWriter.FormatNumber(ChartStateMark.OutlineGap));
             if (mark.OutlineOpacity < 0.999) writer.Attribute("stroke-opacity", mark.OutlineOpacity);
             writer.Attribute("pointer-events", "none").EndEmptyElement().Line();
         }

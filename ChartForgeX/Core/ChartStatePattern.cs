@@ -14,7 +14,7 @@ public enum ChartStatePattern {
     /// <summary>The category colour with crossed diagonal lines in the plot background colour.</summary>
     CrossHatched,
 
-    /// <summary>An outline in the category colour around a faint tint of it.</summary>
+    /// <summary>A dashed outline in the category colour around a faint tint of it.</summary>
     Outlined
 }
 

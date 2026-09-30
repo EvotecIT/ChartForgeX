@@ -9,6 +9,10 @@ namespace ChartForgeX.Rendering;
 /// </summary>
 internal readonly struct ChartStateMark {
     public const double OutlineWidth = 1.5;
+    /// <summary>Dash length of the outline of an outlined mark, which is dashed as report views dash that state.</summary>
+    public const double OutlineDash = 3;
+    /// <summary>Gap between the dashes of the outline of an outlined mark.</summary>
+    public const double OutlineGap = 2;
     public const double PatternLineWidth = 1.5;
     private const double QuietFill = 0.38;
     private const double QuietPatternFill = 0.55;

@@ -30,7 +30,7 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    /// <summary>Draws a state mark: its fill at the mark's strength, its line pattern, and its outline.</summary>
+    /// <summary>Draws a state mark: its fill at the mark's strength, its line pattern, and its dashed outline.</summary>
     private static void DrawStateMark(RgbaCanvas c, ChartStateMark mark, double x, double y, double width, double height, double radius = ChartStateCategoryLegend.SwatchRadius) {
         c.FillRoundedRect(x, y, width, height, radius, ApplyOpacity(mark.Color, mark.FillOpacity));
         if (mark.Lines != ChartFillPattern.None) {
@@ -40,7 +40,8 @@ public sealed partial class PngChartRenderer {
             }
         }
 
-        if (mark.Outlined) c.StrokeRoundedRect(x, y, width, height, radius, ApplyOpacity(mark.Color, mark.OutlineOpacity), ChartStateMark.OutlineWidth);
+        // The dashed outline sits inside the mark on the centre line the SVG outline rectangle uses.
+        if (mark.Outlined) c.StrokeRoundedRectDashed(x, y, width, height, Math.Min(radius, width / 2), ApplyOpacity(mark.Color, mark.OutlineOpacity), ChartStateMark.OutlineWidth, ChartStateMark.OutlineDash, ChartStateMark.OutlineGap);
     }
 
     private static void DrawStateCategoryText(RgbaCanvas c, string text, double x, double centerY, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {

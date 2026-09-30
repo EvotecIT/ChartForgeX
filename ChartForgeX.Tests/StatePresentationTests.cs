@@ -124,6 +124,28 @@ public sealed class StatePresentationTests {
     }
 
     [Fact]
+    public void StatePatterns_OutlinedState_IsDashedInSvgAndPng() {
+        var chart = Matrix();
+        var svg = XDocument.Parse(chart.ToSvg());
+        var outline = ByRole(svg, "heatmap-cell-outline").Single();
+        Assert.Equal("3 2", (string?)outline.Attribute("stroke-dasharray"));
+
+        // Along the top edge of the outline the raster output alternates between dash and gap.
+        var image = PngReader.Decode(chart.ToPng());
+        var scale = image.Width / (double)chart.Options.Size.Width;
+        var y = Number(outline, "y") * scale;
+        var runs = 0;
+        var inDash = false;
+        for (var x = (Number(outline, "x") + Number(outline, "rx")) * scale; x < (Number(outline, "x") + Number(outline, "width") - Number(outline, "rx")) * scale; x++) {
+            var dash = Pixel(image, x, y).R < 200;
+            if (dash && !inDash) runs++;
+            inDash = dash;
+        }
+
+        Assert.True(runs >= 4, "The outline should be drawn as separate dashes, found " + runs.ToString(CultureInfo.InvariantCulture) + " run(s).");
+    }
+
+    [Fact]
     public void StatePatterns_LinesTakeTheSurfaceBehindTheMarks() {
         string[] Strokes(Chart chart) => XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "pattern")
             .SelectMany(pattern => pattern.Elements()).Select(line => (string)line.Attribute("stroke")!).Distinct().ToArray();
@@ -214,6 +236,11 @@ public sealed class StatePresentationTests {
         Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(gantt, "gantt-lane-item").Select(item => (string?)item.Attribute("data-cfx-pattern")).ToArray());
         Assert.Single(ByRole(gantt, "gantt-lane-item-hatch"));
         Assert.True(lanes.ToPng().Length > 64);
+
+        // Every outlined mark is dashed: timeline segments and legend swatches as well as Gantt items.
+        var outlines = ByRole(timeline, "state-segment-outline").Concat(ByRole(gantt, "gantt-lane-item-outline")).ToArray();
+        Assert.True(outlines.Length >= 3);
+        Assert.All(outlines, outline => Assert.Equal("3 2", (string?)outline.Attribute("stroke-dasharray")));
     }
 
     [Fact]
