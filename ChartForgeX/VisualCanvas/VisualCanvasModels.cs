@@ -193,9 +193,9 @@ public enum VisualCanvasInfoTileMiniChartKind {
 /// Theme colors for reusable visual canvas layers.
 /// </summary>
 public sealed class VisualCanvasTheme {
-    /// <summary>Gets or sets the primary font family used by SVG canvas text.</summary>
+    /// <summary>Gets or sets the primary font family stack used by SVG and PNG canvas text.</summary>
     public string FontFamily { get; set; } = "Segoe UI, Arial, sans-serif";
-    /// <summary>Gets or sets the monospace font family used by symbolic badge text.</summary>
+    /// <summary>Gets or sets the monospace font family stack used by symbolic badge text in SVG and PNG output.</summary>
     public string MonospaceFontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
     /// <summary>Gets or sets the primary accent used by built-in decorative elements.</summary>
     public ChartColor Accent { get; set; } = ChartColor.FromHex("#2F80FF");
@@ -382,7 +382,7 @@ public sealed partial class VisualCanvas {
             ValueColorOverride = valueColor,
             FontFamilyName = fontFamilyName ?? string.Empty
         };
-        layer.Height = layer.MeasureHeight();
+        layer.Height = layer.MeasureHeight(Theme);
         return AddLayer(layer);
     }
 
@@ -399,7 +399,7 @@ public sealed partial class VisualCanvas {
             ValueColorOverride = valueColor,
             FontFamilyName = fontFamilyName ?? string.Empty
         };
-        var bounds = ResolvePlacement(placement, width, layer.MeasureHeight());
+        var bounds = ResolvePlacement(placement, width, layer.MeasureHeight(Theme));
         layer.X = bounds.X;
         layer.Y = bounds.Y;
         layer.Height = bounds.Height;

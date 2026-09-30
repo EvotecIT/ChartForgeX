@@ -40,9 +40,10 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void RenderLayer(RgbaCanvas canvas, VisualCanvasLayer layer, VisualCanvasTheme theme) {
         if (layer is VisualCanvasTextLayer text) {
-            DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.Color, text.Alignment, text.Emphasized);
+            var face = VisualCanvasTextFace.Resolve(theme.FontFamily, text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular);
+            DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.Color, text.Alignment, face);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
-            DrawHeroTitle(canvas, hero);
+            DrawHeroTitle(canvas, hero, theme);
         } else if (layer is VisualCanvasKeyValueBlockLayer keyValue) {
             DrawKeyValueBlock(canvas, keyValue, theme);
         } else if (layer is VisualCanvasInfoTileLayer tile) {
@@ -86,39 +87,39 @@ public sealed class PngVisualCanvasRenderer {
         canvas.FillPolygon(horizon, theme.TechHorizonFill);
     }
 
-    private static void DrawText(RgbaCanvas canvas, double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment, bool emphasized) {
-        var fitted = FitText(text, fontSize, Math.Max(4, width), emphasized);
-        var textWidth = emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(fitted, fontSize, null) : RgbaCanvas.MeasureTextWidth(fitted, fontSize, null);
-        var drawX = AlignedX(x, width, textWidth, alignment);
-        if (emphasized) canvas.DrawTextEmphasized(drawX, y, fitted, color, fontSize);
-        else canvas.DrawText(drawX, y, fitted, color, fontSize);
+    // The same family and weight the SVG renderer writes, fitted, measured, and drawn with one face.
+    private static void DrawText(RgbaCanvas canvas, double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment, VisualCanvasTextFace face) {
+        var fitted = face.Fit(text, fontSize, Math.Max(4, width));
+        var drawX = AlignedX(x, width, face.Measure(fitted, fontSize), alignment);
+        face.Draw(canvas, drawX, y, fitted, color, fontSize);
     }
 
-    private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero) {
+    private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
+        var face = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle);
         var totalWidth = 0.0;
-        foreach (var run in hero.Runs) totalWidth += RgbaCanvas.MeasureTextEmphasizedWidth(run.Text, hero.FontSize, null);
+        foreach (var run in hero.Runs) totalWidth += face.Measure(run.Text, hero.FontSize);
         var x = AlignedX(hero.X, hero.Width, totalWidth, hero.Alignment);
         foreach (var run in hero.Runs) {
-            canvas.DrawTextEmphasized(x, hero.Y, run.Text, run.Color, hero.FontSize);
-            x += RgbaCanvas.MeasureTextEmphasizedWidth(run.Text, hero.FontSize, null);
+            face.Draw(canvas, x, hero.Y, run.Text, run.Color, hero.FontSize);
+            x += face.Measure(run.Text, hero.FontSize);
         }
     }
 
     private static void DrawKeyValueBlock(RgbaCanvas canvas, VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
-        var layout = VisualCanvasKeyValueBlockLayout.Build(block);
+        var layout = VisualCanvasKeyValueBlockLayout.Build(block, theme);
+        var labelFace = block.LabelFace(theme);
+        var valueFace = block.ValueFace(theme);
         var defaultLabel = block.LabelColorOverride ?? theme.TileLabelColor;
         var defaultValue = block.ValueColorOverride ?? theme.TileValueColor;
         foreach (var row in layout.Rows) {
             var labelColor = row.Item.LabelColor ?? defaultLabel;
-            if (block.LabelEmphasized) canvas.DrawTextEmphasized(row.LabelX, row.Y, row.LabelText, labelColor, block.LabelFontSize);
-            else canvas.DrawText(row.LabelX, row.Y, row.LabelText, labelColor, block.LabelFontSize);
+            labelFace.Draw(canvas, row.LabelX, row.Y, row.LabelText, labelColor, block.LabelFontSize);
             if (row.LabelOnly) continue;
 
             var valueColor = row.Item.ValueColor ?? defaultValue;
             for (var i = 0; i < row.ValueLines.Count; i++) {
                 var lineY = row.Y + row.ValueLineHeight * i;
-                if (block.ValueEmphasized) canvas.DrawTextEmphasized(row.ValueX, lineY, row.ValueLines[i], valueColor, block.ValueFontSize);
-                else canvas.DrawText(row.ValueX, lineY, row.ValueLines[i], valueColor, block.ValueFontSize);
+                valueFace.Draw(canvas, row.ValueX, lineY, row.ValueLines[i], valueColor, block.ValueFontSize);
             }
         }
     }
@@ -167,14 +168,12 @@ public sealed class PngVisualCanvasRenderer {
         } else {
             canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(0.38), 1);
         }
-        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent);
+        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent, theme.FontFamily);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax).Lines) {
-            var color = TileTextColor(line.Role, theme);
-            if (line.Emphasized) canvas.DrawTextEmphasized(line.X, line.Y, line.Text, color, line.FontSize);
-            else canvas.DrawText(line.X, line.Y, line.Text, color, line.FontSize);
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily).Lines) {
+            VisualCanvasTextFace.Resolve(theme.FontFamily, line.Weight).Draw(canvas, line.X, line.Y, line.Text, TileTextColor(line.Role, theme), line.FontSize);
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
@@ -249,10 +248,11 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color) {
+    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily) {
         if (kind == VisualCanvasInfoTileIconKind.Text) {
-            var iconFont = Math.Min(25, size * (text.Length > 3 ? 0.34 : 0.42));
-            DrawText(canvas, x, y + (size - iconFont) / 2 - 1, size, text, iconFont, color, TextAlignment.Center, true);
+            var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(text, size, fontFamily);
+            // Baselines match the SVG output: DrawText takes the top of the em box, one font size above the baseline.
+            DrawText(canvas, x, y + size / 2 + iconFont * 0.36 - iconFont, size, text, iconFont, color, TextAlignment.Center, VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.Emphasized));
             return;
         }
 
@@ -337,7 +337,7 @@ public sealed class PngVisualCanvasRenderer {
                 canvas.DrawLine(left, y + size * 0.36, cx, top, color, thick);
                 break;
             default:
-                DrawTileIcon(canvas, VisualCanvasInfoTileIconKind.Text, text, x, y, size, color);
+                DrawTileIcon(canvas, VisualCanvasInfoTileIconKind.Text, text, x, y, size, color, fontFamily);
                 break;
         }
     }
@@ -364,7 +364,7 @@ public sealed class PngVisualCanvasRenderer {
         }
 
         var fontSize = Math.Max(24, badge.Height * 0.42);
-        DrawText(canvas, badge.X, badge.Y + badge.Height / 2 - fontSize * 0.40, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, TextAlignment.Center, true);
+        DrawText(canvas, badge.X, badge.Y + badge.Height / 2 + badge.Height * 0.17 - fontSize, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, TextAlignment.Center, VisualCanvasTextFace.Resolve(theme.MonospaceFontFamily, VisualCanvasFontWeights.HeroBadge));
     }
 
     private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
@@ -443,12 +443,14 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void DrawFeatureStrip(RgbaCanvas canvas, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
         var slot = strip.Width / strip.Items.Count;
+        var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized);
+        var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel);
         for (var i = 0; i < strip.Items.Count; i++) {
             var item = strip.Items[i];
             var slotX = strip.X + slot * i;
             if (i > 0) canvas.DrawLine(slotX, strip.Y + 4, slotX, strip.Y + strip.Height - 4, theme.FeatureDividerColor, 1);
-            DrawText(canvas, slotX, strip.Y + 2, slot, item.Icon, 22, strip.Accent, TextAlignment.Center, true);
-            DrawText(canvas, slotX + 6, strip.Y + 38, slot - 12, item.Label, 15, theme.FeatureLabelColor, TextAlignment.Center, true);
+            DrawText(canvas, slotX, strip.Y + 26 - 22, slot, item.Icon, 22, strip.Accent, TextAlignment.Center, iconFace);
+            DrawText(canvas, slotX + 6, strip.Y + 58 - 15, slot - 12, item.Label, 15, theme.FeatureLabelColor, TextAlignment.Center, labelFace);
         }
     }
 
@@ -466,24 +468,6 @@ public sealed class PngVisualCanvasRenderer {
             previousY = y;
         }
     }
-
-    private static string FitText(string value, double fontSize, double maxWidth, bool emphasized) {
-        if (string.IsNullOrEmpty(value) || Measure(value, fontSize, emphasized) <= maxWidth) return value;
-        const string suffix = "...";
-        if (Measure(suffix, fontSize, emphasized) > maxWidth) return string.Empty;
-        var low = 0;
-        var high = value.Length;
-        while (low < high) {
-            var mid = (low + high + 1) / 2;
-            if (Measure(value.Substring(0, mid) + suffix, fontSize, emphasized) <= maxWidth) low = mid;
-            else high = mid - 1;
-        }
-
-        return value.Substring(0, low) + suffix;
-    }
-
-    private static double Measure(string value, double fontSize, bool emphasized) =>
-        emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
 
     private static double AlignedX(double x, double width, double textWidth, TextAlignment alignment) {
         VisualCanvas.ValidateEnum(alignment, nameof(alignment));

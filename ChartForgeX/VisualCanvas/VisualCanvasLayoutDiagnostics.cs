@@ -88,13 +88,13 @@ internal static class VisualCanvasLayoutAnalyzer {
                     bounds));
             }
 
-            if (layer is VisualCanvasInfoTileLayer tile) AnalyzeInfoTile(tile, i, diagnostics);
+            if (layer is VisualCanvasInfoTileLayer tile) AnalyzeInfoTile(tile, i, diagnostics, canvas.Theme.FontFamily);
         }
 
         return new VisualCanvasLayoutReport(diagnostics);
     }
 
-    private static void AnalyzeInfoTile(VisualCanvasInfoTileLayer tile, int layerIndex, List<VisualCanvasLayoutDiagnostic> diagnostics) {
+    private static void AnalyzeInfoTile(VisualCanvasInfoTileLayer tile, int layerIndex, List<VisualCanvasLayoutDiagnostic> diagnostics, string fontFamily) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
@@ -110,7 +110,7 @@ internal static class VisualCanvasLayoutAnalyzer {
                 tile.Bounds));
         }
 
-        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax);
+        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, fontFamily);
         if (layout.HasTruncatedText) {
             diagnostics.Add(new VisualCanvasLayoutDiagnostic(
                 VisualCanvasLayoutDiagnosticSeverity.Warning,
