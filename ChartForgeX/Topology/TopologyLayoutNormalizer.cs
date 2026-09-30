@@ -9,7 +9,6 @@ namespace ChartForgeX.Topology;
 internal static class TopologyLayoutNormalizer {
     internal const double NodeGap = 16;
     private const double GroupPadding = 24;
-    private const double GroupHeaderTopPadding = 14;
     private const double GroupHeaderBottomGap = 12;
     private const double RowTolerance = 36;
     private const double MinimumNodeWidth = 108;
@@ -33,9 +32,9 @@ internal static class TopologyLayoutNormalizer {
 
         foreach (var node in chart.Nodes) {
             if (string.IsNullOrWhiteSpace(node.GroupId) || !groups.TryGetValue(node.GroupId!, out var group)) continue;
-            var headerWidth = HeaderWidth(group, options);
-            if (!Intersects(node.X, node.Y, node.Width, node.Height, HeaderX(group, options, headerWidth), HeaderY(group), headerWidth, HeaderHeight(group))) continue;
-            var safeY = HeaderY(group) + HeaderHeight(group) + GroupHeaderBottomGap;
+            var header = TopologyGroupHeader.Bounds(group, options, options.TextMeasurement);
+            if (!Intersects(node.X, node.Y, node.Width, node.Height, header.X, header.Y, header.Width, header.Height)) continue;
+            var safeY = header.Bottom + GroupHeaderBottomGap;
             if (node.Y < safeY) node.Y = safeY;
         }
     }
@@ -143,28 +142,6 @@ internal static class TopologyLayoutNormalizer {
 
     private static bool Intersects(double ax, double ay, double aw, double ah, double bx, double by, double bw, double bh) {
         return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
-    }
-
-    private static double HeaderX(TopologyGroup group, TopologyRenderOptions options, double width) =>
-        IsMonitoringDashboardStyle(options) && UseNeutralGroupSurface(options) ? group.X + 22 : group.X + (group.Width - width) / 2;
-
-    private static double HeaderY(TopologyGroup group) => group.Y + GroupHeaderTopPadding;
-
-    private static double HeaderHeight(TopologyGroup group) => string.IsNullOrWhiteSpace(group.Subtitle) ? 40 : 60;
-
-    private static double HeaderWidth(TopologyGroup group, TopologyRenderOptions options) {
-        var rendersSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol);
-        var maxLabelWidth = GroupHeaderLabelWidth(group, options, rendersSymbol);
-        var labelSize = FitFontSize(group.Label, maxLabelWidth, 16, 12, true, options.TextMeasurement);
-        var labelWidth = EstimateTextWidth(TrimToEstimatedWidth(group.Label, maxLabelWidth, labelSize, true, options.TextMeasurement), labelSize, true, options.TextMeasurement) + (rendersSymbol ? 30 : 0);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, options.TextMeasurement);
-        return Math.Min(Math.Max(96, Math.Max(labelWidth, subtitleWidth) + 12), Math.Max(96, group.Width - GroupPadding * 2));
-    }
-
-    private static double GroupHeaderLabelWidth(TopologyGroup group, TopologyRenderOptions options, bool includesLeadingSymbol) {
-        var statusReserve = options.IncludeGroupStatusDots && IsMonitoringDashboardStyle(options) && group.Status != TopologyHealthStatus.Unknown ? 38 : 0;
-        var symbolReserve = includesLeadingSymbol ? 42 : 0;
-        return Math.Max(36, group.Width - 44 - statusReserve - symbolReserve);
     }
 
     private static void FitViewportForRenderedContent(TopologyChart chart, TopologyRenderOptions options) {

@@ -7,7 +7,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 /// <summary>Provides deterministic, machine-readable layout diagnostics for topology hosts and tests.</summary>
-public static class TopologyLayoutDiagnostics {
+public static partial class TopologyLayoutDiagnostics {
     /// <summary>Prepares a topology through the normal layout pipeline and returns its geometry diagnostics.</summary>
     public static TopologyLayoutDiagnosticReport Analyze(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
@@ -24,9 +24,15 @@ public static class TopologyLayoutDiagnostics {
     internal static TopologyLayoutDiagnosticReport AnalyzePrepared(TopologyChart chart, TopologyRenderOptions options) {
         var report = new TopologyLayoutDiagnosticReport(chart.Viewport.Width, chart.Viewport.Height, chart.LayoutMode, chart.LayoutDirection);
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        foreach (var group in chart.Groups) report.Groups.Add(new TopologyLayoutBoundsDiagnostic(group.Id, new ChartRect(group.X, group.Y, group.Width, group.Height)));
+        var headers = TopologyGroupHeader.IsDrawn(options);
+        foreach (var group in chart.Groups) {
+            report.Groups.Add(new TopologyLayoutGroupDiagnostic(group.Id, new ChartRect(group.X, group.Y, group.Width, group.Height),
+                headers ? TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement) : null));
+        }
         foreach (var node in chart.Nodes) {
-            var diagnostic = new TopologyLayoutNodeDiagnostic(node.Id, new ChartRect(node.X, node.Y, node.Width, node.Height));
+            var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
+            var diagnostic = new TopologyLayoutNodeDiagnostic(node.Id, new ChartRect(node.X, node.Y, node.Width, node.Height),
+                caption.Height > 0.5 ? new ChartRect(node.X + node.Width / 2 - caption.Width / 2, node.Y + node.Height, caption.Width, caption.Height) : null);
             foreach (var port in node.Ports) diagnostic.Ports.Add(new TopologyLayoutPortDiagnostic(port.Id, port.Side, PortPoint(node, port)));
             report.Nodes.Add(diagnostic);
         }
@@ -39,6 +45,7 @@ public static class TopologyLayoutDiagnostics {
         for (var i = 0; i < report.Nodes.Count; i++) for (var j = i + 1; j < report.Nodes.Count; j++) {
             if (Intersects(report.Nodes[i].Bounds, report.Nodes[j].Bounds)) report.Collisions.Add(new TopologyLayoutCollisionDiagnostic("node-node", report.Nodes[i].Id, report.Nodes[j].Id, Intersection(report.Nodes[i].Bounds, report.Nodes[j].Bounds)));
         }
+        AnalyzeRoutes(report, chart, options);
         return report;
     }
 
@@ -77,8 +84,8 @@ public sealed class TopologyLayoutDiagnosticReport {
     public TopologyLayoutMode LayoutMode { get; }
     /// <summary>Gets the applied layout direction.</summary>
     public TopologyLayoutDirection LayoutDirection { get; }
-    /// <summary>Gets prepared group bounds.</summary>
-    public List<TopologyLayoutBoundsDiagnostic> Groups { get; } = new();
+    /// <summary>Gets prepared group bounds and header blocks.</summary>
+    public List<TopologyLayoutGroupDiagnostic> Groups { get; } = new();
     /// <summary>Gets prepared node bounds and ports.</summary>
     public List<TopologyLayoutNodeDiagnostic> Nodes { get; } = new();
     /// <summary>Gets prepared edge routes and router diagnostics.</summary>
@@ -87,6 +94,12 @@ public sealed class TopologyLayoutDiagnosticReport {
     public List<TopologyLayoutCollisionDiagnostic> Collisions { get; } = new();
     /// <summary>Gets whether the prepared layout contains detected collisions.</summary>
     public bool HasCollisions => Collisions.Count > 0;
+    /// <summary>Gets every place an edge route runs through a foreign node card, a node caption, or a group header.</summary>
+    public List<TopologyLayoutRouteCrossingDiagnostic> RouteCrossings { get; } = new();
+    /// <summary>Gets the pairs of edges whose horizontal or vertical runs are drawn on top of each other. Diagonal and curved runs are not compared.</summary>
+    public List<TopologyLayoutRouteOverlapDiagnostic> RouteOverlaps { get; } = new();
+    /// <summary>Gets the placed edge labels; empty when edge labels are not rendered.</summary>
+    public List<TopologyLayoutEdgeLabelDiagnostic> EdgeLabels { get; } = new();
 }
 
 /// <summary>Describes one prepared bounds rectangle.</summary>
@@ -100,7 +113,9 @@ public class TopologyLayoutBoundsDiagnostic {
 
 /// <summary>Describes one prepared node and its named ports.</summary>
 public sealed class TopologyLayoutNodeDiagnostic : TopologyLayoutBoundsDiagnostic {
-    internal TopologyLayoutNodeDiagnostic(string id, ChartRect bounds) : base(id, bounds) { }
+    internal TopologyLayoutNodeDiagnostic(string id, ChartRect bounds, ChartRect? captionBounds) : base(id, bounds) { CaptionBounds = captionBounds; }
+    /// <summary>Gets the bounds of the caption drawn below a tile node, or null when the node has none.</summary>
+    public ChartRect? CaptionBounds { get; }
     /// <summary>Gets prepared named port positions.</summary>
     public List<TopologyLayoutPortDiagnostic> Ports { get; } = new();
 }
@@ -141,6 +156,10 @@ public sealed class TopologyLayoutEdgeDiagnostic {
     public double RouteOverlapScore { get; }
     /// <summary>Gets a deterministic router fallback reason when applicable.</summary>
     public string FallbackReason { get; }
+    /// <summary>Gets whether the route starts on its source node: a horizontal or vertical first leg points away from the node, not along its side; a diagonal or curved one starts within reach of it.</summary>
+    public bool SourceAttached { get; internal set; }
+    /// <summary>Gets whether the route ends on its target node: a horizontal or vertical last leg points into the node, not along its side; a diagonal or curved one ends within reach of it.</summary>
+    public bool TargetAttached { get; internal set; }
 }
 
 /// <summary>Describes one detected overlap between prepared layout items.</summary>

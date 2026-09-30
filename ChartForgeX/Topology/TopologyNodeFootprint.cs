@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Typography;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -15,7 +16,19 @@ internal static class TopologyNodeFootprint {
     /// <summary>Returns the caption width and the height it adds below the node, or zero for modes without a caption.</summary>
     public static (double Width, double Height) Caption(TopologyChart chart, TopologyNode node) {
         var options = chart.RenderOptions;
-        if (options == null || !options.ReadableDenseLayout || !options.IncludeNodeLabels || (node.DisplayMode ?? options.NodeDisplayMode) != TopologyNodeDisplayMode.Tile) return (0, 0);
+        if (options == null || !options.ReadableDenseLayout) return (0, 0);
+        return CaptionSize(node, options, chart.TextMeasurement, node.DisplayMode ?? options.NodeDisplayMode);
+    }
+
+    /// <summary>
+    /// Returns the size of the caption the renderers draw below a tile node with the given options, whether or not the
+    /// layout reserved room for it. Used by diagnostics to measure what is on the page.
+    /// </summary>
+    public static (double Width, double Height) RenderedCaption(TopologyNode node, TopologyRenderOptions options, TextMeasurementContext? measurement) =>
+        CaptionSize(node, options, measurement, EffectiveNodeDisplayMode(node, options));
+
+    private static (double Width, double Height) CaptionSize(TopologyNode node, TopologyRenderOptions options, TextMeasurementContext? measurement, TopologyNodeDisplayMode mode) {
+        if (!options.IncludeNodeLabels || mode != TopologyNodeDisplayMode.Tile) return (0, 0);
         var width = 0.0;
         var height = 0.0;
         var lineCount = 1;
@@ -23,7 +36,7 @@ internal static class TopologyNodeFootprint {
             var lines = NodeTextLines(node.Label, Math.Max(node.Width + 34, 54), CaptionFontSize, true,
                 options.MaxNodeLabelLines, options, NodeTitleMaxLength(node, TopologyNodeDisplayMode.Tile));
             lineCount = Math.Max(1, lines.Count);
-            foreach (var line in lines) width = Math.Max(width, EstimateTextWidth(line, CaptionFontSize, true, chart.TextMeasurement));
+            foreach (var line in lines) width = Math.Max(width, EstimateTextWidth(line, CaptionFontSize, true, measurement));
             height = 8 + lineCount * CaptionLineHeight;
         }
 

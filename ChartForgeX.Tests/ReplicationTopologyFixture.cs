@@ -55,25 +55,10 @@ internal static class ReplicationTopologyFixture {
 
     /// <summary>
     /// Counts (edge, foreign node) pairs where the edge's route passes through the card of a node other than its own
-    /// endpoints (1 px inset) — the "routes cross node cards" measure tracked in TODO.md. Each pair counts once, however
-    /// many route segments or bends fall inside the card, and zero-length segments are ignored.
+    /// endpoints. Each pair counts once, however many route segments or bends fall inside the card.
     /// </summary>
-    public static int NodeCardCrossings(TopologyLayoutDiagnosticReport report) {
-        var crossings = 0;
-        foreach (var edge in report.Edges) {
-            foreach (var node in report.Nodes) {
-                if (node.Id == edge.SourceNodeId || node.Id == edge.TargetNodeId) continue;
-                var bounds = node.Bounds;
-                for (var i = 0; i + 1 < edge.Points.Count; i++) {
-                    if (!SegmentCrossesRect(edge.Points[i], edge.Points[i + 1], bounds.Left + 1, bounds.Top + 1, bounds.Right - 1, bounds.Bottom - 1)) continue;
-                    crossings++;
-                    break;
-                }
-            }
-        }
-
-        return crossings;
-    }
+    public static int NodeCardCrossings(TopologyLayoutDiagnosticReport report) =>
+        report.RouteCrossings.Count(crossing => crossing.Kind == TopologyLayoutRouteCrossingKind.Node);
 
     /// <summary>
     /// Measures the rendered edge labels: how many overlap a node card or its caption, and how many label pairs overlap.
@@ -104,30 +89,6 @@ internal static class ReplicationTopologyFixture {
 
     private static bool Overlaps(double ax, double ay, double aw, double ah, double bx, double by, double bw, double bh) =>
         Math.Abs(ax - bx) * 2 < aw + bw && Math.Abs(ay - by) * 2 < ah + bh;
-
-    private static bool SegmentCrossesRect(ChartPoint a, ChartPoint b, double left, double top, double right, double bottom) {
-        if (right <= left || bottom <= top) return false;
-        // Liang-Barsky clipping: the segment crosses the open rectangle when a non-empty parameter interval remains.
-        double t0 = 0, t1 = 1;
-        var dx = b.X - a.X;
-        var dy = b.Y - a.Y;
-        if (Math.Abs(dx) < 1e-9 && Math.Abs(dy) < 1e-9) return false;
-        bool Clip(double p, double q) {
-            if (Math.Abs(p) < 1e-12) return q > 0;
-            var r = q / p;
-            if (p < 0) {
-                if (r > t1) return false;
-                if (r > t0) t0 = r;
-            } else {
-                if (r < t0) return false;
-                if (r < t1) t1 = r;
-            }
-
-            return true;
-        }
-
-        return Clip(-dx, a.X - left) && Clip(dx, right - a.X) && Clip(-dy, a.Y - top) && Clip(dy, bottom - a.Y) && t1 - t0 > 1e-9;
-    }
 
     private static void AddSite(TopologyChart chart, string site, string label, int controllers, int regionIndex) {
         chart.AddAutoGroup(site, label, TopologyHealthStatus.Healthy, controllers.ToString(CultureInfo.InvariantCulture) + " DCs", symbol: "site");
