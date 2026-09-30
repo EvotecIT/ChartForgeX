@@ -20,8 +20,8 @@ public sealed partial class TopologyPngRenderer {
         const double spacing = 56;
         var right = x + width;
         var bottom = y + height;
-        for (var gx = x + spacing; gx < right - 2; gx += spacing) canvas.DrawLine(gx, y + 10, gx, bottom - 10, WithAlpha(Color(theme.Border), 72), 0.7);
-        for (var gy = y + spacing; gy < bottom - 2; gy += spacing) canvas.DrawLine(x + 10, gy, right - 10, gy, WithAlpha(Color(theme.Border), 56), 0.7);
+        for (var gx = x + spacing; gx < right - 2; gx += spacing) canvas.DrawLine(gx, y + 10, gx, bottom - 10, WithAlpha(Color(theme.Border), 72), 0.75, RasterLineCap.Butt);
+        for (var gy = y + spacing; gy < bottom - 2; gy += spacing) canvas.DrawLine(x + 10, gy, right - 10, gy, WithAlpha(Color(theme.Border), 56), 0.75, RasterLineCap.Butt);
     }
 
     private static void DrawArrow(RgbaCanvas canvas, ChartPoint from, ChartPoint to, ChartColor color, TopologyRenderOptions options) {
@@ -33,8 +33,7 @@ public sealed partial class TopologyPngRenderer {
         var p3 = new ChartPoint(to.X - Math.Cos(angle + spread) * length, to.Y - Math.Sin(angle + spread) * length);
         switch (options.ArrowMarkerStyle) {
             case TopologyArrowMarkerStyle.Chevron:
-                canvas.DrawLine(p2.X, p2.Y, p1.X, p1.Y, color, 2);
-                canvas.DrawLine(p3.X, p3.Y, p1.X, p1.Y, color, 2);
+                canvas.DrawPolyline(new[] { p2, p1, p3 }, color, 2);
                 break;
             case TopologyArrowMarkerStyle.Diamond:
                 var p4 = new ChartPoint(to.X - Math.Cos(angle) * length * 1.4, to.Y - Math.Sin(angle) * length * 1.4);

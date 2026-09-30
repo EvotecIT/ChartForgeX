@@ -76,13 +76,13 @@ public sealed partial class TopologyPngRenderer {
         for (var i = 1; i < 4; i++) {
             var longitude = chart.MapViewport.MinimumLongitude + (chart.MapViewport.MaximumLongitude - chart.MapViewport.MinimumLongitude) * i / 4.0;
             var x = TopologyMapProjection.Project(map, chart.MapViewport, longitude, chart.MapViewport.MinimumLatitude).X;
-            canvas.DrawLine(x, map.Top, x, map.Bottom, WithAlpha(Color(theme.Border), softMap ? (byte)58 : (byte)110), MinimumReadableFineStrokeWidth);
+            canvas.DrawLine(x, map.Top, x, map.Bottom, WithAlpha(Color(theme.Border), softMap ? (byte)58 : (byte)110), MinimumReadableFineStrokeWidth, RasterLineCap.Butt);
         }
 
         for (var i = 1; i < 3; i++) {
             var latitude = chart.MapViewport.MinimumLatitude + (chart.MapViewport.MaximumLatitude - chart.MapViewport.MinimumLatitude) * i / 3.0;
             var y = TopologyMapProjection.Project(map, chart.MapViewport, chart.MapViewport.MinimumLongitude, latitude).Y;
-            canvas.DrawLine(map.Left, y, map.Right, y, WithAlpha(Color(theme.Border), softMap ? (byte)46 : (byte)88), MinimumReadableFineStrokeWidth);
+            canvas.DrawLine(map.Left, y, map.Right, y, WithAlpha(Color(theme.Border), softMap ? (byte)46 : (byte)88), MinimumReadableFineStrokeWidth, RasterLineCap.Butt);
         }
     }
 
@@ -94,7 +94,7 @@ public sealed partial class TopologyPngRenderer {
         foreach (var boundary in boundaries) {
             var points = ProjectBoundary(boundary, map, chart.MapViewport);
             if (TopologyMapProjection.CanFillBoundary(boundary)) canvas.FillPolygon(points, land);
-            for (var i = 1; i < points.Count; i++) canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, boundaryColor, MinimumReadableFineStrokeWidth);
+            canvas.DrawPolyline(points, boundaryColor, MinimumReadableFineStrokeWidth);
         }
 
         if (softMap && boundaries.Length > 0) return;
@@ -418,7 +418,7 @@ public sealed partial class TopologyPngRenderer {
             var detail = node.Details[i];
             var y = startY + i * 18;
             var color = !string.IsNullOrWhiteSpace(detail.Color) ? Color(detail.Color!) : detail.Status.HasValue ? Color(theme.StatusColor(detail.Status.Value)) : Color(theme.MutedForeground);
-            canvas.DrawLine(left, y - 8, right, y - 8, WithAlpha(Color(theme.Border), 112), 1);
+            canvas.DrawLine(left, y - 8, right, y - 8, WithAlpha(Color(theme.Border), 112), 1, RasterLineCap.Butt);
             canvas.DrawCircle(left + 3, y - 1, 2.5, color);
             canvas.DrawText(left + 10, y - 6, TrimTo(detail.Label, 14), Color(theme.MutedForeground), 8.5);
             var value = TrimTo(detail.Value, 16);
@@ -481,14 +481,7 @@ public sealed partial class TopologyPngRenderer {
         var cy = CenterY(node);
         var symbol = string.IsNullOrWhiteSpace(node.Symbol) ? NodeGlyph(node, options) : node.Symbol!.Trim();
         if (node.Kind == TopologyNodeKind.Server || symbol.Equals("DC", StringComparison.OrdinalIgnoreCase)) {
-            canvas.DrawLine(cx - 4.2, cy - 3.6, cx + 4.2, cy - 3.6, ChartColor.White, 1.05);
-            canvas.DrawLine(cx - 4.2, cy - 0.8, cx + 4.2, cy - 0.8, ChartColor.White, 1.05);
-            canvas.DrawLine(cx - 4.2, cy + 1.5, cx + 4.2, cy + 1.5, ChartColor.White, 1.05);
-            canvas.DrawLine(cx - 4.2, cy + 4.2, cx + 4.2, cy + 4.2, ChartColor.White, 1.05);
-            canvas.DrawLine(cx - 4.2, cy - 3.6, cx - 4.2, cy - 0.8, ChartColor.White, 1.05);
-            canvas.DrawLine(cx + 4.2, cy - 3.6, cx + 4.2, cy - 0.8, ChartColor.White, 1.05);
-            canvas.DrawLine(cx - 4.2, cy + 1.5, cx - 4.2, cy + 4.2, ChartColor.White, 1.05);
-            canvas.DrawLine(cx + 4.2, cy + 1.5, cx + 4.2, cy + 4.2, ChartColor.White, 1.05);
+            DrawGlyphMarks(canvas, TopologyInfrastructureGlyphs.DotServer(cx, cy), ChartColor.White);
             return;
         }
 
@@ -512,158 +505,6 @@ public sealed partial class TopologyPngRenderer {
         if (!DrawInfrastructureGlyph(canvas, node, cx, cy, status, options)) DrawCenteredMiddle(canvas, cx, cy, NodeGlyph(node, options), status, displayMode == TopologyNodeDisplayMode.Pill ? 7.5 : 8.5, true);
     }
 
-    private static bool DrawInfrastructureGlyph(RgbaCanvas canvas, TopologyNode node, double cx, double cy, ChartColor color, TopologyRenderOptions options) {
-        switch (EffectiveIconShape(node, options)) {
-            case TopologyIconShape.Site:
-                canvas.DrawLine(cx - 6, cy + 7, cx - 6, cy - 7, color, 1.4);
-                canvas.DrawLine(cx - 6, cy - 7, cx + 6, cy - 7, color, 1.4);
-                canvas.DrawLine(cx + 6, cy - 7, cx + 6, cy + 7, color, 1.4);
-                canvas.DrawLine(cx - 2, cy + 7, cx - 2, cy + 2, color, 1.4);
-                canvas.DrawLine(cx - 2, cy + 2, cx + 2, cy + 2, color, 1.4);
-                canvas.DrawLine(cx + 2, cy + 2, cx + 2, cy + 7, color, 1.4);
-                canvas.DrawLine(cx - 3.5, cy - 3, cx - 0.5, cy - 3, color, 1.4);
-                canvas.DrawLine(cx + 2.5, cy - 3, cx + 5.5, cy - 3, color, 1.4);
-                canvas.DrawLine(cx - 3.5, cy + 1, cx - 0.5, cy + 1, color, 1.4);
-                canvas.DrawLine(cx + 2.5, cy + 1, cx + 5.5, cy + 1, color, 1.4);
-                return true;
-            case TopologyIconShape.Server:
-            case TopologyIconShape.DomainController:
-            case TopologyIconShape.ReadOnlyDomainController:
-                canvas.StrokeRect(cx - 7, cy - 6, 14, 5, color, 1);
-                canvas.StrokeRect(cx - 7, cy + 2, 14, 5, color, 1);
-                canvas.DrawLine(cx + 4.5, cy - 3.5, cx + 5.5, cy - 3.5, color, 1.4);
-                canvas.DrawLine(cx + 4.5, cy + 4.5, cx + 5.5, cy + 4.5, color, 1.4);
-                if (EffectiveIconShape(node, options) == TopologyIconShape.ReadOnlyDomainController) canvas.DrawLine(cx - 8, cy + 8, cx + 8, cy - 8, color, 1.2);
-                return true;
-            case TopologyIconShape.Network:
-                canvas.DrawLine(cx - 7, cy + 5, cx, cy - 6, color, 1.3);
-                canvas.DrawLine(cx, cy - 6, cx + 7, cy + 5, color, 1.3);
-                canvas.DrawLine(cx - 7, cy + 5, cx + 7, cy + 5, color, 1.3);
-                canvas.DrawCircle(cx, cy - 6, 2.2, color);
-                canvas.DrawCircle(cx - 7, cy + 5, 2.2, color);
-                canvas.DrawCircle(cx + 7, cy + 5, 2.2, color);
-                return true;
-            case TopologyIconShape.NetworkSwitch:
-                canvas.StrokeRect(cx - 8, cy - 4, 16, 8, color, 1);
-                canvas.DrawLine(cx - 5, cy, cx - 2, cy, color, 1.2);
-                canvas.DrawLine(cx + 2, cy, cx + 5, cy, color, 1.2);
-                canvas.DrawLine(cx - 4, cy - 7, cx - 1, cy - 4, color, 1.2);
-                canvas.DrawLine(cx + 4, cy + 7, cx + 1, cy + 4, color, 1.2);
-                return true;
-            case TopologyIconShape.Router:
-                canvas.DrawLine(cx, cy - 8, cx + 8, cy, color, 1.2);
-                canvas.DrawLine(cx + 8, cy, cx, cy + 8, color, 1.2);
-                canvas.DrawLine(cx, cy + 8, cx - 8, cy, color, 1.2);
-                canvas.DrawLine(cx - 8, cy, cx, cy - 8, color, 1.2);
-                canvas.DrawLine(cx - 4, cy, cx + 4, cy, color, 1.3);
-                canvas.DrawLine(cx, cy - 4, cx, cy + 4, color, 1.3);
-                return true;
-            case TopologyIconShape.NetworkSegment:
-                canvas.DrawLine(cx - 9, cy - 4, cx + 9, cy - 4, color, 1.2);
-                canvas.DrawLine(cx - 9, cy + 4, cx + 9, cy + 4, color, 1.2);
-                canvas.DrawLine(cx - 5, cy - 7, cx - 5, cy + 7, color, 1.2);
-                canvas.DrawLine(cx + 5, cy - 7, cx + 5, cy + 7, color, 1.2);
-                return true;
-            case TopologyIconShape.LoadBalancer:
-                canvas.DrawLine(cx, cy - 8, cx, cy + 8, color, 1.3);
-                canvas.DrawLine(cx - 8, cy - 3, cx, cy - 3, color, 1.3);
-                canvas.DrawLine(cx, cy - 3, cx + 6, cy - 7, color, 1.3);
-                canvas.DrawLine(cx - 8, cy + 3, cx, cy + 3, color, 1.3);
-                canvas.DrawLine(cx, cy + 3, cx + 6, cy + 7, color, 1.3);
-                return true;
-            case TopologyIconShape.Firewall:
-                canvas.StrokeRect(cx - 8, cy - 6, 16, 12, color, 1);
-                canvas.DrawLine(cx - 3, cy - 6, cx - 3, cy - 1, color, 1.2);
-                canvas.DrawLine(cx + 3, cy - 1, cx + 3, cy + 6, color, 1.2);
-                canvas.DrawLine(cx - 8, cy, cx - 2, cy, color, 1.2);
-                canvas.DrawLine(cx + 2, cy, cx + 8, cy, color, 1.2);
-                return true;
-            case TopologyIconShape.Service:
-                canvas.DrawCircleOutline(cx, cy, 5.5, color, 1.4);
-                canvas.DrawLine(cx, cy - 9, cx, cy - 7, color, 1.4);
-                canvas.DrawLine(cx, cy + 7, cx, cy + 9, color, 1.4);
-                canvas.DrawLine(cx - 9, cy, cx - 7, cy, color, 1.4);
-                canvas.DrawLine(cx + 7, cy, cx + 9, cy, color, 1.4);
-                return true;
-            case TopologyIconShape.Person:
-                canvas.DrawCircleOutline(cx, cy - 5, 4, color, 1.3);
-                canvas.DrawArc(cx, cy + 8, 8, Math.PI, Math.PI * 2, color, 1.3);
-                return true;
-            case TopologyIconShape.Team:
-                canvas.DrawCircleOutline(cx - 5, cy - 5, 3, color, 1.2);
-                canvas.DrawCircleOutline(cx + 5, cy - 5, 3, color, 1.2);
-                canvas.DrawArc(cx - 5, cy + 7, 6, Math.PI, Math.PI * 2, color, 1.2);
-                canvas.DrawArc(cx + 5, cy + 7, 6, Math.PI, Math.PI * 2, color, 1.2);
-                return true;
-            case TopologyIconShape.Storage:
-                canvas.StrokeRect(cx - 8, cy - 6, 16, 5, color, 1);
-                canvas.StrokeRect(cx - 8, cy + 2, 16, 5, color, 1);
-                canvas.DrawLine(cx - 4.5, cy - 3.5, cx + 1.5, cy - 3.5, color, 1.2);
-                canvas.DrawLine(cx - 4.5, cy + 4.5, cx + 1.5, cy + 4.5, color, 1.2);
-                canvas.DrawCircle(cx + 5, cy - 3.5, 1.2, color);
-                canvas.DrawCircle(cx + 5, cy + 4.5, 1.2, color);
-                return true;
-            case TopologyIconShape.Application:
-                canvas.StrokeRect(cx - 8, cy - 7, 16, 14, color, 1);
-                canvas.DrawLine(cx - 8, cy - 3, cx + 8, cy - 3, color, 1.1);
-                canvas.DrawLine(cx - 5, cy - 5, cx - 4, cy - 5, color, 1.2);
-                canvas.DrawLine(cx - 1.5, cy - 5, cx - 0.5, cy - 5, color, 1.2);
-                canvas.DrawLine(cx - 3, cy + 1, cx + 3, cy + 1, color, 1.2);
-                canvas.DrawLine(cx - 3, cy + 4, cx + 3, cy + 4, color, 1.2);
-                return true;
-            case TopologyIconShape.Certificate:
-                canvas.DrawLine(cx - 6, cy - 8, cx + 4, cy - 8, color, 1.1);
-                canvas.DrawLine(cx + 4, cy - 8, cx + 8, cy - 4, color, 1.1);
-                canvas.DrawLine(cx + 8, cy - 4, cx + 8, cy + 7, color, 1.1);
-                canvas.DrawLine(cx + 8, cy + 7, cx - 6, cy + 7, color, 1.1);
-                canvas.DrawLine(cx - 6, cy + 7, cx - 6, cy - 8, color, 1.1);
-                canvas.DrawLine(cx + 4, cy - 8, cx + 4, cy - 4, color, 1.1);
-                canvas.DrawLine(cx + 4, cy - 4, cx + 8, cy - 4, color, 1.1);
-                canvas.DrawLine(cx - 3, cy - 1, cx + 4, cy - 1, color, 1.1);
-                canvas.DrawLine(cx - 3, cy + 2, cx + 2, cy + 2, color, 1.1);
-                canvas.DrawCircleOutline(cx - 4, cy + 7, 2.5, color, 1.1);
-                return true;
-            case TopologyIconShape.Desktop:
-                canvas.StrokeRect(cx - 8, cy - 7, 16, 11, color, 1);
-                canvas.DrawLine(cx, cy + 4, cx, cy + 8, color, 1.2);
-                canvas.DrawLine(cx - 5, cy + 8, cx + 5, cy + 8, color, 1.2);
-                return true;
-            case TopologyIconShape.Laptop:
-                canvas.StrokeRect(cx - 7, cy - 7, 14, 10, color, 1);
-                canvas.DrawLine(cx - 10, cy + 7, cx + 10, cy + 7, color, 1.2);
-                canvas.DrawLine(cx - 10, cy + 7, cx - 7, cy + 3, color, 1.2);
-                canvas.DrawLine(cx + 10, cy + 7, cx + 7, cy + 3, color, 1.2);
-                return true;
-            case TopologyIconShape.Forest:
-                canvas.DrawLine(cx, cy - 9, cx + 6, cy, color, 1.2);
-                canvas.DrawLine(cx + 6, cy, cx + 2.5, cy, color, 1.2);
-                canvas.DrawLine(cx + 2.5, cy, cx + 8, cy + 8, color, 1.2);
-                canvas.DrawLine(cx + 8, cy + 8, cx - 8, cy + 8, color, 1.2);
-                canvas.DrawLine(cx - 8, cy + 8, cx - 2.5, cy, color, 1.2);
-                canvas.DrawLine(cx - 2.5, cy, cx - 6, cy, color, 1.2);
-                canvas.DrawLine(cx - 6, cy, cx, cy - 9, color, 1.2);
-                canvas.DrawLine(cx, cy, cx, cy + 8, color, 1.2);
-                return true;
-            case TopologyIconShape.Domain:
-                canvas.DrawLine(cx, cy - 9, cx + 8, cy - 3, color, 1.2);
-                canvas.DrawLine(cx + 8, cy - 3, cx + 8, cy + 5, color, 1.2);
-                canvas.DrawLine(cx + 8, cy + 5, cx, cy + 9, color, 1.2);
-                canvas.DrawLine(cx, cy + 9, cx - 8, cy + 5, color, 1.2);
-                canvas.DrawLine(cx - 8, cy + 5, cx - 8, cy - 3, color, 1.2);
-                canvas.DrawLine(cx - 8, cy - 3, cx, cy - 9, color, 1.2);
-                canvas.DrawLine(cx - 8, cy - 3, cx, cy + 2, color, 1.1);
-                canvas.DrawLine(cx, cy + 2, cx + 8, cy - 3, color, 1.1);
-                canvas.DrawLine(cx, cy + 2, cx, cy + 9, color, 1.1);
-                return true;
-            default:
-                if (node.Kind != TopologyNodeKind.Queue) return false;
-                canvas.DrawLine(cx - 7, cy - 6, cx + 7, cy - 6, color, 1.7);
-                canvas.DrawLine(cx - 7, cy, cx + 7, cy, color, 1.7);
-                canvas.DrawLine(cx - 7, cy + 6, cx + 7, cy + 6, color, 1.7);
-                return true;
-        }
-    }
-
     private static void DrawStatusBadges(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
         foreach (var node in chart.Nodes) {
             if (!ShouldRenderNodeStatusBadge(node, options)) continue;
@@ -675,8 +516,7 @@ public sealed partial class TopologyPngRenderer {
             canvas.DrawCircle(cx, cy, NodeStatusBadgeInnerRadius, color);
             if (ShouldDrawNodeStatusBadgeCheck(node, options)) {
                 var check = NodeStatusBadgeCheckPoints(cx, cy);
-                canvas.DrawLine(check[0].X, check[0].Y, check[1].X, check[1].Y, ChartColor.White, NodeStatusBadgeCheckStrokeWidth);
-                canvas.DrawLine(check[1].X, check[1].Y, check[2].X, check[2].Y, ChartColor.White, NodeStatusBadgeCheckStrokeWidth);
+                canvas.DrawPolyline(check, ChartColor.White, NodeStatusBadgeCheckStrokeWidth);
             } else {
                 DrawCenteredMiddle(canvas, cx, cy, StatusGlyph(node.Status), ChartColor.White, NodeStatusBadgeGlyphFontSize, true);
             }
@@ -705,7 +545,7 @@ public sealed partial class TopologyPngRenderer {
             if (item.Kind == TopologyLegendItemKind.Edge) {
                 var dash = EdgePngDash(item.LineStyle);
                 if (dash.Dashed) canvas.DrawDashedLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2, dash.Dash, dash.Gap);
-                else canvas.DrawLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2);
+                else canvas.DrawLine(itemX, markerCenterY, itemX + 24, markerCenterY, color, 2, RasterLineCap.Butt);
             }
             else if (item.Kind == TopologyLegendItemKind.Node) {
                 var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(item.Color ?? theme.Accent, theme.Background) : item.BackgroundColor!.Trim();

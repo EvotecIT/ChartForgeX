@@ -63,11 +63,11 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawCalloutLeader(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, ChartLeaderVisualStyle style) {
-        for (var i = 0; i < points.Count - 1; i++) canvas.DrawDashedLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, style.StrokeWidth, style.Dash, style.Gap);
+        canvas.DrawPolyline(points, color, style.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, RgbaCanvas.DashPattern(style.Dash, style.Gap));
     }
 
     private static void DrawCalloutLeaderHalo(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, ChartColor color, ChartLeaderVisualStyle style) {
-        for (var i = 0; i < points.Count - 1; i++) canvas.DrawLine(points[i].X, points[i].Y, points[i + 1].X, points[i + 1].Y, color, style.HaloStrokeWidth);
+        canvas.DrawPolyline(points, color, style.HaloStrokeWidth);
     }
 
     private static byte Alpha(double opacity) => (byte)System.Math.Round(255 * opacity);
