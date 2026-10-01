@@ -8,7 +8,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawFooterAction(RgbaCanvas canvas, string label, string symbol, double footerY, double footerHeight, double x, double width, ChartForgeX.Themes.ChartTheme theme) {
-        canvas.DrawLine(x, footerY, x + width, footerY, theme.PlotBorder, 1);
+        canvas.DrawLine(x, footerY, x + width, footerY, theme.PlotBorder, 1, RasterLineCap.Butt);
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var y = footerY + (footerHeight - fontSize) * 0.52;
         DrawAlignedText(canvas, label, x, y, Math.Max(1, width - 38), TextAlignment.Left, theme.MutedText, fontSize, false);
@@ -18,8 +18,7 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawActionSymbol(RgbaCanvas canvas, string symbol, double centerX, double centerY, double size, ChartColor color, double fontSize) {
         if (symbol == ">") {
             var glyph = ChartActionGlyphGeometry.RightChevron(centerX, centerY, size);
-            canvas.DrawLine(glyph.X1, glyph.Y1, glyph.X2, glyph.Y2, color, 1.8);
-            canvas.DrawLine(glyph.X2, glyph.Y2, glyph.X3, glyph.Y3, color, 1.8);
+            canvas.DrawPolyline(new[] { new ChartPoint(glyph.X1, glyph.Y1), new ChartPoint(glyph.X2, glyph.Y2), new ChartPoint(glyph.X3, glyph.Y3) }, color, 1.8);
             return;
         }
 

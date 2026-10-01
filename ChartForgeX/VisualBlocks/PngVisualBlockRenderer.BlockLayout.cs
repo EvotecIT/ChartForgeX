@@ -43,10 +43,9 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.FillRoundedRect(rect.X, rect.Y, rect.Width, rect.Height, radius, accent.WithAlpha(42));
             canvas.StrokeRoundedRect(rect.X, rect.Y, rect.Width, rect.Height, radius, accent, 1);
             if (item.Shape == BlockLayoutShape.Database) {
-                var capY = rect.Y + 10;
-                canvas.DrawLine(rect.X + 8, capY, rect.X + rect.Width * 0.28, rect.Y + 4, accent, 1);
-                canvas.DrawLine(rect.X + rect.Width * 0.28, rect.Y + 4, rect.X + rect.Width * 0.72, rect.Y + 4, accent, 1);
-                canvas.DrawLine(rect.X + rect.Width * 0.72, rect.Y + 4, rect.X + rect.Width - 8, capY, accent, 1);
+                // The same curve the SVG block-layout-database-cap path draws.
+                var cap = FormattableString.Invariant($"M {rect.X + 8} {rect.Y + 10} C {rect.X + rect.Width * 0.25} {rect.Y + 2} {rect.X + rect.Width * 0.75} {rect.Y + 2} {rect.X + rect.Width - 8} {rect.Y + 10}");
+                canvas.StrokePathData(cap, accent, 1, RasterLineCap.Butt, RasterLineJoin.Miter);
             }
         }
 

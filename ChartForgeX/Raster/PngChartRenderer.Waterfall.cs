@@ -87,7 +87,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawWaterfallGrid(RgbaCanvas c, Chart chart, ChartRect plot, ChartRange bounds, IReadOnlyList<double> ticks, double fontSize) {
         foreach (var tick in ticks) {
             var y = WaterfallY(plot, bounds, chart.Options.YAxis, tick);
-            if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
+            if (chart.Options.ShowGrid) c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt);
             if (ShowYAxis(chart)) {
                 var label = FormatYAxisValue(chart, tick, ticks);
                 var tickStyle = chart.Options.TickLabelStyle;
@@ -97,10 +97,10 @@ public sealed partial class PngChartRenderer {
         }
 
         var zeroY = WaterfallY(plot, bounds, chart.Options.YAxis, 0);
-        if (ShowXAxisLine(chart) && zeroY > plot.Top && zeroY < plot.Bottom) c.DrawLine(plot.Left, zeroY, plot.Right, zeroY, chart.Options.Theme.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth);
+        if (ShowXAxisLine(chart) && zeroY > plot.Top && zeroY < plot.Bottom) c.DrawLine(plot.Left, zeroY, plot.Right, zeroY, chart.Options.Theme.Axis, ChartVisualPrimitives.ZeroAxisStrokeWidth, RasterLineCap.Butt);
         if (!chart.Options.ShowAxes) return;
-        if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
-        if (ShowYAxisLine(chart)) c.DrawLine(plot.Left, plot.Top, plot.Left, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+        if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth, RasterLineCap.Butt);
+        if (ShowYAxisLine(chart)) c.DrawLine(plot.Left, plot.Top, plot.Left, plot.Bottom, chart.Options.Theme.Axis, ChartVisualPrimitives.AxisStrokeWidth, RasterLineCap.Butt);
     }
 
     private static bool IsWaterfallChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Waterfall);

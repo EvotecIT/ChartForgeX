@@ -95,11 +95,7 @@ public sealed partial class PngChartRenderer {
         DrawPngTextStyled(c, rightAligned ? x - width : x - width / 2, y - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), label, style, chart.Options.Theme.MutedText, fontSize, emphasized: true);
     }
 
-    private static void DrawPolygonOutline(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) {
-        for (var i = 0; i < points.Count; i++) {
-            var next = i == points.Count - 1 ? points[0] : points[i + 1];
-            c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, color, thickness);
-        }
-    }
+    private static void DrawPolygonOutline(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) =>
+        c.StrokeClosedPolyline(points, color, thickness, RasterLineJoin.Miter);
 
 }

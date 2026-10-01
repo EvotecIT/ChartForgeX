@@ -27,7 +27,7 @@ public sealed partial class PngVisualBlockRenderer {
 
         if (card.Title.Length > 0) DrawAlignedText(canvas, card.Title, layout.TextX, layout.TitleTop, layout.TextWidth, TextAlignment.Left, theme.Text, theme.TitleFontSize, true);
         if (card.Subtitle.Length > 0) DrawAlignedText(canvas, card.Subtitle, layout.TextX, layout.SubtitleTop, layout.TextWidth, TextAlignment.Left, theme.MutedText, theme.SubtitleFontSize, false);
-        canvas.DrawLine(x, layout.DividerY, x + width, layout.DividerY, theme.PlotBorder, 1);
+        canvas.DrawLine(x, layout.DividerY, x + width, layout.DividerY, theme.PlotBorder, 1, RasterLineCap.Butt);
         y = layout.NextY;
     }
 }

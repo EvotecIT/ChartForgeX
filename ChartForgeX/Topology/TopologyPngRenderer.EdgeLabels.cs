@@ -11,7 +11,7 @@ public sealed partial class TopologyPngRenderer {
         var end = EdgeLabelLeaderEnd(layout);
         var style = ChartRouteVisualStyles.TopologyEdgeLabelLeader(IsMonitoringDashboardStyle(options));
         canvas.DrawLine(layout.AnchorX, layout.AnchorY, end.X, end.Y, WithOpacity(haloColor, style.HaloOpacity), style.HaloStrokeWidth);
-        canvas.DrawDashedLine(layout.AnchorX, layout.AnchorY, end.X, end.Y, WithOpacity(color, style.StrokeOpacity), style.StrokeWidth, style.Dash, style.Gap);
+        canvas.DrawDashedLine(layout.AnchorX, layout.AnchorY, end.X, end.Y, WithOpacity(color, style.StrokeOpacity), style.StrokeWidth, style.Dash, style.Gap, RasterLineCap.Round);
     }
 
     private static void DrawEdgeLabelBackplate(RgbaCanvas canvas, TopologyEdgeLabelLayout layout, double cx, double cy, TopologyTheme theme, TopologyRenderOptions options, double opacity) {

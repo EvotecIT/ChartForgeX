@@ -14,7 +14,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268640,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1090,
+        "minDistinctColors": 1004,
         "maxEdgeInkPixels": 0
       }
     },
@@ -48,7 +48,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 2012,
+        "minDistinctColors": 1895,
         "maxEdgeInkPixels": 0
       }
     },
@@ -99,7 +99,7 @@
         "outputScale": 2,
         "minVisiblePixels": 408629,
         "minTransparentPixels": 47371,
-        "minDistinctColors": 1683,
+        "minDistinctColors": 1288,
         "maxEdgeInkPixels": 0
       }
     },
@@ -133,7 +133,7 @@
         "outputScale": 1,
         "minVisiblePixels": 405000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1873,
+        "minDistinctColors": 1822,
         "maxEdgeInkPixels": 0
       }
     },
@@ -218,7 +218,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 2013,
+        "minDistinctColors": 1899,
         "maxEdgeInkPixels": 0
       }
     },
@@ -252,7 +252,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1558,
+        "minDistinctColors": 1486,
         "maxEdgeInkPixels": 0
       }
     },
@@ -286,7 +286,7 @@
         "outputScale": 2,
         "minVisiblePixels": 890835,
         "minTransparentPixels": 65965,
-        "minDistinctColors": 2020,
+        "minDistinctColors": 2025,
         "maxEdgeInkPixels": 0
       }
     },
@@ -303,7 +303,7 @@
         "outputScale": 2,
         "minVisiblePixels": 919149,
         "minTransparentPixels": 66451,
-        "minDistinctColors": 1156,
+        "minDistinctColors": 1116,
         "maxEdgeInkPixels": 0
       }
     },
@@ -320,7 +320,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1427029,
         "minTransparentPixels": 83371,
-        "minDistinctColors": 1912,
+        "minDistinctColors": 1801,
         "maxEdgeInkPixels": 0
       }
     },
@@ -354,7 +354,7 @@
         "outputScale": 2,
         "minVisiblePixels": 730261,
         "minTransparentPixels": 60139,
-        "minDistinctColors": 1553,
+        "minDistinctColors": 1484,
         "maxEdgeInkPixels": 0
       }
     },
@@ -388,7 +388,7 @@
         "outputScale": 2,
         "minVisiblePixels": 557600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1484,
+        "minDistinctColors": 1493,
         "maxEdgeInkPixels": 0
       }
     },
@@ -507,7 +507,7 @@
         "outputScale": 2,
         "minVisiblePixels": 234381,
         "minTransparentPixels": 36019,
-        "minDistinctColors": 734,
+        "minDistinctColors": 731,
         "maxEdgeInkPixels": 0
       }
     },
@@ -524,7 +524,7 @@
         "outputScale": 2,
         "minVisiblePixels": 818531,
         "minTransparentPixels": 64669,
-        "minDistinctColors": 1311,
+        "minDistinctColors": 1235,
         "maxEdgeInkPixels": 0
       }
     },
@@ -592,7 +592,7 @@
         "outputScale": 2,
         "minVisiblePixels": 234381,
         "minTransparentPixels": 36019,
-        "minDistinctColors": 801,
+        "minDistinctColors": 796,
         "maxEdgeInkPixels": 0
       }
     },
@@ -609,7 +609,7 @@
         "outputScale": 2,
         "minVisiblePixels": 590400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1928,
+        "minDistinctColors": 1929,
         "maxEdgeInkPixels": 0
       }
     },
@@ -660,7 +660,7 @@
         "outputScale": 2,
         "minVisiblePixels": 632035,
         "minTransparentPixels": 56765,
-        "minDistinctColors": 880,
+        "minDistinctColors": 867,
         "maxEdgeInkPixels": 0
       }
     },
@@ -677,7 +677,7 @@
         "outputScale": 2,
         "minVisiblePixels": 218021,
         "minTransparentPixels": 33979,
-        "minDistinctColors": 829,
+        "minDistinctColors": 797,
         "maxEdgeInkPixels": 0
       }
     },
@@ -694,7 +694,7 @@
         "outputScale": 2,
         "minVisiblePixels": 218021,
         "minTransparentPixels": 33979,
-        "minDistinctColors": 622,
+        "minDistinctColors": 638,
         "maxEdgeInkPixels": 0
       }
     },
@@ -711,7 +711,7 @@
         "outputScale": 2,
         "minVisiblePixels": 218021,
         "minTransparentPixels": 33979,
-        "minDistinctColors": 741,
+        "minDistinctColors": 725,
         "maxEdgeInkPixels": 0
       }
     },
@@ -745,7 +745,7 @@
         "outputScale": 2,
         "minVisiblePixels": 496861,
         "minTransparentPixels": 53539,
-        "minDistinctColors": 861,
+        "minDistinctColors": 905,
         "maxEdgeInkPixels": 0
       }
     },
@@ -762,7 +762,7 @@
         "outputScale": 2,
         "minVisiblePixels": 218021,
         "minTransparentPixels": 33979,
-        "minDistinctColors": 1228,
+        "minDistinctColors": 1170,
         "maxEdgeInkPixels": 0
       }
     },
@@ -796,7 +796,7 @@
         "outputScale": 2,
         "minVisiblePixels": 846400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1479,
+        "minDistinctColors": 1412,
         "maxEdgeInkPixels": 0
       }
     },
@@ -813,7 +813,7 @@
         "outputScale": 2,
         "minVisiblePixels": 404800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1291,
+        "minDistinctColors": 1208,
         "maxEdgeInkPixels": 0
       }
     },
@@ -828,9 +828,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 18088,
-        "minTransparentPixels": 301512,
-        "minDistinctColors": 853,
+        "minVisiblePixels": 17303,
+        "minTransparentPixels": 302296,
+        "minDistinctColors": 805,
         "maxEdgeInkPixels": 0
       }
     },
@@ -864,7 +864,7 @@
         "outputScale": 2,
         "minVisiblePixels": 274315,
         "minTransparentPixels": 37685,
-        "minDistinctColors": 724,
+        "minDistinctColors": 710,
         "maxEdgeInkPixels": 0
       }
     },
@@ -898,7 +898,7 @@
         "outputScale": 2,
         "minVisiblePixels": 469075,
         "minTransparentPixels": 49325,
-        "minDistinctColors": 1428,
+        "minDistinctColors": 1392,
         "maxEdgeInkPixels": 0
       }
     },
@@ -915,7 +915,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1011555,
         "minTransparentPixels": 74045,
-        "minDistinctColors": 1843,
+        "minDistinctColors": 1671,
         "maxEdgeInkPixels": 0
       }
     },
@@ -949,7 +949,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1931,
+        "minDistinctColors": 1848,
         "maxEdgeInkPixels": 0
       }
     },
@@ -966,7 +966,7 @@
         "outputScale": 1,
         "minVisiblePixels": 445800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1685,
+        "minDistinctColors": 1542,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1034,7 +1034,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1427029,
         "minTransparentPixels": 83371,
-        "minDistinctColors": 1902,
+        "minDistinctColors": 1339,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1051,7 +1051,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1427029,
         "minTransparentPixels": 83371,
-        "minDistinctColors": 1898,
+        "minDistinctColors": 1630,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1068,7 +1068,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1561,
+        "minDistinctColors": 1503,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1119,7 +1119,7 @@
         "outputScale": 2,
         "minVisiblePixels": 962275,
         "minTransparentPixels": 68125,
-        "minDistinctColors": 1965,
+        "minDistinctColors": 1893,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1170,7 +1170,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1026949,
         "minTransparentPixels": 70651,
-        "minDistinctColors": 1600,
+        "minDistinctColors": 1581,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1221,7 +1221,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1659,
+        "minDistinctColors": 1581,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1238,7 +1238,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1182,
+        "minDistinctColors": 1137,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1255,7 +1255,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1641,
+        "minDistinctColors": 1559,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1272,7 +1272,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1404,
+        "minDistinctColors": 1356,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1289,7 +1289,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1194,
+        "minDistinctColors": 1150,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1340,7 +1340,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1936,
+        "minDistinctColors": 1852,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1646,7 +1646,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1743,
+        "minDistinctColors": 1621,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1663,7 +1663,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1845,
+        "minDistinctColors": 1704,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1680,7 +1680,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1781,
+        "minDistinctColors": 1683,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1697,7 +1697,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1596,
+        "minDistinctColors": 1470,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1714,7 +1714,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1727,
+        "minDistinctColors": 1573,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1731,7 +1731,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1397,
+        "minDistinctColors": 1321,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1748,7 +1748,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1445,
+        "minDistinctColors": 1359,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1765,7 +1765,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1701,
+        "minDistinctColors": 1625,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1799,7 +1799,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1521,
+        "minDistinctColors": 1412,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1816,7 +1816,7 @@
         "outputScale": 1,
         "minVisiblePixels": 223391,
         "minTransparentPixels": 15809,
-        "minDistinctColors": 1455,
+        "minDistinctColors": 1315,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1833,7 +1833,7 @@
         "outputScale": 1,
         "minVisiblePixels": 398720,
         "minTransparentPixels": 0,
-        "minDistinctColors": 996,
+        "minDistinctColors": 990,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1850,7 +1850,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 848,
+        "minDistinctColors": 847,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1884,7 +1884,7 @@
         "outputScale": 1,
         "minVisiblePixels": 257471,
         "minTransparentPixels": 16929,
-        "minDistinctColors": 1092,
+        "minDistinctColors": 1019,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1901,7 +1901,7 @@
         "outputScale": 1,
         "minVisiblePixels": 394108,
         "minTransparentPixels": 0,
-        "minDistinctColors": 967,
+        "minDistinctColors": 919,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1935,7 +1935,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1899,
+        "minDistinctColors": 1788,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1952,7 +1952,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1892000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1719,
+        "minDistinctColors": 1709,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1969,7 +1969,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1892000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1653,
+        "minDistinctColors": 1648,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1986,7 +1986,7 @@
         "outputScale": 2,
         "minVisiblePixels": 764368,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1324,
+        "minDistinctColors": 1321,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2088,7 +2088,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1847,
+        "minDistinctColors": 1653,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2122,7 +2122,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1400,
+        "minDistinctColors": 1320,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2173,7 +2173,7 @@
         "outputScale": 2,
         "minVisiblePixels": 666272,
         "minTransparentPixels": 0,
-        "minDistinctColors": 986,
+        "minDistinctColors": 985,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2224,7 +2224,7 @@
         "outputScale": 1,
         "minVisiblePixels": 480000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 440,
+        "minDistinctColors": 403,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2241,7 +2241,7 @@
         "outputScale": 2,
         "minVisiblePixels": 926555,
         "minTransparentPixels": 67045,
-        "minDistinctColors": 1676,
+        "minDistinctColors": 1652,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2258,7 +2258,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1068,
+        "minDistinctColors": 1023,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2275,7 +2275,7 @@
         "outputScale": 1,
         "minVisiblePixels": 452400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1151,
+        "minDistinctColors": 1131,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2292,7 +2292,7 @@
         "outputScale": 1,
         "minVisiblePixels": 432600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1085,
+        "minDistinctColors": 1073,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2309,7 +2309,7 @@
         "outputScale": 1,
         "minVisiblePixels": 432600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 756,
+        "minDistinctColors": 744,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2326,7 +2326,7 @@
         "outputScale": 1,
         "minVisiblePixels": 432600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1148,
+        "minDistinctColors": 1125,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2360,7 +2360,7 @@
         "outputScale": 2,
         "minVisiblePixels": 620389,
         "minTransparentPixels": 59611,
-        "minDistinctColors": 788,
+        "minDistinctColors": 774,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2394,7 +2394,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1242549,
         "minTransparentPixels": 79051,
-        "minDistinctColors": 1569,
+        "minDistinctColors": 1552,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2411,7 +2411,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1150309,
         "minTransparentPixels": 76891,
-        "minDistinctColors": 1659,
+        "minDistinctColors": 1654,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2445,7 +2445,7 @@
         "outputScale": 2,
         "minVisiblePixels": 620389,
         "minTransparentPixels": 59611,
-        "minDistinctColors": 1415,
+        "minDistinctColors": 1191,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2462,7 +2462,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1058069,
         "minTransparentPixels": 74731,
-        "minDistinctColors": 1829,
+        "minDistinctColors": 1630,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2479,7 +2479,7 @@
         "outputScale": 2,
         "minVisiblePixels": 695869,
         "minTransparentPixels": 58531,
-        "minDistinctColors": 1065,
+        "minDistinctColors": 1066,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2496,7 +2496,7 @@
         "outputScale": 2,
         "minVisiblePixels": 695869,
         "minTransparentPixels": 58531,
-        "minDistinctColors": 1767,
+        "minDistinctColors": 1766,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2530,7 +2530,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1026949,
         "minTransparentPixels": 70651,
-        "minDistinctColors": 1161,
+        "minDistinctColors": 1139,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2547,7 +2547,7 @@
         "outputScale": 2,
         "minVisiblePixels": 912589,
         "minTransparentPixels": 67411,
-        "minDistinctColors": 1868,
+        "minDistinctColors": 1878,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2581,7 +2581,7 @@
         "outputScale": 2,
         "minVisiblePixels": 962269,
         "minTransparentPixels": 68131,
-        "minDistinctColors": 1717,
+        "minDistinctColors": 1660,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2632,7 +2632,7 @@
         "outputScale": 1,
         "minVisiblePixels": 508800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1703,
+        "minDistinctColors": 1670,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2649,7 +2649,7 @@
         "outputScale": 1,
         "minVisiblePixels": 490200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1419,
+        "minDistinctColors": 1413,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2666,7 +2666,7 @@
         "outputScale": 1,
         "minVisiblePixels": 480000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1739,
+        "minDistinctColors": 1683,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2683,7 +2683,7 @@
         "outputScale": 1,
         "minVisiblePixels": 384000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 918,
+        "minDistinctColors": 911,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2717,7 +2717,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643189,
         "minTransparentPixels": 56011,
-        "minDistinctColors": 1304,
+        "minDistinctColors": 1170,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2734,7 +2734,7 @@
         "outputScale": 2,
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
-        "minDistinctColors": 1539,
+        "minDistinctColors": 1482,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2751,7 +2751,7 @@
         "outputScale": 1,
         "minVisiblePixels": 471600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1408,
+        "minDistinctColors": 1380,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2768,7 +2768,7 @@
         "outputScale": 1,
         "minVisiblePixels": 408000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 733,
+        "minDistinctColors": 729,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2802,7 +2802,7 @@
         "outputScale": 1,
         "minVisiblePixels": 483000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1340,
+        "minDistinctColors": 1323,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2870,7 +2870,7 @@
         "outputScale": 1,
         "minVisiblePixels": 210000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 699,
+        "minDistinctColors": 694,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2887,7 +2887,7 @@
         "outputScale": 1,
         "minVisiblePixels": 210000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 736,
+        "minDistinctColors": 727,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2902,8 +2902,8 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 71100,
-        "minTransparentPixels": 505140,
+        "minVisiblePixels": 70910,
+        "minTransparentPixels": 505330,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2938,7 +2938,7 @@
         "outputScale": 1,
         "minVisiblePixels": 330400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1093,
+        "minDistinctColors": 1064,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2955,7 +2955,7 @@
         "outputScale": 1,
         "minVisiblePixels": 330400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1312,
+        "minDistinctColors": 1225,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2972,7 +2972,7 @@
         "outputScale": 1,
         "minVisiblePixels": 320220,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1343,
+        "minDistinctColors": 1317,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2989,7 +2989,7 @@
         "outputScale": 1,
         "minVisiblePixels": 414770,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1127,
+        "minDistinctColors": 1201,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3142,7 +3142,7 @@
         "outputScale": 1,
         "minVisiblePixels": 218040,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1685,
+        "minDistinctColors": 1612,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3244,7 +3244,7 @@
         "outputScale": 1,
         "minVisiblePixels": 745500,
         "minTransparentPixels": 0,
-        "minDistinctColors": 916,
+        "minDistinctColors": 894,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3278,7 +3278,7 @@
         "outputScale": 1,
         "minVisiblePixels": 541200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1794,
+        "minDistinctColors": 1754,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3295,7 +3295,7 @@
         "outputScale": 1,
         "minVisiblePixels": 471820,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1476,
+        "minDistinctColors": 1270,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3380,7 +3380,7 @@
         "outputScale": 1,
         "minVisiblePixels": 354000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1463,
+        "minDistinctColors": 1366,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3431,7 +3431,7 @@
         "outputScale": 1,
         "minVisiblePixels": 561090,
         "minTransparentPixels": 0,
-        "minDistinctColors": 910,
+        "minDistinctColors": 957,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3480,9 +3480,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 35800,
-        "minTransparentPixels": 28999,
-        "minDistinctColors": 587,
+        "minVisiblePixels": 35715,
+        "minTransparentPixels": 29084,
+        "minDistinctColors": 508,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3550,7 +3550,7 @@
         "outputScale": 2,
         "minVisiblePixels": 470400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 957,
+        "minDistinctColors": 955,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3584,7 +3584,7 @@
         "outputScale": 2,
         "minVisiblePixels": 695869,
         "minTransparentPixels": 58531,
-        "minDistinctColors": 1064,
+        "minDistinctColors": 1065,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3618,7 +3618,7 @@
         "outputScale": 2,
         "minVisiblePixels": 695869,
         "minTransparentPixels": 58531,
-        "minDistinctColors": 1520,
+        "minDistinctColors": 1516,
         "maxEdgeInkPixels": 0
       }
     }

@@ -68,7 +68,7 @@ public sealed partial class PngChartRenderer {
 
         c.FillPolygon(points, ApplyOpacity(color, ChartVisualPrimitives.SankeyLinkFillOpacity));
         var stroke = ApplyOpacity(color, ChartVisualPrimitives.SankeyLinkStrokeOpacity);
-        for (var i = 1; i < points.Count; i++) c.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, stroke, ChartVisualPrimitives.SankeyLinkStrokeWidth);
+        c.StrokeClosedPolyline(points, stroke, ChartVisualPrimitives.SankeyLinkStrokeWidth, RasterLineJoin.Miter);
     }
 
     private static SankeyModel BuildSankeyModel(Chart chart, ChartRect plot) {

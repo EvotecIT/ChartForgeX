@@ -56,7 +56,7 @@ public sealed partial class PngChartRenderer {
 
         foreach (var angle in geometry.AngleTicks) {
             var end = geometry.OnOuterRing(angle);
-            if (chart.Options.ShowGrid) canvas.DrawLine(geometry.CenterX, geometry.CenterY, end.X, end.Y, ApplyOpacity(theme.Grid, ChartVisualPrimitives.PolarSpokeOpacity), ChartVisualPrimitives.GridStrokeWidth);
+            if (chart.Options.ShowGrid) canvas.DrawLine(geometry.CenterX, geometry.CenterY, end.X, end.Y, ApplyOpacity(theme.Grid, ChartVisualPrimitives.PolarSpokeOpacity), ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt);
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var rawLabel = FormatX(chart, angle);
             var maxWidth = Math.Max(44, PngPolarLabelWidth(chart, angle));

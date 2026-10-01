@@ -49,12 +49,7 @@ public sealed partial class PngChartRenderer {
             var y = y0 + tile.Row * (tileSize + gap);
             var points = HexTilePoints(x, y, tileSize);
             c.FillPolygon(points, color);
-            if (regionStrokeWidth > 0) {
-                for (var i = 0; i < points.Count; i++) {
-                    var next = points[(i + 1) % points.Count];
-                    c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, regionStroke, regionStrokeWidth);
-                }
-            }
+            if (regionStrokeWidth > 0) c.StrokeClosedPolyline(points, regionStroke, regionStrokeWidth, RasterLineJoin.Miter);
             if (chart.Options.ShowMapLabels) {
                 var fontSize = Math.Min(PngTickFontSize(chart), tileSize * 0.32);
                 var style = chart.Options.TickLabelStyle;

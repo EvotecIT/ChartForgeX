@@ -30,13 +30,12 @@ public sealed partial class PngChartRenderer {
         foreach (var point in upperPath) polygon.Add(point);
         for (var i = lowerPath.Count - 1; i >= 0; i--) polygon.Add(lowerPath[i]);
         c.FillPolygonVerticalGradient(polygon, ChartColor.FromRgba(color.R, color.G, color.B, 118), ChartColor.FromRgba(color.R, color.G, color.B, 18));
-        DrawDashedPngPath(c, middlePath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap);
-        DrawPremiumPngLinePath(c, upperPath, color, series.StrokeWidth, style);
+        c.DrawPolyline(middlePath, ApplyOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, RgbaCanvas.DashPattern(ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap));
         foreach (var layer in ChartLineVisualLayers.Build(color, series.StrokeWidth, style)) {
             if (!layer.IsVisible) continue;
-            var layerColor = layer.IsForeground ? ApplyOpacity(color, ChartVisualPrimitives.RangeAreaLowerStrokeOpacity) : layer.ColorWithOpacity();
             var layerWidth = layer.IsForeground ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, layer.StrokeWidth) : layer.StrokeWidth;
-            DrawPngLinePath(c, lowerPath, layerColor, layerWidth);
+            DrawPngLinePath(c, upperPath, layer.ColorWithOpacity(), layerWidth);
+            DrawPngLinePath(c, lowerPath, layer.IsForeground ? ApplyOpacity(color, ChartVisualPrimitives.RangeAreaLowerStrokeOpacity) : layer.ColorWithOpacity(), layerWidth);
         }
 
         if (!ShouldDrawDataLabels(chart, series)) return;
@@ -71,11 +70,4 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static void DrawDashedPngPath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness, double dash, double gap) {
-        for (var i = 1; i < points.Count; i++) {
-            var a = points[i - 1];
-            var b = points[i];
-            c.DrawDashedLine(a.X, a.Y, b.X, b.Y, color, thickness, dash, gap);
-        }
-    }
 }

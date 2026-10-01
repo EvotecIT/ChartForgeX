@@ -323,11 +323,8 @@ public sealed partial class PngChartRenderer {
         var vertical = Math.Abs(x1 - x2) < 0.000001;
         if (horizontal) y1 = y2 = CrispStrokeCoordinate(y1, strokeWidth);
         if (vertical) x1 = x2 = CrispStrokeCoordinate(x1, strokeWidth);
-        if (dash > 0 && gap > 0) {
-            c.DrawDashedLine(x1, y1, x2, y2, color, strokeWidth, dash, gap);
-        } else {
-            c.DrawLine(x1, y1, x2, y2, color, strokeWidth);
-        }
+        // Mirrors WriteSvgGuideLine: a butt-capped line, dashed only when both lengths are set.
+        c.DrawDashedLine(x1, y1, x2, y2, color, strokeWidth, dash, gap, RasterLineCap.Butt);
     }
 
     private static void DrawPngSurfaceHighlight(RgbaCanvas c, double x, double y, double width, double height, double radius, double inset, double opacity) {

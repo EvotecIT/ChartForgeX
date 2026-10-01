@@ -7,9 +7,9 @@
   "warnings": 0,
   "baseline": {
     "present": true,
-    "chartMatches": 212,
-    "warnings": 1,
-    "clean": false
+    "chartMatches": 213,
+    "warnings": 0,
+    "clean": true
   },
   "healthThresholds": {
     "svgVisualNodes": 2,
@@ -61,10 +61,10 @@
         "width": 920,
         "height": 584,
         "scale": 1,
-        "bytes": 44431,
+        "bytes": 42921,
         "visiblePixels": 537280,
         "transparentPixels": 0,
-        "foregroundPixels": 19420,
+        "foregroundPixels": 19269,
         "contentBounds": {
           "left": 30,
           "top": 45,
@@ -73,7 +73,7 @@
           "width": 665,
           "height": 510
         },
-        "distinctColors": 2181,
+        "distinctColors": 2008,
         "edgeInkPixels": 0,
         "edgeBandPixels": 17904,
         "healthy": true
@@ -118,10 +118,10 @@
         "width": 1676,
         "height": 1892,
         "scale": 2,
-        "bytes": 320200,
+        "bytes": 319244,
         "visiblePixels": 3170992,
         "transparentPixels": 0,
-        "foregroundPixels": 812553,
+        "foregroundPixels": 812120,
         "contentBounds": {
           "left": 25,
           "top": 30,
@@ -175,10 +175,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 100394,
+        "bytes": 97302,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 285504,
+        "foregroundPixels": 282909,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -187,7 +187,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 4024,
+        "distinctColors": 3790,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -346,10 +346,10 @@
         "width": 1520,
         "height": 600,
         "scale": 2,
-        "bytes": 84649,
+        "bytes": 79704,
         "visiblePixels": 817258,
         "transparentPixels": 94742,
-        "foregroundPixels": 294744,
+        "foregroundPixels": 293063,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -358,7 +358,7 @@
           "width": 1466,
           "height": 558
         },
-        "distinctColors": 3366,
+        "distinctColors": 2576,
         "edgeInkPixels": 0,
         "edgeBandPixels": 25296,
         "healthy": true
@@ -403,10 +403,10 @@
         "width": 1828,
         "height": 1340,
         "scale": 2,
-        "bytes": 341498,
+        "bytes": 330346,
         "visiblePixels": 2449520,
         "transparentPixels": 0,
-        "foregroundPixels": 300838,
+        "foregroundPixels": 290992,
         "contentBounds": {
           "left": 60,
           "top": 58,
@@ -440,7 +440,7 @@
       "svg": {
         "width": 1200,
         "height": 675,
-        "bytes": 271160,
+        "bytes": 271164,
         "visualNodes": 4,
         "textNodes": 0,
         "premiumStrokeNodes": 0,
@@ -460,10 +460,10 @@
         "width": 1200,
         "height": 675,
         "scale": 1,
-        "bytes": 81034,
+        "bytes": 79460,
         "visiblePixels": 810000,
         "transparentPixels": 0,
-        "foregroundPixels": 89131,
+        "foregroundPixels": 88365,
         "contentBounds": {
           "left": 33,
           "top": 29,
@@ -472,14 +472,14 @@
           "width": 1133,
           "height": 612
         },
-        "distinctColors": 3746,
+        "distinctColors": 3645,
         "edgeInkPixels": 0,
         "edgeBandPixels": 26054,
         "healthy": true
       },
       "html": {
         "required": true,
-        "bytes": 272175,
+        "bytes": 272179,
         "hasDocumentShell": true,
         "hasViewport": true,
         "hasInlineSvg": true,
@@ -517,10 +517,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 104063,
+        "bytes": 104259,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 145977,
+        "foregroundPixels": 146282,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -688,10 +688,10 @@
         "width": 2080,
         "height": 1200,
         "scale": 2,
-        "bytes": 199260,
+        "bytes": 194105,
         "visiblePixels": 2345338,
         "transparentPixels": 150662,
-        "foregroundPixels": 606968,
+        "foregroundPixels": 605945,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -745,10 +745,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 117670,
+        "bytes": 115852,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 95691,
+        "foregroundPixels": 94582,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -757,7 +757,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 4026,
+        "distinctColors": 3798,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -802,10 +802,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 166819,
+        "bytes": 167010,
         "visiblePixels": 1924554,
         "transparentPixels": 136246,
-        "foregroundPixels": 981345,
+        "foregroundPixels": 981813,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -859,10 +859,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 95980,
+        "bytes": 94844,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 282931,
+        "foregroundPixels": 279950,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -871,7 +871,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3117,
+        "distinctColors": 2972,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -916,10 +916,10 @@
         "width": 3812,
         "height": 2524,
         "scale": 2,
-        "bytes": 585932,
+        "bytes": 586109,
         "visiblePixels": 9621488,
         "transparentPixels": 0,
-        "foregroundPixels": 4684588,
+        "foregroundPixels": 4687089,
         "contentBounds": {
           "left": 37,
           "top": 50,
@@ -973,10 +973,10 @@
         "width": 1840,
         "height": 1040,
         "scale": 2,
-        "bytes": 122100,
+        "bytes": 121966,
         "visiblePixels": 1781670,
         "transparentPixels": 131930,
-        "foregroundPixels": 481390,
+        "foregroundPixels": 479134,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -985,7 +985,7 @@
           "width": 1786,
           "height": 998
         },
-        "distinctColors": 4040,
+        "distinctColors": 4051,
         "edgeInkPixels": 0,
         "edgeBandPixels": 57200,
         "healthy": true
@@ -1030,10 +1030,10 @@
         "width": 1760,
         "height": 1120,
         "scale": 2,
-        "bytes": 106980,
+        "bytes": 106093,
         "visiblePixels": 1838298,
         "transparentPixels": 132902,
-        "foregroundPixels": 332865,
+        "foregroundPixels": 332773,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -1042,7 +1042,7 @@
           "width": 1706,
           "height": 1078
         },
-        "distinctColors": 2312,
+        "distinctColors": 2232,
         "edgeInkPixels": 0,
         "edgeBandPixels": 62876,
         "healthy": true
@@ -1087,10 +1087,10 @@
         "width": 2360,
         "height": 1280,
         "scale": 2,
-        "bytes": 167695,
+        "bytes": 163389,
         "visiblePixels": 2854058,
         "transparentPixels": 166742,
-        "foregroundPixels": 925867,
+        "foregroundPixels": 924664,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -1099,7 +1099,7 @@
           "width": 2306,
           "height": 1238
         },
-        "distinctColors": 3824,
+        "distinctColors": 3603,
         "edgeInkPixels": 0,
         "edgeBandPixels": 93964,
         "healthy": true
@@ -1144,10 +1144,10 @@
         "width": 2752,
         "height": 3050,
         "scale": 2,
-        "bytes": 1025925,
+        "bytes": 1021205,
         "visiblePixels": 8393600,
         "transparentPixels": 0,
-        "foregroundPixels": 841599,
+        "foregroundPixels": 840914,
         "contentBounds": {
           "left": 24,
           "top": 24,
@@ -1201,10 +1201,10 @@
         "width": 1520,
         "height": 1040,
         "scale": 2,
-        "bytes": 137690,
+        "bytes": 134257,
         "visiblePixels": 1460522,
         "transparentPixels": 120278,
-        "foregroundPixels": 319261,
+        "foregroundPixels": 319312,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -1213,7 +1213,7 @@
           "width": 1466,
           "height": 998
         },
-        "distinctColors": 3106,
+        "distinctColors": 2969,
         "edgeInkPixels": 0,
         "edgeBandPixels": 50800,
         "healthy": true
@@ -1315,19 +1315,19 @@
         "width": 1640,
         "height": 680,
         "scale": 2,
-        "bytes": 66119,
+        "bytes": 66027,
         "visiblePixels": 1115200,
         "transparentPixels": 0,
-        "foregroundPixels": 162672,
+        "foregroundPixels": 162291,
         "contentBounds": {
-          "left": 43,
+          "left": 44,
           "top": 47,
-          "right": 1596,
+          "right": 1595,
           "bottom": 567,
-          "width": 1554,
+          "width": 1552,
           "height": 521
         },
-        "distinctColors": 2968,
+        "distinctColors": 2986,
         "edgeInkPixels": 0,
         "edgeBandPixels": 32284,
         "healthy": true
@@ -1372,10 +1372,10 @@
         "width": 2448,
         "height": 4662,
         "scale": 2,
-        "bytes": 1106153,
+        "bytes": 1080612,
         "visiblePixels": 11412576,
         "transparentPixels": 0,
-        "foregroundPixels": 3631331,
+        "foregroundPixels": 3634952,
         "contentBounds": {
           "left": 24,
           "top": 24,
@@ -1429,16 +1429,16 @@
         "width": 1640,
         "height": 920,
         "scale": 2,
-        "bytes": 179641,
+        "bytes": 179602,
         "visiblePixels": 1508800,
         "transparentPixels": 0,
-        "foregroundPixels": 235054,
+        "foregroundPixels": 235050,
         "contentBounds": {
           "left": 43,
           "top": 47,
-          "right": 1596,
+          "right": 1595,
           "bottom": 860,
-          "width": 1554,
+          "width": 1553,
           "height": 814
         },
         "distinctColors": 4096,
@@ -1486,10 +1486,10 @@
         "width": 1640,
         "height": 660,
         "scale": 2,
-        "bytes": 153430,
+        "bytes": 153397,
         "visiblePixels": 1082400,
         "transparentPixels": 0,
-        "foregroundPixels": 299717,
+        "foregroundPixels": 299713,
         "contentBounds": {
           "left": 43,
           "top": 47,
@@ -1600,10 +1600,10 @@
         "width": 2752,
         "height": 3662,
         "scale": 2,
-        "bytes": 1171486,
+        "bytes": 1151139,
         "visiblePixels": 10077824,
         "transparentPixels": 0,
-        "foregroundPixels": 703631,
+        "foregroundPixels": 696477,
         "contentBounds": {
           "left": 49,
           "top": 37,
@@ -1657,10 +1657,10 @@
         "width": 2584,
         "height": 2018,
         "scale": 2,
-        "bytes": 703405,
+        "bytes": 695052,
         "visiblePixels": 5214512,
         "transparentPixels": 0,
-        "foregroundPixels": 1002918,
+        "foregroundPixels": 1003013,
         "contentBounds": {
           "left": 21,
           "top": 21,
@@ -1714,10 +1714,10 @@
         "width": 1040,
         "height": 520,
         "scale": 2,
-        "bytes": 36641,
+        "bytes": 36633,
         "visiblePixels": 468762,
         "transparentPixels": 72038,
-        "foregroundPixels": 139410,
+        "foregroundPixels": 139412,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -1726,7 +1726,7 @@
           "width": 986,
           "height": 478
         },
-        "distinctColors": 1468,
+        "distinctColors": 1463,
         "edgeInkPixels": 0,
         "edgeBandPixels": 15500,
         "healthy": true
@@ -1771,10 +1771,10 @@
         "width": 1840,
         "height": 960,
         "scale": 2,
-        "bytes": 86138,
+        "bytes": 84332,
         "visiblePixels": 1637062,
         "transparentPixels": 129338,
-        "foregroundPixels": 135998,
+        "foregroundPixels": 135987,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -1783,7 +1783,7 @@
           "width": 1786,
           "height": 918
         },
-        "distinctColors": 2623,
+        "distinctColors": 2471,
         "edgeInkPixels": 0,
         "edgeBandPixels": 55600,
         "healthy": true
@@ -1828,10 +1828,10 @@
         "width": 1840,
         "height": 1040,
         "scale": 2,
-        "bytes": 169155,
+        "bytes": 164949,
         "visiblePixels": 1779942,
         "transparentPixels": 133658,
-        "foregroundPixels": 507382,
+        "foregroundPixels": 506455,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -1885,10 +1885,10 @@
         "width": 2832,
         "height": 2678,
         "scale": 2,
-        "bytes": 1041893,
+        "bytes": 1009117,
         "visiblePixels": 7584096,
         "transparentPixels": 0,
-        "foregroundPixels": 538370,
+        "foregroundPixels": 531759,
         "contentBounds": {
           "left": 49,
           "top": 37,
@@ -1942,10 +1942,10 @@
         "width": 1840,
         "height": 720,
         "scale": 2,
-        "bytes": 114645,
+        "bytes": 109498,
         "visiblePixels": 1324800,
         "transparentPixels": 0,
-        "foregroundPixels": 274358,
+        "foregroundPixels": 273671,
         "contentBounds": {
           "left": 94,
           "top": 39,
@@ -1999,7 +1999,7 @@
         "width": 1040,
         "height": 520,
         "scale": 2,
-        "bytes": 37269,
+        "bytes": 37251,
         "visiblePixels": 468762,
         "transparentPixels": 72038,
         "foregroundPixels": 114273,
@@ -2011,7 +2011,7 @@
           "width": 986,
           "height": 478
         },
-        "distinctColors": 1603,
+        "distinctColors": 1592,
         "edgeInkPixels": 0,
         "edgeBandPixels": 15500,
         "healthy": true
@@ -2056,19 +2056,19 @@
         "width": 1640,
         "height": 720,
         "scale": 2,
-        "bytes": 100544,
+        "bytes": 100501,
         "visiblePixels": 1180800,
         "transparentPixels": 0,
-        "foregroundPixels": 264560,
+        "foregroundPixels": 264556,
         "contentBounds": {
           "left": 43,
           "top": 48,
-          "right": 1596,
+          "right": 1595,
           "bottom": 703,
-          "width": 1554,
+          "width": 1553,
           "height": 656
         },
-        "distinctColors": 3857,
+        "distinctColors": 3859,
         "edgeInkPixels": 0,
         "edgeBandPixels": 32844,
         "healthy": true
@@ -2113,17 +2113,17 @@
         "width": 2640,
         "height": 1440,
         "scale": 2,
-        "bytes": 270008,
+        "bytes": 248413,
         "visiblePixels": 3801600,
         "transparentPixels": 0,
-        "foregroundPixels": 836026,
+        "foregroundPixels": 832087,
         "contentBounds": {
           "left": 43,
           "top": 47,
           "right": 2596,
-          "bottom": 1392,
+          "bottom": 1391,
           "width": 2554,
-          "height": 1346
+          "height": 1345
         },
         "distinctColors": 4096,
         "edgeInkPixels": 0,
@@ -2170,10 +2170,10 @@
         "width": 1640,
         "height": 800,
         "scale": 2,
-        "bytes": 59943,
+        "bytes": 59885,
         "visiblePixels": 1312000,
         "transparentPixels": 0,
-        "foregroundPixels": 133463,
+        "foregroundPixels": 133439,
         "contentBounds": {
           "left": 43,
           "top": 47,
@@ -2182,7 +2182,7 @@
           "width": 1554,
           "height": 722
         },
-        "distinctColors": 993,
+        "distinctColors": 992,
         "edgeInkPixels": 0,
         "edgeBandPixels": 38784,
         "healthy": true
@@ -2227,10 +2227,10 @@
         "width": 1640,
         "height": 840,
         "scale": 2,
-        "bytes": 64599,
+        "bytes": 64539,
         "visiblePixels": 1264070,
         "transparentPixels": 113530,
-        "foregroundPixels": 330252,
+        "foregroundPixels": 329865,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2239,7 +2239,7 @@
           "width": 1586,
           "height": 798
         },
-        "distinctColors": 1760,
+        "distinctColors": 1734,
         "edgeInkPixels": 0,
         "edgeBandPixels": 39424,
         "healthy": true
@@ -2284,10 +2284,10 @@
         "width": 840,
         "height": 600,
         "scale": 2,
-        "bytes": 72276,
+        "bytes": 67249,
         "visiblePixels": 436042,
         "transparentPixels": 67958,
-        "foregroundPixels": 102466,
+        "foregroundPixels": 102883,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2296,7 +2296,7 @@
           "width": 786,
           "height": 558
         },
-        "distinctColors": 1659,
+        "distinctColors": 1595,
         "edgeInkPixels": 0,
         "edgeBandPixels": 17136,
         "healthy": true
@@ -2341,10 +2341,10 @@
         "width": 840,
         "height": 600,
         "scale": 2,
-        "bytes": 42478,
+        "bytes": 42411,
         "visiblePixels": 436042,
         "transparentPixels": 67958,
-        "foregroundPixels": 74820,
+        "foregroundPixels": 75564,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2353,7 +2353,7 @@
           "width": 786,
           "height": 558
         },
-        "distinctColors": 1244,
+        "distinctColors": 1277,
         "edgeInkPixels": 0,
         "edgeBandPixels": 17136,
         "healthy": true
@@ -2398,10 +2398,10 @@
         "width": 840,
         "height": 600,
         "scale": 2,
-        "bytes": 29774,
+        "bytes": 29469,
         "visiblePixels": 436042,
         "transparentPixels": 67958,
-        "foregroundPixels": 61958,
+        "foregroundPixels": 61974,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2410,7 +2410,7 @@
           "width": 786,
           "height": 558
         },
-        "distinctColors": 1482,
+        "distinctColors": 1451,
         "edgeInkPixels": 0,
         "edgeBandPixels": 17136,
         "healthy": true
@@ -2455,10 +2455,10 @@
         "width": 2704,
         "height": 1502,
         "scale": 2,
-        "bytes": 565360,
+        "bytes": 543226,
         "visiblePixels": 4061408,
         "transparentPixels": 0,
-        "foregroundPixels": 353858,
+        "foregroundPixels": 353412,
         "contentBounds": {
           "left": 59,
           "top": 45,
@@ -2512,10 +2512,10 @@
         "width": 1720,
         "height": 640,
         "scale": 2,
-        "bytes": 104784,
+        "bytes": 105018,
         "visiblePixels": 993722,
         "transparentPixels": 107078,
-        "foregroundPixels": 157141,
+        "foregroundPixels": 156261,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2524,7 +2524,7 @@
           "width": 1666,
           "height": 598
         },
-        "distinctColors": 1723,
+        "distinctColors": 1810,
         "edgeInkPixels": 0,
         "edgeBandPixels": 28176,
         "healthy": true
@@ -2569,10 +2569,10 @@
         "width": 840,
         "height": 600,
         "scale": 2,
-        "bytes": 55361,
+        "bytes": 54158,
         "visiblePixels": 436042,
         "transparentPixels": 67958,
-        "foregroundPixels": 31028,
+        "foregroundPixels": 30466,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2581,7 +2581,7 @@
           "width": 786,
           "height": 558
         },
-        "distinctColors": 2457,
+        "distinctColors": 2341,
         "edgeInkPixels": 0,
         "edgeBandPixels": 17136,
         "healthy": true
@@ -2626,10 +2626,10 @@
         "width": 2728,
         "height": 2342,
         "scale": 2,
-        "bytes": 650051,
+        "bytes": 638803,
         "visiblePixels": 6388976,
         "transparentPixels": 0,
-        "foregroundPixels": 562395,
+        "foregroundPixels": 559841,
         "contentBounds": {
           "left": 35,
           "top": 53,
@@ -2683,10 +2683,10 @@
         "width": 1840,
         "height": 920,
         "scale": 2,
-        "bytes": 112752,
+        "bytes": 102831,
         "visiblePixels": 1692800,
         "transparentPixels": 0,
-        "foregroundPixels": 631026,
+        "foregroundPixels": 628568,
         "contentBounds": {
           "left": 27,
           "top": 29,
@@ -2695,7 +2695,7 @@
           "width": 1786,
           "height": 876
         },
-        "distinctColors": 2959,
+        "distinctColors": 2824,
         "edgeInkPixels": 0,
         "edgeBandPixels": 49356,
         "healthy": true
@@ -2740,10 +2740,10 @@
         "width": 1840,
         "height": 440,
         "scale": 2,
-        "bytes": 54405,
+        "bytes": 52245,
         "visiblePixels": 809600,
         "transparentPixels": 0,
-        "foregroundPixels": 293004,
+        "foregroundPixels": 292771,
         "contentBounds": {
           "left": 29,
           "top": 29,
@@ -2752,7 +2752,7 @@
           "width": 1782,
           "height": 382
         },
-        "distinctColors": 2582,
+        "distinctColors": 2416,
         "edgeInkPixels": 0,
         "edgeBandPixels": 18176,
         "healthy": true
@@ -2797,19 +2797,19 @@
         "width": 680,
         "height": 940,
         "scale": 2,
-        "bytes": 42324,
-        "visiblePixels": 36176,
-        "transparentPixels": 603024,
-        "foregroundPixels": 30077,
+        "bytes": 41798,
+        "visiblePixels": 34607,
+        "transparentPixels": 604593,
+        "foregroundPixels": 28508,
         "contentBounds": {
           "left": 49,
-          "top": 45,
+          "top": 46,
           "right": 520,
-          "bottom": 844,
+          "bottom": 841,
           "width": 472,
-          "height": 800
+          "height": 796
         },
-        "distinctColors": 1707,
+        "distinctColors": 1610,
         "edgeInkPixels": 0,
         "edgeBandPixels": 22484,
         "healthy": true
@@ -2854,10 +2854,10 @@
         "width": 2752,
         "height": 2820,
         "scale": 2,
-        "bytes": 852891,
+        "bytes": 832984,
         "visiblePixels": 7760640,
         "transparentPixels": 0,
-        "foregroundPixels": 847713,
+        "foregroundPixels": 841275,
         "contentBounds": {
           "left": 49,
           "top": 39,
@@ -2911,10 +2911,10 @@
         "width": 1040,
         "height": 600,
         "scale": 2,
-        "bytes": 46114,
+        "bytes": 44887,
         "visiblePixels": 548630,
         "transparentPixels": 75370,
-        "foregroundPixels": 80770,
+        "foregroundPixels": 80677,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -2923,7 +2923,7 @@
           "width": 986,
           "height": 558
         },
-        "distinctColors": 1449,
+        "distinctColors": 1421,
         "edgeInkPixels": 0,
         "edgeBandPixels": 19536,
         "healthy": true
@@ -3025,10 +3025,10 @@
         "width": 1440,
         "height": 720,
         "scale": 2,
-        "bytes": 73343,
+        "bytes": 70640,
         "visiblePixels": 938150,
         "transparentPixels": 98650,
-        "foregroundPixels": 192428,
+        "foregroundPixels": 191991,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3037,7 +3037,7 @@
           "width": 1386,
           "height": 678
         },
-        "distinctColors": 2856,
+        "distinctColors": 2785,
         "edgeInkPixels": 0,
         "edgeBandPixels": 30044,
         "healthy": true
@@ -3082,10 +3082,10 @@
         "width": 2360,
         "height": 920,
         "scale": 2,
-        "bytes": 157296,
+        "bytes": 150113,
         "visiblePixels": 2023110,
         "transparentPixels": 148090,
-        "foregroundPixels": 389985,
+        "foregroundPixels": 386553,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3094,7 +3094,7 @@
           "width": 2306,
           "height": 878
         },
-        "distinctColors": 3686,
+        "distinctColors": 3343,
         "edgeInkPixels": 0,
         "edgeBandPixels": 58716,
         "healthy": true
@@ -3139,7 +3139,7 @@
         "width": 1336,
         "height": 1564,
         "scale": 2,
-        "bytes": 243775,
+        "bytes": 240810,
         "visiblePixels": 2089504,
         "transparentPixels": 0,
         "foregroundPixels": 861576,
@@ -3196,10 +3196,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 112856,
+        "bytes": 110312,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 378814,
+        "foregroundPixels": 376825,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3208,7 +3208,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3862,
+        "distinctColors": 3697,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -3253,10 +3253,10 @@
         "width": 1200,
         "height": 743,
         "scale": 1,
-        "bytes": 77109,
+        "bytes": 75125,
         "visiblePixels": 891600,
         "transparentPixels": 0,
-        "foregroundPixels": 360025,
+        "foregroundPixels": 359909,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -3265,7 +3265,7 @@
           "width": 1103,
           "height": 672
         },
-        "distinctColors": 3370,
+        "distinctColors": 3084,
         "edgeInkPixels": 0,
         "edgeBandPixels": 27006,
         "healthy": true
@@ -3310,10 +3310,10 @@
         "width": 2000,
         "height": 1280,
         "scale": 2,
-        "bytes": 219560,
+        "bytes": 220922,
         "visiblePixels": 2408378,
         "transparentPixels": 151622,
-        "foregroundPixels": 289740,
+        "foregroundPixels": 294350,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3424,10 +3424,10 @@
         "width": 2000,
         "height": 1280,
         "scale": 2,
-        "bytes": 890554,
+        "bytes": 810081,
         "visiblePixels": 2408378,
         "transparentPixels": 151622,
-        "foregroundPixels": 1010554,
+        "foregroundPixels": 1009136,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3481,10 +3481,10 @@
         "width": 2360,
         "height": 1280,
         "scale": 2,
-        "bytes": 283681,
+        "bytes": 244046,
         "visiblePixels": 2854058,
         "transparentPixels": 166742,
-        "foregroundPixels": 228288,
+        "foregroundPixels": 218344,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3493,7 +3493,7 @@
           "width": 2306,
           "height": 1238
         },
-        "distinctColors": 3804,
+        "distinctColors": 2678,
         "edgeInkPixels": 0,
         "edgeBandPixels": 93964,
         "healthy": true
@@ -3538,10 +3538,10 @@
         "width": 2360,
         "height": 1280,
         "scale": 2,
-        "bytes": 181656,
+        "bytes": 173328,
         "visiblePixels": 2854058,
         "transparentPixels": 166742,
-        "foregroundPixels": 777970,
+        "foregroundPixels": 776319,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3550,7 +3550,7 @@
           "width": 2306,
           "height": 1238
         },
-        "distinctColors": 3797,
+        "distinctColors": 3261,
         "edgeInkPixels": 0,
         "edgeBandPixels": 93964,
         "healthy": true
@@ -3595,10 +3595,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 94348,
+        "bytes": 92915,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 276806,
+        "foregroundPixels": 275101,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3607,7 +3607,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3123,
+        "distinctColors": 3006,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -3709,10 +3709,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 151507,
+        "bytes": 150599,
         "visiblePixels": 1924538,
         "transparentPixels": 136262,
-        "foregroundPixels": 416739,
+        "foregroundPixels": 416682,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3766,10 +3766,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 119007,
+        "bytes": 117717,
         "visiblePixels": 1924550,
         "transparentPixels": 136250,
-        "foregroundPixels": 880604,
+        "foregroundPixels": 879237,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3778,7 +3778,7 @@
           "width": 1786,
           "height": 1078
         },
-        "distinctColors": 3930,
+        "distinctColors": 3787,
         "edgeInkPixels": 0,
         "edgeBandPixels": 64636,
         "healthy": true
@@ -3823,10 +3823,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 138495,
+        "bytes": 137549,
         "visiblePixels": 1924550,
         "transparentPixels": 136250,
-        "foregroundPixels": 1253689,
+        "foregroundPixels": 1255451,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3880,10 +3880,10 @@
         "width": 2080,
         "height": 1200,
         "scale": 2,
-        "bytes": 149416,
+        "bytes": 146685,
         "visiblePixels": 2345338,
         "transparentPixels": 150662,
-        "foregroundPixels": 207845,
+        "foregroundPixels": 205955,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3937,10 +3937,10 @@
         "width": 1960,
         "height": 1120,
         "scale": 2,
-        "bytes": 120028,
+        "bytes": 119232,
         "visiblePixels": 2053898,
         "transparentPixels": 141302,
-        "foregroundPixels": 293744,
+        "foregroundPixels": 292414,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -3949,7 +3949,7 @@
           "width": 1906,
           "height": 1078
         },
-        "distinctColors": 3200,
+        "distinctColors": 3163,
         "edgeInkPixels": 0,
         "edgeBandPixels": 67276,
         "healthy": true
@@ -3994,10 +3994,10 @@
         "width": 2360,
         "height": 1280,
         "scale": 2,
-        "bytes": 198508,
+        "bytes": 179415,
         "visiblePixels": 2854070,
         "transparentPixels": 166730,
-        "foregroundPixels": 1043266,
+        "foregroundPixels": 1349764,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4051,10 +4051,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 166216,
+        "bytes": 158934,
         "visiblePixels": 1924550,
         "transparentPixels": 136250,
-        "foregroundPixels": 924203,
+        "foregroundPixels": 919297,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4108,10 +4108,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 92119,
+        "bytes": 90209,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 290457,
+        "foregroundPixels": 288875,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4120,7 +4120,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3319,
+        "distinctColors": 3162,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -4165,10 +4165,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 78639,
+        "bytes": 77561,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 278230,
+        "foregroundPixels": 278094,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4177,7 +4177,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2364,
+        "distinctColors": 2275,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -4222,10 +4222,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 95219,
+        "bytes": 93597,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 80104,
+        "foregroundPixels": 78437,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4234,7 +4234,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3283,
+        "distinctColors": 3118,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -4279,10 +4279,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 92643,
+        "bytes": 91674,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 106519,
+        "foregroundPixels": 105859,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4291,7 +4291,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2808,
+        "distinctColors": 2712,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -4336,10 +4336,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 81529,
+        "bytes": 80371,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 89034,
+        "foregroundPixels": 88782,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4348,7 +4348,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2389,
+        "distinctColors": 2301,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -4393,10 +4393,10 @@
         "width": 2080,
         "height": 1200,
         "scale": 2,
-        "bytes": 242897,
+        "bytes": 226172,
         "visiblePixels": 2345338,
         "transparentPixels": 150662,
-        "foregroundPixels": 1123314,
+        "foregroundPixels": 1121918,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4450,7 +4450,7 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 117512,
+        "bytes": 117523,
         "visiblePixels": 1924538,
         "transparentPixels": 136262,
         "foregroundPixels": 1142549,
@@ -4507,10 +4507,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 101706,
+        "bytes": 100209,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 682830,
+        "foregroundPixels": 686058,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4519,7 +4519,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3873,
+        "distinctColors": 3705,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -4564,10 +4564,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 118909,
+        "bytes": 115339,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 333039,
+        "foregroundPixels": 330388,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4621,10 +4621,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 133266,
+        "bytes": 128605,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 205544,
+        "foregroundPixels": 204654,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4735,10 +4735,10 @@
         "width": 1852,
         "height": 888,
         "scale": 2,
-        "bytes": 159608,
+        "bytes": 153915,
         "visiblePixels": 1644576,
         "transparentPixels": 0,
-        "foregroundPixels": 671453,
+        "foregroundPixels": 664277,
         "contentBounds": {
           "left": 24,
           "top": 24,
@@ -4792,10 +4792,10 @@
         "width": 1840,
         "height": 1080,
         "scale": 2,
-        "bytes": 146458,
+        "bytes": 145315,
         "visiblePixels": 1853098,
         "transparentPixels": 134102,
-        "foregroundPixels": 1041741,
+        "foregroundPixels": 1042604,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -4849,10 +4849,10 @@
         "width": 1200,
         "height": 680,
         "scale": 1,
-        "bytes": 153310,
+        "bytes": 139463,
         "visiblePixels": 816000,
         "transparentPixels": 0,
-        "foregroundPixels": 403786,
+        "foregroundPixels": 403698,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -5305,10 +5305,10 @@
         "width": 1600,
         "height": 776,
         "scale": 1,
-        "bytes": 119174,
+        "bytes": 118979,
         "visiblePixels": 1241600,
         "transparentPixels": 0,
-        "foregroundPixels": 693580,
+        "foregroundPixels": 693578,
         "contentBounds": {
           "left": 24,
           "top": 39,
@@ -5419,10 +5419,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 161443,
+        "bytes": 161560,
         "visiblePixels": 1924550,
         "transparentPixels": 136250,
-        "foregroundPixels": 1092121,
+        "foregroundPixels": 1092322,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5476,10 +5476,10 @@
         "width": 1960,
         "height": 1120,
         "scale": 2,
-        "bytes": 218006,
+        "bytes": 216536,
         "visiblePixels": 2053898,
         "transparentPixels": 141302,
-        "foregroundPixels": 561463,
+        "foregroundPixels": 568135,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5533,10 +5533,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 96492,
+        "bytes": 95286,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 429791,
+        "foregroundPixels": 429513,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5545,7 +5545,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3486,
+        "distinctColors": 3243,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5590,10 +5590,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 167924,
+        "bytes": 156097,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 1111511,
+        "foregroundPixels": 1110154,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5602,7 +5602,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3691,
+        "distinctColors": 3408,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5647,10 +5647,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 172997,
+        "bytes": 160401,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 1121705,
+        "foregroundPixels": 1119951,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5659,7 +5659,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3562,
+        "distinctColors": 3367,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5704,10 +5704,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 166697,
+        "bytes": 156756,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 1092349,
+        "foregroundPixels": 1090807,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5716,7 +5716,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3192,
+        "distinctColors": 2940,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5761,10 +5761,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 163966,
+        "bytes": 151958,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 1053934,
+        "foregroundPixels": 1051704,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5773,7 +5773,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3455,
+        "distinctColors": 3146,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5818,10 +5818,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 130626,
+        "bytes": 123083,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 1138212,
+        "foregroundPixels": 1137009,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5830,7 +5830,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2795,
+        "distinctColors": 2643,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5875,10 +5875,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 105631,
+        "bytes": 101556,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 406062,
+        "foregroundPixels": 405070,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5887,7 +5887,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2890,
+        "distinctColors": 2719,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5932,10 +5932,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 127707,
+        "bytes": 120377,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 170310,
+        "foregroundPixels": 169973,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -5944,7 +5944,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3402,
+        "distinctColors": 3250,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -5989,10 +5989,10 @@
         "width": 2236,
         "height": 3100,
         "scale": 2,
-        "bytes": 1193774,
+        "bytes": 1111066,
         "visiblePixels": 6931600,
         "transparentPixels": 0,
-        "foregroundPixels": 898719,
+        "foregroundPixels": 881409,
         "contentBounds": {
           "left": 64,
           "top": 62,
@@ -6046,10 +6046,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 187828,
+        "bytes": 172035,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 197670,
+        "foregroundPixels": 195383,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -6058,7 +6058,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3043,
+        "distinctColors": 2824,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -6103,10 +6103,10 @@
         "width": 920,
         "height": 520,
         "scale": 1,
-        "bytes": 46543,
+        "bytes": 44315,
         "visiblePixels": 446782,
         "transparentPixels": 31618,
-        "foregroundPixels": 38517,
+        "foregroundPixels": 35358,
         "contentBounds": {
           "left": 13,
           "top": 13,
@@ -6115,7 +6115,7 @@
           "width": 894,
           "height": 500
         },
-        "distinctColors": 2911,
+        "distinctColors": 2631,
         "edgeInkPixels": 0,
         "edgeBandPixels": 14300,
         "healthy": true
@@ -6160,10 +6160,10 @@
         "width": 1120,
         "height": 712,
         "scale": 1,
-        "bytes": 38657,
+        "bytes": 38474,
         "visiblePixels": 797440,
         "transparentPixels": 0,
-        "foregroundPixels": 48465,
+        "foregroundPixels": 48461,
         "contentBounds": {
           "left": 23,
           "top": 39,
@@ -6172,7 +6172,7 @@
           "width": 468,
           "height": 649
         },
-        "distinctColors": 1993,
+        "distinctColors": 1981,
         "edgeInkPixels": 0,
         "edgeBandPixels": 25452,
         "healthy": true
@@ -6217,10 +6217,10 @@
         "width": 960,
         "height": 560,
         "scale": 1,
-        "bytes": 26092,
+        "bytes": 25556,
         "visiblePixels": 537600,
         "transparentPixels": 0,
-        "foregroundPixels": 25769,
+        "foregroundPixels": 25210,
         "contentBounds": {
           "left": 8,
           "top": 8,
@@ -6229,7 +6229,7 @@
           "width": 944,
           "height": 544
         },
-        "distinctColors": 1696,
+        "distinctColors": 1694,
         "edgeInkPixels": 0,
         "edgeBandPixels": 18096,
         "healthy": true
@@ -6331,10 +6331,10 @@
         "width": 980,
         "height": 560,
         "scale": 1,
-        "bytes": 40688,
+        "bytes": 39503,
         "visiblePixels": 514942,
         "transparentPixels": 33858,
-        "foregroundPixels": 52218,
+        "foregroundPixels": 50629,
         "contentBounds": {
           "left": 13,
           "top": 13,
@@ -6343,7 +6343,7 @@
           "width": 954,
           "height": 540
         },
-        "distinctColors": 2185,
+        "distinctColors": 2039,
         "edgeInkPixels": 0,
         "edgeBandPixels": 18336,
         "healthy": true
@@ -6388,10 +6388,10 @@
         "width": 1144,
         "height": 689,
         "scale": 1,
-        "bytes": 38964,
+        "bytes": 37685,
         "visiblePixels": 788216,
         "transparentPixels": 0,
-        "foregroundPixels": 147547,
+        "foregroundPixels": 146203,
         "contentBounds": {
           "left": 23,
           "top": 39,
@@ -6400,7 +6400,7 @@
           "width": 1098,
           "height": 626
         },
-        "distinctColors": 1935,
+        "distinctColors": 1838,
         "edgeInkPixels": 0,
         "edgeBandPixels": 25466,
         "healthy": true
@@ -6445,10 +6445,10 @@
         "width": 1520,
         "height": 1080,
         "scale": 2,
-        "bytes": 154694,
+        "bytes": 146823,
         "visiblePixels": 1520950,
         "transparentPixels": 120650,
-        "foregroundPixels": 783622,
+        "foregroundPixels": 782242,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -6502,10 +6502,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 101596,
+        "bytes": 99948,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 234313,
+        "foregroundPixels": 233954,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -6514,7 +6514,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3799,
+        "distinctColors": 3576,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -6559,10 +6559,10 @@
         "width": 1892,
         "height": 2000,
         "scale": 2,
-        "bytes": 361811,
+        "bytes": 352309,
         "visiblePixels": 3784000,
         "transparentPixels": 0,
-        "foregroundPixels": 184015,
+        "foregroundPixels": 181510,
         "contentBounds": {
           "left": 52,
           "top": 50,
@@ -6571,7 +6571,7 @@
           "width": 1764,
           "height": 1885
         },
-        "distinctColors": 3438,
+        "distinctColors": 3419,
         "edgeInkPixels": 0,
         "edgeBandPixels": 146452,
         "healthy": true
@@ -6616,10 +6616,10 @@
         "width": 1892,
         "height": 2000,
         "scale": 2,
-        "bytes": 359929,
+        "bytes": 350653,
         "visiblePixels": 3784000,
         "transparentPixels": 0,
-        "foregroundPixels": 183275,
+        "foregroundPixels": 180851,
         "contentBounds": {
           "left": 52,
           "top": 50,
@@ -6628,7 +6628,7 @@
           "width": 1764,
           "height": 1885
         },
-        "distinctColors": 3306,
+        "distinctColors": 3297,
         "edgeInkPixels": 0,
         "edgeBandPixels": 146452,
         "healthy": true
@@ -6673,10 +6673,10 @@
         "width": 1892,
         "height": 808,
         "scale": 2,
-        "bytes": 101893,
+        "bytes": 99844,
         "visiblePixels": 1528736,
         "transparentPixels": 0,
-        "foregroundPixels": 42074,
+        "foregroundPixels": 41654,
         "contentBounds": {
           "left": 52,
           "top": 50,
@@ -6685,7 +6685,7 @@
           "width": 848,
           "height": 693
         },
-        "distinctColors": 2648,
+        "distinctColors": 2643,
         "edgeInkPixels": 0,
         "edgeBandPixels": 42944,
         "healthy": true
@@ -6730,10 +6730,10 @@
         "width": 1828,
         "height": 1896,
         "scale": 2,
-        "bytes": 343221,
+        "bytes": 341873,
         "visiblePixels": 3465888,
         "transparentPixels": 0,
-        "foregroundPixels": 952208,
+        "foregroundPixels": 953494,
         "contentBounds": {
           "left": 60,
           "top": 58,
@@ -6787,10 +6787,10 @@
         "width": 2704,
         "height": 2932,
         "scale": 2,
-        "bytes": 848180,
+        "bytes": 837800,
         "visiblePixels": 7928128,
         "transparentPixels": 0,
-        "foregroundPixels": 725035,
+        "foregroundPixels": 708268,
         "contentBounds": {
           "left": 60,
           "top": 57,
@@ -6901,10 +6901,10 @@
         "width": 2328,
         "height": 1876,
         "scale": 2,
-        "bytes": 348333,
+        "bytes": 348125,
         "visiblePixels": 4367328,
         "transparentPixels": 0,
-        "foregroundPixels": 177453,
+        "foregroundPixels": 177104,
         "contentBounds": {
           "left": 52,
           "top": 44,
@@ -6958,10 +6958,10 @@
         "width": 1868,
         "height": 2016,
         "scale": 2,
-        "bytes": 542374,
+        "bytes": 528083,
         "visiblePixels": 3765888,
         "transparentPixels": 0,
-        "foregroundPixels": 1061275,
+        "foregroundPixels": 1044258,
         "contentBounds": {
           "left": 60,
           "top": 58,
@@ -7015,10 +7015,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 93265,
+        "bytes": 91450,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 478442,
+        "foregroundPixels": 478139,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -7027,7 +7027,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3695,
+        "distinctColors": 3307,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -7129,10 +7129,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 85561,
+        "bytes": 83833,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 288937,
+        "foregroundPixels": 285717,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -7141,7 +7141,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2801,
+        "distinctColors": 2641,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -7186,10 +7186,10 @@
         "width": 2752,
         "height": 600,
         "scale": 2,
-        "bytes": 188828,
+        "bytes": 188255,
         "visiblePixels": 1651200,
         "transparentPixels": 0,
-        "foregroundPixels": 510578,
+        "foregroundPixels": 507760,
         "contentBounds": {
           "left": 24,
           "top": 24,
@@ -7243,10 +7243,10 @@
         "width": 2400,
         "height": 1260,
         "scale": 2,
-        "bytes": 240186,
+        "bytes": 237393,
         "visiblePixels": 3024000,
         "transparentPixels": 0,
-        "foregroundPixels": 376745,
+        "foregroundPixels": 374610,
         "contentBounds": {
           "left": 0,
           "top": 0,
@@ -7300,10 +7300,10 @@
         "width": 1772,
         "height": 752,
         "scale": 2,
-        "bytes": 91359,
+        "bytes": 91330,
         "visiblePixels": 1332544,
         "transparentPixels": 0,
-        "foregroundPixels": 45867,
+        "foregroundPixels": 44127,
         "contentBounds": {
           "left": 15,
           "top": 39,
@@ -7312,7 +7312,7 @@
           "width": 1742,
           "height": 697
         },
-        "distinctColors": 1973,
+        "distinctColors": 1970,
         "edgeInkPixels": 0,
         "edgeBandPixels": 40128,
         "healthy": true
@@ -7357,10 +7357,10 @@
         "width": 3840,
         "height": 2160,
         "scale": 2,
-        "bytes": 440245,
+        "bytes": 434486,
         "visiblePixels": 8294400,
         "transparentPixels": 0,
-        "foregroundPixels": 635878,
+        "foregroundPixels": 629433,
         "contentBounds": {
           "left": 0,
           "top": 0,
@@ -7414,10 +7414,10 @@
         "width": 1168,
         "height": 848,
         "scale": 2,
-        "bytes": 143603,
+        "bytes": 143137,
         "visiblePixels": 990464,
         "transparentPixels": 0,
-        "foregroundPixels": 92187,
+        "foregroundPixels": 91845,
         "contentBounds": {
           "left": 49,
           "top": 51,
@@ -7471,10 +7471,10 @@
         "width": 1200,
         "height": 800,
         "scale": 1,
-        "bytes": 31591,
+        "bytes": 29283,
         "visiblePixels": 960000,
         "transparentPixels": 0,
-        "foregroundPixels": 41035,
+        "foregroundPixels": 39931,
         "contentBounds": {
           "left": 39,
           "top": 55,
@@ -7483,7 +7483,7 @@
           "width": 1065,
           "height": 349
         },
-        "distinctColors": 880,
+        "distinctColors": 807,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31744,
         "healthy": true
@@ -7528,10 +7528,10 @@
         "width": 1840,
         "height": 1080,
         "scale": 2,
-        "bytes": 104216,
+        "bytes": 103685,
         "visiblePixels": 1853110,
         "transparentPixels": 134090,
-        "foregroundPixels": 376192,
+        "foregroundPixels": 366653,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -7540,7 +7540,7 @@
           "width": 1786,
           "height": 1038
         },
-        "distinctColors": 3352,
+        "distinctColors": 3304,
         "edgeInkPixels": 0,
         "edgeBandPixels": 63756,
         "healthy": true
@@ -7585,10 +7585,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 91003,
+        "bytes": 90482,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 77554,
+        "foregroundPixels": 77269,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -7597,7 +7597,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2137,
+        "distinctColors": 2047,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -7642,10 +7642,10 @@
         "width": 1200,
         "height": 754,
         "scale": 1,
-        "bytes": 60452,
+        "bytes": 59351,
         "visiblePixels": 904800,
         "transparentPixels": 0,
-        "foregroundPixels": 174356,
+        "foregroundPixels": 174056,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -7654,7 +7654,7 @@
           "width": 860,
           "height": 683
         },
-        "distinctColors": 2303,
+        "distinctColors": 2262,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31008,
         "healthy": true
@@ -7699,10 +7699,10 @@
         "width": 1200,
         "height": 721,
         "scale": 1,
-        "bytes": 52190,
+        "bytes": 51339,
         "visiblePixels": 865200,
         "transparentPixels": 0,
-        "foregroundPixels": 167312,
+        "foregroundPixels": 167068,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -7711,7 +7711,7 @@
           "width": 860,
           "height": 650
         },
-        "distinctColors": 2171,
+        "distinctColors": 2146,
         "edgeInkPixels": 0,
         "edgeBandPixels": 26698,
         "healthy": true
@@ -7756,10 +7756,10 @@
         "width": 1200,
         "height": 721,
         "scale": 1,
-        "bytes": 38492,
+        "bytes": 37485,
         "visiblePixels": 865200,
         "transparentPixels": 0,
-        "foregroundPixels": 30524,
+        "foregroundPixels": 30102,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -7768,7 +7768,7 @@
           "width": 860,
           "height": 650
         },
-        "distinctColors": 1513,
+        "distinctColors": 1489,
         "edgeInkPixels": 0,
         "edgeBandPixels": 26698,
         "healthy": true
@@ -7813,10 +7813,10 @@
         "width": 1200,
         "height": 721,
         "scale": 1,
-        "bytes": 56679,
+        "bytes": 55473,
         "visiblePixels": 865200,
         "transparentPixels": 0,
-        "foregroundPixels": 98157,
+        "foregroundPixels": 96923,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -7825,7 +7825,7 @@
           "width": 860,
           "height": 650
         },
-        "distinctColors": 2297,
+        "distinctColors": 2251,
         "edgeInkPixels": 0,
         "edgeBandPixels": 26698,
         "healthy": true
@@ -7870,10 +7870,10 @@
         "width": 1960,
         "height": 588,
         "scale": 2,
-        "bytes": 141413,
+        "bytes": 141197,
         "visiblePixels": 1152480,
         "transparentPixels": 0,
-        "foregroundPixels": 98754,
+        "foregroundPixels": 94980,
         "contentBounds": {
           "left": 48,
           "top": 52,
@@ -7927,10 +7927,10 @@
         "width": 2000,
         "height": 680,
         "scale": 2,
-        "bytes": 65691,
+        "bytes": 65640,
         "visiblePixels": 1240778,
         "transparentPixels": 119222,
-        "foregroundPixels": 157417,
+        "foregroundPixels": 157374,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -7939,7 +7939,7 @@
           "width": 1946,
           "height": 638
         },
-        "distinctColors": 1577,
+        "distinctColors": 1548,
         "edgeInkPixels": 0,
         "edgeBandPixels": 37324,
         "healthy": true
@@ -8041,10 +8041,10 @@
         "width": 2360,
         "height": 1120,
         "scale": 2,
-        "bytes": 129305,
+        "bytes": 128140,
         "visiblePixels": 2485098,
         "transparentPixels": 158102,
-        "foregroundPixels": 246367,
+        "foregroundPixels": 242179,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8053,7 +8053,7 @@
           "width": 2306,
           "height": 1078
         },
-        "distinctColors": 3139,
+        "distinctColors": 3104,
         "edgeInkPixels": 0,
         "edgeBandPixels": 76076,
         "healthy": true
@@ -8098,10 +8098,10 @@
         "width": 2360,
         "height": 1040,
         "scale": 2,
-        "bytes": 137728,
+        "bytes": 137204,
         "visiblePixels": 2300618,
         "transparentPixels": 153782,
-        "foregroundPixels": 1757996,
+        "foregroundPixels": 1757992,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8110,7 +8110,7 @@
           "width": 2306,
           "height": 998
         },
-        "distinctColors": 3319,
+        "distinctColors": 3309,
         "edgeInkPixels": 0,
         "edgeBandPixels": 67600,
         "healthy": true
@@ -8155,7 +8155,7 @@
         "width": 2360,
         "height": 1040,
         "scale": 2,
-        "bytes": 179222,
+        "bytes": 179170,
         "visiblePixels": 2300618,
         "transparentPixels": 153782,
         "foregroundPixels": 1780777,
@@ -8212,10 +8212,10 @@
         "width": 2000,
         "height": 680,
         "scale": 2,
-        "bytes": 94091,
+        "bytes": 88169,
         "visiblePixels": 1240778,
         "transparentPixels": 119222,
-        "foregroundPixels": 104828,
+        "foregroundPixels": 103671,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8224,7 +8224,7 @@
           "width": 1946,
           "height": 638
         },
-        "distinctColors": 2830,
+        "distinctColors": 2383,
         "edgeInkPixels": 0,
         "edgeBandPixels": 37324,
         "healthy": true
@@ -8269,10 +8269,10 @@
         "width": 2360,
         "height": 960,
         "scale": 2,
-        "bytes": 168031,
+        "bytes": 159718,
         "visiblePixels": 2116138,
         "transparentPixels": 149462,
-        "foregroundPixels": 125754,
+        "foregroundPixels": 123146,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8281,7 +8281,7 @@
           "width": 2306,
           "height": 918
         },
-        "distinctColors": 3659,
+        "distinctColors": 3260,
         "edgeInkPixels": 0,
         "edgeBandPixels": 66000,
         "healthy": true
@@ -8326,10 +8326,10 @@
         "width": 1640,
         "height": 920,
         "scale": 2,
-        "bytes": 78676,
+        "bytes": 78682,
         "visiblePixels": 1391738,
         "transparentPixels": 117062,
-        "foregroundPixels": 122350,
+        "foregroundPixels": 122422,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8338,7 +8338,7 @@
           "width": 1586,
           "height": 878
         },
-        "distinctColors": 2131,
+        "distinctColors": 2133,
         "edgeInkPixels": 0,
         "edgeBandPixels": 45756,
         "healthy": true
@@ -8383,10 +8383,10 @@
         "width": 1640,
         "height": 920,
         "scale": 2,
-        "bytes": 88484,
+        "bytes": 88463,
         "visiblePixels": 1391738,
         "transparentPixels": 117062,
-        "foregroundPixels": 154450,
+        "foregroundPixels": 154605,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8395,7 +8395,7 @@
           "width": 1586,
           "height": 878
         },
-        "distinctColors": 3534,
+        "distinctColors": 3533,
         "edgeInkPixels": 0,
         "edgeBandPixels": 45756,
         "healthy": true
@@ -8440,10 +8440,10 @@
         "width": 1960,
         "height": 1120,
         "scale": 2,
-        "bytes": 245949,
+        "bytes": 232131,
         "visiblePixels": 2053898,
         "transparentPixels": 141302,
-        "foregroundPixels": 1731451,
+        "foregroundPixels": 1729679,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8497,10 +8497,10 @@
         "width": 1960,
         "height": 1120,
         "scale": 2,
-        "bytes": 212933,
+        "bytes": 212306,
         "visiblePixels": 2053898,
         "transparentPixels": 141302,
-        "foregroundPixels": 601335,
+        "foregroundPixels": 608386,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8509,7 +8509,7 @@
           "width": 1906,
           "height": 1078
         },
-        "distinctColors": 2323,
+        "distinctColors": 2279,
         "edgeInkPixels": 0,
         "edgeBandPixels": 67276,
         "healthy": true
@@ -8554,10 +8554,10 @@
         "width": 1960,
         "height": 1000,
         "scale": 2,
-        "bytes": 147839,
+        "bytes": 148378,
         "visiblePixels": 1825178,
         "transparentPixels": 134822,
-        "foregroundPixels": 263744,
+        "foregroundPixels": 266478,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8566,7 +8566,7 @@
           "width": 1906,
           "height": 958
         },
-        "distinctColors": 3737,
+        "distinctColors": 3757,
         "edgeInkPixels": 0,
         "edgeBandPixels": 58800,
         "healthy": true
@@ -8611,10 +8611,10 @@
         "width": 1960,
         "height": 1120,
         "scale": 2,
-        "bytes": 291280,
+        "bytes": 268355,
         "visiblePixels": 2053898,
         "transparentPixels": 141302,
-        "foregroundPixels": 338800,
+        "foregroundPixels": 335596,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8668,10 +8668,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 111725,
+        "bytes": 110487,
         "visiblePixels": 1924538,
         "transparentPixels": 136262,
-        "foregroundPixels": 365386,
+        "foregroundPixels": 364689,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8680,7 +8680,7 @@
           "width": 1786,
           "height": 1078
         },
-        "distinctColors": 3435,
+        "distinctColors": 3320,
         "edgeInkPixels": 0,
         "edgeBandPixels": 64636,
         "healthy": true
@@ -8782,10 +8782,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 153968,
+        "bytes": 154155,
         "visiblePixels": 1924550,
         "transparentPixels": 136250,
-        "foregroundPixels": 1116863,
+        "foregroundPixels": 1117220,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -8839,10 +8839,10 @@
         "width": 1200,
         "height": 848,
         "scale": 1,
-        "bytes": 78735,
+        "bytes": 77753,
         "visiblePixels": 1017600,
         "transparentPixels": 0,
-        "foregroundPixels": 258565,
+        "foregroundPixels": 258209,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -8851,7 +8851,7 @@
           "width": 1038,
           "height": 777
         },
-        "distinctColors": 3406,
+        "distinctColors": 3341,
         "edgeInkPixels": 0,
         "edgeBandPixels": 32512,
         "healthy": true
@@ -8896,10 +8896,10 @@
         "width": 1200,
         "height": 817,
         "scale": 1,
-        "bytes": 63572,
+        "bytes": 63055,
         "visiblePixels": 980400,
         "transparentPixels": 0,
-        "foregroundPixels": 266530,
+        "foregroundPixels": 266290,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -8908,7 +8908,7 @@
           "width": 1038,
           "height": 746
         },
-        "distinctColors": 2838,
+        "distinctColors": 2827,
         "edgeInkPixels": 0,
         "edgeBandPixels": 32016,
         "healthy": true
@@ -8953,10 +8953,10 @@
         "width": 1200,
         "height": 800,
         "scale": 1,
-        "bytes": 77392,
+        "bytes": 76232,
         "visiblePixels": 960000,
         "transparentPixels": 0,
-        "foregroundPixels": 267484,
+        "foregroundPixels": 267122,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -8965,7 +8965,7 @@
           "width": 1038,
           "height": 729
         },
-        "distinctColors": 3478,
+        "distinctColors": 3366,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31744,
         "healthy": true
@@ -9010,10 +9010,10 @@
         "width": 1200,
         "height": 640,
         "scale": 1,
-        "bytes": 42405,
+        "bytes": 42313,
         "visiblePixels": 768000,
         "transparentPixels": 0,
-        "foregroundPixels": 193233,
+        "foregroundPixels": 193145,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9022,7 +9022,7 @@
           "width": 1038,
           "height": 569
         },
-        "distinctColors": 1836,
+        "distinctColors": 1823,
         "edgeInkPixels": 0,
         "edgeBandPixels": 21936,
         "healthy": true
@@ -9067,10 +9067,10 @@
         "width": 2164,
         "height": 880,
         "scale": 2,
-        "bytes": 157845,
+        "bytes": 153277,
         "visiblePixels": 1904320,
         "transparentPixels": 0,
-        "foregroundPixels": 226911,
+        "foregroundPixels": 216104,
         "contentBounds": {
           "left": 66,
           "top": 66,
@@ -9124,10 +9124,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 80607,
+        "bytes": 79007,
         "visiblePixels": 1286378,
         "transparentPixels": 112022,
-        "foregroundPixels": 79898,
+        "foregroundPixels": 79591,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -9136,7 +9136,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 2608,
+        "distinctColors": 2340,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -9181,10 +9181,10 @@
         "width": 1520,
         "height": 920,
         "scale": 2,
-        "bytes": 88996,
+        "bytes": 87697,
         "visiblePixels": 1286390,
         "transparentPixels": 112010,
-        "foregroundPixels": 276802,
+        "foregroundPixels": 274589,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -9193,7 +9193,7 @@
           "width": 1466,
           "height": 878
         },
-        "distinctColors": 3079,
+        "distinctColors": 2964,
         "edgeInkPixels": 0,
         "edgeBandPixels": 43596,
         "healthy": true
@@ -9238,10 +9238,10 @@
         "width": 1200,
         "height": 786,
         "scale": 1,
-        "bytes": 71770,
+        "bytes": 71180,
         "visiblePixels": 943200,
         "transparentPixels": 0,
-        "foregroundPixels": 286793,
+        "foregroundPixels": 286617,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9250,7 +9250,7 @@
           "width": 1134,
           "height": 715
         },
-        "distinctColors": 2817,
+        "distinctColors": 2760,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31520,
         "healthy": true
@@ -9295,10 +9295,10 @@
         "width": 1200,
         "height": 680,
         "scale": 1,
-        "bytes": 37189,
+        "bytes": 37144,
         "visiblePixels": 816000,
         "transparentPixels": 0,
-        "foregroundPixels": 102510,
+        "foregroundPixels": 102454,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9307,7 +9307,7 @@
           "width": 860,
           "height": 609
         },
-        "distinctColors": 1466,
+        "distinctColors": 1459,
         "edgeInkPixels": 0,
         "edgeBandPixels": 26124,
         "healthy": true
@@ -9409,10 +9409,10 @@
         "width": 1200,
         "height": 805,
         "scale": 1,
-        "bytes": 70669,
+        "bytes": 70369,
         "visiblePixels": 966000,
         "transparentPixels": 0,
-        "foregroundPixels": 298689,
+        "foregroundPixels": 298593,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9421,7 +9421,7 @@
           "width": 1103,
           "height": 734
         },
-        "distinctColors": 2681,
+        "distinctColors": 2647,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31824,
         "healthy": true
@@ -9523,10 +9523,10 @@
         "width": 1720,
         "height": 960,
         "scale": 2,
-        "bytes": 148566,
+        "bytes": 147460,
         "visiblePixels": 1528976,
         "transparentPixels": 122224,
-        "foregroundPixels": 358778,
+        "foregroundPixels": 355212,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -9580,10 +9580,10 @@
         "width": 1828,
         "height": 1340,
         "scale": 2,
-        "bytes": 322393,
+        "bytes": 315148,
         "visiblePixels": 2449520,
         "transparentPixels": 0,
-        "foregroundPixels": 1052257,
+        "foregroundPixels": 1045276,
         "contentBounds": {
           "left": 24,
           "top": 24,
@@ -9637,10 +9637,10 @@
         "width": 1000,
         "height": 420,
         "scale": 1,
-        "bytes": 28312,
+        "bytes": 28072,
         "visiblePixels": 420000,
         "transparentPixels": 0,
-        "foregroundPixels": 63209,
+        "foregroundPixels": 63143,
         "contentBounds": {
           "left": 24,
           "top": 25,
@@ -9649,7 +9649,7 @@
           "width": 952,
           "height": 276
         },
-        "distinctColors": 1399,
+        "distinctColors": 1389,
         "edgeInkPixels": 0,
         "edgeBandPixels": 11296,
         "healthy": true
@@ -9694,10 +9694,10 @@
         "width": 1000,
         "height": 420,
         "scale": 1,
-        "bytes": 32002,
+        "bytes": 31598,
         "visiblePixels": 420000,
         "transparentPixels": 0,
-        "foregroundPixels": 62358,
+        "foregroundPixels": 62220,
         "contentBounds": {
           "left": 28,
           "top": 25,
@@ -9706,7 +9706,7 @@
           "width": 944,
           "height": 276
         },
-        "distinctColors": 1473,
+        "distinctColors": 1455,
         "edgeInkPixels": 0,
         "edgeBandPixels": 11296,
         "healthy": true
@@ -9751,10 +9751,10 @@
         "width": 1960,
         "height": 588,
         "scale": 2,
-        "bytes": 111305,
-        "visiblePixels": 142200,
-        "transparentPixels": 1010280,
-        "foregroundPixels": 126277,
+        "bytes": 111098,
+        "visiblePixels": 141820,
+        "transparentPixels": 1010660,
+        "foregroundPixels": 126017,
         "contentBounds": {
           "left": 48,
           "top": 52,
@@ -9808,10 +9808,10 @@
         "width": 1960,
         "height": 1120,
         "scale": 2,
-        "bytes": 355198,
+        "bytes": 329761,
         "visiblePixels": 2053910,
         "transparentPixels": 141290,
-        "foregroundPixels": 1094843,
+        "foregroundPixels": 1091628,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -9865,10 +9865,10 @@
         "width": 1180,
         "height": 560,
         "scale": 1,
-        "bytes": 45772,
+        "bytes": 44645,
         "visiblePixels": 660800,
         "transparentPixels": 0,
-        "foregroundPixels": 43596,
+        "foregroundPixels": 41500,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9877,7 +9877,7 @@
           "width": 1125,
           "height": 489
         },
-        "distinctColors": 2186,
+        "distinctColors": 2129,
         "edgeInkPixels": 0,
         "edgeBandPixels": 20736,
         "healthy": true
@@ -9922,10 +9922,10 @@
         "width": 1180,
         "height": 560,
         "scale": 1,
-        "bytes": 63050,
+        "bytes": 61225,
         "visiblePixels": 660800,
         "transparentPixels": 0,
-        "foregroundPixels": 32794,
+        "foregroundPixels": 32313,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9934,7 +9934,7 @@
           "width": 943,
           "height": 489
         },
-        "distinctColors": 2624,
+        "distinctColors": 2451,
         "edgeInkPixels": 0,
         "edgeBandPixels": 20736,
         "healthy": true
@@ -9979,10 +9979,10 @@
         "width": 1080,
         "height": 593,
         "scale": 1,
-        "bytes": 54226,
+        "bytes": 53834,
         "visiblePixels": 640440,
         "transparentPixels": 0,
-        "foregroundPixels": 40604,
+        "foregroundPixels": 39477,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -9991,7 +9991,7 @@
           "width": 1025,
           "height": 522
         },
-        "distinctColors": 2686,
+        "distinctColors": 2635,
         "edgeInkPixels": 0,
         "edgeBandPixels": 19932,
         "healthy": true
@@ -10036,10 +10036,10 @@
         "width": 1180,
         "height": 703,
         "scale": 1,
-        "bytes": 55999,
+        "bytes": 55764,
         "visiblePixels": 829540,
         "transparentPixels": 0,
-        "foregroundPixels": 42021,
+        "foregroundPixels": 41430,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -10048,7 +10048,7 @@
           "width": 1125,
           "height": 632
         },
-        "distinctColors": 2255,
+        "distinctColors": 2402,
         "edgeInkPixels": 0,
         "edgeBandPixels": 26166,
         "healthy": true
@@ -10093,10 +10093,10 @@
         "width": 1180,
         "height": 813,
         "scale": 1,
-        "bytes": 130266,
+        "bytes": 126286,
         "visiblePixels": 959340,
         "transparentPixels": 0,
-        "foregroundPixels": 68953,
+        "foregroundPixels": 67261,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -10150,10 +10150,10 @@
         "width": 980,
         "height": 598,
         "scale": 1,
-        "bytes": 66135,
+        "bytes": 64613,
         "visiblePixels": 586040,
         "transparentPixels": 0,
-        "foregroundPixels": 41279,
+        "foregroundPixels": 40408,
         "contentBounds": {
           "left": 24,
           "top": 39,
@@ -10207,10 +10207,10 @@
         "width": 1500,
         "height": 920,
         "scale": 1,
-        "bytes": 710085,
+        "bytes": 634250,
         "visiblePixels": 1380000,
         "transparentPixels": 0,
-        "foregroundPixels": 239443,
+        "foregroundPixels": 189228,
         "contentBounds": {
           "left": 30,
           "top": 44,
@@ -10264,10 +10264,10 @@
         "width": 1280,
         "height": 760,
         "scale": 1,
-        "bytes": 231601,
+        "bytes": 205563,
         "visiblePixels": 972800,
         "transparentPixels": 0,
-        "foregroundPixels": 73277,
+        "foregroundPixels": 57797,
         "contentBounds": {
           "left": 27,
           "top": 42,
@@ -10321,10 +10321,10 @@
         "width": 2360,
         "height": 1240,
         "scale": 2,
-        "bytes": 376396,
+        "bytes": 344678,
         "visiblePixels": 2761818,
         "transparentPixels": 164582,
-        "foregroundPixels": 482291,
+        "foregroundPixels": 478647,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -10378,10 +10378,10 @@
         "width": 1280,
         "height": 720,
         "scale": 1,
-        "bytes": 154107,
+        "bytes": 139848,
         "visiblePixels": 921600,
         "transparentPixels": 0,
-        "foregroundPixels": 145947,
+        "foregroundPixels": 143627,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -10435,10 +10435,10 @@
         "width": 1648,
         "height": 900,
         "scale": 1,
-        "bytes": 112238,
+        "bytes": 110804,
         "visiblePixels": 1483200,
         "transparentPixels": 0,
-        "foregroundPixels": 374652,
+        "foregroundPixels": 373777,
         "contentBounds": {
           "left": 37,
           "top": 39,
@@ -10492,10 +10492,10 @@
         "width": 1120,
         "height": 811,
         "scale": 1,
-        "bytes": 105044,
+        "bytes": 102504,
         "visiblePixels": 908320,
         "transparentPixels": 0,
-        "foregroundPixels": 57441,
+        "foregroundPixels": 55465,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -10549,10 +10549,10 @@
         "width": 920,
         "height": 474,
         "scale": 1,
-        "bytes": 49306,
+        "bytes": 48425,
         "visiblePixels": 436080,
         "transparentPixels": 0,
-        "foregroundPixels": 31039,
+        "foregroundPixels": 30533,
         "contentBounds": {
           "left": 24,
           "top": 39,
@@ -10561,7 +10561,7 @@
           "width": 873,
           "height": 411
         },
-        "distinctColors": 3370,
+        "distinctColors": 3225,
         "edgeInkPixels": 0,
         "edgeBandPixels": 13840,
         "healthy": true
@@ -10606,10 +10606,10 @@
         "width": 1320,
         "height": 920,
         "scale": 1,
-        "bytes": 185858,
+        "bytes": 176335,
         "visiblePixels": 1214400,
         "transparentPixels": 0,
-        "foregroundPixels": 83307,
+        "foregroundPixels": 80263,
         "contentBounds": {
           "left": 20,
           "top": 31,
@@ -10663,10 +10663,10 @@
         "width": 1320,
         "height": 920,
         "scale": 1,
-        "bytes": 188918,
+        "bytes": 179301,
         "visiblePixels": 1214400,
         "transparentPixels": 0,
-        "foregroundPixels": 85449,
+        "foregroundPixels": 82009,
         "contentBounds": {
           "left": 20,
           "top": 31,
@@ -10720,10 +10720,10 @@
         "width": 1540,
         "height": 760,
         "scale": 1,
-        "bytes": 250016,
+        "bytes": 234940,
         "visiblePixels": 1170400,
         "transparentPixels": 0,
-        "foregroundPixels": 95941,
+        "foregroundPixels": 91377,
         "contentBounds": {
           "left": 21,
           "top": 33,
@@ -10777,10 +10777,10 @@
         "width": 1540,
         "height": 760,
         "scale": 1,
-        "bytes": 250268,
+        "bytes": 235600,
         "visiblePixels": 1170400,
         "transparentPixels": 0,
-        "foregroundPixels": 95535,
+        "foregroundPixels": 90615,
         "contentBounds": {
           "left": 21,
           "top": 33,
@@ -10834,10 +10834,10 @@
         "width": 1120,
         "height": 711,
         "scale": 1,
-        "bytes": 102025,
+        "bytes": 99222,
         "visiblePixels": 796320,
         "transparentPixels": 0,
-        "foregroundPixels": 58325,
+        "foregroundPixels": 55992,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -10891,7 +10891,7 @@
         "width": 1400,
         "height": 1065,
         "scale": 1,
-        "bytes": 83143,
+        "bytes": 80479,
         "visiblePixels": 1491000,
         "transparentPixels": 0,
         "foregroundPixels": 621207,
@@ -10903,7 +10903,7 @@
           "width": 1218,
           "height": 1002
         },
-        "distinctColors": 1832,
+        "distinctColors": 1789,
         "edgeInkPixels": 0,
         "edgeBandPixels": 53746,
         "healthy": true
@@ -10948,10 +10948,10 @@
         "width": 1680,
         "height": 1060,
         "scale": 1,
-        "bytes": 717957,
+        "bytes": 662250,
         "visiblePixels": 1780800,
         "transparentPixels": 0,
-        "foregroundPixels": 257211,
+        "foregroundPixels": 228993,
         "contentBounds": {
           "left": 30,
           "top": 44,
@@ -11005,10 +11005,10 @@
         "width": 1320,
         "height": 820,
         "scale": 1,
-        "bytes": 66917,
+        "bytes": 64654,
         "visiblePixels": 1082400,
         "transparentPixels": 0,
-        "foregroundPixels": 25960,
+        "foregroundPixels": 24977,
         "contentBounds": {
           "left": 31,
           "top": 45,
@@ -11017,7 +11017,7 @@
           "width": 1220,
           "height": 745
         },
-        "distinctColors": 3588,
+        "distinctColors": 3509,
         "edgeInkPixels": 0,
         "edgeBandPixels": 33984,
         "healthy": true
@@ -11062,10 +11062,10 @@
         "width": 1240,
         "height": 761,
         "scale": 1,
-        "bytes": 69561,
+        "bytes": 65405,
         "visiblePixels": 943640,
         "transparentPixels": 0,
-        "foregroundPixels": 45960,
+        "foregroundPixels": 45792,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11074,7 +11074,7 @@
           "width": 1185,
           "height": 690
         },
-        "distinctColors": 2952,
+        "distinctColors": 2541,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31760,
         "healthy": true
@@ -11119,10 +11119,10 @@
         "width": 1280,
         "height": 814,
         "scale": 1,
-        "bytes": 90591,
+        "bytes": 87564,
         "visiblePixels": 1041920,
         "transparentPixels": 0,
-        "foregroundPixels": 63198,
+        "foregroundPixels": 58439,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11176,10 +11176,10 @@
         "width": 1280,
         "height": 814,
         "scale": 1,
-        "bytes": 91471,
+        "bytes": 88462,
         "visiblePixels": 1041920,
         "transparentPixels": 0,
-        "foregroundPixels": 63548,
+        "foregroundPixels": 58807,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11233,10 +11233,10 @@
         "width": 1316,
         "height": 764,
         "scale": 1,
-        "bytes": 94162,
+        "bytes": 92979,
         "visiblePixels": 1005424,
         "transparentPixels": 0,
-        "foregroundPixels": 77794,
+        "foregroundPixels": 75763,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11290,10 +11290,10 @@
         "width": 1280,
         "height": 714,
         "scale": 1,
-        "bytes": 103386,
+        "bytes": 101108,
         "visiblePixels": 913920,
         "transparentPixels": 0,
-        "foregroundPixels": 114607,
+        "foregroundPixels": 112411,
         "contentBounds": {
           "left": 21,
           "top": 94,
@@ -11347,10 +11347,10 @@
         "width": 1180,
         "height": 600,
         "scale": 1,
-        "bytes": 56173,
+        "bytes": 54199,
         "visiblePixels": 708000,
         "transparentPixels": 0,
-        "foregroundPixels": 29965,
+        "foregroundPixels": 28229,
         "contentBounds": {
           "left": 27,
           "top": 43,
@@ -11359,7 +11359,7 @@
           "width": 1126,
           "height": 503
         },
-        "distinctColors": 2926,
+        "distinctColors": 2732,
         "edgeInkPixels": 0,
         "edgeBandPixels": 21216,
         "healthy": true
@@ -11404,10 +11404,10 @@
         "width": 2360,
         "height": 1240,
         "scale": 2,
-        "bytes": 378219,
+        "bytes": 349267,
         "visiblePixels": 2761818,
         "transparentPixels": 164582,
-        "foregroundPixels": 474049,
+        "foregroundPixels": 470850,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -11461,10 +11461,10 @@
         "width": 1280,
         "height": 894,
         "scale": 1,
-        "bytes": 94216,
+        "bytes": 91947,
         "visiblePixels": 1144320,
         "transparentPixels": 0,
-        "foregroundPixels": 77800,
+        "foregroundPixels": 75627,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11518,10 +11518,10 @@
         "width": 1180,
         "height": 951,
         "scale": 1,
-        "bytes": 69404,
+        "bytes": 68549,
         "visiblePixels": 1122180,
         "transparentPixels": 0,
-        "foregroundPixels": 63277,
+        "foregroundPixels": 59638,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11530,7 +11530,7 @@
           "width": 1125,
           "height": 880
         },
-        "distinctColors": 1820,
+        "distinctColors": 1914,
         "edgeInkPixels": 0,
         "edgeBandPixels": 42220,
         "healthy": true
@@ -11575,10 +11575,10 @@
         "width": 1280,
         "height": 868,
         "scale": 1,
-        "bytes": 103829,
+        "bytes": 100690,
         "visiblePixels": 1111040,
         "transparentPixels": 0,
-        "foregroundPixels": 90242,
+        "foregroundPixels": 88326,
         "contentBounds": {
           "left": 28,
           "top": 43,
@@ -11632,10 +11632,10 @@
         "width": 2360,
         "height": 1240,
         "scale": 2,
-        "bytes": 363033,
+        "bytes": 332636,
         "visiblePixels": 2761818,
         "transparentPixels": 164582,
-        "foregroundPixels": 476494,
+        "foregroundPixels": 2364008,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -11689,10 +11689,10 @@
         "width": 720,
         "height": 180,
         "scale": 2,
-        "bytes": 11009,
-        "visiblePixels": 71601,
-        "transparentPixels": 57999,
-        "foregroundPixels": 67639,
+        "bytes": 10182,
+        "visiblePixels": 71431,
+        "transparentPixels": 58169,
+        "foregroundPixels": 67806,
         "contentBounds": {
           "left": 10,
           "top": 30,
@@ -11701,7 +11701,7 @@
           "width": 700,
           "height": 135
         },
-        "distinctColors": 1175,
+        "distinctColors": 1017,
         "edgeInkPixels": 0,
         "edgeBandPixels": 3584,
         "healthy": true
@@ -11746,10 +11746,10 @@
         "width": 2328,
         "height": 1130,
         "scale": 2,
-        "bytes": 294547,
+        "bytes": 294565,
         "visiblePixels": 2630640,
         "transparentPixels": 0,
-        "foregroundPixels": 194970,
+        "foregroundPixels": 194929,
         "contentBounds": {
           "left": 50,
           "top": 36,
@@ -11860,10 +11860,10 @@
         "width": 1640,
         "height": 2004,
         "scale": 2,
-        "bytes": 356310,
+        "bytes": 353960,
         "visiblePixels": 3286560,
         "transparentPixels": 0,
-        "foregroundPixels": 166845,
+        "foregroundPixels": 165636,
         "contentBounds": {
           "left": 60,
           "top": 48,
@@ -11917,10 +11917,10 @@
         "width": 1120,
         "height": 840,
         "scale": 2,
-        "bytes": 57460,
+        "bytes": 57674,
         "visiblePixels": 940800,
         "transparentPixels": 0,
-        "foregroundPixels": 67531,
+        "foregroundPixels": 67822,
         "contentBounds": {
           "left": 45,
           "top": 48,
@@ -11929,7 +11929,7 @@
           "width": 813,
           "height": 486
         },
-        "distinctColors": 1914,
+        "distinctColors": 1911,
         "edgeInkPixels": 0,
         "edgeBandPixels": 31104,
         "healthy": true
@@ -12031,10 +12031,10 @@
         "width": 1640,
         "height": 920,
         "scale": 2,
-        "bytes": 81634,
+        "bytes": 81635,
         "visiblePixels": 1391738,
         "transparentPixels": 117062,
-        "foregroundPixels": 122719,
+        "foregroundPixels": 122750,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -12043,7 +12043,7 @@
           "width": 1586,
           "height": 878
         },
-        "distinctColors": 2128,
+        "distinctColors": 2131,
         "edgeInkPixels": 0,
         "edgeBandPixels": 45756,
         "healthy": true
@@ -12088,10 +12088,10 @@
         "width": 1840,
         "height": 1120,
         "scale": 2,
-        "bytes": 114643,
+        "bytes": 114073,
         "visiblePixels": 1924538,
         "transparentPixels": 136262,
-        "foregroundPixels": 309165,
+        "foregroundPixels": 309212,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -12145,10 +12145,10 @@
         "width": 1640,
         "height": 920,
         "scale": 2,
-        "bytes": 95565,
+        "bytes": 95611,
         "visiblePixels": 1391738,
         "transparentPixels": 117062,
-        "foregroundPixels": 114819,
+        "foregroundPixels": 114883,
         "contentBounds": {
           "left": 27,
           "top": 27,
@@ -12157,7 +12157,7 @@
           "width": 1586,
           "height": 878
         },
-        "distinctColors": 3041,
+        "distinctColors": 3032,
         "edgeInkPixels": 0,
         "edgeBandPixels": 45756,
         "healthy": true

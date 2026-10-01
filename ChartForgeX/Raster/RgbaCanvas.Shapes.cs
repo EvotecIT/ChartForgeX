@@ -17,19 +17,47 @@ internal sealed partial class RgbaCanvas {
     internal void StrokePolylines(IReadOnlyList<IReadOnlyList<ChartPoint>> polylines, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray = null, double miterLimit = DefaultMiterLimit) {
         if (polylines == null) throw new ArgumentNullException(nameof(polylines));
         if (color.A == 0 || !(thickness > 0)) return;
+        // Outline in device pixels, so the outline is built once at the resolution it is filled at.
+        var width = thickness * _scale;
+        double[]? pattern = null;
+        if (dashArray != null && dashArray.Count > 0) {
+            pattern = new double[dashArray.Count];
+            for (var i = 0; i < pattern.Length; i++) pattern[i] = dashArray[i] * _scale;
+        }
+
         var outline = new List<List<ChartPoint>>();
         foreach (var polyline in polylines) {
             if (polyline == null || polyline.Count == 0) continue;
-            if (dashArray == null || dashArray.Count == 0) {
-                RasterStroker.AppendOutline(polyline, thickness, lineCap, lineJoin, miterLimit, _scale, outline);
+            var device = new List<ChartPoint>(polyline.Count);
+            foreach (var point in polyline) device.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
+            if (pattern == null) {
+                RasterStroker.AppendOutline(device, width, lineCap, lineJoin, miterLimit, 1, outline);
                 continue;
             }
 
-            foreach (var dash in RasterStroker.Dash(polyline, dashArray)) RasterStroker.AppendOutline(dash, thickness, lineCap, lineJoin, miterLimit, _scale, outline);
+            foreach (var dash in RasterStroker.Dash(device, pattern)) RasterStroker.AppendOutline(dash, width, lineCap, lineJoin, miterLimit, 1, outline);
         }
 
-        FillContours(outline, color, RasterFillRule.NonZero);
+        FillContoursPixels(outline, color, RasterFillRule.NonZero, StrokeSubScanlines);
     }
+
+    /// <summary>
+    /// Strokes SVG path data as one shape, so a renderer can draw the same path its SVG counterpart
+    /// writes. Curves are flattened at the canvas resolution; a closed subpath gets a join where it closes.
+    /// </summary>
+    internal void StrokePathData(string pathData, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin) {
+        var polylines = new List<IReadOnlyList<ChartPoint>>();
+        foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) {
+            var points = subpath.Points;
+            if (subpath.IsClosed && points.Count > 1 && (points[0].X != points[points.Count - 1].X || points[0].Y != points[points.Count - 1].Y)) points.Add(points[0]);
+            polylines.Add(points);
+        }
+
+        StrokePolylines(polylines, color, thickness, lineCap, lineJoin);
+    }
+
+    /// <summary>Device pixels per canvas unit, the resolution callers flatten curves at before stroking them.</summary>
+    internal int PixelsPerUnit => _scale;
 
     /// <summary>Fills an ellipse.</summary>
     internal void FillEllipse(double cx, double cy, double rx, double ry, ChartColor color) {
