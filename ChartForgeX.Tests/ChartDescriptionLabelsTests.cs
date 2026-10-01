@@ -16,11 +16,30 @@ public sealed class ChartDescriptionLabelsTests {
         Assert.Equal("Chart with no data series.", Desc(untitled));
         Assert.Equal("ChartForgeX chart", Element(untitled, "title").Value);
         Assert.Equal("Chart with no data points.", Desc(Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>())));
-        Assert.Equal("Changes calendar heatmap for Days from 2026-09-07 to 2026-09-08 with 2 dated values.", Desc(Calendar()));
-        Assert.Equal("Days calendar heatmap from 2026-09-06 to 2026-09-12 with 2 filled days and 5 empty days", AriaLabel(Calendar(), "calendar-heatmap"));
+        Assert.Equal("Changes calendar heatmap for Days from 2026-09-07 to 2026-09-08 with 2 days with a value.", Desc(Calendar()));
+        Assert.Equal("Days calendar heatmap from 2026-09-06 to 2026-09-12 with 2 days with a value and 5 days without data", AriaLabel(Calendar(), "calendar-heatmap"));
         Assert.Equal("Coverage region map for Sites on United States states with 2 filled regions and 49 missing regions.", Desc(RegionMap()));
         Assert.Equal("Sites region map with 2 filled regions and 49 missing regions", AriaLabel(RegionMap(), "region-map"));
         Assert.Contains("<html lang=\"en\">", Html(Chart.Create()), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CalendarFacts_CountDaysAtZeroApartFromDaysWithAValue() {
+        // A day at zero is drawn neutral: a day in the data without changes, not a day with a value.
+        var facts = new List<ChartDescriptionFacts>();
+        _ = Chart.Create().WithLabels(labels => labels.AccessibleTextFormatter = item => {
+            facts.Add(item);
+            return null;
+        }).AddCalendarHeatmap("Changes", new[] {
+            new ChartCalendarHeatmapItem(new DateTime(2026, 9, 7), 1),
+            new ChartCalendarHeatmapItem(new DateTime(2026, 9, 8), 0),
+            new ChartCalendarHeatmapItem(new DateTime(2026, 9, 10), 4)
+        }).ToSvg();
+
+        var description = facts.Single(item => item.Kind == ChartDescriptionKind.CalendarHeatmap);
+        var group = facts.Single(item => item.Kind == ChartDescriptionKind.CalendarHeatmapGroup);
+        Assert.Equal(new[] { 2, 1, 1 }, new[] { description.Count, description.ZeroCount, description.MissingCount });
+        Assert.Equal(new[] { 2, 1, 4 }, new[] { group.Count, group.ZeroCount, group.MissingCount });
     }
 
     [Fact]

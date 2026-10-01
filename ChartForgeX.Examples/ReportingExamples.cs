@@ -39,8 +39,8 @@ internal static class ReportingExamples {
                 labels.More = "Mehr";
                 labels.NoData = "Keine Daten";
                 labels.AccessibleTextFormatter = facts => facts.Kind switch {
-                    ChartDescriptionKind.CalendarHeatmapGroup => facts.SeriesNames[0] + " vom " + facts.FirstDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + " bis " + facts.LastDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + ": " + Days(facts.Count) + " mit Werten, " + Days(facts.MissingCount) + " ohne",
-                    ChartDescriptionKind.CalendarHeatmap => (facts.Title ?? "Diagramm") + ": Kalender mit " + facts.Count + (facts.Count == 1 ? " Wert" : " Werten"),
+                    ChartDescriptionKind.CalendarHeatmapGroup => facts.SeriesNames[0] + " vom " + facts.FirstDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + " bis " + facts.LastDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + ": Tage mit Änderungen " + facts.Count + " von " + (facts.Count + facts.ZeroCount) + (facts.MissingCount > 0 ? ", " + Days(facts.MissingCount) + " ohne Daten" : string.Empty),
+                    ChartDescriptionKind.CalendarHeatmap => (facts.Title ?? "Diagramm") + ": Kalender, Tage mit Änderungen " + facts.Count + " von " + (facts.Count + facts.ZeroCount),
                     _ => null
                 };
             })

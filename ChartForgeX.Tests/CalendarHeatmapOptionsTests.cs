@@ -36,7 +36,7 @@ public sealed class CalendarHeatmapOptionsTests {
             labels.More = "Mehr";
             labels.NoData = "Keine Daten";
             labels.AccessibleTextFormatter = facts => facts.Kind == ChartDescriptionKind.CalendarHeatmapGroup
-                ? string.Format(CultureInfo.InvariantCulture, "{0}: {1:yyyy-MM-dd} bis {2:yyyy-MM-dd}, {3} Tage mit Werten, {4} ohne", facts.SeriesNames[0], facts.FirstDate, facts.LastDate, facts.Count, facts.MissingCount)
+                ? string.Format(CultureInfo.InvariantCulture, "{0}: {1:yyyy-MM-dd} bis {2:yyyy-MM-dd}, {3} Tage mit Änderungen von {4} Tagen, {5} ohne Daten", facts.SeriesNames[0], facts.FirstDate, facts.LastDate, facts.Count, facts.Count + facts.ZeroCount, facts.MissingCount)
                 : null;
         });
         var svg = chart.ToSvg();
@@ -48,7 +48,8 @@ public sealed class CalendarHeatmapOptionsTests {
         Assert.Equal(new[] { "Sep" }, ByRole(document, "calendar-heatmap-month-label").Select(label => label.Value).ToArray());
         Assert.Equal(new[] { "Weniger", "Mehr" }, ByRole(document, "calendar-heatmap-scale-label").Select(label => label.Value).ToArray());
         Assert.Contains("Keine Daten", svg, StringComparison.Ordinal);
-        Assert.Equal("Changes: 2026-09-07 bis 2026-09-20, 10 Tage mit Werten, 4 ohne", (string?)ByRole(document, "calendar-heatmap").Single().Attribute("aria-label"));
+        // The Tuesday at zero is a day in the data without changes; the weekends have no data.
+        Assert.Equal("Changes: 2026-09-07 bis 2026-09-20, 9 Tage mit Änderungen von 10 Tagen, 4 ohne Daten", (string?)ByRole(document, "calendar-heatmap").Single().Attribute("aria-label"));
         Assert.DoesNotContain(">Less<", svg, StringComparison.Ordinal);
         Assert.DoesNotContain(">Mon<", svg, StringComparison.Ordinal);
         Assert.NotEqual(TwoWeeks(DayOfWeek.Monday).ToPng(), chart.ToPng());

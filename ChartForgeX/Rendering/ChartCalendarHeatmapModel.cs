@@ -18,7 +18,7 @@ internal sealed class ChartCalendarHeatmapModel {
     private readonly string[] _dayNames;
     private readonly string[] _monthNames;
 
-    private ChartCalendarHeatmapModel(Chart chart, ChartSeries series, Dictionary<DateTime, ChartCalendarDay> byDate, DateTime minDate, DateTime maxDate, double min, double max, double rampMin) {
+    private ChartCalendarHeatmapModel(Chart chart, ChartSeries series, Dictionary<DateTime, ChartCalendarDay> byDate, DateTime minDate, DateTime maxDate, double min, double max, double rampMin, int zeroDays) {
         Chart = chart;
         Series = series;
         _byDate = byDate;
@@ -33,6 +33,7 @@ internal sealed class ChartCalendarHeatmapModel {
         Min = min;
         Max = max;
         RampMin = rampMin;
+        ZeroDays = zeroDays;
     }
 
     public Chart Chart { get; }
@@ -63,9 +64,17 @@ internal sealed class ChartCalendarHeatmapModel {
 
     public int TotalDays => (End - Start).Days + 1;
 
+    /// <summary>Gets the number of days with data, zeros included.</summary>
     public int FilledDays => _byDate.Count;
 
+    /// <summary>Gets the number of drawn days without data.</summary>
     public int EmptyDays => Math.Max(0, TotalDays - FilledDays);
+
+    /// <summary>Gets the number of days at zero that are drawn neutral (see <see cref="IsZero"/>).</summary>
+    public int ZeroDays { get; }
+
+    /// <summary>Gets the number of days with a value: days with data that are not a neutral zero.</summary>
+    public int ValueDays => FilledDays - ZeroDays;
 
     public static ChartCalendarHeatmapModel? Build(Chart chart) {
         ChartSeries? series = null;
@@ -97,7 +106,14 @@ internal sealed class ChartCalendarHeatmapModel {
         // With zeros in the data the ramp starts at the smallest non-zero value, unless that is the only other value:
         // then the ramp runs from zero so that value is drawn at full strength instead of the weakest step.
         var rampMin = min == 0 && !double.IsPositiveInfinity(minNonZero) && minNonZero < max ? minNonZero : min;
-        return new ChartCalendarHeatmapModel(chart, series, byDate, minDate, maxDate, min, max, rampMin);
+        var zeroDays = 0;
+        if (min >= 0) {
+            foreach (var day in byDate.Values) {
+                if (day.Value == 0) zeroDays++;
+            }
+        }
+
+        return new ChartCalendarHeatmapModel(chart, series, byDate, minDate, maxDate, min, max, rampMin, zeroDays);
     }
 
     /// <summary>Returns the row of a day: zero for the first day of the week.</summary>
@@ -141,7 +157,16 @@ internal sealed class ChartCalendarHeatmapModel {
     public string DateText(DateTime day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     /// <summary>Returns the accessible name of the calendar group, through <see cref="ChartLabels.AccessibleTextFormatter"/>.</summary>
-    public string Summary() => Chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmapGroup, Chart.Title, new[] { Series.Name }, FilledDays, EmptyDays, Start, End));
+    public string Summary() => Chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmapGroup, Chart.Title, new[] { Series.Name }, ValueDays, EmptyDays, Start, End, zeroCount: ZeroDays));
+
+    /// <summary>
+    /// Returns the facts of the chart description: the days from the earliest to the latest value, and the days between
+    /// them without data.
+    /// </summary>
+    public ChartDescriptionFacts DescriptionFacts() {
+        var missing = Math.Max(0, (MaxDate - MinDate).Days + 1 - FilledDays);
+        return new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmap, Chart.Title, new[] { Series.Name }, ValueDays, missing, MinDate, MaxDate, zeroCount: ZeroDays);
+    }
 
     /// <summary>Gap the calendar keeps from the chart edge, or from the card when one is drawn.</summary>
     private const double EdgeInset = 8;

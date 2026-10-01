@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Svg;
 
@@ -12,12 +13,8 @@ public sealed partial class SvgChartRenderer {
     private static ChartDescriptionFacts DescriptionFacts(Chart chart) {
         var title = chart.Title;
         if (chart.Series.Count == 0) return new ChartDescriptionFacts(ChartDescriptionKind.NoSeries, title, Array.Empty<string>(), 0);
-        var calendar = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.CalendarHeatmap);
-        if (calendar != null && calendar.Points.Count > 0) {
-            var minDate = calendar.Points.Min(point => DateTime.FromOADate(point.X).Date);
-            var maxDate = calendar.Points.Max(point => DateTime.FromOADate(point.X).Date);
-            return new ChartDescriptionFacts(ChartDescriptionKind.CalendarHeatmap, title, new[] { calendar.Name }, calendar.Points.Count, firstDate: minDate, lastDate: maxDate);
-        }
+        var calendar = ChartCalendarHeatmapModel.Build(chart);
+        if (calendar != null) return calendar.DescriptionFacts();
 
         var dottedMap = ChartSeriesKindTraits.FirstSeriesOrDefault(chart.Series, ChartSeriesKind.DottedMap);
         if (dottedMap != null && dottedMap.Points.Count > 0) {
