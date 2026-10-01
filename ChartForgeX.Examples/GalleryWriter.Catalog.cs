@@ -260,6 +260,7 @@ public static partial class GalleryWriter {
             "Visual Systems",
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",
             "composition-shapes",
+            "styled-multilingual-text",
             "theme-font-showcase-grid",
             "brand-kit-showcase-grid",
             "palette-swatch-showcase-grid",

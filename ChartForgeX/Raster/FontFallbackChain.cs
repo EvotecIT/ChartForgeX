@@ -67,7 +67,7 @@ internal sealed class FontFallbackChain {
     /// <summary>The chain for text drawn with <paramref name="primary"/>.</summary>
     internal static FontFallbackChain For(TrueTypeFont primary) {
         var stack = primary.FallbackFamilies;
-        var key = string.Join("\n", stack) + "|" + primary.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (primary.IsItalic ? "|i" : "|n");
+        var key = string.Join("\n", stack) + "|" + primary.FallbackWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (primary.FallbackItalic ? "|i" : "|n");
         lock (Gate) {
             if (_chains.TryGetValue(key, out var chain)) return chain;
             var families = new List<string>();
@@ -75,7 +75,7 @@ internal sealed class FontFallbackChain {
             foreach (var family in stack) if (seen.Add(family)) families.Add(family);
             foreach (var family in FontRegistry.Families) if (seen.Add(family)) families.Add(family);
             foreach (var family in PlatformFamilies()) if (seen.Add(family)) families.Add(family);
-            chain = new FontFallbackChain(families.ToArray(), primary.Weight, primary.IsItalic);
+            chain = new FontFallbackChain(families.ToArray(), primary.FallbackWeight, primary.FallbackItalic);
             if (_chains.Count >= MaximumChains) _chains = new Dictionary<string, FontFallbackChain>(StringComparer.Ordinal);
             _chains[key] = chain;
             return chain;

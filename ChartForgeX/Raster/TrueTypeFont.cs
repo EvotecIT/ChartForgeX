@@ -40,19 +40,23 @@ internal sealed partial class TrueTypeFont {
     private readonly short _indexToLocFormat;
     private readonly int? _collectionIndex;
     private readonly string[] _fallbackFamilies;
+    private readonly int? _fallbackWeight;
+    private readonly bool? _fallbackItalic;
     private readonly TrueTypeFont _root;
     private readonly object _viewLock = new();
     private Dictionary<string, TrueTypeFont>? _views;
     private double? _xHeight;
     private double? _capHeight;
 
-    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies) {
+    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null) {
         _data = data;
         _tables = tables;
         _collectionIndex = collectionIndex;
         _compact = compact;
         _root = root ?? this;
         _fallbackFamilies = fallbackFamilies;
+        _fallbackWeight = fallbackWeight;
+        _fallbackItalic = fallbackItalic;
         _cmap = FontCmap.Read(data, tables["cmap"]);
         _glyf = tables.TryGetValue("glyf", out var glyf) ? glyf : -1;
         _loca = tables.TryGetValue("loca", out var loca) ? loca : -1;
@@ -200,15 +204,17 @@ internal sealed partial class TrueTypeFont {
     /// are looked up in those families before the registered and platform fallback faces. The same
     /// family list always returns the same instance.
     /// </summary>
-    internal TrueTypeFont WithFallbackFamilies(IReadOnlyList<string> families) {
-        if (families.Count == 0) return _root;
-        var key = string.Join("\n", families);
+    internal TrueTypeFont WithFallbackFamilies(IReadOnlyList<string> families, int? weight = null, bool? italic = null) {
+        var requestedWeight = weight ?? _root.Weight;
+        var requestedItalic = italic ?? _root.IsItalic;
+        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic) return _root;
+        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n");
         lock (_root._viewLock) {
             _root._views ??= new Dictionary<string, TrueTypeFont>(StringComparer.OrdinalIgnoreCase);
             if (_root._views.TryGetValue(key, out var view)) return view;
             var names = new string[families.Count];
             for (var i = 0; i < names.Length; i++) names[i] = families[i];
-            view = new TrueTypeFont(_data, _tables, _collectionIndex, _compact, _root, names);
+            view = new TrueTypeFont(_data, _tables, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic);
             _root._views[key] = view;
             return view;
         }
@@ -216,6 +222,10 @@ internal sealed partial class TrueTypeFont {
 
     /// <summary>The stack families consulted first for characters this face does not cover.</summary>
     internal IReadOnlyList<string> FallbackFamilies => _fallbackFamilies;
+
+    /// <summary>Requested fallback style, which can differ from a primary face requiring synthetic emphasis or slant.</summary>
+    internal int FallbackWeight => _fallbackWeight ?? Weight;
+    internal bool FallbackItalic => _fallbackItalic ?? IsItalic;
 
     /// <summary>The face as loaded from its file, without a bound fallback stack.</summary>
     internal TrueTypeFont Root => _root;
@@ -273,7 +283,7 @@ internal sealed partial class TrueTypeFont {
     public bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize) =>
         Draw(canvas, x, y, text, color, fontSize, italic: false);
 
-    internal bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool italic) {
+    internal bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool italic, bool syntheticBoldCopyOnly = false) {
         var scale = ScaleFor(fontSize);
         var cursor = x;
         // Small text sits on a whole pixel and has its x-height and cap height fitted to the grid.
@@ -287,7 +297,8 @@ internal sealed partial class TrueTypeFont {
                 var face = shaped.Face;
                 var faceScale = face.ScaleFor(fontSize);
                 if (ReferenceEquals(face, previousFace)) cursor += face.Kerning(previousGlyph, shaped.Glyph) * faceScale;
-                rendered |= face.DrawGlyph(canvas, shaped.Glyph, cursor, baseline, faceScale, italic, color, fit);
+                if (!syntheticBoldCopyOnly || ReferenceEquals(face, this) || face.Weight < 600)
+                    rendered |= face.DrawGlyph(canvas, shaped.Glyph, cursor, baseline, faceScale, italic && !face.IsItalic, color, fit);
                 cursor += face.AdvanceWidth(shaped.Glyph) * faceScale;
                 previousFace = face;
                 previousGlyph = shaped.Glyph;

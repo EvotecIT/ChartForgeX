@@ -103,7 +103,8 @@ internal sealed partial class RgbaCanvas {
         }
 
         DrawText(x, y, text, color, fontSize, font, italic);
-        DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize, font, italic);
+        if (font != null) font.Draw(this, x + EmphasisOffset(fontSize), y, text, color, Math.Max(1, fontSize), italic, syntheticBoldCopyOnly: true);
+        else DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize, font, italic);
     }
 
     public static double MeasureTextTinyWidth(string text, int scale) => MeasureTextTinyWidth(text, scale, null);
@@ -142,13 +143,14 @@ internal sealed partial class RgbaCanvas {
     internal static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) {
         if (string.IsNullOrEmpty(text)) return 0;
         var bold = EmphasisFace(outlineFont ?? DefaultOutlineFont);
-        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidth(text, fontSize, outlineFont, italic) + EmphasisOffset(fontSize);
+        var primary = outlineFont ?? DefaultOutlineFont;
+        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidth(text, fontSize, outlineFont, italic) + (primary == null || primary.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
     }
 
     private static double MeasureTextEmphasizedWidthWithFont(string text, double fontSize, TrueTypeFont? font, bool italic) {
         if (string.IsNullOrEmpty(text)) return 0;
         var bold = EmphasisFace(font);
-        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidthWithFont(text, fontSize, font, italic) + EmphasisOffset(fontSize);
+        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidthWithFont(text, fontSize, font, italic) + (font == null || font.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
     }
 
     internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);

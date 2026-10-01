@@ -38,6 +38,8 @@ public static class TextLayoutEngine {
         var font = TypographyFontResolver.ResolveFace(style.Font);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
+        var omittedLines = false;
+        var lastLineEllipsized = false;
         foreach (var paragraphSlice in TextLineScanner.Enumerate(text)) {
             var remainingLines = maximumLines.HasValue
                 ? Math.Max(0, maximumLines.Value - resolved.Count)
@@ -51,17 +53,27 @@ public static class TextLayoutEngine {
                 remainingLines,
                 out var paragraphTrimmed);
             for (var i = 0; i < paragraphLines.Count; i++) {
-                resolved.Add(paragraphLines[i]);
+                var line = paragraphLines[i];
+                lastLineEllipsized = false;
+                if (wrapMode == TextWrapMode.NoWrap && line.Width > maximumWidth) {
+                    trimmed = true;
+                    if (trimming == TextTrimming.Ellipsis) {
+                        line = Ellipsize(line.Text, maximumWidth, style, font);
+                        lastLineEllipsized = true;
+                    }
+                }
+                resolved.Add(line);
             }
 
             if (paragraphTrimmed) {
                 trimmed = true;
+                omittedLines = true;
                 break;
             }
         }
 
         if (resolved.Count == 0) resolved.Add(new TextLayoutLine(string.Empty, 0));
-        if (trimmed && trimming == TextTrimming.Ellipsis) {
+        if (omittedLines && trimming == TextTrimming.Ellipsis && !lastLineEllipsized) {
             var last = resolved.Count - 1;
             resolved[last] = Ellipsize(resolved[last].Text, maximumWidth, style, font);
         }
@@ -81,7 +93,7 @@ public static class TextLayoutEngine {
         // A real italic face leans past its last advance just as a sheared one does; reserving the same
         // overhang keeps layout independent of which faces the host has installed.
         if (style.Font.Italic && !face.SynthesizeItalic && text.Length > 0) width += TrueTypeFont.ItalicOverhang(style.EffectiveFontSize);
-        if (face.SynthesizeBold && text.Length > 0) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
+        if (face.SynthesizeBold && text.Length > 0 && (face.Font == null || face.Font.NeedsSyntheticBold(text))) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
         return width;
     }
 
@@ -109,10 +121,8 @@ public static class TextLayoutEngine {
         }
         if (paragraph.Length == 0) return new List<TextLayoutLine> { new(string.Empty, 0) };
         if (wrapMode == TextWrapMode.NoWrap) {
-            // A line wider than the region is trimmed like a wrapped one past its last line: Ellipsis ends it with a
-            // marker, None clips it. Before, the full width was returned and Ellipsis never applied.
+            // Horizontal overflow is handled per line; it does not exhaust the remaining explicit paragraphs.
             var width = MeasureWidth(paragraph, style, font);
-            trimmed = width > maximumWidth;
             return new List<TextLayoutLine> { new(paragraph, width) };
         }
         if (wrapMode == TextWrapMode.Character) {

@@ -34,12 +34,12 @@ internal static class OpenTypeTestFonts {
     private static readonly byte[] FlexCharstring = Cs(100, 100, Op(21), 100, 0, 100, 0, 100, 0, 100, 0, 100, 0, 100, 0, 50, Op(12), (byte)35, 0, 100, Op(5), -600, 0, Op(5), Op(14));
     private static readonly byte[] BoxCharstring = Cs(50, 0, Op(21), 400, Op(6), 700, Op(7), -400, Op(6), Op(14));
 
-    internal static byte[] NameKeyed(bool includePrivateUse = true) {
+    internal static byte[] NameKeyed(bool includePrivateUse = true, IReadOnlyDictionary<int, int>? extraGlyphs = null, int weight = 400, bool italic = false) {
         var charStrings = new[] { Cs(Op(14)), HCharstring, OCharstring, XCharstring, ECharstring, AcuteCharstring, EAcuteCharstring, FlexCharstring, BoxCharstring };
         // Custom charset (format 0): SIDs of H, O, x, e, acute, eacute, F, and one more.
         var charset = new List<byte> { 0 };
         foreach (var sid in new[] { 41, 48, 89, 70, 125, 208, 39, 42 }) AddU16(charset, sid);
-        return Font("CFF ", BuildCff(charStrings, new[] { LocalSubr }, charset.ToArray(), cid: false), includePrivateUse);
+        return Font("CFF ", BuildCff(charStrings, new[] { LocalSubr }, charset.ToArray(), cid: false), includePrivateUse, extraGlyphs, weight, italic);
     }
 
     /// <summary>Packages independent synthetic faces in one OpenType collection.</summary>
@@ -188,15 +188,19 @@ internal static class OpenTypeTestFonts {
         return header.Concat(top).Concat(globalSubrs).Concat(vstore).Concat(charStringsIndex).Concat(fdArray).ToArray();
     }
 
-    private static byte[] Font(string outlineTag, byte[] outlines, bool includePrivateUse = true) {
+    private static byte[] Font(string outlineTag, byte[] outlines, bool includePrivateUse = true, IReadOnlyDictionary<int, int>? extraGlyphs = null, int weight = 400, bool italic = false) {
         var glyphCount = Advances.Length;
         var map = new SortedDictionary<int, int> { ['H'] = H, ['O'] = O, ['x'] = X, ['e'] = E, [0x00B4] = Acute, [0x00E9] = EAcute, ['F'] = Flex };
         foreach (var ch in "ChartForgeX 0123456789") if (!map.ContainsKey(ch)) map[ch] = Box;
         // A private-use character no platform font draws, for fallback tests.
         if (includePrivateUse) map[PrivateUseCharacter] = Box;
+        if (extraGlyphs != null) foreach (var glyph in extraGlyphs) map[glyph.Key] = glyph.Value;
+        var os2 = Os2();
+        os2[4] = (byte)(weight >> 8); os2[5] = (byte)weight;
+        os2[63] = italic ? (byte)1 : weight >= 600 ? (byte)0x20 : (byte)0x40;
         var tables = new SortedDictionary<string, byte[]>(StringComparer.Ordinal) {
             [outlineTag] = outlines,
-            ["OS/2"] = Os2(),
+            ["OS/2"] = os2,
             ["cmap"] = Cmap(map),
             ["head"] = Head(),
             ["hhea"] = Hhea(glyphCount),

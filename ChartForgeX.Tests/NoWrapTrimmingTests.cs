@@ -38,4 +38,34 @@ public sealed class NoWrapTrimmingTests {
             for (var x = 204; x < image.Width; x++) Assert.Equal(0, image.Pixels[(y * image.Width + x) * 4 + 3]);
         }
     }
+
+    [Theory]
+    [InlineData(TextTrimming.None)]
+    [InlineData(TextTrimming.Ellipsis)]
+    public void HorizontalOverflowPreservesFollowingExplicitLines(TextTrimming trimming) {
+        var style = TextStyle.Create(24, ChartColor.White);
+        foreach (int? maximumLines in new int?[] { null, 2 }) {
+            var layout = TextLayoutEngine.Layout(Long + "\nShort", 200, style, TextWrapMode.NoWrap, maximumLines, trimming);
+            Assert.True(layout.Trimmed);
+            Assert.Equal(2, layout.Lines.Count);
+            Assert.Equal("Short", layout.Lines[1].Text);
+            if (trimming == TextTrimming.Ellipsis) Assert.EndsWith("…", layout.Lines[0].Text);
+            else Assert.Equal(Long, layout.Lines[0].Text);
+        }
+    }
+
+    [Fact]
+    public void HorizontalAndLineLimitOverflowShareOneEllipsis() {
+        var path = Path.Combine(Path.GetTempPath(), "cfx-ellipsis-" + Guid.NewGuid().ToString("N") + ".otf");
+        File.WriteAllBytes(path, OpenTypeTestFonts.NameKeyed(extraGlyphs: new Dictionary<int, int> { [0x2026] = OpenTypeTestFonts.Box }));
+        try {
+            var style = TextStyle.Create(20, ChartColor.White);
+            style.Font = FontSpec.FromFile(path);
+            var layout = TextLayoutEngine.Layout("FFF\nH", 21, style, TextWrapMode.NoWrap, 1, TextTrimming.Ellipsis);
+            Assert.True(layout.Trimmed);
+            Assert.Equal("…", Assert.Single(layout.Lines).Text);
+        } finally {
+            File.Delete(path);
+        }
+    }
 }

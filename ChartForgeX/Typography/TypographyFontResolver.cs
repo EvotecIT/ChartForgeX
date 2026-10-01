@@ -36,7 +36,7 @@ internal static class TypographyFontResolver {
     internal static ResolvedTypeface ResolveFace(FontSpec font) {
         if (font.FilePath != null) {
             var requested = TrueTypeFont.TryLoadFromPath(font.FilePath, font.CollectionIndex, font.FaceName);
-            if (requested != null) return new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath);
+            if (requested != null) return WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic);
         }
 
         return ResolveFace(font.Family, font.Weight, font.Italic);
@@ -56,7 +56,7 @@ internal static class TypographyFontResolver {
             version = _cacheVersion;
         }
 
-        var resolved = ResolveFamily(family, weight, italic);
+        var resolved = WithRequestedFallbackStyle(ResolveFamily(family, weight, italic), weight, italic);
         lock (CacheLock) {
             // A registration that landed while this stack was resolving may have changed the answer.
             if (version == _cacheVersion && FamilyCache.Count < MaximumCachedFamilies) FamilyCache[key] = resolved;
@@ -64,6 +64,11 @@ internal static class TypographyFontResolver {
 
         return resolved;
     }
+
+    private static ResolvedTypeface WithRequestedFallbackStyle(ResolvedTypeface resolved, int weight, bool italic) =>
+        resolved.Font == null ? resolved : new ResolvedTypeface(
+            resolved.Font.WithFallbackFamilies(resolved.Font.FallbackFamilies, weight, italic),
+            resolved.SynthesizeBold, resolved.SynthesizeItalic, resolved.Path);
 
     /// <summary>
     /// Reads a CSS <c>font-weight</c> value: a number from 1 through 1000, <c>normal</c>, <c>bold</c>,

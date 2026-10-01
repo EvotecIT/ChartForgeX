@@ -9,13 +9,16 @@ namespace ChartForgeX.Typography;
 
 /// <summary>One glyph of shaped text: the face that draws it and its glyph id, in visual order.</summary>
 internal readonly struct ShapedGlyph {
-    public ShapedGlyph(TrueTypeFont face, ushort glyph) {
+    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0) {
         Face = face;
         Glyph = glyph;
+        SourceIndex = sourceIndex;
     }
 
     public TrueTypeFont Face { get; }
     public ushort Glyph { get; }
+    /// <summary>Index of the logical source cluster in Unicode code points, before visual reordering.</summary>
+    public int SourceIndex { get; }
 }
 
 /// <summary>
@@ -65,12 +68,19 @@ internal static class TextShaper {
         return shaped;
     }
 
-    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text) {
+    /// <summary>Shapes one complete text chunk while retaining the primary face of each logical code point.</summary>
+    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners) =>
+        ShapeCore(faces[0], text, faces, owners);
+
+    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null) {
         var codePoints = new List<int>(text.Length);
         for (var index = 0; index < text.Length;) codePoints.Add(TrueTypeFont.ReadCodePoint(text, ref index));
-        var clusters = Segment(codePoints);
+        var clusters = Segment(codePoints, owners);
         FontFallbackChain? chain = null;
-        foreach (var cluster in clusters) AssignFace(primary, ref chain, codePoints, cluster);
+        foreach (var cluster in clusters) {
+            if (faces != null) { primary = faces[cluster.Start]; chain = null; }
+            AssignFace(primary, ref chain, codePoints, cluster);
+        }
         if (ArabicShaping.MayJoin(codePoints)) Join(clusters);
 
         var order = new int[clusters.Count];
@@ -90,14 +100,14 @@ internal static class TextShaper {
         var glyphs = new List<ShapedGlyph>(codePoints.Count);
         foreach (var index in order) {
             var cluster = clusters[index];
-            foreach (var cp in cluster.Output) glyphs.Add(new ShapedGlyph(cluster.Face!, cluster.Face!.MapGlyph(cp)));
+            foreach (var cp in cluster.Output) glyphs.Add(new ShapedGlyph(cluster.Face!, cluster.Face!.MapGlyph(cp), cluster.Start));
         }
 
         return glyphs.ToArray();
     }
 
     // A base character and what attaches to it: marks, joiners and what they join, variation selectors, emoji modifiers, tags.
-    private static List<Cluster> Segment(List<int> codePoints) {
+    private static List<Cluster> Segment(List<int> codePoints, IReadOnlyList<int>? owners) {
         var clusters = new List<Cluster>();
         Cluster? current = null;
         for (var i = 0; i < codePoints.Count; i++) {
@@ -105,10 +115,10 @@ internal static class TextShaper {
             var arabicJoiner = cp == 0x200D &&
                 ((current != null && ArabicShaping.IsJoiningLetter(current.First)) ||
                  (i + 1 < codePoints.Count && ArabicShaping.IsJoiningLetter(codePoints[i + 1])));
-            var joinsPrevious = current != null && !arabicJoiner &&
+            var joinsPrevious = current != null && !arabicJoiner && (owners == null || owners[i] == owners[i - 1]) &&
                 (Extends(cp) || (codePoints[i - 1] == 0x200D && current.First != 0x200D && !ArabicShaping.IsJoiningLetter(cp)));
             if (!joinsPrevious) {
-                current = new Cluster(i, cp);
+                current = new Cluster(i, cp, owners == null ? 0 : owners[i]);
                 clusters.Add(current);
             }
 
@@ -197,7 +207,7 @@ internal static class TextShaper {
             if (cluster.Base == 0x0644 && i + 1 < clusters.Count) {
                 var alef = clusters[i + 1];
                 var ligature = ArabicShaping.LamAlef(alef.Base, forms[i] == ArabicForm.Final || forms[i] == ArabicForm.Medial);
-                if (ligature >= 0 && alef.Output.Count > 0 && ReferenceEquals(alef.Face, cluster.Face) && cluster.Face!.HasGlyph(ligature)) {
+                if (ligature >= 0 && alef.Output.Count > 0 && alef.Owner == cluster.Owner && ReferenceEquals(alef.Face, cluster.Face) && cluster.Face!.HasGlyph(ligature)) {
                     cluster.Output[0] = ligature;
                     for (var m = 1; m < alef.Output.Count; m++) cluster.Output.Add(alef.Output[m]);
                     alef.Output.Clear();
@@ -229,12 +239,14 @@ internal static class TextShaper {
         (cp >= 0x1BCA0 && cp <= 0x1BCA3) || (cp >= 0x1D173 && cp <= 0x1D17A) || (cp >= 0xE0000 && cp <= 0xE0FFF);
 
     private sealed class Cluster {
-        public Cluster(int start, int first) {
+        public Cluster(int start, int first, int owner) {
             Start = start;
             First = first;
+            Owner = owner;
         }
 
         public int Start { get; }
+        public int Owner { get; }
         /// <summary>The first code point, which decides joining when nothing in the cluster is drawn.</summary>
         public int First { get; }
         public int Count { get; set; }

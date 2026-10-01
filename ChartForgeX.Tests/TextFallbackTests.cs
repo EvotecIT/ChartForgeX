@@ -17,6 +17,41 @@ public sealed class TextFallbackTests : IDisposable {
 
     public void Dispose() => FontRegistry.Clear();
 
+    [Theory]
+    [InlineData(700, false)]
+    [InlineData(400, true)]
+    [InlineData(700, true)]
+    public void FallbackUsesRequestedStyleWithoutSynthesizingAnAvailableRealFace(int weight, bool italic) {
+        var stem = Path.Combine(Path.GetTempPath(), "cfx-styled-fallback-" + Guid.NewGuid().ToString("N"));
+        var paths = new[] { stem + "-primary.otf", stem + "-regular.otf", stem + "-styled.otf" };
+        File.WriteAllBytes(paths[0], OpenTypeTestFonts.NameKeyed(includePrivateUse: false));
+        File.WriteAllBytes(paths[1], OpenTypeTestFonts.NameKeyed());
+        File.WriteAllBytes(paths[2], OpenTypeTestFonts.NameKeyed(extraGlyphs: new Dictionary<int, int> {
+            [OpenTypeTestFonts.PrivateUseCharacter] = OpenTypeTestFonts.H
+        }, weight: weight, italic: italic));
+        try {
+            FontRegistry.Register("CFX Style Primary", paths[0]);
+            FontRegistry.Register("CFX Style Fallback", paths[1]);
+            FontRegistry.Register("CFX Style Fallback", paths[2], weight, italic);
+            var primary = TypographyFontResolver.ResolveFace("CFX Style Primary, CFX Style Fallback", weight, italic).Font!;
+            var text = char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter);
+            var glyph = Assert.Single(TextShaper.Shape(primary, text));
+            Assert.Equal(weight, glyph.Face.Weight);
+            Assert.Equal(italic, glyph.Face.IsItalic);
+            Assert.Equal(OpenTypeTestFonts.H, glyph.Glyph);
+            var actual = new RgbaCanvas(40, 40, 1, primary, 1, useDefaultOutlineFont: false);
+            if (weight >= 600) actual.DrawTextEmphasized(4, 4, text, ChartColor.Black, 20, primary, italic);
+            else actual.DrawText(4, 4, text, ChartColor.Black, 20, primary, italic);
+            var expected = new RgbaCanvas(40, 40, 1, glyph.Face, 1, useDefaultOutlineFont: false);
+            glyph.Face.Draw(expected, 4, 4, text, ChartColor.Black, 20, italic: false);
+            Assert.Equal(expected.ToOutputPixels(), actual.ToOutputPixels());
+            if (weight >= 600) Assert.Equal(glyph.Face.Measure(text, 20), RgbaCanvas.MeasureTextEmphasizedWidth(text, 20, primary), 6);
+        } finally {
+            FontRegistry.Clear();
+            foreach (var path in paths) File.Delete(path);
+        }
+    }
+
     [Fact]
     public void MissingCharactersComeFromAFaceThatHasThem() {
         var primary = TrueTypeFont.TryLoadDefault();
