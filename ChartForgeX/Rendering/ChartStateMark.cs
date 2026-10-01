@@ -50,7 +50,7 @@ internal readonly struct ChartStateMark {
 
     private ChartColor Background { get; }
 
-    /// <summary>Gets the fill as it appears on the plot background, for choosing a readable text colour on the mark.</summary>
+    /// <summary>Gets the fill as it appears on the backdrop (see <see cref="Backdrop"/>), for choosing a readable text colour on the mark.</summary>
     public ChartColor Surface => FillOpacity >= 0.999 ? Color : ChartColorMath.Blend(Background, Color, FillOpacity);
 
     /// <summary>Gets the pattern token written to <c>data-cfx-pattern</c>, or null for a solid mark.</summary>
@@ -65,16 +65,27 @@ internal readonly struct ChartStateMark {
     public string? EmphasisToken => State.Emphasis == ChartStateEmphasis.Quiet ? "quiet" : null;
 
     /// <summary>
-    /// Returns the opaque colour behind the marks: the chart background, then the card, then the plot background,
-    /// each composited only where it is drawn. A theme with no opaque surface at all (a transparent overlay) falls back
-    /// to white or black, whichever contrasts with the text colour, so pattern lines never disappear.
+    /// Returns the opaque colour behind the marks, from <see cref="ChartOptions.MarkBackdrop"/>. By default
+    /// (<see cref="ChartMarkBackdrop.Layered"/>) that is the theme background, drawn or not (with a transparent chart it
+    /// stands for the surface the host places the chart on), then the card and the plot background composited where they are drawn;
+    /// the other choices take one theme surface whether or not it is drawn. Any surface is composited over white or black,
+    /// whichever contrasts with the text colour, so a translucent or transparent surface still gives visible lines.
     /// </summary>
     public static ChartColor Backdrop(Chart chart) {
         var options = chart.Options;
         var theme = options.Theme;
         var backdrop = ChartColorMath.RelativeLuminance(theme.Text) > 0.5 ? ChartColor.FromRgb(0, 0, 0) : ChartColor.White;
+        switch (options.MarkBackdrop) {
+            case ChartMarkBackdrop.Background:
+                return Over(theme.Background, backdrop);
+            case ChartMarkBackdrop.Card:
+                return Over(theme.CardBackground, backdrop);
+            case ChartMarkBackdrop.Plot:
+                return Over(theme.PlotBackground, backdrop);
+        }
+
         backdrop = Over(theme.Background, backdrop);
-        if (options.ShowCard) backdrop = Over(theme.CardBackground, backdrop);
+        if (options.ShowCard && theme.UseCard) backdrop = Over(theme.CardBackground, backdrop);
         if (options.ShowPlotBackground) backdrop = Over(theme.PlotBackground, backdrop);
         return backdrop;
     }

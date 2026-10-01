@@ -169,6 +169,37 @@ public sealed class StatePresentationTests {
     }
 
     [Fact]
+    public void MarkBackdrop_ChoosesTheSurfaceBehindTheMarks() {
+        string Stroke(Chart chart) => XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "pattern")
+            .SelectMany(pattern => pattern.Elements()).Select(line => (string)line.Attribute("stroke")!).Distinct().Single();
+        Chart Transparent(ChartMarkBackdrop? backdrop) {
+            var chart = Matrix().WithTransparentBackground().WithCard(false).WithPlotBackground(false);
+            chart.Options.Theme.Background = ChartColor.FromHex("#F2F3F4");
+            chart.Options.Theme.CardBackground = ChartColor.FromHex("#FFFFFF");
+            chart.Options.Theme.PlotBackground = ChartColor.FromHex("#F8F9FA");
+            if (backdrop.HasValue) chart.WithMarkBackdrop(backdrop.Value);
+            return chart;
+        }
+
+        // The default keeps the undrawn theme background: it stands for the page under a transparent chart.
+        Assert.Equal(ChartMarkBackdrop.Layered, Chart.Create().Options.MarkBackdrop);
+        Assert.Equal("#F2F3F4", Stroke(Transparent(null)));
+        Assert.Equal("#FFFFFF", Stroke(Transparent(ChartMarkBackdrop.Card)));
+        Assert.Equal("#F8F9FA", Stroke(Transparent(ChartMarkBackdrop.Plot)));
+        Assert.Equal("#F2F3F4", Stroke(Transparent(ChartMarkBackdrop.Background)));
+        Assert.Equal("#FFFFFF", Stroke(Transparent(null).WithCard(true)));
+        Assert.Equal("#F2F3F4", Stroke(Transparent(ChartMarkBackdrop.Background).WithCard(true)));
+        Assert.NotEqual(Transparent(null).ToPng(), Transparent(ChartMarkBackdrop.Card).ToPng());
+
+        // A card that is not drawn (the Bare surface style) is not composited.
+        var bare = Matrix();
+        bare.Options.Theme.WithSurfaceStyle(ChartSurfaceStyle.Bare);
+        bare.Options.Theme.Background = ChartColor.FromHex("#EEF0F2");
+        Assert.Equal(bare.Options.Theme.Background.ToCss(), Stroke(bare));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().WithMarkBackdrop((ChartMarkBackdrop)42));
+    }
+
+    [Fact]
     public void CategoricalHeatmap_ManyGroupsInAShortChart_KeepRowsInsideThePlot() {
         var chart = Chart.Create().WithSize(640, 300).WithStateCategories(new ChartStateCategory("pass", "Passed", Pass)).WithXLabels("One", "Two");
         chart.Options.ShowLegend = false;

@@ -8,10 +8,10 @@ public enum ChartStatePattern {
     /// <summary>A solid fill in the category colour.</summary>
     Solid,
 
-    /// <summary>The category colour with diagonal lines in the plot background colour.</summary>
+    /// <summary>The category colour with diagonal lines in the colour behind the marks (see <see cref="ChartOptions.MarkBackdrop"/>).</summary>
     Hatched,
 
-    /// <summary>The category colour with crossed diagonal lines in the plot background colour.</summary>
+    /// <summary>The category colour with crossed diagonal lines in the colour behind the marks (see <see cref="ChartOptions.MarkBackdrop"/>).</summary>
     CrossHatched,
 
     /// <summary>A dashed outline in the category colour around a faint tint of it.</summary>
