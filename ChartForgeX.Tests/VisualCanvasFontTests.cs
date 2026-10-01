@@ -57,9 +57,19 @@ public sealed class VisualCanvasFontTests {
     }
 
     [Fact]
+    public void PortableHeroRunsKeepTheDrawnGlyphAdvances() {
+        var canvas = VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .AddHeroTitle(20, 10, 560, 40, new[] { new VisualCanvasTextRun("iiiiii", ChartColors.White), new VisualCanvasTextRun("MMMMMM", ChartColors.White) });
+        var png = InkBounds(Png(canvas), 0, 130);
+        var svg = InkBounds(SvgRasterizer.ToImage(canvas.ToSvg()), 0, 130);
+        Assert.InRange(png.Right - svg.Right, -2, 2);
+    }
+
+    [Fact]
     public void HeroTitlesShrinkToTheirWidthInBothOutputs() {
         const double left = 100, width = 300;
         var canvas = VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .WithTheme(new VisualCanvasTheme { TextMeasurementMode = TextMeasurementMode.InstalledFonts })
             .AddHeroTitle(left, 10, width, 82, new[] { new VisualCanvasTextRun("Power", ChartColors.White), new VisualCanvasTextRun("BGInfo", ChartColors.White) });
         foreach (var image in new[] { Png(canvas), SvgRasterizer.ToImage(canvas.ToSvg()) }) {
             var bounds = InkBounds(image, 0, image.Height);
@@ -74,7 +84,7 @@ public sealed class VisualCanvasFontTests {
         var canvas = Canvas(family).AddInfoTile(10, 10, 360, 100, "CPU", "Processor", "Intel Xeon Platinum 8380 @ 2.30GHz", "40 cores, 80 threads", textFitPolicy: VisualCanvasTextFitPolicy.SingleLineEllipsis);
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
-        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, family);
+        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, family, TextMeasurementMode.InstalledFonts);
         foreach (var line in layout.Lines) {
             var width = VisualCanvasTextFace.Resolve(family, line.Weight).Measure(line.Text, line.FontSize);
             Assert.True(width <= metrics.TextMax + 0.01, "Tile line '" + line.Text + "' is wider than the tile text area.");
@@ -84,7 +94,7 @@ public sealed class VisualCanvasFontTests {
     }
 
     private static VisualCanvas Canvas(string family) =>
-        VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(new VisualCanvasTheme { FontFamily = family });
+        VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(new VisualCanvasTheme { FontFamily = family, TextMeasurementMode = TextMeasurementMode.InstalledFonts });
 
     private static RgbaImage Png(VisualCanvas canvas) => new PngVisualCanvasRenderer().RenderImage(canvas);
 

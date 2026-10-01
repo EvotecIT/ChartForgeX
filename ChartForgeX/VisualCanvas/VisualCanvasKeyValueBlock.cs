@@ -110,10 +110,10 @@ public sealed class VisualCanvasKeyValueBlockLayer : VisualCanvasLayer {
     internal string ResolveFontFamily(VisualCanvasTheme theme) => string.IsNullOrWhiteSpace(FontFamilyName) ? theme.FontFamily : FontFamilyName;
 
     internal VisualCanvasTextFace LabelFace(VisualCanvasTheme theme) =>
-        VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), LabelEmphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular);
+        VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), LabelEmphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
 
     internal VisualCanvasTextFace ValueFace(VisualCanvasTheme theme) =>
-        VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), ValueEmphasized ? VisualCanvasFontWeights.KeyValueEmphasizedValue : VisualCanvasFontWeights.Regular);
+        VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), ValueEmphasized ? VisualCanvasFontWeights.KeyValueEmphasizedValue : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
 }
 
 internal sealed class VisualCanvasKeyValueBlockLayout {

@@ -193,6 +193,12 @@ public enum VisualCanvasInfoTileMiniChartKind {
 /// Theme colors for reusable visual canvas layers.
 /// </summary>
 public sealed class VisualCanvasTheme {
+    private TextMeasurementMode _textMeasurementMode = TextMeasurementMode.PortableEstimate;
+    /// <summary>Controls canvas fitting and wrapping. Portable estimates and registered faces are independent of installed fonts; InstalledFonts opts into host-dependent exact metrics.</summary>
+    public TextMeasurementMode TextMeasurementMode {
+        get => _textMeasurementMode;
+        set { VisualCanvas.ValidateEnum(value, nameof(value)); _textMeasurementMode = value; }
+    }
     /// <summary>Gets or sets the primary font family stack used by SVG and PNG canvas text.</summary>
     public string FontFamily { get; set; } = "Segoe UI, Arial, sans-serif";
     /// <summary>Gets or sets the monospace font family stack used by symbolic badge text in SVG and PNG output.</summary>

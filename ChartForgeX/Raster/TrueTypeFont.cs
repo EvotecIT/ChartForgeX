@@ -8,6 +8,8 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Raster;
 
 internal sealed partial class TrueTypeFont {
+    /// <summary>Shares immutable font data while giving a rendering context its own face identity.</summary>
+    internal TrueTypeFont WithRenderingIdentity() => (TrueTypeFont)MemberwiseClone();
     internal const double ObliqueShear = 0.22;
     private static readonly object FontCacheLock = new();
     private static readonly Dictionary<string, TrueTypeFont?> FontCache = new(StringComparer.OrdinalIgnoreCase);

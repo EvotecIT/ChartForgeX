@@ -35,10 +35,11 @@ public sealed class ChartThemeFontTests {
         var synthesized = RgbaCanvas.MeasureTextEmphasizedWidth("Readership", 20, regular);
         Assert.True(synthesized > regular.Measure("Readership", 20));
         using (RgbaCanvas.OpenEmphasisScope()) {
-            Assert.Same(regular, TypographyFontResolver.ResolveThemeFont("Georgia, serif"));
-            Assert.Equal(bold.Measure("Readership", 20), RgbaCanvas.MeasureTextEmphasizedWidth("Readership", 20, regular), 6);
-            var viaEmphasis = new RgbaCanvas(200, 40, 1, regular, 1, useDefaultOutlineFont: false);
-            viaEmphasis.DrawTextEmphasized(4, 4, "Readership", ChartColors.White, 20, regular, italic: false);
+            var scoped = TypographyFontResolver.ResolveThemeFont("Georgia, serif");
+            Assert.NotSame(regular, scoped);
+            Assert.Equal(bold.Measure("Readership", 20), RgbaCanvas.MeasureTextEmphasizedWidth("Readership", 20, scoped), 6);
+            var viaEmphasis = new RgbaCanvas(200, 40, 1, scoped, 1, useDefaultOutlineFont: false);
+            viaEmphasis.DrawTextEmphasized(4, 4, "Readership", ChartColors.White, 20, scoped, italic: false);
             var direct = new RgbaCanvas(200, 40, 1, bold, 1, useDefaultOutlineFont: false);
             direct.DrawText(4, 4, "Readership", ChartColors.White, 20, bold, italic: false);
             Assert.Equal(direct.Pixels, viaEmphasis.Pixels);

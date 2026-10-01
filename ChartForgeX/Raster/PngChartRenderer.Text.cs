@@ -148,7 +148,8 @@ public sealed partial class PngChartRenderer {
             : RgbaCanvas.MeasureTextWidthWithFont(value, fontSize, font, style.Italic));
     }
     private static double EstimatePngStyledTextHeight(double fontSize, TextStyleOverride style) {
-        var height = RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style));
+        // Layout reserves the same em-based line box as SVG; host face metrics must not consume the plot.
+        var height = Math.Min(fontSize * 1.2, RgbaCanvas.MeasureTextHeight(fontSize, PngStyleFont(style)));
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         if (PngUnderlineStyle(style) != TextDecorationStyle.None) height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(PngUnderlineStyle(style), decorationThickness));
         return height;
@@ -160,7 +161,7 @@ public sealed partial class PngChartRenderer {
         Clamp(y, top - PngStyledTextTopExtent(fontSize, style), bottom - PngStyledTextBottomExtent(fontSize, style));
     private static double CenterPngStyledTextY(ChartRect bounds, double fontSize, TextStyleOverride style) =>
         bounds.Top + (bounds.Height - EstimatePngStyledTextBoundsHeight(fontSize, style)) / 2.0 - PngStyledTextTopExtent(fontSize, style);
-    private static double EstimatePngTextHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont);
+    private static double EstimatePngTextHeight(double fontSize) => Math.Min(fontSize * 1.2, RgbaCanvas.MeasureTextHeight(fontSize, CurrentOutlineFont));
     private static double PngTickFontSize(Chart chart) => PngStyleFontSize(chart.Options.TickLabelStyle, chart.Options.Theme.TickLabelFontSize);
     private static ChartColor PngTickColor(Chart chart) => PngStyleColor(chart.Options.TickLabelStyle, chart.Options.Theme.MutedText);
     private static double PngAxisTitleFontSize(Chart chart) => PngStyleFontSize(chart.Options.AxisTitleStyle, chart.Options.Theme.AxisTitleFontSize);

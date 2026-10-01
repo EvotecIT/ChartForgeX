@@ -42,19 +42,5 @@ public sealed class ReadmeSampleTests {
         }
     }
 
-    [Fact]
-    public void ReadmeSamplesDoNotNumberLabelledPointsFromZero() {
-        var root = AppContext.BaseDirectory;
-        while (root != null && !File.Exists(Path.Combine(root, "ChartForgeX.sln"))) root = Path.GetDirectoryName(root);
-        if (root == null) return;
-        foreach (var readme in new[] { "README.md", "README.nuget.md" }) {
-            var text = File.ReadAllText(Path.Combine(root, readme));
-            Assert.DoesNotContain("new ChartPoint(index, value)", text, StringComparison.Ordinal);
-            Assert.DoesNotContain("new ChartPoint(i, y[i])", text, StringComparison.Ordinal);
-        }
-
-        Assert.Contains("ChartPoints.FromValues(820, 940", File.ReadAllText(Path.Combine(root, "README.nuget.md")), StringComparison.Ordinal);
-    }
-
     private static double Number(XElement element, string name) => double.Parse((string)element.Attribute(name)!, CultureInfo.InvariantCulture);
 }

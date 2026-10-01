@@ -141,7 +141,7 @@ internal sealed class SvgRasterStyle {
         ApplyCustomProperties(style, declarations);
         foreach (var declaration in declarations) {
             if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
-            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties));
+            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight);
         }
 
         if (declarations.Any(declaration => string.Equals(declaration.Name, "text-decoration", StringComparison.OrdinalIgnoreCase))) {
@@ -247,7 +247,7 @@ internal sealed class SvgRasterStyle {
         }
     }
 
-    private static void Apply(SvgRasterStyle style, string name, string value) {
+    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight) {
         if (string.IsNullOrWhiteSpace(value)) return;
         switch (name) {
             case "color":
@@ -310,7 +310,7 @@ internal sealed class SvgRasterStyle {
                 style.FontFamily = value.Trim();
                 break;
             case "font-weight":
-                style.FontWeight = TypographyFontResolver.ParseCssWeight(value, style.FontWeight);
+                style.FontWeight = TypographyFontResolver.ParseCssWeight(value, inheritedFontWeight);
                 break;
             case "font-style":
                 style.FontStyle = value.Trim();

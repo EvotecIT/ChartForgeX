@@ -17,6 +17,53 @@ namespace ChartForgeX.Tests;
 public sealed class FontRegistryTests : IDisposable {
     private const string Family = "CFX Registered Serif";
 
+    [Fact]
+    public void UnpairedAliasPreservesAnEarlierThemesEmphasisPair() {
+        if (!TryGetGeorgia(out var regularPath, out _)) return;
+        FontRegistry.Register(Family, regularPath);
+        using (RgbaCanvas.OpenEmphasisScope()) {
+            var regular = TypographyFontResolver.ResolveThemeFont("Georgia");
+            var pairedWidth = RgbaCanvas.MeasureTextEmphasizedWidth("Readership", 20, regular);
+            var alias = TypographyFontResolver.ResolveThemeFont(Family);
+            Assert.NotSame(regular, alias);
+            var syntheticWidth = RgbaCanvas.MeasureTextEmphasizedWidth("Readership", 20, alias);
+            Assert.NotEqual(pairedWidth, syntheticWidth);
+            Assert.Equal(pairedWidth, RgbaCanvas.MeasureTextEmphasizedWidth("Readership", 20, regular));
+            Assert.Same(regular, TypographyFontResolver.ResolveThemeFont("Georgia"));
+        }
+    }
+
+    [Fact]
+    public void PortableDrawingKeepsStackPrecedenceAndUsesActualGlyphAdvances() {
+        if (!TryGetGeorgia(out var path, out _)) return;
+        FontRegistry.Register(Family, path);
+        foreach (var stack in new[] { "Segoe UI, " + Family + ", sans-serif", "sans-serif, " + Family }) {
+            var portable = VisualCanvasTextFace.Resolve(stack, 850, TextMeasurementMode.PortableEstimate);
+            var actual = VisualCanvasTextFace.Resolve(stack, 850);
+            foreach (var text in new[] { "iiiiii", "MMMMMM" }) {
+                Assert.Equal(actual.Measure(text, 20), portable.DrawAdvance(text, 20));
+                var expected = new RgbaCanvas(250, 50, 1);
+                var image = new RgbaCanvas(250, 50, 1);
+                actual.Draw(expected, 10, 10, text, ChartForgeX.Primitives.ChartColor.White, 20);
+                portable.Draw(image, 10, 10, text, ChartForgeX.Primitives.ChartColor.White, 20);
+                Assert.Equal(expected.Pixels, image.Pixels);
+            }
+        }
+    }
+
+    [Fact]
+    public void PortableCanvasMetricsIgnoreInstalledFamiliesAndUseRegisteredFaces() {
+        const string text = "Wide canvas title WWW";
+        var portable = VisualCanvasTextFace.Resolve("Georgia", 400, TextMeasurementMode.PortableEstimate);
+        var absent = VisualCanvasTextFace.Resolve("No Such Family", 400, TextMeasurementMode.PortableEstimate);
+        Assert.Equal(absent.Measure(text, 20), portable.Measure(text, 20));
+        Assert.Equal(absent.LineHeight(20), portable.LineHeight(20));
+        if (!TryGetGeorgia(out var path, out _)) return;
+        FontRegistry.Register(Family, path);
+        var registered = VisualCanvasTextFace.Resolve(Family, 400, TextMeasurementMode.PortableEstimate);
+        Assert.Equal(TrueTypeFont.TryLoadFromPath(path)!.Measure(text, 20), registered.Measure(text, 20));
+    }
+
     public void Dispose() => FontRegistry.Clear();
 
     [Fact]

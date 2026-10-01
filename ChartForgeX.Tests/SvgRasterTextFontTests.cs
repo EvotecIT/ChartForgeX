@@ -10,6 +10,17 @@ namespace ChartForgeX.Tests;
 /// family return early on hosts without it.
 /// </summary>
 public sealed class SvgRasterTextFontTests {
+    [Theory]
+    [InlineData("lighter", 100)]
+    [InlineData("bolder", 700)]
+    public void RelativeWeightUsesParentDespiteOverriddenPresentationAttribute(string relative, int expected) {
+        var svg = SvgRasterParser.ParseDocument("<svg xmlns=\"http://www.w3.org/2000/svg\"><text font-weight=\"900\" style=\"font-weight:" + relative + "\">text</text></svg>");
+        var parent = SvgRasterStyle.Default;
+        parent.FontWeight = 400;
+        var style = SvgRasterStyle.Resolve(parent, svg.Children[0]);
+        Assert.Equal(expected, style.FontWeight);
+    }
+
     [Fact]
     public void CssWeightsResolveKeywordsNumbersAndRelativeValues() {
         Assert.Equal(400, TypographyFontResolver.ParseCssWeight("normal", 700));

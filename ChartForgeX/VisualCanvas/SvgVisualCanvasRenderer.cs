@@ -149,7 +149,7 @@ public sealed class SvgVisualCanvasRenderer {
         var anchor = Anchor(text.Alignment);
         var x = AlignedX(text.X, text.Width, text.Alignment);
         var weight = text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular;
-        var fitted = VisualCanvasTextFace.Resolve(theme.FontFamily, weight).Fit(text.Text, text.FontSize, Math.Max(4, text.Width));
+        var fitted = VisualCanvasTextFace.Resolve(theme.FontFamily, weight, theme.TextMeasurementMode).Fit(text.Text, text.FontSize, Math.Max(4, text.Width));
         writer.StartElement("text")
             .Attribute("data-cfx-role", "visual-canvas-text")
             .Attribute("x", x)
@@ -167,7 +167,7 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
         var anchor = Anchor(hero.Alignment);
         var x = AlignedX(hero.X, hero.Width, hero.Alignment);
-        var fontSize = hero.FittedFontSize(VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle));
+        var fontSize = hero.FittedFontSize(VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode));
         writer.StartElement("text")
             .Attribute("data-cfx-role", "visual-canvas-hero-title")
             .Attribute("x", x)
@@ -252,13 +252,13 @@ public sealed class SvgVisualCanvasRenderer {
         var iconBox = metrics.IconBox;
         var iconX = metrics.IconX;
         var iconY = metrics.IconY;
-        var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(tile.Icon, iconBox, theme.FontFamily);
+        var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(tile.Icon, iconBox, theme.FontFamily, theme.TextMeasurementMode);
         writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", isFilled ? accent.WithOpacity(isRaised ? 0.25 : 0.18).ToCss() : "none").Attribute("stroke", isRaised ? accent.WithOpacity(0.32).ToCss() : (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? accent.WithOpacity(0.38).ToCss() : "none")).EndEmptyElement().Line();
         RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, accent, theme.FontFamily);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily).Lines) {
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily, theme.TextMeasurementMode).Lines) {
             writer.StartElement("text")
                 .Attribute("x", line.X)
                 .Attribute("y", line.Y + line.FontSize)
@@ -497,8 +497,8 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderFeatureStrip(SvgMarkupWriter writer, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-feature-strip").EndStartElement().Line();
         var slot = strip.Width / strip.Items.Count;
-        var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized);
-        var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel);
+        var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized, theme.TextMeasurementMode);
+        var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel, theme.TextMeasurementMode);
         for (var i = 0; i < strip.Items.Count; i++) {
             var item = strip.Items[i];
             var cx = strip.X + slot * i + slot / 2;

@@ -40,7 +40,7 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void RenderLayer(RgbaCanvas canvas, VisualCanvasLayer layer, VisualCanvasTheme theme) {
         if (layer is VisualCanvasTextLayer text) {
-            var face = VisualCanvasTextFace.Resolve(theme.FontFamily, text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular);
+            var face = VisualCanvasTextFace.Resolve(theme.FontFamily, text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
             DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.Color, text.Alignment, face);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
             DrawHeroTitle(canvas, hero, theme);
@@ -90,21 +90,21 @@ public sealed class PngVisualCanvasRenderer {
     // The same family and weight the SVG renderer writes, fitted, measured, and drawn with one face.
     private static void DrawText(RgbaCanvas canvas, double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment, VisualCanvasTextFace face) {
         var fitted = face.Fit(text, fontSize, Math.Max(4, width));
-        var drawX = AlignedX(x, width, face.Measure(fitted, fontSize), alignment);
+        var drawX = AlignedX(x, width, face.DrawAdvance(fitted, fontSize), alignment);
         face.Draw(canvas, drawX, y, fitted, color, fontSize);
     }
 
     private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
-        var face = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle);
+        var face = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode);
         var fontSize = hero.FittedFontSize(face);
         var totalWidth = 0.0;
-        foreach (var run in hero.Runs) totalWidth += face.Measure(run.Text, fontSize);
+        foreach (var run in hero.Runs) totalWidth += face.DrawAdvance(run.Text, fontSize);
         var x = AlignedX(hero.X, hero.Width, totalWidth, hero.Alignment);
         // A title shrunk to fit stays centered on the line it was placed on.
         var y = hero.Y + (hero.FontSize - fontSize) / 2;
         foreach (var run in hero.Runs) {
             face.Draw(canvas, x, y, run.Text, run.Color, fontSize);
-            x += face.Measure(run.Text, fontSize);
+            x += face.DrawAdvance(run.Text, fontSize);
         }
     }
 
@@ -171,12 +171,12 @@ public sealed class PngVisualCanvasRenderer {
         } else {
             canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(0.38), 1);
         }
-        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent, theme.FontFamily);
+        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent, theme.FontFamily, theme.TextMeasurementMode);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily).Lines) {
-            VisualCanvasTextFace.Resolve(theme.FontFamily, line.Weight).Draw(canvas, line.X, line.Y, line.Text, TileTextColor(line.Role, theme), line.FontSize);
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily, theme.TextMeasurementMode).Lines) {
+            VisualCanvasTextFace.Resolve(theme.FontFamily, line.Weight, theme.TextMeasurementMode).Draw(canvas, line.X, line.Y, line.Text, TileTextColor(line.Role, theme), line.FontSize);
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
@@ -251,11 +251,11 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily) {
+    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         if (kind == VisualCanvasInfoTileIconKind.Text) {
-            var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(text, size, fontFamily);
+            var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(text, size, fontFamily, mode);
             // Baselines match the SVG output: DrawText takes the top of the em box, one font size above the baseline.
-            DrawText(canvas, x, y + size / 2 + iconFont * 0.36 - iconFont, size, text, iconFont, color, TextAlignment.Center, VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.Emphasized));
+            DrawText(canvas, x, y + size / 2 + iconFont * 0.36 - iconFont, size, text, iconFont, color, TextAlignment.Center, VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.Emphasized, mode));
             return;
         }
 
@@ -367,7 +367,7 @@ public sealed class PngVisualCanvasRenderer {
         }
 
         var fontSize = Math.Max(24, badge.Height * 0.42);
-        DrawText(canvas, badge.X, badge.Y + badge.Height / 2 + badge.Height * 0.17 - fontSize, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, TextAlignment.Center, VisualCanvasTextFace.Resolve(theme.MonospaceFontFamily, VisualCanvasFontWeights.HeroBadge));
+        DrawText(canvas, badge.X, badge.Y + badge.Height / 2 + badge.Height * 0.17 - fontSize, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, TextAlignment.Center, VisualCanvasTextFace.Resolve(theme.MonospaceFontFamily, VisualCanvasFontWeights.HeroBadge, theme.TextMeasurementMode));
     }
 
     private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
@@ -446,8 +446,8 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void DrawFeatureStrip(RgbaCanvas canvas, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
         var slot = strip.Width / strip.Items.Count;
-        var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized);
-        var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel);
+        var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized, theme.TextMeasurementMode);
+        var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel, theme.TextMeasurementMode);
         for (var i = 0; i < strip.Items.Count; i++) {
             var item = strip.Items[i];
             var slotX = strip.X + slot * i;

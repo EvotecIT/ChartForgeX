@@ -400,8 +400,7 @@ public sealed class StateTimelineTests {
     }
 
     private static Chart CreateChart() {
-        // Tall enough for three readable lanes below the summary header and above the axis, its title, and the legend.
-        var chart = Chart.Create().WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
+        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
                 new ChartStateCategory("up", "Up", Up),
                 new ChartStateCategory("down", "Down", Down),

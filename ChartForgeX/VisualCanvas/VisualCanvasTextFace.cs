@@ -31,26 +31,56 @@ internal static class VisualCanvasFontWeights {
 internal readonly struct VisualCanvasTextFace {
     private const string Ellipsis = "...";
     private readonly ResolvedTypeface _face;
+    private readonly bool _portable;
+    private readonly string? _family;
+    private readonly int _weight;
 
-    private VisualCanvasTextFace(ResolvedTypeface face) {
+    private VisualCanvasTextFace(ResolvedTypeface face, bool portable = false, string? family = null, int weight = 400) {
         _face = face;
+        _portable = portable;
+        _family = family;
+        _weight = weight;
     }
 
     public static VisualCanvasTextFace Resolve(string? family, int weight) => new(TypographyFontResolver.ResolveFace(family, weight, italic: false));
 
+    public static VisualCanvasTextFace Resolve(string? family, int weight, TextMeasurementMode mode) {
+        if (mode == TextMeasurementMode.InstalledFonts) return Resolve(family, weight);
+        foreach (var part in (family ?? "sans-serif").Split(',')) {
+            var registered = FontRegistry.Find(part.Trim().Trim('\"', '\''), weight, italic: false);
+            if (string.IsNullOrWhiteSpace(part)) continue;
+            if (registered != null) {
+                var font = TrueTypeFont.TryLoadFromPath(registered.Path, registered.CollectionIndex);
+                if (font != null && font.IsTextFace) return new(new ResolvedTypeface(font, weight >= 600 && registered.Weight < 600, false, registered.Path));
+            }
+            // An earlier unregistered family may be installed on the drawing host. It must keep
+            // precedence over later registrations, without discovering host fonts during layout.
+            break;
+        }
+        return new(default, portable: true, family: family, weight: weight);
+    }
+
     public double Measure(string text, double fontSize) {
         if (string.IsNullOrEmpty(text)) return 0;
+        if (_portable) return text.Length * fontSize * (_weight >= 600 ? 0.62 : 0.56);
         // Only a family without a bold face is emboldened, and only then does the offset take room.
         return _face.SynthesizeBold
             ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, _face.Font)
             : RgbaCanvas.MeasureTextWidth(text, fontSize, _face.Font);
     }
 
-    public double LineHeight(double fontSize) => RgbaCanvas.MeasureTextHeight(fontSize, _face.Font);
+    public double LineHeight(double fontSize) => _portable ? fontSize * 1.2 : RgbaCanvas.MeasureTextHeight(fontSize, _face.Font);
+
+    /// <summary>The actual advance for raster placement, after portable fitting has chosen the text and size.</summary>
+    public double DrawAdvance(string text, double fontSize) => _portable ? Resolve(_family, _weight).Measure(text, fontSize) : Measure(text, fontSize);
 
     /// <summary>Draws text whose em box starts at <paramref name="y"/>; the baseline is one font size lower, where SVG output puts it.</summary>
     public void Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize) {
         if (string.IsNullOrEmpty(text)) return;
+        if (_portable) {
+            Resolve(_family, _weight).Draw(canvas, x, y, text, color, fontSize);
+            return;
+        }
         var top = y + fontSize - (_face.Font?.Ascent(fontSize) ?? fontSize);
         if (_face.SynthesizeBold) canvas.DrawTextEmphasized(x, top, text, color, fontSize, _face.Font);
         else canvas.DrawText(x, top, text, color, fontSize, _face.Font);

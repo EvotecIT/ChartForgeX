@@ -86,7 +86,12 @@ internal static class TypographyFontResolver {
     private static ResolvedTypeface ResolveFamily(string family, int weight, bool italic) {
         foreach (var part in family.Split(',')) {
             var name = part.Trim().Trim('"', '\'').Trim();
-            if (name.Length == 0 || IsPlatformAlias(name)) continue;
+            if (name.Length == 0) continue;
+            if (IsPlatformAlias(name)) {
+                if (TryLoad(FontRegistry.Find(name, weight, italic), weight, italic, out var registeredAlias)) return registeredAlias;
+                if (name.Equals("-apple-system", StringComparison.OrdinalIgnoreCase) && TryAppleSystemFace(weight, italic, out var systemFace)) return systemFace;
+                continue;
+            }
             // A generic keyword ends the named part of the stack: a face registered under the keyword
             // answers it, otherwise the fallback below picks one.
             if (IsGenericFamily(name)) {
@@ -114,6 +119,22 @@ internal static class TypographyFontResolver {
         var loaded = face == null ? null : TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
         resolved = loaded != null && loaded.IsTextFace ? new ResolvedTypeface(loaded, weight >= 600 && face!.Weight < 600, italic && !face!.Italic, face!.Path) : default;
         return loaded != null && loaded.IsTextFace;
+    }
+
+    private static bool TryAppleSystemFace(int weight, bool italic, out ResolvedTypeface resolved) {
+        foreach (var name in new[] { "SF Pro Text", ".SF NS Text", "SF Pro Display", ".AppleSystemUIFont" }) {
+            if (TryLoad(InstalledFontCatalog.Find(name, weight, italic), weight, italic, out resolved)) return true;
+        }
+        // macOS may expose its system face by a private family name; select the known system file before later stack families.
+        const string path = "/System/Library/Fonts/SFNS.ttf";
+        var font = TrueTypeFont.TryLoadFromPath(path);
+        if (font != null && font.IsTextFace) {
+            if (TryLoad(InstalledFontCatalog.FindSibling(path, weight, italic), weight, italic, out resolved)) return true;
+            resolved = new ResolvedTypeface(font, weight >= 600, italic, path);
+            return true;
+        }
+        resolved = default;
+        return false;
     }
 
     /// <summary>Forgets resolved stacks after the registered fonts change.</summary>
@@ -156,7 +177,7 @@ internal static class TypographyFontResolver {
     /// emphasized text in that stack draws and measures bold instead of being drawn twice.
     /// </summary>
     internal static TrueTypeFont? ResolveThemeFont(string? family) {
-        var regular = ResolveFace(family, 400, italic: false).Font;
+        var regular = RgbaCanvas.ThemeOutlineFace(family, ResolveFace(family, 400, italic: false).Font);
         RgbaCanvas.PairEmphasisFace(regular, ResolveThemeBoldFont(family));
         return regular;
     }
