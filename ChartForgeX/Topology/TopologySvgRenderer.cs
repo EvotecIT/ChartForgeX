@@ -296,19 +296,21 @@ public sealed partial class TopologySvgRenderer {
 
         AddDropShadowFilter(defs, id + "-shadow", "#0F172A", IsMonitoringDashboardStyle(options) ? 0.065 : 0.10);
         AddDropShadowFilter(defs, id + "-selected-shadow", "#2563EB", IsMonitoringDashboardStyle(options) ? 0.13 : 0.18);
-        var markerTokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Markers are keyed by where the edge colour comes from, not by the colour, so renders in different themes share ids.
+        var markerIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var status in GetTopologyHealthStatuses()) {
-            var color = theme.StatusColor(status);
-            if (markerTokens.Add(ArrowMarkerToken(color))) AddArrowMarker(defs, ArrowMarkerId(id, color), color, options);
+            var key = StatusMarkerToken(status);
+            if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), theme.StatusColor(status), options);
         }
 
+        var markerKeys = new TopologySvgMarkerKeys(chart);
         foreach (var edge in chart.Edges) {
             var color = EdgeColor(edge, theme, options);
-            if (markerTokens.Add(ArrowMarkerToken(color))) AddArrowMarker(defs, ArrowMarkerId(id, color), color, options);
+            var key = markerKeys.Key(edge);
+            if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), color, options);
             foreach (var kind in new[] { EffectiveSourceMarker(edge), EffectiveTargetMarker(edge) }) {
                 if (kind is TopologyMarkerKind.None or TopologyMarkerKind.Arrow) continue;
-                var token = kind + ":" + ArrowMarkerToken(color);
-                if (markerTokens.Add(token)) AddEndpointMarker(defs, EndpointMarkerId(id, color, kind), color, kind, options);
+                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), color, kind, options);
             }
         }
 
@@ -514,6 +516,7 @@ public sealed partial class TopologySvgRenderer {
         var layer = new SvgElement("g")
             .Class(prefix + "__edges")
             .Attribute("data-cfx-role", "topology-edges");
+        var markerKeys = new TopologySvgMarkerKeys(chart);
         foreach (var (edge, renderOrder) in OrderedEdgesForRendering(chart, options)) {
             var points = EdgePoints(chart, edge, nodes);
             var routeOffset = EdgeRouteOffset(chart, edge);
@@ -607,7 +610,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("opacity", (geographicHalo ? 0.86 : 0.88) * EdgeOpacity(edge, options)));
             }
 
-            AddPremiumEdgePath(edgeGroup, chart, edge, nodes, points, prefix, options, svgId, selected, color, dash);
+            AddPremiumEdgePath(edgeGroup, chart, edge, nodes, points, prefix, options, svgId, selected, color, dash, markerKeys.Key(edge));
         }
 
         root.AddElement(layer);

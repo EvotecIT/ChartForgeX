@@ -105,14 +105,9 @@ public sealed partial class TopologySvgRenderer {
         });
     }
 
-    private static string ArrowMarkerId(string svgId, string color) => svgId + "-arrow-" + ArrowMarkerToken(color);
+    /// <summary>Returns the id of the arrow marker for a marker key (see <see cref="TopologySvgMarkerKeys"/>).</summary>
+    private static string ArrowMarkerId(string svgId, string markerKey) => svgId + "-arrow-" + markerKey;
 
-    private static string EndpointMarkerId(string svgId, string color, TopologyMarkerKind kind) => svgId + "-" + kind.ToString().ToLowerInvariant() + "-" + ArrowMarkerToken(color);
-
-    private static string ArrowMarkerToken(string color) {
-        var value = string.IsNullOrWhiteSpace(color) ? "current" : color.Trim().ToLowerInvariant();
-        var sb = new System.Text.StringBuilder(value.Length);
-        foreach (var c in value) sb.Append(char.IsLetterOrDigit(c) ? c : '-');
-        return sb.ToString().Trim('-');
-    }
+    /// <summary>Returns the id of a circle or diamond endpoint marker for a marker key.</summary>
+    private static string EndpointMarkerId(string svgId, string markerKey, TopologyMarkerKind kind) => svgId + "-" + kind.ToString().ToLowerInvariant() + "-" + markerKey;
 }

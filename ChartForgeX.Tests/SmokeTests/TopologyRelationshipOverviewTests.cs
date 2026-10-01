@@ -31,7 +31,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("markerUnits=\"userSpaceOnUse\"", StringComparison.Ordinal), "Topology direction markers should keep a stable visual size when interactive scenario emphasis increases route stroke width.");
         Assert(svg.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview topology should support explicit relationship colors independent from health status.");
         Assert(svg.Contains("stroke=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview edge colors should be used by the route renderer.");
-        Assert(svg.Contains("marker-end=\"url(#relationship-overview-arrow-dc2626)\"", StringComparison.Ordinal), "Relationship overview direction markers should use the rendered edge color instead of only health status.");
+        Assert(svg.Contains("marker-end=\"url(#relationship-overview-arrow-color-1)\"", StringComparison.Ordinal) &&
+            System.Text.RegularExpressions.Regex.IsMatch(svg, "<marker id=\"relationship-overview-arrow-color-1\"[^>]*><path [^>]*stroke=\"#DC2626\""),
+            "Relationship overview direction markers should use the rendered edge color instead of only health status.");
         Assert(svg.Contains(">Links<", StringComparison.Ordinal), "Relationship overview topology should preserve caller-shaped legends.");
         Assert(svg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "Topology legend and fallback glyph symbols should use centered text baselines.");
         Assert(svg.Contains("stroke-dasharray=\"2 5\"", StringComparison.Ordinal), "Relationship overview legends should render caller-specified dotted line styles.");

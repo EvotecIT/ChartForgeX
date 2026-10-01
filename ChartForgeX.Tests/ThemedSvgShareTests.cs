@@ -76,9 +76,33 @@ public sealed class ThemedSvgShareTests {
     }
 
     [Fact]
+    public void Topology_LightDrawingWithDarkProperties_PaintsTheDarkDrawing_WithArrowsAndEndpointMarkers() {
+        // Arrows by status, an explicit edge colour, a muted edge, and circle and diamond endpoint markers.
+        string Render(VisualDesignTokens tokens) => ArrowDiagram().WithDesignTokens(tokens).ToSvg(new TopologyRenderOptions { IdScope = "themed", SvgColorVariables = tokens.ToSvgColorVariables() });
+        var light = Render(Light);
+        Assert.Contains("marker-end=\"url(#themed-sites-arrow-warning)\"", light, StringComparison.Ordinal);
+        Assert.Contains("marker-start=\"url(#themed-sites-circle-color-1)\"", light, StringComparison.Ordinal);
+        Assert.Contains("marker-end=\"url(#themed-sites-diamond-muted)\"", light, StringComparison.Ordinal);
+        AssertShared(light, Render(Dark));
+
+        // Every marker reference resolves, marker ids stay unique, and PNG arrows are drawn as before.
+        var ids = Regex.Matches(light, "<marker id=\"([^\"]+)\"").Cast<Match>().Select(match => match.Groups[1].Value).ToArray();
+        Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
+        foreach (Match reference in Regex.Matches(light, "marker-(?:start|end)=\"url\\(#([^)]+)\\)\"")) Assert.Contains(reference.Groups[1].Value, ids);
+        Assert.Equal(ArrowDiagram().WithDesignTokens(Light).ToPng(), ArrowDiagram().WithDesignTokens(Light).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
+    }
+
+    [Fact]
+    public void Topology_MarkerIds_DoNotDependOnTheEdgeColour() {
+        // The same chart with other status colours (another theme) references the same markers.
+        var light = ArrowDiagram().WithDesignTokens(Light).ToSvg();
+        var dark = ArrowDiagram().WithDesignTokens(Dark).ToSvg();
+        string References(string svg) => string.Join(",", Regex.Matches(svg, "marker-(?:start|end)=\"url\\(#([^)]+)\\)\"").Cast<Match>().Select(match => match.Groups[1].Value));
+        Assert.Equal(References(light), References(dark));
+    }
+
+    [Fact]
     public void Topology_TintsFollowTheTokensAndContrastWhiteStaysLiteral() {
-        // Marker ids still carry the edge colour, so a topology is not yet one SVG for both themes; its tints and
-        // contrast strokes no longer stand in the way.
         var svg = Diagram().WithDesignTokens(Light).ToSvg(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() });
         Assert.Contains("color-mix(in srgb, var(--cfx-surface-page, #F2F3F4)", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
@@ -285,6 +309,20 @@ public sealed class ThemedSvgShareTests {
         .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "waw")
         .AddAutoNode("dc3", "DC03", TopologyNodeKind.Server, TopologyHealthStatus.Critical)
         .AddEdge("a", "dc1", "dc2").AddEdge("b", "dc2", "dc3");
+
+    private static TopologyChart ArrowDiagram() => TopologyChart.Create().WithId("sites").WithViewport(720, 400)
+        .AddAutoGroup("waw", "Warsaw", TopologyHealthStatus.Healthy)
+        .AddAutoNode("dc1", "DC01", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "waw")
+        .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "waw")
+        .AddAutoNode("dc3", "DC03", TopologyNodeKind.Server, TopologyHealthStatus.Critical)
+        .AddAutoNode("dc4", "DC04", TopologyNodeKind.Server, TopologyHealthStatus.Unknown)
+        .AddEdge("a", "dc1", "dc2", status: TopologyHealthStatus.Warning, direction: VisualLinkDirection.Forward)
+        .AddEdge("b", "dc2", "dc3", status: TopologyHealthStatus.Critical, direction: VisualLinkDirection.Bidirectional)
+        .AddEdge("c", "dc3", "dc4", direction: VisualLinkDirection.Forward, color: "#9A5B13")
+        .AddEdge("d", "dc1", "dc4", status: TopologyHealthStatus.Healthy, direction: VisualLinkDirection.Forward)
+        .WithEdgeMarkers("c", TopologyMarkerKind.Circle, TopologyMarkerKind.Arrow)
+        .WithEdgeMarkers("d", null, TopologyMarkerKind.Diamond)
+        .WithEdgeMuted("d");
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 
