@@ -12,7 +12,7 @@ namespace ChartForgeX.Composition;
 /// <summary>
 /// Dependency-free RGBA image composition surface for wallpapers, previews, reports, and reusable renderer hosts.
 /// </summary>
-public sealed class ImageComposition {
+public sealed partial class ImageComposition {
     private readonly RgbaCanvas _canvas;
 
     private ImageComposition(RgbaCanvas canvas) {
@@ -44,7 +44,8 @@ public sealed class ImageComposition {
     /// <summary>Creates a composition initialized with decoded image pixels.</summary>
     public static ImageComposition FromImage(RgbaImage image) {
         var composition = CreateTransparent(image.Width, image.Height);
-        composition.DrawImage(image, 0, 0, image.Width, image.Height);
+        // The canvas starts transparent, so the pixels can be copied instead of blended one by one.
+        Buffer.BlockCopy(image.Pixels, 0, composition._canvas.Pixels, 0, image.Width * image.Height * 4);
         return composition;
     }
 
@@ -175,14 +176,16 @@ public sealed class ImageComposition {
         if (text.Length == 0 || style.Color.A == 0) return this;
 
         var layout = TextLayoutEngine.Layout(text, width, style, wrapMode, maximumLines, trimming);
-        var font = TypographyFontResolver.Resolve(style.Font);
+        var face = TypographyFontResolver.ResolveFace(style.Font);
+        var font = face.Font;
         var fontSize = style.EffectiveFontSize;
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
             var drawX = ResolveAlignedX(x, width, line.Width, style.Alignment);
             var drawY = y + index * layout.Metrics.LineHeight + BaselineOffset(style.Baseline, fontSize);
-            if (style.Font.Weight >= 600) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, fontSize, font, style.Font.Italic);
-            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, fontSize, font, style.Font.Italic);
+            // A real bold or italic face is drawn as it is; only a missing one is synthesized.
+            if (face.SynthesizeBold) _canvas.DrawTextEmphasized(drawX, drawY, line.Text, style.Color, fontSize, font, face.SynthesizeItalic);
+            else _canvas.DrawText(drawX, drawY, line.Text, style.Color, fontSize, font, face.SynthesizeItalic);
             var thickness = Math.Max(1, fontSize / 16);
             RasterTextDecoration.Draw(_canvas, drawX, drawX + line.Width, drawY + fontSize * 1.05, style.UnderlineStyle, style.Color, thickness);
             RasterTextDecoration.Draw(_canvas, drawX, drawX + line.Width, drawY + fontSize * 0.55, style.StrikethroughStyle, style.Color, thickness);

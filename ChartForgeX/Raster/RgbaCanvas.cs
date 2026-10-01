@@ -581,12 +581,10 @@ internal sealed partial class RgbaCanvas {
 
     private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule) {
         if (contours.Count == 0) return;
-        ScanFillSpans(contours, fillRule, (y, _, left, right) => {
-            var xStart = Math.Max(0, (int)Math.Floor(left));
-            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+        ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
             for (var x = xStart; x <= xEnd; x++) {
-                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
-                if (coverage > 0) BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+                var coverage = rowCoverage[x];
+                if (coverage > 0) BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }
         });
     }

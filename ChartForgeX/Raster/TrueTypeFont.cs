@@ -196,7 +196,9 @@ internal sealed partial class TrueTypeFont {
             if (previous.HasValue) cursor += Kerning(previous.Value, glyph) * scale;
             var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, cursor, baseline), 0);
             if (contours.Count > 0) {
-                canvas.FillContours(contours, color);
+                // TrueType outlines are non-zero wound: variable fonts and composites overlap their
+                // contours, and an even-odd fill would punch the overlaps out as holes.
+                canvas.FillContours(contours, color, RasterFillRule.NonZero);
                 rendered = true;
             }
 
@@ -212,6 +214,9 @@ internal sealed partial class TrueTypeFont {
     internal string? DisplayName => FirstName(4) ?? FirstName(1) ?? FirstName(6) ?? FirstName(2);
 
     internal int? CollectionIndex => _collectionIndex;
+
+    /// <summary>True when the face covers basic Latin text, which symbol and icon fonts do not.</summary>
+    internal bool IsTextFace => HasGlyphs("ChartForgeX 0123456789");
 
     private bool HasGlyphs(string value) {
         for (var index = 0; index < value.Length;) {
@@ -704,9 +709,8 @@ internal sealed partial class TrueTypeFont {
     }
 
     private static void FlattenQuadratic(GlyphPoint start, GlyphPoint control, GlyphPoint end, List<ChartPoint> output) {
-        var chord = Math.Sqrt((end.X - start.X) * (end.X - start.X) + (end.Y - start.Y) * (end.Y - start.Y));
-        var bend = Math.Sqrt((start.X - 2 * control.X + end.X) * (start.X - 2 * control.X + end.X) + (start.Y - 2 * control.Y + end.Y) * (start.Y - 2 * control.Y + end.Y));
-        var steps = Math.Max(6, Math.Min(18, (int)Math.Ceiling((chord + bend * 2.0) / 120.0)));
+        // Sized to the glyph on the page: a small letter needs two or three chords per curve, a headline more.
+        var steps = Math.Max(2, ChartCurveFlattening.QuadraticSegments(start.Point, control.Point, end.Point, 1));
         for (var i = 1; i <= steps; i++) {
             var t = i / (double)steps;
             var mt = 1 - t;

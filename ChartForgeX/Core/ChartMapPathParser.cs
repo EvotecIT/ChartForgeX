@@ -6,14 +6,20 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 internal static class ChartMapPathParser {
-    public static List<List<ChartPoint>> ParseRings(string path) {
-        var subpaths = ParseSubpaths(path);
+    /// <summary>Parses path data into rings. See <see cref="ParseSubpaths"/> for <paramref name="pixelsPerUnit"/>.</summary>
+    public static List<List<ChartPoint>> ParseRings(string path, double pixelsPerUnit = 0) {
+        var subpaths = ParseSubpaths(path, pixelsPerUnit);
         var rings = new List<List<ChartPoint>>(subpaths.Count);
         foreach (var subpath in subpaths) rings.Add(subpath.Points);
         return rings;
     }
 
-    public static List<ChartMapPathSubpath> ParseSubpaths(string path) {
+    /// <summary>
+    /// Parses path data into flattened subpaths. With a positive <paramref name="pixelsPerUnit"/> curves are
+    /// flattened to stay within <see cref="ChartCurveFlattening.Tolerance"/> device pixels at that scale;
+    /// otherwise they keep the fixed segment counts map outlines have always used.
+    /// </summary>
+    public static List<ChartMapPathSubpath> ParseSubpaths(string path, double pixelsPerUnit = 0) {
         if (path == null) throw new ArgumentNullException(nameof(path));
 
         var subpaths = new List<ChartMapPathSubpath>();
@@ -117,7 +123,7 @@ internal static class ChartMapPathParser {
                     var control1 = ReadPoint(path, ref index, current, command == 'c');
                     var control2 = ReadPoint(path, ref index, current, command == 'c');
                     var point = ReadPoint(path, ref index, current, command == 'c');
-                    AddCubic(currentRing, current, control1, control2, point);
+                    AddCubic(currentRing, current, control1, control2, point, pixelsPerUnit);
                     current = point;
                     lastCubicControl = control2;
                     lastQuadraticControl = null;
@@ -130,7 +136,7 @@ internal static class ChartMapPathParser {
                     var control1 = IsSmoothCubic(previousCommand) && lastCubicControl.HasValue ? Reflect(lastCubicControl.Value, current) : current;
                     var control2 = ReadPoint(path, ref index, current, command == 's');
                     var point = ReadPoint(path, ref index, current, command == 's');
-                    AddCubic(currentRing, current, control1, control2, point);
+                    AddCubic(currentRing, current, control1, control2, point, pixelsPerUnit);
                     current = point;
                     lastCubicControl = control2;
                     lastQuadraticControl = null;
@@ -142,7 +148,7 @@ internal static class ChartMapPathParser {
                     currentRing = RequireRing(currentRing);
                     var control = ReadPoint(path, ref index, current, command == 'q');
                     var point = ReadPoint(path, ref index, current, command == 'q');
-                    AddQuadratic(currentRing, current, control, point);
+                    AddQuadratic(currentRing, current, control, point, pixelsPerUnit);
                     current = point;
                     lastCubicControl = null;
                     lastQuadraticControl = control;
@@ -154,7 +160,7 @@ internal static class ChartMapPathParser {
                     currentRing = RequireRing(currentRing);
                     var control = IsSmoothQuadratic(previousCommand) && lastQuadraticControl.HasValue ? Reflect(lastQuadraticControl.Value, current) : current;
                     var point = ReadPoint(path, ref index, current, command == 't');
-                    AddQuadratic(currentRing, current, control, point);
+                    AddQuadratic(currentRing, current, control, point, pixelsPerUnit);
                     current = point;
                     lastCubicControl = null;
                     lastQuadraticControl = control;
@@ -170,7 +176,7 @@ internal static class ChartMapPathParser {
                     var largeArc = Math.Abs(ReadNumber(path, ref index)) > 0.5;
                     var sweep = Math.Abs(ReadNumber(path, ref index)) > 0.5;
                     var point = ReadPoint(path, ref index, current, command == 'a');
-                    AddArc(currentRing, current, Math.Abs(radiusX), Math.Abs(radiusY), rotation, largeArc, sweep, point);
+                    AddArc(currentRing, current, Math.Abs(radiusX), Math.Abs(radiusY), rotation, largeArc, sweep, point, pixelsPerUnit);
                     current = point;
                     lastCubicControl = null;
                     lastQuadraticControl = null;
@@ -268,8 +274,8 @@ internal static class ChartMapPathParser {
         return command == 'Q' || command == 'q' || command == 'T' || command == 't';
     }
 
-    private static void AddCubic(List<ChartPoint> ring, ChartPoint start, ChartPoint control1, ChartPoint control2, ChartPoint end) {
-        const int segments = 12;
+    private static void AddCubic(List<ChartPoint> ring, ChartPoint start, ChartPoint control1, ChartPoint control2, ChartPoint end, double pixelsPerUnit) {
+        var segments = pixelsPerUnit > 0 ? Math.Max(4, ChartCurveFlattening.CubicSegments(start, control1, control2, end, pixelsPerUnit)) : 12;
         for (var i = 1; i <= segments; i++) {
             var t = i / (double)segments;
             var mt = 1 - t;
@@ -279,8 +285,8 @@ internal static class ChartMapPathParser {
         }
     }
 
-    private static void AddQuadratic(List<ChartPoint> ring, ChartPoint start, ChartPoint control, ChartPoint end) {
-        const int segments = 10;
+    private static void AddQuadratic(List<ChartPoint> ring, ChartPoint start, ChartPoint control, ChartPoint end, double pixelsPerUnit) {
+        var segments = pixelsPerUnit > 0 ? Math.Max(4, ChartCurveFlattening.QuadraticSegments(start, control, end, pixelsPerUnit)) : 10;
         for (var i = 1; i <= segments; i++) {
             var t = i / (double)segments;
             var mt = 1 - t;
@@ -290,7 +296,7 @@ internal static class ChartMapPathParser {
         }
     }
 
-    private static void AddArc(List<ChartPoint> ring, ChartPoint start, double radiusX, double radiusY, double rotation, bool largeArc, bool sweep, ChartPoint end) {
+    private static void AddArc(List<ChartPoint> ring, ChartPoint start, double radiusX, double radiusY, double rotation, bool largeArc, bool sweep, ChartPoint end, double pixelsPerUnit) {
         if ((Math.Abs(start.X - end.X) < 0.000001 && Math.Abs(start.Y - end.Y) < 0.000001) || radiusX <= 0 || radiusY <= 0) {
             ring.Add(end);
             return;
@@ -337,7 +343,9 @@ internal static class ChartMapPathParser {
         if (!sweep && delta > 0) delta -= Math.PI * 2;
         if (sweep && delta < 0) delta += Math.PI * 2;
 
-        var segments = Math.Max(4, (int)Math.Ceiling(Math.Abs(delta) / (Math.PI / 8.0)));
+        var segments = pixelsPerUnit > 0
+            ? Math.Max(4, ChartCurveFlattening.ArcSegments(Math.Max(radiusX, radiusY) * pixelsPerUnit, delta))
+            : Math.Max(4, (int)Math.Ceiling(Math.Abs(delta) / (Math.PI / 8.0)));
         for (var i = 1; i <= segments; i++) {
             var theta = startAngle + delta * i / segments;
             var x = centerX + cosPhi * radiusX * Math.Cos(theta) - sinPhi * radiusY * Math.Sin(theta);

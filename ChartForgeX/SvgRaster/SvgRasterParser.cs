@@ -24,6 +24,12 @@ internal static class SvgRasterParser {
         return FromRoot(root, SvgRasterViewBox.FromDimensions(root.Attribute("width")?.Value, root.Attribute("height")?.Value));
     }
 
+    /// <summary>Builds a document from an svg root element the caller has already parsed and validated.</summary>
+    public static SvgRasterDocument FromDocumentRoot(XElement root) {
+        if (root == null) throw new ArgumentNullException(nameof(root));
+        return FromRoot(root, SvgRasterViewBox.FromDimensions(root.Attribute("width")?.Value, root.Attribute("height")?.Value));
+    }
+
     private static SvgRasterDocument FromRoot(XElement root, SvgRasterViewBox fallbackViewBox) {
         ValidateElementDepth(root);
         var viewBox = fallbackViewBox;

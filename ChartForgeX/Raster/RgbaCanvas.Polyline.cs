@@ -7,7 +7,8 @@ namespace ChartForgeX.Raster;
 
 internal enum RasterLineCap {
     Butt,
-    Round
+    Round,
+    Square
 }
 
 internal enum RasterLineJoin {

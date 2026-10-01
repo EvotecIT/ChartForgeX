@@ -17,6 +17,16 @@ public static class SvgRasterizer {
 
     /// <summary>Rasterizes an SVG document to PNG using optional output dimensions.</summary>
     public static byte[] ToPng(string svg, int? width, int? height, RasterImageOptions? options = null) {
+        RgbaImage image = ToImage(svg, width, height);
+        return PngWriter.WriteRgba(image.Width, image.Height, image.Pixels, options);
+    }
+
+    /// <summary>
+    /// Rasterizes an SVG document to RGBA pixels using its declared viewport size or optional output
+    /// dimensions. Use this instead of <see cref="ToPng(string, RasterImageOptions)"/> when the pixels
+    /// go straight into a composition, so they are not encoded and decoded on the way.
+    /// </summary>
+    public static RgbaImage ToImage(string svg, int? width = null, int? height = null) {
         if (string.IsNullOrWhiteSpace(svg)) throw new ArgumentException("SVG content cannot be empty.", nameof(svg));
         if (width.HasValue && width.Value <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Width must be greater than zero.");
         if (height.HasValue && height.Value <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Height must be greater than zero.");
@@ -50,10 +60,22 @@ public static class SvgRasterizer {
             ? "0 0 " + viewWidth.ToString(CultureInfo.InvariantCulture) + " " + viewHeight.ToString(CultureInfo.InvariantCulture)
             : viewBox!;
         if (string.IsNullOrWhiteSpace(viewBox)) root.SetAttributeValue("viewBox", effectiveViewBox);
-        if (!SvgRasterRenderer.TryRenderDocument(root.ToString(SaveOptions.DisableFormatting), Attribute(root, "preserveAspectRatio"), targetWidth, targetHeight, out byte[] rgba)) {
+        SvgRasterDocument parsed;
+        try {
+            parsed = SvgRasterParser.FromDocumentRoot(root);
+        } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException) {
+            throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.", ex);
+        }
+        if (!SvgRasterRenderer.TryRenderDocument(parsed, Attribute(root, "preserveAspectRatio"), targetWidth, targetHeight, out byte[] rgba)) {
             throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.");
         }
-        return PngWriter.WriteRgba(targetWidth, targetHeight, rgba, options);
+        return new RgbaImage(targetWidth, targetHeight, rgba);
+    }
+
+    /// <summary>Rasterizes UTF-8 SVG bytes to RGBA pixels.</summary>
+    public static RgbaImage ToImage(byte[] svgBytes, int? width = null, int? height = null) {
+        if (svgBytes == null) throw new ArgumentNullException(nameof(svgBytes));
+        return ToImage(Encoding.UTF8.GetString(svgBytes), width, height);
     }
 
     /// <summary>Rasterizes UTF-8 SVG bytes to PNG.</summary>

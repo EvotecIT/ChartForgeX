@@ -7,6 +7,10 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
+- Move chart, grid, and topology PNG line drawing from `RgbaCanvas.DrawPolyline` (one feathered quad per segment) to `RgbaCanvas.StrokePolylines`, the outline stroker the SVG rasterizer and `ImageComposition` already share. Exact-width strokes are about half an output pixel thinner, so review the gallery and visual baseline when doing it.
+- Let chart, grid, and topology theme font stacks match installed families and weights through `InstalledFontCatalog`, as `FontSpec` text already does, together with `TextMeasurementMode.InstalledFonts` so measured layout and drawn text keep using the same face.
+- Raster typography gaps: variable fonts render only their default instance (`fvar`/`gvar` are not applied), CFF outlines (`.otf`) are not read, and glyphs are unhinted. Supersampled canvases still take one fill scanline per sub-pixel row; only unscaled canvases (`ImageComposition`, SVG raster) take eight per row.
+- SVG raster strokes: paint gradient and pattern strokes instead of their first stop color, and apply `stroke-dashoffset` and non-uniform transforms to the stroke outline.
 - Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
 
 ## Interactivity

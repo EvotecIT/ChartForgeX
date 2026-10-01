@@ -33,6 +33,17 @@ internal static partial class SvgRasterRenderer {
         }
     }
 
+    public static bool TryRenderDocument(SvgRasterDocument document, string? preserveAspectRatio, int width, int height, out byte[] rgba) {
+        rgba = Array.Empty<byte>();
+        if (width <= 0 || height <= 0) return false;
+        try {
+            rgba = RenderDocument(document, preserveAspectRatio, width, height);
+            return true;
+        } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException || ex is System.Xml.XmlException) {
+            return false;
+        }
+    }
+
     private static byte[] RenderDocument(SvgRasterDocument document, string? preserveAspectRatio, int width, int height, int imageDepth = 0) {
         var definitions = SvgRasterDefinitions.From(document);
         var canvas = new RgbaCanvas(width, height, 1);
@@ -310,11 +321,13 @@ internal static partial class SvgRasterRenderer {
     private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         var d = element.Get("d");
         if (string.IsNullOrWhiteSpace(d)) return;
-        var subpaths = ChartMapPathParser.ParseSubpaths(d!);
+        var subpaths = ChartMapPathParser.ParseSubpaths(d!, matrix.ScaleFactor);
         var sourceRings = new List<List<ChartPoint>>(subpaths.Count);
         var fillContours = new List<List<ChartPoint>>(subpaths.Count);
         var strokeContours = new List<List<ChartPoint>>(subpaths.Count);
         foreach (var subpath in subpaths) {
+            // A bare moveto has no stroke; repeated points from drawing commands retain their caps.
+            if (subpath.Points.Count == 1 && !subpath.IsClosed) continue;
             sourceRings.Add(subpath.Points);
             var transformed = TransformRing(subpath.Points, matrix);
             var contour = ClosedRing(transformed);
@@ -332,13 +345,13 @@ internal static partial class SvgRasterRenderer {
         var height = VerticalLength(element, "height", viewport);
         if (width <= 0 || height <= 0) return;
         ResolveRoundedRectRadii(element, viewport, width, height, out var rx, out var ry);
-        var ring = rx <= 0 || ry <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx, ry);
+        var ring = ChartCurveFlattening.RoundedRectangle(x, y, width, height, rx, ry, matrix.ScaleFactor);
         FillAndStroke(canvas, new[] { TransformRing(ring, matrix) }, style, true, matrix, definitions, viewport);
     }
 
     private static void RenderEllipse(RgbaCanvas canvas, double cx, double cy, double rx, double ry, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport) {
         if (rx <= 0 || ry <= 0) return;
-        FillAndStroke(canvas, new[] { TransformRing(EllipseRing(cx, cy, rx, ry, 36), matrix) }, style, true, matrix, definitions, viewport);
+        FillAndStroke(canvas, new[] { TransformRing(ChartCurveFlattening.Ellipse(cx, cy, rx, ry, matrix.ScaleFactor), matrix) }, style, true, matrix, definitions, viewport);
     }
 
     private static void RenderLine(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
@@ -402,10 +415,11 @@ internal static partial class SvgRasterRenderer {
         if (fill.A != 0) canvas.FillContours(contours, fill, fillRule);
     }
 
-    private static void Stroke(RgbaCanvas canvas, IReadOnlyList<ChartPoint> points, SvgRasterStyle style, double scale, SvgRasterDefinitions definitions) {
+    // Every subpath is outlined and painted as one shape, so curved strokes get the same coverage as fills.
+    private static void Stroke(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, double scale, SvgRasterDefinitions definitions) {
         var stroke = ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions);
-        if (stroke.A == 0 || style.StrokeWidth <= 0 || points.Count < 2) return;
-        canvas.DrawPolyline(points, stroke, Math.Max(0.5, style.StrokeWidth * scale), LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin), ScaledDashArray(style.StrokeDashArray, scale), style.StrokeMiterLimit);
+        if (stroke.A == 0 || style.StrokeWidth <= 0 || contours.Count == 0) return;
+        canvas.StrokePolylines(contours, stroke, style.StrokeWidth * scale, LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin), ScaledDashArray(style.StrokeDashArray, scale), style.StrokeMiterLimit);
     }
 
     private static ChartColor ResolveColor(SvgRasterPaint paint, double opacity, SvgRasterDefinitions definitions) {
@@ -580,7 +594,7 @@ internal static partial class SvgRasterRenderer {
         switch (element.Name) {
             case "path":
                 var d = element.Get("d");
-                return string.IsNullOrWhiteSpace(d) ? new List<List<ChartPoint>>() : TransformRings(ChartMapPathParser.ParseRings(d!), matrix);
+                return string.IsNullOrWhiteSpace(d) ? new List<List<ChartPoint>>() : TransformRings(ChartMapPathParser.ParseRings(d!, matrix.ScaleFactor), matrix);
             case "rect":
                 var width = HorizontalLength(element, "width", viewport);
                 var height = VerticalLength(element, "height", viewport);
@@ -588,14 +602,14 @@ internal static partial class SvgRasterRenderer {
                 var x = HorizontalLength(element, "x", viewport);
                 var y = VerticalLength(element, "y", viewport);
                 ResolveRoundedRectRadii(element, viewport, width, height, out var rx, out var ry);
-                return new List<List<ChartPoint>> { TransformRing(rx <= 0 || ry <= 0 ? RectRing(x, y, width, height) : RoundedRectRing(x, y, width, height, rx, ry), matrix) };
+                return new List<List<ChartPoint>> { TransformRing(ChartCurveFlattening.RoundedRectangle(x, y, width, height, rx, ry, matrix.ScaleFactor), matrix) };
             case "circle":
                 var r = DiagonalLength(element, "r", viewport);
-                return r <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), r, r, 36), matrix) };
+                return r <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(ChartCurveFlattening.Ellipse(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), r, r, matrix.ScaleFactor), matrix) };
             case "ellipse":
                 var rxEllipse = HorizontalLength(element, "rx", viewport);
                 var ryEllipse = VerticalLength(element, "ry", viewport);
-                return rxEllipse <= 0 || ryEllipse <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(EllipseRing(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), rxEllipse, ryEllipse, 36), matrix) };
+                return rxEllipse <= 0 || ryEllipse <= 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(ChartCurveFlattening.Ellipse(HorizontalLength(element, "cx", viewport), VerticalLength(element, "cy", viewport), rxEllipse, ryEllipse, matrix.ScaleFactor), matrix) };
             case "polygon":
                 var points = ReadPointList(element.Get("points"));
                 return points.Count == 0 ? new List<List<ChartPoint>>() : new List<List<ChartPoint>> { TransformRing(points, matrix) };
@@ -618,33 +632,6 @@ internal static partial class SvgRasterRenderer {
 
     private static List<ChartPoint> RectRing(double x, double y, double width, double height) =>
         new() { new ChartPoint(x, y), new ChartPoint(x + width, y), new ChartPoint(x + width, y + height), new ChartPoint(x, y + height) };
-
-    private static List<ChartPoint> RoundedRectRing(double x, double y, double width, double height, double rx, double ry) {
-        var points = new List<ChartPoint>();
-        AddArc(points, x + width - rx, y + ry, rx, ry, -Math.PI / 2, 0);
-        AddArc(points, x + width - rx, y + height - ry, rx, ry, 0, Math.PI / 2);
-        AddArc(points, x + rx, y + height - ry, rx, ry, Math.PI / 2, Math.PI);
-        AddArc(points, x + rx, y + ry, rx, ry, Math.PI, Math.PI * 1.5);
-        return points;
-    }
-
-    private static List<ChartPoint> EllipseRing(double cx, double cy, double rx, double ry, int segments) {
-        var points = new List<ChartPoint>(segments);
-        for (var i = 0; i < segments; i++) {
-            var angle = Math.PI * 2 * i / segments;
-            points.Add(new ChartPoint(cx + Math.Cos(angle) * rx, cy + Math.Sin(angle) * ry));
-        }
-
-        return points;
-    }
-
-    private static void AddArc(List<ChartPoint> points, double cx, double cy, double rx, double ry, double start, double end) {
-        const int segments = 8;
-        for (var i = 0; i <= segments; i++) {
-            var angle = start + (end - start) * i / segments;
-            points.Add(new ChartPoint(cx + Math.Cos(angle) * rx, cy + Math.Sin(angle) * ry));
-        }
-    }
 
     private static List<ChartPoint> ReadPointList(string? value) {
         var numbers = SvgRasterNumbers.ParseList(value);
@@ -703,7 +690,7 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static RasterLineCap LineCap(string value) =>
-        string.Equals(value, "round", StringComparison.OrdinalIgnoreCase) ? RasterLineCap.Round : RasterLineCap.Butt;
+        string.Equals(value, "round", StringComparison.OrdinalIgnoreCase) ? RasterLineCap.Round : string.Equals(value, "square", StringComparison.OrdinalIgnoreCase) ? RasterLineCap.Square : RasterLineCap.Butt;
 
     private static RasterLineJoin LineJoin(string value) =>
         string.Equals(value, "round", StringComparison.OrdinalIgnoreCase) ? RasterLineJoin.Round : string.Equals(value, "bevel", StringComparison.OrdinalIgnoreCase) ? RasterLineJoin.Bevel : RasterLineJoin.Miter;

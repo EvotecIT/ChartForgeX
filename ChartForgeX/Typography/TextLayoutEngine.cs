@@ -14,8 +14,8 @@ public static class TextLayoutEngine {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (style == null) throw new ArgumentNullException(nameof(style));
         text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
-        var font = TypographyFontResolver.Resolve(style.Font);
-        var lineHeight = ResolveLineHeight(style, font);
+        var font = TypographyFontResolver.ResolveFace(style.Font);
+        var lineHeight = ResolveLineHeight(style, font.Font);
         var width = 0d;
         var lineCount = 0;
         foreach (var line in TextLineScanner.Enumerate(text)) {
@@ -35,7 +35,7 @@ public static class TextLayoutEngine {
         if (!Enum.IsDefined(typeof(TextTrimming), trimming)) throw new ArgumentOutOfRangeException(nameof(trimming), trimming, "Unknown text trimming mode.");
 
         text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
-        var font = TypographyFontResolver.Resolve(style.Font);
+        var font = TypographyFontResolver.ResolveFace(style.Font);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
         foreach (var paragraphSlice in TextLineScanner.Enumerate(text)) {
@@ -68,13 +68,20 @@ public static class TextLayoutEngine {
 
         var width = 0d;
         for (var i = 0; i < resolved.Count; i++) width = Math.Max(width, resolved[i].Width);
-        var lineHeight = ResolveLineHeight(style, font);
+        var lineHeight = ResolveLineHeight(style, font.Font);
         return new TextLayout(resolved, new TextMetrics(width, resolved.Count * lineHeight, lineHeight), trimmed);
     }
 
-    internal static double MeasureWidth(string text, TextStyle style, TrueTypeFont? font) {
-        var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, font, style.Font.Italic);
-        if (style.Font.Weight >= 600 && text.Length > 0) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
+    /// <summary>Measures with a face chosen elsewhere; bold and italic requested by the style are synthesized on it.</summary>
+    internal static double MeasureWidth(string text, TextStyle style, TrueTypeFont? font) =>
+        MeasureWidth(text, style, new ResolvedTypeface(font, style.Font.Weight >= 600, style.Font.Italic));
+
+    internal static double MeasureWidth(string text, TextStyle style, ResolvedTypeface face) {
+        var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, face.Font, face.SynthesizeItalic);
+        // A real italic face leans past its last advance just as a sheared one does; reserving the same
+        // overhang keeps layout independent of which faces the host has installed.
+        if (style.Font.Italic && !face.SynthesizeItalic && text.Length > 0) width += TrueTypeFont.ItalicOverhang(style.EffectiveFontSize);
+        if (face.SynthesizeBold && text.Length > 0) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
         return width;
     }
 
@@ -91,7 +98,7 @@ public static class TextLayoutEngine {
         string paragraph,
         double maximumWidth,
         TextStyle style,
-        TrueTypeFont? font,
+        ResolvedTypeface font,
         TextWrapMode wrapMode,
         int? maximumLines,
         out bool trimmed) {
@@ -174,7 +181,7 @@ public static class TextLayoutEngine {
         string text,
         double maximumWidth,
         TextStyle style,
-        TrueTypeFont? font,
+        ResolvedTypeface font,
         int? maximumLines,
         out bool trimmed) {
         var output = new List<TextLayoutLine>();
@@ -199,7 +206,7 @@ public static class TextLayoutEngine {
         return output;
     }
 
-    private static TextLayoutLine Ellipsize(string text, double maximumWidth, TextStyle style, TrueTypeFont? font) {
+    private static TextLayoutLine Ellipsize(string text, double maximumWidth, TextStyle style, ResolvedTypeface font) {
         const string ellipsis = "…";
         if (MeasureWidth(ellipsis, style, font) > maximumWidth) return new TextLayoutLine(string.Empty, 0);
         var candidate = text.TrimEnd();
