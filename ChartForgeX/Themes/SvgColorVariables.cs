@@ -22,7 +22,9 @@ namespace ChartForgeX.Themes;
 /// when it equals a token colour. A blend of token colours (bar gradients, heatmap and calendar ramp steps, neutral zero
 /// and empty days, topology tints) is written as <c>color-mix(in srgb, …)</c> of their properties, so it follows a theme
 /// switch. A colour written for a role (a series, a status, a ramp step, the surface behind marks) takes the variable of
-/// that role when several share its colour. Other paints match by colour value.
+/// that role when several share its colour. Text on filled marks (heatmap and hexbin values, categorical cell text, Gantt
+/// lane labels) is written as the text colour or, on strong marks, the surface behind the marks, by role. Other paints
+/// match by colour value.
 /// </para>
 /// <para>
 /// <see cref="Apply"/> on finished markup only matches by colour value (red, green, and blue; a paint is only matched
@@ -63,7 +65,7 @@ public sealed class SvgColorVariables {
     /// </summary>
     /// <param name="name">The custom property name, for example <c>--brand-series-1</c>.</param>
     /// <param name="color">The colour it stands for; its literal value is the fallback.</param>
-    /// <param name="role">The role of the colour; <see cref="SvgColorRole.Surface"/> keeps text fills of this colour literal.</param>
+    /// <param name="role">The role of the colour; <see cref="SvgColorRole.Surface"/> keeps text fills of this colour literal when they are matched by value.</param>
     /// <returns>The same instance.</returns>
     /// <exception cref="ArgumentException">The name is not <c>--</c> followed by letters, digits, <c>-</c>, or <c>_</c>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The role is not defined.</exception>

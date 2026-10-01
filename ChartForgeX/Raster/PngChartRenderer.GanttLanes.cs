@@ -81,7 +81,7 @@ public sealed partial class PngChartRenderer {
                 DrawStateMark(c, mark, left, y, width, band, radius);
                 var text = placed.Item.Label;
                 if (text != null && width >= EstimatePngStyledTextWidth(text, tickFontSize, tickStyle, emphasized: true) + ChartGanttLaneModel.LabelPadding * 2 && band >= textHeight + 2) {
-                    DrawStateCategoryText(c, text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, tickStyle, ChartColorMath.TextOnBackground(mark.Surface), tickFontSize, true);
+                    DrawStateCategoryText(c, text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, tickStyle, ChartMarkText.OnStateMark(chart, mark).Color, tickFontSize, true);
                 }
             }
 

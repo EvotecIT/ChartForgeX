@@ -16,8 +16,9 @@ public sealed partial class VisualDesignTokens {
     /// They are added in that order, so when two tokens share a colour the earlier one names a paint without a role.
     /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
     /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>Ramp</c>; accents <c>Any</c>), so a renderer
-    /// that writes a colour for a role names the same token in every theme. Surface tokens are not used for text fills,
-    /// so contrast text that happens to have a surface colour (white labels on dark marks) stays literal.
+    /// that writes a colour for a role names the same token in every theme. Text matched by value never takes a surface
+    /// token, so contrast text that happens to have a surface colour stays literal; text on filled heatmap cells and
+    /// state marks is written for the surface or text role and takes those tokens.
     /// </summary>
     /// <param name="variableName">
     /// Returns the custom property name for a token path, or null to leave that token literal. Null names every token

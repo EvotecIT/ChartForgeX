@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -23,7 +24,12 @@ public sealed class ThemedSvgShareTests {
 
     public static IEnumerable<object[]> Families() => new[] {
         new object[] { "line" }, new object[] { "bars" }, new object[] { "flat-histogram" }, new object[] { "calendar" },
-        new object[] { "heatmap" }, new object[] { "state-timeline" }, new object[] { "donut" }
+        new object[] { "heatmap" }, new object[] { "state-timeline" }, new object[] { "donut" },
+        new object[] { "heatmap-values" }, new object[] { "categorical-text" }, new object[] { "hexbin-values" }, new object[] { "gantt-lanes" }, new object[] { "semantic-values" }
+    };
+
+    public static IEnumerable<object[]> MarkTextFamilies() => new[] {
+        new object[] { "heatmap-values" }, new object[] { "categorical-text" }, new object[] { "hexbin-values" }, new object[] { "gantt-lanes" }, new object[] { "semantic-values" }
     };
 
     [Theory]
@@ -32,6 +38,41 @@ public sealed class ThemedSvgShareTests {
         var light = Build(family, Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         var dark = Build(family, Dark).WithSvgColorVariables(Dark.ToSvgColorVariables()).ToSvg();
         AssertShared(light, dark);
+    }
+
+    [Theory]
+    [MemberData(nameof(MarkTextFamilies))]
+    public void MarkText_ReachesThreeToOneOnEveryFill_InBothThemes(string family) {
+        foreach (var tokens in new[] { Light, Dark }) {
+            // On the card, as report hosts draw marks, and on the page surface behind a chart without card (Layered).
+            foreach (var (backdrop, surface) in new[] { (ChartMarkBackdrop.Card, Surface(tokens)), (ChartMarkBackdrop.Layered, tokens.Background) }) {
+                var texts = MarkTexts(Build(family, tokens).WithMarkBackdrop(backdrop).ToSvg(), surface);
+                Assert.NotEmpty(texts);
+                foreach (var (fill, text, label) in texts) {
+                    var contrast = Contrast(fill, text);
+                    Assert.True(contrast >= 3, $"{family} on {backdrop} ({tokens.Foreground.ToHex()} text): '{label}' is {text.ToHex()} on {fill.ToHex()} at {contrast:0.00}:1.");
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void MarkText_OnAPaleCallerColour_StaysReadable() {
+        // A strong cell of a pale series colour would get the white surface as text; the text colour contrasts more.
+        var chart = Host(Light).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
+            .WithXLabels("A", "B", "C").AddHeatmapRow("Pale", new[] { 1d, 50, 100 }, ChartColor.FromHex("#FFE066"));
+        var texts = MarkTexts(chart.ToSvg(), Surface(Light));
+        Assert.Equal(3, texts.Count);
+        foreach (var (fill, text, label) in texts) Assert.True(Contrast(fill, text) >= 3, $"'{label}' is {text.ToHex()} on {fill.ToHex()}.");
+    }
+
+    [Fact]
+    public void MarkText_IsWrittenByRole_WithVariables() {
+        var svg = Build("categorical-text", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
+        // Solid marks carry the card surface as text, quiet and outlined tints the text colour.
+        Assert.Matches("data-cfx-role=\"data-label\"[^>]*fill=\"var\\(--cfx-surface-card, #FFFFFF\\)\"", svg);
+        Assert.Matches("data-cfx-role=\"data-label\"[^>]*fill=\"var\\(--cfx-text-primary, #16181C\\)\"", svg);
+        Assert.DoesNotMatch("data-cfx-role=\"data-label\"[^>]*fill=\"#", svg);
     }
 
     [Fact]
@@ -135,6 +176,44 @@ public sealed class ThemedSvgShareTests {
 
     private static string Hex(ChartColor color) => color.A == 255 ? color.ToHex() : color.ToHexRgba();
 
+    private static readonly HashSet<string> MarkRoles = new(StringComparer.Ordinal) { "heatmap-cell", "hexbin-cell", "gantt-lane-item" };
+
+    /// <summary>Pairs every text drawn on a mark with the mark's fill as it appears on <paramref name="backdrop"/>.</summary>
+    private static List<(ChartColor Fill, ChartColor Text, string Label)> MarkTexts(string svg, ChartColor backdrop) {
+        var result = new List<(ChartColor, ChartColor, string)>();
+        ChartColor? mark = null;
+        foreach (var element in XDocument.Parse(svg).Descendants()) {
+            var role = (string?)element.Attribute("data-cfx-role");
+            if (role != null && MarkRoles.Contains(role)) {
+                var opacity = double.Parse((string?)element.Attribute("fill-opacity") ?? "1", CultureInfo.InvariantCulture);
+                mark = Over(ChartColor.FromHex((string)element.Attribute("fill")!), opacity, backdrop);
+            } else if (mark.HasValue && role is "data-label" or "gantt-lane-item-label") {
+                result.Add((mark.Value, ChartColor.FromHex((string)element.Attribute("fill")!), element.Value));
+            }
+        }
+
+        return result;
+    }
+
+    private static ChartColor Over(ChartColor top, double opacity, ChartColor bottom) => ChartColor.FromRgb(
+        (byte)Math.Round(top.R * opacity + bottom.R * (1 - opacity)),
+        (byte)Math.Round(top.G * opacity + bottom.G * (1 - opacity)),
+        (byte)Math.Round(top.B * opacity + bottom.B * (1 - opacity)));
+
+    private static ChartColor Surface(VisualDesignTokens tokens) => tokens.ElevatedSurface;
+
+    private static double Contrast(ChartColor first, ChartColor second) {
+        static double Channel(byte value) {
+            var c = value / 255.0;
+            return c <= 0.03928 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+        }
+
+        static double Luminance(ChartColor color) => 0.2126 * Channel(color.R) + 0.7152 * Channel(color.G) + 0.0722 * Channel(color.B);
+        var a = Luminance(first);
+        var b = Luminance(second);
+        return (Math.Max(a, b) + 0.05) / (Math.Min(a, b) + 0.05);
+    }
+
     /// <summary>A chart as a report host creates it: token colours and font, transparent, no card, plot surface, or header.</summary>
     private static Chart Host(VisualDesignTokens tokens, int width = 640, int height = 320) => Chart.Create()
         .WithSize(width, height).WithDesignTokens(tokens).WithTransparentBackground().WithCard(false).WithPlotBackground(false).WithHeader(false)
@@ -161,6 +240,40 @@ public sealed class ThemedSvgShareTests {
                 return Host(tokens, 720, 280).WithStateCategories(states.ToArray())
                     .AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(day, day.AddHours(6), "up"), new ChartStateTimelineSegment(day.AddHours(6), day.AddHours(8), "down"), new ChartStateTimelineSegment(day.AddHours(8), day.AddHours(12), "notObservable") })
                     .AddStateTimelineLane("DC02", new[] { new ChartStateTimelineSegment(day, day.AddHours(5), "unknown"), new ChartStateTimelineSegment(day.AddHours(5), day.AddHours(12), "maintenance") });
+            case "heatmap-values":
+                // Counts across the whole ramp, from a neutral zero to the strongest step, with the value in every cell.
+                var counts = Host(tokens, 720, 280).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).WithXLabels("1", "2", "3", "4", "5", "6", "7", "8");
+                for (var row = 0; row < 3; row++) counts.AddHeatmapRow("Row " + (row + 1).ToString(CultureInfo.InvariantCulture), Enumerable.Range(row * 8, 8).Select(value => (double)value).ToArray());
+                counts.Options.HeatmapRelativeScale = true;
+                return counts;
+            case "semantic-values":
+                // Status colours from negative through warning to positive, with the value in every cell.
+                var semantic = Host(tokens, 720, 280).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).WithXLabels("1", "2", "3", "4", "5", "6", "7", "8");
+                semantic.Options.HeatmapScale = ChartHeatmapScale.Semantic;
+                for (var row = 0; row < 3; row++) semantic.AddHeatmapRow("Row " + (row + 1).ToString(CultureInfo.InvariantCulture), Enumerable.Range(row * 8, 8).Select(value => value * 100.0 / 23).ToArray());
+                return semantic;
+            case "categorical-text":
+                // As report views draw them: up is quiet, and an outlined state stands for could not evaluate.
+                var operational = tokens.Status.OperationalStateCategories().Select(state => state.Key switch {
+                    "up" => new ChartStateCategory(state.Key, state.Label, state.Color, state.Pattern, ChartStateEmphasis.Quiet),
+                    "unknown" => new ChartStateCategory(state.Key, state.Label, state.Color, ChartStatePattern.Outlined),
+                    _ => state
+                }).ToList();
+                var keys = operational.Select(state => state.Key).ToArray();
+                var matrix = Host(tokens, 760, 260).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).WithStateCategories(operational.ToArray()).WithXLabels(keys);
+                for (var row = 0; row < 3; row++) matrix.AddHeatmapCategoryRow("Site " + (row + 1).ToString(CultureInfo.InvariantCulture), keys.Select((key, column) => (ChartHeatmapCell?)new ChartHeatmapCell(key, (row * 7 + column).ToString(CultureInfo.InvariantCulture))).ToArray());
+                return matrix;
+            case "hexbin-values":
+                var hexbin = Host(tokens, 720, 320).WithDataLabels();
+                for (var row = 0; row < 3; row++) hexbin.AddHexbinHeatmapRow("Row " + (row + 1).ToString(CultureInfo.InvariantCulture), Enumerable.Range(row * 6, 6).Select(value => (double)value).ToArray());
+                hexbin.Options.HeatmapRelativeScale = true;
+                return hexbin;
+            case "gantt-lanes":
+                var lanes = tokens.Status.OperationalStateCategories();
+                var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+                return Host(tokens, 760, 420).WithStateCategories(lanes.ToArray())
+                    .AddGanttLane("Changes", lanes.Take(4).Select((state, index) => new ChartGanttLaneItem(start.AddHours(index * 6), start.AddHours(index * 6 + 5), state.Key, state.Label)).ToArray())
+                    .AddGanttLane("Patching", lanes.Skip(4).Select((state, index) => new ChartGanttLaneItem(start.AddHours(index * 8), start.AddHours(index * 8 + 7), state.Key, state.Label)).ToArray());
             default:
                 return Host(tokens).AddDonut("Outcomes", new[] { new ChartPoint(0, 5), new ChartPoint(1, 3), new ChartPoint(2, 2) });
         }

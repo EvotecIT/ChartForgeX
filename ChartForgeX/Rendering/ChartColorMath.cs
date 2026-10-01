@@ -24,6 +24,21 @@ internal static class ChartColorMath {
     public static ChartColor TextOnBackground(ChartColor background, double lightThreshold = 0.54) =>
         RelativeLuminance(background) > lightThreshold ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
 
+    /// <summary>Returns the WCAG 2 contrast ratio (1 to 21) of two opaque colours; alpha is ignored.</summary>
+    public static double ContrastRatio(ChartColor first, ChartColor second) {
+        var a = WcagLuminance(first);
+        var b = WcagLuminance(second);
+        return (Math.Max(a, b) + 0.05) / (Math.Min(a, b) + 0.05);
+    }
+
+    private static double WcagLuminance(ChartColor color) =>
+        0.2126 * LinearChannel(color.R) + 0.7152 * LinearChannel(color.G) + 0.0722 * LinearChannel(color.B);
+
+    private static double LinearChannel(byte value) {
+        var channel = value / 255.0;
+        return channel <= 0.03928 ? channel / 12.92 : Math.Pow((channel + 0.055) / 1.055, 2.4);
+    }
+
     private static double Clamp01(double value) {
         if (double.IsNaN(value)) return 0;
         if (value < 0) return 0;

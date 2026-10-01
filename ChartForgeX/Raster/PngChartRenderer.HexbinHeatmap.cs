@@ -56,7 +56,7 @@ public sealed partial class PngChartRenderer {
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
                     var width = EstimatePngStyledTextWidth(label, fontSize, dataStyle, true);
                     var height = EstimatePngStyledTextHeight(fontSize, dataStyle);
-                    DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - height / 2, label, ChartColorMath.TextOnBackground(color), color, fontSize, dataStyle);
+                    DrawReadablePngLabel(c, new ChartRect(cx - layout.HexWidth / 2, cy - layout.Radius, layout.HexWidth, layout.Radius * 2), cx - width / 2, cy - height / 2, label, ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max).Color, color, fontSize, dataStyle);
                 }
             }
         }

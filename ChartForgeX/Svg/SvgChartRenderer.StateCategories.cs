@@ -86,11 +86,15 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteStateCategoryText(SvgMarkupWriter writer, Chart chart, string role, string text, double x, double y, string anchor, double fontSize, TextStyleOverride style, string weight, bool middle, ChartColor? color = null) {
+    /// <summary>
+    /// Writes state-category text in <paramref name="color"/> (muted text by default) or, when given, the typed
+    /// <paramref name="paint"/>; a colour set on <paramref name="style"/> wins over both.
+    /// </summary>
+    private static void WriteStateCategoryText(SvgMarkupWriter writer, Chart chart, string role, string text, double x, double y, string anchor, double fontSize, TextStyleOverride style, string weight, bool middle, ChartColor? color = null, SvgPaint? paint = null) {
         if (text.Length == 0) return;
         writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor);
         if (middle) writer.Attribute("dominant-baseline", "middle");
-        writer.Attribute("fill", StyleColor(style, color ?? chart.Options.Theme.MutedText).ToCss())
+        writer.Paint("fill", style.Color is { } styleColor ? SvgPaint.Plain(styleColor) : paint ?? SvgPaint.Plain(color ?? chart.Options.Theme.MutedText))
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
             .Attribute("font-weight", StyleWeight(style, weight));

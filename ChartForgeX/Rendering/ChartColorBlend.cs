@@ -10,6 +10,7 @@ namespace ChartForgeX.Rendering;
 /// </summary>
 internal readonly struct ChartColorBlend {
     private readonly ChartColor? _result;
+    private readonly bool _solid;
 
     /// <summary>Describes a blend of <paramref name="from"/> towards <paramref name="to"/> by <paramref name="amount"/>.</summary>
     /// <param name="from">The colour at amount 0.</param>
@@ -40,8 +41,11 @@ internal readonly struct ChartColorBlend {
     /// <summary>Gets the blended colour, as the raster renderer draws it.</summary>
     public ChartColor Color => _result ?? ChartColorMath.Blend(From, To, Amount);
 
-    /// <summary>Gets the SVG paint of the blend.</summary>
-    public SvgPaint Paint => SvgPaint.Mix(Color, From, FromRole, To, ToRole, Amount);
+    /// <summary>
+    /// Gets the SVG paint of the blend; a <see cref="Solid"/> colour is its role's paint, which also maps translucent
+    /// colours (a mix only maps opaque operands).
+    /// </summary>
+    public SvgPaint Paint => _solid && FromRole.HasValue ? SvgPaint.Of(Color, FromRole.Value) : SvgPaint.Mix(Color, From, FromRole, To, ToRole, Amount);
 
     /// <summary>
     /// Gets the SVG paint of the blend with its literal written opaque, for paints whose opacity is set separately
@@ -55,5 +59,7 @@ internal readonly struct ChartColorBlend {
     }
 
     /// <summary>A colour that is not a blend: <paramref name="color"/> written for <paramref name="role"/>.</summary>
-    public static ChartColorBlend Solid(ChartColor color, SvgColorRole role) => new(color, role, color, role, 0, color);
+    public static ChartColorBlend Solid(ChartColor color, SvgColorRole role) => new(color, role);
+
+    private ChartColorBlend(ChartColor color, SvgColorRole role) : this(color, role, color, role, 0, color) => _solid = true;
 }

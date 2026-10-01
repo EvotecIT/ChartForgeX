@@ -9,7 +9,10 @@ public enum SvgColorRole {
     /// <summary>No particular role: the variable is used for any paint of its colour.</summary>
     Any,
 
-    /// <summary>A surface: page, card, plot, or line colour. Not used for the fill of text.</summary>
+    /// <summary>
+    /// A surface: page, card, plot, or line colour. Text matched by colour value never takes it; text a renderer writes
+    /// in the surface colour on purpose (a count on a strong heatmap cell) does.
+    /// </summary>
     Surface,
 
     /// <summary>A text colour.</summary>

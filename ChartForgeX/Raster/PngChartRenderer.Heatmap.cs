@@ -128,7 +128,8 @@ public sealed partial class PngChartRenderer {
                     var label = categoricalLabel ?? FormatDataLabel(chart, series, pointIndex, value);
                     var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, ChartColorMath.TextOnBackground(color), color, dataFontSize, dataStyle);
+                        var cellText = mark.HasValue ? ChartMarkText.OnStateMark(chart, mark.Value) : ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max);
+                        DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, cellText.Color, color, dataFontSize, dataStyle);
                     } else {
                         var heatmapLabelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, emphasized: true);
                         var heatmapLabelHeight = EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle);

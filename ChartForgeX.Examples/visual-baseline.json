@@ -2399,6 +2399,23 @@
       }
     },
     {
+      "name": "report-host-themed-status-counts",
+      "width": 760,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 55,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496589,
+        "minTransparentPixels": 50611,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "report-summary-metric-strip",
       "width": 980,
       "height": 294,

@@ -24,6 +24,28 @@ internal static class ChartHeatmapSurface {
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
         chart.Options.HeatmapRelativeScale && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
 
+    /// <summary>
+    /// Returns whether a matrix or hexbin heatmap cell is strong, so the text on it takes the surface colour
+    /// (<see cref="ChartMarkText"/>). It follows the branches of <see cref="CellBlend"/> and depends on where the value sits
+    /// on the scale, never on the colour of the cell in one theme: semantic cells are status colours, so strong; a neutral
+    /// zero is weak; a ramp cell is strong from <see cref="StrongRampRatio"/> of the ramp, where token ramps (weakest step
+    /// nearest the surface) have moved far enough from the surface in light and dark themes alike; a tint of a series
+    /// colour is strong only near the full colour (<see cref="StrongTintAmount"/>).
+    /// </summary>
+    public static bool IsStrongCell(Chart chart, ChartColor? highColor, double value, double min, double max) {
+        if (chart.Options.HeatmapRelativeScale && value == 0 && min >= 0) return false;
+        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return true;
+        var ratio = Ratio(chart, value, min, max);
+        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue != null) return ratio >= StrongRampRatio;
+        return 0.18 + ratio * 0.82 >= StrongTintAmount;
+    }
+
+    /// <summary>The position on a sequential ramp (0 weakest, 1 strongest) from which cells count as strong.</summary>
+    internal const double StrongRampRatio = 0.35;
+
+    /// <summary>The share of the series colour in a surface-to-series tint from which cells count as strong.</summary>
+    internal const double StrongTintAmount = 0.9;
+
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) => ColorBlend(chart, highColor, value, min, max).Color;
 
     /// <summary>Returns <see cref="Color"/> as a blend of its theme, series, or ramp colours.</summary>

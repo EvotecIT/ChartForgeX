@@ -13,6 +13,43 @@ internal static class ReportHostExamples {
         WriteShortCardCalendar(output, pngOutputScale);
         WriteFlatHistogram(output, pngOutputScale);
         WriteThemedCalendar(output, pngOutputScale);
+        WriteThemedStatusCounts(output, pngOutputScale);
+    }
+
+    private static void WriteThemedStatusCounts(string output, ChartPngOutputScale pngOutputScale) {
+        // A status matrix with a count in every cell, its SVG colours written as the custom properties of the design
+        // tokens: the count takes the card colour on solid marks and the text colour on quiet ones, by role, so a host that
+        // draws the matrix without card or plot surface can ship one SVG for its light and dark themes.
+        var tokens = VisualDesignTokens.Dark();
+        var states = tokens.Status.OperationalStateCategories()
+            .Select(state => state.Key == "up" ? new ChartStateCategory(state.Key, state.Label, state.Color, state.Pattern, ChartStateEmphasis.Quiet) : state)
+            .ToArray();
+        string[] checks = { "Replication", "DNS", "Time", "SYSVOL", "LDAP", "Backup" };
+        var chart = Chart.Create()
+            .WithTitle("Checks per site")
+            .WithSubtitle("Counts take the card or text colour by role, not a fixed contrast colour")
+            .WithDesignTokens(tokens)
+            .WithSize(760, 360)
+            .WithPngOutputScale(pngOutputScale)
+            .WithMarkBackdrop(ChartMarkBackdrop.Card)
+            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
+            .WithSvgColorVariables(tokens.ToSvgColorVariables())
+            .WithStateCategories(states)
+            .WithXLabels(checks);
+        string[] sites = { "Warsaw", "Berlin", "Madrid", "Oslo" };
+        for (var row = 0; row < sites.Length; row++) {
+            var cells = new ChartHeatmapCell?[checks.Length];
+            for (var column = 0; column < checks.Length; column++) {
+                var state = states[(row * 3 + column * 5) % states.Length];
+                cells[column] = new ChartHeatmapCell(state.Key, ((row * 7 + column * 3) % 12 + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            chart.AddHeatmapCategoryRow(sites[row], cells);
+        }
+
+        chart.SaveSvg(Path.Combine(output, "report-host-themed-status-counts.svg"));
+        chart.SaveHtml(Path.Combine(output, "report-host-themed-status-counts.html"));
+        chart.SavePng(Path.Combine(output, "report-host-themed-status-counts.png"));
     }
 
     private static void WriteThemedCalendar(string output, ChartPngOutputScale pngOutputScale) {

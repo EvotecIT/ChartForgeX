@@ -84,7 +84,7 @@ public sealed partial class SvgChartRenderer {
                 int? level = category == null && status == null ? ChartHeatmapSurface.Level(ratio) : null;
                 ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
                 var cellBlend = ChartHeatmapSurface.CellBlend(chart, series.Color, value, min, max);
-                var color = mark?.Surface ?? cellBlend.Color;
+                var cellText = mark.HasValue ? ChartMarkText.OnStateMark(chart, mark.Value) : ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 // The accessible name always says which cell this is; a caller's tooltip adds to it instead of replacing it.
@@ -113,7 +113,7 @@ public sealed partial class SvgChartRenderer {
                     body.Append("<g pointer-events=\"none\">");
                     var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, ChartColorMath.TextOnBackground(color), fittedCellFontSize, cellWidth - 6, "750", style: dataStyle);
+                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, cellText.Paint, fittedCellFontSize, cellWidth - 6, "750", style: dataStyle);
                     } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                         var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + cellWidth + 8;
                         var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";

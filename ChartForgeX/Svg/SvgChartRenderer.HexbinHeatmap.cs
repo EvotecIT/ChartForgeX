@@ -36,7 +36,6 @@ public sealed partial class SvgChartRenderer {
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
                 var blend = ChartHeatmapSurface.CellBlend(chart, series.Color, value, min, max);
-                var color = blend.Color;
                 var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
                 var status = ChartHeatmapSurface.CellStatus(chart, ratio);
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
@@ -44,7 +43,7 @@ public sealed partial class SvgChartRenderer {
                 WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, blend.Paint, status, ChartHeatmapSurface.Level(ratio), summary);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
-                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartColorMath.TextOnBackground(color), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), layout.HexWidth - 8, "750", style: dataStyle);
+                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max).Paint, StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), layout.HexWidth - 8, "750", style: dataStyle);
                 }
             }
         }

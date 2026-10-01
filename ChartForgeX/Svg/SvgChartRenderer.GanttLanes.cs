@@ -117,7 +117,7 @@ public sealed partial class SvgChartRenderer {
                 var text = placed.Item.Label;
                 if (text != null && width >= EstimateSvgStyledTextWidth(chart, text, tickFontSize, tickStyle, emphasized: true) + ChartGanttLaneModel.LabelPadding * 2 && band >= textHeight + 2) {
                     writer.StartElement("g").Attribute("pointer-events", "none").EndStartElement();
-                    WriteStateCategoryText(writer, chart, "gantt-lane-item-label", text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, "start", tickFontSize, tickStyle, "600", true, ChartColorMath.TextOnBackground(mark.Surface));
+                    WriteStateCategoryText(writer, chart, "gantt-lane-item-label", text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, "start", tickFontSize, tickStyle, "600", true, paint: ChartMarkText.OnStateMark(chart, mark).Paint);
                     writer.EndElement().Line();
                 }
             }
