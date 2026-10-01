@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -60,14 +61,14 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("stroke-width", 2)
                         .Attribute("stroke-dasharray", EdgeDash(LegendLineStyle(chart, item))));
                 } else if (item.Kind == TopologyLegendItemKind.Node) {
-                    var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusFill(color, theme.Background) : item.BackgroundColor!.Trim();
+                    var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusPaint(color, theme.Background) : SvgPaint.Plain(item.BackgroundColor!.Trim());
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)
                         .Attribute("y", markerCenterY - 11)
                         .Attribute("width", 22)
                         .Attribute("height", 22)
                         .Attribute("rx", 6)
-                        .Attribute("fill", fill)
+                        .Paint("fill", fill)
                         .Attribute("stroke", color));
                     var legendNode = LegendNode(item);
                     var iconDefinition = ResolveNodeIcon(legendNode, options);

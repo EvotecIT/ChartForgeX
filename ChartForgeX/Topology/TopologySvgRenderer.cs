@@ -6,6 +6,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -100,7 +101,7 @@ public sealed partial class TopologySvgRenderer {
         });
 
         var markup = document.ToMarkup();
-        return options.SvgColorVariables?.Apply(markup) ?? markup;
+        return Themes.SvgPaint.Resolve(options.SvgColorVariables?.Apply(markup) ?? markup, options.SvgColorVariables);
     }
 
     private static void AddBodyElements(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string id, TopologyHighlightState highlight) {
@@ -146,7 +147,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", map.Width)
             .Attribute("height", map.Height)
             .Attribute("rx", softMap ? 12 : 16)
-            .Attribute("fill", softMap ? StatusFill(theme.Accent, theme.Background, 0.035) : StatusFill(theme.Accent, theme.Background))
+            .Paint("fill", softMap ? StatusPaint(theme.Accent, theme.Background, 0.035) : StatusPaint(theme.Accent, theme.Background))
             .Attribute("stroke", theme.Border)
             .Attribute("stroke-width", 1));
         DrawGeographicLandLayer(layer, chart, map, theme, options);
@@ -263,7 +264,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-hull-padding", options.GeographicRegionHullPadding)
                 .Attribute("data-hull-min-radius", options.GeographicRegionHullMinRadius)
                 .Attribute("data-hull-max-radius", options.GeographicRegionHullMaxRadius)
-                .Attribute("fill", StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.22 : 0.16))
+                .Paint("fill", StatusPaint(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.22 : 0.16))
                 .Attribute("stroke", accent)
                 .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.28 : 0.38)
                 .Attribute("stroke-width", IsMonitoringDashboardStyle(options) ? 1.1 : 1.4));
@@ -390,7 +391,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("width", group.Width)
                     .Attribute("height", group.Height)
                     .Attribute("rx", IsMonitoringDashboardStyle(options) ? 10 : 12)
-                    .Attribute("fill", GroupFill(accent, theme, options))
+                    .Paint("fill", GroupPaint(accent, theme, options))
                     .Attribute("stroke", accent)
                     .Attribute("stroke-width", selected ? (IsMonitoringDashboardStyle(options) ? 2.2 : 2.4) : 1)
                     .Attribute("stroke-opacity", selected ? (IsMonitoringDashboardStyle(options) ? 0.82 : 0.9) : UseNeutralGroupSurface(options) ? 0.38 : (IsMonitoringDashboardStyle(options) ? 0.42 : 0.48)));
@@ -408,7 +409,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("cx", symbolCx)
                         .Attribute("cy", group.Y + 26)
                         .Attribute("r", 10)
-                        .Attribute("fill", StatusFill(accent, theme.Background))
+                        .Paint("fill", StatusPaint(accent, theme.Background))
                         .Attribute("stroke", accent));
                     AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent, prefix, options);
                 }
@@ -422,7 +423,7 @@ public sealed partial class TopologySvgRenderer {
                             .Attribute("cx", symbolCx)
                             .Attribute("cy", group.Y + 26)
                             .Attribute("r", 9.5)
-                            .Attribute("fill", StatusFill(accent, theme.Background))
+                            .Paint("fill", StatusPaint(accent, theme.Background))
                             .Attribute("stroke", accent));
                         AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent, prefix, options);
                         labelX = group.X + 42;

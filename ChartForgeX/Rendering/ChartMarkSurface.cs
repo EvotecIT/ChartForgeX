@@ -1,11 +1,18 @@
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
 internal static class ChartMarkSurface {
-    public static ChartColor BarGradientTop(ChartColor color) => GradientTop(color, ChartVisualPrimitives.BarGradientTopBlend);
+    public static ChartColor BarGradientTop(ChartColor color) => BarGradientTopBlend(color).Color;
 
-    public static ChartColor BarGradientBottom(ChartColor color) => GradientBottom(color, ChartVisualPrimitives.BarGradientBottomBlend);
+    public static ChartColor BarGradientBottom(ChartColor color) => BarGradientBottomBlend(color).Color;
+
+    /// <summary>Returns the top stop of a bar gradient: white blended towards the bar colour (white stays literal).</summary>
+    public static ChartColorBlend BarGradientTopBlend(ChartColor color) => new(ChartColor.White, null, color, SvgColorRole.Series, ChartVisualPrimitives.BarGradientTopBlend);
+
+    /// <summary>Returns the bottom stop of a bar gradient: black blended towards the bar colour (black stays literal).</summary>
+    public static ChartColorBlend BarGradientBottomBlend(ChartColor color) => new(ChartColor.Black, null, color, SvgColorRole.Series, ChartVisualPrimitives.BarGradientBottomBlend);
 
     public static ChartColor TimelineItemGradientTop(ChartColor color) => GradientTop(color, ChartVisualPrimitives.TimelineItemGradientTopBlend);
 

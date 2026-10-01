@@ -116,8 +116,11 @@ internal sealed class ChartCalendarHeatmapModel {
     public bool IsZero(double value) => value == 0 && Min >= 0;
 
     /// <summary>Returns the colour of a day; a colour set on the day itself wins over the neutral zero.</summary>
-    public ChartColor Color(double value, ChartColor? pointColor) =>
-        IsZero(value) && !pointColor.HasValue ? ChartHeatmapSurface.ZeroColor(Chart) : ChartHeatmapSurface.CalendarColor(Chart, Series, pointColor, value, RampMin, Max);
+    public ChartColor Color(double value, ChartColor? pointColor) => Blend(value, pointColor).Color;
+
+    /// <summary>Returns the colour of a day as a blend, for SVG colour variables (see <see cref="Color"/>).</summary>
+    public ChartColorBlend Blend(double value, ChartColor? pointColor) =>
+        IsZero(value) && !pointColor.HasValue ? ChartHeatmapSurface.ZeroBlend(Chart) : ChartHeatmapSurface.CalendarBlend(Chart, Series, pointColor, value, RampMin, Max);
 
     /// <summary>Returns the intensity level: 0 for a neutral zero, otherwise 1 to 4 along the ramp.</summary>
     public int Level(double value) => IsZero(value) ? 0 : Math.Max(1, ChartHeatmapSurface.Level(ChartHeatmapSurface.CalendarRatio(value, RampMin, Max)));

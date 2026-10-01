@@ -354,7 +354,8 @@ public sealed partial class SvgChartRenderer {
 
     private static string SvgFontFamily(string value) => Escape(string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value);
 
-    private static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+    // The markup writer's escaping also replaces characters that are not allowed in markup (and the noncharacters of paint tokens).
+    private static string Escape(string value) => SvgMarkupWriter.EscapeAttribute(value);
 
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
 

@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -24,20 +25,20 @@ public sealed partial class TopologySvgRenderer {
 
     private static void AddCssColorPremiumEdgePathLayers(SvgElement edgeGroup, TopologyEdge edge, string prefix, TopologyRenderOptions options, string svgId, bool selected, string color, string dash, string pathData, ChartLineVisualStyle style) {
         var strokeWidth = EdgeStrokeWidth(edge, selected, options);
-        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, "-ambient-halo", color, strokeWidth + style.AmbientHaloStrokeExtra, style.AmbientHaloOpacity, false);
-        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, "-halo", color, strokeWidth + style.HaloStrokeExtra, style.HaloOpacity, false);
-        AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, string.Empty, color, strokeWidth, 1, true);
-        if (style.HighlightOpacity > 0) AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, "-highlight", ChartColor.White.ToCss(), System.Math.Max(1.0, strokeWidth * style.HighlightStrokeRatio), style.HighlightOpacity, false);
+        if (style.AmbientHaloOpacity > 0 && style.AmbientHaloStrokeExtra > 0) AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, "-ambient-halo", SvgPaint.Plain(color), strokeWidth + style.AmbientHaloStrokeExtra, style.AmbientHaloOpacity, false);
+        if (style.HaloOpacity > 0 && style.HaloStrokeExtra > 0) AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, "-halo", SvgPaint.Plain(color), strokeWidth + style.HaloStrokeExtra, style.HaloOpacity, false);
+        AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, string.Empty, SvgPaint.Plain(color), strokeWidth, 1, true);
+        if (style.HighlightOpacity > 0) AddCssColorPremiumEdgePathLayer(edgeGroup, edge, prefix, options, svgId, color, dash, pathData, ChartLineVisualLayer.HighlightSuffix, SvgPaint.Literal(ChartColor.White), System.Math.Max(1.0, strokeWidth * style.HighlightStrokeRatio), style.HighlightOpacity, false);
     }
 
-    private static void AddCssColorPremiumEdgePathLayer(SvgElement edgeGroup, TopologyEdge edge, string prefix, TopologyRenderOptions options, string svgId, string markerColor, string dash, string pathData, string roleSuffix, string stroke, double strokeWidth, double layerOpacity, bool foreground) {
+    private static void AddCssColorPremiumEdgePathLayer(SvgElement edgeGroup, TopologyEdge edge, string prefix, TopologyRenderOptions options, string svgId, string markerColor, string dash, string pathData, string roleSuffix, SvgPaint stroke, double strokeWidth, double layerOpacity, bool foreground) {
         edgeGroup.Element("path", path => {
             path
                 .Class(prefix + "__edge " + ChartVisualPrimitives.SvgPremiumStrokeClass + (foreground ? string.Empty : " " + prefix + "__edge--premium-layer"))
                 .Attribute("data-cfx-role", "topology-edge-path" + roleSuffix)
                 .Attribute("d", pathData)
                 .Attribute("fill", "none")
-                .Attribute("stroke", stroke)
+                .Paint("stroke", stroke)
                 .Attribute("stroke-width", strokeWidth)
                 .Attribute("stroke-linecap", "round")
                 .Attribute("stroke-linejoin", "round")
@@ -51,7 +52,8 @@ public sealed partial class TopologySvgRenderer {
 
     private static void AddPremiumEdgePathLayer(SvgElement edgeGroup, TopologyEdge edge, string prefix, TopologyRenderOptions options, string svgId, bool selected, string color, string dash, string pathData, ChartLineVisualLayer? layer) {
         var foreground = !layer.HasValue || layer.Value.IsForeground;
-        var stroke = !layer.HasValue ? color : (foreground ? color : layer.Value.Color.ToCss());
+        // The sheen layer is a derived white that never takes a token property; the line and its halos keep their colour.
+        var stroke = !layer.HasValue || foreground ? SvgPaint.Plain(color) : layer.Value.IsHighlight ? SvgPaint.Literal(layer.Value.Color) : SvgPaint.Plain(layer.Value.Color);
         var strokeWidth = layer.HasValue ? layer.Value.StrokeWidth : EdgeStrokeWidth(edge, selected, options);
         var roleSuffix = layer.HasValue ? layer.Value.RoleSuffix : string.Empty;
         var layerOpacity = layer.HasValue ? layer.Value.Opacity : 1;
@@ -61,7 +63,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-cfx-role", "topology-edge-path" + roleSuffix)
                 .Attribute("d", pathData)
                 .Attribute("fill", "none")
-                .Attribute("stroke", stroke)
+                .Paint("stroke", stroke)
                 .Attribute("stroke-width", strokeWidth)
                 .Attribute("stroke-linecap", "round")
                 .Attribute("stroke-linejoin", "round")

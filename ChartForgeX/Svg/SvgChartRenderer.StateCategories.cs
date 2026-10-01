@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -14,20 +15,20 @@ public sealed partial class SvgChartRenderer {
     /// </summary>
     private static void WriteStateCategoryHatchPattern(SvgMarkupWriter writer, string hatchId, Chart chart) {
         var spacing = ChartStateCategoryLegend.HatchSpacing;
-        var stroke = ChartStateMark.Backdrop(chart).ToCss();
+        var stroke = SvgPaint.Of(ChartStateMark.Backdrop(chart), SvgColorRole.Surface);
         writer.StartElement("defs").EndStartElement()
             .StartElement("pattern").Attribute("id", hatchId).Attribute("width", spacing).Attribute("height", spacing).Attribute("patternUnits", "userSpaceOnUse").Attribute("patternTransform", "rotate(45)").EndStartElement()
-            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", 0).Attribute("y2", spacing).Attribute("stroke", stroke).Attribute("stroke-opacity", ChartStateCategoryLegend.HatchOpacity).Attribute("stroke-width", ChartStateMark.PatternLineWidth).EndEmptyElement()
+            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", 0).Attribute("y2", spacing).Paint("stroke", stroke).Attribute("stroke-opacity", ChartStateCategoryLegend.HatchOpacity).Attribute("stroke-width", ChartStateMark.PatternLineWidth).EndEmptyElement()
             .EndElement()
             .StartElement("pattern").Attribute("id", hatchId + "-cross").Attribute("width", spacing).Attribute("height", spacing).Attribute("patternUnits", "userSpaceOnUse").Attribute("patternTransform", "rotate(45)").EndStartElement()
-            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", 0).Attribute("y2", spacing).Attribute("stroke", stroke).Attribute("stroke-opacity", ChartStateCategoryLegend.HatchOpacity).Attribute("stroke-width", ChartStateMark.PatternLineWidth).EndEmptyElement()
-            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", spacing).Attribute("y2", 0).Attribute("stroke", stroke).Attribute("stroke-opacity", ChartStateCategoryLegend.HatchOpacity).Attribute("stroke-width", ChartStateMark.PatternLineWidth).EndEmptyElement()
+            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", 0).Attribute("y2", spacing).Paint("stroke", stroke).Attribute("stroke-opacity", ChartStateCategoryLegend.HatchOpacity).Attribute("stroke-width", ChartStateMark.PatternLineWidth).EndEmptyElement()
+            .StartElement("line").Attribute("x1", 0).Attribute("y1", 0).Attribute("x2", spacing).Attribute("y2", 0).Paint("stroke", stroke).Attribute("stroke-opacity", ChartStateCategoryLegend.HatchOpacity).Attribute("stroke-width", ChartStateMark.PatternLineWidth).EndEmptyElement()
             .EndElement().EndElement().Line();
     }
 
     /// <summary>Writes the fill and fill strength of a state mark onto the element being written.</summary>
     private static SvgMarkupWriter WriteStateMarkFill(SvgMarkupWriter writer, ChartStateMark mark) {
-        writer.Attribute("data-cfx-pattern", mark.PatternToken).Attribute("data-cfx-emphasis", mark.EmphasisToken).Attribute("fill", mark.Color.ToCss());
+        writer.Attribute("data-cfx-pattern", mark.PatternToken).Attribute("data-cfx-emphasis", mark.EmphasisToken).Paint("fill", SvgPaint.Of(mark.Color, SvgColorRole.Status));
         if (mark.FillOpacity < 0.999) writer.Attribute("fill-opacity", mark.FillOpacity);
         return writer;
     }
@@ -43,7 +44,7 @@ public sealed partial class SvgChartRenderer {
             var inset = Math.Min(ChartStateMark.OutlineWidth / 2, Math.Min(width, height) / 2);
             writer.StartElement("rect").Attribute("data-cfx-role", role.Replace("-hatch", "-outline")).Attribute("x", x + inset).Attribute("y", y + inset)
                 .Attribute("width", Math.Max(0, width - inset * 2)).Attribute("height", Math.Max(0, height - inset * 2)).Attribute("rx", Math.Max(0, Math.Min(radius, width / 2) - inset))
-                .Attribute("fill", "none").Attribute("stroke", mark.Color.ToCss()).Attribute("stroke-width", ChartStateMark.OutlineWidth)
+                .Attribute("fill", "none").Paint("stroke", SvgPaint.Of(mark.Color, SvgColorRole.Status)).Attribute("stroke-width", ChartStateMark.OutlineWidth)
                 .Attribute("stroke-dasharray", SvgMarkupWriter.FormatNumber(ChartStateMark.OutlineDash) + " " + SvgMarkupWriter.FormatNumber(ChartStateMark.OutlineGap));
             if (mark.OutlineOpacity < 0.999) writer.Attribute("stroke-opacity", mark.OutlineOpacity);
             writer.Attribute("pointer-events", "none").EndEmptyElement().Line();

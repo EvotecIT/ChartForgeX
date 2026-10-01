@@ -4,6 +4,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -47,7 +48,7 @@ public sealed partial class SvgChartRenderer {
             var value = hasValue ? entry.Value : 0;
             hasZero |= hasValue && model.IsZero(value) && !entry.Color.HasValue;
             int? level = hasValue ? model.Level(value) : null;
-            var color = hasValue ? model.Color(value, entry.Color) : ChartHeatmapSurface.CalendarEmptyColor(chart);
+            var fill = hasValue ? model.Blend(value, entry.Color) : ChartHeatmapSurface.CalendarEmptyBlend(chart);
             var dateText = model.DateText(day);
             var summary = model.Series.Name + ", " + labels.FormatDate(day) + ": " + (hasValue ? FormatValue(chart, value) : labels.NoData);
             // A static cell carries an accessible name but is not a tab stop; the interactive HTML adapter adds focus.
@@ -70,8 +71,8 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("width", layout.Cell)
                 .Attribute("height", layout.Cell)
                 .Attribute("rx", layout.Radius)
-                .Attribute("fill", color.ToCss())
-                .Attribute("stroke", t.CardBackground.ToCss())
+                .Paint("fill", fill.Paint)
+                .Paint("stroke", SvgPaint.Of(t.CardBackground, SvgColorRole.Surface))
                 .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
                 .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)
                 .EndStartElement()
@@ -126,19 +127,19 @@ public sealed partial class SvgChartRenderer {
         var x = right - extraWidth - width - EstimateSvgStyledTextWidth(chart, labels.More, tickFontSize, tickStyle) - 10;
         var lessLabelX = x - 8;
         if (showNoData) {
-            WriteCalendarScaleSwatch(writer, "calendar-heatmap-scale-no-data", "empty", x, y, size, ChartHeatmapSurface.CalendarEmptyColor(chart), labels.NoData);
+            WriteCalendarScaleSwatch(writer, "calendar-heatmap-scale-no-data", "empty", x, y, size, ChartHeatmapSurface.CalendarEmptyBlend(chart).Paint, labels.NoData);
             x += size + gap;
         }
 
         if (showZero) {
-            WriteCalendarScaleSwatch(writer, "calendar-heatmap-scale-zero", null, x, y, size, ChartHeatmapSurface.ZeroColor(chart), FormatValue(chart, 0));
+            WriteCalendarScaleSwatch(writer, "calendar-heatmap-scale-zero", null, x, y, size, ChartHeatmapSurface.ZeroBlend(chart).Paint, FormatValue(chart, 0));
             x += size + gap;
         }
 
         WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", labels.Less, lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
         for (var i = 0; i < 5; i++) {
             var value = model.ScaleValue(i);
-            var color = ChartHeatmapSurface.CalendarColor(chart, model.Series, null, value, model.RampMin, model.Max);
+            var color = ChartHeatmapSurface.CalendarBlend(chart, model.Series, null, value, model.RampMin, model.Max).Paint;
             writer
                 .StartElement("rect")
                 .Attribute("data-cfx-role", "calendar-heatmap-scale-step")
@@ -149,7 +150,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("width", size)
                 .Attribute("height", size)
                 .Attribute("rx", Math.Min(3, size * 0.22))
-                .Attribute("fill", color.ToCss())
+                .Paint("fill", color)
                 .EndEmptyElement()
                 .Line();
         }
@@ -157,7 +158,7 @@ public sealed partial class SvgChartRenderer {
         WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", labels.More, x + width + 8, y + size / 2, "start", emphasized: false, middleBaseline: true);
     }
 
-    private static void WriteCalendarScaleSwatch(SvgMarkupWriter writer, string role, string? status, double x, double y, double size, ChartColor color, string title) {
+    private static void WriteCalendarScaleSwatch(SvgMarkupWriter writer, string role, string? status, double x, double y, double size, SvgPaint color, string title) {
         writer
             .StartElement("rect")
             .Attribute("data-cfx-role", role)
@@ -167,7 +168,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", size)
             .Attribute("height", size)
             .Attribute("rx", Math.Min(3, size * 0.22))
-            .Attribute("fill", color.ToCss())
+            .Paint("fill", color)
             .EndStartElement()
             .StartElement("title")
             .Text(title)

@@ -200,6 +200,16 @@ public sealed class StatePresentationTests {
     }
 
     [Fact]
+    public void PinStateColorsInForcedColors_IsOptIn() {
+        Assert.DoesNotContain("forced-color-adjust", Matrix().ToSvg(), StringComparison.Ordinal);
+        var pinned = Matrix().WithStateColorsPinnedInForcedColors().ToSvg();
+        Assert.Contains("[data-cfx-status]", pinned, StringComparison.Ordinal);
+        Assert.Contains("{forced-color-adjust:none}", pinned, StringComparison.Ordinal);
+        Assert.NotNull(XDocument.Parse(pinned).Root);
+        Assert.Equal(Matrix().ToPng(), Matrix().WithStateColorsPinnedInForcedColors().ToPng());
+    }
+
+    [Fact]
     public void CategoricalHeatmap_ManyGroupsInAShortChart_KeepRowsInsideThePlot() {
         var chart = Chart.Create().WithSize(640, 300).WithStateCategories(new ChartStateCategory("pass", "Passed", Pass)).WithXLabels("One", "Two");
         chart.Options.ShowLegend = false;

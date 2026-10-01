@@ -18,6 +18,11 @@ internal readonly struct ChartLineVisualLayer {
     public double StrokeWidth { get; }
     public double Opacity { get; }
     public bool IsForeground => RoleSuffix.Length == 0;
+
+    /// <summary>Gets whether this is the white sheen drawn over the line: a derived colour that never takes a token property.</summary>
+    public bool IsHighlight => RoleSuffix == HighlightSuffix;
+
+    public const string HighlightSuffix = "-highlight";
     public bool IsVisible => StrokeWidth > 0 && Opacity > 0 && (IsForeground || Color.A > 0);
 
     public ChartColor ColorWithOpacity() {
@@ -42,7 +47,7 @@ internal static class ChartLineVisualLayers {
         layers.Add(new ChartLineVisualLayer(string.Empty, color, strokeWidth, 1));
         var highlightOpacity = HighlightOpacity(color, style);
         if (highlightOpacity > 0) {
-            layers.Add(new ChartLineVisualLayer("-highlight", ChartColor.White, Math.Max(1.0, strokeWidth * style.HighlightStrokeRatio), highlightOpacity));
+            layers.Add(new ChartLineVisualLayer(ChartLineVisualLayer.HighlightSuffix, ChartColor.White, Math.Max(1.0, strokeWidth * style.HighlightStrokeRatio), highlightOpacity));
         }
 
         return layers;

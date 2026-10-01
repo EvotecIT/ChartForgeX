@@ -1,4 +1,5 @@
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Topology;
 
@@ -9,7 +10,7 @@ public sealed partial class TopologySvgRenderer {
         foreach (var group in report.Groups) AddDiagnosticRect(layer, group.Bounds, group.Id, "group", "#7C3AED");
         foreach (var node in report.Nodes) {
             AddDiagnosticRect(layer, node.Bounds, node.Id, "node", "#0284C7");
-            foreach (var port in node.Ports) layer.Element("circle", circle => circle.Attribute("data-cfx-role", "topology-layout-port").Attribute("data-port-id", port.Id).Attribute("cx", port.Position.X).Attribute("cy", port.Position.Y).Attribute("r", 4).Attribute("fill", "#F59E0B").Attribute("stroke", "#FFFFFF").Attribute("stroke-width", 1));
+            foreach (var port in node.Ports) layer.Element("circle", circle => circle.Attribute("data-cfx-role", "topology-layout-port").Attribute("data-port-id", port.Id).Attribute("cx", port.Position.X).Attribute("cy", port.Position.Y).Attribute("r", 4).Attribute("fill", "#F59E0B").Paint("stroke", TopologyRenderPrimitives.ContrastWhite).Attribute("stroke-width", 1));
         }
         foreach (var edge in report.Edges) foreach (var point in edge.Points) layer.Element("circle", circle => circle.Attribute("data-cfx-role", "topology-layout-route-point").Attribute("data-edge-id", edge.Id).Attribute("cx", point.X).Attribute("cy", point.Y).Attribute("r", 2.5).Attribute("fill", "#10B981"));
         foreach (var collision in report.Collisions) AddDiagnosticRect(layer, collision.Bounds, collision.FirstId + ":" + collision.SecondId, "collision", "#DC2626");

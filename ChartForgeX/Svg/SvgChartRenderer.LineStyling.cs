@@ -3,6 +3,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -27,7 +28,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("x2", x2)
                 .Attribute("y2", y2)
                 .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
-                .Attribute("stroke", layer.Color.ToCss())
+                .Paint("stroke", LayerPaint(layer))
                 .Attribute("stroke-width", layer.StrokeWidth)
                 .Attribute("stroke-linecap", "round");
             if (!string.IsNullOrWhiteSpace(dashArray)) writer.Attribute("stroke-dasharray", dashArray);
@@ -35,6 +36,9 @@ public sealed partial class SvgChartRenderer {
             writer.EndEmptyElement().Line();
         });
     }
+
+    /// <summary>Returns the stroke of a line layer: the sheen stays literal white, the line and its halos keep their colour.</summary>
+    private static SvgPaint LayerPaint(ChartLineVisualLayer layer) => layer.IsHighlight ? SvgPaint.Literal(layer.Color) : SvgPaint.Plain(layer.Color);
 
     private static void DrawPremiumSvgLinePath(StringBuilder sb, string role, int seriesIndex, int pointCount, string path, ChartColor color, double strokeWidth, ChartLineVisualStyle style, Action<SvgMarkupWriter>? foregroundAttributes = null) {
         foreach (var layer in ChartLineVisualLayers.Build(color, strokeWidth, style)) {
@@ -48,7 +52,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("d", path)
                     .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
                     .Attribute("fill", "none")
-                    .Attribute("stroke", layer.Color.ToCss())
+                    .Paint("stroke", LayerPaint(layer))
                     .Attribute("stroke-width", layer.StrokeWidth)
                     .Attribute("stroke-linecap", "round")
                     .Attribute("stroke-linejoin", "round");

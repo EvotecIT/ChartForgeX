@@ -13,9 +13,11 @@ public sealed partial class VisualDesignTokens {
     /// <c>severity.{critical|high|medium|low|info}.{fill|ink}</c>, <c>outcome.{pass|neutral}.{fill|ink}</c>,
     /// <c>state.maintenance.{fill|ink}</c>, <c>accent.base</c>, <c>chrome.accent</c>, <c>ramps.sequential.1</c> …,
     /// <c>ramps.diverging.negative.1</c> …, <c>ramps.diverging.neutral</c>, and <c>ramps.diverging.positive.1</c> ….
-    /// They are added in that order, so when two tokens share a colour the earlier one names it. Surface tokens are not
-    /// used for text fills, so contrast text that happens to have a surface colour (white labels on dark marks) stays
-    /// literal.
+    /// They are added in that order, so when two tokens share a colour the earlier one names a paint without a role.
+    /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
+    /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>Ramp</c>; accents <c>Any</c>), so a renderer
+    /// that writes a colour for a role names the same token in every theme. Surface tokens are not used for text fills,
+    /// so contrast text that happens to have a surface colour (white labels on dark marks) stays literal.
     /// </summary>
     /// <param name="variableName">
     /// Returns the custom property name for a token path, or null to leave that token literal. Null names every token
@@ -28,7 +30,7 @@ public sealed partial class VisualDesignTokens {
         var variables = new SvgColorVariables();
         void Add(string path, ChartColor color) {
             var variable = name(path);
-            if (variable != null) variables.Add(variable, color, appliesToText: !path.StartsWith("surface.", StringComparison.Ordinal));
+            if (variable != null) variables.Add(variable, color, RoleOf(path));
         }
 
         void AddList(string path, ChartColor[] colors) {
@@ -65,6 +67,16 @@ public sealed partial class VisualDesignTokens {
         }
 
         return variables;
+    }
+
+    /// <summary>Returns the role of a token path: surfaces, text, series, statuses, ramps; accents have no particular role.</summary>
+    private static SvgColorRole RoleOf(string path) {
+        if (path.StartsWith("surface.", StringComparison.Ordinal)) return SvgColorRole.Surface;
+        if (path.StartsWith("text.", StringComparison.Ordinal)) return SvgColorRole.Text;
+        if (path.StartsWith("series.", StringComparison.Ordinal)) return SvgColorRole.Series;
+        if (path.StartsWith("ramps.", StringComparison.Ordinal)) return SvgColorRole.Ramp;
+        if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal)) return SvgColorRole.Status;
+        return SvgColorRole.Any;
     }
 
     private static string DefaultSvgVariableName(string path) {

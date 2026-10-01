@@ -28,6 +28,13 @@ internal sealed class SvgElement : SvgNode {
         return this;
     }
 
+    /// <summary>Sets a paint attribute; a typed paint stays a token until the renderer resolves it.</summary>
+    public SvgElement Paint(string name, Themes.SvgPaint paint) {
+        if (paint.Value == null) return this;
+        SetAttribute(new SvgAttribute(name, paint.Value, paint.IsRaw));
+        return this;
+    }
+
     public SvgElement Attribute(string name, double value) =>
         Attribute(name, SvgMarkupWriter.FormatNumber(value));
 
@@ -217,7 +224,11 @@ internal sealed class SvgElement : SvgNode {
     public override void WriteTo(SvgMarkupWriter writer) {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
         writer.StartElement(Name);
-        foreach (var attribute in _attributes) writer.Attribute(attribute.Name, attribute.Value);
+        foreach (var attribute in _attributes) {
+            if (attribute.IsRawPaint) writer.Paint(attribute.Name, RawPaint(attribute.Value));
+            else writer.Attribute(attribute.Name, attribute.Value);
+        }
+
         if (_children.Count == 0) {
             writer.EndEmptyElement();
             return;
@@ -230,10 +241,12 @@ internal sealed class SvgElement : SvgNode {
 
     protected override SvgNode CloneCore() {
         var clone = new SvgElement(Name);
-        foreach (var attribute in _attributes) clone.Attribute(attribute.Name, attribute.Value);
+        foreach (var attribute in _attributes) clone.SetAttribute(attribute);
         foreach (var child in _children) clone.Add(child.Clone());
         return clone;
     }
+
+    private static Themes.SvgPaint RawPaint(string token) => Themes.SvgPaint.FromToken(token);
 
     private void SetAttribute(SvgAttribute attribute) {
         for (var i = 0; i < _attributes.Count; i++) {

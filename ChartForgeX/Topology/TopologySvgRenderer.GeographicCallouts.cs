@@ -3,6 +3,7 @@ using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -189,7 +190,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("width", width)
                     .Attribute("height", TopologyGeographicCalloutPrimitives.StatusChipHeight)
                     .Attribute("rx", TopologyGeographicCalloutPrimitives.StatusChipRadius)
-                    .Attribute("fill", StatusFill(color, theme.Background))
+                    .Paint("fill", StatusPaint(color, theme.Background))
                     .Attribute("stroke", color)
                     .Attribute("stroke-opacity", TopologyGeographicCalloutPrimitives.StatusChipStrokeOpacity));
                 group.Element("circle", circle => circle

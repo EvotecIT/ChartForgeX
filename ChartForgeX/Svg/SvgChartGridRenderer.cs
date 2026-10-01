@@ -31,7 +31,7 @@ public sealed class SvgChartGridRenderer {
         var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-grid", idScope, grid.Title, grid.Charts.Count.ToString(CultureInfo.InvariantCulture));
         var svg = RenderCore(grid, provisionalId);
         var bound = SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-grid", idScope);
-        return grid.SvgColorVariables?.Apply(bound) ?? bound;
+        return Themes.SvgPaint.Resolve(grid.SvgColorVariables?.Apply(bound) ?? bound, grid.SvgColorVariables);
     }
 
     private string RenderCore(ChartGrid grid, string id) {
@@ -87,7 +87,7 @@ public sealed class SvgChartGridRenderer {
 
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
-            var childSvg = _chartRenderer.Render(cell.Chart, id + "-cell-" + i.ToString(CultureInfo.InvariantCulture));
+            var childSvg = _chartRenderer.RenderGridPanel(cell.Chart, id + "-cell-" + i.ToString(CultureInfo.InvariantCulture));
             writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height)).Line();
         }
 
@@ -109,7 +109,7 @@ public sealed class SvgChartGridRenderer {
         WriteStyledTextContent(writer, style, text).EndElement().Line();
     }
 
-    private static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+    private static string Escape(string value) => SvgMarkupWriter.EscapeAttribute(value);
 
     private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 

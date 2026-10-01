@@ -57,6 +57,27 @@ public sealed class SvgColorVariablesTests {
     }
 
     [Fact]
+    public void TypedPaints_ResolveByRole_KeepDerivedLiterals_AndMixTokenColours() {
+        var blue = ChartColor.FromHex("#2A78D6");
+        var variables = new SvgColorVariables().Add("--series-1", blue, SvgColorRole.Series).Add("--ramp-3", blue, SvgColorRole.Ramp)
+            .Add("--card", ChartColor.White, SvgColorRole.Surface);
+        // A ramp step takes the ramp property, a paint without a role the one added first.
+        Assert.Equal("var(--ramp-3, #2A78D6)", SvgPaint.Resolve(SvgPaint.Of(blue, SvgColorRole.Ramp).Value!, variables));
+        Assert.Equal("var(--series-1, #2A78D6)", SvgPaint.Resolve(SvgPaint.Of(blue, SvgColorRole.Any).Value!, variables));
+        // A derived white stays literal although the card is white; kept as a token for a host that applies more variables.
+        var literal = SvgPaint.Literal(ChartColor.White).Value!;
+        Assert.Equal("#FFFFFF", SvgPaint.Resolve(literal, variables));
+        Assert.Equal(literal, SvgPaint.Resolve(literal, variables, keepLiterals: true));
+        // A blend of a token and a derived colour mixes the property; without variables it is the blended literal.
+        var mix = SvgPaint.Mix(ChartColor.FromHex("#3F85DA"), ChartColor.White, null, blue, SvgColorRole.Series, 0.9).Value!;
+        Assert.Equal("color-mix(in srgb, #FFFFFF, var(--series-1, #2A78D6) 90%)", SvgPaint.Resolve(mix, variables));
+        Assert.Equal("#3F85DA", SvgPaint.Resolve(mix, null));
+        // A blend of colours nothing maps stays a protected literal.
+        Assert.Equal("#808080", SvgPaint.Resolve(SvgPaint.Mix(ChartColor.FromHex("#808080"), ChartColor.Black, null, ChartColor.White, null, 0.5).Value!, variables));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SvgColorVariables().Add("--x", blue, (SvgColorRole)99));
+    }
+
+    [Fact]
     public void Apply_ChangesOnlyPaintValues() {
         var variables = new SvgColorVariables().Add("--ink", ChartColor.FromHex("#112233"));
         const string svg = "<svg><style>.a{fill:#112233;stroke:#112233 !important}</style>"
@@ -72,7 +93,7 @@ public sealed class SvgColorVariablesTests {
 
     [Fact]
     public void SurfaceVariables_AreNotUsedForTextFills() {
-        var variables = new SvgColorVariables().Add("--card", ChartColor.White, appliesToText: false).Add("--ink", ChartColor.FromHex("#112233"));
+        var variables = new SvgColorVariables().Add("--card", ChartColor.White, SvgColorRole.Surface).Add("--ink", ChartColor.FromHex("#112233"));
         var result = variables.Apply("<rect fill=\"#FFFFFF\"/><text fill=\"#FFFFFF\" stroke=\"#FFFFFF\">a</text><tspan style=\"fill:#FFFFFF;stroke:#FFFFFF\"/><text fill=\"#112233\">b</text>");
         Assert.Equal("<rect fill=\"var(--card, #FFFFFF)\"/><text fill=\"#FFFFFF\" stroke=\"var(--card, #FFFFFF)\">a</text><tspan style=\"fill:#FFFFFF;stroke:var(--card, #FFFFFF)\"/><text fill=\"var(--ink, #112233)\">b</text>", result);
 
@@ -100,7 +121,9 @@ public sealed class SvgColorVariablesTests {
         var grid = new ChartGrid().Add(Lines()).Add(Lines()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
         var svg = grid.ToSvg();
         Assert.Contains("var(--cfx-series-1, #2A78D6)", svg, StringComparison.Ordinal);
-        Assert.Equal(grid.ToSvg(), Graphite.ToSvgColorVariables().Apply(svg));
+        // Panels without variables of their own resolve their typed paints with the grid's: the white sheen stays literal.
+        Assert.Matches("data-cfx-role=\"line-highlight\"[^>]*stroke=\"#FFFFFF\"", svg);
+        Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
 
         var chart = TopologyChart.Create().WithId("sites").AddAutoNode("dc1", "DC1");
         chart.Theme = Graphite.ApplyTo(TopologyTheme.Light());
@@ -139,8 +162,17 @@ public sealed class SvgColorVariablesTests {
         .AddLine("Inbound", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(2, 2) })
         .AddLine("Outbound", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1), new ChartPoint(2, 3) });
 
-    // Undoes the variables: var(--x, #hex) becomes #hex and color-mix(... N%, transparent) becomes rgba(r,g,b,N/100).
+    // Undoes the variables: var(--x, #hex) becomes #hex, color-mix(... N%, transparent) becomes rgba(r,g,b,N/100), and a
+    // color-mix of two colours becomes their blend, rounded as the renderers blend.
     private static string Strip(string svg) {
+        const string Operand = @"(?:var\(--[\w-]+, )?#([0-9A-Fa-f]{6})\)?";
+        svg = Regex.Replace(svg, @"color-mix\(in srgb, " + Operand + @", " + Operand + @" ([0-9.]+)%\)", match => {
+            var from = ChartColor.FromHex(match.Groups[1].Value);
+            var to = ChartColor.FromHex(match.Groups[2].Value);
+            var amount = double.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture) / 100;
+            byte Channel(byte a, byte b) => (byte)Math.Round(a + (b - a) * amount);
+            return ChartColor.FromRgb(Channel(from.R, to.R), Channel(from.G, to.G), Channel(from.B, to.B)).ToHex();
+        });
         var plain = Regex.Replace(svg, @"color-mix\(in srgb, var\(--[\w-]+, #([0-9A-Fa-f]{6})\) ([0-9.]+)%, transparent\)", match => {
             var hex = match.Groups[1].Value;
             var alpha = double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) / 100;

@@ -8,6 +8,8 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 
+using ChartForgeX.Svg;
+
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
@@ -567,9 +569,9 @@ internal static partial class TopologyRenderPrimitives {
 
     public static string CssFontFamily(string value) => value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
 
-    public static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+    public static string Escape(string value) => SvgMarkupWriter.EscapeText(value);
 
-    public static string EscapeAttr(string value) => Escape(value).Replace("\"", "&quot;");
+    public static string EscapeAttr(string value) => SvgMarkupWriter.EscapeAttribute(value);
 
     public static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 

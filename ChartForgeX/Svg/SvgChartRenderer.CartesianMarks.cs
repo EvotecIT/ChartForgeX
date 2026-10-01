@@ -5,6 +5,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -198,13 +199,13 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-x", p.X)
                     .Attribute("data-cfx-y", p.Y)
                     .Attribute("data-cfx-base", baseValue)
-                    .Attribute("data-cfx-color", PointColor(chart, s, index, pointIndex).ToHex())
+                    .Paint("data-cfx-color", DataColor(PointColor(chart, s, index, pointIndex)))
                     .Attribute("x", x)
                     .Attribute("y", top)
                     .Attribute("width", barWidth)
                     .Attribute("height", height)
                     .Attribute("rx", radius)
-                    .Attribute("fill", flat ? PointColor(chart, s, index, pointIndex).ToCss() : BarFill(chart, s, index, pointIndex, id))
+                    .Paint("fill", flat ? SvgPaint.Of(PointColor(chart, s, index, pointIndex), SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)))
                     .Attribute("opacity", flat ? null : SvgMarkupWriter.FormatNumber(ChartVisualPrimitives.BarFillOpacity))
                     .EndEmptyElement()
                     .Line());

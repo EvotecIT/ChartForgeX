@@ -5,6 +5,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Svg;
@@ -82,13 +83,14 @@ public sealed partial class SvgChartRenderer {
                 var status = category?.Key ?? ChartHeatmapSurface.CellStatus(chart, ratio);
                 int? level = category == null && status == null ? ChartHeatmapSurface.Level(ratio) : null;
                 ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
-                var color = mark?.Surface ?? ChartHeatmapSurface.CellColor(chart, series.Color, value, min, max);
+                var cellBlend = ChartHeatmapSurface.CellBlend(chart, series.Color, value, min, max);
+                var color = mark?.Surface ?? cellBlend.Color;
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 // The accessible name always says which cell this is; a caller's tooltip adds to it instead of replacing it.
                 var tooltip = cell?.Tooltip;
                 var name = string.IsNullOrWhiteSpace(tooltip) || string.Equals(tooltip, summary, StringComparison.Ordinal) ? summary : summary + ". " + tooltip;
-                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, color, cell?.Href, category?.Label, level, mark, string.IsNullOrWhiteSpace(tooltip) ? summary : tooltip!);
+                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, cellBlend.Paint, cell?.Href, category?.Label, level, mark, string.IsNullOrWhiteSpace(tooltip) ? summary : tooltip!);
                 if (mark.HasValue) AppendSvg(body, writer => WriteStateMarkLines(writer, hatchId, mark.Value, x, y, cellWidth, cellHeight, radius, "heatmap-cell-hatch"));
                 var label = FormatDataLabel(chart, series, pointIndex, value);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
@@ -207,7 +209,7 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, ChartColor color, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null, string? tooltip = null) {
+    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, SvgPaint fill, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null, string? tooltip = null) {
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(768);
         // Static cells carry accessible names but are not tab stops (the interactive HTML adapter adds focus); a
@@ -231,11 +233,11 @@ public sealed partial class SvgChartRenderer {
             .Attribute("height", height)
             .Attribute("rx", radius);
         if (mark.HasValue) WriteStateMarkFill(writer, mark.Value);
-        else writer.Attribute("fill", color.ToCss());
+        else writer.Paint("fill", fill);
         // An outlined state draws its own border in the state colour instead of the card-coloured cell border.
         if (mark?.Outlined != true) {
             writer
-                .Attribute("stroke", t.CardBackground.ToCss())
+                .Paint("stroke", SvgPaint.Of(t.CardBackground, SvgColorRole.Surface))
                 .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
                 .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
         }
@@ -370,7 +372,7 @@ public sealed partial class SvgChartRenderer {
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
-            var color = ChartHeatmapSurface.CellColor(chart, highColor, value, min, max);
+            var color = ChartHeatmapSurface.CellBlend(chart, highColor, value, min, max).Paint;
             var stepRatio = ChartHeatmapSurface.Ratio(chart, value, min, max);
             WriteHeatmapScaleStep(sb, x + i * width / steps, y, width / steps + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartHeatmapSurface.CellStatus(chart, stepRatio), ChartHeatmapSurface.Level(stepRatio), color);
         }
@@ -390,7 +392,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHeatmapScaleStep(StringBuilder sb, double x, double y, double width, double height, string? status, int level, ChartColor color) {
+    private static void WriteHeatmapScaleStep(StringBuilder sb, double x, double y, double width, double height, string? status, int level, SvgPaint color) {
         var writer = new SvgMarkupWriter(384);
         writer
             .StartElement("rect")
@@ -402,7 +404,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", width)
             .Attribute("height", height)
             .Attribute("rx", ChartVisualPrimitives.HeatmapScaleRadius)
-            .Attribute("fill", color.ToCss())
+            .Paint("fill", color)
             .EndEmptyElement()
             .Line();
         sb.Append(writer.Build());

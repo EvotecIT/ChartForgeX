@@ -2382,6 +2382,23 @@
       }
     },
     {
+      "name": "report-host-themed-calendar",
+      "width": 760,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 58,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 408629,
+        "minTransparentPixels": 47371,
+        "minDistinctColors": 1804,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "report-summary-metric-strip",
       "width": 980,
       "height": 294,

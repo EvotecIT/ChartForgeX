@@ -15,11 +15,26 @@ namespace ChartForgeX.Themes;
 /// <c>color-mix(in srgb, var(--name, #rrggbb) N%, transparent)</c>. PNG output is not affected.
 /// </summary>
 /// <remarks>
-/// Colours are matched by value (red, green, and blue; a paint is only matched when it is no more opaque than the
-/// variable). When two variables share a colour, the one added first is used. Any paint with a mapped colour takes the
-/// variable, including colours ChartForgeX derives that happen to equal it, except that variables added with
-/// <c>appliesToText: false</c> are not used for text fills. Derived colours that differ from every mapped colour
-/// (blends, most contrast text) stay literal.
+/// <para>
+/// Set on a chart, grid, or topology (<c>Chart.WithSvgColorVariables</c>, <c>ChartGrid.WithSvgColorVariables</c>,
+/// <c>TopologyRenderOptions.SvgColorVariables</c>), the renderers write colours by role. A colour the renderer derives
+/// (the white sheen of a line, the highlight of a surface, the contrast stroke of a topology icon) stays literal even
+/// when it equals a token colour. A blend of token colours (bar gradients, heatmap and calendar ramp steps, neutral zero
+/// and empty days, topology tints) is written as <c>color-mix(in srgb, …)</c> of their properties, so it follows a theme
+/// switch. A colour written for a role (a series, a status, a ramp step, the surface behind marks) takes the variable of
+/// that role when several share its colour. Other paints match by colour value.
+/// </para>
+/// <para>
+/// <see cref="Apply"/> on finished markup only matches by colour value (red, green, and blue; a paint is only matched
+/// when it is no more opaque than the variable): every paint of a mapped colour takes the variable, including derived
+/// colours that happen to equal it. When two variables share a colour, the one added first is used, and
+/// <see cref="SvgColorRole.Surface"/> variables are not used for text fills. Do not apply variables to SVG rendered with
+/// variables: its derived colours are literal on purpose and would be mapped by value.
+/// </para>
+/// <para>
+/// Roles tell token kinds apart (a series colour from a ramp step of the same value), not tokens within a kind: when two
+/// surface tokens share a colour in one theme, the one added first names it.
+/// </para>
 /// </remarks>
 public sealed class SvgColorVariables {
     private static readonly Regex VariableName = new("^--[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant);
@@ -37,37 +52,45 @@ public sealed class SvgColorVariables {
     private readonly List<SvgColorVariable> _variables = new();
     private readonly Dictionary<int, SvgColorVariable> _any = new();
     private readonly Dictionary<int, SvgColorVariable> _text = new();
+    private readonly Dictionary<long, SvgColorVariable> _byRole = new();
 
     /// <summary>Gets the variables in the order they were added.</summary>
     public IReadOnlyList<SvgColorVariable> Variables => _variables.AsReadOnly();
 
     /// <summary>
-    /// Adds a variable. When a variable for the same colour was added before, that one keeps the colour and this one is
-    /// only listed.
+    /// Adds a variable. When a variable for the same colour was added before, that one keeps the colour for paints
+    /// without a role and this one is only used by paints of its own role.
     /// </summary>
     /// <param name="name">The custom property name, for example <c>--brand-series-1</c>.</param>
     /// <param name="color">The colour it stands for; its literal value is the fallback.</param>
-    /// <param name="appliesToText">False keeps text fills of this colour literal; use it for surface colours.</param>
+    /// <param name="role">The role of the colour; <see cref="SvgColorRole.Surface"/> keeps text fills of this colour literal.</param>
     /// <returns>The same instance.</returns>
     /// <exception cref="ArgumentException">The name is not <c>--</c> followed by letters, digits, <c>-</c>, or <c>_</c>.</exception>
-    public SvgColorVariables Add(string name, ChartColor color, bool appliesToText = true) {
+    /// <exception cref="ArgumentOutOfRangeException">The role is not defined.</exception>
+    public SvgColorVariables Add(string name, ChartColor color, SvgColorRole role = SvgColorRole.Any) {
         if (name == null || !VariableName.IsMatch(name)) throw new ArgumentException("A CSS custom property name starts with '--' and holds letters, digits, '-', or '_'.", nameof(name));
-        var variable = new SvgColorVariable(name, color, appliesToText);
+        if (!Enum.IsDefined(typeof(SvgColorRole), role)) throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown colour role.");
+        var variable = new SvgColorVariable(name, color, role);
         _variables.Add(variable);
         var key = Rgb(color.R, color.G, color.B);
         if (!_any.ContainsKey(key)) _any[key] = variable;
-        if (appliesToText && !_text.ContainsKey(key)) _text[key] = variable;
+        if (role != SvgColorRole.Surface && !_text.ContainsKey(key)) _text[key] = variable;
+        var roleKey = RoleKey(role, key);
+        if (!_byRole.ContainsKey(roleKey)) _byRole[roleKey] = variable;
         return this;
     }
 
     /// <summary>Creates an independent copy.</summary>
     public SvgColorVariables Clone() {
         var copy = new SvgColorVariables();
-        foreach (var variable in _variables) copy.Add(variable.Name, variable.Color, variable.AppliesToText);
+        foreach (var variable in _variables) copy.Add(variable.Name, variable.Color, variable.Role);
         return copy;
     }
 
-    /// <summary>Writes mapped paint values in <paramref name="svg"/> as custom properties. Applying it twice changes nothing more.</summary>
+    /// <summary>
+    /// Writes mapped paint values in finished <paramref name="svg"/> as custom properties, by colour value. Applying it
+    /// twice changes nothing more. Renderers given these variables also write derived colours by role (see remarks).
+    /// </summary>
     /// <param name="svg">SVG markup, for example from <c>ToSvg()</c>.</param>
     /// <returns>The markup with mapped paints replaced.</returns>
     public string Apply(string svg) {
@@ -75,6 +98,19 @@ public sealed class SvgColorVariables {
         if (_any.Count == 0) return svg;
         var result = StyleElement.Replace(svg, match => match.Groups["open"].Value + Declarations(match.Groups["css"].Value, textElement: false) + match.Groups["close"].Value);
         return StartTag.Replace(result, ReplaceTag);
+    }
+
+    /// <summary>
+    /// Returns the CSS paint for a colour written for <paramref name="role"/>: the variable of that role with that colour,
+    /// else the variable a paint without a role would take (never a surface variable for <see cref="SvgColorRole.Text"/>).
+    /// </summary>
+    internal bool TryPaint(ChartColor color, SvgColorRole role, out string paint) {
+        paint = string.Empty;
+        if (color.A == 0) return false;
+        var key = Rgb(color.R, color.G, color.B);
+        if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out var variable)) &&
+            !(role == SvgColorRole.Text ? _text : _any).TryGetValue(key, out variable)) return false;
+        return TryWrite(variable, color.A / 255.0, out paint);
     }
 
     private string ReplaceTag(Match match) {
@@ -96,13 +132,19 @@ public sealed class SvgColorVariables {
         var value = match.Groups["value"].Value;
         if (!TryParse(value, out var r, out var g, out var b, out var alpha) || alpha <= 0) return match.Value;
         if (!(textFill ? _text : _any).TryGetValue(Rgb(r, g, b), out var variable)) return match.Value;
+        return TryWrite(variable, alpha, out var paint) ? match.Groups["lead"].Value + paint : match.Value;
+    }
+
+    /// <summary>Writes the variable, mixed with transparent when the paint is more transparent than the variable.</summary>
+    private static bool TryWrite(SvgColorVariable variable, double alpha, out string paint) {
+        paint = string.Empty;
         var variableAlpha = variable.Color.A / 255.0;
-        if (variableAlpha <= 0 || alpha > variableAlpha + 0.002) return match.Value;
+        if (variableAlpha <= 0 || alpha > variableAlpha + 0.002) return false;
         var literal = variable.Color.A == 255 ? variable.Color.ToHex() : variable.Color.ToHexRgba();
-        var paint = "var(" + variable.Name + ", " + literal + ")";
+        paint = "var(" + variable.Name + ", " + literal + ")";
         var share = alpha / variableAlpha;
         if (share < 0.9995) paint = "color-mix(in srgb, " + paint + " " + (share * 100).ToString("0.##", CultureInfo.InvariantCulture) + "%, transparent)";
-        return match.Groups["lead"].Value + paint;
+        return true;
     }
 
     private static bool TryParse(string value, out int r, out int g, out int b, out double alpha) {
@@ -126,4 +168,6 @@ public sealed class SvgColorVariables {
     }
 
     private static int Rgb(int r, int g, int b) => (r << 16) | (g << 8) | b;
+
+    private static long RoleKey(SvgColorRole role, int rgb) => ((long)role << 32) | (uint)rgb;
 }

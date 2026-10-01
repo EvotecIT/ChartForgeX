@@ -5,6 +5,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -28,7 +29,7 @@ public sealed partial class SvgChartRenderer {
             } else {
                 var flat = chart.Options.BarVisualStyle.Kind == ChartBarStyle.Flat;
                 var color = PointColor(chart, s, index, pointIndex);
-                WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, flat ? color.ToCss() : BarFill(chart, s, index, pointIndex, id), color, flat ? null : ChartVisualPrimitives.BarFillOpacity);
+                WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, flat ? SvgPaint.Of(color, SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)), color, flat ? null : ChartVisualPrimitives.BarFillOpacity);
                 DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, left, y, width, layout.BarHeight, radius, "horizontal-bar-pattern");
                 if (!flat) DrawSvgBarHighlight(sb, left, y, width, layout.BarHeight);
             }
@@ -55,7 +56,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteHorizontalBar(StringBuilder sb, int seriesIndex, int pointIndex, double category, double value, double baseValue, double x, double y, double width, double height, double radius, string fill, ChartColor sourceColor, double? opacity) {
+    private static void WriteHorizontalBar(StringBuilder sb, int seriesIndex, int pointIndex, double category, double value, double baseValue, double x, double y, double width, double height, double radius, SvgPaint fill, ChartColor sourceColor, double? opacity) {
         var writer = new SvgMarkupWriter(512);
         writer
             .StartElement("rect")
@@ -65,13 +66,13 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-category", category)
             .Attribute("data-cfx-value", value)
             .Attribute("data-cfx-base", baseValue)
-            .Attribute("data-cfx-color", sourceColor.ToHex())
+            .Paint("data-cfx-color", DataColor(sourceColor))
             .Attribute("x", x)
             .Attribute("y", y)
             .Attribute("width", width)
             .Attribute("height", height)
             .Attribute("rx", radius)
-            .Attribute("fill", fill)
+            .Paint("fill", fill)
             .OptionalAttribute("opacity", opacity)
             .EndEmptyElement()
             .Line();

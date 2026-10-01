@@ -12,6 +12,26 @@ internal static class ReportHostExamples {
         WriteRotatedStatusMatrix(output, pngOutputScale);
         WriteShortCardCalendar(output, pngOutputScale);
         WriteFlatHistogram(output, pngOutputScale);
+        WriteThemedCalendar(output, pngOutputScale);
+    }
+
+    private static void WriteThemedCalendar(string output, ChartPngOutputScale pngOutputScale) {
+        // A dark calendar whose SVG writes token colours as CSS custom properties: ramp steps, zero and empty days are
+        // color-mix() of the properties, so a host page switching themes recolours the same SVG.
+        var tokens = VisualDesignTokens.Dark();
+        var items = Enumerable.Range(0, 70).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 7, 6).AddDays(day), day % 5 == 0 ? 0 : (day * 7) % 11)).ToArray();
+        var chart = Chart.Create()
+            .WithTitle("Changes per day")
+            .WithSubtitle("SVG colours are the custom properties of the design tokens")
+            .WithDesignTokens(tokens)
+            .WithSize(760, 300)
+            .WithPngOutputScale(pngOutputScale)
+            .WithSvgColorVariables(tokens.ToSvgColorVariables())
+            .AddCalendarHeatmap("Changes", items);
+
+        chart.SaveSvg(Path.Combine(output, "report-host-themed-calendar.svg"));
+        chart.SaveHtml(Path.Combine(output, "report-host-themed-calendar.html"));
+        chart.SavePng(Path.Combine(output, "report-host-themed-calendar.png"));
     }
 
     private static void WriteFlatHistogram(string output, ChartPngOutputScale pngOutputScale) {

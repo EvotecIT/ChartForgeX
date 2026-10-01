@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -17,14 +18,20 @@ internal static class ChartHeatmapSurface {
     /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor"/> instead of the weakest ramp step.
     /// Maps keep using <see cref="Color"/>, where zero can be a real magnitude.
     /// </summary>
-    public static ChartColor CellColor(Chart chart, ChartColor? highColor, double value, double min, double max) =>
-        chart.Options.HeatmapRelativeScale && value == 0 && min >= 0 ? ZeroColor(chart) : Color(chart, highColor, value, min, max);
+    public static ChartColor CellColor(Chart chart, ChartColor? highColor, double value, double min, double max) => CellBlend(chart, highColor, value, min, max).Color;
 
-    public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) {
+    /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor"/>).</summary>
+    public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
+        chart.Options.HeatmapRelativeScale && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
+
+    public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) => ColorBlend(chart, highColor, value, min, max).Color;
+
+    /// <summary>Returns <see cref="Color"/> as a blend of its theme, series, or ramp colours.</summary>
+    public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
-        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticColor(chart, ratio);
-        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampColor(ramp, ratio);
-        return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, highColor ?? chart.Options.Theme.Palette[0], 0.18 + ratio * 0.82);
+        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
+        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
+        return new ChartColorBlend(chart.Options.Theme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.Theme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
     }
 
     public static ChartColor MapColor(Chart chart, ChartColor? pointColor, ChartColor highColor, double value, double min, double max) {
@@ -109,11 +116,13 @@ internal static class ChartHeatmapSurface {
 
     public static string MapHighLabel(Chart chart) => chart.Options.MapColorScale?.HighLabel ?? chart.Options.Labels.More;
 
-    public static ChartColor SemanticColor(Chart chart, double ratio) {
+    public static ChartColor SemanticColor(Chart chart, double ratio) => SemanticBlend(chart, ratio).Color;
+
+    private static ChartColorBlend SemanticBlend(Chart chart, double ratio) {
         var t = chart.Options.Theme;
-        if (ratio < 0.60) return ChartColorMath.Blend(t.Negative, t.Warning, ratio / 0.60 * 0.42);
-        if (ratio < 0.80) return ChartColorMath.Blend(t.Warning, t.Positive, (ratio - 0.60) / 0.20 * 0.5);
-        return ChartColorMath.Blend(t.Warning, t.Positive, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
+        if (ratio < 0.60) return new ChartColorBlend(t.Negative, SvgColorRole.Status, t.Warning, SvgColorRole.Status, ratio / 0.60 * 0.42);
+        if (ratio < 0.80) return new ChartColorBlend(t.Warning, SvgColorRole.Status, t.Positive, SvgColorRole.Status, (ratio - 0.60) / 0.20 * 0.5);
+        return new ChartColorBlend(t.Warning, SvgColorRole.Status, t.Positive, SvgColorRole.Status, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
     }
 
     /// <summary>
@@ -129,11 +138,14 @@ internal static class ChartHeatmapSurface {
     }
 
     /// <summary>Interpolates piecewise-linearly along a ramp ordered weakest to strongest.</summary>
-    public static ChartColor RampColor(IReadOnlyList<ChartColor> ramp, double ratio) {
-        if (ramp.Count == 1) return ramp[0];
+    public static ChartColor RampColor(IReadOnlyList<ChartColor> ramp, double ratio) => RampBlend(ramp, ratio).Color;
+
+    /// <summary>Returns <see cref="RampColor"/> as a blend of the two ramp steps around the ratio.</summary>
+    public static ChartColorBlend RampBlend(IReadOnlyList<ChartColor> ramp, double ratio) {
+        if (ramp.Count == 1) return ChartColorBlend.Solid(ramp[0], SvgColorRole.Ramp);
         var position = Clamp(ratio, 0, 1) * (ramp.Count - 1);
         var index = Math.Min(ramp.Count - 2, (int)Math.Floor(position));
-        return ChartColorMath.Blend(ramp[index], ramp[index + 1], position - index);
+        return new ChartColorBlend(ramp[index], SvgColorRole.Ramp, ramp[index + 1], SvgColorRole.Ramp, position - index);
     }
 
     public static double Ratio(double value, double min, double max) {
@@ -156,12 +168,15 @@ internal static class ChartHeatmapSurface {
         return "positive";
     }
 
-    public static ChartColor CalendarColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
+    public static ChartColor CalendarColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) => CalendarBlend(chart, series, pointColor, value, min, max).Color;
+
+    /// <summary>Returns <see cref="CalendarColor"/> as a blend of its ramp, series, and surface colours.</summary>
+    public static ChartColorBlend CalendarBlend(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
         var ratio = CalendarRatio(value, min, max);
-        if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampColor(ramp, ratio);
+        if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
         // Counts use a neutral single-hue ramp from the first categorical colour; status colours stay reserved for status.
         var high = pointColor ?? series.Color ?? chart.Options.Theme.Palette[0];
-        return ChartColorMath.Blend(chart.Options.Theme.PlotBackground, high, 0.30 + ratio * 0.70);
+        return new ChartColorBlend(chart.Options.Theme.PlotBackground, SvgColorRole.Surface, high, SvgColorRole.Series, 0.30 + ratio * 0.70);
     }
 
     /// <summary>
@@ -169,20 +184,30 @@ internal static class ChartHeatmapSurface {
     /// the cell stays visible without reading as activity. It differs from <see cref="CalendarEmptyColor"/>, which marks
     /// days without data.
     /// </summary>
-    public static ChartColor ZeroColor(Chart chart) {
+    public static ChartColor ZeroColor(Chart chart) => ZeroBlend(chart).Color;
+
+    /// <summary>Returns <see cref="ZeroColor"/> as a blend of the backdrop and the muted text colour.</summary>
+    public static ChartColorBlend ZeroBlend(Chart chart) => TowardsMutedText(chart, 0.14);
+
+    /// <summary>
+    /// Returns the colour of a calendar day without data: the surface behind the cells shifted further towards the muted
+    /// text colour than a zero count, the same rule on light and dark themes.
+    /// </summary>
+    public static ChartColor CalendarEmptyColor(Chart chart) => CalendarEmptyBlend(chart).Color;
+
+    /// <summary>Returns <see cref="CalendarEmptyColor"/> as a blend of the backdrop and the muted text colour.</summary>
+    public static ChartColorBlend CalendarEmptyBlend(Chart chart) => TowardsMutedText(chart, 0.30);
+
+    /// <summary>Blends the backdrop towards the muted text colour, by <paramref name="share"/> of its opacity, into an opaque colour.</summary>
+    private static ChartColorBlend TowardsMutedText(Chart chart, double share) {
         var ink = chart.Options.Theme.MutedText;
         var backdrop = ChartStateMark.Backdrop(chart);
-        var amount = 0.14 * ink.A / 255.0;
-        return ChartColor.FromRgb(
+        var amount = share * ink.A / 255.0;
+        var result = ChartColor.FromRgb(
             (byte)Math.Round(backdrop.R + (ink.R - backdrop.R) * amount),
             (byte)Math.Round(backdrop.G + (ink.G - backdrop.G) * amount),
             (byte)Math.Round(backdrop.B + (ink.B - backdrop.B) * amount));
-    }
-
-    public static ChartColor CalendarEmptyColor(Chart chart) {
-        var t = chart.Options.Theme;
-        var light = ChartColorMath.RelativeLuminance(t.PlotBackground) > 0.70;
-        return light ? ChartColorMath.Blend(t.PlotBackground, t.MutedText, 0.30) : ChartColorMath.Blend(t.PlotBackground, t.Grid, 0.72);
+        return new ChartColorBlend(backdrop, SvgColorRole.Surface, ChartColor.FromRgb(ink.R, ink.G, ink.B), SvgColorRole.Text, amount, result);
     }
 
     public static double CalendarRatio(double value, double min, double max) =>

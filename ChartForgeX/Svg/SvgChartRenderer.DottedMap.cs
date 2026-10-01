@@ -5,6 +5,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -537,7 +538,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("x2", end.X)
                     .Attribute("y2", end.Y)
                     .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
-                    .Attribute("stroke", layer.Color.ToCss())
+                    .Paint("stroke", LayerPaint(layer))
                     .Attribute("stroke-width", layer.StrokeWidth)
                     .Attribute("stroke-linecap", "round");
                 if (layer.Opacity < 1) writer.Attribute("opacity", layer.Opacity);
