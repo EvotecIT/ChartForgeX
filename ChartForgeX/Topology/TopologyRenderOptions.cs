@@ -202,6 +202,18 @@ public sealed class TopologyRenderOptions {
     /// </summary>
     public ChartForgeX.Themes.SvgColorVariables? SvgColorVariables { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether SVG output keeps status marks in their colours in forced-colours mode (Windows high contrast),
+    /// as <c>ChartOptions.PinStateColorsInForcedColors</c> does for charts: edges and their arrow and endpoint markers,
+    /// node status badges, group status dots, geographic callout status chips, node detail status dots, and status line
+    /// and dot legend swatches get <c>forced-color-adjust:none</c>. Node and group cards, whose labels sit on the canvas,
+    /// and geographic region hulls, which lie under such labels, keep following forced colours. The rule is written in a
+    /// <c>&lt;style&gt;</c> element even when <see cref="IncludeCss"/> is off. Off by default. A host that also remaps its colour variables in
+    /// forced-colours mode must keep the values these marks use, because custom properties are not affected by
+    /// <c>forced-color-adjust</c>. PNG output is not affected.
+    /// </summary>
+    public bool PinStateColorsInForcedColors { get; set; }
+
     /// <summary>Gets or sets an optional focused topology view.</summary>
     public TopologyView? View { get; set; }
 

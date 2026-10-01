@@ -290,8 +290,8 @@ public sealed partial class TopologySvgRenderer {
 
     private static SvgElement BuildDefs(string id, string prefix, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options) {
         var defs = new SvgElement("defs");
-        if (options.IncludeCss) {
-            defs.Element("style", style => style.Text(BuildCss(id, prefix, theme)));
+        if (options.IncludeCss || options.PinStateColorsInForcedColors) {
+            defs.Element("style", style => style.Text((options.IncludeCss ? BuildCss(id, prefix, theme) : string.Empty) + ForcedColorsRule(id, options)));
         }
 
         AddDropShadowFilter(defs, id + "-shadow", "#0F172A", IsMonitoringDashboardStyle(options) ? 0.065 : 0.10);

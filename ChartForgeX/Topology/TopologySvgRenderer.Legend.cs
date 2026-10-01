@@ -45,6 +45,9 @@ public sealed partial class TopologySvgRenderer {
             var itemY = y + LegendFirstItemOffsetY + row * LegendItemRowHeight;
             var markerCenterY = itemY - 5;
             var color = item.Color ?? (item.Status.HasValue ? theme.StatusColor(item.Status.Value) : theme.Accent);
+            // Line and dot swatches carry their status, so a pinned render keeps them in their colour in forced-colours mode;
+            // a node swatch is left out because its glyph follows forced colours.
+            var swatchStatus = item.Status?.ToString();
             layer.Element("g", group => {
                 group
                     .Class(prefix + "__legend-item")
@@ -53,6 +56,7 @@ public sealed partial class TopologySvgRenderer {
                 if (!string.IsNullOrWhiteSpace(item.IconId)) group.Attribute("data-legend-icon-id", item.IconId!.Trim());
                 if (item.Kind == TopologyLegendItemKind.Edge) {
                     group.Element("line", line => line
+                        .Attribute("data-cfx-status", swatchStatus)
                         .Attribute("x1", itemX)
                         .Attribute("y1", markerCenterY)
                         .Attribute("x2", itemX + 24)
@@ -87,6 +91,7 @@ public sealed partial class TopologySvgRenderer {
                     }
                 } else {
                     group.Element("circle", circle => circle
+                        .Attribute("data-cfx-status", swatchStatus)
                         .Attribute("cx", itemX + 8)
                         .Attribute("cy", markerCenterY)
                         .Attribute("r", 6)

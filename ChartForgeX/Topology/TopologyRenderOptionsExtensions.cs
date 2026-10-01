@@ -316,6 +316,18 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Keeps status marks in their colours in forced-colours mode (see <see cref="TopologyRenderOptions.PinStateColorsInForcedColors"/>).
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="pin">True to pin the status colours; false (the default) lets forced colours apply.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithStateColorsPinnedInForcedColors(this TopologyRenderOptions options, bool pin = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.PinStateColorsInForcedColors = pin;
+        return options;
+    }
+
+    /// <summary>
     /// Keeps topology output at the requested viewport size by scaling dense rendered content down when needed.
     /// </summary>
     /// <param name="options">The render options.</param>
