@@ -522,8 +522,10 @@ internal static partial class TopologyLayoutEngine {
             var row = i / columns;
             var policy = ResolveDenseGroupPolicy(chart, group, nodes);
             if (UsesReadableDenseLayout(chart)) {
+                // Panels fill the row width but take the height of their content, not of the viewport; the panels of
+                // one row are evened out below and the canvas height follows the content (TopologyLayoutNormalizer).
                 group.Width = Math.Max(group.Width, Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy)));
-                group.Height = Math.Max(group.Height, Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy)));
+                group.Height = Math.Max(group.Height, Math.Max(170, DenseGroupHeight(chart, nodes, policy)));
             } else {
                 if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
                 if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
@@ -554,6 +556,7 @@ internal static partial class TopologyLayoutEngine {
                 group.Y = rowY[placement.Row];
             }
 
+            if (UsesReadableDenseLayout(chart)) group.Height = rowHeights[placement.Row];
             PlaceDenseNodesInGroup(chart, placement.Nodes, group);
         }
 

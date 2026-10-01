@@ -25,6 +25,35 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
+    public void FewSites_OneRowOfCards_SizePanelsAndCanvasToTheirContent() {
+        // Two and one controllers per site in a viewport much taller than the content: the panels take the height of
+        // their cards and captions, share one height per row, and the legend follows them instead of the viewport bottom.
+        var chart = TopologyChart.Create().WithId("small").WithTitle("Replication").WithViewport(1180, 660, 24)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight).WithLegend(TopologyLegend.Default());
+        var counts = new[] { 2, 1, 2 };
+        for (var site = 0; site < counts.Length; site++) {
+            chart.AddAutoGroup("s" + site, "Site " + site);
+            for (var dc = 0; dc < counts[site]; dc++) chart.AddAutoNode("s" + site + "-dc" + dc, "S" + site + "-DC" + dc, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "s" + site, width: 64, height: 40);
+        }
+
+        chart.AddEdge("e0", "s0-dc0", "s1-dc0", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("e1", "s1-dc0", "s2-dc1", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("e2", "s0-dc1", "s2-dc0", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeEdgeLabels = false };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+
+        Assert.Single(prepared.Groups.Select(group => group.Height).Distinct());
+        foreach (var group in prepared.Groups) {
+            var contentBottom = prepared.Nodes.Where(node => node.GroupId == group.Id).Max(node => node.Y + TopologyNodeFootprint.Height(prepared, node));
+            Assert.InRange(group.Y + group.Height - contentBottom, 0, 120);
+        }
+
+        var legendTop = prepared.Viewport.Height - prepared.Viewport.Padding - (TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport) - 24);
+        Assert.InRange(legendTop - prepared.Groups.Max(group => group.Y + group.Height), 20, 60);
+        Assert.True(prepared.Viewport.Height < 660, $"The canvas should shrink to its content, was {prepared.Viewport.Height}.");
+    }
+
+    [Fact]
     public void DefaultOptions_KeepClassicDenseLayout() {
         var classic = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var wide = TopologyLayoutEngine.Prepare(Sites(12, 3), options: classic);

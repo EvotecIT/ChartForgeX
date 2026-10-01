@@ -161,8 +161,17 @@ internal static class TopologyLayoutNormalizer {
         var neededWidth = bounds.Right + chart.Viewport.Padding + surfaceInset;
         var neededHeight = bounds.Bottom + chart.Viewport.Padding + surfaceInset + LegendReservedHeight(chart.Legend, chart.Viewport);
         if (neededWidth > chart.Viewport.Width) chart.Viewport.Width = Math.Ceiling(neededWidth);
-        if (neededHeight > chart.Viewport.Height) chart.Viewport.Height = Math.Ceiling(neededHeight);
+        if (neededHeight > chart.Viewport.Height || FitsHeightToContent(chart, options)) chart.Viewport.Height = Math.Ceiling(neededHeight);
     }
+
+    /// <summary>
+    /// Returns true when the canvas height follows the content instead of the requested viewport height: readable dense
+    /// grouped layouts size their site panels to their content, so a taller viewport would only leave a gap above the
+    /// legend. Bottom-to-top layouts keep the requested height because they are placed from its bottom edge.
+    /// </summary>
+    private static bool FitsHeightToContent(TopologyChart chart, TopologyRenderOptions options) =>
+        options.ReadableDenseLayout && chart.LayoutMode == TopologyLayoutMode.DenseGrouped && chart.Groups.Count > 0 &&
+        chart.LayoutDirection != TopologyLayoutDirection.BottomToTop;
 
     private static ContentBounds MeasureContent(TopologyChart chart, TopologyRenderOptions options) {
         var bounds = ContentBounds.Empty;
