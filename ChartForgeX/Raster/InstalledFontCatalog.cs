@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ChartForgeX.Raster;
 
-/// <summary>One installed TrueType face, as described by its own name and OS/2 tables.</summary>
+/// <summary>One installed OpenType face (TrueType or CFF outlines), as described by its own name and OS/2 tables.</summary>
 internal sealed class InstalledFontFace {
     public InstalledFontFace(string path, int? collectionIndex, string family, string? legacyFamily, int weight, int width, bool italic) {
         Path = path;
@@ -29,7 +29,7 @@ internal sealed class InstalledFontFace {
 }
 
 /// <summary>
-/// Indexes the TrueType faces installed on the host by family name, so a family and weight can
+/// Indexes the OpenType faces (<c>.ttf</c>, <c>.ttc</c>, <c>.otf</c>, <c>.otc</c>) installed on the host by family name, so a family and weight can
 /// be matched to a file. The font folders are read once, on the first lookup of a named family;
 /// only each file's directory, name, OS/2, and head tables are read. A host with no font
 /// folders simply has an empty catalog.
@@ -51,19 +51,28 @@ internal static class InstalledFontCatalog {
     }
 
     internal static InstalledFontFace? Find(Dictionary<string, List<InstalledFontFace>> families, string family, int weight, bool italic) {
-        if (string.IsNullOrWhiteSpace(family) || !families.TryGetValue(family.Trim(), out var faces)) return null;
-        InstalledFontFace? best = null;
-        var bestScore = int.MaxValue;
-        foreach (var face in faces) {
-            var score = WeightDistance(weight, face.Weight) + Math.Abs(face.Width - 5) * 2000 + (face.Italic == italic ? 0 : 20000);
-            if (score < bestScore || (score == bestScore && best != null && string.CompareOrdinal(face.Path, best.Path) < 0)) {
-                best = face;
-                bestScore = score;
-            }
-        }
-
-        return best;
+        var ranked = Ranked(families, family, weight, italic);
+        return ranked.Count == 0 ? null : ranked[0];
     }
+
+    /// <summary>Every installed face of <paramref name="family"/>, closest to the weight and slant first.</summary>
+    internal static IReadOnlyList<InstalledFontFace> Ranked(string family, int weight, bool italic) => Ranked(Families.Value, family, weight, italic);
+
+    internal static List<InstalledFontFace> Ranked(Dictionary<string, List<InstalledFontFace>> families, string family, int weight, bool italic) {
+        if (string.IsNullOrWhiteSpace(family) || !families.TryGetValue(family.Trim(), out var faces)) return new List<InstalledFontFace>();
+        var ranked = new List<InstalledFontFace>(faces);
+        // Stable and deterministic: ties go to the lower path.
+        ranked.Sort((left, right) => {
+            var byScore = Score(left, weight, italic).CompareTo(Score(right, weight, italic));
+            if (byScore != 0) return byScore;
+            var byPath = string.CompareOrdinal(left.Path, right.Path);
+            return byPath != 0 ? byPath : (left.CollectionIndex ?? 0).CompareTo(right.CollectionIndex ?? 0);
+        });
+        return ranked;
+    }
+
+    private static int Score(InstalledFontFace face, int weight, bool italic) =>
+        WeightDistance(weight, face.Weight) + Math.Abs(face.Width - 5) * 2000 + (face.Italic == italic ? 0 : 20000);
 
     /// <summary>Builds the family index for a set of font folders; folders and files that cannot be read are skipped.</summary>
     internal static Dictionary<string, List<InstalledFontFace>> Index(IEnumerable<string> directories) {
@@ -111,13 +120,17 @@ internal static class InstalledFontCatalog {
         faces.Add(face);
     }
 
+    private static bool IsFontFile(string extension) =>
+        extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) || extension.Equals(".ttc", StringComparison.OrdinalIgnoreCase) ||
+        extension.Equals(".otf", StringComparison.OrdinalIgnoreCase) || extension.Equals(".otc", StringComparison.OrdinalIgnoreCase);
+
     private static void AddFontFiles(string directory, List<string> files, int depth) {
         if (depth > 6 || files.Count >= MaximumFiles) return;
         try {
             if (!Directory.Exists(directory)) return;
             foreach (var file in Directory.GetFiles(directory)) {
                 var extension = Path.GetExtension(file);
-                if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".ttc", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!IsFontFile(extension)) continue;
                 if (files.Count >= MaximumFiles) return;
                 files.Add(file);
             }
@@ -127,7 +140,7 @@ internal static class InstalledFontCatalog {
         }
     }
 
-    /// <summary>Reads the faces a font file declares. A file that is not a readable glyf-outline font adds nothing.</summary>
+    /// <summary>Reads the faces a font file declares. A file without TrueType or CFF outlines adds nothing.</summary>
     internal static void ReadFaces(string path, List<InstalledFontFace> faces) {
         try {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -154,7 +167,7 @@ internal static class InstalledFontCatalog {
         var directory = Read(stream, directoryOffset, 12);
         if (directory == null) return null;
         var scaler = UInt32(directory, 0);
-        if (scaler != 0x00010000 && scaler != 0x74727565) return null;
+        if (scaler != 0x00010000 && scaler != 0x74727565 && scaler != 0x4F54544F) return null;
         var tableCount = UInt16(directory, 4);
         var records = Read(stream, directoryOffset + 12, tableCount * 16);
         if (records == null) return null;
@@ -169,7 +182,7 @@ internal static class InstalledFontCatalog {
             if (tag == "name") { nameOffset = offset; nameLength = length; }
             else if (tag == "OS/2") { os2Offset = offset; os2Length = length; }
             else if (tag == "head") headOffset = offset;
-            else if (tag == "glyf") hasOutlines = true;
+            else if (tag == "glyf" || tag == "CFF " || tag == "CFF2") hasOutlines = true;
         }
 
         if (!hasOutlines || nameOffset < 0 || nameLength < 6 || nameLength > MaximumNameTableBytes) return null;

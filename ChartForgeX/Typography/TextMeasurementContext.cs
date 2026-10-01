@@ -20,8 +20,9 @@ internal sealed class TextMeasurementContext {
         _family = family;
         _mode = mode;
         if (mode == TextMeasurementMode.PortableEstimate) return;
-        _font = TypographyFontResolver.Resolve(new FontSpec { Family = family });
-        _boldFont = TypographyFontResolver.ResolveBoldMeasurementFace(family);
+        // The faces the PNG renderers draw this stack with; emphasized text draws the real bold face when one is installed.
+        _font = TypographyFontResolver.ResolveFace(family, 400, italic: false).Font;
+        _boldFont = TypographyFontResolver.ResolveThemeBoldFont(family);
     }
 
     internal double Measure(string value, double size, bool bold) {
@@ -32,12 +33,9 @@ internal sealed class TextMeasurementContext {
         var key = (value, size, bold);
         lock (_gate) {
             if (_widths.TryGetValue(key, out var cached)) return cached;
+            var face = bold && _boldFont != null ? _boldFont : _font;
             var width = TextLayoutEngine.MeasureWidth(value,
-                new TextStyle { Font = new FontSpec { Family = _family, Weight = bold ? 700 : 400 }, FontSize = size }, _font);
-            if (bold && _boldFont != null) {
-                width = Math.Max(width, TextLayoutEngine.MeasureWidth(value,
-                    new TextStyle { Font = new FontSpec { Family = _family, Weight = 400 }, FontSize = size }, _boldFont));
-            }
+                new TextStyle { Font = new FontSpec { Family = _family, Weight = bold && _boldFont == null ? 700 : 400 }, FontSize = size }, face);
             // A render owns this cache; cap it for scenes with many unique labels.
             if (_widths.Count < MaximumCachedWidths) _widths.Add(key, width);
             return width;

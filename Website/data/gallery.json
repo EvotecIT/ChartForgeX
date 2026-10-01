@@ -27,11 +27,39 @@
   ],
   "items": [
     {
+      "category": "topology",
+      "title": "Advanced Topology Diagnostics",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/advanced-topology-diagnostics.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Advanced Topology",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/advanced-topology.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Animated Engineering Portfolio Story",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/animated-engineering-portfolio-story.svg"
+    },
+    {
       "category": "charts",
       "title": "Annotation Edge Dark",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
       "image": "/examples/generated/annotation-edge-dark.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Api Request Response Story",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/api-request-response-story.svg"
     },
     {
       "category": "infographics",
@@ -58,6 +86,13 @@
         "BrandKit"
       ],
       "image": "/examples/generated/brand-kit-showcase-grid.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Chart In Five Lines Story",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/chart-in-five-lines-story.svg"
     },
     {
       "category": "charts",
@@ -462,7 +497,8 @@
       "body": "A bounded legend with an explicit count of additional entries.",
       "tags": [
         "Legend",
-        "Density"
+        "Density",
+        "Pie"
       ],
       "image": "/examples/generated/dense-legend-pie.svg"
     },
@@ -485,6 +521,13 @@
         "Density"
       ],
       "image": "/examples/generated/dense-legend-series.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Dense Signal Decimated Light",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/dense-signal-decimated-light.svg"
     },
     {
       "category": "charts",
@@ -755,6 +798,20 @@
       "image": "/examples/generated/icon-palette.svg"
     },
     {
+      "category": "charts",
+      "title": "Image Before After Story",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/image-before-after-story.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Incident Direction Polar Dark",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/incident-direction-polar-dark.svg"
+    },
+    {
       "category": "maps",
       "title": "Industrial Births Region Map Us States Light",
       "body": "Generated ChartForgeX visual output.",
@@ -910,6 +967,13 @@
     },
     {
       "category": "charts",
+      "title": "Multi Shell Console Story",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/multi-shell-console-story.svg"
+    },
+    {
+      "category": "charts",
       "title": "Observed Remediation Trend Light",
       "body": "Generated ChartForgeX visual output.",
       "tags": [
@@ -1036,6 +1100,13 @@
     },
     {
       "category": "charts",
+      "title": "Powershell Console Story",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/powershell-console-story.svg"
+    },
+    {
+      "category": "charts",
       "title": "Premium Desktop Wallpaper Canvas",
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
@@ -1047,6 +1118,83 @@
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
       "image": "/examples/generated/premium-email-summary-grid.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Detail",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-detail.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Overview",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-overview.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 1",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-1.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 2",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-2.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 3",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-3.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 4",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-4.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 5",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-5.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 6",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-6.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 7",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-7.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 8",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-8.svg"
+    },
+    {
+      "category": "topology",
+      "title": "Readable Topology Page 9",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/readable-topology-page-9.svg"
     },
     {
       "category": "charts",
@@ -1101,6 +1249,59 @@
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
       "image": "/examples/generated/report-summary-metric-strip.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting Classic Wall Clock",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/reporting-classic-wall-clock.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting Hour Weekday",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/reporting-hour-weekday.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting Incident Lanes",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/reporting-incident-lanes.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting State Timeline",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Timeline"
+      ],
+      "image": "/examples/generated/reporting-state-timeline.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting Status Matrix",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [
+        "Heatmap"
+      ],
+      "image": "/examples/generated/reporting-status-matrix.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting Time Axis Subsecond",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/reporting-time-axis-subsecond.svg"
+    },
+    {
+      "category": "charts",
+      "title": "Reporting Time Axis Utc",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/reporting-time-axis-utc.svg"
     },
     {
       "category": "charts",
@@ -1258,6 +1459,13 @@
         "Topology"
       ],
       "image": "/examples/generated/site-topology.svg"
+    },
+    {
+      "category": "themes",
+      "title": "Styled Multilingual Text",
+      "body": "Generated ChartForgeX visual output.",
+      "tags": [],
+      "image": "/examples/generated/styled-multilingual-text.svg"
     },
     {
       "category": "topology",
@@ -1466,6 +1674,13 @@
       "image": "/examples/generated/visual-ownership-evidence-bundle.svg"
     },
     {
+      "category": "topology",
+      "title": "Readable Dense Replication",
+      "body": "Wrapped site panels, server cards and caption-aware routes in an opt-in dense topology layout.",
+      "tags": [],
+      "image": "/examples/generated/visual-readable-dense-replication.svg"
+    },
+    {
       "category": "charts",
       "title": "Visual Relationship Radial 500 Ego Graph",
       "body": "Generated ChartForgeX visual output.",
@@ -1499,13 +1714,6 @@
       "body": "Generated ChartForgeX visual output.",
       "tags": [],
       "image": "/examples/generated/visual-replication-mesh-route-motion.svg"
-    },
-    {
-      "category": "topology",
-      "title": "Readable Dense Replication",
-      "body": "Wrapped site panels, server cards and caption-aware routes in an opt-in dense topology layout.",
-      "tags": [],
-      "image": "/examples/generated/visual-readable-dense-replication.svg"
     },
     {
       "category": "topology",

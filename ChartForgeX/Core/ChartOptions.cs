@@ -35,6 +35,7 @@ public sealed partial class ChartOptions {
     private string? _pngFontFaceName;
     private int? _pngFontCollectionIndex;
     private int _pngSupersamplingScale = 2;
+    private Typography.TextHinting _pngTextHinting;
     private int _pngOutputScale = 1;
     private double? _ganttToday;
     private double _donutInnerRadiusRatio = 0.58;
@@ -112,6 +113,20 @@ public sealed partial class ChartOptions {
         set {
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG font collection index must be non-negative.");
             _pngFontCollectionIndex = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets how the PNG renderer fits text to the pixel grid.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Typography.TextHinting.Auto"/> (the default) snaps the baseline, x-height, and cap height of labels at 12 output pixels and below to whole pixels without changing their widths. Use <see cref="Typography.TextHinting.None"/> where exact outline geometry matters, such as animation frames.
+    /// </remarks>
+    public Typography.TextHinting PngTextHinting {
+        get => _pngTextHinting;
+        set {
+            if (!Enum.IsDefined(typeof(Typography.TextHinting), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown text hinting mode.");
+            _pngTextHinting = value;
         }
     }
 

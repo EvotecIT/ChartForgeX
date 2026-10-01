@@ -196,7 +196,7 @@ public sealed partial class SvgChartRenderer {
             else high = mid - 1;
         }
 
-        return low == 0 ? suffix : value.Substring(0, low).TrimEnd() + suffix;
+        return low == 0 ? suffix : value.Substring(0, Typography.TextElementBoundary.Snap(value, low)).TrimEnd() + suffix;
     }
 
     private static double TextFontSizeForSvgWidth(string text, double maxWidth, double preferredFontSize, double minFontSize = 8) {

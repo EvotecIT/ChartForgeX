@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
-using ChartForgeX.Raster;
 
 namespace ChartForgeX.Composition;
 
@@ -92,15 +91,29 @@ public sealed class VisualCanvasKeyValueBlockLayer : VisualCanvasLayer {
     public ChartColor? LabelColorOverride { get; set; }
     /// <summary>Gets or sets an optional default value color override.</summary>
     public ChartColor? ValueColorOverride { get; set; }
-    /// <summary>Gets or sets the SVG font family name. PNG output uses the dependency-free built-in font path.</summary>
+    /// <summary>Gets or sets the font family for this block. When empty, the canvas theme family is used by SVG and PNG output alike.</summary>
     public string FontFamilyName { get => _fontFamilyName; set => _fontFamilyName = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets whether labels use the emphasized text treatment.</summary>
     public bool LabelEmphasized { get; set; } = true;
     /// <summary>Gets or sets whether values use the emphasized text treatment.</summary>
     public bool ValueEmphasized { get; set; }
 
-    /// <summary>Measures the block height using the current text and wrapping settings.</summary>
-    public double MeasureHeight() => VisualCanvasKeyValueBlockLayout.Build(this).Height;
+    /// <summary>Measures the block height using the current text and wrapping settings and the default theme font family.</summary>
+    public double MeasureHeight() => MeasureHeight(new VisualCanvasTheme());
+
+    /// <summary>Measures the block height with the font family the block draws with on a canvas using <paramref name="theme"/>.</summary>
+    public double MeasureHeight(VisualCanvasTheme theme) {
+        if (theme == null) throw new ArgumentNullException(nameof(theme));
+        return VisualCanvasKeyValueBlockLayout.Build(this, theme).Height;
+    }
+
+    internal string ResolveFontFamily(VisualCanvasTheme theme) => string.IsNullOrWhiteSpace(FontFamilyName) ? theme.FontFamily : FontFamilyName;
+
+    internal VisualCanvasTextFace LabelFace(VisualCanvasTheme theme) =>
+        VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), LabelEmphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
+
+    internal VisualCanvasTextFace ValueFace(VisualCanvasTheme theme) =>
+        VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), ValueEmphasized ? VisualCanvasFontWeights.KeyValueEmphasizedValue : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
 }
 
 internal sealed class VisualCanvasKeyValueBlockLayout {
@@ -116,15 +129,17 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
     public double ValueWidth { get; }
     public double Height { get; }
 
-    public static VisualCanvasKeyValueBlockLayout Build(VisualCanvasKeyValueBlockLayer block) {
+    public static VisualCanvasKeyValueBlockLayout Build(VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
         if (block == null) throw new ArgumentNullException(nameof(block));
+        var labelFace = block.LabelFace(theme);
+        var valueFace = block.ValueFace(theme);
         var hasPairs = false;
         var labelWidth = block.LabelWidth ?? 0;
         if (!block.LabelWidth.HasValue) {
             foreach (var item in block.Items) {
                 if (item.LabelOnly) continue;
                 hasPairs = true;
-                labelWidth = Math.Max(labelWidth, Measure(item.Label, block.LabelFontSize, block.LabelEmphasized));
+                labelWidth = Math.Max(labelWidth, labelFace.Measure(item.Label, block.LabelFontSize));
             }
         } else {
             foreach (var item in block.Items) {
@@ -141,8 +156,8 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
         var columnGap = hasPairs ? Math.Min(block.ColumnGap, Math.Max(0, block.Width - labelWidth - 1)) : 0;
         var remainingWidth = Math.Max(1, block.Width - labelWidth - columnGap);
         var valueWidth = Math.Min(block.ValueWrapWidth ?? remainingWidth, remainingWidth);
-        var labelLineHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(block.LabelFontSize, null));
-        var valueLineHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(block.ValueFontSize, null));
+        var labelLineHeight = Math.Max(1, labelFace.LineHeight(block.LabelFontSize));
+        var valueLineHeight = Math.Max(1, valueFace.LineHeight(block.ValueFontSize));
         var rows = new List<VisualCanvasKeyValueRowLayout>(block.Items.Count);
         var y = block.Y;
 
@@ -150,9 +165,9 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
             var labelOnly = item.LabelOnly || !hasPairs;
             var rowLabelWidth = labelOnly ? block.Width : labelWidth;
             var rowValueWidth = labelOnly ? 0 : valueWidth;
-            var labelText = FitText(item.Label, block.LabelFontSize, Math.Max(1, rowLabelWidth), block.LabelEmphasized);
+            var labelText = labelFace.Fit(item.Label, block.LabelFontSize, Math.Max(1, rowLabelWidth));
             IReadOnlyList<string> valueLines = Array.Empty<string>();
-            if (!labelOnly) valueLines = WrapText(item.Value, Math.Max(1, rowValueWidth), block.ValueFontSize, block.ValueEmphasized);
+            if (!labelOnly) valueLines = WrapText(item.Value, Math.Max(1, rowValueWidth), block.ValueFontSize, valueFace);
             var lineCount = Math.Max(1, valueLines.Count);
             var rowHeight = labelOnly ? labelLineHeight : Math.Max(labelLineHeight, lineCount * valueLineHeight);
             rows.Add(new VisualCanvasKeyValueRowLayout(item, block.X, y, block.X, block.X + labelWidth + columnGap, rowLabelWidth, rowValueWidth, labelText, valueLines, rowHeight, labelLineHeight, valueLineHeight, labelOnly));
@@ -163,7 +178,7 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
         return new VisualCanvasKeyValueBlockLayout(rows, labelWidth, valueWidth, height);
     }
 
-    private static IReadOnlyList<string> WrapText(string value, double maxWidth, double fontSize, bool emphasized) {
+    private static IReadOnlyList<string> WrapText(string value, double maxWidth, double fontSize, VisualCanvasTextFace face) {
         var normalized = (value ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n');
         var lines = new List<string>();
         var paragraphs = normalized.Split('\n');
@@ -176,13 +191,13 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
             var current = string.Empty;
             foreach (var word in paragraph.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)) {
                 var candidate = current.Length == 0 ? word : current + " " + word;
-                if (Measure(candidate, fontSize, emphasized) <= maxWidth) {
+                if (face.Measure(candidate, fontSize) <= maxWidth) {
                     current = candidate;
                     continue;
                 }
 
                 if (current.Length > 0) lines.Add(current);
-                current = Measure(word, fontSize, emphasized) <= maxWidth ? word : FitText(word, fontSize, maxWidth, emphasized);
+                current = face.Measure(word, fontSize) <= maxWidth ? word : face.Fit(word, fontSize, maxWidth);
             }
 
             lines.Add(current);
@@ -192,24 +207,8 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
         return lines;
     }
 
-    private static string FitText(string value, double fontSize, double maxWidth, bool emphasized) {
-        if (string.IsNullOrEmpty(value) || Measure(value, fontSize, emphasized) <= maxWidth) return value;
-        const string suffix = "...";
-        if (Measure(suffix, fontSize, emphasized) > maxWidth) return string.Empty;
-        var low = 0;
-        var high = value.Length;
-        while (low < high) {
-            var mid = (low + high + 1) / 2;
-            if (Measure(value.Substring(0, mid) + suffix, fontSize, emphasized) <= maxWidth) low = mid;
-            else high = mid - 1;
-        }
-
-        return value.Substring(0, low) + suffix;
-    }
-
-    private static double Measure(string value, double fontSize, bool emphasized) =>
-        emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
 }
+
 
 internal sealed class VisualCanvasKeyValueRowLayout {
     public VisualCanvasKeyValueRowLayout(VisualCanvasKeyValueItem item, double x, double y, double labelX, double valueX, double labelWidth, double valueWidth, string labelText, IReadOnlyList<string> valueLines, double rowHeight, double labelLineHeight, double valueLineHeight, bool labelOnly) {

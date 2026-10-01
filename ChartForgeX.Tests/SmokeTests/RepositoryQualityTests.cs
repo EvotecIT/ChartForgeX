@@ -424,7 +424,9 @@ internal static partial class SmokeTests {
             var html = File.ReadAllText(htmlPath);
             foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(html, "(?:href|src)=\"([^\"]+)\"", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) {
                 var value = match.Groups[1].Value;
-                if (value.StartsWith("#", StringComparison.Ordinal) || value.StartsWith("/", StringComparison.Ordinal) || Uri.TryCreate(value, UriKind.Absolute, out _)) continue;
+                // Embedded data URLs can exceed System.Uri's length limit; they are not local asset paths.
+                if (value.StartsWith("#", StringComparison.Ordinal) || value.StartsWith("/", StringComparison.Ordinal)
+                    || System.Text.RegularExpressions.Regex.IsMatch(value, "^[a-z][a-z0-9+.-]*:", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) continue;
                 var relativePath = value.Split('?', '#')[0].Replace('/', Path.DirectorySeparatorChar);
                 if (string.IsNullOrWhiteSpace(relativePath)) continue;
                 var assetPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(htmlPath) ?? generatedPath, relativePath));

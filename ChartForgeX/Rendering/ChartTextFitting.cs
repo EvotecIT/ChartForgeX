@@ -15,6 +15,6 @@ internal static class ChartTextFitting {
             else high = mid - 1;
         }
 
-        return value.Substring(0, low) + suffix;
+        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 }

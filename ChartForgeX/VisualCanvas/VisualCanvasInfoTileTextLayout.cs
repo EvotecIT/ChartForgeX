@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using ChartForgeX.Raster;
 
 namespace ChartForgeX.Composition;
 
@@ -47,13 +46,12 @@ internal sealed class VisualCanvasInfoTileMetrics {
 }
 
 internal sealed class VisualCanvasInfoTileTextLine {
-    public VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole role, string text, double x, double y, double fontSize, bool emphasized, bool truncated) {
+    public VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole role, string text, double x, double y, double fontSize, bool truncated) {
         Role = role;
         Text = text;
         X = x;
         Y = y;
         FontSize = fontSize;
-        Emphasized = emphasized;
         Truncated = truncated;
     }
 
@@ -62,8 +60,12 @@ internal sealed class VisualCanvasInfoTileTextLine {
     public double X { get; }
     public double Y { get; }
     public double FontSize { get; }
-    public bool Emphasized { get; }
+    /// <summary>The CSS weight the role asks for; SVG writes it and PNG resolves the same face from it.</summary>
+    public int Weight => WeightFor(Role);
     public bool Truncated { get; }
+
+    public static int WeightFor(VisualCanvasInfoTileTextRole role) =>
+        role == VisualCanvasInfoTileTextRole.Label ? VisualCanvasFontWeights.TileLabel : role == VisualCanvasInfoTileTextRole.Value ? VisualCanvasFontWeights.TileValue : VisualCanvasFontWeights.TileDetail;
 }
 
 internal sealed class VisualCanvasInfoTileTextLayoutResult {
@@ -102,32 +104,34 @@ internal static class VisualCanvasInfoTileTextLayout {
         return new VisualCanvasInfoTileMetrics(x, y, width, height, padX, iconBox, iconX, iconY, textX, textMax, hasMiniChart, chartX, chartY, chartWidth, chartHeight);
     }
 
-    public static IReadOnlyList<VisualCanvasInfoTileTextLine> Build(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth) =>
-        BuildResult(tile, tileY, tileHeight, textX, maxWidth).Lines;
-
-    public static VisualCanvasInfoTileTextLayoutResult BuildForTile(VisualCanvasInfoTileLayer tile) {
-        var metrics = CalculateMetrics(tile);
-        return BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax);
+    /// <summary>The icon text size both renderers use: the preferred size, reduced until the text fits inside the icon box.</summary>
+    public static double IconFontSize(string icon, double iconBox, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
+        var size = Math.Min(25, iconBox * (icon.Length > 3 ? 0.34 : 0.42));
+        var width = VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.Emphasized, mode).Measure(icon, size);
+        var available = Math.Max(4, iconBox - 8);
+        return width > available ? Math.Max(1, size * available / width) : size;
     }
 
-    public static VisualCanvasInfoTileTextLayoutResult BuildResult(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth) {
+    /// <summary>Lays out the tile text measured with <paramref name="fontFamily"/> at the weights each role draws with.</summary>
+    public static VisualCanvasInfoTileTextLayoutResult BuildResult(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
+        var faces = new TileFaces(fontFamily, mode);
         var policy = tile.TextFitPolicy == VisualCanvasTextFitPolicy.Auto ? VisualCanvasTextFitPolicy.WrapThenShrink : tile.TextFitPolicy;
         var singleLine = policy == VisualCanvasTextFitPolicy.SingleLineEllipsis || policy == VisualCanvasTextFitPolicy.ShrinkToFit;
         var scale = 1.0;
-        var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false);
+        var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces);
         if (policy != VisualCanvasTextFitPolicy.ShrinkToFit && policy != VisualCanvasTextFitPolicy.WrapThenShrink) return best;
 
         for (var i = 0; i < 8 && RequiresFitAdjustment(best); i++) {
             scale -= 0.04;
             if (scale < 0.72) break;
-            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false);
+            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces);
             best = next;
             if (!RequiresFitAdjustment(next)) break;
         }
 
         if (best.HasVerticalOverflow && tile.Detail.Length > 0) {
-            var withoutDetail = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, true);
+            var withoutDetail = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, true, faces);
             if (withoutDetail.TextHeight < best.TextHeight || !withoutDetail.HasVerticalOverflow) best = withoutDetail;
         }
 
@@ -137,7 +141,7 @@ internal static class VisualCanvasInfoTileTextLayout {
     private static bool RequiresFitAdjustment(VisualCanvasInfoTileTextLayoutResult result) =>
         result.HasTruncatedText || result.HasVerticalOverflow;
 
-    private static VisualCanvasInfoTileTextLayoutResult BuildCore(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, bool singleLine, double scale, bool omitDetail) {
+    private static VisualCanvasInfoTileTextLayoutResult BuildCore(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, bool singleLine, double scale, bool omitDetail, TileFaces faces) {
         var labelFont = Math.Max(10, (tileHeight < 72 ? 12.0 : 14.0) * scale);
         var valueFont = Math.Max(13, (tileHeight < 72 ? 17.0 : tileHeight < 92 ? 21.0 : 22.0) * scale);
         var detailFont = Math.Max(10, (tileHeight < 72 ? 11.0 : 13.0) * scale);
@@ -156,9 +160,9 @@ internal static class VisualCanvasInfoTileTextLayout {
             valueLineLimit = 1;
         }
 
-        var labelLines = Wrap(tile.Label, labelFont, maxWidth, true, 1);
-        var valueLines = Wrap(tile.Value, valueFont, maxWidth, true, valueLineLimit);
-        var detailLines = detailLineLimit > 0 ? Wrap(tile.Detail, detailFont, maxWidth, false, detailLineLimit) : WrapResult.Empty;
+        var labelLines = Wrap(tile.Label, labelFont, maxWidth, faces.Label, 1);
+        var valueLines = Wrap(tile.Value, valueFont, maxWidth, faces.Value, valueLineLimit);
+        var detailLines = detailLineLimit > 0 ? Wrap(tile.Detail, detailFont, maxWidth, faces.Detail, detailLineLimit) : WrapResult.Empty;
         var totalHeight =
             labelLines.Lines.Count * labelLineHeight +
             valueLines.Lines.Count * valueLineHeight +
@@ -168,27 +172,27 @@ internal static class VisualCanvasInfoTileTextLayout {
         var y = tileY + Math.Max(topPadding, (tileHeight - bottomPadding - totalHeight) / 2);
         var lines = new List<VisualCanvasInfoTileTextLine>(labelLines.Lines.Count + valueLines.Lines.Count + detailLines.Lines.Count);
         foreach (var line in labelLines.Lines) {
-            lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Label, line.Text, textX, y, labelFont, true, line.Truncated));
+            lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Label, line.Text, textX, y, labelFont, line.Truncated));
             y += labelLineHeight;
         }
 
         y += 3;
         foreach (var line in valueLines.Lines) {
-            lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Value, line.Text, textX, y, valueFont, true, line.Truncated));
+            lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Value, line.Text, textX, y, valueFont, line.Truncated));
             y += valueLineHeight;
         }
 
         if (detailLines.Lines.Count > 0) {
             y += 2;
             foreach (var line in detailLines.Lines) {
-                lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Detail, line.Text, textX, y, detailFont, false, line.Truncated));
+                lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Detail, line.Text, textX, y, detailFont, line.Truncated));
                 y += detailLineHeight;
             }
         }
 
         var textWidth = 0.0;
         foreach (var line in lines) {
-            var lineWidth = Measure(line.Text, line.FontSize, line.Emphasized);
+            var lineWidth = faces.For(line.Role).Measure(line.Text, line.FontSize);
             if (lineWidth > textWidth) textWidth = lineWidth;
         }
 
@@ -198,9 +202,9 @@ internal static class VisualCanvasInfoTileTextLayout {
         return new VisualCanvasInfoTileTextLayoutResult(lines, labelLines.Truncated || valueLines.Truncated || detailLines.Truncated || detailOmitted, hasVerticalOverflow, textWidth, totalHeight);
     }
 
-    private static WrapResult Wrap(string value, double fontSize, double maxWidth, bool emphasized, int maxLines) {
+    private static WrapResult Wrap(string value, double fontSize, double maxWidth, VisualCanvasTextFace face, int maxLines) {
         if (string.IsNullOrEmpty(value) || maxLines <= 0) return WrapResult.Empty;
-        if (Measure(value, fontSize, emphasized) <= maxWidth) return new WrapResult(new[] { new WrappedLine(value, false) }, false);
+        if (face.Measure(value, fontSize) <= maxWidth) return new WrapResult(new[] { new WrappedLine(value, false) }, false);
         var words = value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (words.Length == 0) return new WrapResult(new[] { new WrappedLine(string.Empty, false) }, false);
         var lines = new List<WrappedLine>(maxLines);
@@ -210,14 +214,14 @@ internal static class VisualCanvasInfoTileTextLayout {
         while (index < words.Length && lines.Count < maxLines) {
             var word = words[index];
             var candidate = current.Length == 0 ? word : current + " " + word;
-            if (Measure(candidate, fontSize, emphasized) <= maxWidth) {
+            if (face.Measure(candidate, fontSize) <= maxWidth) {
                 current = candidate;
                 index++;
                 continue;
             }
 
             if (current.Length == 0) {
-                var fitted = FitText(word, fontSize, maxWidth, emphasized, index < words.Length - 1);
+                var fitted = FitText(word, fontSize, maxWidth, face, index < words.Length - 1);
                 truncated |= fitted.Truncated || index < words.Length - 1;
                 lines.Add(new WrappedLine(fitted.Text, fitted.Truncated || index < words.Length - 1));
                 index++;
@@ -226,7 +230,7 @@ internal static class VisualCanvasInfoTileTextLayout {
 
             if (lines.Count == maxLines - 1) {
                 var remainder = current + " " + string.Join(" ", words, index, words.Length - index);
-                var fitted = FitText(remainder, fontSize, maxWidth, emphasized, true);
+                var fitted = FitText(remainder, fontSize, maxWidth, face, true);
                 truncated = true;
                 lines.Add(new WrappedLine(fitted.Text, true));
                 return new WrapResult(lines, truncated);
@@ -237,7 +241,7 @@ internal static class VisualCanvasInfoTileTextLayout {
         }
 
         if (current.Length > 0 && lines.Count < maxLines) {
-            var fitted = FitText(current, fontSize, maxWidth, emphasized, index < words.Length && Measure(current, fontSize, emphasized) > maxWidth);
+            var fitted = FitText(current, fontSize, maxWidth, face, index < words.Length && face.Measure(current, fontSize) > maxWidth);
             truncated |= fitted.Truncated || index < words.Length;
             lines.Add(new WrappedLine(fitted.Text, fitted.Truncated || index < words.Length));
         } else if (index < words.Length) {
@@ -247,24 +251,36 @@ internal static class VisualCanvasInfoTileTextLayout {
         return new WrapResult(lines, truncated);
     }
 
-    private static FitResult FitText(string value, double fontSize, double maxWidth, bool emphasized, bool forceSuffix) {
+    private static FitResult FitText(string value, double fontSize, double maxWidth, VisualCanvasTextFace face, bool forceSuffix) {
         if (string.IsNullOrEmpty(value)) return new FitResult(string.Empty, false);
         const string suffix = "...";
-        if (!forceSuffix && Measure(value, fontSize, emphasized) <= maxWidth) return new FitResult(value, false);
-        if (Measure(suffix, fontSize, emphasized) > maxWidth) return new FitResult(string.Empty, true);
+        if (!forceSuffix && face.Measure(value, fontSize) <= maxWidth) return new FitResult(value, false);
+        if (face.Measure(suffix, fontSize) > maxWidth) return new FitResult(string.Empty, true);
         var low = 0;
         var high = value.Length;
         while (low < high) {
             var mid = (low + high + 1) / 2;
-            if (Measure(value.Substring(0, mid).TrimEnd() + suffix, fontSize, emphasized) <= maxWidth) low = mid;
+            if (face.Measure(value.Substring(0, mid).TrimEnd() + suffix, fontSize) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 
-        return new FitResult(value.Substring(0, low).TrimEnd() + suffix, true);
+        return new FitResult(value.Substring(0, Typography.TextElementBoundary.Snap(value, low)).TrimEnd() + suffix, true);
     }
 
-    private static double Measure(string value, double fontSize, bool emphasized) =>
-        emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
+    private readonly struct TileFaces {
+        public TileFaces(string fontFamily, TextMeasurementMode mode) {
+            Label = VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.TileLabel, mode);
+            Value = VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.TileValue, mode);
+            Detail = VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.TileDetail, mode);
+        }
+
+        public VisualCanvasTextFace Label { get; }
+        public VisualCanvasTextFace Value { get; }
+        public VisualCanvasTextFace Detail { get; }
+
+        public VisualCanvasTextFace For(VisualCanvasInfoTileTextRole role) =>
+            role == VisualCanvasInfoTileTextRole.Label ? Label : role == VisualCanvasInfoTileTextRole.Value ? Value : Detail;
+    }
 
     private readonly struct FitResult {
         public FitResult(string text, bool truncated) {

@@ -177,8 +177,20 @@ public sealed partial class ImageComposition {
 
         var layout = TextLayoutEngine.Layout(text, width, style, wrapMode, maximumLines, trimming);
         var face = TypographyFontResolver.ResolveFace(style.Font);
-        var font = face.Font;
         var fontSize = style.EffectiveFontSize;
+        var hinting = _canvas.TextHinting;
+        _canvas.TextHinting = style.Hinting;
+        try {
+            DrawLayoutLines(x, width, y, style, layout, face, fontSize);
+        } finally {
+            _canvas.TextHinting = hinting;
+        }
+
+        return this;
+    }
+
+    private void DrawLayoutLines(double x, double width, double y, TextStyle style, TextLayout layout, ResolvedTypeface face, double fontSize) {
+        var font = face.Font;
         for (var index = 0; index < layout.Lines.Count; index++) {
             var line = layout.Lines[index];
             var drawX = ResolveAlignedX(x, width, line.Width, style.Alignment);
@@ -190,8 +202,6 @@ public sealed partial class ImageComposition {
             RasterTextDecoration.Draw(_canvas, drawX, drawX + line.Width, drawY + fontSize * 1.05, style.UnderlineStyle, style.Color, thickness);
             RasterTextDecoration.Draw(_canvas, drawX, drawX + line.Width, drawY + fontSize * 0.55, style.StrikethroughStyle, style.Color, thickness);
         }
-
-        return this;
     }
 
     private static double BaselineOffset(TextBaseline baseline, double effectiveFontSize) => baseline switch {

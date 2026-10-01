@@ -19,7 +19,8 @@ public sealed partial class PngVisualBlockRenderer {
         VisualBlockRendering.Validate(block);
         var options = block.Options;
         var theme = options.Theme;
-        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), options.PngOutputScale);
+        using var emphasis = RgbaCanvas.OpenEmphasisScope();
+        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), options.PngOutputScale);
         canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
             canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
@@ -594,6 +595,6 @@ public sealed partial class PngVisualBlockRenderer {
             else high = mid - 1;
         }
 
-        return value.Substring(0, low) + suffix;
+        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 }

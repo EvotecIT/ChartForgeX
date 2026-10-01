@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
 
@@ -342,7 +343,12 @@ internal static partial class SmokeTests {
         var italicAdjacentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicAdjacentText));
         var regularAdjacentBlue = SvgColorBounds(regularAdjacentImage.Pixels, 140, 50, 37, 99, 235);
         var italicAdjacentBlue = SvgColorBounds(italicAdjacentImage.Pixels, 140, 50, 37, 99, 235);
-        Assert(regularAdjacentBlue.HasPixels && italicAdjacentBlue.HasPixels && Math.Abs(regularAdjacentBlue.Left - italicAdjacentBlue.Left) <= 1, "Synthetic italic overhang should expand painted bounds without advancing adjacent SVG text runs.");
+        // A designed italic (DejaVu Sans Oblique on Linux, Helvetica Oblique on macOS) slants around its own centre, so
+        // the next run's ink starts elsewhere by design; the synthetic case, pinned to a regular-only face, is
+        // SyntheticItalicTests.SyntheticItalicDoesNotAdvanceTheNextSvgRun.
+        if (TypographyFontResolver.ResolveFace(null, 400, italic: true).SynthesizeItalic) {
+            Assert(regularAdjacentBlue.HasPixels && italicAdjacentBlue.HasPixels && Math.Abs(regularAdjacentBlue.Left - italicAdjacentBlue.Left) <= 1, "Synthetic italic overhang should expand painted bounds without advancing adjacent SVG text runs.");
+        }
 
         const string transformedText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><text x='12' y='18' font-size='16' fill='#ef4444' transform='rotate(90 12 18)'>TEST</text></svg>";
         var transformedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedText));

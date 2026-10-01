@@ -41,14 +41,16 @@ public sealed partial class PngChartRenderer {
     internal RgbaCanvas RenderCanvas(Chart chart) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
+        // Theme stacks resolve to installed faces, and emphasized text draws their real bold face.
+        var emphasis = RgbaCanvas.OpenEmphasisScope();
         var explicitOutlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
-        var outlineFont = explicitOutlineFont ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
+        var outlineFont = explicitOutlineFont ?? TypographyFontResolver.ResolveThemeFont(t.FontFamily);
         var previousOutlineFont = CurrentOutlineFont;
         var previousOutlineFontIsExplicit = CurrentOutlineFontIsExplicit;
         CurrentOutlineFont = outlineFont;
         CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         try {
-            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale);
+            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale) { TextHinting = o.PngTextHinting };
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
             if (o.ShowCard && t.UseCard) DrawCardSurface(c, o, t);
             var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(o);
@@ -262,6 +264,7 @@ public sealed partial class PngChartRenderer {
         } finally {
             CurrentOutlineFont = previousOutlineFont;
             CurrentOutlineFontIsExplicit = previousOutlineFontIsExplicit;
+            emphasis.Dispose();
         }
     }
 
