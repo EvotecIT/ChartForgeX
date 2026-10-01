@@ -378,8 +378,8 @@ internal sealed class SvgRasterStyle {
 
     private static IReadOnlyList<double>? ParseDashArray(string value) {
         if (string.Equals(value.Trim(), "none", StringComparison.OrdinalIgnoreCase)) return null;
-        var values = SvgRasterNumbers.ParseList(value).Where(item => item > 0).ToArray();
-        return values.Length == 0 ? null : values;
+        var values = SvgRasterNumbers.ParseList(value).ToArray();
+        return values.Length == 0 || values.Any(item => item < 0 || double.IsNaN(item) || double.IsInfinity(item)) || values.All(item => item == 0) ? null : values;
     }
 
     private static ChartColor WithOpacity(ChartColor color, double opacity) {

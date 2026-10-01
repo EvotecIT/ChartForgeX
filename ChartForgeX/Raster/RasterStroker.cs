@@ -62,7 +62,10 @@ internal static class RasterStroker {
         var lengths = new List<double>(pattern.Count * 2);
         var total = 0.0;
         foreach (var value in pattern) {
-            if (!(value > 0) || double.IsInfinity(value)) continue;
+            if (value < 0 || double.IsNaN(value) || double.IsInfinity(value)) {
+                runs.Add(new List<ChartPoint>(points));
+                return runs;
+            }
             lengths.Add(value);
             total += value;
         }
@@ -75,7 +78,7 @@ internal static class RasterStroker {
 
         var pathLength = 0.0;
         for (var i = 1; i < points.Count; i++) pathLength += Distance(points[i - 1], points[i]);
-        if (lengths.Count == 0 || !(total > 0) || pathLength / total * lengths.Count > MaximumDashes) {
+        if (lengths.Count == 0 || !(total > 0) || pathLength <= Epsilon || pathLength / total * lengths.Count > MaximumDashes) {
             runs.Add(new List<ChartPoint>(points));
             return runs;
         }
@@ -111,7 +114,19 @@ internal static class RasterStroker {
             if (painting) run!.Add(b);
         }
 
-        if (painting && run != null && run.Count > 1) runs.Add(run);
+        if (painting && run != null) runs.Add(run);
+        // Zero gaps and a painted closed-path seam are contiguous strokes, with joins rather than caps.
+        for (var i = runs.Count - 1; i > 0; i--) {
+            if (!Same(runs[i - 1][runs[i - 1].Count - 1], runs[i][0])) continue;
+            runs[i - 1].AddRange(runs[i].GetRange(1, runs[i].Count - 1));
+            runs.RemoveAt(i);
+        }
+        if (runs.Count > 1 && points.Count > 1 && Same(points[0], points[points.Count - 1]) &&
+            Same(runs[runs.Count - 1][runs[runs.Count - 1].Count - 1], runs[0][0])) {
+            var last = runs[runs.Count - 1];
+            last.AddRange(runs[0].GetRange(1, runs[0].Count - 1));
+            runs.RemoveAt(0);
+        }
         return runs;
     }
 

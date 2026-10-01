@@ -791,7 +791,7 @@ var findingsPareto = Chart.Create()
     }, ChartColor.FromRgb(96, 165, 250), ChartColor.FromRgb(251, 191, 36));
 
 SaveChart(findingsPareto, "findings-pareto-dark");
-
+CompositionShapeExamples.Write(output);
 GalleryWriter.Write(output);
 Console.WriteLine("Generated files in: " + output);
 

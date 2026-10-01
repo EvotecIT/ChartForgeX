@@ -11,6 +11,43 @@ namespace ChartForgeX.Tests;
 /// </summary>
 public sealed class RasterStrokeQualityTests {
     [Theory]
+    [InlineData("round")]
+    [InlineData("square")]
+    public void BareMovesDoNotPaintButZeroLengthDrawingCommandsDo(string cap) {
+        var attributes = " fill='none' stroke='#fff' stroke-width='10' stroke-linecap='" + cap + "'";
+        Assert.Equal(0, Alpha(Render(80, 80, "<path d='M20 20'" + attributes + "/>"), 20, 20));
+        Assert.Equal(255, Alpha(Render(80, 80, "<path d='M20 20 L20 20'" + attributes + "/>"), 20, 20));
+        Assert.Equal(255, Alpha(Render(80, 80, "<path d='M20 20 Z'" + attributes + "/>"), 20, 20));
+    }
+
+    [Fact]
+    public void ZeroDashEntriesKeepPaintAndGapParity() {
+        const string path = "<path d='M20 20 H60' fill='none' stroke='#fff' stroke-width='2' stroke-linecap='round'{0}/>";
+        var dots = Render(80, 40, string.Format(path, " stroke-dasharray='0 8'"));
+        Assert.InRange(Alpha(dots, 20, 20), 180, 210);
+        Assert.InRange(Alpha(dots, 28, 20), 180, 210);
+        Assert.Equal(0, Alpha(dots, 24, 20));
+        var solid = Render(80, 40, string.Format(path, ""));
+        Assert.Equal(solid.Pixels, Render(80, 40, string.Format(path, " stroke-dasharray='8 0'")).Pixels);
+        Assert.Equal(solid.Pixels, Render(80, 40, string.Format(path, " stroke-dasharray='0 0'")).Pixels);
+    }
+
+    [Fact]
+    public void TerminalDashGapDoesNotStartAnotherCap() {
+        foreach (var pattern in new[] { "8 8", "0 8" }) {
+            var image = Render(60, 40, "<path d='M20 20 H36' fill='none' stroke='#fff' stroke-width='4' stroke-linecap='round' stroke-dasharray='" + pattern + "'/>");
+            Assert.True(Alpha(image, 28, 20) > 0);
+            Assert.Equal(0, Alpha(image, 36, 20));
+        }
+    }
+
+    [Fact]
+    public void ClosedDashedPathJoinsPaintAcrossItsSeam() {
+        var image = Render(100, 100, "<path d='M30 30 H70 V70 H30 Z' fill='none' stroke='#fff' stroke-width='10' stroke-linecap='butt' stroke-linejoin='miter' stroke-dasharray='30 20'/>");
+        Assert.Equal(255, Alpha(image, 26, 26));
+    }
+
+    [Theory]
     [InlineData(1.5)]
     [InlineData(4)]
     [InlineData(18)]

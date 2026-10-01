@@ -326,6 +326,8 @@ internal static partial class SvgRasterRenderer {
         var fillContours = new List<List<ChartPoint>>(subpaths.Count);
         var strokeContours = new List<List<ChartPoint>>(subpaths.Count);
         foreach (var subpath in subpaths) {
+            // A bare moveto has no stroke; repeated points from drawing commands retain their caps.
+            if (subpath.Points.Count == 1 && !subpath.IsClosed) continue;
             sourceRings.Add(subpath.Points);
             var transformed = TransformRing(subpath.Points, matrix);
             var contour = ClosedRing(transformed);
