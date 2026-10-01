@@ -289,7 +289,7 @@ public sealed class StatePresentationTests {
         var tokens = new VisualStatusTokens();
         var operational = tokens.OperationalStateCategories().ToDictionary(state => state.Key, state => state.Pattern);
         Assert.Equal(ChartStatePattern.Hatched, operational["notObservable"]);
-        Assert.Equal(ChartStatePattern.CrossHatched, operational["unknown"]);
+        Assert.Equal(ChartStatePattern.Outlined, operational["unknown"]);
         var outcomes = tokens.OutcomeCategories().ToDictionary(state => state.Key, state => state.Pattern);
         Assert.Equal(ChartStatePattern.Hatched, outcomes["notEvaluated"]);
         Assert.Equal(ChartStatePattern.Outlined, outcomes["couldNotEvaluate"]);

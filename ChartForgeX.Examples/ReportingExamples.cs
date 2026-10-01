@@ -158,7 +158,7 @@ internal static class ReportingExamples {
             new ChartStateCategory("recovering", "Recovering", ChartColor.FromHex("#0c8aa8")),
             new ChartStateCategory("maintenance", "Maintenance", ChartColor.FromHex("#6b5bd2")),
             new ChartStateCategory("notObservable", "Not observable", ChartColor.FromHex("#7c818a"), ChartStatePattern.Hatched),
-            new ChartStateCategory("unknown", "Unknown", ChartColor.FromHex("#7c818a"), ChartStatePattern.CrossHatched)
+            new ChartStateCategory("unknown", "Unknown", ChartColor.FromHex("#7c818a"), ChartStatePattern.Outlined)
         };
         var chart = Chart.Create()
             .WithTitle("Domain controller availability")

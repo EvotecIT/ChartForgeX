@@ -49,7 +49,7 @@ public sealed class VisualStatusTokens {
 
     /// <summary>
     /// Returns the outcomes that have their own colour, keyed <c>pass</c>, <c>notEvaluated</c> (hatched), and
-    /// <c>couldNotEvaluate</c> (outlined). A failed result has no colour of its own; colour it by its severity.
+    /// <c>couldNotEvaluate</c> (dashed outline). A failed result has no colour of its own; colour it by its severity.
     /// </summary>
     /// <param name="labels">Optional localized labels by key; missing keys keep the English label.</param>
     public IReadOnlyList<ChartStateCategory> OutcomeCategories(IReadOnlyDictionary<string, string>? labels = null) => new[] {
@@ -61,7 +61,7 @@ public sealed class VisualStatusTokens {
     /// <summary>
     /// Returns the operational states keyed <c>up</c>, <c>degraded</c>, <c>down</c>, <c>recovering</c>,
     /// <c>maintenance</c>, <c>notObservable</c>, and <c>unknown</c>. Up uses the pass colour, degraded medium,
-    /// down critical, recovering low; not observable (hatched) and unknown (cross-hatched) are neutral.
+    /// down critical, recovering low; not observable (hatched) and unknown (dashed outline) are neutral.
     /// </summary>
     /// <param name="labels">Optional localized labels by key; missing keys keep the English label.</param>
     public IReadOnlyList<ChartStateCategory> OperationalStateCategories(IReadOnlyDictionary<string, string>? labels = null) => new[] {
@@ -71,7 +71,7 @@ public sealed class VisualStatusTokens {
         new ChartStateCategory("recovering", Label(labels, "recovering", "Recovering"), Low.Fill),
         new ChartStateCategory("maintenance", Label(labels, "maintenance", "Maintenance"), Maintenance.Fill),
         new ChartStateCategory("notObservable", Label(labels, "notObservable", "Not observable"), Neutral.Fill, ChartStatePattern.Hatched),
-        new ChartStateCategory("unknown", Label(labels, "unknown", "Unknown"), Neutral.Fill, ChartStatePattern.CrossHatched)
+        new ChartStateCategory("unknown", Label(labels, "unknown", "Unknown"), Neutral.Fill, ChartStatePattern.Outlined)
     };
 
     /// <summary>Creates a copy of these status colours.</summary>
