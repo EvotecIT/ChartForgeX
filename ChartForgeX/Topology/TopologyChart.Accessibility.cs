@@ -14,6 +14,16 @@ public sealed partial class TopologyChart {
         return this;
     }
 
+    /// <summary>Gets the words the renderers write on their own: the name of an untitled diagram and its automatic description.</summary>
+    public TopologyLabels Labels { get; internal set; } = new();
+
+    /// <summary>Configures the words the renderers write on their own (see <see cref="TopologyLabels"/>).</summary>
+    public TopologyChart WithLabels(Action<TopologyLabels> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(Labels);
+        return this;
+    }
+
     /// <summary>Marks the topology as decorative for capable renderers.</summary>
     public TopologyChart AsDecorative(bool decorative = true) {
         Accessibility.IsDecorative = decorative;

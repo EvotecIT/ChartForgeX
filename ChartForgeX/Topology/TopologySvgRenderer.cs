@@ -68,10 +68,10 @@ public sealed partial class TopologySvgRenderer {
         if (!accessibility.IsDecorative) {
             document.Root.Element("title", title => title
                 .Attribute("id", id + "-title")
-                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(prepared.Title) ? "ChartForgeX topology" : prepared.Title!)));
+                .Text(accessibility.Name ?? prepared.Labels.Name(prepared)));
             document.Root.Element("desc", desc => desc
                 .Attribute("id", id + "-desc")
-                .Text(accessibility.Description ?? BuildDescription(prepared)));
+                .Text(accessibility.Description ?? prepared.Labels.Describe(prepared)));
         }
         document.Root.AddElement(BuildDefs(id, prefix, prepared, theme, options));
         document.Root.Element("g", root => {
@@ -783,10 +783,6 @@ public sealed partial class TopologySvgRenderer {
         }
 
         return sb.ToString().Trim('-').ToLowerInvariant();
-    }
-
-    private static string BuildDescription(TopologyChart chart) {
-        return (string.IsNullOrWhiteSpace(chart.Title) ? "Topology chart" : chart.Title) + " with " + chart.Groups.Count.ToString(CultureInfo.InvariantCulture) + " groups, " + chart.Nodes.Count.ToString(CultureInfo.InvariantCulture) + " nodes, and " + chart.Edges.Count.ToString(CultureInfo.InvariantCulture) + " edges.";
     }
 
     private static string CssToken(string value) => value.ToLowerInvariant();

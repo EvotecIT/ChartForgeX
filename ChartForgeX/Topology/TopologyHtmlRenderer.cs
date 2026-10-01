@@ -163,11 +163,11 @@ public sealed partial class TopologyHtmlRenderer {
         EnsureStatic(options);
         options ??= new TopologyRenderOptions();
         var theme = chart.Theme ?? TopologyTheme.Light();
-        var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX topology" : chart.Title!;
+        var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var cssPrefix = CssClassPrefix(options);
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
-            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("html").Attribute("lang", string.IsNullOrWhiteSpace(chart.Accessibility.Language) ? "en" : chart.Accessibility.Language).EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background));
         writer.EndElement().Line()

@@ -412,6 +412,10 @@ A chart can carry the options it was designed for: `.WithRenderOptions(options)`
 - SVG and PNG render routes by visual priority instead of declaration order: subtle dependency fabric draws first, critical/strong routes draw later, and selected routes draw last. SVG emits `data-edge-render-order` so hosts can validate layering deterministically.
 - `EdgeLabelMetricKey`, `EdgeSecondaryLabelMetricKey`, and `EdgeTertiaryLabelMetricKey` allow hosts to switch route labels from default edge text to metrics such as `transport`, `cost`, `lag`, `queue`, `owner`, or `lastSuccess`; `.WithEdgeMetricLabels("lag", "queue", "transport")` applies the stacked metric label keys in one call.
 
+## Words the renderers write
+
+The SVG title and description of a diagram come from `WithAccessibility` when set, otherwise from `TopologyChart.Labels`: `UntitledTopology` names a diagram without a title and `AccessibleTextFormatter` writes the description from `ChartDescriptionFacts` of kind `Topology` (node, group, and edge counts), the same facts charts pass to `ChartLabels.AccessibleTextFormatter`. `UntitledReport` titles a report split from an untitled diagram. Labels are copied to prepared charts and report pages. The interactive page controls and the graph explorer still write English.
+
 ## Host Boundaries
 
 HtmlForgeX can later provide cards, toolbars, sidebars, filters, tabs, inspectors, and event panels around the SVG. TestimoX or another product can later collect and calculate product-specific health, then convert that data into `TopologyChart`. ChartForgeX should not connect to Active Directory, hardcode TestimoX data, or implement dashboard page layout.

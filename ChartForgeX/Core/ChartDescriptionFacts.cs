@@ -42,12 +42,19 @@ public enum ChartDescriptionKind {
     RegionMapGroup,
 
     /// <summary>Accessible name of the tile map group: <see cref="ChartDescriptionFacts.Count"/> filled and <see cref="ChartDescriptionFacts.MissingCount"/> missing tiles.</summary>
-    TileMapGroup
+    TileMapGroup,
+
+    /// <summary>
+    /// Description of a topology diagram (<see cref="ChartForgeX.Topology.TopologyLabels.AccessibleTextFormatter"/>):
+    /// <see cref="ChartDescriptionFacts.Count"/> nodes, <see cref="ChartDescriptionFacts.GroupCount"/> groups, and
+    /// <see cref="ChartDescriptionFacts.EdgeCount"/> edges.
+    /// </summary>
+    Topology
 }
 
 /// <summary>
-/// The facts behind one automatic accessible sentence: the chart description (the SVG <c>desc</c> element) or the
-/// accessible name of a calendar or map group. <see cref="ChartLabels.AccessibleTextFormatter"/> receives them so hosts
+/// The facts behind one automatic accessible sentence: the chart description (the SVG <c>desc</c> element), the
+/// accessible name of a calendar or map group, or the description of a topology diagram. <see cref="ChartLabels.AccessibleTextFormatter"/> and <see cref="ChartForgeX.Topology.TopologyLabels.AccessibleTextFormatter"/> receive them so hosts
 /// can write the sentence in their own language, including its plural forms.
 /// </summary>
 public sealed class ChartDescriptionFacts {
@@ -62,10 +69,14 @@ public sealed class ChartDescriptionFacts {
     /// <param name="firstDate">The first day, for calendar sentences.</param>
     /// <param name="lastDate">The last day, for calendar sentences.</param>
     /// <param name="mapName">The name of the region or tile map definition.</param>
-    public ChartDescriptionFacts(ChartDescriptionKind kind, string? title, IEnumerable<string> seriesNames, int count, int missingCount = 0, DateTime? firstDate = null, DateTime? lastDate = null, string? mapName = null) {
+    /// <param name="groupCount">The number of groups, for topology descriptions; zero or greater.</param>
+    /// <param name="edgeCount">The number of edges, for topology descriptions; zero or greater.</param>
+    public ChartDescriptionFacts(ChartDescriptionKind kind, string? title, IEnumerable<string> seriesNames, int count, int missingCount = 0, DateTime? firstDate = null, DateTime? lastDate = null, string? mapName = null, int groupCount = 0, int edgeCount = 0) {
         if (seriesNames == null) throw new ArgumentNullException(nameof(seriesNames));
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, "Counts must be zero or greater.");
         if (missingCount < 0) throw new ArgumentOutOfRangeException(nameof(missingCount), missingCount, "Counts must be zero or greater.");
+        if (groupCount < 0) throw new ArgumentOutOfRangeException(nameof(groupCount), groupCount, "Counts must be zero or greater.");
+        if (edgeCount < 0) throw new ArgumentOutOfRangeException(nameof(edgeCount), edgeCount, "Counts must be zero or greater.");
         Kind = kind;
         Title = string.IsNullOrWhiteSpace(title) ? null : title;
         var names = new List<string>();
@@ -76,6 +87,8 @@ public sealed class ChartDescriptionFacts {
         FirstDate = firstDate;
         LastDate = lastDate;
         MapName = string.IsNullOrWhiteSpace(mapName) ? null : mapName;
+        GroupCount = groupCount;
+        EdgeCount = edgeCount;
     }
 
     /// <summary>Gets which sentence is described.</summary>
@@ -89,7 +102,7 @@ public sealed class ChartDescriptionFacts {
 
     /// <summary>
     /// Gets the main count: described series, dated calendar values, calendar days with a value, highlighted map
-    /// points, or filled map regions, depending on <see cref="Kind"/>.
+    /// points, filled map regions, or topology nodes, depending on <see cref="Kind"/>.
     /// </summary>
     public int Count { get; }
 
@@ -104,6 +117,12 @@ public sealed class ChartDescriptionFacts {
 
     /// <summary>Gets the name of the region or tile map definition, when there is one.</summary>
     public string? MapName { get; }
+
+    /// <summary>Gets the number of groups of a topology diagram; zero for other kinds.</summary>
+    public int GroupCount { get; }
+
+    /// <summary>Gets the number of edges of a topology diagram; zero for other kinds.</summary>
+    public int EdgeCount { get; }
 
     /// <summary>Gets the English sentence ChartForgeX writes when no formatter is set.</summary>
     public string EnglishText {
@@ -129,6 +148,8 @@ public sealed class ChartDescriptionFacts {
                     return series + " dotted map with " + Number(Count) + " highlighted " + (Count == 1 ? "point" : "points");
                 case ChartDescriptionKind.RegionMapGroup:
                     return series + " region map with " + Number(Count) + " filled regions and " + Number(MissingCount) + " missing regions";
+                case ChartDescriptionKind.Topology:
+                    return (Title ?? "Topology chart") + " with " + Number(GroupCount) + " groups, " + Number(Count) + " nodes, and " + Number(EdgeCount) + " edges.";
                 case ChartDescriptionKind.TileMapGroup:
                     return series + " tile map with " + Number(Count) + " filled regions and " + Number(MissingCount) + " missing regions";
                 default:
