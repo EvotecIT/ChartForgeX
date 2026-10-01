@@ -87,10 +87,10 @@ public sealed partial class SvgChartRenderer {
                 var cellText = mark.HasValue ? ChartMarkText.OnStateMark(chart, mark.Value) : ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max);
                 var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
-                // The accessible name always says which cell this is; a caller's tooltip adds to it instead of replacing it.
+                // The accessible name and the hover text always say which cell this is; a caller's tooltip is appended.
                 var tooltip = cell?.Tooltip;
                 var name = string.IsNullOrWhiteSpace(tooltip) || string.Equals(tooltip, summary, StringComparison.Ordinal) ? summary : summary + ". " + tooltip;
-                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, cellBlend.Paint, cell?.Href, category?.Label, level, mark, string.IsNullOrWhiteSpace(tooltip) ? summary : tooltip!);
+                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, cellBlend.Paint, cell?.Href, category?.Label, level, mark);
                 if (mark.HasValue) AppendSvg(body, writer => WriteStateMarkLines(writer, hatchId, mark.Value, x, y, cellWidth, cellHeight, radius, "heatmap-cell-hatch"));
                 var label = FormatDataLabel(chart, series, pointIndex, value);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
@@ -209,7 +209,11 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, SvgPaint fill, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null, string? tooltip = null) {
+    /// <summary>
+    /// Writes one heatmap cell. <paramref name="summary"/> is both the accessible name and the hover <c>title</c>, so
+    /// static SVG and the interactive adapter (which shows the accessible name) say the same.
+    /// </summary>
+    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, SvgPaint fill, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null) {
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(768);
         // Static cells carry accessible names but are not tab stops (the interactive HTML adapter adds focus); a
@@ -245,7 +249,7 @@ public sealed partial class SvgChartRenderer {
         writer
             .EndStartElement()
             .StartElement("title")
-            .Text(tooltip ?? summary)
+            .Text(summary)
             .EndElement()
             .EndElement();
         if (href != null) writer.EndElement();

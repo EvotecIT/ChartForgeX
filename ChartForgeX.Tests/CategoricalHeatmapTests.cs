@@ -19,7 +19,7 @@ public sealed class CategoricalHeatmapTests {
         Assert.Equal(new[] { "pass", "critical", "notEvaluated", "pass", "critical" }, cells.Select(cell => (string)cell.Attribute("data-cfx-status")!).ToArray());
         Assert.Equal(new[] { Pass.ToCss(), Critical.ToCss(), Neutral.ToCss() }, cells.Take(3).Select(cell => (string)cell.Attribute("fill")!).ToArray());
         Assert.Equal("DC01, LDAP: Critical", (string)cells[1].Attribute("aria-label")!);
-        Assert.Equal("Backup is 9 days old", Title(cells[4]));
+        Assert.Equal("DC02, Backup: Critical. Backup is 9 days old", Title(cells[4]));
 
         var links = ByRole(svg, "heatmap-cell-link");
         Assert.Equal(new[] { "#dc01-ldap", "evidence/dc02.html#backup" }, links.Select(link => (string)link.Attribute("href")!).ToArray());
@@ -159,7 +159,7 @@ public sealed class CategoricalHeatmapTests {
         var ids = cells.Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray();
         Assert.All(ids, id => Assert.False(string.IsNullOrEmpty(id)));
         Assert.Equal(4, ids.Distinct().Count());
-        Assert.All(cells, cell => Assert.Equal("Open evidence", Title(cell)));
+        Assert.All(cells, cell => Assert.EndsWith(": pass. Open evidence", Title(cell), StringComparison.Ordinal));
         Assert.Equal(ids, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray());
     }
 

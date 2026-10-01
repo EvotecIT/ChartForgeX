@@ -83,12 +83,12 @@ public sealed class StatePresentationTests {
     }
 
     [Fact]
-    public void CategoricalHeatmap_CellTooltip_AddsToTheAccessibleNameInsteadOfReplacingIt() {
+    public void CategoricalHeatmap_CellTooltip_AddsToTheAccessibleNameAndHoverTextInsteadOfReplacingThem() {
         var svg = XDocument.Parse(Matrix().ToSvg());
         var cell = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-id") == "heatmap:1:1");
 
         Assert.Equal("A2, Two: Critical. Backup is 9 days old", (string?)cell.Attribute("aria-label"));
-        Assert.Equal("Backup is 9 days old", cell.Elements().Single(child => child.Name.LocalName == "title").Value);
+        Assert.Equal("A2, Two: Critical. Backup is 9 days old", cell.Elements().Single(child => child.Name.LocalName == "title").Value);
         var plain = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-id") == "heatmap:0:0");
         Assert.Equal("A1, One: Passed", (string?)plain.Attribute("aria-label"));
         Assert.Equal("A1, One: Passed", plain.Elements().Single(child => child.Name.LocalName == "title").Value);
