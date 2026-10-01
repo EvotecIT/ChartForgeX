@@ -61,6 +61,23 @@ public sealed class TextFallbackTests : IDisposable {
     }
 
     [Fact]
+    public void FallbackCanUseAnotherFaceFromTheSameCollectionFile() {
+        var path = Path.Combine(Path.GetTempPath(), "cfx-collection-" + Guid.NewGuid().ToString("N") + ".otc");
+        File.WriteAllBytes(path, OpenTypeTestFonts.Collection(OpenTypeTestFonts.NameKeyed(false), OpenTypeTestFonts.NameKeyed()));
+        try {
+            FontRegistry.Register("CFX Collection Primary", path, collectionIndex: 0);
+            FontRegistry.Register("CFX Collection Fallback", path, collectionIndex: 1);
+            var font = TypographyFontResolver.ResolveFace("CFX Collection Primary, CFX Collection Fallback", 400, false).Font!;
+            var glyph = TextShaper.Shape(font, char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter)).Single();
+            Assert.Equal(1, glyph.Face.CollectionIndex);
+            Assert.Equal(OpenTypeTestFonts.Box, glyph.Glyph);
+        } finally {
+            FontRegistry.Clear();
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public void RegisteredFontsAreFallbackFacesBeforeThePlatformChain() {
         var primary = TrueTypeFont.TryLoadDefault();
         if (primary == null || primary.HasGlyph(OpenTypeTestFonts.PrivateUseCharacter) || FontFallbackChain.For(primary).FaceFor(OpenTypeTestFonts.PrivateUseCharacter) != null) return;
@@ -115,6 +132,16 @@ public sealed class TextFallbackTests : IDisposable {
         Assert.Equal(0, kept.Length % 2);
         // Room for "..." and one UTF-16 unit: half a rocket is dropped rather than drawn.
         Assert.Equal("...", ChartForgeX.Rendering.ChartTextFitting.TrimEnd("\uD83D\uDE80\uD83D\uDE80\uD83D\uDE80", 20, 45, (value, size) => value.Length * size * 0.5));
+    }
+
+    [Fact]
+    public void TrimmingAndWrappingKeepEmojiExtendersWithTheirBase() {
+        foreach (var cluster in new[] { "\U0001F44D\U0001F3FD", "\U0001F3F4\U000E0067\U000E007F", "\u4E00\U000E0100" }) {
+            Assert.Equal(cluster.Length, TextElementBoundary.Next(cluster, 0));
+            for (var index = 1; index < cluster.Length; index++) Assert.Equal(0, TextElementBoundary.Snap(cluster, index));
+            var wrapped = TextLayoutEngine.Layout(cluster + cluster, 1, new TextStyle { FontSize = 20 }, TextWrapMode.Character);
+            Assert.Equal(new[] { cluster, cluster }, wrapped.Lines.Select(line => line.Text));
+        }
     }
 
     [Fact]

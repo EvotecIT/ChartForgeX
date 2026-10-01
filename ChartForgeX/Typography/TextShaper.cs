@@ -102,7 +102,11 @@ internal static class TextShaper {
         Cluster? current = null;
         for (var i = 0; i < codePoints.Count; i++) {
             var cp = codePoints[i];
-            var joinsPrevious = current != null && (Extends(cp) || codePoints[i - 1] == 0x200D);
+            var arabicJoiner = cp == 0x200D &&
+                ((current != null && ArabicShaping.IsJoiningLetter(current.First)) ||
+                 (i + 1 < codePoints.Count && ArabicShaping.IsJoiningLetter(codePoints[i + 1])));
+            var joinsPrevious = current != null && !arabicJoiner &&
+                (Extends(cp) || (codePoints[i - 1] == 0x200D && current.First != 0x200D && !ArabicShaping.IsJoiningLetter(cp)));
             if (!joinsPrevious) {
                 current = new Cluster(i, cp);
                 clusters.Add(current);
@@ -211,7 +215,7 @@ internal static class TextShaper {
         if (mirrored != cluster.Output[0] && cluster.Face!.HasGlyph(mirrored)) cluster.Output[0] = mirrored;
     }
 
-    private static bool Extends(int cp) {
+    internal static bool Extends(int cp) {
         if (cp == 0x200D || (cp >= 0xFE00 && cp <= 0xFE0F) || (cp >= 0x1F3FB && cp <= 0x1F3FF) || (cp >= 0xE0020 && cp <= 0xE007F) || (cp >= 0xE0100 && cp <= 0xE01EF)) return true;
         var category = BidiCharacterData.Category(cp);
         return category == UnicodeCategory.NonSpacingMark || category == UnicodeCategory.SpacingCombiningMark || category == UnicodeCategory.EnclosingMark;

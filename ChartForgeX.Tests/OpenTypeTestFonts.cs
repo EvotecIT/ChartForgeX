@@ -34,12 +34,34 @@ internal static class OpenTypeTestFonts {
     private static readonly byte[] FlexCharstring = Cs(100, 100, Op(21), 100, 0, 100, 0, 100, 0, 100, 0, 100, 0, 100, 0, 50, Op(12), (byte)35, 0, 100, Op(5), -600, 0, Op(5), Op(14));
     private static readonly byte[] BoxCharstring = Cs(50, 0, Op(21), 400, Op(6), 700, Op(7), -400, Op(6), Op(14));
 
-    internal static byte[] NameKeyed() {
+    internal static byte[] NameKeyed(bool includePrivateUse = true) {
         var charStrings = new[] { Cs(Op(14)), HCharstring, OCharstring, XCharstring, ECharstring, AcuteCharstring, EAcuteCharstring, FlexCharstring, BoxCharstring };
         // Custom charset (format 0): SIDs of H, O, x, e, acute, eacute, F, and one more.
         var charset = new List<byte> { 0 };
         foreach (var sid in new[] { 41, 48, 89, 70, 125, 208, 39, 42 }) AddU16(charset, sid);
-        return Font("CFF ", BuildCff(charStrings, new[] { LocalSubr }, charset.ToArray(), cid: false));
+        return Font("CFF ", BuildCff(charStrings, new[] { LocalSubr }, charset.ToArray(), cid: false), includePrivateUse);
+    }
+
+    /// <summary>Packages independent synthetic faces in one OpenType collection.</summary>
+    internal static byte[] Collection(params byte[][] fonts) {
+        var output = new List<byte>();
+        AddU32(output, 0x74746366); // ttcf
+        AddU32(output, 0x00010000);
+        AddU32(output, fonts.Length);
+        var offset = 12 + fonts.Length * 4;
+        foreach (var font in fonts) { AddU32(output, offset); offset += font.Length; }
+        foreach (var font in fonts) {
+            var face = (byte[])font.Clone();
+            var tables = (face[4] << 8) | face[5];
+            for (var table = 0; table < tables; table++) {
+                var at = 12 + table * 16 + 8;
+                var absolute = ((face[at] << 24) | (face[at + 1] << 16) | (face[at + 2] << 8) | face[at + 3]) + output.Count;
+                face[at] = (byte)(absolute >> 24); face[at + 1] = (byte)(absolute >> 16);
+                face[at + 2] = (byte)(absolute >> 8); face[at + 3] = (byte)absolute;
+            }
+            output.AddRange(face);
+        }
+        return output.ToArray();
     }
 
     /// <summary>A CID-keyed font whose two font DICTs carry different local subroutine 0: glyphs up to <see cref="X"/> use the first, the rest the second.</summary>
@@ -166,12 +188,12 @@ internal static class OpenTypeTestFonts {
         return header.Concat(top).Concat(globalSubrs).Concat(vstore).Concat(charStringsIndex).Concat(fdArray).ToArray();
     }
 
-    private static byte[] Font(string outlineTag, byte[] outlines) {
+    private static byte[] Font(string outlineTag, byte[] outlines, bool includePrivateUse = true) {
         var glyphCount = Advances.Length;
         var map = new SortedDictionary<int, int> { ['H'] = H, ['O'] = O, ['x'] = X, ['e'] = E, [0x00B4] = Acute, [0x00E9] = EAcute, ['F'] = Flex };
         foreach (var ch in "ChartForgeX 0123456789") if (!map.ContainsKey(ch)) map[ch] = Box;
         // A private-use character no platform font draws, for fallback tests.
-        map[PrivateUseCharacter] = Box;
+        if (includePrivateUse) map[PrivateUseCharacter] = Box;
         var tables = new SortedDictionary<string, byte[]>(StringComparer.Ordinal) {
             [outlineTag] = outlines,
             ["OS/2"] = Os2(),

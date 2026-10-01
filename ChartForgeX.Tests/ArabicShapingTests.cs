@@ -38,6 +38,14 @@ public sealed class ArabicShapingTests {
     }
 
     [Fact]
+    public void JoinerBetweenArabicLettersPreservesEachContextualGlyph() {
+        var font = TrueTypeFont.TryLoadDefault();
+        if (font == null || !font.HasGlyph(0xFE91) || !font.HasGlyph(0xFE90)) return;
+        var glyphs = TextShaper.Shape(font, "\u0628\u200D\u0628");
+        Assert.Equal(new[] { font.MapGlyph(0xFE90), font.MapGlyph(0xFE91) }, glyphs.Select(glyph => glyph.Glyph).ToArray());
+    }
+
+    [Fact]
     public void ShapedTextUsesTheFacesPresentationFormsInVisualOrder() {
         var font = TrueTypeFont.TryLoadDefault();
         if (font == null || !font.HasGlyph(0xFE91) || !font.HasGlyph(0xFEFC)) return;

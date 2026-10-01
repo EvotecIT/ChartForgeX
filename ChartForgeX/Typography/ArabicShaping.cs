@@ -23,6 +23,9 @@ internal static class ArabicShaping {
     // Presentation forms: isolated, final, initial, medial (the last two only for dual-joining letters).
     private static readonly Dictionary<int, int[]> Forms = BuildForms();
 
+    /// <summary>True for Arabic letters whose neighbours determine their joining form.</summary>
+    internal static bool IsJoiningLetter(int cp) => IsRightJoining(cp) || IsDualJoining(cp);
+
     /// <summary>True when the text may contain Arabic letters that join.</summary>
     internal static bool MayJoin(IReadOnlyList<int> codePoints) {
         foreach (var cp in codePoints) if ((cp >= 0x0620 && cp <= 0x06FF) || (cp >= 0x0750 && cp <= 0x077F) || (cp >= 0x08A0 && cp <= 0x08BD)) return true;

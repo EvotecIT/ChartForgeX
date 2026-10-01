@@ -1,4 +1,4 @@
-using System.Globalization;
+using ChartForgeX.Raster;
 
 namespace ChartForgeX.Typography;
 
@@ -27,8 +27,7 @@ internal static class TextElementBoundary {
     private static bool IsBoundary(string value, int index) {
         var ch = value[index];
         if (char.IsLowSurrogate(ch) && char.IsHighSurrogate(value[index - 1])) return false;
-        if (ch == '\u200D' || value[index - 1] == '\u200D' || (ch >= '\uFE00' && ch <= '\uFE0F')) return false;
-        var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
-        return category != UnicodeCategory.NonSpacingMark && category != UnicodeCategory.SpacingCombiningMark && category != UnicodeCategory.EnclosingMark;
+        if (value[index - 1] == '\u200D') return false;
+        return !TextShaper.Extends(TrueTypeFont.ReadCodePoint(value, ref index));
     }
 }
