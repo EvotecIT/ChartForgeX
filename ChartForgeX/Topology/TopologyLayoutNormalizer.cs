@@ -167,11 +167,10 @@ internal static class TopologyLayoutNormalizer {
     /// <summary>
     /// Returns true when the canvas height follows the content instead of the requested viewport height: readable dense
     /// grouped layouts size their site panels to their content, so a taller viewport would only leave a gap above the
-    /// legend. Bottom-to-top layouts keep the requested height because they are placed from its bottom edge.
+    /// legend.
     /// </summary>
     private static bool FitsHeightToContent(TopologyChart chart, TopologyRenderOptions options) =>
-        options.ReadableDenseLayout && chart.LayoutMode == TopologyLayoutMode.DenseGrouped && chart.Groups.Count > 0 &&
-        chart.LayoutDirection != TopologyLayoutDirection.BottomToTop;
+        options.ReadableDenseLayout && chart.LayoutMode == TopologyLayoutMode.DenseGrouped && chart.Groups.Count > 0;
 
     private static ContentBounds MeasureContent(TopologyChart chart, TopologyRenderOptions options) {
         var bounds = ContentBounds.Empty;

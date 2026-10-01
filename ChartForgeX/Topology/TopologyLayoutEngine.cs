@@ -451,7 +451,10 @@ internal static partial class TopologyLayoutEngine {
         }
 
         if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) {
-            MirrorLayoutVertically(chart, pad + titleOffset, chart.Viewport.Height - pad - legendOffset);
+            // Readable panels take the height of their content, so they are flipped within the content instead of the
+            // viewport, which would leave the unused height as a gap under the title.
+            var bottom = UsesReadableDenseLayout(chart) ? chart.Groups.Max(group => group.Y + group.Height) : chart.Viewport.Height - pad - legendOffset;
+            MirrorLayoutVertically(chart, pad + titleOffset, bottom);
             var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
             ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
             ResetDenseInferenceForRestoredGroups(chart, restoredGroups);

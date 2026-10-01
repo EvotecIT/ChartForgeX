@@ -24,12 +24,14 @@ public sealed class DenseTopologyLayoutTests {
         Assert.Single(prepared.Groups.Select(group => group.Y).Distinct());
     }
 
-    [Fact]
-    public void FewSites_OneRowOfCards_SizePanelsAndCanvasToTheirContent() {
+    [Theory]
+    [InlineData(TopologyLayoutDirection.LeftToRight, 660)]
+    [InlineData(TopologyLayoutDirection.BottomToTop, 1400)]
+    public void FewSites_OneRowOfCards_SizePanelsAndCanvasToTheirContent(TopologyLayoutDirection direction, int height) {
         // Two and one controllers per site in a viewport much taller than the content: the panels take the height of
         // their cards and captions, share one height per row, and the legend follows them instead of the viewport bottom.
-        var chart = TopologyChart.Create().WithId("small").WithTitle("Replication").WithViewport(1180, 660, 24)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight).WithLegend(TopologyLegend.Default());
+        var chart = TopologyChart.Create().WithId("small").WithTitle("Replication").WithViewport(1180, height, 24)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, direction).WithLegend(TopologyLegend.Default());
         var counts = new[] { 2, 1, 2 };
         for (var site = 0; site < counts.Length; site++) {
             chart.AddAutoGroup("s" + site, "Site " + site);
@@ -50,7 +52,9 @@ public sealed class DenseTopologyLayoutTests {
 
         var legendTop = prepared.Viewport.Height - prepared.Viewport.Padding - (TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport) - 24);
         Assert.InRange(legendTop - prepared.Groups.Max(group => group.Y + group.Height), 20, 60);
-        Assert.True(prepared.Viewport.Height < 660, $"The canvas should shrink to its content, was {prepared.Viewport.Height}.");
+        Assert.True(prepared.Viewport.Height < height, $"The canvas should shrink to its content, was {prepared.Viewport.Height}.");
+        // The first row of panels sits under the title in both directions, bottom-to-top included.
+        Assert.InRange(prepared.Groups.Min(group => group.Y), 90, 130);
     }
 
     [Fact]

@@ -120,7 +120,10 @@ public sealed class ChartDescriptionFacts {
     /// <summary>Gets the number of calendar days without data, or of map regions without a value; zero for other kinds.</summary>
     public int MissingCount { get; }
 
-    /// <summary>Gets the number of calendar days whose value is zero, which are drawn neutral; zero for other kinds.</summary>
+    /// <summary>
+    /// Gets the number of calendar days whose value is zero (days without changes, drawn neutral unless the day has a
+    /// colour of its own); zero for other kinds.
+    /// </summary>
     public int ZeroCount { get; }
 
     /// <summary>Gets the first day of a calendar sentence.</summary>
