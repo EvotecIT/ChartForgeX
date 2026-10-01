@@ -26,7 +26,7 @@ public sealed partial class PngChartRenderer {
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
                     DrawSegmentedHorizontalBar(c, chart.Options.BarVisualStyle, left, y, width, layout.BarHeight, p.Y, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 } else {
-                    DrawGradientBar(c, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
+                    DrawBarBody(c, chart, left, y, width, layout.BarHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 }
                 if (ShouldDrawDataLabels(chart, s)) {
                     var label = FormatDataLabel(chart, s, pointIndex, p.Y);
@@ -84,7 +84,7 @@ public sealed partial class PngChartRenderer {
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
                     DrawSegmentedBar(c, chart.Options.BarVisualStyle, barX, barY, barWidth, barHeight, p.Y, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 } else {
-                    DrawGradientBar(c, barX, barY, barWidth, barHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
+                    DrawBarBody(c, chart, barX, barY, barWidth, barHeight, radius, PointColor(chart, s, index, pointIndex), FillPattern(s, pointIndex));
                 }
                 if (ShouldDrawDataLabels(chart, s)) {
                     var label = FormatDataLabel(chart, s, pointIndex, p.Y);
@@ -169,7 +169,7 @@ public sealed partial class PngChartRenderer {
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
                     DrawSegmentedRangeBar(c, chart.Options.BarVisualStyle, x, top, barWidth, height, y1, y2, pointColor, FillPattern(s, intervalIndex));
                 } else {
-                    DrawGradientBar(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor, FillPattern(s, intervalIndex));
+                    DrawBarBody(c, chart, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor, FillPattern(s, intervalIndex));
                     c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                     c.DrawLine(x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                 }
@@ -395,6 +395,18 @@ public sealed partial class PngChartRenderer {
         foreach (var item in reserved) if (bounds.Intersects(item)) return false;
         reserved.Add(bounds);
         return true;
+    }
+
+    /// <summary>Draws a bar in the chart's bar style: the colour alone for <see cref="ChartBarStyle.Flat"/>, otherwise the gradient and highlight.</summary>
+    private static void DrawBarBody(RgbaCanvas c, Chart chart, double x, double y, double width, double height, double radius, ChartColor color, ChartFillPattern pattern = ChartFillPattern.None) {
+        if (chart.Options.BarVisualStyle.Kind != ChartBarStyle.Flat) {
+            DrawGradientBar(c, x, y, width, height, radius, color, pattern);
+            return;
+        }
+
+        if (width <= 0.5 || height <= 0.5) return;
+        c.FillRoundedRect(x, y, width, height, radius, color);
+        DrawHatchOverlay(c, x, y, width, height, radius, pattern);
     }
 
     private static void DrawGradientBar(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor color, ChartFillPattern pattern = ChartFillPattern.None) {

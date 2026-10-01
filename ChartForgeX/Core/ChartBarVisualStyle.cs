@@ -133,9 +133,14 @@ public sealed class ChartBarVisualStyle {
     }
 
     /// <summary>
-    /// Creates the default solid bar style.
+    /// Creates the default solid bar style: a soft gradient derived from the bar colour and a light top highlight.
     /// </summary>
     public static ChartBarVisualStyle Solid() => new() { Kind = ChartBarStyle.Solid };
+
+    /// <summary>
+    /// Creates the flat bar style: each bar is filled with its colour only, without gradient or highlight.
+    /// </summary>
+    public static ChartBarVisualStyle Flat() => new() { Kind = ChartBarStyle.Flat };
 
     /// <summary>
     /// Creates a soft dashboard capsule style for stacked or grouped bars.

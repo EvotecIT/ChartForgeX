@@ -11,6 +11,26 @@ internal static class ReportHostExamples {
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
         WriteRotatedStatusMatrix(output, pngOutputScale);
         WriteShortCardCalendar(output, pngOutputScale);
+        WriteFlatHistogram(output, pngOutputScale);
+    }
+
+    private static void WriteFlatHistogram(string output, ChartPngOutputScale pngOutputScale) {
+        // A histogram in a report card: flat bars are exactly the series colour, with no derived gradient or highlight.
+        var latencies = Enumerable.Range(0, 400).Select(i => 18 + (i * 37 % 23) + (i * 11 % 7) * 1.5 + (i % 41 == 0 ? 28 : 0)).ToArray();
+        var chart = Chart.Create()
+            .WithTitle("LDAP bind latency")
+            .WithSubtitle("Flat bars: one colour per bar")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(760, 360)
+            .WithPngOutputScale(pngOutputScale)
+            .WithBarStyle(ChartBarStyle.Flat)
+            .WithXAxis("Latency (ms)")
+            .WithYAxis("Samples")
+            .AddHistogram("Samples", latencies, 14, ChartColor.FromHex("#2a78d6"));
+
+        chart.SaveSvg(Path.Combine(output, "report-host-flat-histogram.svg"));
+        chart.SaveHtml(Path.Combine(output, "report-host-flat-histogram.html"));
+        chart.SavePng(Path.Combine(output, "report-host-flat-histogram.png"));
     }
 
     private static void WriteShortCardCalendar(string output, ChartPngOutputScale pngOutputScale) {

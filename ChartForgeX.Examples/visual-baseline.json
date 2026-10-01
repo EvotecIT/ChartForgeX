@@ -2331,6 +2331,23 @@
       }
     },
     {
+      "name": "report-host-flat-histogram",
+      "width": 760,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 33,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496589,
+        "minTransparentPixels": 50611,
+        "minDistinctColors": 998,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "report-host-rotated-matrix",
       "width": 620,
       "height": 440,
