@@ -87,6 +87,15 @@
       "notes": "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy."
     },
     {
+      "name": "visual-readable-dense-replication",
+      "title": "Readable Dense Replication",
+      "kind": "topology",
+      "svg": "visual-readable-dense-replication.svg",
+      "html": "visual-readable-dense-replication.html",
+      "png": "visual-readable-dense-replication.png",
+      "notes": "Opt-in wrapped site rows, card-based medium-sized groups, and caption-aware obstacle routing in a dense replication map."
+    },
+    {
       "name": "visual-replication-mesh-explorer",
       "title": "Replication Mesh Explorer",
       "kind": "topology",
@@ -212,7 +221,7 @@
       "svg": "visual-team-hierarchy-builder.svg",
       "html": "visual-team-hierarchy-builder.html",
       "png": "visual-team-hierarchy-builder.png",
-      "notes": "Team/org topology generated from parent-child member data with level filtering and wrapped crowded levels."
+      "notes": "Team/org topology generated from parent-child member data with inherited standard, compact, and vertical subtree policies."
     },
     {
       "name": "visual-nested-user-hierarchy",
@@ -221,7 +230,7 @@
       "svg": "visual-nested-user-hierarchy.svg",
       "html": "visual-nested-user-hierarchy.html",
       "png": "visual-nested-user-hierarchy.png",
-      "notes": "Parent-child directory fixture with nested OUs, groups, and users using tiered hierarchy buses and fit-to-panel rendering."
+      "notes": "Parent-child directory fixture with nested OUs, groups, and users using shared first-band buses, exterior trunks for later bands, and fit-to-panel rendering."
     },
     {
       "name": "visual-nested-user-hierarchy-left-right",

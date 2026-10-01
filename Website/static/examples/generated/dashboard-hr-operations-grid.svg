@@ -1,11 +1,11 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-865c37cc" width="1376" height="1831" viewBox="0 0 1376 1831" role="img" aria-labelledby="cfx-visual-grid-865c37cc-title cfx-visual-grid-865c37cc-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-865c37cc-title">HR Operations Dashboard</title>
-<desc id="cfx-visual-grid-865c37cc-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-1ddf6362" width="1376" height="1831" viewBox="0 0 1376 1831" role="img" aria-labelledby="cfx-visual-grid-1ddf6362-title cfx-visual-grid-1ddf6362-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-1ddf6362-title">HR Operations Dashboard</title>
+<desc id="cfx-visual-grid-1ddf6362-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-865c37cc .cfx-guide-stroke,#cfx-visual-grid-865c37cc .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-865c37cc text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-grid-865c37cc-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6F8FC" stop-opacity="1"/><stop offset="100%" stop-color="#ECEFF4" stop-opacity="1"/></linearGradient>
+<style>#cfx-visual-grid-1ddf6362 .cfx-guide-stroke,#cfx-visual-grid-1ddf6362 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-1ddf6362 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-grid-1ddf6362-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6F8FC" stop-opacity="1"/><stop offset="100%" stop-color="#ECEFF4" stop-opacity="1"/></linearGradient>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-grid-865c37cc-visualGridSurface)"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-grid-1ddf6362-visualGridSurface)"/>
 <rect data-cfx-role="visual-grid-frame" class="cfx-guide-stroke" x="12" y="12" width="1352" height="1807" rx="26" fill="none" stroke="#EDF1F7" stroke-width="1.4"/>
 <rect data-cfx-role="visual-grid-frame-highlight" class="cfx-guide-stroke" x="13.5" y="13.5" width="1349" height="1804" rx="24" fill="none" stroke="#fff" stroke-opacity="0.42" stroke-width="1"/>
 <text data-cfx-role="visual-grid-title" x="24" y="43.5" fill="#171927" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="800">HR Operations Dashboard</text>
@@ -250,37 +250,37 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="656" height="476" viewBox="0 0 656 360" role="img" aria-labelledby="cfx6b6808af-title cfx6b6808af-desc" preserveAspectRatio="none" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="On-time" data-cfx-series-name-0="On-time" data-cfx-series-source-points-0="7" data-cfx-series-rendered-points-0="7" data-cfx-series-key-1="Late attend" data-cfx-series-name-1="Late attend" data-cfx-series-source-points-1="7" data-cfx-series-rendered-points-1="7" data-cfx-series-key-2="Absent" data-cfx-series-name-2="Absent" data-cfx-series-source-points-2="7" data-cfx-series-rendered-points-2="7" data-cfx-series-key-3="Apr" data-cfx-series-name-3="Apr" data-cfx-series-source-points-3="1" data-cfx-series-rendered-points-3="1" x="24" y="839" data-cfx-role="visual-grid-panel">
-<title id="cfx6b6808af-title">Attendance Rate</title>
-<desc id="cfx6b6808af-desc">Attendance Rate with 3 data series: On-time, Late attend, Absent.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="656" height="476" viewBox="0 0 656 360" role="img" aria-labelledby="cfx62248d9d-title cfx62248d9d-desc" preserveAspectRatio="none" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="On-time" data-cfx-series-name-0="On-time" data-cfx-series-source-points-0="7" data-cfx-series-rendered-points-0="7" data-cfx-series-key-1="Late attend" data-cfx-series-name-1="Late attend" data-cfx-series-source-points-1="7" data-cfx-series-rendered-points-1="7" data-cfx-series-key-2="Absent" data-cfx-series-name-2="Absent" data-cfx-series-source-points-2="7" data-cfx-series-rendered-points-2="7" data-cfx-series-key-3="Apr" data-cfx-series-name-3="Apr" data-cfx-series-source-points-3="1" data-cfx-series-rendered-points-3="1" x="24" y="839" data-cfx-role="visual-grid-panel">
+<title id="cfx62248d9d-title">Attendance Rate</title>
+<desc id="cfx62248d9d-desc">Attendance Rate with 3 data series: On-time, Late attend, Absent.</desc>
 <defs>
-<style>#cfx6b6808af text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx6b6808af .cfx-crisp-stroke,#cfx6b6808af .cfx-guide-stroke,#cfx6b6808af .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx6b6808af .cfx-guide-stroke{shape-rendering:crispEdges} #cfx6b6808af .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx6b6808af .cfx-interactive-region:hover,#cfx6b6808af .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfx6b6808af-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.018"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.04"/></filter>
-<linearGradient id="cfx6b6808af-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx6b6808af-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx6b6808af-plotClip"><rect x="56" y="92" width="566" height="152" rx="8"/></clipPath>
-<linearGradient id="cfx6b6808af-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7057E6" stop-opacity="0.32"/><stop offset="100%" stop-color="#7057E6" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx6b6808af-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#816BE9" stop-opacity="1"/><stop offset="100%" stop-color="#6952D8" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx6b6808af-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFB05C" stop-opacity="0.32"/><stop offset="100%" stop-color="#FFB05C" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx6b6808af-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFB970" stop-opacity="1"/><stop offset="100%" stop-color="#F0A556" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx6b6808af-area2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5FD3D9" stop-opacity="0.32"/><stop offset="100%" stop-color="#5FD3D9" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx6b6808af-seriesFill2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#72D8DE" stop-opacity="1"/><stop offset="100%" stop-color="#59C6CC" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx6b6808af-area3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7057E6" stop-opacity="0.32"/><stop offset="100%" stop-color="#7057E6" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx6b6808af-seriesFill3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#816BE9" stop-opacity="1"/><stop offset="100%" stop-color="#6952D8" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx6b6808af-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#7057E6" stop-opacity="1"/><stop offset="100%" stop-color="#7057E6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx6b6808af-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5FD3D9" stop-opacity="1"/><stop offset="100%" stop-color="#5FD3D9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx6b6808af-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FFB05C" stop-opacity="1"/><stop offset="100%" stop-color="#FFB05C" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx6b6808af-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#36C47D" stop-opacity="1"/><stop offset="100%" stop-color="#36C47D" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx6b6808af-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5EA2F6" stop-opacity="1"/><stop offset="100%" stop-color="#5EA2F6" stop-opacity="0.78"/></linearGradient>
+<style>#cfx62248d9d text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx62248d9d .cfx-crisp-stroke,#cfx62248d9d .cfx-guide-stroke,#cfx62248d9d .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx62248d9d .cfx-guide-stroke{shape-rendering:crispEdges} #cfx62248d9d .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx62248d9d .cfx-interactive-region:hover,#cfx62248d9d .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx62248d9d-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.018"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.04"/></filter>
+<linearGradient id="cfx62248d9d-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx62248d9d-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx62248d9d-plotClip"><rect x="56" y="92" width="566" height="152" rx="8"/></clipPath>
+<linearGradient id="cfx62248d9d-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7057E6" stop-opacity="0.32"/><stop offset="100%" stop-color="#7057E6" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx62248d9d-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#816BE9" stop-opacity="1"/><stop offset="100%" stop-color="#6952D8" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx62248d9d-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFB05C" stop-opacity="0.32"/><stop offset="100%" stop-color="#FFB05C" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx62248d9d-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFB970" stop-opacity="1"/><stop offset="100%" stop-color="#F0A556" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx62248d9d-area2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5FD3D9" stop-opacity="0.32"/><stop offset="100%" stop-color="#5FD3D9" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx62248d9d-seriesFill2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#72D8DE" stop-opacity="1"/><stop offset="100%" stop-color="#59C6CC" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx62248d9d-area3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7057E6" stop-opacity="0.32"/><stop offset="100%" stop-color="#7057E6" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx62248d9d-seriesFill3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#816BE9" stop-opacity="1"/><stop offset="100%" stop-color="#6952D8" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx62248d9d-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#7057E6" stop-opacity="1"/><stop offset="100%" stop-color="#7057E6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx62248d9d-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5FD3D9" stop-opacity="1"/><stop offset="100%" stop-color="#5FD3D9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx62248d9d-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FFB05C" stop-opacity="1"/><stop offset="100%" stop-color="#FFB05C" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx62248d9d-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#36C47D" stop-opacity="1"/><stop offset="100%" stop-color="#36C47D" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx62248d9d-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5EA2F6" stop-opacity="1"/><stop offset="100%" stop-color="#5EA2F6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfx6b6808af">
-<rect data-cfx-role="card-surface" x="14" y="14" width="628" height="332" rx="18" fill="url(#cfx6b6808af-cardSurface)" filter="url(#cfx6b6808af-softShadow)"/>
+<g id="cfx62248d9d">
+<rect data-cfx-role="card-surface" x="14" y="14" width="628" height="332" rx="18" fill="url(#cfx62248d9d-cardSurface)" filter="url(#cfx62248d9d-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="627" height="331" rx="17.5" fill="none" stroke="#EDF1F7"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="625" height="329" rx="16.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#171927" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="26" font-weight="750">Attendance Rate</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14" font-weight="400">6.15% total attendance rate</text>
 <line class="cfx-guide-stroke" x1="56.5" y1="92" x2="56.5" y2="244" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
-<text data-cfx-role="x-axis-label" x="76.898" y="271.2" text-anchor="start" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="400">Jan</text>
+<text data-cfx-role="x-axis-label" x="64" y="271.2" text-anchor="start" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="400">Jan</text>
 <line class="cfx-guide-stroke" x1="150.5" y1="92" x2="150.5" y2="244" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text data-cfx-role="x-axis-label" x="150.333" y="271.2" text-anchor="middle" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="400">Feb</text>
 <line class="cfx-guide-stroke" x1="244.5" y1="92" x2="244.5" y2="244" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
@@ -292,8 +292,8 @@
 <line class="cfx-guide-stroke" x1="527.5" y1="92" x2="527.5" y2="244" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
 <text data-cfx-role="x-axis-label" x="527.667" y="271.2" text-anchor="middle" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="400">Jun</text>
 <line class="cfx-guide-stroke" x1="622.5" y1="92" x2="622.5" y2="244" stroke="#DDE3D1" stroke-width="1" opacity="0.34" stroke-dasharray="4 6"/>
-<text data-cfx-role="x-axis-label" x="603.773" y="271.2" text-anchor="end" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="400">Jul</text>
-<g clip-path="url(#cfx6b6808af-plotClip)">
+<text data-cfx-role="x-axis-label" x="614" y="271.2" text-anchor="end" fill="#717682" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="16" font-weight="400">Jul</text>
+<g clip-path="url(#cfx62248d9d-plotClip)">
 <path data-cfx-role="line-ambient-halo" data-cfx-series="0" data-cfx-point-count="7" d="M 56 180.16 C 71.722 179.147 118.889 176.107 150.333 174.08 C 181.778 172.053 213.222 175.093 244.667 168 C 276.111 160.907 307.556 134.56 339 131.52 C 370.444 128.48 401.889 145.2 433.333 149.76 C 464.778 154.32 496.222 166.987 527.667 158.88 C 559.111 150.773 606.278 110.747 622 101.12" class="cfx-premium-stroke" fill="none" stroke="#7057E6" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.014"/>
 <path data-cfx-role="line-halo" data-cfx-series="0" data-cfx-point-count="7" d="M 56 180.16 C 71.722 179.147 118.889 176.107 150.333 174.08 C 181.778 172.053 213.222 175.093 244.667 168 C 276.111 160.907 307.556 134.56 339 131.52 C 370.444 128.48 401.889 145.2 433.333 149.76 C 464.778 154.32 496.222 166.987 527.667 158.88 C 559.111 150.773 606.278 110.747 622 101.12" class="cfx-premium-stroke" fill="none" stroke="#7057E6" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
 <path data-cfx-role="line" data-cfx-series="0" data-cfx-point-count="7" d="M 56 180.16 C 71.722 179.147 118.889 176.107 150.333 174.08 C 181.778 172.053 213.222 175.093 244.667 168 C 276.111 160.907 307.556 134.56 339 131.52 C 370.444 128.48 401.889 145.2 433.333 149.76 C 464.778 154.32 496.222 166.987 527.667 158.88 C 559.111 150.773 606.278 110.747 622 101.12" class="cfx-premium-stroke" fill="none" stroke="#7057E6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -328,9 +328,9 @@
 <circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="5" data-cfx-x="6" data-cfx-y="20" cx="527.667" cy="183.2" r="4.2" fill="#5FD3D9" stroke="#FFFFFF" stroke-width="2"/>
 <circle data-cfx-role="line-marker" data-cfx-series="2" data-cfx-point="6" data-cfx-x="7" data-cfx-y="31" cx="622" cy="149.76" r="4.2" fill="#5FD3D9" stroke="#FFFFFF" stroke-width="2"/>
 <circle data-cfx-role="point-callout" data-cfx-series="3" data-cfx-point="0" data-cfx-x="4" data-cfx-y="37" cx="339" cy="131.52" r="4.95" fill="#7057E6" opacity="0.92" stroke="#FFFFFF" stroke-width="2"/>
-<rect data-cfx-role="point-callout-label" data-cfx-label="Apr" x="353" y="112.72" width="53.011" height="37.6" rx="9" fill="rgba(20,20,22,0.933)"/>
+<rect data-cfx-role="point-callout-label" data-cfx-label="Apr" x="353" y="112.72" width="50.965" height="37.6" rx="9" fill="rgba(20,20,22,0.933)"/>
 <polygon data-cfx-role="point-callout-pointer" points="353,125.52 353,137.52 344,131.52" fill="rgba(20,20,22,0.933)"/>
-<text data-cfx-role="point-callout-label-text" x="379.505" y="134.76" text-anchor="middle" fill="#FFFFFF" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="18" font-weight="800">Apr</text>
+<text data-cfx-role="point-callout-label-text" x="378.482" y="134.76" text-anchor="middle" fill="#FFFFFF" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="18" font-weight="800">Apr</text>
 </g>
 <line data-cfx-role="annotation-line" data-cfx-kind="vertical-line" data-cfx-value="4" data-cfx-label="Apr" x1="339" y1="92" x2="339" y2="244" stroke="#7057E6" stroke-width="1.6" stroke-dasharray="6 5"/>
 <rect data-cfx-role="annotation-label" data-cfx-label="Apr" x="347" y="97" width="45.2" height="23" rx="5" fill="#FFFFFF" opacity="0.92" stroke="#7057E6" stroke-opacity="0.36"/>

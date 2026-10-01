@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-1cfaa0c4" width="1164" height="565" viewBox="0 0 1164 565" role="img" aria-labelledby="cfx-visual-grid-1cfaa0c4-title cfx-visual-grid-1cfaa0c4-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-1cfaa0c4-title">Calories Intake</title>
-<desc id="cfx-visual-grid-1cfaa0c4-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-0820ad25" width="1164" height="565" viewBox="0 0 1164 565" role="img" aria-labelledby="cfx-visual-grid-0820ad25-title cfx-visual-grid-0820ad25-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-0820ad25-title">Calories Intake</title>
+<desc id="cfx-visual-grid-0820ad25-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-1cfaa0c4 .cfx-guide-stroke,#cfx-visual-grid-1cfaa0c4 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-1cfaa0c4 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-grid-1cfaa0c4-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F7F8F9" stop-opacity="1"/><stop offset="100%" stop-color="#EDEEF1" stop-opacity="1"/></linearGradient>
+<style>#cfx-visual-grid-0820ad25 .cfx-guide-stroke,#cfx-visual-grid-0820ad25 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-0820ad25 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-grid-0820ad25-visualGridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F7F8F9" stop-opacity="1"/><stop offset="100%" stop-color="#EDEEF1" stop-opacity="1"/></linearGradient>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-grid-1cfaa0c4-visualGridSurface)"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-grid-0820ad25-visualGridSurface)"/>
 <text data-cfx-role="visual-grid-title" x="24" y="45" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="28" font-weight="800">Calories Intake</text>
 <text data-cfx-role="visual-grid-subtitle" x="26" y="66" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="14">Built from public visual blocks, icons, radial layers, and progress bars.</text>
 <svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-53c43009" width="360" height="438" viewBox="0 0 360 438" role="img" aria-labelledby="cfx-visual-53c43009-title cfx-visual-53c43009-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block" x="24" y="103" data-cfx-role="visual-grid-panel">
@@ -83,32 +83,32 @@
 <text data-cfx-role="metric-caption" x="22" y="188" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="13">Activity estimate</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="738" height="210" viewBox="0 0 738 210" role="img" aria-labelledby="cfx61a6b26a-title cfx61a6b26a-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="402" y="331" data-cfx-role="visual-grid-panel">
-<title id="cfx61a6b26a-title">Macro Balance</title>
-<desc id="cfx61a6b26a-desc">Macro Balance with 1 data series: Macros.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="738" height="210" viewBox="0 0 738 210" role="img" aria-labelledby="cfx8b4a117e-title cfx8b4a117e-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Macros" data-cfx-series-name-0="Macros" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="402" y="331" data-cfx-role="visual-grid-panel">
+<title id="cfx8b4a117e-title">Macro Balance</title>
+<desc id="cfx8b4a117e-desc">Macro Balance with 1 data series: Macros.</desc>
 <defs>
-<style>#cfx61a6b26a text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx61a6b26a .cfx-crisp-stroke,#cfx61a6b26a .cfx-guide-stroke,#cfx61a6b26a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx61a6b26a .cfx-guide-stroke{shape-rendering:crispEdges} #cfx61a6b26a .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx61a6b26a .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx61a6b26a .cfx-interactive-region:hover,#cfx61a6b26a .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfx61a6b26a-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.013"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.03"/></filter>
-<linearGradient id="cfx61a6b26a-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx61a6b26a-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx61a6b26a-plotClip"><rect x="26" y="82" width="686" height="86" rx="14"/></clipPath>
-<linearGradient id="cfx61a6b26a-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FF9F4A" stop-opacity="0.32"/><stop offset="100%" stop-color="#FF9F4A" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx61a6b26a-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFAB60" stop-opacity="1"/><stop offset="100%" stop-color="#F09546" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx61a6b26a-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#C5EA77" stop-opacity="1"/><stop offset="100%" stop-color="#B2D95F" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx61a6b26a-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFAB60" stop-opacity="1"/><stop offset="100%" stop-color="#F09546" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx61a6b26a-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFD375" stop-opacity="1"/><stop offset="100%" stop-color="#F0C15C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx61a6b26a-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FF9F4A" stop-opacity="1"/><stop offset="100%" stop-color="#FF9F4A" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx61a6b26a-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FFCD62" stop-opacity="1"/><stop offset="100%" stop-color="#FFCD62" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx61a6b26a-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#BDE765" stop-opacity="1"/><stop offset="100%" stop-color="#BDE765" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx61a6b26a-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#6A7FDB" stop-opacity="1"/><stop offset="100%" stop-color="#6A7FDB" stop-opacity="0.78"/></linearGradient>
+<style>#cfx8b4a117e text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx8b4a117e .cfx-crisp-stroke,#cfx8b4a117e .cfx-guide-stroke,#cfx8b4a117e .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx8b4a117e .cfx-guide-stroke{shape-rendering:crispEdges} #cfx8b4a117e .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx8b4a117e .cfx-interactive-region:hover,#cfx8b4a117e .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx8b4a117e-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.013"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.03"/></filter>
+<linearGradient id="cfx8b4a117e-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx8b4a117e-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx8b4a117e-plotClip"><rect x="26" y="82" width="686" height="66.8" rx="14"/></clipPath>
+<linearGradient id="cfx8b4a117e-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FF9F4A" stop-opacity="0.32"/><stop offset="100%" stop-color="#FF9F4A" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx8b4a117e-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFAB60" stop-opacity="1"/><stop offset="100%" stop-color="#F09546" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx8b4a117e-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#C5EA77" stop-opacity="1"/><stop offset="100%" stop-color="#B2D95F" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx8b4a117e-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFAB60" stop-opacity="1"/><stop offset="100%" stop-color="#F09546" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx8b4a117e-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFD375" stop-opacity="1"/><stop offset="100%" stop-color="#F0C15C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx8b4a117e-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FF9F4A" stop-opacity="1"/><stop offset="100%" stop-color="#FF9F4A" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8b4a117e-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FFCD62" stop-opacity="1"/><stop offset="100%" stop-color="#FFCD62" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8b4a117e-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#BDE765" stop-opacity="1"/><stop offset="100%" stop-color="#BDE765" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8b4a117e-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#6A7FDB" stop-opacity="1"/><stop offset="100%" stop-color="#6A7FDB" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfx61a6b26a">
-<rect data-cfx-role="card-surface" x="14" y="14" width="710" height="182" rx="30" fill="url(#cfx61a6b26a-cardSurface)" filter="url(#cfx61a6b26a-softShadow)"/>
+<g id="cfx8b4a117e">
+<rect data-cfx-role="card-surface" x="14" y="14" width="710" height="182" rx="30" fill="url(#cfx8b4a117e-cardSurface)" filter="url(#cfx8b4a117e-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="709" height="181" rx="29.5" fill="none" stroke="#F1F2F6"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="707" height="179" rx="28.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="26" y="82" width="686" height="86" rx="14" fill="url(#cfx61a6b26a-plotSurface)"/>
-<rect class="cfx-crisp-stroke" x="26.5" y="82.5" width="685" height="85" rx="13.5" fill="none" stroke="#F1F2F6"/>
-<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="27" y="83" width="684" height="84" rx="13" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<rect x="26" y="82" width="686" height="66.8" rx="14" fill="url(#cfx8b4a117e-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="26.5" y="82.5" width="685" height="65.8" rx="13.5" fill="none" stroke="#F1F2F6"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="27" y="83" width="684" height="64.8" rx="13" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#252936" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="28" font-weight="750">Macro Balance</text>
 <g data-cfx-role="progress-bar-chart" data-cfx-maximum="100" data-cfx-show-values="true" data-cfx-show-handles="false" data-cfx-bar-thickness-ratio="0.46" data-cfx-track-opacity="0.24">
 <text data-cfx-role="progress-label" data-cfx-point="0" x="168" y="103" text-anchor="end" fill="#8B8E96" font-family="Aptos, Calibri, 'Segoe UI', Candara, Arial, sans-serif" font-size="18" font-weight="700">Carbohydrates</text>
