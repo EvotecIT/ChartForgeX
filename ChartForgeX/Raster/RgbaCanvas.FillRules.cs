@@ -14,9 +14,9 @@ internal sealed partial class RgbaCanvas {
     // edge or a stem thinner than a pixel is weighted by the rows it covers instead of being
     // kept or dropped whole. Supersampled canvases already average several rows per output pixel.
     private const int UnscaledFillSubScanlines = 8;
-    // Strokes take the same eight sub-scanlines per output pixel row at any supersampling, so a
+    // Strokes take at least eight sub-scanlines per output pixel row at any supersampling, so a
     // line keeps its exact width whether it runs across the rows or along them.
-    private int StrokeSubScanlines => Math.Max(1, UnscaledFillSubScanlines / _supersamplingScale);
+    private int StrokeSubScanlines => Math.Max(1, (UnscaledFillSubScanlines + _supersamplingScale - 1) / _supersamplingScale);
     private const double FullCoverage = 0.999999;
     // One row of coverage, reused by every fill on this canvas and left zeroed between them.
     private double[]? _fillCoverage;

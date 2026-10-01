@@ -16,6 +16,16 @@ namespace ChartForgeX.Tests;
 public sealed class ChartLineStrokeQualityTests {
     private static readonly ChartColor Ink = ChartColor.FromRgb(20, 40, 160);
 
+    [Fact]
+    public void ThreefoldSupersamplingKeepsFractionalHorizontalStrokeWidth() {
+        var canvas = new RgbaCanvas(40, 25, 3);
+        canvas.DrawLine(5, 10.5, 35, 10.5, ChartColors.White, 1.4);
+        var pixels = canvas.ToOutputPixels();
+        var coverage = 0.0;
+        for (var y = 0; y < 25; y++) coverage += pixels[(y * 40 + 20) * 4 + 3] / 255.0;
+        Assert.InRange(coverage, 1.34, 1.47);
+    }
+
     [Theory]
     [InlineData(1.5, false)]
     [InlineData(4, false)]
