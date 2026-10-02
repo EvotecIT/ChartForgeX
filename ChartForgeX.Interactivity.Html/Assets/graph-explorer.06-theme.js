@@ -142,9 +142,23 @@
     button.setAttribute('data-cfx-tooltip', `Color theme: ${visible} (${active} colors)`);
     button.setAttribute('data-cfx-graph-theme-mode', mode);
   };
+  const syncGraphThemeState = (root, state) => {
+    if (!state) return;
+    const palette = graphThemePalette(root);
+    state.nodes.forEach(node => {
+      const metadata = metadataDetail(node.el);
+      if (node.card && !Object.prototype.hasOwnProperty.call(metadata, 'topology.backgroundColor')) {
+        node.el.setAttribute('data-node-background-color', palette.card);
+      }
+      node.backgroundColor = attr(node.el, 'data-node-background-color');
+    });
+    // Retain live positions and physics ownership; only the theme-derived paint changes.
+    root.__cfxGraphEdgeMesh = null;
+  };
   const redrawGraphTheme = (root) => {
-    syncSvgThemeColors(root);
     const state = root.__cfxGraphState;
+    syncGraphThemeState(root, state);
+    syncSvgThemeColors(root);
     if (!state) return;
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);

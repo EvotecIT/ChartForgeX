@@ -55,6 +55,12 @@
     if (svg) svg.setAttribute('aria-hidden', renderer === 'svg' ? 'false' : 'true');
   };
   const setGraphRenderer = (root, renderer) => {
+    const previous = root.dataset.cfxGraphRendererActive;
+    const focused = root.ownerDocument?.activeElement;
+    const role = attr(focused, 'data-cfx-role');
+    const ownedFocus = focused && root.contains(focused) && (
+      ['graph-canvas', 'graph-webgl', 'graph-scene'].includes(role) ||
+      focused.closest?.('[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]'));
     root.classList.toggle('cfx-graph-render-canvas', renderer === 'canvas');
     root.classList.toggle('cfx-graph-render-webgl', renderer === 'webgl');
     root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
@@ -62,6 +68,12 @@
     root.dataset.cfxGraphRendererFallback = attr(root, 'data-cfx-graph-renderer') === 'webgl' && renderer !== 'webgl' ? renderer : '';
     syncRendererAccessibility(root, renderer);
     syncGraphItemTabStops(root);
+    if (previous !== renderer && ownedFocus) {
+      const target = renderer === 'svg'
+        ? root.querySelector('[data-cfx-role="graph-scene"][tabindex="0"],[data-cfx-role="graph-node"][tabindex="0"],[data-cfx-role="graph-edge"][tabindex="0"],[data-cfx-role="graph-cluster"][tabindex="0"]') || root.querySelector('[data-cfx-role="graph-scene"]')
+        : root.querySelector(`[data-cfx-role="graph-${renderer}"]`);
+      target?.focus?.({ preventScroll: true });
+    }
   };
   const applyLod = (root) => {
     const state = root.__cfxGraphState || graphState(root);

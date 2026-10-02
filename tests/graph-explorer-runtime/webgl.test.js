@@ -9,7 +9,7 @@ const source = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\
   .map(match => fs.readFileSync(path.join(assets, match[1]), 'utf8')).join('\n');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
-  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark };', host);
+  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches };', host);
   const api = host.api, root = api.graphVirtualElement('root', { 'data-cfx-graph-theme-active': 'light' }, []);
   const node = (id, x, y) => ({ id, x, y, size: 12, shape: 'circle', el: api.graphVirtualElement('graph-node', { 'data-node-label': id }, []) });
   const a = node('a', 100, 100), b = node('b', 300, 100);
@@ -179,4 +179,44 @@ test('Canvas marks render serialized fills, borders and selected emphasis', () =
   paints.length = 0;
   api.drawNodeMark(context, a, true, true, root, false);
   assert.deepEqual(paints, ['#7c3aed', ['#f59e0b', 5]]);
+});
+
+test('theme changes synchronize retained card paint without replacing live positions or explicit colours', () => {
+  const { api, root, a, b, state } = runtime(), nodes = state.nodes;
+  for (const node of nodes) { node.card = true; node.shape = 'box'; node.el.setAttribute('data-node-card', 'true'); }
+  b.el.setAttribute('data-cfx-metadata', JSON.stringify({ 'topology.backgroundColor': '#7c3aed' }));
+  b.el.setAttribute('data-node-background-color', '#7c3aed');
+  a.vx = 3; a.x = 140;
+  for (const theme of ['dark', 'light']) {
+    root.setAttribute('data-cfx-graph-theme-active', theme);
+    root.__cfxGraphEdgeMesh = {};
+    api.syncGraphThemeState(root, state);
+    assert.equal(state.nodes, nodes); assert.equal(state.nodes[0], a); assert.equal(a.x, 140); assert.equal(a.vx, 3);
+    assert.equal(a.backgroundColor, api.graphThemePalette(root).card);
+    assert.equal(b.backgroundColor, '#7c3aed'); assert.equal(root.__cfxGraphEdgeMesh, null);
+    for (const node of nodes) {
+      const colours = api.graphReadableNodeColors(root, node.el, api.graphThemePalette(root));
+      assert.equal(colours.halo, node.backgroundColor);
+      assert.ok(api.graphColorContrast(colours.label, node.backgroundColor) >= 4.5);
+    }
+  }
+});
+test('renderer switches transfer surface focus and preserve focus on host controls', () => {
+  const { api, root } = runtime(), doc = { activeElement: null };
+  const surfaces = ['canvas', 'webgl', 'scene'].map(name => api.graphVirtualElement('graph-' + name, {}, []));
+  surfaces.forEach(element => element.focus = () => doc.activeElement = element);
+  root.dataset = { cfxGraphRendererActive: 'webgl' }; root.ownerDocument = doc;
+  root.setAttribute('data-cfx-graph-renderer', 'webgl'); root.setAttribute('data-cfx-graph-features', 'Selection');
+  root.setAttribute('data-cfx-graph-accelerated-markup', 'true');
+  root.contains = element => surfaces.includes(element);
+  root.querySelectorAll = selector => surfaces.filter(element => api.graphVirtualMatches(element, selector));
+  root.querySelector = selector => root.querySelectorAll(selector)[0] || null;
+  doc.activeElement = surfaces[1];
+  for (const [renderer, target] of [['canvas', surfaces[0]], ['svg', surfaces[2]], ['webgl', surfaces[1]]]) {
+    api.setGraphRenderer(root, renderer);
+    assert.equal(doc.activeElement, target); assert.equal(target.getAttribute('aria-hidden'), 'false');
+    assert.equal(target.getAttribute('tabindex'), '0');
+  }
+  const toolbar = api.graphVirtualElement('graph-toolbar', {}, []); doc.activeElement = toolbar;
+  api.setGraphRenderer(root, 'canvas'); assert.equal(doc.activeElement, toolbar);
 });
