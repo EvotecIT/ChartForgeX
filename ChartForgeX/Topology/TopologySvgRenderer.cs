@@ -300,17 +300,17 @@ public sealed partial class TopologySvgRenderer {
         var markerIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var status in GetTopologyHealthStatuses()) {
             var key = StatusMarkerToken(status);
-            if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), theme.StatusColor(status), options);
+            if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), EdgePaint(theme.StatusColor(status), key), options);
         }
 
         var markerKeys = new TopologySvgMarkerKeys(chart);
         foreach (var edge in chart.Edges) {
             var color = EdgeColor(edge, theme, options);
             var key = markerKeys.Key(edge);
-            if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), color, options);
+            if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), EdgePaint(color, key), options);
             foreach (var kind in new[] { EffectiveSourceMarker(edge), EffectiveTargetMarker(edge) }) {
                 if (kind is TopologyMarkerKind.None or TopologyMarkerKind.Arrow) continue;
-                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), color, kind, options);
+                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), EdgePaint(color, key), kind, options);
             }
         }
 

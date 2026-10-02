@@ -11,7 +11,8 @@ public sealed partial class VisualDesignTokens {
     /// member names of the token JSON with 1-based positions: <c>surface.page</c>, <c>surface.card</c>,
     /// <c>surface.cardAlt</c>, <c>surface.line</c>, <c>text.primary</c>, <c>text.secondary</c>, <c>series.1</c> …,
     /// <c>severity.{critical|high|medium|low|info}.{fill|ink}</c>, <c>outcome.{pass|neutral}.{fill|ink}</c>,
-    /// <c>state.maintenance.{fill|ink}</c>, <c>accent.base</c>, <c>chrome.accent</c>, <c>ramps.sequential.1</c> …,
+    /// <c>state.maintenance.{fill|ink}</c>, independent legacy <c>status.{positive|warning|negative|disabled}</c>,
+    /// <c>accent.base</c>, <c>chrome.accent</c>, <c>ramps.sequential.1</c> …,
     /// <c>ramps.diverging.negative.1</c> …, <c>ramps.diverging.neutral</c>, and <c>ramps.diverging.positive.1</c> ….
     /// They are added in that order, so when two tokens share a colour the earlier one names a paint without a role.
     /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
@@ -58,6 +59,11 @@ public sealed partial class VisualDesignTokens {
         AddPair("outcome.pass", Status.Pass);
         AddPair("outcome.neutral", Status.Neutral);
         AddPair("state.maintenance", Status.Maintenance);
+        // Legacy chart/topology status slots are independently customizable from the paired report tones.
+        Add("status.positive", Positive);
+        Add("status.warning", Warning);
+        Add("status.negative", Negative);
+        Add("status.disabled", Disabled);
         Add("accent.base", Accent);
         Add("chrome.accent", SecondaryAccent);
         if (_sequentialRamp != null) AddList("ramps.sequential", _sequentialRamp);
@@ -76,7 +82,7 @@ public sealed partial class VisualDesignTokens {
         if (path.StartsWith("text.", StringComparison.Ordinal)) return SvgColorRole.Text;
         if (path.StartsWith("series.", StringComparison.Ordinal)) return SvgColorRole.Series;
         if (path.StartsWith("ramps.", StringComparison.Ordinal)) return SvgColorRole.Ramp;
-        if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal)) return SvgColorRole.Status;
+        if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal) || path.StartsWith("status.", StringComparison.Ordinal)) return SvgColorRole.Status;
         return SvgColorRole.Any;
     }
 

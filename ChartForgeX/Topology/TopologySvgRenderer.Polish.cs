@@ -53,7 +53,7 @@ public sealed partial class TopologySvgRenderer {
     private static void AddPremiumEdgePathLayer(SvgElement edgeGroup, TopologyEdge edge, string prefix, TopologyRenderOptions options, string svgId, bool selected, string color, string dash, string markerKey, string pathData, ChartLineVisualLayer? layer) {
         var foreground = !layer.HasValue || layer.Value.IsForeground;
         // The sheen layer is a derived white that never takes a token property; the line and its halos keep their colour.
-        var stroke = !layer.HasValue || foreground ? SvgPaint.Plain(color) : layer.Value.IsHighlight ? SvgPaint.Literal(layer.Value.Color) : SvgPaint.Plain(layer.Value.Color);
+        var stroke = !layer.HasValue || foreground ? EdgePaint(color, markerKey) : layer.Value.IsHighlight ? SvgPaint.Literal(layer.Value.Color) : EdgePaint(layer.Value.Color.ToCss(), markerKey);
         var strokeWidth = layer.HasValue ? layer.Value.StrokeWidth : EdgeStrokeWidth(edge, selected, options);
         var roleSuffix = layer.HasValue ? layer.Value.RoleSuffix : string.Empty;
         var layerOpacity = layer.HasValue ? layer.Value.Opacity : 1;
@@ -83,6 +83,11 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static string MarkerId(string svgId, string markerKey, TopologyMarkerKind kind) => kind == TopologyMarkerKind.Arrow ? ArrowMarkerId(svgId, markerKey) : EndpointMarkerId(svgId, markerKey, kind);
+
+    private static SvgPaint EdgePaint(string color, string markerKey) {
+        if (markerKey.StartsWith("color-", System.StringComparison.Ordinal) || !ChartColor.TryParse(color, out var parsed)) return SvgPaint.Plain(color);
+        return SvgPaint.Of(parsed, markerKey == "muted" ? SvgColorRole.Surface : SvgColorRole.Status);
+    }
 
     private static double EdgeLabelHaloStrokeWidth(double fontSize, bool emphasized) => ChartTextHalo.SvgStrokeWidth(fontSize, emphasized);
 }

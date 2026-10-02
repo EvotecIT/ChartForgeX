@@ -93,6 +93,19 @@ public sealed class ThemedSvgShareTests {
     }
 
     [Fact]
+    public void Topology_BuiltInAndCustomStatusSlots_FollowStatusVariablesForEdgesAndMarkers() {
+        foreach (var tokens in new[] { new VisualDesignTokens(), VisualDesignTokens.Dark() }) {
+            tokens.Warning = tokens.Palette[0]; // A shared RGB must still retain its semantic role.
+            var svg = ArrowDiagram().WithDesignTokens(tokens).ToSvg(new TopologyRenderOptions { IdScope = "role", SvgColorVariables = tokens.ToSvgColorVariables() });
+            var document = XDocument.Parse(svg);
+            var marker = document.Descendants().Single(e => (string?)e.Attribute("id") == "role-sites-arrow-warning");
+            Assert.Contains(marker.Descendants().Attributes("fill"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
+            var edge = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-edge-path" && ((string?)e.Attribute("marker-end"))?.Contains("arrow-warning", StringComparison.Ordinal) == true);
+            Assert.StartsWith("var(--cfx-status-warning,", (string?)edge.Attribute("stroke"));
+        }
+    }
+
+    [Fact]
     public void Topology_MarkerIds_DoNotDependOnTheEdgeColour() {
         // The same chart with other status colours (another theme) references the same markers.
         var light = ArrowDiagram().WithDesignTokens(Light).ToSvg();

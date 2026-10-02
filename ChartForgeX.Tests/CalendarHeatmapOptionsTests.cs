@@ -197,6 +197,21 @@ public sealed class CalendarHeatmapOptionsTests {
         Assert.Equal(2, chart.Options.CalendarCellGap);
     }
 
+    [Fact]
+    public void YearCalendar_LargePreferredGap_KeepsCellsInsideViewport() {
+        var chart = Chart.Create().WithSize(760, 220).WithHeader(false).WithCard(false)
+            .WithCalendarHeatmapCells(gap: 24)
+            .AddCalendarHeatmap("Year", Enumerable.Range(0, 365).Select(i => new ChartCalendarHeatmapItem(new DateTime(2025, 1, 1).AddDays(i), i % 5)).ToArray());
+        var cells = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-heatmap-cell");
+        Assert.Equal(371, cells.Length); // Whole weeks include six days outside the requested year.
+        foreach (var cell in cells) {
+            double Number(string name) => double.Parse((string)cell.Attribute(name)!, CultureInfo.InvariantCulture);
+            Assert.InRange(Number("x") + Number("width"), 0, 760);
+            Assert.InRange(Number("y") + Number("height"), 0, 220);
+        }
+        Assert.True(chart.ToPng().Length > 64);
+    }
+
     private static Chart TwoWeeks(DayOfWeek firstDay, IReadOnlyList<string>? days = null, IReadOnlyList<string>? months = null) =>
         Chart.Create().WithSize(560, 300).AddCalendarHeatmap("Changes", Items(), ChartColor.FromHex("#2a78d6"), firstDay, days, months);
 

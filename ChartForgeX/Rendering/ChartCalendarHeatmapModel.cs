@@ -200,7 +200,9 @@ internal sealed class ChartCalendarHeatmapModel {
     public ChartCalendarLayout Layout(ChartRect plot) {
         var options = Chart.Options;
         var gap = options.CalendarCellGap ?? (Columns > 32 ? 2.5 : 3.5);
-        var fit = Math.Max(1, Math.Min((plot.Width - gap * (Columns - 1)) / Columns, (plot.Height - gap * 6) / 7));
+        // A preferred gap cannot consume the frame before its cells are drawn.
+        gap = Math.Max(0, Math.Min(gap, Math.Min(Columns > 1 ? Math.Max(0, plot.Width - Columns) / (Columns - 1) : gap, Math.Max(0, plot.Height - 7) / 6)));
+        var fit = Math.Max(0, Math.Min((plot.Width - gap * (Columns - 1)) / Columns, (plot.Height - gap * 6) / 7));
         var cell = fit;
         if (options.CalendarMaximumCellSize.HasValue) cell = Math.Min(cell, options.CalendarMaximumCellSize.Value);
         if (options.CalendarCellSize.HasValue) cell = Math.Min(options.CalendarCellSize.Value, fit);
