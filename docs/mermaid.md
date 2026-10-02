@@ -54,7 +54,7 @@ Supported flowchart parsing includes:
 
 Flowcharts accept semicolon-separated statements, including statements on the header line. Semicolons inside quoted labels, node shapes, and pipe edge labels stay inside that label. Every retained statement carries its original line and column. Incomplete shapes, missing edge targets, and unmatched `subgraph`/`end` declarations produce located errors; unsupported trailing syntax is diagnosed instead of being silently discarded.
 
-The compact flowchart conformance fixture checks node ids and edge endpoints against the same expected document in .NET and Mermaid.js. Other fixtures currently check syntax acceptance and the resulting .NET document type.
+The compact and quoted-shape flowchart conformance fixtures check node ids and edge endpoints against the same expected documents in .NET and Mermaid.js. The remaining fixtures currently check syntax acceptance and the resulting .NET document type.
 
 ```csharp
 using ChartForgeX.Mermaid;
