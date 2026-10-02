@@ -573,6 +573,8 @@ Dotted maps can render both point-to-point route arcs and ordered waypoint route
 
 `GraphScene` is the product-neutral relationship and large-topology document. It supports image and icon nodes, badges, secondary labels, rich edges, explicit or adaptive clusters, validated parent-child hierarchy, deterministic layouts, runtime physics, level of detail, performance budgets, atomic `GraphScenePatch` updates, and reusable `GraphSceneStage` planning. `ChartForgeX.Interactivity.Html` renders the same scene through SVG, Canvas, or WebGL and can save script-free stage SVG/PNG files without opening a browser.
 
+The WebGL explorer renders rich node shapes, images, labels, badges and status details alongside styled routes with individual widths, curves, dashes and arrows. It retains geometry during viewport movement and falls back to Canvas after context loss while preserving the current graph and selection. The generated `graph-rich-rendering-*` examples exercise all three backends.
+
 Small scenes keep complete SVG artwork. Large scenes switch to a compact graph document and batched rendering so they do not carry thousands of hidden SVG marks; SVG export reconstructs the vector scene on demand. The generated 1k/5k/10k fixtures are intended for real-browser release review rather than synthetic model-only claims.
 
 ```csharp

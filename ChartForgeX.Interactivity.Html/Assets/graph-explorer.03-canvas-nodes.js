@@ -1,7 +1,12 @@
+  const graphNodeMarkPaint = (node, selected, compact) => ({
+    fill: node.backgroundColor || '#2563eb', stroke: selected ? '#f59e0b' : node.borderColor || '#eff6ff',
+    width: selected ? 5 : compact ? 1.5 : 3
+  });
   const drawNodeMark = (context, node, selected, compact, root, moving) => {
-    context.fillStyle = node.backgroundColor || '#2563eb';
-    context.strokeStyle = selected ? '#f59e0b' : node.borderColor || '#eff6ff';
-    context.lineWidth = selected ? 5 : compact ? 1.5 : 3;
+    const paint = graphNodeMarkPaint(node, selected, compact);
+    context.fillStyle = paint.fill;
+    context.strokeStyle = paint.stroke;
+    context.lineWidth = paint.width;
     if (node.shadow && !moving) {
       context.shadowColor = 'rgba(15,23,42,.18)';
       context.shadowBlur = 10;

@@ -65,7 +65,7 @@
         emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
         return;
       } finally {
-        if (root.classList.contains('cfx-graph-render-canvas')) drawCanvas(root, state);
+        if (root.classList.contains('cfx-graph-render-canvas') || root.classList.contains('cfx-graph-render-webgl')) drawCanvas(root, state);
       }
       mime = 'image/png';
     }
@@ -198,11 +198,7 @@
     else {
       const configured = attr(root, 'data-cfx-graph-renderer');
       const renderer = configured === 'webgl' && webGlAvailable(root) ? 'webgl' : configured === 'canvas' || configured === 'webgl' ? 'canvas' : 'svg';
-      root.classList.toggle('cfx-graph-render-canvas', renderer === 'canvas');
-      root.classList.toggle('cfx-graph-render-webgl', renderer === 'webgl');
-      root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
-      root.dataset.cfxGraphRendererActive = renderer; syncRendererAccessibility(root, renderer);
-      syncGraphItemTabStops(root);
+      setGraphRenderer(root, renderer);
     }
     applySemanticZoom(root, viewport(root).scale);
     performanceGate(root);

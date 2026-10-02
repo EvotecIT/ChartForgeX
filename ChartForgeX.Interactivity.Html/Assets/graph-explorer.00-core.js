@@ -219,83 +219,10 @@
     const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
     const dense = compact || state.edges.length > 250;
     const moving = root.dataset.cfxGraphPhysicsState === 'running' && !options?.force;
-    state.clusters.forEach(cluster => {
-      if (!visible(cluster.el)) return;
-      const metrics = clusterMetrics(cluster, byId);
-      if (!metrics) return;
-      const label = attr(cluster.el, 'data-cluster-label') || cluster.id;
-      const selected = cluster.el.classList.contains('cfx-graph-selected');
-      const clusterColors = graphClusterColors(root, cluster, palette);
-      context.beginPath();
-      context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
-      context.globalAlpha = metrics.expanded ? .1 : .86;
-      context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : clusterColors.fill;
-      context.strokeStyle = selected ? palette.selected : clusterColors.stroke;
-      context.lineWidth = selected ? 4 : metrics.expanded ? 1.2 : 2;
-      context.setLineDash([6, 4]);
-      if (!metrics.expanded) context.fill();
-      context.stroke();
-      context.setLineDash([]);
-      if ((!moving && !metrics.expanded) || selected) {
-        const memberCount = cluster.nodeIds.length;
-        const memberLabel = `${memberCount} ${memberCount === 1 ? 'object' : 'objects'}`;
-        context.globalAlpha = metrics.expanded ? .55 : 1;
-        context.font = '700 12px Segoe UI, Arial, sans-serif';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.lineWidth = 4;
-        context.strokeStyle = palette.halo;
-        context.fillStyle = palette.clusterText;
-        context.strokeText(label, metrics.x, metrics.y - 6);
-        context.fillText(label, metrics.x, metrics.y - 6);
-        context.font = '600 9.5px Segoe UI, Arial, sans-serif';
-        context.fillStyle = palette.muted;
-        context.strokeText(memberLabel, metrics.x, metrics.y + 10);
-        context.fillText(memberLabel, metrics.x, metrics.y + 10);
-      }
-      context.globalAlpha = 1;
-    });
+    drawCanvasClusters(context, root, state, byId, palette, moving);
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
-      const rendered = visualEdge(edge, byId);
-      const control = edgeControl(rendered);
-      const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
-      const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
-      const selected = edge.el.classList.contains('cfx-graph-selected');
-      edgeDrawPath(context, rendered, control);
-      const edgeColor = selected ? palette.selected : related ? '#14b8a6' : edge.strokeColor || palette.edge;
-      context.strokeStyle = edgeColor;
-      context.globalAlpha = dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58;
-      const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
-      const styledWidth = edge.strokeWidth > 0 ? edge.strokeWidth : baseWidth;
-      context.lineWidth = edge.strokeWidth > 0
-        ? Math.max(.65, edge.strokeWidth + (selected ? 1.6 : related ? 1.2 : 0))
-        : Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, styledWidth + (selected ? 1.6 : related ? 1.2 : 0)));
-      context.setLineDash(edge.dashed ? edge.dashPattern : []);
-      context.stroke();
-      context.setLineDash([]);
-      context.globalAlpha = 1;
-      if ((!moving || selected || related) && (edge.sourceArrow || edge.targetArrow || edge.directed)) {
-        context.globalAlpha = dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1;
-        if (edge.sourceArrow) drawArrow(context, rendered, control, 'source', edgeColor);
-        if (edge.targetArrow || edge.directed) drawArrow(context, rendered, control, 'target', edgeColor);
-        context.globalAlpha = 1;
-      }
-      if ((!moving || selected || related) && edge.label && edge.showLabel &&
-          (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related) &&
-          (!root.classList.contains('cfx-graph-priority-overview') || selected || related)) {
-        const label = edgeLabelPoint(rendered, control);
-        context.font = '11px Segoe UI, Arial, sans-serif';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.lineWidth = 4;
-        context.strokeStyle = palette.halo;
-        context.fillStyle = graphAdaptiveTextColor(root, edge.labelColor, palette.edgeLabel);
-        context.globalAlpha = dimmed ? .16 : 1;
-        context.strokeText(edge.label, label.x, label.y);
-        context.fillText(edge.label, label.x, label.y);
-        context.globalAlpha = 1;
-      }
+      drawCanvasEdge(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving), palette);
     });
     drawCanvasNodes(context, root, state.nodes, compact, moving);
     context.restore();

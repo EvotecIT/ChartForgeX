@@ -124,16 +124,16 @@ test('WebGL reuses capacity and uploads only live values when the visible scene 
     bufferSubData: (_, offset, data) => writes.push([bound, offset, [...data]]),
     enableVertexAttribArray() {}, vertexAttribPointer() {}, uniform1i() {}
   };
-  const renderer = { gl, positionBuffer: 'p', colorBuffer: 'c', sizeBuffer: 's' };
-  host.api.webGlUpload(renderer, [1, 2, 3, 4], [1, 0, 0, 1, 0, 1, 0, 1], [5, 6], true);
-  assert.equal(allocations.length, 3);
+  const renderer = { gl, positionBuffer: 'p', colorBuffer: 'c' };
+  host.api.webGlUpload(renderer, [1, 2, 3, 4], [1, 0, 0, 1, 0, 1, 0, 1]);
+  assert.equal(allocations.length, 2);
   const staging = renderer.uploads.position.data;
-  host.api.webGlUpload(renderer, [7, 8], [0, 0, 1, 1], [9], true);
-  assert.equal(allocations.length, 3);
+  host.api.webGlUpload(renderer, [7, 8], [0, 0, 1, 1]);
+  assert.equal(allocations.length, 2);
   assert.equal(renderer.uploads.position.data, staging);
-  assert.deepEqual(writes.slice(-3), [['p', 0, [7, 8]], ['c', 0, [0, 0, 1, 1]], ['s', 0, [9]]]);
-  host.api.webGlUpload(renderer, Array(130).fill(2), Array(260).fill(1), Array(65).fill(3), true);
-  assert.equal(allocations.length, 6);
+  assert.deepEqual(writes.slice(-2), [['p', 0, [7, 8]], ['c', 0, [0, 0, 1, 1]]]);
+  host.api.webGlUpload(renderer, Array(130).fill(2), Array(260).fill(1));
+  assert.equal(allocations.length, 4);
   assert.ok(renderer.uploads.position.data.length >= 130);
 });
 

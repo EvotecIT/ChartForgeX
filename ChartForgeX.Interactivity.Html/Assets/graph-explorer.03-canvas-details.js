@@ -1,18 +1,21 @@
-  const drawCanvasNodeDetails = (context, root, node, compact, moving) => {
+  const drawCanvasNodeDetails = (context, root, node, compact, moving, gpuNodes) => {
     if (!visible(node.el)) return;
-    const palette = graphThemePalette(root);
     const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
     const primary = node.el.classList.contains('cfx-graph-neighborhood-primary');
     const related = node.el.classList.contains('cfx-graph-neighborhood-related');
     const selected = node.el.classList.contains('cfx-graph-selected');
+    if (gpuNodes?.has(node) && (compact || moving) && !selected && !primary && !related) return;
+    const palette = graphThemePalette(root);
     const card = node.card === true;
     const cardHalfWidth = node.size * 1.45;
     const cardHalfHeight = Math.min(node.size * 1.05, 36);
-    const nodeColors = graphReadableNodeColors(root, node.el, palette);
+    const labels = (!compact && !moving) || node.shape === 'text' || selected || primary || related;
+    const nodeColors = labels ? graphReadableNodeColors(root, node.el, palette)
+      : { halo: card ? node.backgroundColor || '#2563eb' : palette.paper };
     context.save();
     context.globalAlpha = dimmed ? .18 : 1;
     const status = attr(node.el, 'data-cfx-status').toLowerCase();
-    if (status && status !== 'unknown') {
+    if (status && status !== 'unknown' && !gpuNodes?.has(node)) {
       const statusColor = status === 'healthy' ? '#22c55e' : status === 'warning' ? '#f59e0b' : status === 'critical' ? '#ef4444' : '#94a3b8';
       context.beginPath();
       context.arc(card ? node.x + cardHalfWidth - 15 : node.x - node.size * .8, card ? node.y + cardHalfHeight - 14 : node.y - node.size * .8, 4.5, 0, Math.PI * 2);
@@ -43,7 +46,7 @@
       context.lineWidth = 3;
       context.stroke();
     }
-    if ((!compact && !moving) || node.shape === 'text' || selected || primary || related) {
+    if (labels) {
       context.font = card ? '700 12.5px Inter, Segoe UI, Arial, sans-serif' : '12px Inter, Segoe UI, Arial, sans-serif';
       context.textAlign = card ? 'left' : 'center';
       context.textBaseline = node.shape === 'text' ? 'middle' : card ? 'alphabetic' : 'top';
@@ -82,13 +85,13 @@
     }
     context.restore();
   };
-  const drawCanvasNodes = (context, root, nodes, compact, moving) => {
+  const drawCanvasNodes = (context, root, nodes, compact, moving, gpuNodes) => {
     nodes.forEach(node => {
-      if (!visible(node.el)) return;
+      if (!visible(node.el) || gpuNodes?.has(node)) return;
       context.save();
       context.globalAlpha = node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1;
       drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected'), compact, root, moving);
       context.restore();
     });
-    nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving));
+    nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving, gpuNodes));
   };

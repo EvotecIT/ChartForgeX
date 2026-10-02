@@ -89,8 +89,9 @@
     return graphColorContrast(value, graphThemePalette(root).paper) >= 4.5 ? value : fallback;
   };
   const graphReadableNodeColors = (root, node, palette) => {
-    const requestedBackground = attr(node, 'data-node-background-color');
-    const background = graphColorRgb(requestedBackground) ? requestedBackground : '#2563eb';
+    const card = attr(node, 'data-node-card') === 'true';
+    const requestedBackground = attr(node, card ? 'data-node-background-color' : 'data-node-label-background-color');
+    const background = graphColorRgb(requestedBackground) ? requestedBackground : card ? '#2563eb' : palette.paper;
     const preferred = attr(node, 'data-node-label-color');
     const choose = (requested, fallback) => {
       const candidates = [requested, fallback, '#f8fafc', '#0f172a']

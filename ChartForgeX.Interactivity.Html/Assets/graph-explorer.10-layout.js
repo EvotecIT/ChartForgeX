@@ -54,6 +54,15 @@
     if (webgl) webgl.setAttribute('aria-hidden', renderer === 'webgl' ? 'false' : 'true');
     if (svg) svg.setAttribute('aria-hidden', renderer === 'svg' ? 'false' : 'true');
   };
+  const setGraphRenderer = (root, renderer) => {
+    root.classList.toggle('cfx-graph-render-canvas', renderer === 'canvas');
+    root.classList.toggle('cfx-graph-render-webgl', renderer === 'webgl');
+    root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
+    root.dataset.cfxGraphRendererActive = renderer;
+    root.dataset.cfxGraphRendererFallback = attr(root, 'data-cfx-graph-renderer') === 'webgl' && renderer !== 'webgl' ? renderer : '';
+    syncRendererAccessibility(root, renderer);
+    syncGraphItemTabStops(root);
+  };
   const applyLod = (root) => {
     const state = root.__cfxGraphState || graphState(root);
     const nodes = state.nodes.filter(node => visible(node.el)).length;
@@ -69,19 +78,11 @@
     let renderer = configured === 'canvas' ? 'canvas' : configured === 'webgl' && webGlAvailable(root) ? 'webgl' : configured === 'webgl' ? 'canvas' : 'svg';
     if (configured === 'svg' && allowFallback && preferWebGl && webGlAvailable(root)) renderer = 'webgl';
     else if (configured === 'svg' && allowFallback && preferCanvas) renderer = 'canvas';
-    const useCanvas = renderer === 'canvas';
-    const useWebGl = renderer === 'webgl';
     root.classList.toggle('cfx-graph-lod-compact', compact);
     root.classList.toggle('cfx-graph-lod-hide-edge-labels', hideEdgeLabels);
-    root.classList.toggle('cfx-graph-render-canvas', useCanvas);
-    root.classList.toggle('cfx-graph-render-webgl', useWebGl);
-    root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
     root.dataset.cfxGraphLod = preferWebGl ? 'webgl-preferred' : preferCanvas ? 'canvas-preferred' : compact ? 'compact' : hideEdgeLabels ? 'edge-labels-hidden' : 'full';
     root.dataset.cfxGraphClusterLod = nodes >= num(root, 'data-cfx-lod-cluster-threshold', Number.POSITIVE_INFINITY) ? 'threshold' : 'none';
-    root.dataset.cfxGraphRendererActive = renderer;
-    root.dataset.cfxGraphRendererFallback = configured === 'webgl' && renderer !== 'webgl' ? renderer : '';
-    syncRendererAccessibility(root, renderer);
-    syncGraphItemTabStops(root);
+    setGraphRenderer(root, renderer);
     root.dataset.cfxGraphVisibleNodes = String(nodes);
     root.dataset.cfxGraphVisibleEdges = String(edges);
     emit(root, 'cfxgraphlod', { graphId: attr(root, 'data-cfx-graph-id'), mode: root.dataset.cfxGraphLod, renderer: root.dataset.cfxGraphRendererActive, nodes, edges, totalNodes, totalEdges });

@@ -19,37 +19,51 @@
     const vertex = webGlShader(gl, gl.VERTEX_SHADER, `#version 300 es
       in vec2 a_position;
       in vec4 a_color;
-      in float a_size;
+      in vec4 a_stroke;
+      in vec2 a_point;
       uniform vec2 u_sceneSize;
       uniform vec3 u_view;
       uniform vec3 u_surface;
       out vec4 v_color;
+      out vec4 v_stroke;
+      out vec2 v_point;
       void main() {
         vec2 screen = (a_position * u_view.z + u_view.xy) * u_surface.x + u_surface.yz;
         vec2 clip = screen / u_sceneSize * 2.0 - 1.0;
         gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
-        gl_PointSize = clamp(a_size * max(0.72, u_view.z), 3.0, 72.0) * u_surface.x;
         v_color = a_color;
+        v_stroke = a_stroke; v_point = a_point;
+        gl_PointSize = a_point.x * u_view.z * u_surface.x;
       }`);
     const fragment = webGlShader(gl, gl.FRAGMENT_SHADER, `#version 300 es
       precision mediump float;
       in vec4 v_color;
+      in vec4 v_stroke;
+      in vec2 v_point;
       uniform bool u_points;
       out vec4 outColor;
       void main() {
         if (u_points) {
-          vec2 point = gl_PointCoord * 2.0 - 1.0;
-          float radius = dot(point, point);
-          if (radius > 1.0) discard;
-          float edge = smoothstep(1.0, 0.78, radius);
-          outColor = vec4(v_color.rgb, v_color.a * edge);
+          float radius = length(gl_PointCoord * 2.0 - 1.0);
+          float smoothing = max(fwidth(radius), 0.001);
+          float coverage = 1.0 - smoothstep(1.0 - smoothing, 1.0, radius);
+          float border = smoothstep(v_point.y - smoothing, v_point.y + smoothing, radius);
+          outColor = mix(v_color, v_stroke, border);
+          outColor.a *= coverage;
         } else outColor = v_color;
       }`);
     if (!vertex || !fragment) {
+      if (vertex) gl.deleteShader(vertex);
+      if (fragment) gl.deleteShader(fragment);
       root.__cfxGraphWebGl = false;
       return null;
     }
     const program = gl.createProgram();
+    if (!program) {
+      gl.deleteShader(vertex); gl.deleteShader(fragment);
+      root.__cfxGraphWebGl = false;
+      return null;
+    }
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
@@ -64,35 +78,35 @@
       canvas, gl, program,
       position: gl.getAttribLocation(program, 'a_position'),
       color: gl.getAttribLocation(program, 'a_color'),
-      size: gl.getAttribLocation(program, 'a_size'),
+      stroke: gl.getAttribLocation(program, 'a_stroke'),
+      point: gl.getAttribLocation(program, 'a_point'),
+      points: gl.getUniformLocation(program, 'u_points'),
+      pointLimit: gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1],
       sceneSize: gl.getUniformLocation(program, 'u_sceneSize'),
       view: gl.getUniformLocation(program, 'u_view'),
       surface: gl.getUniformLocation(program, 'u_surface'),
-      points: gl.getUniformLocation(program, 'u_points'),
-      positionBuffer: gl.createBuffer(), colorBuffer: gl.createBuffer(), sizeBuffer: gl.createBuffer()
+      positionBuffer: gl.createBuffer(), colorBuffer: gl.createBuffer(),
+      pointPositionBuffer: gl.createBuffer(), pointColorBuffer: gl.createBuffer(), strokeBuffer: gl.createBuffer(), pointBuffer: gl.createBuffer()
     };
+    runtime.pointPosition = runtime.position;
+    runtime.pointColor = runtime.color;
+    const buffers = [runtime.positionBuffer, runtime.colorBuffer, runtime.pointPositionBuffer, runtime.pointColorBuffer, runtime.strokeBuffer, runtime.pointBuffer];
+    if (buffers.some(buffer => !buffer)) {
+      for (const buffer of buffers) if (buffer) gl.deleteBuffer(buffer);
+      gl.deleteProgram(program);
+      root.__cfxGraphWebGl = false;
+      return null;
+    }
     root.__cfxGraphWebGl = runtime;
     return runtime;
   };
   const webGlAvailable = (root) => !!webGlRuntime(root);
   const webGlColor = (value, alpha, fallback) => {
-    let rgb = fallback || [37, 99, 235];
-    const source = (value || '').trim();
-    if (/^#[0-9a-f]{3}$/i.test(source)) rgb = source.slice(1).split('').map(value => parseInt(value + value, 16));
-    else if (/^#[0-9a-f]{6}$/i.test(source)) rgb = [parseInt(source.slice(1, 3), 16), parseInt(source.slice(3, 5), 16), parseInt(source.slice(5, 7), 16)];
-    else {
-      const match = source.match(/^rgba?\(\s*([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)/i);
-      if (match) rgb = [Number(match[1]), Number(match[2]), Number(match[3])];
-    }
-    return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, alpha];
-  };
-  const webGlStatusColor = (node) => {
-    const status = attr(node.el, 'data-cfx-status').toLowerCase();
-    if (status === 'critical') return '#ef4444';
-    if (status === 'warning') return '#f59e0b';
-    if (status === 'healthy') return '#22c55e';
-    if (status === 'disabled' || status === 'muted') return '#94a3b8';
-    return node.backgroundColor || '#2563eb';
+    const rgb = graphColorRgb(value) || fallback || [37, 99, 235];
+    const source = graphLiteralColorRgb(value) ? String(value || '').trim() : String(graphColorContext?.fillStyle || value || '');
+    const rgba = source.match(/^rgba\([^)]*,\s*([\d.]+)\s*\)$/i);
+    const opacity = rgba ? Math.max(0, Math.min(1, Number(rgba[1]))) : 1;
+    return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, alpha * opacity];
   };
   const webGlResize = (runtime, size) => {
     const rect = runtime.canvas.getBoundingClientRect();
@@ -121,22 +135,17 @@
     gl.enableVertexAttribArray(runtime[name]);
     gl.vertexAttribPointer(runtime[name], components, gl.FLOAT, false, 0, 0);
   };
-  const webGlUpload = (runtime, positions, colors, sizes, points) => {
+  const webGlUpload = (runtime, positions, colors) => {
     webGlUploadAttribute(runtime, 'position', positions, 2);
     webGlUploadAttribute(runtime, 'color', colors, 4);
-    webGlUploadAttribute(runtime, 'size', sizes, 1);
-    runtime.gl.uniform1i(runtime.points, points ? 1 : 0);
   };
   const drawWebGl = (root, state) => {
     const runtime = webGlRuntime(root);
-    if (!runtime) return false;
-    const { gl } = runtime;
-    const size = sceneSize(root);
-    const view = viewport(root);
-    const palette = graphThemePalette(root);
+    if (!runtime || runtime.gl.isContextLost?.()) return false;
+    const { gl } = runtime, size = sceneSize(root), view = viewport(root), palette = graphThemePalette(root);
     webGlResize(runtime, size);
-    const clear = webGlColor(palette.paper, 1, palette.dark ? [11, 18, 32] : [255, 255, 255]);
-    gl.clearColor(clear[0], clear[1], clear[2], 1);
+    const paper = webGlColor(palette.paper, 1, [255, 255, 255]);
+    gl.clearColor(paper[0], paper[1], paper[2], 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(runtime.program);
     const fit = graphSurfaceFit(size, runtime.canvas.width, runtime.canvas.height);
@@ -145,65 +154,38 @@
     gl.uniform3f(runtime.view, view.x, view.y, view.scale);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-    const linePositions = [], lineColors = [], lineSizes = [];
-    state.edges.forEach(edge => {
-      if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, state.byId)) return;
-      const rendered = visualEdge(edge, state.byId);
-      const selected = edge.el.classList.contains('cfx-graph-selected');
-      const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
-      const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
-      const color = webGlColor(selected ? palette.selected : related ? '#14b8a6' : edge.strokeColor || palette.edge, dimmed ? .08 : selected ? .95 : related ? .8 : .42);
-      const control = edgeControl(rendered);
-      const points = edgeHasRoute(rendered) ? routeRenderPoints(rendered) : [rendered.source, rendered.target];
-      for (let index = 1; index < points.length; index++) {
-        linePositions.push(points[index - 1].x, points[index - 1].y, points[index].x, points[index].y);
-        lineColors.push(...color, ...color);
-        lineSizes.push(1, 1);
-      }
-      const appendArrow = side => {
-        const arrow = edgeArrowGeometry(rendered, control, side);
-        linePositions.push(arrow.tip.x, arrow.tip.y, arrow.left.x, arrow.left.y, arrow.tip.x, arrow.tip.y, arrow.right.x, arrow.right.y);
-        lineColors.push(...color, ...color, ...color, ...color);
-        lineSizes.push(1, 1, 1, 1);
-      };
-      if (rendered.sourceArrow) appendArrow('source');
-      if (rendered.targetArrow || rendered.directed) appendArrow('target');
-    });
-    if (linePositions.length) {
-      webGlUpload(runtime, linePositions, lineColors, lineSizes, false);
-      gl.drawArrays(gl.LINES, 0, linePositions.length / 2);
+    const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
+    const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
+    const dense = compact || state.edges.length > 250, moving = root.dataset.cfxGraphPhysicsState === 'running';
+    const mesh = webGlEdgeMesh(root, state, byId, palette, dense, moving, fit.scale, compact, runtime.pointLimit);
+    if (mesh.positions.length) {
+      if (runtime.uploadedMesh !== mesh) { webGlUpload(runtime, mesh.positions, mesh.colors); runtime.uploadedMesh = mesh; }
+      else { webGlBindAttribute(runtime, 'position', 2); webGlBindAttribute(runtime, 'color', 4); }
+      gl.disableVertexAttribArray(runtime.stroke); gl.vertexAttrib4f(runtime.stroke, 0, 0, 0, 0);
+      gl.disableVertexAttribArray(runtime.point); gl.vertexAttrib2f(runtime.point, 1, 1);
+      gl.uniform1i(runtime.points, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, mesh.positions.length / 2);
     }
-
-    const pointPositions = [], pointColors = [], pointSizes = [];
-    state.clusters.forEach(cluster => {
-      if (!visible(cluster.el) || attr(cluster.el, 'data-cluster-collapsed') !== 'true') return;
-      const metrics = clusterMetrics(cluster, state.byId);
-      if (!metrics) return;
-      const clusterColors = graphClusterColors(root, cluster, palette);
-      pointPositions.push(metrics.x, metrics.y);
-      pointColors.push(...webGlColor(cluster.el.classList.contains('cfx-graph-selected') ? palette.selected : clusterColors.stroke, .9));
-      pointSizes.push(Math.max(16, metrics.radius * 1.5));
-    });
-    state.nodes.forEach(node => {
-      if (!visible(node.el)) return;
-      const selected = node.el.classList.contains('cfx-graph-selected');
-      const primary = node.el.classList.contains('cfx-graph-neighborhood-primary');
-      const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
-      pointPositions.push(node.x, node.y);
-      pointColors.push(...webGlColor(selected ? palette.selected : primary ? '#14b8a6' : webGlStatusColor(node), dimmed ? .15 : 1));
-      pointSizes.push(Math.max(5, node.size * 2 + (selected || primary ? 7 : 0)));
-    });
-    if (pointPositions.length) {
-      webGlUpload(runtime, pointPositions, pointColors, pointSizes, true);
-      gl.drawArrays(gl.POINTS, 0, pointPositions.length / 2);
-    }
+    webGlDrawNodes(runtime, mesh.nodePoints);
     gl.disable(gl.BLEND);
-    return true;
+    return drawWebGlDetails(root, state, { byId, palette, compact, dense, moving, mesh });
   };
   const bindWebGlHitTesting = (root) => {
     const canvas = root.querySelector('[data-cfx-role="graph-webgl"]');
     if (!canvas) return;
+    canvas.addEventListener('webglcontextlost', event => {
+      event.preventDefault();
+      root.__cfxGraphWebGl = false;
+      if (root.dataset.cfxGraphRendererActive !== 'webgl') return;
+      setGraphRenderer(root, 'canvas');
+      drawCanvas(root, root.__cfxGraphState || graphState(root));
+    });
+    canvas.addEventListener('webglcontextrestored', () => {
+      root.__cfxGraphWebGl = null;
+      if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
+      else if (attr(root, 'data-cfx-graph-renderer') === 'webgl') setGraphRenderer(root, webGlAvailable(root) ? 'webgl' : 'canvas');
+      drawCanvas(root, root.__cfxGraphState || graphState(root));
+    });
     canvas.addEventListener('click', event => {
       if (root.dataset.cfxGraphRendererActive !== 'webgl') return;
       const best = hitGraphItemAt(root, scenePoint(root, event));
