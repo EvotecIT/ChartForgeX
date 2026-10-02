@@ -125,6 +125,8 @@ graph.Options.Performance.MaxInteractiveWebGlEdges = 80000;
 
 WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer.
 
+During dense motion, strokes below one physical pixel use opacity proportional to their width. Zooming into the scene or settling physics restores full stroke geometry.
+
 Panning and zooming reuse retained GPU geometry. Position changes, selection, filters, patches, theme changes and surface resizing invalidate the affected rendering state. If a WebGL context is lost, the explorer switches to Canvas and retains its viewport, selection and graph document; restoration rebuilds the GPU resources. PNG export uses the complete shared Canvas renderer, then restores the interactive surface.
 
 The generated `graph-rich-rendering-svg.html`, `graph-rich-rendering-canvas.html` and `graph-rich-rendering-webgl.html` examples show the same scene in all three backends, including route updates and WebGL context loss/restoration.
