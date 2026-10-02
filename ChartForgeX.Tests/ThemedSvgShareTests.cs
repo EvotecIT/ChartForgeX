@@ -102,6 +102,10 @@ public sealed class ThemedSvgShareTests {
             Assert.Contains(marker.Descendants().Attributes("fill"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
             var edge = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-edge-path" && ((string?)e.Attribute("marker-end"))?.Contains("arrow-warning", StringComparison.Ordinal) == true);
             Assert.StartsWith("var(--cfx-status-warning,", (string?)edge.Attribute("stroke"));
+            var node = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-node" && (string?)e.Attribute("data-node-id") == "dc2");
+            Assert.Contains(node.Descendants().Attributes("stroke"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
+            var status = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-node-status" && (string?)e.Attribute("data-node-id") == "dc2");
+            Assert.Contains(status.Descendants().Attributes("fill"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
         }
     }
 
@@ -169,6 +173,30 @@ public sealed class ThemedSvgShareTests {
         var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor").AddIcon(icon));
         var topology = TopologyChart.Create().AddIconNode("a", Forged, "vendor:service", 100, 100, catalog: catalog);
         AssertNotResolved(topology.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, SvgColorVariables = Light.ToSvgColorVariables() }));
+    }
+
+    [Fact]
+    public void Topology_ExplicitNodeAndGroupColours_KeepValueMappingThroughTintsAndLegend() {
+        var tokens = new VisualDesignTokens();
+        tokens.Warning = tokens.Palette[0];
+        string color = tokens.Palette[0].ToHex();
+        var chart = TopologyChart.Create().WithViewport(640, 400)
+            .AddAutoGroup("g", "Group", TopologyHealthStatus.Warning, color: color)
+            .AddAutoNode("n", "Node", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "g", subtitle: "Subtitle", color: color)
+            .WithDesignTokens(tokens);
+        var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
+            LegendMode = TopologyLegendMode.Auto, SvgColorVariables = tokens.ToSvgColorVariables()
+        }));
+        foreach (string role in new[] { "topology-node", "topology-group", "topology-legend" }) {
+            var elements = svg.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == role);
+            var tints = elements.SelectMany(e => e.DescendantsAndSelf().Attributes("fill"))
+                .Where(a => a.Value.StartsWith("color-mix(", StringComparison.Ordinal)).ToArray();
+            Assert.NotEmpty(tints);
+            foreach (var tint in tints) {
+                Assert.Contains("var(--cfx-series-1,", tint.Value, StringComparison.Ordinal);
+                Assert.DoesNotContain("--cfx-status-warning", tint.Value, StringComparison.Ordinal);
+            }
+        }
     }
 
     private const string Forged = "\uFDD0LFFFFFFFF\uFDD1 and";

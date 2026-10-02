@@ -1,11 +1,12 @@
 using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
-    private static void AddEdgeLabelLeader(SvgElement group, TopologyEdgeLabelLayout layout, string color, TopologyTheme theme, TopologyRenderOptions options) {
+    private static void AddEdgeLabelLeader(SvgElement group, TopologyEdgeLabelLayout layout, SvgPaint color, TopologyTheme theme, TopologyRenderOptions options) {
         if (!ShouldDrawEdgeLabelLeader(layout, options)) return;
         var end = EdgeLabelLeaderEnd(layout);
         var path = "M " + F(layout.AnchorX) + " " + F(layout.AnchorY) + " L " + F(end.X) + " " + F(end.Y);
@@ -22,7 +23,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-cfx-role", "topology-edge-label-leader")
             .Attribute("d", path)
             .Attribute("fill", "none")
-            .Attribute("stroke", color)
+            .Paint("stroke", color)
             .Attribute("stroke-opacity", style.StrokeOpacity)
             .Attribute("stroke-width", style.StrokeWidth)
             .Attribute("stroke-dasharray", F(style.Dash) + " " + F(style.Gap))

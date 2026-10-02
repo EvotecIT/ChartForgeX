@@ -48,6 +48,7 @@ public sealed partial class TopologySvgRenderer {
             // Line and dot swatches carry their status, so a pinned render keeps them in their colour in forced-colours mode;
             // a node swatch is left out because its glyph follows forced colours.
             var swatchStatus = item.Status?.ToString();
+            var paint = item.Color == null && item.Status.HasValue ? StatusColorPaint(color) : SvgPaint.Plain(color);
             layer.Element("g", group => {
                 group
                     .Class(prefix + "__legend-item")
@@ -61,11 +62,13 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("y1", markerCenterY)
                         .Attribute("x2", itemX + 24)
                         .Attribute("y2", markerCenterY)
-                        .Attribute("stroke", color)
+                        .Paint("stroke", paint)
                         .Attribute("stroke-width", 2)
                         .Attribute("stroke-dasharray", EdgeDash(LegendLineStyle(chart, item))));
                 } else if (item.Kind == TopologyLegendItemKind.Node) {
-                    var fill = string.IsNullOrWhiteSpace(item.BackgroundColor) ? StatusPaint(color, theme.Background) : SvgPaint.Plain(item.BackgroundColor!.Trim());
+                    var fill = string.IsNullOrWhiteSpace(item.BackgroundColor)
+                        ? StatusPaint(color, theme.Background, 0.10, item.Color == null && item.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Any)
+                        : SvgPaint.Plain(item.BackgroundColor!.Trim());
                     group.Element("rect", rect => rect
                         .Attribute("x", itemX)
                         .Attribute("y", markerCenterY - 11)
@@ -73,18 +76,18 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("height", 22)
                         .Attribute("rx", 6)
                         .Paint("fill", fill)
-                        .Attribute("stroke", color));
+                        .Paint("stroke", paint));
                     var legendNode = LegendNode(item);
                     var iconDefinition = ResolveNodeIcon(legendNode, options);
                     if (iconDefinition != null) group.Attribute("data-legend-icon-shape", iconDefinition.Shape.ToString());
                     var artwork = iconDefinition?.Artwork;
-                    if (!TryDrawIconArtwork(group, artwork, prefix, options, itemX + 11, markerCenterY, 18) && !AddInfrastructureGlyph(group, legendNode, itemX + 11, markerCenterY, color, options)) {
+                    if (!TryDrawIconArtwork(group, artwork, prefix, options, itemX + 11, markerCenterY, 18) && !AddInfrastructureGlyph(group, legendNode, itemX + 11, markerCenterY, color, options, paint)) {
                         group.Element("text", text => text
                             .Attribute("x", itemX + 11)
                             .Attribute("y", markerCenterY)
                             .Attribute("text-anchor", "middle")
                             .Attribute("dominant-baseline", "central")
-                            .Attribute("fill", color)
+                            .Paint("fill", paint)
                             .Attribute("font-size", 8)
                             .Attribute("font-weight", "800")
                             .Text(NodeGlyph(legendNode, options)));
@@ -95,7 +98,7 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("cx", itemX + 8)
                         .Attribute("cy", markerCenterY)
                         .Attribute("r", 6)
-                        .Attribute("fill", color));
+                        .Paint("fill", paint));
                 }
 
                 group.Element("text", text => text

@@ -147,7 +147,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", map.Width)
             .Attribute("height", map.Height)
             .Attribute("rx", softMap ? 12 : 16)
-            .Paint("fill", softMap ? StatusPaint(theme.Accent, theme.Background, 0.035) : StatusPaint(theme.Accent, theme.Background))
+            .Paint("fill", softMap ? StatusPaint(theme.Accent, theme.Background, 0.035, SvgColorRole.Any) : StatusPaint(theme.Accent, theme.Background, 0.10, SvgColorRole.Any))
             .Attribute("stroke", theme.Border)
             .Attribute("stroke-width", 1));
         DrawGeographicLandLayer(layer, chart, map, theme, options);
@@ -264,8 +264,8 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-hull-padding", options.GeographicRegionHullPadding)
                 .Attribute("data-hull-min-radius", options.GeographicRegionHullMinRadius)
                 .Attribute("data-hull-max-radius", options.GeographicRegionHullMaxRadius)
-                .Paint("fill", StatusPaint(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.22 : 0.16))
-                .Attribute("stroke", accent)
+                .Paint("fill", StatusPaint(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.22 : 0.16, GroupAccentRole(group, options)))
+                .Paint("stroke", GroupAccentPaint(group, accent, options))
                 .Attribute("stroke-opacity", IsMonitoringDashboardStyle(options) ? 0.28 : 0.38)
                 .Attribute("stroke-width", IsMonitoringDashboardStyle(options) ? 1.1 : 1.4));
         }
@@ -393,8 +393,8 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("width", group.Width)
                     .Attribute("height", group.Height)
                     .Attribute("rx", IsMonitoringDashboardStyle(options) ? 10 : 12)
-                    .Paint("fill", GroupPaint(accent, theme, options))
-                    .Attribute("stroke", accent)
+                    .Paint("fill", GroupPaint(accent, theme, options, GroupAccentRole(group, options)))
+                    .Paint("stroke", GroupAccentPaint(group, accent, options))
                     .Attribute("stroke-width", selected ? (IsMonitoringDashboardStyle(options) ? 2.2 : 2.4) : 1)
                     .Attribute("stroke-opacity", selected ? (IsMonitoringDashboardStyle(options) ? 0.82 : 0.9) : UseNeutralGroupSurface(options) ? 0.38 : (IsMonitoringDashboardStyle(options) ? 0.42 : 0.48)));
             if (options.IncludeGroupLabels) {
@@ -411,8 +411,8 @@ public sealed partial class TopologySvgRenderer {
                         .Attribute("cx", symbolCx)
                         .Attribute("cy", group.Y + 26)
                         .Attribute("r", 10)
-                        .Paint("fill", StatusPaint(accent, theme.Background))
-                        .Attribute("stroke", accent));
+                        .Paint("fill", StatusPaint(accent, theme.Background, 0.10, GroupAccentRole(group, options)))
+                        .Paint("stroke", GroupAccentPaint(group, accent, options)));
                     AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent, prefix, options);
                 }
 
@@ -425,8 +425,8 @@ public sealed partial class TopologySvgRenderer {
                             .Attribute("cx", symbolCx)
                             .Attribute("cy", group.Y + 26)
                             .Attribute("r", 9.5)
-                            .Paint("fill", StatusPaint(accent, theme.Background))
-                            .Attribute("stroke", accent));
+                            .Paint("fill", StatusPaint(accent, theme.Background, 0.10, GroupAccentRole(group, options)))
+                            .Paint("stroke", GroupAccentPaint(group, accent, options)));
                         AddGroupSymbol(groupElement, group, symbolCx, group.Y + 26, accent, prefix, options);
                         labelX = group.X + 42;
                         labelWidth = GroupHeaderLabelWidth(group, options, true);
@@ -437,7 +437,7 @@ public sealed partial class TopologySvgRenderer {
                     groupElement.Element("text", text => text
                         .Attribute("x", labelX)
                         .Attribute("y", group.Y + 30)
-                        .Attribute("fill", accent)
+                        .Paint("fill", GroupAccentPaint(group, accent, options))
                         .Attribute("font-size", neutralLabelSize)
                         .Attribute("font-weight", "700")
                         .Text(neutralLabel));
@@ -459,7 +459,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("x", renderSymbol ? cx - (EstimateTextWidth(groupLabel, groupLabelSize, true, options.TextMeasurement) + 30) / 2 + 30 : cx)
                     .Attribute("y", group.Y + 30)
                     .Attribute("text-anchor", renderSymbol ? "start" : "middle")
-                    .Attribute("fill", accent)
+                    .Paint("fill", GroupAccentPaint(group, accent, options))
                     .Attribute("font-size", groupLabelSize)
                     .Attribute("font-weight", "700")
                     .Text(groupLabel));
@@ -496,7 +496,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("cx", cx)
             .Attribute("cy", cy)
             .Attribute("r", GroupStatusDotInnerRadius)
-            .Attribute("fill", statusColor));
+            .Paint("fill", StatusColorPaint(statusColor)));
     }
 
     private static double GroupHeaderLabelWidth(TopologyGroup group, TopologyRenderOptions options, bool includesLeadingSymbol) {
@@ -647,10 +647,12 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-cfx-selected", selected);
                 var labelOpacity = EdgeOpacity(edge, options) * (highlight.IsActive && !highlighted ? highlight.DimmedOpacity : 1);
                 if (labelOpacity < 0.999) group.Attribute("opacity", labelOpacity);
-                AddEdgeLabelLeader(group, layout, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme, options);
+                var labelPaint = EdgePaint(edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options),
+                    edge.IsMuted ? "muted" : !string.IsNullOrWhiteSpace(edge.Color) ? "color-custom" : "status");
+                AddEdgeLabelLeader(group, layout, labelPaint, theme, options);
                 AddEdgeLabelBackplate(group, layout, cx, cy, theme, options);
                 AddEdgeLabelClearance(group, chart, layout, cx, cy, theme, options);
-                AddEdgeLabelLines(group, layout, cx, cy, edge.IsMuted ? theme.MutedForeground : EdgeColor(edge, theme, options), theme.MutedForeground, theme, options);
+                AddEdgeLabelLines(group, layout, cx, cy, labelPaint, SvgPaint.Plain(theme.MutedForeground), theme, options);
             });
         }
 
@@ -665,7 +667,7 @@ public sealed partial class TopologySvgRenderer {
         return count;
     }
 
-    private static void AddEdgeLabelLines(SvgElement group, TopologyEdgeLabelLayout layout, double cx, double cy, string primaryColor, string secondaryColor, TopologyTheme theme, TopologyRenderOptions options) {
+    private static void AddEdgeLabelLines(SvgElement group, TopologyEdgeLabelLayout layout, double cx, double cy, SvgPaint primaryColor, SvgPaint secondaryColor, TopologyTheme theme, TopologyRenderOptions options) {
         var lines = new List<(string Text, bool Primary)>();
         if (!string.IsNullOrWhiteSpace(layout.Label)) lines.Add((layout.Label, true));
         if (!string.IsNullOrWhiteSpace(layout.SecondaryLabel)) lines.Add((layout.SecondaryLabel, false));
@@ -682,7 +684,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("x", cx)
                     .Attribute("y", start + i * 16 + (line.Primary ? 4 : 3))
                     .Attribute("text-anchor", "middle")
-                    .Attribute("fill", color)
+                    .Paint("fill", color)
                     .Attribute("font-size", size)
                     .Attribute("font-weight", weight)
                     .Attribute("data-cfx-role", "topology-edge-label-text");

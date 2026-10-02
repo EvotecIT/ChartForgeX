@@ -94,7 +94,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("cy", cy)
                     .Attribute("r", Math.Max(8, Math.Min(node.Width, node.Height) / 2 + 5))
                     .Attribute("fill", "none")
-                    .Attribute("stroke", color)
+                    .Paint("stroke", NodeAccentPaint(node, color, options))
                     .Attribute("stroke-width", 2.4)
                     .Attribute("opacity", 0.5));
             }
@@ -104,7 +104,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("cx", cx)
                 .Attribute("cy", cy)
                 .Attribute("r", Math.Max(5, Math.Min(node.Width, node.Height) / 2))
-                .Attribute("fill", color)
+                .Paint("fill", NodeAccentPaint(node, color, options))
                 .Attribute("stroke", theme.Background)
                 .Attribute("stroke-width", 2));
             AddDotNodeSymbol(body, node, cx, cy, options);
@@ -120,7 +120,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("cx", cx)
                 .Attribute("cy", cy)
                 .Attribute("r", r)
-                .Attribute("fill", color)
+                .Paint("fill", NodeAccentPaint(node, color, options))
                 .Attribute("stroke", theme.Background)
                 .Attribute("stroke-width", selected ? 4 : 3)
                 .Attribute("filter", "url(#" + rootId + "-shadow)"));
@@ -138,8 +138,8 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", node.Width)
             .Attribute("height", node.Height)
             .Attribute("rx", radius)
-            .Paint("fill", NodePaint(node, theme, color, options))
-            .Attribute("stroke", color)
+            .Paint("fill", NodePaint(node, theme, color, options, NodeAccentRole(node, options)))
+            .Paint("stroke", NodeAccentPaint(node, color, options))
             .Attribute("stroke-width", selected ? 2.8 : 1.5)
             .Attribute("data-node-surface-style", EffectiveNodeSurfaceStyle(options).ToString())
             .Attribute("filter", "url(#" + rootId + "-shadow)"));
@@ -152,7 +152,7 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("width", 4.5)
                 .Attribute("height", Math.Max(6, node.Height - 16))
                 .Attribute("rx", 2.25)
-                .Attribute("fill", color)
+                .Paint("fill", NodeAccentPaint(node, color, options))
                 .Attribute("opacity", selected ? 0.95 : 0.82));
         }
         DrawNodeIcon(body, node, prefix, theme, color, displayMode, options);
@@ -227,7 +227,7 @@ public sealed partial class TopologySvgRenderer {
             var y = startY + i * 18;
             var color = !string.IsNullOrWhiteSpace(detail.Color) ? detail.Color!.Trim() : detail.Status.HasValue ? theme.StatusColor(detail.Status.Value) : theme.MutedForeground;
             body.Element("line", line => line.Attribute("x1", left).Attribute("y1", y - 8).Attribute("x2", right).Attribute("y2", y - 8).Attribute("stroke", theme.Border).Attribute("stroke-opacity", 0.45).Attribute("stroke-width", 1));
-            body.Element("circle", circle => circle.Attribute("data-cfx-role", "topology-node-detail-status").Attribute("data-cfx-status", detail.Status?.ToString()).Attribute("cx", left + 3).Attribute("cy", y - 1).Attribute("r", 2.5).Attribute("fill", color));
+            body.Element("circle", circle => circle.Attribute("data-cfx-role", "topology-node-detail-status").Attribute("data-cfx-status", detail.Status?.ToString()).Attribute("cx", left + 3).Attribute("cy", y - 1).Attribute("r", 2.5).Paint("fill", !string.IsNullOrWhiteSpace(detail.Color) || !detail.Status.HasValue ? SvgPaint.Plain(color) : StatusColorPaint(color)));
             body.Element("text", text => text.Attribute("data-cfx-role", "topology-node-detail-label").Attribute("x", left + 10).Attribute("y", y + 2).Attribute("fill", theme.MutedForeground).Attribute("font-size", 8.5).Text(TrimTo(detail.Label, 14)));
             body.Element("text", text => text.Attribute("data-cfx-role", "topology-node-detail-value").Attribute("x", right).Attribute("y", y + 2).Attribute("fill", theme.Foreground).Attribute("font-size", 8.5).Attribute("font-weight", 700).Attribute("text-anchor", "end").Text(TrimTo(detail.Value, 16)));
         }
@@ -251,8 +251,8 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", node.Width)
             .Attribute("height", node.Height)
             .Attribute("rx", 12)
-            .Paint("fill", NodePaint(node, theme, color, options))
-            .Attribute("stroke", color)
+            .Paint("fill", NodePaint(node, theme, color, options, NodeAccentRole(node, options)))
+            .Paint("stroke", NodeAccentPaint(node, color, options))
             .Attribute("stroke-width", 1.5)
             .Attribute("data-node-surface-style", "ArtworkFallback"));
         DrawNodeIcon(body, node, prefix, theme, color, TopologyNodeDisplayMode.Card, options);
@@ -320,14 +320,14 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", width)
             .Attribute("height", height)
             .Attribute("rx", 8.5)
-            .Paint("fill", StatusPaint(color, theme.Background))
-            .Attribute("stroke", color)
+            .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
+            .Paint("stroke", NodeAccentPaint(node, color, options))
             .Attribute("stroke-opacity", 0.45));
         group.Element("text", text => text
             .Attribute("x", x + width / 2)
             .Attribute("y", y + 11.8)
             .Attribute("text-anchor", "middle")
-            .Attribute("fill", color)
+            .Paint("fill", NodeAccentPaint(node, color, options))
             .Attribute("font-size", 9.5)
             .Attribute("font-weight", "700")
             .Text(subtitle));
@@ -349,8 +349,8 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", width)
             .Attribute("height", 17)
             .Attribute("rx", 8.5)
-            .Paint("fill", StatusPaint(color, theme.Background))
-            .Attribute("stroke", color)
+            .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
+            .Paint("stroke", NodeAccentPaint(node, color, options))
             .Attribute("stroke-opacity", 0.45));
         group.Element("text", text => text
             .Attribute("x", CenterX(node))
@@ -380,13 +380,13 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("width", width)
             .Attribute("height", height)
             .Attribute("rx", 9)
-            .Paint("fill", StatusPaint(color, theme.Background))
-            .Attribute("stroke", color));
+            .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
+            .Paint("stroke", NodeAccentPaint(node, color, options)));
         group.Element("text", text => text
             .Attribute("x", x + width / 2)
             .Attribute("y", y + 12.5)
             .Attribute("text-anchor", "middle")
-            .Attribute("fill", color)
+            .Paint("fill", NodeAccentPaint(node, color, options))
             .Attribute("font-size", 9)
             .Attribute("font-weight", "800")
             .Text(badge));
@@ -406,8 +406,8 @@ public sealed partial class TopologySvgRenderer {
         if (TryDrawIconArtwork(icon, artwork, prefix, options, cx, cy, size)) return;
         var shape = EffectiveIconShape(node, options);
         if (shape == TopologyIconShape.Cloud) {
-            var cloudStroke = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? ContrastWhite : SvgPaint.Plain(color);
-            var cloudFill = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? SvgPaint.Plain("none") : StatusPaint(color, theme.Background);
+            var cloudStroke = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? ContrastWhite : NodeAccentPaint(node, color, options);
+            var cloudFill = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon ? SvgPaint.Plain("none") : StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options));
             icon.Element("circle", circle => circle
                 .Attribute("cx", cx - 5)
                 .Attribute("cy", cy)
@@ -428,12 +428,12 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("cy", cy - 7)
                 .Attribute("rx", 10)
                 .Attribute("ry", 4)
-                .Paint("fill", StatusPaint(color, theme.Background))
-                .Attribute("stroke", color));
+                .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
+                .Paint("stroke", NodeAccentPaint(node, color, options)));
             icon.Element("path", path => path
                 .Attribute("d", "M " + F(cx - 10) + " " + F(cy - 7) + " V " + F(cy + 7) + " A 10 4 0 0 0 " + F(cx + 10) + " " + F(cy + 7) + " V " + F(cy - 7))
-                .Paint("fill", StatusPaint(color, theme.Background))
-                .Attribute("stroke", color));
+                .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
+                .Paint("stroke", NodeAccentPaint(node, color, options)));
         } else {
             icon.Element("rect", rect => rect
                 .Attribute("x", cx - size / 2)
@@ -441,15 +441,15 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("width", size)
                 .Attribute("height", size)
                 .Attribute("rx", 6)
-                .Paint("fill", StatusPaint(color, theme.Background))
-                .Attribute("stroke", color));
+                .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
+                .Paint("stroke", NodeAccentPaint(node, color, options)));
             if (!AddInfrastructureGlyph(icon, node, cx, cy, color, options)) {
                 icon.Element("text", text => text
                     .Attribute("x", cx)
                     .Attribute("y", cy)
                     .Attribute("text-anchor", "middle")
                     .Attribute("dominant-baseline", "central")
-                    .Attribute("fill", color)
+                    .Paint("fill", NodeAccentPaint(node, color, options))
                     .Attribute("font-size", 9)
                     .Attribute("font-weight", "800")
                     .Text(NodeGlyph(node, options)));
@@ -500,10 +500,10 @@ public sealed partial class TopologySvgRenderer {
         return "empty";
     }
 
-    private static bool AddInfrastructureGlyph(SvgElement parent, TopologyNode node, double cx, double cy, string color, TopologyRenderOptions options) {
+    private static bool AddInfrastructureGlyph(SvgElement parent, TopologyNode node, double cx, double cy, string color, TopologyRenderOptions options, SvgPaint? paint = null) {
         var marks = TopologyInfrastructureGlyphs.Build(EffectiveIconShape(node, options), node.Kind, cx, cy);
         if (marks == null) return false;
-        foreach (var mark in marks) AddGlyphMark(parent, mark, SvgPaint.Plain(color));
+        foreach (var mark in marks) AddGlyphMark(parent, mark, paint ?? NodeAccentPaint(node, color, options));
         return true;
     }
 
@@ -554,7 +554,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("cx", cx)
                     .Attribute("cy", cy)
                     .Attribute("r", NodeStatusBadgeInnerRadius)
-                    .Attribute("fill", color));
+                    .Paint("fill", StatusColorPaint(color)));
                 group.Element("text", text => text
                     .Attribute("x", cx)
                     .Attribute("y", cy + NodeStatusBadgeGlyphYOffset)

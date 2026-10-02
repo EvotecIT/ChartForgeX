@@ -89,5 +89,22 @@ public sealed partial class TopologySvgRenderer {
         return SvgPaint.Of(parsed, markerKey == "muted" ? SvgColorRole.Surface : SvgColorRole.Status);
     }
 
+    private static SvgPaint StatusColorPaint(string color) => ChartColor.TryParse(color, out var parsed)
+        ? SvgPaint.Of(parsed, SvgColorRole.Status) : SvgPaint.Plain(color);
+
+    private static SvgPaint NodeAccentPaint(TopologyNode node, string color, TopologyRenderOptions options) =>
+        NodeAccentRole(node, options) == SvgColorRole.Any ? SvgPaint.Plain(color) : StatusColorPaint(color);
+
+    private static SvgColorRole NodeAccentRole(TopologyNode node, TopologyRenderOptions options) =>
+        !string.IsNullOrWhiteSpace(node.Color) || !string.IsNullOrWhiteSpace(ResolveNodeIcon(node, options)?.Color)
+            ? SvgColorRole.Any : SvgColorRole.Status;
+
+    private static SvgPaint GroupAccentPaint(TopologyGroup group, string color, TopologyRenderOptions options) =>
+        GroupAccentRole(group, options) == SvgColorRole.Any ? SvgPaint.Plain(color) : StatusColorPaint(color);
+
+    private static SvgColorRole GroupAccentRole(TopologyGroup group, TopologyRenderOptions options) =>
+        !string.IsNullOrWhiteSpace(group.Color) || !string.IsNullOrWhiteSpace(ResolveGroupIcon(group, options)?.Color)
+            ? SvgColorRole.Any : SvgColorRole.Status;
+
     private static double EdgeLabelHaloStrokeWidth(double fontSize, bool emphasized) => ChartTextHalo.SvgStrokeWidth(fontSize, emphasized);
 }

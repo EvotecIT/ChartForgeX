@@ -169,7 +169,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("cx", points[i].X)
                     .Attribute("cy", points[i].Y)
                     .Attribute("r", TopologyGeographicCalloutPrimitives.MiniTopologyNodeRadius)
-                    .Attribute("fill", color)
+                    .Paint("fill", StatusColorPaint(color))
                     .Attribute("stroke", theme.Background)
                     .Attribute("stroke-width", TopologyGeographicCalloutPrimitives.MiniTopologyNodeStrokeWidth));
             }
@@ -191,17 +191,17 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("height", TopologyGeographicCalloutPrimitives.StatusChipHeight)
                     .Attribute("rx", TopologyGeographicCalloutPrimitives.StatusChipRadius)
                     .Paint("fill", StatusPaint(color, theme.Background))
-                    .Attribute("stroke", color)
+                    .Paint("stroke", StatusColorPaint(color))
                     .Attribute("stroke-opacity", TopologyGeographicCalloutPrimitives.StatusChipStrokeOpacity));
                 group.Element("circle", circle => circle
                     .Attribute("cx", x + offset + TopologyGeographicCalloutPrimitives.StatusChipDotX)
                     .Attribute("cy", y + TopologyGeographicCalloutPrimitives.StatusChipRadius)
                     .Attribute("r", TopologyGeographicCalloutPrimitives.StatusChipDotRadius)
-                    .Attribute("fill", color));
+                    .Paint("fill", StatusColorPaint(color)));
                 group.Element("text", textNode => textNode
                     .Attribute("x", x + offset + TopologyGeographicCalloutPrimitives.StatusChipTextX)
                     .Attribute("y", y + TopologyGeographicCalloutPrimitives.StatusChipTextSvgBaseline)
-                    .Attribute("fill", color)
+                    .Paint("fill", StatusColorPaint(color))
                     .Attribute("font-size", TopologyGeographicCalloutPrimitives.StatusChipTextFontSize)
                     .Attribute("font-weight", "800")
                     .Text(text));
