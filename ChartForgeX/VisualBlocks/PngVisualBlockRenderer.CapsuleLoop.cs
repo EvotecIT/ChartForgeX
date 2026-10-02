@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
@@ -62,13 +64,16 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawCapsuleLoopStroke(RgbaCanvas canvas, double x, double y, double width, double height, double stroke, double start, double end, ChartColor color, RasterLineCap lineCap) {
         if (color.A == 0) return;
+        // The parts join end to end, so they are stroked as one path, as the SVG writes them: no cap or
+        // overlap where a straight run meets an arc, which would darken a translucent track.
+        var path = new List<ChartPoint>();
         foreach (var part in VisualBlockRendering.CapsuleLoopParts(x, y, width, height, stroke, start, end)) {
-            if (part.Kind == CapsuleLoopPartKind.Line) {
-                canvas.DrawLine(part.StartPoint.X, part.StartPoint.Y, part.EndPoint.X, part.EndPoint.Y, color, stroke, lineCap);
-            } else {
-                canvas.DrawArc(part.CenterX, part.CenterY, part.Radius, part.StartAngle, part.EndAngle, color, stroke, lineCap);
-            }
+            var points = part.Kind == CapsuleLoopPartKind.Line
+                ? new List<ChartPoint> { part.StartPoint, part.EndPoint }
+                : ChartCurveFlattening.Arc(part.CenterX, part.CenterY, part.Radius, part.StartAngle, part.EndAngle - part.StartAngle, canvas.PixelsPerUnit);
+            path.AddRange(points);
         }
+        canvas.DrawPolyline(path, color, stroke, lineCap, RasterLineJoin.Round, null);
     }
 
     private static void DrawCapsuleLegend(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height) {

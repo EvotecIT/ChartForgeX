@@ -19,7 +19,8 @@ public sealed partial class PngVisualBlockRenderer {
         VisualBlockRendering.Validate(block);
         var options = block.Options;
         var theme = options.Theme;
-        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), options.PngOutputScale);
+        using var emphasis = RgbaCanvas.OpenEmphasisScope();
+        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), options.PngOutputScale);
         canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
             canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
@@ -227,7 +228,7 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawMetricAction(RgbaCanvas canvas, MetricCard card, double footerY, double footerHeight, double x, double width) {
         var theme = card.Options.Theme;
-        canvas.DrawLine(0, footerY, card.Options.Size.Width, footerY, theme.PlotBorder, 1);
+        canvas.DrawLine(0, footerY, card.Options.Size.Width, footerY, theme.PlotBorder, 1, RasterLineCap.Butt);
         var fontSize = Math.Max(10, theme.SubtitleFontSize);
         var symbolWidth = Math.Min(24, canvas.MeasureTextEmphasizedWidth(card.ActionSymbol, fontSize) + 6);
         var y = footerY + (footerHeight - fontSize) * 0.52;
@@ -254,10 +255,10 @@ public sealed partial class PngVisualBlockRenderer {
         else if (card.SecondaryMiniSparkline.Count > 0) {
             var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
             var secondaryPoints = VisualBlockRendering.SmoothMiniSparklinePoints(secondary);
-            for (var i = 1; i < secondaryPoints.Count; i++) canvas.DrawLine(secondaryPoints[i - 1].X, secondaryPoints[i - 1].Y, secondaryPoints[i].X, secondaryPoints[i].Y, secondary.LineColor, Math.Max(1.8, secondary.StrokeWidth * 0.72));
+            canvas.DrawPolyline(secondaryPoints, secondary.LineColor, Math.Max(1.8, secondary.StrokeWidth * 0.72));
         }
 
-        for (var i = 1; i < points.Count; i++) canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, sparkline.LineColor, sparkline.StrokeWidth);
+        canvas.DrawPolyline(points, sparkline.LineColor, sparkline.StrokeWidth);
         if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line) canvas.DrawCircle(sparkline.Points[0].X, sparkline.Points[0].Y, sparkline.CurrentRadius * 0.82, sparkline.LineColor);
         canvas.DrawCircle(sparkline.Current.X, sparkline.Current.Y, sparkline.CurrentRadius, sparkline.LineColor);
     }
@@ -351,12 +352,11 @@ public sealed partial class PngVisualBlockRenderer {
                 if (row.Selected) canvas.FillRoundedRect(controlX, centerY - 8, 16, 16, 4, color.WithAlpha(46));
                 canvas.StrokeRoundedRect(controlX, centerY - 8, 16, 16, 4, row.Selected ? color : theme.PlotBorder, 1);
                 if (row.Selected) {
-                    canvas.DrawLine(controlX + 4, centerY, controlX + 7, centerY + 4, color, 1.6);
-                    canvas.DrawLine(controlX + 7, centerY + 4, controlX + 13, centerY - 5, color, 1.6);
+                    canvas.DrawPolyline(new[] { new ChartPoint(controlX + 4, centerY), new ChartPoint(controlX + 7, centerY + 4), new ChartPoint(controlX + 13, centerY - 5) }, color, 1.8);
                 }
             }
 
-            if (block.ShowDividers && i < block.Rows.Count - 1) canvas.DrawLine(textX, y + rowHeight - 1, content.X + content.Width, y + rowHeight - 1, theme.PlotBorder.WithAlpha(120), 1);
+            if (block.ShowDividers && i < block.Rows.Count - 1) canvas.DrawLine(textX, y + rowHeight - 1, content.X + content.Width, y + rowHeight - 1, theme.PlotBorder.WithAlpha(120), 1, RasterLineCap.Butt);
             y += rowHeight;
         }
 
@@ -384,7 +384,7 @@ public sealed partial class PngVisualBlockRenderer {
 
         for (var lane = 0; lane < laneCount; lane++) {
             var laneY = plotTop + lane * (laneHeight + laneGap);
-            canvas.DrawLine(content.X, laneY + laneHeight / 2, content.X + content.Width, laneY + laneHeight / 2, theme.PlotBorder.WithAlpha(70), 1);
+            canvas.DrawLine(content.X, laneY + laneHeight / 2, content.X + content.Width, laneY + laneHeight / 2, theme.PlotBorder.WithAlpha(70), 1, RasterLineCap.Butt);
         }
 
         if (block.CurrentTime.HasValue && VisualBlockRendering.IsScheduleTimeInRange(block, block.CurrentTime.Value)) {
@@ -501,8 +501,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.DrawCircle(x, y, 7, color.WithAlpha(55));
             canvas.DrawCircleOutline(x, y, 7, color, 1);
             if (item.IsChecked != false) {
-                canvas.DrawLine(x - 4, y, x - 1, y + 4, color, 1.6);
-                canvas.DrawLine(x - 1, y + 4, x + 5, y - 4, color, 1.6);
+                canvas.DrawPolyline(new[] { new ChartPoint(x - 4, y), new ChartPoint(x - 1, y + 4), new ChartPoint(x + 5, y - 4) }, color, 1.8);
             }
 
             return;
@@ -594,6 +593,6 @@ public sealed partial class PngVisualBlockRenderer {
             else high = mid - 1;
         }
 
-        return value.Substring(0, low) + suffix;
+        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 }

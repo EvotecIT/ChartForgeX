@@ -34,7 +34,7 @@ public sealed partial class SvgChartRenderer {
             else high = mid - 1;
         }
 
-        return low == 0 ? suffix : transformed.Substring(0, low).TrimEnd() + suffix;
+        return low == 0 ? suffix : transformed.Substring(0, TextElementBoundary.Snap(transformed, low)).TrimEnd() + suffix;
     }
 
     private static double TextFontSizeForSvgWidth(Chart chart, string text, double maxWidth, double preferredFontSize, TextStyleOverride style, bool emphasized = false, double minFontSize = 8) {

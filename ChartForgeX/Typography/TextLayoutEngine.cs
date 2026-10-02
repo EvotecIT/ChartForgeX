@@ -14,8 +14,8 @@ public static class TextLayoutEngine {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (style == null) throw new ArgumentNullException(nameof(style));
         text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
-        var font = TypographyFontResolver.Resolve(style.Font);
-        var lineHeight = ResolveLineHeight(style, font);
+        var font = TypographyFontResolver.ResolveFace(style.Font);
+        var lineHeight = ResolveLineHeight(style, font.Font);
         var width = 0d;
         var lineCount = 0;
         foreach (var line in TextLineScanner.Enumerate(text)) {
@@ -35,9 +35,11 @@ public static class TextLayoutEngine {
         if (!Enum.IsDefined(typeof(TextTrimming), trimming)) throw new ArgumentOutOfRangeException(nameof(trimming), trimming, "Unknown text trimming mode.");
 
         text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
-        var font = TypographyFontResolver.Resolve(style.Font);
+        var font = TypographyFontResolver.ResolveFace(style.Font);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
+        var omittedLines = false;
+        var lastLineEllipsized = false;
         foreach (var paragraphSlice in TextLineScanner.Enumerate(text)) {
             var remainingLines = maximumLines.HasValue
                 ? Math.Max(0, maximumLines.Value - resolved.Count)
@@ -51,30 +53,47 @@ public static class TextLayoutEngine {
                 remainingLines,
                 out var paragraphTrimmed);
             for (var i = 0; i < paragraphLines.Count; i++) {
-                resolved.Add(paragraphLines[i]);
+                var line = paragraphLines[i];
+                lastLineEllipsized = false;
+                if (wrapMode == TextWrapMode.NoWrap && line.Width > maximumWidth) {
+                    trimmed = true;
+                    if (trimming == TextTrimming.Ellipsis) {
+                        line = Ellipsize(line.Text, maximumWidth, style, font);
+                        lastLineEllipsized = true;
+                    }
+                }
+                resolved.Add(line);
             }
 
             if (paragraphTrimmed) {
                 trimmed = true;
+                omittedLines = true;
                 break;
             }
         }
 
         if (resolved.Count == 0) resolved.Add(new TextLayoutLine(string.Empty, 0));
-        if (trimmed && trimming == TextTrimming.Ellipsis) {
+        if (omittedLines && trimming == TextTrimming.Ellipsis && !lastLineEllipsized) {
             var last = resolved.Count - 1;
             resolved[last] = Ellipsize(resolved[last].Text, maximumWidth, style, font);
         }
 
         var width = 0d;
         for (var i = 0; i < resolved.Count; i++) width = Math.Max(width, resolved[i].Width);
-        var lineHeight = ResolveLineHeight(style, font);
+        var lineHeight = ResolveLineHeight(style, font.Font);
         return new TextLayout(resolved, new TextMetrics(width, resolved.Count * lineHeight, lineHeight), trimmed);
     }
 
-    internal static double MeasureWidth(string text, TextStyle style, TrueTypeFont? font) {
-        var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, font, style.Font.Italic);
-        if (style.Font.Weight >= 600 && text.Length > 0) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
+    /// <summary>Measures with a face chosen elsewhere; bold and italic requested by the style are synthesized on it.</summary>
+    internal static double MeasureWidth(string text, TextStyle style, TrueTypeFont? font) =>
+        MeasureWidth(text, style, new ResolvedTypeface(font, style.Font.Weight >= 600, style.Font.Italic));
+
+    internal static double MeasureWidth(string text, TextStyle style, ResolvedTypeface face) {
+        var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, face.Font, face.SynthesizeItalic);
+        // A real italic face leans past its last advance just as a sheared one does; reserving the same
+        // overhang keeps layout independent of which faces the host has installed.
+        if (style.Font.Italic && !face.SynthesizeItalic && text.Length > 0) width += TrueTypeFont.ItalicOverhang(style.EffectiveFontSize);
+        if (face.SynthesizeBold && text.Length > 0 && (face.Font == null || face.Font.NeedsSyntheticBold(text))) width += Math.Max(0.6, style.EffectiveFontSize / 18.0);
         return width;
     }
 
@@ -91,7 +110,7 @@ public static class TextLayoutEngine {
         string paragraph,
         double maximumWidth,
         TextStyle style,
-        TrueTypeFont? font,
+        ResolvedTypeface font,
         TextWrapMode wrapMode,
         int? maximumLines,
         out bool trimmed) {
@@ -101,7 +120,11 @@ public static class TextLayoutEngine {
             return new List<TextLayoutLine>();
         }
         if (paragraph.Length == 0) return new List<TextLayoutLine> { new(string.Empty, 0) };
-        if (wrapMode == TextWrapMode.NoWrap) return new List<TextLayoutLine> { new(paragraph, MeasureWidth(paragraph, style, font)) };
+        if (wrapMode == TextWrapMode.NoWrap) {
+            // Horizontal overflow is handled per line; it does not exhaust the remaining explicit paragraphs.
+            var width = MeasureWidth(paragraph, style, font);
+            return new List<TextLayoutLine> { new(paragraph, width) };
+        }
         if (wrapMode == TextWrapMode.Character) {
             return WrapCharacters(
                 paragraph,
@@ -174,36 +197,38 @@ public static class TextLayoutEngine {
         string text,
         double maximumWidth,
         TextStyle style,
-        TrueTypeFont? font,
+        ResolvedTypeface font,
         int? maximumLines,
         out bool trimmed) {
         var output = new List<TextLayoutLine>();
         var start = 0;
         while (start < text.Length) {
             if (maximumLines.HasValue && output.Count >= maximumLines.Value) break;
-            var length = 1;
-            var bestLength = 1;
-            while (start + length <= text.Length) {
-                var candidate = text.Substring(start, length);
+            // Lines break between whole characters: a surrogate pair or a base and its marks stay together.
+            var end = TextElementBoundary.Next(text, start);
+            var bestEnd = end;
+            while (end <= text.Length) {
+                var candidate = text.Substring(start, end - start);
                 if (MeasureWidth(candidate, style, font) > maximumWidth) break;
-                bestLength = length;
-                length++;
+                bestEnd = end;
+                if (end == text.Length) break;
+                end = TextElementBoundary.Next(text, end);
             }
 
-            var line = text.Substring(start, bestLength);
+            var line = text.Substring(start, bestEnd - start);
             output.Add(new TextLayoutLine(line, MeasureWidth(line, style, font)));
-            start += bestLength;
+            start = bestEnd;
         }
 
         trimmed = start < text.Length;
         return output;
     }
 
-    private static TextLayoutLine Ellipsize(string text, double maximumWidth, TextStyle style, TrueTypeFont? font) {
+    private static TextLayoutLine Ellipsize(string text, double maximumWidth, TextStyle style, ResolvedTypeface font) {
         const string ellipsis = "…";
         if (MeasureWidth(ellipsis, style, font) > maximumWidth) return new TextLayoutLine(string.Empty, 0);
         var candidate = text.TrimEnd();
-        while (candidate.Length > 0 && MeasureWidth(candidate + ellipsis, style, font) > maximumWidth) candidate = candidate.Substring(0, candidate.Length - 1).TrimEnd();
+        while (candidate.Length > 0 && MeasureWidth(candidate + ellipsis, style, font) > maximumWidth) candidate = candidate.Substring(0, TextElementBoundary.Snap(candidate, candidate.Length - 1)).TrimEnd();
         var result = candidate + ellipsis;
         return new TextLayoutLine(result, MeasureWidth(result, style, font));
     }

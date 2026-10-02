@@ -300,7 +300,7 @@ internal static partial class SmokeTests {
         var svgRangeBand = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeBand.cs"));
         var svgRangeArea = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeArea.cs"));
         var svgWaterfall = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Waterfall.cs"));
-        var canvas = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.cs"));
+        var canvas = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.cs")) + File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.Polyline.cs"));
         var png = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.cs"));
         var cartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
         var radar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Radar.cs"));

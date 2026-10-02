@@ -79,13 +79,13 @@ public sealed partial class PngChartRenderer {
         for (var i = 1; i < 4; i++) {
             var longitude = viewport.MinimumLongitude + (viewport.MaximumLongitude - viewport.MinimumLongitude) * i / 4.0;
             var x = ProjectMapX(map, viewport, longitude);
-            c.DrawLine(x, map.Top, x, map.Bottom, verticalColor, 0.8);
+            c.DrawLine(x, map.Top, x, map.Bottom, verticalColor, 0.8, RasterLineCap.Butt);
         }
 
         for (var i = 1; i < 3; i++) {
             var latitude = viewport.MinimumLatitude + (viewport.MaximumLatitude - viewport.MinimumLatitude) * i / 3.0;
             var y = ProjectMapY(map, viewport, latitude);
-            c.DrawLine(map.Left, y, map.Right, y, horizontalColor, 0.8);
+            c.DrawLine(map.Left, y, map.Right, y, horizontalColor, 0.8, RasterLineCap.Butt);
         }
     }
 
@@ -98,10 +98,7 @@ public sealed partial class PngChartRenderer {
             var points = new List<ChartPoint>(outline.Length);
             foreach (var point in outline) points.Add(new ChartPoint(ProjectMapX(map, viewport, point.X), ProjectMapY(map, viewport, point.Y)));
             c.FillPolygon(points, ApplyOpacity(color, 0.10));
-            for (var i = 0; i < points.Count; i++) {
-                var next = points[(i + 1) % points.Count];
-                c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, ApplyOpacity(color, 0.46), Math.Max(1.2, dot * 0.42));
-            }
+            c.StrokeClosedPolyline(points, ApplyOpacity(color, 0.46), Math.Max(1.2, dot * 0.42), RasterLineJoin.Miter);
         }
     }
 
@@ -115,7 +112,7 @@ public sealed partial class PngChartRenderer {
             var y1 = routePoints[0].Y;
             var x2 = routePoints[routePoints.Count - 1].X;
             var y2 = routePoints[routePoints.Count - 1].Y;
-            var color = ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.62);
+            var color = ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.72);
             var control = DottedMapConnectorControlPoint(x1, y1, x2, y2, map, dot);
             var fromTrim = DottedMapEndpointTrim(series, viewport, connector.FromLongitude, connector.FromLatitude, dot, valueRange);
             var toTrim = DottedMapEndpointTrim(series, viewport, connector.ToLongitude, connector.ToLatitude, dot, valueRange);
@@ -130,8 +127,8 @@ public sealed partial class PngChartRenderer {
             var strokeWidth = Math.Max(1.2, dot * 0.78);
             if (connector.RoutePoints.Length > 0) {
                 var smoothRoutePoints = DottedMapSmoothRoute(routePoints);
-                c.DrawPolyline(smoothRoutePoints, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2);
-                c.DrawPolyline(smoothRoutePoints, color, strokeWidth);
+                c.DrawPolyline(smoothRoutePoints, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2, RasterLineCap.Round, RasterLineJoin.Miter, null);
+                c.DrawPolyline(smoothRoutePoints, color, strokeWidth, RasterLineCap.Round, RasterLineJoin.Miter, null);
                 c.FillPolygon(DottedMapConnectorArrowPoints(smoothRoutePoints, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
             } else {
                 DrawDottedMapPngConnectorCurve(c, renderedFrom.X, renderedFrom.Y, renderedTo.X, renderedTo.Y, control.X, control.Y, ApplyOpacity(t.PlotBackground, 0.72), strokeWidth + 3.2);
@@ -277,17 +274,14 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawDottedMapPngConnectorCurve(RgbaCanvas c, double x1, double y1, double x2, double y2, double controlX, double controlY, ChartColor color, double strokeWidth) {
-        var previousX = x1;
-        var previousY = y1;
+        var curve = new List<ChartPoint>(23) { new ChartPoint(x1, y1) };
         for (var step = 1; step <= 22; step++) {
             var ratio = step / 22.0;
             var oneMinus = 1 - ratio;
-            var x = oneMinus * oneMinus * x1 + 2 * oneMinus * ratio * controlX + ratio * ratio * x2;
-            var y = oneMinus * oneMinus * y1 + 2 * oneMinus * ratio * controlY + ratio * ratio * y2;
-            c.DrawLine(previousX, previousY, x, y, color, strokeWidth);
-            previousX = x;
-            previousY = y;
+            curve.Add(new ChartPoint(oneMinus * oneMinus * x1 + 2 * oneMinus * ratio * controlX + ratio * ratio * x2, oneMinus * oneMinus * y1 + 2 * oneMinus * ratio * controlY + ratio * ratio * y2));
         }
+
+        c.DrawPolyline(curve, color, strokeWidth, RasterLineCap.Round, RasterLineJoin.Miter, null);
     }
 
     private static ChartPoint[] DottedMapConnectorArrowPoints(double x1, double y1, double controlX, double controlY, double x2, double y2, double dot) {
@@ -354,20 +348,12 @@ public sealed partial class PngChartRenderer {
         if (boundaries.Length == 0) return;
         var t = chart.Options.Theme;
         var color = ApplyOpacity(ChartDottedMapSurface.BoundaryColor(t.PlotBackground, t.MutedText), ChartDottedMapSurface.BoundaryOpacity(t.PlotBackground));
-        var strokeWidth = Math.Max(0.65, dot * 0.26);
+        var strokeWidth = Math.Max(0.75, dot * 0.30);
         foreach (var line in boundaries) {
             if (line.Length < 2) continue;
-            var previous = line[0];
-            var previousX = ProjectMapX(map, viewport, previous.X);
-            var previousY = ProjectMapY(map, viewport, previous.Y);
-            for (var i = 1; i < line.Length; i++) {
-                var point = line[i];
-                var x = ProjectMapX(map, viewport, point.X);
-                var y = ProjectMapY(map, viewport, point.Y);
-                c.DrawLine(previousX, previousY, x, y, color, strokeWidth);
-                previousX = x;
-                previousY = y;
-            }
+            var points = new ChartPoint[line.Length];
+            for (var i = 0; i < line.Length; i++) points[i] = new ChartPoint(ProjectMapX(map, viewport, line[i].X), ProjectMapY(map, viewport, line[i].Y));
+            c.DrawPolyline(points, color, strokeWidth);
         }
     }
 

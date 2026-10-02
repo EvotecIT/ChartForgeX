@@ -1,47 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-grid-4a66cdf4" width="1118" height="1550" viewBox="0 0 1118 1550" role="img" aria-labelledby="cfx-grid-4a66cdf4-title cfx-grid-4a66cdf4-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-grid-4a66cdf4-title">Map Viewport Showcase</title>
-<desc id="cfx-grid-4a66cdf4-desc">Static chart grid containing 8 charts.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-grid-3caa3f90" width="1118" height="1550" viewBox="0 0 1118 1550" role="img" aria-labelledby="cfx-grid-3caa3f90-title cfx-grid-3caa3f90-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-grid-3caa3f90-title">Map Viewport Showcase</title>
+<desc id="cfx-grid-3caa3f90-desc">Static chart grid containing 8 charts.</desc>
 <defs>
-<style>#cfx-grid-4a66cdf4 .cfx-guide-stroke,#cfx-grid-4a66cdf4 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-grid-4a66cdf4 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-grid-4a66cdf4-gridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<style>#cfx-grid-3caa3f90 .cfx-guide-stroke,#cfx-grid-3caa3f90 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-grid-3caa3f90 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-grid-3caa3f90-gridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-grid-4a66cdf4-gridSurface)"/>
+<rect width="100%" height="100%" fill="url(#cfx-grid-3caa3f90-gridSurface)"/>
 <text data-cfx-role="grid-title" x="30" y="45.5" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">Map Viewport Showcase</text>
 <text data-cfx-role="grid-subtitle" x="32" y="67.5" fill="#475569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">The same dotted map layer can focus on continents, Europe, Poland, or custom longitude/latitude windows</text>
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxbb914ff2-title cfxbb914ff2-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="30" y="106" data-cfx-role="grid-panel">
-<title id="cfxbb914ff2-title">World</title>
-<desc id="cfxbb914ff2-desc">World dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfx88a56fc5-title cfx88a56fc5-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="30" y="106" data-cfx-role="grid-panel">
+<title id="cfx88a56fc5-title">World</title>
+<desc id="cfx88a56fc5-desc">World dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxbb914ff2 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxbb914ff2 .cfx-crisp-stroke,#cfxbb914ff2 .cfx-guide-stroke,#cfxbb914ff2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxbb914ff2 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxbb914ff2 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxbb914ff2 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxbb914ff2 .cfx-interactive-region:hover,#cfxbb914ff2 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxbb914ff2-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxbb914ff2-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxbb914ff2-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxbb914ff2-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxbb914ff2-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxbb914ff2-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxbb914ff2-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxbb914ff2-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxbb914ff2-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxbb914ff2-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfx88a56fc5 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx88a56fc5 .cfx-crisp-stroke,#cfx88a56fc5 .cfx-guide-stroke,#cfx88a56fc5 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx88a56fc5 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx88a56fc5 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx88a56fc5 .cfx-interactive-region:hover,#cfx88a56fc5 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx88a56fc5-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfx88a56fc5-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx88a56fc5-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx88a56fc5-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfx88a56fc5-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx88a56fc5-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx88a56fc5-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx88a56fc5-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx88a56fc5-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx88a56fc5-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxbb914ff2">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxbb914ff2-cardSurface)" filter="url(#cfxbb914ff2-softShadow)"/>
+<g id="cfx88a56fc5">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfx88a56fc5-cardSurface)" filter="url(#cfx88a56fc5-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxbb914ff2-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfx88a56fc5-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">World</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">World viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="World" data-cfx-viewport-min-longitude="-180" data-cfx-viewport-max-longitude="180" data-cfx-viewport-min-latitude="-58" data-cfx-viewport-max-latitude="84" data-cfx-min-longitude="-98.58" data-cfx-max-longitude="113.921" data-cfx-min-latitude="-0.789" data-cfx-max-latitude="40.417" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxbb914ff2-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfx88a56fc5-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="40" y="98.983" width="446" height="188.033" rx="7" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="-90" x1="156.5" y1="108.983" x2="156.5" y2="277.017" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="0" x1="263" y1="108.983" x2="263" y2="277.017" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -655,40 +655,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxe02c913b-title cfxe02c913b-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="568" y="106" data-cfx-role="grid-panel">
-<title id="cfxe02c913b-title">Europe</title>
-<desc id="cfxe02c913b-desc">Europe dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxb20552da-title cfxb20552da-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="568" y="106" data-cfx-role="grid-panel">
+<title id="cfxb20552da-title">Europe</title>
+<desc id="cfxb20552da-desc">Europe dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxe02c913b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxe02c913b .cfx-crisp-stroke,#cfxe02c913b .cfx-guide-stroke,#cfxe02c913b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxe02c913b .cfx-guide-stroke{shape-rendering:crispEdges} #cfxe02c913b .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxe02c913b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxe02c913b .cfx-interactive-region:hover,#cfxe02c913b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxe02c913b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxe02c913b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxe02c913b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxe02c913b-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxe02c913b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxe02c913b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxe02c913b-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxe02c913b-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxe02c913b-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5391F7" stop-opacity="1"/><stop offset="100%" stop-color="#377AE7" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxe02c913b-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfxb20552da text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxb20552da .cfx-crisp-stroke,#cfxb20552da .cfx-guide-stroke,#cfxb20552da .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxb20552da .cfx-guide-stroke{shape-rendering:crispEdges} #cfxb20552da .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxb20552da .cfx-interactive-region:hover,#cfxb20552da .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxb20552da-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxb20552da-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxb20552da-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxb20552da-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfxb20552da-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxb20552da-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb20552da-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb20552da-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb20552da-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5391F7" stop-opacity="1"/><stop offset="100%" stop-color="#377AE7" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb20552da-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxe02c913b">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxe02c913b-cardSurface)" filter="url(#cfxe02c913b-softShadow)"/>
+<g id="cfxb20552da">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxb20552da-cardSurface)" filter="url(#cfxb20552da-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxe02c913b-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxb20552da-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Europe</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Europe viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="Europe" data-cfx-viewport-min-longitude="-11" data-cfx-viewport-max-longitude="35" data-cfx-viewport-min-latitude="36" data-cfx-viewport-max-latitude="72" data-cfx-min-longitude="-3.704" data-cfx-max-longitude="21.012" data-cfx-min-latitude="40.417" data-cfx-max-latitude="59.914" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxe02c913b-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxb20552da-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="125.376" y="82.32" width="275.249" height="221.36" rx="11.52" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="0.5" x1="201.028" y1="96" x2="201.028" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="12" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -830,40 +830,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxade95dfd-title cfxade95dfd-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="30" y="464" data-cfx-role="grid-panel">
-<title id="cfxade95dfd-title">North America</title>
-<desc id="cfxade95dfd-desc">North America dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfx23686c3b-title cfx23686c3b-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="30" y="464" data-cfx-role="grid-panel">
+<title id="cfx23686c3b-title">North America</title>
+<desc id="cfx23686c3b-desc">North America dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxade95dfd text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxade95dfd .cfx-crisp-stroke,#cfxade95dfd .cfx-guide-stroke,#cfxade95dfd .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxade95dfd .cfx-guide-stroke{shape-rendering:crispEdges} #cfxade95dfd .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxade95dfd .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxade95dfd .cfx-interactive-region:hover,#cfxade95dfd .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxade95dfd-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxade95dfd-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxade95dfd-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxade95dfd-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxade95dfd-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxade95dfd-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxade95dfd-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxade95dfd-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxade95dfd-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxade95dfd-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfx23686c3b text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx23686c3b .cfx-crisp-stroke,#cfx23686c3b .cfx-guide-stroke,#cfx23686c3b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx23686c3b .cfx-guide-stroke{shape-rendering:crispEdges} #cfx23686c3b .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx23686c3b .cfx-interactive-region:hover,#cfx23686c3b .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx23686c3b-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfx23686c3b-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx23686c3b-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx23686c3b-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfx23686c3b-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx23686c3b-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx23686c3b-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx23686c3b-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx23686c3b-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx23686c3b-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxade95dfd">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxade95dfd-cardSurface)" filter="url(#cfxade95dfd-softShadow)"/>
+<g id="cfx23686c3b">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfx23686c3b-cardSurface)" filter="url(#cfx23686c3b-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxade95dfd-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfx23686c3b-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">North America</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">North America viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="North America" data-cfx-viewport-min-longitude="-170" data-cfx-viewport-max-longitude="-50" data-cfx-viewport-min-latitude="5" data-cfx-viewport-max-latitude="72" data-cfx-min-longitude="-122.419" data-cfx-max-longitude="-74.006" data-cfx-min-latitude="37.775" data-cfx-max-latitude="43.653" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxade95dfd-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfx23686c3b-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="73.094" y="79.826" width="379.811" height="226.349" rx="13.621" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="-140" x1="176.134" y1="96" x2="176.134" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="-110" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -984,40 +984,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxa3785cfa-title cfxa3785cfa-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="568" y="464" data-cfx-role="grid-panel">
-<title id="cfxa3785cfa-title">South America</title>
-<desc id="cfxa3785cfa-desc">South America dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxb08fc3e4-title cfxb08fc3e4-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="568" y="464" data-cfx-role="grid-panel">
+<title id="cfxb08fc3e4-title">South America</title>
+<desc id="cfxb08fc3e4-desc">South America dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxa3785cfa text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxa3785cfa .cfx-crisp-stroke,#cfxa3785cfa .cfx-guide-stroke,#cfxa3785cfa .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxa3785cfa .cfx-guide-stroke{shape-rendering:crispEdges} #cfxa3785cfa .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxa3785cfa .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxa3785cfa .cfx-interactive-region:hover,#cfxa3785cfa .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxa3785cfa-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxa3785cfa-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxa3785cfa-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxa3785cfa-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxa3785cfa-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxa3785cfa-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxa3785cfa-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6AA28" stop-opacity="1"/><stop offset="100%" stop-color="#E6950A" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxa3785cfa-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6AA28" stop-opacity="1"/><stop offset="100%" stop-color="#E6950A" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxa3785cfa-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F15A5A" stop-opacity="1"/><stop offset="100%" stop-color="#E14040" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxa3785cfa-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfxb08fc3e4 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxb08fc3e4 .cfx-crisp-stroke,#cfxb08fc3e4 .cfx-guide-stroke,#cfxb08fc3e4 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxb08fc3e4 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxb08fc3e4 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxb08fc3e4 .cfx-interactive-region:hover,#cfxb08fc3e4 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxb08fc3e4-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxb08fc3e4-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxb08fc3e4-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfxb08fc3e4-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6AA28" stop-opacity="1"/><stop offset="100%" stop-color="#E6950A" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6AA28" stop-opacity="1"/><stop offset="100%" stop-color="#E6950A" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F15A5A" stop-opacity="1"/><stop offset="100%" stop-color="#E14040" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxb08fc3e4-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxa3785cfa">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxa3785cfa-cardSurface)" filter="url(#cfxa3785cfa-softShadow)"/>
+<g id="cfxb08fc3e4">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxb08fc3e4-cardSurface)" filter="url(#cfxb08fc3e4-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxa3785cfa-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxb08fc3e4-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">South America</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">South America viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="South America" data-cfx-viewport-min-longitude="-86" data-cfx-viewport-max-longitude="-32" data-cfx-viewport-min-latitude="-56" data-cfx-viewport-max-latitude="14" data-cfx-min-longitude="-77.043" data-cfx-max-longitude="-46.633" data-cfx-min-latitude="-34.604" data-cfx-max-latitude="-12.046" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxa3785cfa-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxb08fc3e4-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="172.69" y="80.519" width="180.62" height="224.962" rx="13.037" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="-72.5" x1="225.586" y1="96" x2="225.586" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="-59" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -1099,40 +1099,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfx2cad2183-title cfx2cad2183-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="30" y="822" data-cfx-role="grid-panel">
-<title id="cfx2cad2183-title">Africa</title>
-<desc id="cfx2cad2183-desc">Africa dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxd51d19d0-title cfxd51d19d0-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="30" y="822" data-cfx-role="grid-panel">
+<title id="cfxd51d19d0-title">Africa</title>
+<desc id="cfxd51d19d0-desc">Africa dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfx2cad2183 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx2cad2183 .cfx-crisp-stroke,#cfx2cad2183 .cfx-guide-stroke,#cfx2cad2183 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx2cad2183 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx2cad2183 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfx2cad2183 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx2cad2183 .cfx-interactive-region:hover,#cfx2cad2183 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfx2cad2183-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfx2cad2183-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx2cad2183-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx2cad2183-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfx2cad2183-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx2cad2183-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx2cad2183-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#30C1B1" stop-opacity="1"/><stop offset="100%" stop-color="#13AD9C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx2cad2183-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#30C1B1" stop-opacity="1"/><stop offset="100%" stop-color="#13AD9C" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx2cad2183-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24BFD9" stop-opacity="1"/><stop offset="100%" stop-color="#06ABC7" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx2cad2183-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfxd51d19d0 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxd51d19d0 .cfx-crisp-stroke,#cfxd51d19d0 .cfx-guide-stroke,#cfxd51d19d0 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxd51d19d0 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxd51d19d0 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxd51d19d0 .cfx-interactive-region:hover,#cfxd51d19d0 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxd51d19d0-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxd51d19d0-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxd51d19d0-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxd51d19d0-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfxd51d19d0-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxd51d19d0-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd51d19d0-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#30C1B1" stop-opacity="1"/><stop offset="100%" stop-color="#13AD9C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd51d19d0-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#30C1B1" stop-opacity="1"/><stop offset="100%" stop-color="#13AD9C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd51d19d0-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24BFD9" stop-opacity="1"/><stop offset="100%" stop-color="#06ABC7" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxd51d19d0-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfx2cad2183">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfx2cad2183-cardSurface)" filter="url(#cfx2cad2183-softShadow)"/>
+<g id="cfxd51d19d0">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxd51d19d0-cardSurface)" filter="url(#cfxd51d19d0-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfx2cad2183-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxd51d19d0-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Africa</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Africa viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="Africa" data-cfx-viewport-min-longitude="-20" data-cfx-viewport-max-longitude="55" data-cfx-viewport-min-latitude="-36" data-cfx-viewport-max-latitude="38" data-cfx-min-longitude="3.379" data-cfx-max-longitude="31.236" data-cfx-min-latitude="-33.925" data-cfx-max-latitude="30.044" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfx2cad2183-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxd51d19d0-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="150.045" y="81.356" width="225.91" height="223.289" rx="12.332" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="-1.25" x1="213.845" y1="96" x2="213.845" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="17.5" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -1319,40 +1319,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxd8ac9849-title cfxd8ac9849-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="568" y="822" data-cfx-role="grid-panel">
-<title id="cfxd8ac9849-title">Asia</title>
-<desc id="cfxd8ac9849-desc">Asia dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxaabbe222-title cfxaabbe222-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="568" y="822" data-cfx-role="grid-panel">
+<title id="cfxaabbe222-title">Asia</title>
+<desc id="cfxaabbe222-desc">Asia dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxd8ac9849 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxd8ac9849 .cfx-crisp-stroke,#cfxd8ac9849 .cfx-guide-stroke,#cfxd8ac9849 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxd8ac9849 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxd8ac9849 .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxd8ac9849 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxd8ac9849 .cfx-interactive-region:hover,#cfxd8ac9849 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxd8ac9849-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxd8ac9849-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxd8ac9849-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxd8ac9849-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxd8ac9849-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxd8ac9849-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxd8ac9849-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#8C52EF" stop-opacity="1"/><stop offset="100%" stop-color="#7537DF" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxd8ac9849-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#8C52EF" stop-opacity="1"/><stop offset="100%" stop-color="#7537DF" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxd8ac9849-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#B269F8" stop-opacity="1"/><stop offset="100%" stop-color="#9E50E8" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxd8ac9849-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfxaabbe222 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxaabbe222 .cfx-crisp-stroke,#cfxaabbe222 .cfx-guide-stroke,#cfxaabbe222 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxaabbe222 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxaabbe222 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxaabbe222 .cfx-interactive-region:hover,#cfxaabbe222 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxaabbe222-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxaabbe222-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxaabbe222-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxaabbe222-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfxaabbe222-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxaabbe222-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaabbe222-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#8C52EF" stop-opacity="1"/><stop offset="100%" stop-color="#7537DF" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaabbe222-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#8C52EF" stop-opacity="1"/><stop offset="100%" stop-color="#7537DF" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaabbe222-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#B269F8" stop-opacity="1"/><stop offset="100%" stop-color="#9E50E8" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaabbe222-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxd8ac9849">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxd8ac9849-cardSurface)" filter="url(#cfxd8ac9849-softShadow)"/>
+<g id="cfxaabbe222">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxaabbe222-cardSurface)" filter="url(#cfxaabbe222-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxd8ac9849-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxaabbe222-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Asia</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Asia viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="Asia" data-cfx-viewport-min-longitude="44" data-cfx-viewport-max-longitude="150" data-cfx-viewport-min-latitude="-10" data-cfx-viewport-max-latitude="72" data-cfx-min-longitude="103.82" data-cfx-max-longitude="139.65" data-cfx-min-latitude="1.352" data-cfx-max-latitude="37.567" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxd8ac9849-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxaabbe222-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="124.394" y="82.784" width="277.212" height="220.431" rx="11.129" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="70.5" x1="200.305" y1="96" x2="200.305" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="97" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -1527,40 +1527,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxcc337f8f-title cfxcc337f8f-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="30" y="1180" data-cfx-role="grid-panel">
-<title id="cfxcc337f8f-title">Oceania</title>
-<desc id="cfxcc337f8f-desc">Oceania dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxbee431f7-title cfxbee431f7-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="30" y="1180" data-cfx-role="grid-panel">
+<title id="cfxbee431f7-title">Oceania</title>
+<desc id="cfxbee431f7-desc">Oceania dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxcc337f8f text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxcc337f8f .cfx-crisp-stroke,#cfxcc337f8f .cfx-guide-stroke,#cfxcc337f8f .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxcc337f8f .cfx-guide-stroke{shape-rendering:crispEdges} #cfxcc337f8f .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxcc337f8f .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxcc337f8f .cfx-interactive-region:hover,#cfxcc337f8f .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxcc337f8f-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxcc337f8f-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxcc337f8f-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxcc337f8f-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxcc337f8f-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxcc337f8f-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxcc337f8f-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxcc337f8f-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxcc337f8f-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxcc337f8f-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfxbee431f7 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxbee431f7 .cfx-crisp-stroke,#cfxbee431f7 .cfx-guide-stroke,#cfxbee431f7 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxbee431f7 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxbee431f7 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxbee431f7 .cfx-interactive-region:hover,#cfxbee431f7 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxbee431f7-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxbee431f7-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxbee431f7-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxbee431f7-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfxbee431f7-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxbee431f7-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxbee431f7-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxbee431f7-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxbee431f7-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3DCC71" stop-opacity="1"/><stop offset="100%" stop-color="#20B958" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxbee431f7-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxcc337f8f">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxcc337f8f-cardSurface)" filter="url(#cfxcc337f8f-softShadow)"/>
+<g id="cfxbee431f7">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxbee431f7-cardSurface)" filter="url(#cfxbee431f7-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxcc337f8f-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxbee431f7-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Oceania</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Oceania viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="2" data-cfx-connector-count="1" data-cfx-viewport="Oceania" data-cfx-viewport-min-longitude="108" data-cfx-viewport-max-longitude="180" data-cfx-viewport-min-latitude="-48" data-cfx-viewport-max-latitude="2" data-cfx-min-longitude="106.846" data-cfx-max-longitude="174.763" data-cfx-min-latitude="-36.849" data-cfx-max-latitude="-6.209" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxcc337f8f-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxbee431f7-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="103.56" y="76.24" width="318.88" height="233.52" rx="16.64" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="126" x1="193.16" y1="96" x2="193.16" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="144" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
@@ -1655,40 +1655,40 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxb625f94d-title cfxb625f94d-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" x="568" y="1180" data-cfx-role="grid-panel">
-<title id="cfxb625f94d-title">Poland</title>
-<desc id="cfxb625f94d-desc">Poland dotted world map for Cities with 3 highlighted points.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="340" viewBox="0 0 520 340" role="img" aria-labelledby="cfxaccad271-title cfxaccad271-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Cities" data-cfx-series-name-0="Cities" data-cfx-series-source-points-0="3" data-cfx-series-rendered-points-0="3" x="568" y="1180" data-cfx-role="grid-panel">
+<title id="cfxaccad271-title">Poland</title>
+<desc id="cfxaccad271-desc">Poland dotted world map for Cities with 3 highlighted points.</desc>
 <defs>
-<style>#cfxb625f94d text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxb625f94d .cfx-crisp-stroke,#cfxb625f94d .cfx-guide-stroke,#cfxb625f94d .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxb625f94d .cfx-guide-stroke{shape-rendering:crispEdges} #cfxb625f94d .cfx-interactive-region{transition:opacity .12s ease,stroke-width .12s ease} #cfxb625f94d .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxb625f94d .cfx-interactive-region:hover,#cfxb625f94d .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfxb625f94d-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
-<linearGradient id="cfxb625f94d-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfxb625f94d-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfxb625f94d-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
-<linearGradient id="cfxb625f94d-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfxb625f94d-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxb625f94d-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E04040" stop-opacity="1"/><stop offset="100%" stop-color="#CF2424" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxb625f94d-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E04040" stop-opacity="1"/><stop offset="100%" stop-color="#CF2424" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxb625f94d-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F15A5A" stop-opacity="1"/><stop offset="100%" stop-color="#E14040" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfxb625f94d-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+<style>#cfxaccad271 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfxaccad271 .cfx-crisp-stroke,#cfxaccad271 .cfx-guide-stroke,#cfxaccad271 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfxaccad271 .cfx-guide-stroke{shape-rendering:crispEdges} #cfxaccad271 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfxaccad271 .cfx-interactive-region:hover,#cfxaccad271 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfxaccad271-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfxaccad271-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfxaccad271-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfxaccad271-plotClip"><rect x="42" y="88" width="442" height="210" rx="8"/></clipPath>
+<linearGradient id="cfxaccad271-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfxaccad271-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaccad271-seriesFill0-point0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E04040" stop-opacity="1"/><stop offset="100%" stop-color="#CF2424" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaccad271-seriesFill0-point1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#E04040" stop-opacity="1"/><stop offset="100%" stop-color="#CF2424" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaccad271-seriesFill0-point2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F15A5A" stop-opacity="1"/><stop offset="100%" stop-color="#E14040" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfxaccad271-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfxb625f94d">
-<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxb625f94d-cardSurface)" filter="url(#cfxb625f94d-softShadow)"/>
+<g id="cfxaccad271">
+<rect data-cfx-role="card-surface" x="14" y="14" width="492" height="312" rx="12" fill="url(#cfxaccad271-cardSurface)" filter="url(#cfxaccad271-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="491" height="311" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="489" height="309" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxb625f94d-plotSurface)"/>
+<rect x="42" y="88" width="442" height="210" rx="8" fill="url(#cfxaccad271-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="42.5" y="88.5" width="441" height="209" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="43" y="89" width="440" height="208" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Poland</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">Poland viewport</text>
 <g data-cfx-role="dotted-map" data-cfx-map-kind="world-dotted" data-cfx-label="Cities" data-cfx-projection="equirectangular" data-cfx-point-count="3" data-cfx-visible-point-count="3" data-cfx-connector-count="1" data-cfx-viewport="Poland" data-cfx-viewport-min-longitude="13.5" data-cfx-viewport-max-longitude="24.5" data-cfx-viewport-min-latitude="48.5" data-cfx-viewport-max-latitude="55.2" data-cfx-min-longitude="18.647" data-cfx-max-longitude="21.012" data-cfx-min-latitude="50.065" data-cfx-max-latitude="54.352" role="group" aria-label="Cities dotted map with 3 highlighted points">
-<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxb625f94d-plotClip)">
+<g data-cfx-role="dotted-map-base-layer" clip-path="url(#cfxaccad271-plotClip)">
 <rect data-cfx-role="dotted-map-surface" x="90.066" y="82.32" width="345.867" height="221.36" rx="11.52" fill="rgba(236,240,244,0.914)" fill-opacity="0.16" stroke="rgba(148,163,184,0.188)" stroke-opacity="0.16"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="16.25" x1="183.373" y1="96" x2="183.373" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>
 <line data-cfx-role="dotted-map-graticule" data-cfx-axis="longitude" data-cfx-longitude="19" x1="263" y1="96" x2="263" y2="290" stroke="rgba(148,163,184,0.275)" stroke-width="0.8" stroke-opacity="0.22"/>

@@ -14,6 +14,7 @@ public sealed class TextStyle {
     private TextDecorationStyle _strikethroughStyle;
     private TextBaseline _baseline;
     private TextCaseTransform _textCase;
+    private TextHinting _hinting;
 
     /// <summary>Gets or sets the font selection.</summary>
     public FontSpec Font { get => _font; set => _font = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -78,6 +79,17 @@ public sealed class TextStyle {
         set { ValidateEnum(value, nameof(value)); _textCase = value; }
     }
 
+    /// <summary>
+    /// Gets or sets how raster output fits this text to the pixel grid. <see cref="TextHinting.Auto"/>
+    /// (the default) snaps the baseline, x-height, and cap height of text at 12 output pixels and
+    /// below to whole pixels without changing its width; <see cref="TextHinting.None"/> draws the
+    /// outlines exactly. SVG and HTML output leave hinting to the browser.
+    /// </summary>
+    public TextHinting Hinting {
+        get => _hinting;
+        set { ValidateEnum(value, nameof(value)); _hinting = value; }
+    }
+
     /// <summary>Gets the font size used to measure and render this style.</summary>
     public double EffectiveFontSize => Baseline == TextBaseline.Normal ? FontSize : FontSize * 0.65;
 
@@ -91,7 +103,8 @@ public sealed class TextStyle {
         UnderlineStyle = UnderlineStyle,
         StrikethroughStyle = StrikethroughStyle,
         Baseline = Baseline,
-        TextCase = TextCase
+        TextCase = TextCase,
+        Hinting = Hinting
     };
 
     /// <summary>Creates a text style using the supplied size and color.</summary>

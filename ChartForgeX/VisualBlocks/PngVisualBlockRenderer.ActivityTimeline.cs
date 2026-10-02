@@ -17,7 +17,7 @@ public sealed partial class PngVisualBlockRenderer {
         var bottom = options.Size.Height - options.Padding.Bottom;
         var spineX = content.X + 18;
         var spineEnd = ActivitySpineEnd(block, y, bottom);
-        canvas.DrawLine(spineX, y + 6, spineX, spineEnd, theme.PlotBorder, 2);
+        canvas.DrawLine(spineX, y + 6, spineX, spineEnd, theme.PlotBorder, 2, RasterLineCap.Butt);
         for (var i = 0; i < block.Items.Count && y < bottom - 12; i++) {
             var item = block.Items[i];
             var rowHeight = ActivityRowHeight(item);
@@ -41,13 +41,12 @@ public sealed partial class PngVisualBlockRenderer {
         var theme = block.Options.Theme;
         canvas.DrawCircle(spineX + 24, y + 11, 4, color);
         if (item.Completed) {
-            canvas.DrawLine(spineX + 20, y + 11, spineX + 23, y + 15, color, 1.4);
-            canvas.DrawLine(spineX + 23, y + 15, spineX + 29, y + 7, color, 1.4);
+            canvas.DrawPolyline(new[] { new ChartPoint(spineX + 20, y + 11), new ChartPoint(spineX + 23, y + 15), new ChartPoint(spineX + 29, y + 7) }, color, 1.5);
         }
 
         var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
         DrawAlignedText(canvas, item.Title, x + 58, y + 5, width - 58, TextAlignment.Left, textColor, theme.SubtitleFontSize, item.Completed ? false : true);
-        if (item.Completed) canvas.DrawLine(x + 58, y + 10, x + Math.Min(width, 58 + canvas.MeasureTextWidth(FitText(canvas, item.Title, theme.SubtitleFontSize, width - 58), theme.SubtitleFontSize)), y + 10, textColor.WithAlpha(140), 1);
+        if (item.Completed) canvas.DrawLine(x + 58, y + 10, x + Math.Min(width, 58 + canvas.MeasureTextWidth(FitText(canvas, item.Title, theme.SubtitleFontSize, width - 58), theme.SubtitleFontSize)), y + 10, textColor.WithAlpha(140), 1, RasterLineCap.Butt);
     }
 
     private static void DrawActivityHiddenSummary(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {

@@ -57,7 +57,7 @@ public sealed partial class PngChartRenderer {
             var top = rowTops[rowIndex];
             var height = rowTops[rowIndex + 1] - top;
             if (row.IsGroup) {
-                if (rowIndex > 0) c.DrawLine(bounds.Left, top, bounds.Right, top, t.Grid, ChartVisualPrimitives.GridStrokeWidth);
+                if (rowIndex > 0) c.DrawLine(bounds.Left, top, bounds.Right, top, t.Grid, ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt);
                 if (ShowYAxis(chart) && row.Name.Length > 0) {
                     var group = TrimReadablePngLabelToWidth(row.Name, tickFontSize, bounds.Width, tickStyle);
                     if (group.Length > 0) DrawStateCategoryText(c, group, bounds.Left, top + height / 2, tickStyle, t.Text, tickFontSize, true);
@@ -110,7 +110,7 @@ public sealed partial class PngChartRenderer {
         }
 
         if (ShowXAxis(chart)) {
-            if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth);
+            if (ShowXAxisLine(chart)) c.DrawLine(plot.Left, plot.Bottom, plot.Right, plot.Bottom, t.Axis, ChartVisualPrimitives.AxisStrokeWidth, RasterLineCap.Butt);
             if (!string.IsNullOrWhiteSpace(XAxisTitleText(chart))) DrawPngXAxisTitle(c, chart, plot, plot.Bottom + PngXAxisTitleOffset(chart, tickLabels), PngAxisTitleFontSize(chart));
         }
 

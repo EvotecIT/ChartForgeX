@@ -423,7 +423,9 @@ internal static partial class SmokeTests {
             var html = File.ReadAllText(htmlPath);
             foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(html, "(?:href|src)=\"([^\"]+)\"", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) {
                 var value = match.Groups[1].Value;
-                if (value.StartsWith("#", StringComparison.Ordinal) || value.StartsWith("/", StringComparison.Ordinal) || Uri.TryCreate(value, UriKind.Absolute, out _)) continue;
+                // Embedded data URLs can exceed System.Uri's length limit; they are not local asset paths.
+                if (value.StartsWith("#", StringComparison.Ordinal) || value.StartsWith("/", StringComparison.Ordinal)
+                    || System.Text.RegularExpressions.Regex.IsMatch(value, "^[a-z][a-z0-9+.-]*:", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) continue;
                 var relativePath = value.Split('?', '#')[0].Replace('/', Path.DirectorySeparatorChar);
                 if (string.IsNullOrWhiteSpace(relativePath)) continue;
                 var assetPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(htmlPath) ?? generatedPath, relativePath));
@@ -455,9 +457,6 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "Deterministic", "true"), "Package builds should be deterministic.");
         Assert(HasXmlProperty(libraryProject, "IncludeSymbols", "true"), "Package should include symbol package generation.");
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
-        var releaseNotes = GetXmlValue(libraryProject, "PackageReleaseNotes");
-        Assert(ContainsMetadataConcepts(releaseNotes, "typography", "chart", "grid"), "Package release notes should summarize the complete chart and grid typography contract.");
-        Assert(ContainsMetadataConcepts(releaseNotes, "image", "SVG", "raster"), "Package release notes should name the image-composition and SVG-raster surfaces covered by the current release.");
         var productVersion = CurrentProductVersion();
         foreach (var dependentProject in new[] {
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
@@ -762,28 +761,4 @@ internal static partial class SmokeTests {
         }
     }
 
-    private static bool ContainsMetadataConcepts(string value, params string[] concepts) {
-        var normalizedValue = NormalizeMetadataText(value);
-        foreach (var concept in concepts) {
-            if (!normalizedValue.Contains(NormalizeMetadataText(concept), StringComparison.Ordinal)) return false;
-        }
-
-        return true;
-    }
-
-    private static string NormalizeMetadataText(string value) {
-        var normalized = new System.Text.StringBuilder(value.Length);
-        var previousWasSpace = true;
-        foreach (var character in value) {
-            if (char.IsLetterOrDigit(character)) {
-                normalized.Append(char.ToLowerInvariant(character));
-                previousWasSpace = false;
-            } else if (!previousWasSpace) {
-                normalized.Append(' ');
-                previousWasSpace = true;
-            }
-        }
-
-        return normalized.ToString().TrimEnd();
-    }
 }

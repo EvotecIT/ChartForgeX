@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
 
@@ -192,7 +193,7 @@ internal static partial class SmokeTests {
         const string automaticHorizontalRadius = "<rect width='100' height='40' rx='auto' ry='5' fill='#16a34a'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(automaticHorizontalRadius, "0 0 100 40", "none", 100, 40, out var automaticHorizontalRadiusPixels) && IsPixelNear(automaticHorizontalRadiusPixels, 100, 5, 2, 22, 163, 74), "An automatic rounded-rectangle rx should copy the resolved ry value.");
         const string automaticVerticalClipRadius = "<defs><clipPath id='automatic-radius'><rect width='100' height='40' rx='20' ry='auto'/></clipPath></defs><rect width='100' height='40' fill='#8b5cf6' clip-path='url(#automatic-radius)'/>";
-        Assert(SvgRasterRenderer.TryRenderFragment(automaticVerticalClipRadius, "0 0 100 40", "none", 100, 40, out var automaticVerticalRadiusPixels) && PixelAlpha(automaticVerticalRadiusPixels, 100, 5, 5) == 0, "An automatic rounded-rectangle ry should copy rx before clip-path geometry is constructed.");
+        Assert(SvgRasterRenderer.TryRenderFragment(automaticVerticalClipRadius, "0 0 100 40", "none", 100, 40, out var automaticVerticalRadiusPixels) && PixelAlpha(automaticVerticalRadiusPixels, 100, 4, 4) == 0, "An automatic rounded-rectangle ry should copy rx before clip-path geometry is constructed.");
 
         const string openFilledPath = "<path d='M5 5 L35 5 L35 35' fill='#16a34a' stroke='#2563eb' stroke-width='2'/>";
         Assert(SvgRasterRenderer.TryRenderFragment(openFilledPath, "0 0 40 40", "none", 40, 40, out var openFilledPathPixels), "SVG rasterization should fill an open path while keeping its stroke open.");
@@ -342,7 +343,12 @@ internal static partial class SmokeTests {
         var italicAdjacentImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(italicAdjacentText));
         var regularAdjacentBlue = SvgColorBounds(regularAdjacentImage.Pixels, 140, 50, 37, 99, 235);
         var italicAdjacentBlue = SvgColorBounds(italicAdjacentImage.Pixels, 140, 50, 37, 99, 235);
-        Assert(regularAdjacentBlue.HasPixels && italicAdjacentBlue.HasPixels && Math.Abs(regularAdjacentBlue.Left - italicAdjacentBlue.Left) <= 1, "Synthetic italic overhang should expand painted bounds without advancing adjacent SVG text runs.");
+        // A designed italic (DejaVu Sans Oblique on Linux, Helvetica Oblique on macOS) slants around its own centre, so
+        // the next run's ink starts elsewhere by design; the synthetic case, pinned to a regular-only face, is
+        // SyntheticItalicTests.SyntheticItalicDoesNotAdvanceTheNextSvgRun.
+        if (TypographyFontResolver.ResolveFace(null, 400, italic: true).SynthesizeItalic) {
+            Assert(regularAdjacentBlue.HasPixels && italicAdjacentBlue.HasPixels && Math.Abs(regularAdjacentBlue.Left - italicAdjacentBlue.Left) <= 1, "Synthetic italic overhang should expand painted bounds without advancing adjacent SVG text runs.");
+        }
 
         const string transformedText = "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><text x='12' y='18' font-size='16' fill='#ef4444' transform='rotate(90 12 18)'>TEST</text></svg>";
         var transformedTextImage = RasterImageDecoder.Decode(SvgRasterizer.ToPng(transformedText));

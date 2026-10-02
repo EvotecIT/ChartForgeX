@@ -26,9 +26,8 @@ public sealed partial class TopologyPngRenderer {
             return;
         }
 
-        canvas.DrawDashedLine(bounds.X, bounds.Y, bounds.Right, bounds.Y, color, width, 5, 4);
-        canvas.DrawDashedLine(bounds.Right, bounds.Y, bounds.Right, bounds.Bottom, color, width, 5, 4);
-        canvas.DrawDashedLine(bounds.Right, bounds.Bottom, bounds.X, bounds.Bottom, color, width, 5, 4);
-        canvas.DrawDashedLine(bounds.X, bounds.Bottom, bounds.X, bounds.Y, color, width, 5, 4);
+        // One dash pattern runs around the whole outline, as the SVG rect's stroke-dasharray does.
+        var outline = new[] { new ChartPoint(bounds.X, bounds.Y), new ChartPoint(bounds.Right, bounds.Y), new ChartPoint(bounds.Right, bounds.Bottom), new ChartPoint(bounds.X, bounds.Bottom), new ChartPoint(bounds.X, bounds.Y) };
+        canvas.DrawPolyline(outline, color, width, RasterLineCap.Butt, RasterLineJoin.Miter, RgbaCanvas.DashPattern(5, 4));
     }
 }

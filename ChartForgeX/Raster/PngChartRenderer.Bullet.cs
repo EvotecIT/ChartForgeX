@@ -101,10 +101,10 @@ public sealed partial class PngChartRenderer {
         var max = BulletMax(reference);
         if (Math.Abs(max - min) < 0.000001) max = min + 1;
         var ticks = new[] { min, min + (max - min) / 2, max };
-        c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Axis, ChartVisualPrimitives.BulletAxisStrokeWidth);
+        c.DrawLine(plot.Left, y, plot.Right, y, chart.Options.Theme.Axis, ChartVisualPrimitives.BulletAxisStrokeWidth, RasterLineCap.Butt);
         foreach (var tick in ticks) {
             var x = BulletX(plot, min, max, tick);
-            c.DrawLine(x, y - 4, x, y + 4, chart.Options.Theme.Axis, ChartVisualPrimitives.BulletAxisStrokeWidth);
+            c.DrawLine(x, y - 4, x, y + 4, chart.Options.Theme.Axis, ChartVisualPrimitives.BulletAxisStrokeWidth, RasterLineCap.Butt);
             var label = FormatValue(chart, tick);
             var style = chart.Options.TickLabelStyle;
             var fontSize = PngTickFontSize(chart);

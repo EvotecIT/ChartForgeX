@@ -23,7 +23,8 @@ public sealed class PngVisualGridRenderer {
         var layout = VisualGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), grid.PngOutputScale);
+        using var emphasis = RgbaCanvas.OpenEmphasisScope();
+        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
         canvas.Clear(background);
         if (background.A == 255) {
             var surfaceInset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
@@ -82,7 +83,7 @@ public sealed class PngVisualGridRenderer {
             else high = mid - 1;
         }
 
-        return value.Substring(0, low) + suffix;
+        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 
 }

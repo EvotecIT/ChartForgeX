@@ -41,7 +41,6 @@ using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
-using System.Linq;
 
 var chart = Chart.Create()
     .WithTitle("Domain Security Checks")
@@ -51,16 +50,15 @@ var chart = Chart.Create()
     .WithTheme(ChartTheme.ReportDark())
     .WithSize(1180, 640)
     .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
-    .AddSmoothLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36));
+    .AddSmoothArea("Passed", ChartPoints.FromValues(820, 940, 980, 1040, 1120, 1180, 1230))
+    .AddSmoothLine("Warnings", ChartPoints.FromValues(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36));
 
 chart.SaveSvg("domain-security.svg");
 chart.SavePng("domain-security.png");
 chart.SaveHtml("domain-security.html");
-
-static ChartPoint[] Points(params double[] values) =>
-    values.Select((value, index) => new ChartPoint(index, value)).ToArray();
 ```
+
+`WithXLabels` places its labels at x = 1 through N, and `ChartPoints.FromValues` numbers its points the same way, so the first label sits under the first point.
 
 ## Typed Data and Scales
 

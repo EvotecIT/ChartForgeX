@@ -279,19 +279,16 @@ public sealed partial class TopologySvgRenderer {
         if (string.IsNullOrWhiteSpace(node.Symbol) && node.Kind != TopologyNodeKind.Server) return;
         var symbol = string.IsNullOrWhiteSpace(node.Symbol) ? NodeGlyph(node) : node.Symbol!.Trim();
         if (node.Kind == TopologyNodeKind.Server || symbol.Equals("DC", StringComparison.OrdinalIgnoreCase)) {
+            var marks = TopologyInfrastructureGlyphs.DotServer(cx, cy);
             body.Element("path", path => path
                 .Attribute("data-cfx-role", "topology-node-dot-symbol")
                 .Attribute("data-node-id", node.Id)
-                .Attribute("d", "M " + F(cx - 4.2) + " " + F(cy - 3.6) + " H " + F(cx + 4.2) + " V " + F(cy - 0.8) + " H " + F(cx - 4.2) + " Z M " + F(cx - 4.2) + " " + F(cy + 1.5) + " H " + F(cx + 4.2) + " V " + F(cy + 4.2) + " H " + F(cx - 4.2) + " Z")
+                .Attribute("d", marks[0].PathData)
                 .Attribute("fill", "none")
                 .Paint("stroke", ContrastWhite)
-                .Attribute("stroke-width", 1.15)
+                .Attribute("stroke-width", marks[0].StrokeWidth)
                 .Attribute("stroke-linejoin", "round"));
-            body.Element("path", path => path
-                .Attribute("d", "M " + F(cx + 2.1) + " " + F(cy - 2.2) + " H " + F(cx + 3.1) + " M " + F(cx + 2.1) + " " + F(cy + 2.9) + " H " + F(cx + 3.1))
-                .Paint("stroke", ContrastWhite)
-                .Attribute("stroke-width", 1.2)
-                .Attribute("stroke-linecap", "round"));
+            AddGlyphMark(body, marks[1], ContrastWhite);
             return;
         }
 
@@ -504,212 +501,31 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static bool AddInfrastructureGlyph(SvgElement parent, TopologyNode node, double cx, double cy, string color, TopologyRenderOptions options) {
-        switch (EffectiveIconShape(node, options)) {
-            case TopologyIconShape.Site:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 6) + " " + F(cy + 7) + " V " + F(cy - 7) + " H " + F(cx + 6) + " V " + F(cy + 7) + " M " + F(cx - 2) + " " + F(cy + 7) + " V " + F(cy + 2) + " H " + F(cx + 2) + " V " + F(cy + 7) + " M " + F(cx - 3.5) + " " + F(cy - 3) + " H " + F(cx - 0.5) + " M " + F(cx + 2.5) + " " + F(cy - 3) + " H " + F(cx + 5.5) + " M " + F(cx - 3.5) + " " + F(cy + 1) + " H " + F(cx - 0.5) + " M " + F(cx + 2.5) + " " + F(cy + 1) + " H " + F(cx + 5.5))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.7)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Server:
-            case TopologyIconShape.DomainController:
-            case TopologyIconShape.ReadOnlyDomainController:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 7) + " " + F(cy - 6) + " H " + F(cx + 7) + " V " + F(cy - 1) + " H " + F(cx - 7) + " Z M " + F(cx - 7) + " " + F(cy + 2) + " H " + F(cx + 7) + " V " + F(cy + 7) + " H " + F(cx - 7) + " Z M " + F(cx + 4.5) + " " + F(cy - 3.5) + " H " + F(cx + 5.5) + " M " + F(cx + 4.5) + " " + F(cy + 4.5) + " H " + F(cx + 5.5))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.7)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                if (EffectiveIconShape(node, options) == TopologyIconShape.ReadOnlyDomainController) parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy + 8) + " L " + F(cx + 8) + " " + F(cy - 8))
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.4)
-                    .Attribute("stroke-linecap", "round"));
-                return true;
-            case TopologyIconShape.Network:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 7) + " " + F(cy + 5) + " L " + F(cx) + " " + F(cy - 6) + " L " + F(cx + 7) + " " + F(cy + 5) + " M " + F(cx - 7) + " " + F(cy + 5) + " H " + F(cx + 7))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.6)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                parent.Element("circle", circle => circle.Attribute("cx", cx).Attribute("cy", cy - 6).Attribute("r", 2.2).Attribute("fill", color));
-                parent.Element("circle", circle => circle.Attribute("cx", cx - 7).Attribute("cy", cy + 5).Attribute("r", 2.2).Attribute("fill", color));
-                parent.Element("circle", circle => circle.Attribute("cx", cx + 7).Attribute("cy", cy + 5).Attribute("r", 2.2).Attribute("fill", color));
-                return true;
-            case TopologyIconShape.NetworkSwitch:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy - 4) + " H " + F(cx + 8) + " V " + F(cy + 4) + " H " + F(cx - 8) + " Z M " + F(cx - 5) + " " + F(cy) + " H " + F(cx - 2) + " M " + F(cx + 2) + " " + F(cy) + " H " + F(cx + 5) + " M " + F(cx - 4) + " " + F(cy - 7) + " L " + F(cx - 1) + " " + F(cy - 4) + " M " + F(cx + 4) + " " + F(cy + 7) + " L " + F(cx + 1) + " " + F(cy + 4))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Router:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx) + " " + F(cy - 8) + " L " + F(cx + 8) + " " + F(cy) + " L " + F(cx) + " " + F(cy + 8) + " L " + F(cx - 8) + " " + F(cy) + " Z M " + F(cx - 4) + " " + F(cy) + " H " + F(cx + 4) + " M " + F(cx) + " " + F(cy - 4) + " V " + F(cy + 4))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.NetworkSegment:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 9) + " " + F(cy - 4) + " H " + F(cx + 9) + " M " + F(cx - 9) + " " + F(cy + 4) + " H " + F(cx + 9) + " M " + F(cx - 5) + " " + F(cy - 7) + " V " + F(cy + 7) + " M " + F(cx + 5) + " " + F(cy - 7) + " V " + F(cy + 7))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round"));
-                return true;
-            case TopologyIconShape.LoadBalancer:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx) + " " + F(cy - 8) + " V " + F(cy + 8) + " M " + F(cx - 8) + " " + F(cy - 3) + " H " + F(cx) + " L " + F(cx + 6) + " " + F(cy - 7) + " M " + F(cx - 8) + " " + F(cy + 3) + " H " + F(cx) + " L " + F(cx + 6) + " " + F(cy + 7))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.6)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Firewall:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy - 6) + " H " + F(cx + 8) + " V " + F(cy + 6) + " H " + F(cx - 8) + " Z M " + F(cx - 3) + " " + F(cy - 6) + " V " + F(cy - 1) + " M " + F(cx + 3) + " " + F(cy - 1) + " V " + F(cy + 6) + " M " + F(cx - 8) + " " + F(cy) + " H " + F(cx - 2) + " M " + F(cx + 2) + " " + F(cy) + " H " + F(cx + 8))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Service:
-                parent.Element("circle", circle => circle
-                    .Attribute("cx", cx)
-                    .Attribute("cy", cy)
-                    .Attribute("r", 5.5)
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.7));
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx) + " " + F(cy - 9) + " V " + F(cy - 7) + " M " + F(cx) + " " + F(cy + 7) + " V " + F(cy + 9) + " M " + F(cx - 9) + " " + F(cy) + " H " + F(cx - 7) + " M " + F(cx + 7) + " " + F(cy) + " H " + F(cx + 9))
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.7)
-                    .Attribute("stroke-linecap", "round"));
-                return true;
-            case TopologyIconShape.Database:
-                parent.Element("ellipse", ellipse => ellipse
-                    .Attribute("cx", cx)
-                    .Attribute("cy", cy - 6)
-                    .Attribute("rx", 8)
-                    .Attribute("ry", 3.5)
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5));
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy - 6) + " V " + F(cy + 6) + " A 8 3.5 0 0 0 " + F(cx + 8) + " " + F(cy + 6) + " V " + F(cy - 6))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5));
-                return true;
-            case TopologyIconShape.Person:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx) + " " + F(cy - 7) + " A 4 4 0 1 1 " + F(cx - 0.1) + " " + F(cy - 7) + " M " + F(cx - 8) + " " + F(cy + 8) + " A 8 7 0 0 1 " + F(cx + 8) + " " + F(cy + 8))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.6)
-                    .Attribute("stroke-linecap", "round"));
-                return true;
-            case TopologyIconShape.Team:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 5) + " " + F(cy - 6) + " A 3 3 0 1 1 " + F(cx - 5.1) + " " + F(cy - 6) + " M " + F(cx + 5) + " " + F(cy - 6) + " A 3 3 0 1 1 " + F(cx + 4.9) + " " + F(cy - 6) + " M " + F(cx - 11) + " " + F(cy + 7) + " A 6 5 0 0 1 " + F(cx - 1) + " " + F(cy + 7) + " M " + F(cx + 1) + " " + F(cy + 7) + " A 6 5 0 0 1 " + F(cx + 11) + " " + F(cy + 7))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round"));
-                return true;
-            case TopologyIconShape.Storage:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy - 6) + " H " + F(cx + 8) + " V " + F(cy - 1) + " H " + F(cx - 8) + " Z M " + F(cx - 8) + " " + F(cy + 2) + " H " + F(cx + 8) + " V " + F(cy + 7) + " H " + F(cx - 8) + " Z M " + F(cx - 4.5) + " " + F(cy - 3.5) + " H " + F(cx + 1.5) + " M " + F(cx - 4.5) + " " + F(cy + 4.5) + " H " + F(cx + 1.5))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                parent.Element("circle", circle => circle.Attribute("cx", cx + 5).Attribute("cy", cy - 3.5).Attribute("r", 1.2).Attribute("fill", color));
-                parent.Element("circle", circle => circle.Attribute("cx", cx + 5).Attribute("cy", cy + 4.5).Attribute("r", 1.2).Attribute("fill", color));
-                return true;
-            case TopologyIconShape.Application:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy - 7) + " H " + F(cx + 8) + " V " + F(cy + 7) + " H " + F(cx - 8) + " Z M " + F(cx - 8) + " " + F(cy - 3) + " H " + F(cx + 8) + " M " + F(cx - 5) + " " + F(cy - 5) + " H " + F(cx - 4) + " M " + F(cx - 1.5) + " " + F(cy - 5) + " H " + F(cx - 0.5) + " M " + F(cx - 3) + " " + F(cy + 1) + " H " + F(cx + 3) + " M " + F(cx - 3) + " " + F(cy + 4) + " H " + F(cx + 3))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.45)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Certificate:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 6) + " " + F(cy - 8) + " H " + F(cx + 4) + " L " + F(cx + 8) + " " + F(cy - 4) + " V " + F(cy + 7) + " H " + F(cx - 6) + " Z M " + F(cx + 4) + " " + F(cy - 8) + " V " + F(cy - 4) + " H " + F(cx + 8) + " M " + F(cx - 3) + " " + F(cy - 1) + " H " + F(cx + 4) + " M " + F(cx - 3) + " " + F(cy + 2) + " H " + F(cx + 2))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.4)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                parent.Element("circle", circle => circle.Attribute("cx", cx - 4).Attribute("cy", cy + 7).Attribute("r", 2.5).Attribute("fill", "none").Attribute("stroke", color).Attribute("stroke-width", 1.3));
-                return true;
-            case TopologyIconShape.Desktop:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 8) + " " + F(cy - 7) + " H " + F(cx + 8) + " V " + F(cy + 4) + " H " + F(cx - 8) + " Z M " + F(cx) + " " + F(cy + 4) + " V " + F(cy + 8) + " M " + F(cx - 5) + " " + F(cy + 8) + " H " + F(cx + 5))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.5)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Laptop:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 7) + " " + F(cy - 7) + " H " + F(cx + 7) + " V " + F(cy + 3) + " H " + F(cx - 7) + " Z M " + F(cx - 10) + " " + F(cy + 7) + " H " + F(cx + 10) + " L " + F(cx + 7) + " " + F(cy + 3) + " H " + F(cx - 7) + " Z")
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.45)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Forest:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx) + " " + F(cy - 9) + " L " + F(cx + 6) + " " + F(cy) + " H " + F(cx + 2.5) + " L " + F(cx + 8) + " " + F(cy + 8) + " H " + F(cx - 8) + " L " + F(cx - 2.5) + " " + F(cy) + " H " + F(cx - 6) + " Z M " + F(cx) + " " + F(cy) + " V " + F(cy + 8))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.4)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Domain:
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx) + " " + F(cy - 9) + " L " + F(cx + 8) + " " + F(cy - 3) + " V " + F(cy + 5) + " L " + F(cx) + " " + F(cy + 9) + " L " + F(cx - 8) + " " + F(cy + 5) + " V " + F(cy - 3) + " Z M " + F(cx - 8) + " " + F(cy - 3) + " L " + F(cx) + " " + F(cy + 2) + " L " + F(cx + 8) + " " + F(cy - 3) + " M " + F(cx) + " " + F(cy + 2) + " V " + F(cy + 9))
-                    .Attribute("fill", "none")
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 1.4)
-                    .Attribute("stroke-linecap", "round")
-                    .Attribute("stroke-linejoin", "round"));
-                return true;
-            case TopologyIconShape.Badge:
-                return false;
-            default:
-                if (node.Kind == TopologyNodeKind.Queue) {
-                parent.Element("path", path => path
-                    .Attribute("d", "M " + F(cx - 7) + " " + F(cy - 6) + " H " + F(cx + 7) + " M " + F(cx - 7) + " " + F(cy) + " H " + F(cx + 7) + " M " + F(cx - 7) + " " + F(cy + 6) + " H " + F(cx + 7))
-                    .Attribute("stroke", color)
-                    .Attribute("stroke-width", 2)
-                    .Attribute("stroke-linecap", "round"));
-                return true;
-                }
-                return false;
+        var marks = TopologyInfrastructureGlyphs.Build(EffectiveIconShape(node, options), node.Kind, cx, cy);
+        if (marks == null) return false;
+        foreach (var mark in marks) AddGlyphMark(parent, mark, SvgPaint.Plain(color));
+        return true;
+    }
+
+    private static void AddGlyphMark(SvgElement parent, TopologyGlyphMark mark, SvgPaint color) {
+        if (mark.PathData != null) {
+            parent.Element("path", path => {
+                path.Attribute("d", mark.PathData);
+                if (mark.FillNone) path.Attribute("fill", "none");
+                path.Paint("stroke", color).Attribute("stroke-width", mark.StrokeWidth);
+                if (mark.RoundCap) path.Attribute("stroke-linecap", "round");
+                if (mark.RoundJoin) path.Attribute("stroke-linejoin", "round");
+            });
+            return;
         }
+
+        parent.Element(mark.IsCircle ? "circle" : "ellipse", shape => {
+            shape.Attribute("cx", mark.Cx).Attribute("cy", mark.Cy);
+            if (mark.IsCircle) shape.Attribute("r", mark.Rx);
+            else shape.Attribute("rx", mark.Rx).Attribute("ry", mark.Ry);
+            if (mark.Filled) shape.Paint("fill", color);
+            else shape.Attribute("fill", "none").Paint("stroke", color).Attribute("stroke-width", mark.StrokeWidth);
+        });
     }
 
     private static void AddNodeStatuses(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {

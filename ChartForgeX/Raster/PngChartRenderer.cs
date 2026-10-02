@@ -41,14 +41,16 @@ public sealed partial class PngChartRenderer {
     internal RgbaCanvas RenderCanvas(Chart chart) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
+        // Theme stacks resolve to installed faces, and emphasized text draws their real bold face.
+        var emphasis = RgbaCanvas.OpenEmphasisScope();
         var explicitOutlineFont = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
-        var outlineFont = explicitOutlineFont ?? TrueTypeFont.TryLoadForFamily(t.FontFamily, out _);
+        var outlineFont = explicitOutlineFont ?? TypographyFontResolver.ResolveThemeFont(t.FontFamily);
         var previousOutlineFont = CurrentOutlineFont;
         var previousOutlineFontIsExplicit = CurrentOutlineFontIsExplicit;
         CurrentOutlineFont = outlineFont;
         CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         try {
-            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale);
+            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale) { TextHinting = o.PngTextHinting };
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
             if (o.ShowCard && t.UseCard) DrawCardSurface(c, o, t);
             var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(o);
@@ -266,6 +268,7 @@ public sealed partial class PngChartRenderer {
         } finally {
             CurrentOutlineFont = previousOutlineFont;
             CurrentOutlineFontIsExplicit = previousOutlineFontIsExplicit;
+            emphasis.Dispose();
         }
     }
 
@@ -324,11 +327,8 @@ public sealed partial class PngChartRenderer {
         var vertical = Math.Abs(x1 - x2) < 0.000001;
         if (horizontal) y1 = y2 = CrispStrokeCoordinate(y1, strokeWidth);
         if (vertical) x1 = x2 = CrispStrokeCoordinate(x1, strokeWidth);
-        if (dash > 0 && gap > 0) {
-            c.DrawDashedLine(x1, y1, x2, y2, color, strokeWidth, dash, gap);
-        } else {
-            c.DrawLine(x1, y1, x2, y2, color, strokeWidth);
-        }
+        // Mirrors WriteSvgGuideLine: a butt-capped line, dashed only when both lengths are set.
+        c.DrawDashedLine(x1, y1, x2, y2, color, strokeWidth, dash, gap, RasterLineCap.Butt);
     }
 
     private static void DrawPngSurfaceHighlight(RgbaCanvas c, double x, double y, double width, double height, double radius, double inset, double opacity) {

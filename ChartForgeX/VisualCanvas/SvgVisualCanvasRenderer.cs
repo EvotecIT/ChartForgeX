@@ -148,7 +148,8 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, VisualCanvasTheme theme) {
         var anchor = Anchor(text.Alignment);
         var x = AlignedX(text.X, text.Width, text.Alignment);
-        var fitted = FitText(text.Text, text.FontSize, Math.Max(4, text.Width), text.Emphasized);
+        var weight = text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular;
+        var fitted = VisualCanvasTextFace.Resolve(theme.FontFamily, weight, theme.TextMeasurementMode).Fit(text.Text, text.FontSize, Math.Max(4, text.Width));
         writer.StartElement("text")
             .Attribute("data-cfx-role", "visual-canvas-text")
             .Attribute("x", x)
@@ -157,7 +158,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("fill", text.Color.ToCss())
             .Attribute("font-family", theme.FontFamily)
             .Attribute("font-size", text.FontSize)
-            .Attribute("font-weight", text.Emphasized ? "800" : "500")
+            .Attribute("font-weight", VisualCanvasFontWeights.Css(weight))
             .Text(fitted)
             .EndElement()
             .Line();
@@ -166,14 +167,15 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
         var anchor = Anchor(hero.Alignment);
         var x = AlignedX(hero.X, hero.Width, hero.Alignment);
+        var fontSize = hero.FittedFontSize(VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode));
         writer.StartElement("text")
             .Attribute("data-cfx-role", "visual-canvas-hero-title")
             .Attribute("x", x)
-            .Attribute("y", hero.Y + hero.FontSize)
+            .Attribute("y", hero.Y + (hero.FontSize + fontSize) / 2)
             .Attribute("text-anchor", anchor)
             .Attribute("font-family", theme.FontFamily)
-            .Attribute("font-size", hero.FontSize)
-            .Attribute("font-weight", "850")
+            .Attribute("font-size", fontSize)
+            .Attribute("font-weight", VisualCanvasFontWeights.Css(VisualCanvasFontWeights.HeroTitle))
             .Attribute("letter-spacing", "0")
             .EndStartElement();
         foreach (var run in hero.Runs) writer.StartElement("tspan").Attribute("fill", run.Color.ToCss()).Text(run.Text).EndElement();
@@ -181,10 +183,10 @@ public sealed class SvgVisualCanvasRenderer {
     }
 
     private static void RenderKeyValueBlock(SvgMarkupWriter writer, VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
-        var layout = VisualCanvasKeyValueBlockLayout.Build(block);
+        var layout = VisualCanvasKeyValueBlockLayout.Build(block, theme);
         var labelColor = block.LabelColorOverride ?? theme.TileLabelColor;
         var valueColor = block.ValueColorOverride ?? theme.TileValueColor;
-        var fontFamily = string.IsNullOrWhiteSpace(block.FontFamilyName) ? theme.FontFamily : block.FontFamilyName;
+        var fontFamily = block.ResolveFontFamily(theme);
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-key-value-block").EndStartElement().Line();
         foreach (var row in layout.Rows) {
             writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-key-value-row").EndStartElement().Line();
@@ -194,7 +196,7 @@ public sealed class SvgVisualCanvasRenderer {
                 .Attribute("fill", (row.Item.LabelColor ?? labelColor).ToCss())
                 .Attribute("font-family", fontFamily)
                 .Attribute("font-size", block.LabelFontSize)
-                .Attribute("font-weight", block.LabelEmphasized ? "800" : "500")
+                .Attribute("font-weight", VisualCanvasFontWeights.Css(block.LabelEmphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular))
                 .Text(row.LabelText)
                 .EndElement()
                 .Line();
@@ -206,7 +208,7 @@ public sealed class SvgVisualCanvasRenderer {
                         .Attribute("fill", (row.Item.ValueColor ?? valueColor).ToCss())
                         .Attribute("font-family", fontFamily)
                         .Attribute("font-size", block.ValueFontSize)
-                        .Attribute("font-weight", block.ValueEmphasized ? "700" : "500")
+                        .Attribute("font-weight", VisualCanvasFontWeights.Css(block.ValueEmphasized ? VisualCanvasFontWeights.KeyValueEmphasizedValue : VisualCanvasFontWeights.Regular))
                         .Text(row.ValueLines[i])
                         .EndElement()
                         .Line();
@@ -250,20 +252,20 @@ public sealed class SvgVisualCanvasRenderer {
         var iconBox = metrics.IconBox;
         var iconX = metrics.IconX;
         var iconY = metrics.IconY;
-        var iconFont = Math.Min(25, iconBox * (tile.Icon.Length > 3 ? 0.34 : 0.42));
+        var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(tile.Icon, iconBox, theme.FontFamily, theme.TextMeasurementMode);
         writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", isFilled ? accent.WithOpacity(isRaised ? 0.25 : 0.18).ToCss() : "none").Attribute("stroke", isRaised ? accent.WithOpacity(0.32).ToCss() : (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? accent.WithOpacity(0.38).ToCss() : "none")).EndEmptyElement().Line();
         RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, accent, theme.FontFamily);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax).Lines) {
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily, theme.TextMeasurementMode).Lines) {
             writer.StartElement("text")
                 .Attribute("x", line.X)
                 .Attribute("y", line.Y + line.FontSize)
                 .Attribute("fill", TileTextColor(line.Role, theme).ToCss())
                 .Attribute("font-family", theme.FontFamily)
                 .Attribute("font-size", line.FontSize)
-                .Attribute("font-weight", line.Role == VisualCanvasInfoTileTextRole.Label ? "700" : line.Role == VisualCanvasInfoTileTextRole.Value ? "650" : "500")
+                .Attribute("font-weight", VisualCanvasFontWeights.Css(line.Weight))
                 .Text(line.Text)
                 .EndElement()
                 .Line();
@@ -345,7 +347,7 @@ public sealed class SvgVisualCanvasRenderer {
         var top = y + size * 0.24;
         var bottom = y + size * 0.76;
         if (kind == VisualCanvasInfoTileIconKind.Text) {
-            writer.StartElement("text").Attribute("x", cx).Attribute("y", cy + iconFont * 0.36).Attribute("text-anchor", "middle").Attribute("fill", stroke).Attribute("font-family", fontFamily).Attribute("font-size", iconFont).Attribute("font-weight", "800").Text(text).EndElement().Line();
+            writer.StartElement("text").Attribute("x", cx).Attribute("y", cy + iconFont * 0.36).Attribute("text-anchor", "middle").Attribute("fill", stroke).Attribute("font-family", fontFamily).Attribute("font-size", iconFont).Attribute("font-weight", VisualCanvasFontWeights.Css(VisualCanvasFontWeights.Emphasized)).Text(text).EndElement().Line();
             return;
         }
 
@@ -420,7 +422,7 @@ public sealed class SvgVisualCanvasRenderer {
             return;
         }
 
-        writer.StartElement("text").Attribute("x", badge.X + badge.Width / 2).Attribute("y", badge.Y + badge.Height / 2 + badge.Height * 0.17).Attribute("text-anchor", "middle").Attribute("fill", theme.HeroBadgeTextColor.ToCss()).Attribute("font-family", theme.MonospaceFontFamily).Attribute("font-size", Math.Max(24, badge.Height * 0.42)).Attribute("font-weight", "850").Text(badge.Symbol).EndElement().Line();
+        writer.StartElement("text").Attribute("x", badge.X + badge.Width / 2).Attribute("y", badge.Y + badge.Height / 2 + badge.Height * 0.17).Attribute("text-anchor", "middle").Attribute("fill", theme.HeroBadgeTextColor.ToCss()).Attribute("font-family", theme.MonospaceFontFamily).Attribute("font-size", Math.Max(24, badge.Height * 0.42)).Attribute("font-weight", VisualCanvasFontWeights.Css(VisualCanvasFontWeights.HeroBadge)).Text(badge.Symbol).EndElement().Line();
         writer.EndElement().Line();
     }
 
@@ -495,12 +497,14 @@ public sealed class SvgVisualCanvasRenderer {
     private static void RenderFeatureStrip(SvgMarkupWriter writer, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-feature-strip").EndStartElement().Line();
         var slot = strip.Width / strip.Items.Count;
+        var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized, theme.TextMeasurementMode);
+        var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel, theme.TextMeasurementMode);
         for (var i = 0; i < strip.Items.Count; i++) {
             var item = strip.Items[i];
             var cx = strip.X + slot * i + slot / 2;
             if (i > 0) writer.StartElement("line").Attribute("x1", strip.X + slot * i).Attribute("y1", strip.Y + 4).Attribute("x2", strip.X + slot * i).Attribute("y2", strip.Y + strip.Height - 4).Attribute("stroke", theme.FeatureDividerColor.ToCss()).EndEmptyElement().Line();
-            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 26).Attribute("text-anchor", "middle").Attribute("fill", strip.Accent.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 22).Attribute("font-weight", "800").Text(FitText(item.Icon, 22, Math.Max(8, slot - 12), true)).EndElement().Line();
-            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 58).Attribute("text-anchor", "middle").Attribute("fill", theme.FeatureLabelColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 15).Attribute("font-weight", "700").Text(FitText(item.Label, 15, Math.Max(8, slot - 12), true)).EndElement().Line();
+            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 26).Attribute("text-anchor", "middle").Attribute("fill", strip.Accent.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 22).Attribute("font-weight", VisualCanvasFontWeights.Css(VisualCanvasFontWeights.Emphasized)).Text(iconFace.Fit(item.Icon, 22, Math.Max(8, slot - 12))).EndElement().Line();
+            writer.StartElement("text").Attribute("x", cx).Attribute("y", strip.Y + 58).Attribute("text-anchor", "middle").Attribute("fill", theme.FeatureLabelColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 15).Attribute("font-weight", VisualCanvasFontWeights.Css(VisualCanvasFontWeights.FeatureLabel)).Text(labelFace.Fit(item.Label, 15, Math.Max(8, slot - 12))).EndElement().Line();
         }
 
         writer.EndElement().Line();
@@ -524,23 +528,4 @@ public sealed class SvgVisualCanvasRenderer {
     }
 
     private static string F(double value) => SvgMarkupWriter.FormatNumber(value);
-
-    private static string FitText(string value, double fontSize, double maxWidth, bool emphasized) {
-        if (string.IsNullOrEmpty(value) || Measure(value, fontSize, emphasized) <= maxWidth) return value;
-        const string suffix = "...";
-        if (Measure(suffix, fontSize, emphasized) > maxWidth) return string.Empty;
-        var low = 0;
-        var high = value.Length;
-        while (low < high) {
-            var mid = (low + high + 1) / 2;
-            if (Measure(value.Substring(0, mid) + suffix, fontSize, emphasized) <= maxWidth) low = mid;
-            else high = mid - 1;
-        }
-
-        return value.Substring(0, low) + suffix;
-    }
-
-    private static double Measure(string value, double fontSize, bool emphasized) =>
-        emphasized ? RgbaCanvas.MeasureTextEmphasizedWidth(value, fontSize, null) : RgbaCanvas.MeasureTextWidth(value, fontSize, null);
-
 }

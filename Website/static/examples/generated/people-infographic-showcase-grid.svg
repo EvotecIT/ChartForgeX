@@ -1,46 +1,46 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" id="cfx-grid-8c4f2d36" width="1352" height="1466" viewBox="0 0 1352 1466" role="img" aria-labelledby="cfx-grid-8c4f2d36-title cfx-grid-8c4f2d36-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-grid-8c4f2d36-title">People Infographic Showcase</title>
-<desc id="cfx-grid-8c4f2d36-desc">Static chart grid containing 9 charts.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-grid-ce6467f1" width="1352" height="1466" viewBox="0 0 1352 1466" role="img" aria-labelledby="cfx-grid-ce6467f1-title cfx-grid-ce6467f1-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-grid-ce6467f1-title">People Infographic Showcase</title>
+<desc id="cfx-grid-ce6467f1-desc">Static chart grid containing 9 charts.</desc>
 <defs>
-<style>#cfx-grid-8c4f2d36 .cfx-guide-stroke,#cfx-grid-8c4f2d36 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-grid-8c4f2d36 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-grid-8c4f2d36-gridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<style>#cfx-grid-ce6467f1 .cfx-guide-stroke,#cfx-grid-ce6467f1 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-grid-ce6467f1 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-grid-ce6467f1-gridSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-grid-8c4f2d36-gridSurface)"/>
+<rect width="100%" height="100%" fill="url(#cfx-grid-ce6467f1-gridSurface)"/>
 <text data-cfx-role="grid-title" x="28" y="43.5" fill="#0F172A" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="25" font-weight="900">People Infographic Showcase</text>
 <text data-cfx-role="grid-subtitle" x="30" y="65.5" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="12.5" font-weight="400">Demographic panels using pictorial people, donut split, rings, horizontal bars, and trend lines</text>
-<svg xmlns="http://www.w3.org/2000/svg" width="858" height="320" viewBox="0 0 858 320" role="img" aria-labelledby="cfx72e65363-title cfx72e65363-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Male" data-cfx-series-name-0="Male" data-cfx-series-source-points-0="5" data-cfx-series-rendered-points-0="5" data-cfx-series-key-1="Female" data-cfx-series-name-1="Female" data-cfx-series-source-points-1="5" data-cfx-series-rendered-points-1="5" x="28" y="104" data-cfx-role="grid-panel">
-<title id="cfx72e65363-title">Age Bands</title>
-<desc id="cfx72e65363-desc">Age Bands with 2 data series: Male, Female.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="858" height="320" viewBox="0 0 858 320" role="img" aria-labelledby="cfx8d1eb48d-title cfx8d1eb48d-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Male" data-cfx-series-name-0="Male" data-cfx-series-source-points-0="5" data-cfx-series-rendered-points-0="5" data-cfx-series-key-1="Female" data-cfx-series-name-1="Female" data-cfx-series-source-points-1="5" data-cfx-series-rendered-points-1="5" x="28" y="104" data-cfx-role="grid-panel">
+<title id="cfx8d1eb48d-title">Age Bands</title>
+<desc id="cfx8d1eb48d-desc">Age Bands with 2 data series: Male, Female.</desc>
 <defs>
-<style>#cfx72e65363 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx72e65363 .cfx-crisp-stroke,#cfx72e65363 .cfx-guide-stroke,#cfx72e65363 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx72e65363 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx72e65363 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx72e65363 .cfx-interactive-region:hover,#cfx72e65363 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfx72e65363-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0"/></filter>
-<linearGradient id="cfx72e65363-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx72e65363-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx72e65363-plotClip"><rect x="85" y="112" width="737" height="113" rx="6"/></clipPath>
-<linearGradient id="cfx72e65363-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="0.32"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx72e65363-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24BFD9" stop-opacity="1"/><stop offset="100%" stop-color="#06ABC7" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx72e65363-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="0.32"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx72e65363-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DF4187" stop-opacity="1"/><stop offset="100%" stop-color="#CE2570" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="1"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="1"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#7C3AED" stop-opacity="1"/><stop offset="100%" stop-color="#7C3AED" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F472B6" stop-opacity="1"/><stop offset="100%" stop-color="#F472B6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FB923C" stop-opacity="1"/><stop offset="100%" stop-color="#FB923C" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx72e65363-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#475569" stop-opacity="1"/><stop offset="100%" stop-color="#475569" stop-opacity="0.78"/></linearGradient>
+<style>#cfx8d1eb48d text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx8d1eb48d .cfx-crisp-stroke,#cfx8d1eb48d .cfx-guide-stroke,#cfx8d1eb48d .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx8d1eb48d .cfx-guide-stroke{shape-rendering:crispEdges} #cfx8d1eb48d .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx8d1eb48d .cfx-interactive-region:hover,#cfx8d1eb48d .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx8d1eb48d-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0"/></filter>
+<linearGradient id="cfx8d1eb48d-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx8d1eb48d-plotClip"><rect x="85" y="112" width="737" height="113" rx="6"/></clipPath>
+<linearGradient id="cfx8d1eb48d-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="0.32"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24BFD9" stop-opacity="1"/><stop offset="100%" stop-color="#06ABC7" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="0.32"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DF4187" stop-opacity="1"/><stop offset="100%" stop-color="#CE2570" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="1"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="1"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#7C3AED" stop-opacity="1"/><stop offset="100%" stop-color="#7C3AED" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F472B6" stop-opacity="1"/><stop offset="100%" stop-color="#F472B6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FB923C" stop-opacity="1"/><stop offset="100%" stop-color="#FB923C" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx8d1eb48d-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#475569" stop-opacity="1"/><stop offset="100%" stop-color="#475569" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfx72e65363">
-<rect data-cfx-role="card-surface" x="14" y="14" width="830" height="292" rx="8" fill="url(#cfx72e65363-cardSurface)" filter="url(#cfx72e65363-softShadow)"/>
+<g id="cfx8d1eb48d">
+<rect data-cfx-role="card-surface" x="14" y="14" width="830" height="292" rx="8" fill="url(#cfx8d1eb48d-cardSurface)" filter="url(#cfx8d1eb48d-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="829" height="291" rx="7.5" fill="none" stroke="rgba(15,23,42,0.173)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="827" height="289" rx="6.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="85" y="112" width="737" height="113" rx="6" fill="url(#cfx72e65363-plotSurface)"/>
+<rect x="85" y="112" width="737" height="113" rx="6" fill="url(#cfx8d1eb48d-plotSurface)"/>
 <rect class="cfx-crisp-stroke" x="85.5" y="112.5" width="736" height="112" rx="5.5" fill="none" stroke="rgba(100,116,139,0.18)"/>
 <rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="86" y="113" width="735" height="111" rx="5" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="24" font-weight="750">Age Bands</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="12" font-weight="400">Segment response by cohort</text>
 <line class="cfx-guide-stroke" x1="85.5" y1="112" x2="85.5" y2="225" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.72"/>
-<text data-cfx-role="x-axis-label" x="96.23" y="246" text-anchor="start" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">0</text>
+<text data-cfx-role="x-axis-label" x="93" y="246" text-anchor="start" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">0</text>
 <line class="cfx-guide-stroke" x1="232.5" y1="112" x2="232.5" y2="225" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.72"/>
 <text data-cfx-role="x-axis-label" x="232.4" y="246" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">20</text>
 <line class="cfx-guide-stroke" x1="379.5" y1="112" x2="379.5" y2="225" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.72"/>
@@ -50,7 +50,7 @@
 <line class="cfx-guide-stroke" x1="674.5" y1="112" x2="674.5" y2="225" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.72"/>
 <text data-cfx-role="x-axis-label" x="674.6" y="246" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">80</text>
 <line class="cfx-guide-stroke" x1="822.5" y1="112" x2="822.5" y2="225" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.72"/>
-<text data-cfx-role="x-axis-label" x="804.31" y="246" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">100</text>
+<text data-cfx-role="x-axis-label" x="814" y="246" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">100</text>
 <line class="cfx-guide-stroke" x1="85" y1="213.5" x2="822" y2="213.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.28"/>
 <text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="73" y="217.7" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="600">18-24</text>
 <line class="cfx-guide-stroke" x1="85" y1="191.5" x2="822" y2="191.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.28"/>
@@ -63,26 +63,26 @@
 <text data-cfx-role="horizontal-category-label" data-cfx-line="0" x="73" y="127.3" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="600">55+</text>
 <line class="cfx-guide-stroke" x1="85" y1="225.5" x2="822" y2="225.5" stroke="rgba(51,65,85,0.588)" stroke-width="1.2"/>
 <line class="cfx-guide-stroke" x1="85.5" y1="112" x2="85.5" y2="225" stroke="rgba(51,65,85,0.588)" stroke-width="1.2"/>
-<g clip-path="url(#cfx72e65363-plotClip)">
-<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="0" data-cfx-category="1" data-cfx-value="30" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="205.112" width="221.1" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill0)" opacity="0.94"/>
+<g clip-path="url(#cfx8d1eb48d-plotClip)">
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="0" data-cfx-category="1" data-cfx-value="30" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="205.112" width="221.1" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill0)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="206.112" x2="305.1" y2="206.112" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="1" data-cfx-category="2" data-cfx-value="64" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="182.512" width="471.68" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill0)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="1" data-cfx-category="2" data-cfx-value="64" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="182.512" width="471.68" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill0)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="183.512" x2="555.68" y2="183.512" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="2" data-cfx-category="3" data-cfx-value="82" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="159.912" width="604.34" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill0)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="2" data-cfx-category="3" data-cfx-value="82" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="159.912" width="604.34" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill0)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="160.912" x2="688.34" y2="160.912" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="3" data-cfx-category="4" data-cfx-value="55" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="137.312" width="405.35" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill0)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="3" data-cfx-category="4" data-cfx-value="55" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="137.312" width="405.35" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill0)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="138.312" x2="489.35" y2="138.312" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="4" data-cfx-category="5" data-cfx-value="41" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="114.712" width="302.17" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill0)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="0" data-cfx-point="4" data-cfx-category="5" data-cfx-value="41" data-cfx-base="0" data-cfx-color="#06B6D4" x="85" y="114.712" width="302.17" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill0)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="115.712" x2="386.17" y2="115.712" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="0" data-cfx-category="1" data-cfx-value="24" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="214.387" width="176.88" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill1)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="0" data-cfx-category="1" data-cfx-value="24" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="214.387" width="176.88" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill1)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="215.387" x2="260.88" y2="215.387" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="1" data-cfx-category="2" data-cfx-value="58" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="191.787" width="427.46" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill1)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="1" data-cfx-category="2" data-cfx-value="58" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="191.787" width="427.46" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill1)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="192.787" x2="511.46" y2="192.787" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="2" data-cfx-category="3" data-cfx-value="76" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="169.187" width="560.12" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill1)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="2" data-cfx-category="3" data-cfx-value="76" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="169.187" width="560.12" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill1)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="170.187" x2="644.12" y2="170.187" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="3" data-cfx-category="4" data-cfx-value="61" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="146.587" width="449.57" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill1)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="3" data-cfx-category="4" data-cfx-value="61" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="146.587" width="449.57" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill1)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="147.587" x2="533.57" y2="147.587" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
-<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="4" data-cfx-category="5" data-cfx-value="45" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="123.987" width="331.65" height="7.901" rx="3.95" fill="url(#cfx72e65363-seriesFill1)" opacity="0.94"/>
+<rect data-cfx-role="horizontal-bar" data-cfx-series="1" data-cfx-point="4" data-cfx-category="5" data-cfx-value="45" data-cfx-base="0" data-cfx-color="#DB2777" x="85" y="123.987" width="331.65" height="7.901" rx="3.95" fill="url(#cfx8d1eb48d-seriesFill1)" opacity="0.94"/>
 <line data-cfx-role="bar-highlight" x1="86" y1="124.987" x2="415.65" y2="124.987" stroke="#fff" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
 </g>
 <g data-cfx-role="legend" data-cfx-position="Bottom">
@@ -133,79 +133,79 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" width="858" height="320" viewBox="0 0 858 320" role="img" aria-labelledby="cfx89401423-title cfx89401423-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Male" data-cfx-series-name-0="Male" data-cfx-series-source-points-0="5" data-cfx-series-rendered-points-0="5" data-cfx-series-key-1="Female" data-cfx-series-name-1="Female" data-cfx-series-source-points-1="5" data-cfx-series-rendered-points-1="5" x="28" y="442" data-cfx-role="grid-panel">
-<title id="cfx89401423-title">Survey Trend</title>
-<desc id="cfx89401423-desc">Survey Trend with 2 data series: Male, Female.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="858" height="320" viewBox="0 0 858 320" role="img" aria-labelledby="cfx9eecce90-title cfx9eecce90-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="Male" data-cfx-series-name-0="Male" data-cfx-series-source-points-0="5" data-cfx-series-rendered-points-0="5" data-cfx-series-key-1="Female" data-cfx-series-name-1="Female" data-cfx-series-source-points-1="5" data-cfx-series-rendered-points-1="5" x="28" y="442" data-cfx-role="grid-panel">
+<title id="cfx9eecce90-title">Survey Trend</title>
+<desc id="cfx9eecce90-desc">Survey Trend with 2 data series: Male, Female.</desc>
 <defs>
-<style>#cfx89401423 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx89401423 .cfx-crisp-stroke,#cfx89401423 .cfx-guide-stroke,#cfx89401423 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx89401423 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx89401423 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx89401423 .cfx-interactive-region:hover,#cfx89401423 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
-<filter id="cfx89401423-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0"/></filter>
-<linearGradient id="cfx89401423-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx89401423-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx89401423-plotClip"><rect x="78.23" y="112" width="743.77" height="95.8" rx="6"/></clipPath>
-<linearGradient id="cfx89401423-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="0.32"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx89401423-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24BFD9" stop-opacity="1"/><stop offset="100%" stop-color="#06ABC7" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx89401423-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="0.32"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.02"/></linearGradient>
-<linearGradient id="cfx89401423-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DF4187" stop-opacity="1"/><stop offset="100%" stop-color="#CE2570" stop-opacity="0.94"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="1"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="1"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#7C3AED" stop-opacity="1"/><stop offset="100%" stop-color="#7C3AED" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F472B6" stop-opacity="1"/><stop offset="100%" stop-color="#F472B6" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FB923C" stop-opacity="1"/><stop offset="100%" stop-color="#FB923C" stop-opacity="0.78"/></linearGradient>
-<linearGradient id="cfx89401423-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#475569" stop-opacity="1"/><stop offset="100%" stop-color="#475569" stop-opacity="0.78"/></linearGradient>
+<style>#cfx9eecce90 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx9eecce90 .cfx-crisp-stroke,#cfx9eecce90 .cfx-guide-stroke,#cfx9eecce90 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx9eecce90 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx9eecce90 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx9eecce90 .cfx-interactive-region:hover,#cfx9eecce90 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx9eecce90-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0"/></filter>
+<linearGradient id="cfx9eecce90-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx9eecce90-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx9eecce90-plotClip"><rect x="76" y="112" width="746" height="95.8" rx="6"/></clipPath>
+<linearGradient id="cfx9eecce90-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="0.32"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx9eecce90-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#24BFD9" stop-opacity="1"/><stop offset="100%" stop-color="#06ABC7" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx9eecce90-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="0.32"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx9eecce90-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#DF4187" stop-opacity="1"/><stop offset="100%" stop-color="#CE2570" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#06B6D4" stop-opacity="1"/><stop offset="100%" stop-color="#06B6D4" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#DB2777" stop-opacity="1"/><stop offset="100%" stop-color="#DB2777" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2DD4BF" stop-opacity="1"/><stop offset="100%" stop-color="#2DD4BF" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#7C3AED" stop-opacity="1"/><stop offset="100%" stop-color="#7C3AED" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F472B6" stop-opacity="1"/><stop offset="100%" stop-color="#F472B6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#FB923C" stop-opacity="1"/><stop offset="100%" stop-color="#FB923C" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx9eecce90-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#475569" stop-opacity="1"/><stop offset="100%" stop-color="#475569" stop-opacity="0.78"/></linearGradient>
 </defs>
-<g id="cfx89401423">
-<rect data-cfx-role="card-surface" x="14" y="14" width="830" height="292" rx="8" fill="url(#cfx89401423-cardSurface)" filter="url(#cfx89401423-softShadow)"/>
+<g id="cfx9eecce90">
+<rect data-cfx-role="card-surface" x="14" y="14" width="830" height="292" rx="8" fill="url(#cfx9eecce90-cardSurface)" filter="url(#cfx9eecce90-softShadow)"/>
 <rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="829" height="291" rx="7.5" fill="none" stroke="rgba(15,23,42,0.173)"/>
 <rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="827" height="289" rx="6.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
-<rect x="78.23" y="112" width="743.77" height="95.8" rx="6" fill="url(#cfx89401423-plotSurface)"/>
-<rect class="cfx-crisp-stroke" x="78.73" y="112.5" width="742.77" height="94.8" rx="5.5" fill="none" stroke="rgba(100,116,139,0.18)"/>
-<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="79.23" y="113" width="741.77" height="93.8" rx="5" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<rect x="76" y="112" width="746" height="95.8" rx="6" fill="url(#cfx9eecce90-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="745" height="94.8" rx="5.5" fill="none" stroke="rgba(100,116,139,0.18)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="744" height="93.8" rx="5" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
 <text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="24" font-weight="750">Survey Trend</text>
 <text data-cfx-role="chart-subtitle" x="40" y="79" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="12" font-weight="400">Two audience groups over time</text>
-<line class="cfx-guide-stroke" x1="78.23" y1="207.5" x2="822" y2="207.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
-<text data-cfx-role="y-axis-label" data-cfx-value="0" x="66.23" y="211.8" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">0%</text>
-<line class="cfx-guide-stroke" x1="78.23" y1="183.5" x2="822" y2="183.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
-<text data-cfx-role="y-axis-label" data-cfx-value="20" x="66.23" y="187.85" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">20%</text>
-<line class="cfx-guide-stroke" x1="78.23" y1="159.5" x2="822" y2="159.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
-<text data-cfx-role="y-axis-label" data-cfx-value="40" x="66.23" y="163.9" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">40%</text>
-<line class="cfx-guide-stroke" x1="78.23" y1="135.5" x2="822" y2="135.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
-<text data-cfx-role="y-axis-label" data-cfx-value="60" x="66.23" y="139.95" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">60%</text>
-<line class="cfx-guide-stroke" x1="78.23" y1="112.5" x2="822" y2="112.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
-<text data-cfx-role="y-axis-label" data-cfx-value="80" x="66.23" y="116" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">80%</text>
-<line class="cfx-guide-stroke" x1="78.5" y1="112" x2="78.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
-<text data-cfx-role="x-axis-label" x="99.15" y="228.8" text-anchor="start" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2016</text>
-<line class="cfx-guide-stroke" x1="264.5" y1="112" x2="264.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
-<text data-cfx-role="x-axis-label" x="264.173" y="228.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2017</text>
-<line class="cfx-guide-stroke" x1="450.5" y1="112" x2="450.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
-<text data-cfx-role="x-axis-label" x="450.115" y="228.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2018</text>
-<line class="cfx-guide-stroke" x1="636.5" y1="112" x2="636.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
-<text data-cfx-role="x-axis-label" x="636.058" y="228.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2019</text>
+<line class="cfx-guide-stroke" x1="76" y1="207.5" x2="822" y2="207.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
+<text data-cfx-role="y-axis-label" data-cfx-value="0" x="64" y="211.8" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">0%</text>
+<line class="cfx-guide-stroke" x1="76" y1="183.5" x2="822" y2="183.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
+<text data-cfx-role="y-axis-label" data-cfx-value="20" x="64" y="187.85" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">20%</text>
+<line class="cfx-guide-stroke" x1="76" y1="159.5" x2="822" y2="159.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
+<text data-cfx-role="y-axis-label" data-cfx-value="40" x="64" y="163.9" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">40%</text>
+<line class="cfx-guide-stroke" x1="76" y1="135.5" x2="822" y2="135.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
+<text data-cfx-role="y-axis-label" data-cfx-value="60" x="64" y="139.95" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">60%</text>
+<line class="cfx-guide-stroke" x1="76" y1="112.5" x2="822" y2="112.5" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="1"/>
+<text data-cfx-role="y-axis-label" data-cfx-value="80" x="64" y="116" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">80%</text>
+<line class="cfx-guide-stroke" x1="76.5" y1="112" x2="76.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
+<text data-cfx-role="x-axis-label" x="84" y="228.8" text-anchor="start" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2016</text>
+<line class="cfx-guide-stroke" x1="262.5" y1="112" x2="262.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
+<text data-cfx-role="x-axis-label" x="262.5" y="228.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2017</text>
+<line class="cfx-guide-stroke" x1="448.5" y1="112" x2="448.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
+<text data-cfx-role="x-axis-label" x="449" y="228.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2018</text>
+<line class="cfx-guide-stroke" x1="635.5" y1="112" x2="635.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
+<text data-cfx-role="x-axis-label" x="635.5" y="228.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2019</text>
 <line class="cfx-guide-stroke" x1="822.5" y1="112" x2="822.5" y2="207.8" stroke="rgba(148,163,184,0.337)" stroke-width="1" opacity="0.42"/>
-<text data-cfx-role="x-axis-label" x="801.08" y="228.8" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2020</text>
-<line class="cfx-guide-stroke" x1="78.23" y1="207.5" x2="822" y2="207.5" stroke="rgba(51,65,85,0.588)" stroke-width="1.2"/>
-<text x="450.115" y="250.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="11" font-weight="600">Year</text>
-<line class="cfx-guide-stroke" x1="78.5" y1="112" x2="78.5" y2="207.8" stroke="rgba(51,65,85,0.588)" stroke-width="1.2"/>
+<text data-cfx-role="x-axis-label" x="814" y="228.8" text-anchor="end" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="10" font-weight="400">2020</text>
+<line class="cfx-guide-stroke" x1="76" y1="207.5" x2="822" y2="207.5" stroke="rgba(51,65,85,0.588)" stroke-width="1.2"/>
+<text x="449" y="250.8" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="11" font-weight="600">Year</text>
+<line class="cfx-guide-stroke" x1="76.5" y1="112" x2="76.5" y2="207.8" stroke="rgba(51,65,85,0.588)" stroke-width="1.2"/>
 <text transform="translate(26 159.9) rotate(-90)" text-anchor="middle" fill="#475569" font-family="Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif" font-size="11" font-weight="600">Share</text>
-<g clip-path="url(#cfx89401423-plotClip)">
-<path data-cfx-role="line-ambient-halo" data-cfx-series="0" data-cfx-point-count="5" d="M 78.23 181.455 C 109.22 178.86 202.192 168.083 264.173 165.888 C 326.153 163.692 388.134 170.877 450.115 168.283 C 512.096 165.688 574.077 156.507 636.058 150.32 C 698.038 144.133 791.01 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#06B6D4" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.014"/>
-<path data-cfx-role="line-halo" data-cfx-series="0" data-cfx-point-count="5" d="M 78.23 181.455 C 109.22 178.86 202.192 168.083 264.173 165.888 C 326.153 163.692 388.134 170.877 450.115 168.283 C 512.096 165.688 574.077 156.507 636.058 150.32 C 698.038 144.133 791.01 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#06B6D4" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
-<path data-cfx-role="line" data-cfx-series="0" data-cfx-point-count="5" d="M 78.23 181.455 C 109.22 178.86 202.192 168.083 264.173 165.888 C 326.153 163.692 388.134 170.877 450.115 168.283 C 512.096 165.688 574.077 156.507 636.058 150.32 C 698.038 144.133 791.01 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#06B6D4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<path data-cfx-role="line-highlight" data-cfx-series="0" data-cfx-point-count="5" d="M 78.23 181.455 C 109.22 178.86 202.192 168.083 264.173 165.888 C 326.153 163.692 388.134 170.877 450.115 168.283 C 512.096 165.688 574.077 156.507 636.058 150.32 C 698.038 144.133 791.01 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.035"/>
-<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-y="22" cx="78.23" cy="181.455" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
-<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="1" data-cfx-x="2" data-cfx-y="35" cx="264.173" cy="165.888" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
-<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="2" data-cfx-x="3" data-cfx-y="33" cx="450.115" cy="168.283" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
-<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="3" data-cfx-x="4" data-cfx-y="48" cx="636.058" cy="150.32" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
+<g clip-path="url(#cfx9eecce90-plotClip)">
+<path data-cfx-role="line-ambient-halo" data-cfx-series="0" data-cfx-point-count="5" d="M 76 181.455 C 107.083 178.86 200.333 168.083 262.5 165.888 C 324.667 163.692 386.833 170.877 449 168.283 C 511.167 165.688 573.333 156.507 635.5 150.32 C 697.667 144.133 790.917 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#06B6D4" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.014"/>
+<path data-cfx-role="line-halo" data-cfx-series="0" data-cfx-point-count="5" d="M 76 181.455 C 107.083 178.86 200.333 168.083 262.5 165.888 C 324.667 163.692 386.833 170.877 449 168.283 C 511.167 165.688 573.333 156.507 635.5 150.32 C 697.667 144.133 790.917 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#06B6D4" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
+<path data-cfx-role="line" data-cfx-series="0" data-cfx-point-count="5" d="M 76 181.455 C 107.083 178.86 200.333 168.083 262.5 165.888 C 324.667 163.692 386.833 170.877 449 168.283 C 511.167 165.688 573.333 156.507 635.5 150.32 C 697.667 144.133 790.917 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#06B6D4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path data-cfx-role="line-highlight" data-cfx-series="0" data-cfx-point-count="5" d="M 76 181.455 C 107.083 178.86 200.333 168.083 262.5 165.888 C 324.667 163.692 386.833 170.877 449 168.283 C 511.167 165.688 573.333 156.507 635.5 150.32 C 697.667 144.133 790.917 134.353 822 131.16" class="cfx-premium-stroke" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.035"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="0" data-cfx-x="1" data-cfx-y="22" cx="76" cy="181.455" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="1" data-cfx-x="2" data-cfx-y="35" cx="262.5" cy="165.888" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="2" data-cfx-x="3" data-cfx-y="33" cx="449" cy="168.283" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="3" data-cfx-x="4" data-cfx-y="48" cx="635.5" cy="150.32" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
 <circle data-cfx-role="line-marker" data-cfx-series="0" data-cfx-point="4" data-cfx-x="5" data-cfx-y="64" cx="822" cy="131.16" r="3.1" fill="#06B6D4" stroke="#FFFFFF" stroke-width="2"/>
-<path data-cfx-role="line-ambient-halo" data-cfx-series="1" data-cfx-point-count="5" d="M 78.23 165.888 C 109.22 166.486 202.192 171.276 264.173 169.48 C 326.153 167.684 388.134 156.906 450.115 155.11 C 512.096 153.314 574.077 164.291 636.058 158.703 C 698.038 153.114 791.01 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#DB2777" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.014"/>
-<path data-cfx-role="line-halo" data-cfx-series="1" data-cfx-point-count="5" d="M 78.23 165.888 C 109.22 166.486 202.192 171.276 264.173 169.48 C 326.153 167.684 388.134 156.906 450.115 155.11 C 512.096 153.314 574.077 164.291 636.058 158.703 C 698.038 153.114 791.01 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#DB2777" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
-<path data-cfx-role="line" data-cfx-series="1" data-cfx-point-count="5" d="M 78.23 165.888 C 109.22 166.486 202.192 171.276 264.173 169.48 C 326.153 167.684 388.134 156.906 450.115 155.11 C 512.096 153.314 574.077 164.291 636.058 158.703 C 698.038 153.114 791.01 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#DB2777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<path data-cfx-role="line-highlight" data-cfx-series="1" data-cfx-point-count="5" d="M 78.23 165.888 C 109.22 166.486 202.192 171.276 264.173 169.48 C 326.153 167.684 388.134 156.906 450.115 155.11 C 512.096 153.314 574.077 164.291 636.058 158.703 C 698.038 153.114 791.01 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.035"/>
-<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="0" data-cfx-x="1" data-cfx-y="35" cx="78.23" cy="165.888" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
-<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="1" data-cfx-x="2" data-cfx-y="32" cx="264.173" cy="169.48" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
-<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="2" data-cfx-x="3" data-cfx-y="44" cx="450.115" cy="155.11" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
-<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="3" data-cfx-x="4" data-cfx-y="41" cx="636.058" cy="158.703" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
+<path data-cfx-role="line-ambient-halo" data-cfx-series="1" data-cfx-point-count="5" d="M 76 165.888 C 107.083 166.486 200.333 171.276 262.5 169.48 C 324.667 167.684 386.833 156.906 449 155.11 C 511.167 153.314 573.333 164.291 635.5 158.703 C 697.667 153.114 790.917 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#DB2777" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.014"/>
+<path data-cfx-role="line-halo" data-cfx-series="1" data-cfx-point-count="5" d="M 76 165.888 C 107.083 166.486 200.333 171.276 262.5 169.48 C 324.667 167.684 386.833 156.906 449 155.11 C 511.167 153.314 573.333 164.291 635.5 158.703 C 697.667 153.114 790.917 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#DB2777" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.055"/>
+<path data-cfx-role="line" data-cfx-series="1" data-cfx-point-count="5" d="M 76 165.888 C 107.083 166.486 200.333 171.276 262.5 169.48 C 324.667 167.684 386.833 156.906 449 155.11 C 511.167 153.314 573.333 164.291 635.5 158.703 C 697.667 153.114 790.917 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#DB2777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path data-cfx-role="line-highlight" data-cfx-series="1" data-cfx-point-count="5" d="M 76 165.888 C 107.083 166.486 200.333 171.276 262.5 169.48 C 324.667 167.684 386.833 156.906 449 155.11 C 511.167 153.314 573.333 164.291 635.5 158.703 C 697.667 153.114 790.917 127.767 822 121.58" class="cfx-premium-stroke" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.035"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="0" data-cfx-x="1" data-cfx-y="35" cx="76" cy="165.888" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="1" data-cfx-x="2" data-cfx-y="32" cx="262.5" cy="169.48" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="2" data-cfx-x="3" data-cfx-y="44" cx="449" cy="155.11" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
+<circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="3" data-cfx-x="4" data-cfx-y="41" cx="635.5" cy="158.703" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
 <circle data-cfx-role="line-marker" data-cfx-series="1" data-cfx-point="4" data-cfx-x="5" data-cfx-y="72" cx="822" cy="121.58" r="3.1" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
 </g>
 <g data-cfx-role="legend" data-cfx-position="Bottom">

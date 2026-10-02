@@ -308,7 +308,7 @@ public sealed partial class PngChartRenderer {
         var start = series.Points[0];
         var end = series.Points[series.Points.Count - 1];
         var style = chart.Options.LineVisualStyle;
-        DrawPremiumPngLineSegment(c, map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), color, series.StrokeWidth, style, dashed: true, foregroundMinStrokeWidth: ChartVisualPrimitives.TrendLineMinStrokeWidth);
+        DrawPremiumPngLineSegment(c, map.X(start.X), map.Y(start.Y), map.X(end.X), map.Y(end.Y), color, Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, series.StrokeWidth), style, TrendLineDash, foregroundOpacity: 0.92);
     }
 
     private static void DrawSlope(RgbaCanvas c, Chart chart, int index, ChartRect plot, ChartMapper map) {
@@ -458,7 +458,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawHatchOverlay(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartFillPattern pattern) {
         if (pattern == ChartFillPattern.None || width <= 1 || height <= 1) return;
         var color = ApplyOpacity(ChartColor.White, pattern == ChartFillPattern.Crosshatch ? 0.22 : 0.30);
-        foreach (var line in ChartPatternLineGeometry.Build(pattern, x, y, width, height, radius, 8)) c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.15);
+        foreach (var line in ChartPatternLineGeometry.Build(pattern, x, y, width, height, radius, 8)) c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.25);
     }
 
     private static string FormatRangeBarLabel(Chart chart, ChartSeries series, int intervalIndex, double startValue, double endValue) {
@@ -472,13 +472,11 @@ public sealed partial class PngChartRenderer {
         c.DrawCircle(x, y, radius, color);
     }
 
+    /// <summary>Strokes a series path like its SVG <c>path</c>: round caps and joins, and every gap-separated run painted as one shape.</summary>
     private static void DrawPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth) {
-        var thickness = Math.Max(1, strokeWidth);
-        foreach (var segment in ChartPointSegments.Split(points)) {
-            if (segment.Count == 1 || (segment.Count == 2 && segment[0].X == segment[1].X && segment[0].Y == segment[1].Y))
-                c.DrawCircle(segment[0].X, segment[0].Y, thickness / 2, color);
-            else c.DrawPolyline(segment, color, thickness);
-        }
+        var runs = new List<IReadOnlyList<ChartPoint>>();
+        foreach (var segment in ChartPointSegments.Split(points)) runs.Add(segment);
+        c.StrokePolylines(runs, color, strokeWidth, RasterLineCap.Round, RasterLineJoin.Round);
     }
 
     private static void DrawPremiumPngLinePath(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double strokeWidth, ChartLineVisualStyle style) {
@@ -487,12 +485,15 @@ public sealed partial class PngChartRenderer {
         }
     }
 
-    private static void DrawPremiumPngLineSegment(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, double strokeWidth, ChartLineVisualStyle style, bool dashed = false, double foregroundMinStrokeWidth = 0) {
+    private static readonly double[] TrendLineDash = { 8, 6 };
+
+    /// <summary>Mirrors <c>DrawPremiumSvgLineSegment</c>: one round-capped line per visual layer, optionally dashed.</summary>
+    private static void DrawPremiumPngLineSegment(RgbaCanvas c, double x1, double y1, double x2, double y2, ChartColor color, double strokeWidth, ChartLineVisualStyle style, IReadOnlyList<double>? dashArray = null, double foregroundOpacity = 1) {
+        var segment = new[] { new ChartPoint(x1, y1), new ChartPoint(x2, y2) };
         foreach (var layer in ChartLineVisualLayers.Build(color, strokeWidth, style)) {
             if (!layer.IsVisible) continue;
-            var width = layer.IsForeground && foregroundMinStrokeWidth > 0 ? Math.Max(foregroundMinStrokeWidth, layer.StrokeWidth) : layer.StrokeWidth;
-            if (dashed) c.DrawDashedLine(x1, y1, x2, y2, layer.ColorWithOpacity(), width, 8, 6);
-            else c.DrawLine(x1, y1, x2, y2, layer.ColorWithOpacity(), width);
+            var layerColor = layer.IsForeground ? ApplyOpacity(layer.ColorWithOpacity(), foregroundOpacity) : layer.ColorWithOpacity();
+            c.DrawPolyline(segment, layerColor, layer.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, dashArray);
         }
     }
 

@@ -226,23 +226,17 @@ public sealed partial class PngChartRenderer {
             var control1Y = startY;
             var control2X = tickStartX - side * Math.Min(radius * 0.24, Math.Abs(tickStartX - startX) * 0.42);
             var control2Y = labelY;
-            var previousX = startX;
-            var previousY = startY;
+            var curve = new List<ChartPoint>(16) { new ChartPoint(startX, startY) };
             for (var i = 1; i <= 14; i++) {
                 var t = i / 14.0;
-                var x = PieConnectorCubic(startX, control1X, control2X, tickStartX, t);
-                var y = PieConnectorCubic(startY, control1Y, control2Y, labelY, t);
-                c.DrawLine(previousX, previousY, x, y, color, chart.Options.DataLabelConnectorStrokeWidth);
-                previousX = x;
-                previousY = y;
+                curve.Add(new ChartPoint(PieConnectorCubic(startX, control1X, control2X, tickStartX, t), PieConnectorCubic(startY, control1Y, control2Y, labelY, t)));
             }
-            c.DrawLine(tickStartX, labelY, targetX, labelY, color, chart.Options.DataLabelConnectorStrokeWidth);
+            curve.Add(new ChartPoint(targetX, labelY));
+            c.DrawPolyline(curve, color, chart.Options.DataLabelConnectorStrokeWidth);
             return;
         }
 
-        c.DrawLine(startX, startY, elbowX, elbowY, color, chart.Options.DataLabelConnectorStrokeWidth);
-        c.DrawLine(elbowX, elbowY, tickStartX, labelY, color, chart.Options.DataLabelConnectorStrokeWidth);
-        c.DrawLine(tickStartX, labelY, targetX, labelY, color, chart.Options.DataLabelConnectorStrokeWidth);
+        c.DrawPolyline(new[] { new ChartPoint(startX, startY), new ChartPoint(elbowX, elbowY), new ChartPoint(tickStartX, labelY), new ChartPoint(targetX, labelY) }, color, chart.Options.DataLabelConnectorStrokeWidth);
     }
 
     private static double PieConnectorCubic(double p0, double p1, double p2, double p3, double t) {

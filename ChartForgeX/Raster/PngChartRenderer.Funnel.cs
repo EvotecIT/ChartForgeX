@@ -170,10 +170,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawFunnelSegmentStroke(RgbaCanvas c, Chart chart, IReadOnlyList<ChartPoint> segment) {
         var border = ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.FunnelSegmentStrokeOpacity);
         var highlight = ApplyOpacity(ChartColor.White, chart.Options.Theme.Background.R < 80 ? ChartVisualPrimitives.FunnelHighlightOpacityDark : ChartVisualPrimitives.FunnelHighlightOpacityLight);
-        for (var i = 0; i < segment.Count; i++) {
-            var next = segment[(i + 1) % segment.Count];
-            c.DrawLine(segment[i].X, segment[i].Y, next.X, next.Y, border, ChartVisualPrimitives.FunnelSegmentStrokeWidth);
-        }
+        c.StrokeClosedPolyline(segment, border, ChartVisualPrimitives.FunnelSegmentStrokeWidth, RasterLineJoin.Round);
 
         c.DrawLine(segment[0].X + 2, segment[0].Y + 1, segment[1].X - 2, segment[1].Y + 1, highlight, ChartVisualPrimitives.GridStrokeWidth);
     }

@@ -26,7 +26,8 @@ public sealed class PngChartGridRenderer {
         var layout = ChartGridLayout.FromGrid(grid);
         var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        var output = new RgbaCanvas(layout.Width, layout.Height, 1, TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _), grid.PngOutputScale);
+        using var emphasis = RgbaCanvas.OpenEmphasisScope();
+        var output = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
         output.Clear(background);
         if (background.A == 255) {
             var inset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
@@ -55,7 +56,7 @@ public sealed class PngChartGridRenderer {
 
     private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
-    private static TrueTypeFont? StyleFont(TextStyleOverride style) => style.FontFamily == null ? null : TrueTypeFont.TryLoadForFamily(style.FontFamily, out _);
+    private static TrueTypeFont? StyleFont(TextStyleOverride style) => style.FontFamily == null ? null : TypographyFontResolver.ResolveThemeFont(style.FontFamily);
 
     private static bool StyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
 

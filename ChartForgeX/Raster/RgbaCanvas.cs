@@ -62,36 +62,8 @@ internal sealed partial class RgbaCanvas {
         FillRoundedRectPixels(x * _scale, y * _scale, width * _scale, height * _scale, radius * _scale, topColor, bottomColor);
     }
 
-    public void StrokeRect(double x, double y, double width, double height, ChartColor color, double thickness = 1) {
-        DrawLine(x, y, x + width, y, color, thickness);
-        DrawLine(x + width, y, x + width, y + height, color, thickness);
-        DrawLine(x + width, y + height, x, y + height, color, thickness);
-        DrawLine(x, y + height, x, y, color, thickness);
-    }
-
     public void StrokeRoundedRect(double x, double y, double width, double height, double radius, ChartColor color, double thickness = 1) {
         StrokeRoundedRectPixels(x * _scale, y * _scale, width * _scale, height * _scale, radius * _scale, color, Math.Max(1, thickness * _scale));
-    }
-
-    public void DrawLine(double x0, double y0, double x1, double y1, ChartColor color, double thickness) {
-        DrawLinePixels(x0 * _scale, y0 * _scale, x1 * _scale, y1 * _scale, Math.Max(1, thickness * _scale), color);
-    }
-
-    public void DrawDashedLine(double x0, double y0, double x1, double y1, ChartColor color, double thickness, double dash = 6, double gap = 5) {
-        var dx = x1 - x0;
-        var dy = y1 - y0;
-        var length = Math.Sqrt(dx * dx + dy * dy);
-        if (length <= 0.000001) {
-            DrawLine(x0, y0, x1, y1, color, thickness);
-            return;
-        }
-
-        var ux = dx / length;
-        var uy = dy / length;
-        for (var offset = 0.0; offset < length; offset += dash + gap) {
-            var end = Math.Min(length, offset + dash);
-            DrawLine(x0 + ux * offset, y0 + uy * offset, x0 + ux * end, y0 + uy * end, color, thickness);
-        }
     }
 
     public void DrawCircle(double cx, double cy, double radius, ChartColor color) {
@@ -250,7 +222,7 @@ internal sealed partial class RgbaCanvas {
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
         contentHeight += Math.Abs(baselineOffset);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(contentHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false);
+        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(contentHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
         var textY = padding + baselineOffset;
         if (emphasized) buffer.DrawTextEmphasized(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
         else buffer.DrawText(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
@@ -341,7 +313,7 @@ internal sealed partial class RgbaCanvas {
         return output;
     }
 
-    internal void FillContours(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule = RasterFillRule.EvenOdd) {
+    internal void FillContours(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule = RasterFillRule.EvenOdd, int subScanlines = 0) {
         if (contours.Count == 0) return;
         var scaled = new List<List<ChartPoint>>(contours.Count);
         foreach (var contour in contours) {
@@ -351,7 +323,7 @@ internal sealed partial class RgbaCanvas {
             scaled.Add(points);
         }
 
-        FillContoursPixels(scaled, color, fillRule);
+        FillContoursPixels(scaled, color, fillRule, subScanlines);
     }
 
     private void FillRectPixels(double x, double y, double width, double height, ChartColor color) {
@@ -579,16 +551,14 @@ internal sealed partial class RgbaCanvas {
         return cx * cx + cy * cy;
     }
 
-    private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule) {
+    private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule, int subScanlines = 0) {
         if (contours.Count == 0) return;
-        ScanFillSpans(contours, fillRule, (y, _, left, right) => {
-            var xStart = Math.Max(0, (int)Math.Floor(left));
-            var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right));
+        ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
             for (var x = xStart; x <= xEnd; x++) {
-                var coverage = Math.Min(x + 1.0, right) - Math.Max(x, left);
-                if (coverage > 0) BlendPixel(x, y, coverage >= 1 ? color : WithOpacity(color, coverage));
+                var coverage = rowCoverage[x];
+                if (coverage > 0) BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }
-        });
+        }, subScanlines);
     }
 
     private void FillRingSlicePixels(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double endAngle, ChartColor color) {

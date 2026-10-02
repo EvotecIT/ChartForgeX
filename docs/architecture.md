@@ -35,6 +35,15 @@ For repeatable local measurements rather than broad smoke-test ceilings, run `./
 - Split renderer partials by behavior, such as entry point, axes/layout, series drawing, labels, and helpers.
 - Keep the public renderer surface in the main file.
 
+### PNG lines
+
+Every PNG line goes through `RgbaCanvas` (`DrawLine`, `DrawDashedLine`, `DrawPolyline`, `StrokeClosedPolylines`, `StrokePathData`), which outline it with `RasterStroker` and fill that outline once, the same path the SVG rasterizer takes. A stroke therefore keeps its exact width, a translucent stroke never darkens where its own segments or dashes overlap, and joins, caps, and dashes follow the SVG attributes:
+
+- Pass the cap, join, and dash array the SVG counterpart writes. `DrawLine` defaults to round caps; a `<line>` without `stroke-linecap` is `RasterLineCap.Butt`. `DrawDashedLine` draws butt dashes unless a cap is given.
+- Stroke a multi-point SVG path as one polyline, and a polygon or `Z`-closed path with `StrokeClosedPolylines`, rather than as a loop of segments, so its corners are joined and its dash pattern runs continuously.
+- When a glyph or icon has SVG path data, share that data (as `TopologyInfrastructureGlyphs` does for topology node icons) and stroke it with `StrokePathData`, so both outputs draw one geometry at one width.
+- Strokes take eight sub-scanlines per output pixel row on supersampled canvases as well, so a line has the same width whether it runs along or across the pixel rows.
+
 ## Interactivity Layout
 
 - Keep static rendering in `ChartForgeX`; it must remain deterministic and script-free.

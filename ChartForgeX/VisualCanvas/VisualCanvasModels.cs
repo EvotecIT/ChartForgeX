@@ -193,9 +193,15 @@ public enum VisualCanvasInfoTileMiniChartKind {
 /// Theme colors for reusable visual canvas layers.
 /// </summary>
 public sealed class VisualCanvasTheme {
-    /// <summary>Gets or sets the primary font family used by SVG canvas text.</summary>
+    private TextMeasurementMode _textMeasurementMode = TextMeasurementMode.PortableEstimate;
+    /// <summary>Controls canvas fitting and wrapping. Portable estimates and registered faces are independent of installed fonts; InstalledFonts opts into host-dependent exact metrics.</summary>
+    public TextMeasurementMode TextMeasurementMode {
+        get => _textMeasurementMode;
+        set { VisualCanvas.ValidateEnum(value, nameof(value)); _textMeasurementMode = value; }
+    }
+    /// <summary>Gets or sets the primary font family stack used by SVG and PNG canvas text.</summary>
     public string FontFamily { get; set; } = "Segoe UI, Arial, sans-serif";
-    /// <summary>Gets or sets the monospace font family used by symbolic badge text.</summary>
+    /// <summary>Gets or sets the monospace font family stack used by symbolic badge text in SVG and PNG output.</summary>
     public string MonospaceFontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
     /// <summary>Gets or sets the primary accent used by built-in decorative elements.</summary>
     public ChartColor Accent { get; set; } = ChartColor.FromHex("#2F80FF");
@@ -382,7 +388,7 @@ public sealed partial class VisualCanvas {
             ValueColorOverride = valueColor,
             FontFamilyName = fontFamilyName ?? string.Empty
         };
-        layer.Height = layer.MeasureHeight();
+        layer.Height = layer.MeasureHeight(Theme);
         return AddLayer(layer);
     }
 
@@ -399,7 +405,7 @@ public sealed partial class VisualCanvas {
             ValueColorOverride = valueColor,
             FontFamilyName = fontFamilyName ?? string.Empty
         };
-        var bounds = ResolvePlacement(placement, width, layer.MeasureHeight());
+        var bounds = ResolvePlacement(placement, width, layer.MeasureHeight(Theme));
         layer.X = bounds.X;
         layer.Y = bounds.Y;
         layer.Height = bounds.Height;
@@ -609,10 +615,16 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
 
     /// <summary>Gets the colored title runs.</summary>
     public IReadOnlyList<VisualCanvasTextRun> Runs => _runs;
-    /// <summary>Gets or sets the title font size.</summary>
+    /// <summary>Gets or sets the largest title font size; SVG and PNG output shrink the title when its runs are wider than <see cref="VisualCanvasLayer.Width"/>.</summary>
     public double FontSize { get => _fontSize; set { ValidatePositive(value, nameof(value)); _fontSize = value; Height = Math.Max(Height, value * 1.25); } }
     /// <summary>Gets or sets the title alignment.</summary>
     public TextAlignment Alignment { get; set; } = TextAlignment.Center;
+
+    internal double FittedFontSize(VisualCanvasTextFace face) {
+        var texts = new string[_runs.Count];
+        for (var i = 0; i < texts.Length; i++) texts[i] = _runs[i].Text;
+        return face.FitSize(texts, FontSize, Width);
+    }
 }
 
 /// <summary>Reusable information tile layer.</summary>

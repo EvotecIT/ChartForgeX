@@ -30,9 +30,8 @@ public sealed partial class PngChartRenderer {
             var color = item.Series.Color ?? chart.Options.Theme.Palette[item.Index % chart.Options.Theme.Palette.Length];
             var points = RadarPoints(item.Series, categories, scale, cx, cy, radius);
             c.FillPolygon(points, ApplyOpacity(color, ChartVisualPrimitives.RadarAreaOpacity));
+            c.StrokeClosedPolyline(points, color, ChartVisualPrimitives.RadarOutlineStrokeWidth, RasterLineJoin.Round);
             for (var i = 0; i < points.Count; i++) {
-                var next = points[(i + 1) % points.Count];
-                c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, color, ChartVisualPrimitives.RadarOutlineStrokeWidth);
                 c.DrawCircle(points[i].X, points[i].Y, ChartVisualPrimitives.RadarPointRadius + ChartVisualPrimitives.PngRadarPointOutlineRadiusExtra, chart.Options.Theme.CardBackground);
                 c.DrawCircle(points[i].X, points[i].Y, ChartVisualPrimitives.RadarPointRadius, color);
                 if (ShouldDrawDataLabels(chart, item.Series)) {
@@ -72,7 +71,7 @@ public sealed partial class PngChartRenderer {
             var angle = RadarAngle(i, categories.Count);
             var endX = cx + Math.Cos(angle) * radius;
             var endY = cy + Math.Sin(angle) * radius;
-            if (chart.Options.ShowGrid) c.DrawLine(cx, cy, endX, endY, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.RadarSpokeOpacity), ChartVisualPrimitives.GridStrokeWidth);
+            if (chart.Options.ShowGrid) c.DrawLine(cx, cy, endX, endY, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.RadarSpokeOpacity), ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt);
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var rawLabel = FormatX(chart, categories[i]);
             var maxWidth = Math.Max(44, RadarLabelWidth(chart, angle));
@@ -91,12 +90,8 @@ public sealed partial class PngChartRenderer {
         return Math.Abs(Math.Cos(angle)) < 0.32 ? chart.Options.Size.Width * 0.26 : sideRoom;
     }
 
-    private static void DrawRadarPolyline(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) {
-        for (var i = 0; i < points.Count; i++) {
-            var next = points[(i + 1) % points.Count];
-            c.DrawLine(points[i].X, points[i].Y, next.X, next.Y, color, thickness);
-        }
-    }
+    private static void DrawRadarPolyline(RgbaCanvas c, IReadOnlyList<ChartPoint> points, ChartColor color, double thickness) =>
+        c.StrokeClosedPolyline(points, color, thickness, RasterLineJoin.Miter);
 
     private static bool IsRadarChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Radar);
 

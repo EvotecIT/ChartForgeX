@@ -131,9 +131,19 @@ internal static partial class SmokeTests {
 
         var annotated = composition.ToImage();
         var highlight = PixelAt(annotated, 8, 7);
-        var callout = PixelAt(annotated, 82, 20);
         Assert(highlight.R > 180 && highlight.G < 80 && highlight.B < 80, "Screenshot-style annotation should render a red highlight rectangle.");
-        Assert(callout.A > 180 && callout.R < 80 && callout.G < 80 && callout.B < 80, "Screenshot-style annotation should render a filled callout box.");
+        // Most of the box is its dark fill. One sampled pixel is not enough: where the label's glyphs land depends on the
+        // host's fonts (Arial on Windows, DejaVu or none on a Linux runner), and the label can cover any single pixel.
+        int filled = 0, sampled = 0;
+        // The fill inside the 1.5 px border of the 34 by 18 box at (54, 8).
+        for (int y = 12; y <= 22; y++) {
+            for (int x = 58; x <= 83; x++) {
+                var pixel = PixelAt(annotated, x, y);
+                sampled++;
+                if (pixel.A > 180 && pixel.R < 80 && pixel.G < 80 && pixel.B < 80) filled++;
+            }
+        }
+        Assert(filled >= sampled * 0.6, "Screenshot-style annotation should render a filled callout box.");
 
         Assert(composition.ToPng(new RasterImageOptions { PngCompressionLevel = 9 }).Length > 64, "Screenshot-style annotation should export PNG bytes.");
         Assert(IsGif(composition.ToRasterImage(RasterImageFormat.Gif)), "Screenshot-style annotation should export GIF bytes.");

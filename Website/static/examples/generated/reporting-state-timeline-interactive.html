@@ -1,0 +1,2337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain controller availability</title>
+<style>:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Arial, sans-serif;
+}
+
+.cfx-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.cfx-dashboard {
+  width: min(100%, 1440px);
+  display: grid;
+  grid-template-columns: repeat(var(--cfx-dashboard-columns, 2), minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cfx-interactive-chart {
+  position: relative;
+  width: min(100%, 1200px);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfx-dashboard .cfx-interactive-chart {
+  width: 100%;
+}
+
+.cfx-stage {
+  position: relative;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.cfx-stage svg {
+  margin: auto;
+  transform: translate(var(--cfx-pan-x, 0), var(--cfx-pan-y, 0)) scale(var(--cfx-zoom, 1));
+  transform-origin: center center;
+  transition: transform .12s ease;
+  will-change: transform;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.cfx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 6px;
+  border: 1px solid rgba(51, 65, 85, .72);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, .58);
+}
+
+.cfx-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-tool,
+.cfx-scenario {
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #111827;
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 9px;
+}
+
+.cfx-scenario {
+  border-color: color-mix(in srgb, var(--cfx-scenario-color, #64748b) 45%, #334155);
+}
+
+.cfx-scenario::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--cfx-scenario-color, #64748b);
+}
+
+.cfx-tool:hover,
+.cfx-tool:focus-visible,
+.cfx-tool[aria-pressed="true"],
+.cfx-scenario:hover,
+.cfx-scenario:focus-visible,
+.cfx-scenario[aria-pressed="true"] {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+.cfx-scenario-panel {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, .78);
+  color: #e5e7eb;
+}
+
+.cfx-scenario-panel__summary {
+  display: grid;
+  gap: 2px;
+}
+
+.cfx-scenario-panel__title {
+  color: var(--cfx-scenario-color, #f8fafc);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cfx-scenario-panel__meta {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.cfx-scenario-panel__controls,
+.cfx-scenario-panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.cfx-scenario-panel__steps {
+  list-style: none;
+}
+
+.cfx-scenario-panel__steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 6px;
+  background: rgba(2, 6, 23, .52);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cfx-scenario-panel__steps li::before {
+  content: attr(data-cfx-scenario-step-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--cfx-scenario-color, #2563eb);
+  color: #fff;
+  font-size: 10px;
+}
+
+.cfx-scenario-panel__steps li[aria-current="step"] {
+  border-color: var(--cfx-scenario-color, #38bdf8);
+  color: #f8fafc;
+}
+
+.cfx-interactive-chart[data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
+  border-color: var(--cfx-scenario-color, #38bdf8);
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 30%, rgba(15, 23, 42, .92));
+  color: #fff;
+}
+
+.cfx-scenario-progress {
+  position: relative;
+  min-height: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, .54);
+  color: #dbeafe;
+}
+
+.cfx-scenario-progress[hidden] {
+  display: none;
+}
+
+.cfx-scenario-progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--cfx-scenario-progress, 0%);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 46%, rgba(56, 189, 248, .2));
+  transition: width .18s ease;
+}
+
+.cfx-scenario-progress__text {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-scenario-scrubber {
+  width: 100%;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--cfx-scenario-color, #38bdf8);
+  cursor: pointer;
+}
+
+.cfx-scenario-scrubber:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+.cfx-tooltip {
+  position: fixed;
+  z-index: 20;
+  min-width: 180px;
+  max-width: 320px;
+  border: 1px solid rgba(56, 189, 248, .45);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, .96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .26);
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 8px 10px;
+  pointer-events: none;
+}
+
+.cfx-tooltip--pinned {
+  border-color: rgba(250, 204, 21, .7);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .30), 0 0 0 1px rgba(250, 204, 21, .16) inset;
+}
+
+.cfx-tooltip--pinned::before {
+  content: "Pinned";
+  display: block;
+  margin-bottom: 4px;
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.cfx-tooltip__title {
+  font-weight: 800;
+}
+
+.cfx-tooltip__meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  color: #cbd5e1;
+}
+
+.cfx-tooltip__meta dt,
+.cfx-tooltip__meta dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.cfx-tooltip__meta dt {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.cfx-tooltip[hidden] {
+  display: none;
+}
+
+.cfx-brush-box {
+  position: absolute;
+  z-index: 10;
+  border: 1px solid rgba(56, 189, 248, .95);
+  background: rgba(56, 189, 248, .18);
+  pointer-events: none;
+}
+
+.cfx-brush-box[hidden] {
+  display: none;
+}
+
+.cfx-crosshair {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.cfx-crosshair[hidden] {
+  display: none;
+}
+
+.cfx-crosshair__line {
+  position: absolute;
+  background: rgba(14, 165, 233, .58);
+  box-shadow: 0 0 10px rgba(14, 165, 233, .18);
+}
+
+.cfx-crosshair__line--x {
+  left: 0;
+  right: 0;
+  top: var(--cfx-crosshair-y, 0);
+  height: 1px;
+}
+
+.cfx-crosshair__line--y {
+  top: 0;
+  bottom: 0;
+  left: var(--cfx-crosshair-x, 0);
+  width: 1px;
+}
+
+.cfx-crosshair__label {
+  position: absolute;
+  left: min(calc(var(--cfx-crosshair-x, 0px) + 10px), calc(100% - 220px));
+  top: max(8px, calc(var(--cfx-crosshair-y, 0px) - 28px));
+  max-width: 210px;
+  overflow: hidden;
+  border: 1px solid rgba(14, 165, 233, .42);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .86);
+  color: #e0f2fe;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-reveal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cfx-reveal-layer[hidden] {
+  display: none;
+}
+
+.cfx-reveal-label {
+  position: absolute;
+  max-width: min(220px, calc(100% - 16px));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 42%, rgba(15, 23, 42, .7));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 18%, rgba(2, 6, 23, .9));
+  box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  padding: 5px 8px;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.cfx-reveal-label::before {
+  content: attr(data-cfx-reveal-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, .16);
+  color: #bae6fd;
+  font-size: 10px;
+}
+
+.cfx-compare-tray {
+  position: absolute;
+  z-index: 11;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 36px);
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, .36);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, .82);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .24);
+  color: #e0f2fe;
+  padding: 6px;
+  pointer-events: auto;
+}
+
+.cfx-compare-tray[hidden] {
+  display: none;
+}
+
+.cfx-compare-tray__summary,
+.cfx-compare-tray__more {
+  flex: 0 0 auto;
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip,
+.cfx-compare-clear {
+  min-width: 0;
+  border: 1px solid rgba(56, 189, 248, .34);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .72);
+  color: #f8fafc;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.cfx-compare-chip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip:hover,
+.cfx-compare-chip:focus-visible {
+  border-color: #7dd3fc;
+  color: #bae6fd;
+}
+
+.cfx-compare-clear {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border-color: rgba(250, 204, 21, .44);
+  color: #fde68a;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
+  cursor: grab;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage:active {
+  cursor: grabbing;
+}
+
+.cfx-interactive-chart[data-cfx-mode="brush"] .cfx-stage {
+  cursor: crosshair;
+}
+
+.cfx-interactive-chart [data-cfx-label],
+.cfx-interactive-chart [data-cfx-point],
+.cfx-interactive-chart [data-cfx-series],
+.cfx-interactive-chart [data-cfx-role="legend-item"],
+.cfx-interactive-chart .cfx-interactive-region {
+  cursor: pointer;
+}
+
+.cfx-interactive-chart .cfx-selected {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, .75));
+  opacity: 1 !important;
+  stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
+}
+
+.cfx-interactive-chart .cfx-hovered {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
+  stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
+}
+
+.cfx-interactive-chart .cfx-hover-related {
+  opacity: .82 !important;
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
+}
+
+.cfx-interactive-chart[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
+  opacity: .38;
+}
+
+.cfx-interactive-chart .cfx-trail {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 9px rgba(34, 211, 238, .44));
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"] {
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, .72));
+  stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"] {
+  opacity: .86 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"] {
+  opacity: .72 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"],
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"] {
+  opacity: .58 !important;
+}
+
+.cfx-interactive-chart .cfx-series-muted {
+  opacity: .18 !important;
+}
+
+.cfx-interactive-chart .cfx-series-isolated-in {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, .34));
+}
+
+.cfx-interactive-chart .cfx-series-isolated-out {
+  opacity: .10 !important;
+  filter: saturate(.35);
+}
+
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-isolated="true"] {
+  filter: drop-shadow(0 0 8px rgba(250, 204, 21, .55));
+}
+
+.cfx-interactive-chart .cfx-scenario-muted {
+  opacity: .46 !important;
+  filter: saturate(.72);
+}
+
+.cfx-interactive-chart .cfx-scenario-active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 70%, transparent));
+}
+
+.cfx-interactive-chart .cfx-scenario-step-active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 80%, transparent));
+}
+
+.cfx-interactive-chart .cfx-scenario-step-muted {
+  opacity: .56 !important;
+  filter: saturate(.8);
+}
+
+@media (max-width: 900px) {
+  .cfx-shell {
+    padding: 14px;
+  }
+
+  .cfx-dashboard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cfx-stage {
+    padding: 8px;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-gutter: stable;
+    touch-action: auto;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
+    touch-action: none;
+  }
+
+  .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {
+    width: 100%;
+    min-width: min(var(--cfx-native-width, 640px), 38rem);
+    max-width: none;
+  }
+
+  .cfx-toolbar,
+  .cfx-scenario-panel__controls {
+    justify-content: stretch;
+  }
+
+  .cfx-toolbar .cfx-tool,
+  .cfx-scenario-panel__controls .cfx-tool {
+    flex: 1 1 auto;
+    min-height: 36px;
+  }
+
+  .cfx-scenario-panel__steps {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .cfx-scenario-panel__steps li {
+    min-height: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-stage svg,
+  .cfx-scenario-progress__bar,
+  .cfx-interactive-chart [data-cfx-label],
+  .cfx-interactive-chart [data-cfx-point],
+  .cfx-interactive-chart [data-cfx-series] {
+    transition: none !important;
+  }
+}
+</style>
+</head>
+<body>
+<main class="cfx-shell">
+<section class="cfx-interactive-chart" role="group" aria-label="Domain controller availability" data-cfx-asset-source="document" data-cfx-chart-id="reporting-state-timeline-interactive" data-cfx-interaction-features="ReportReview" data-cfx-scenario-count="0" data-cfx-deep-link-state="false" data-cfx-responsive-layout="readable" style="--cfx-native-width:1180px;--cfx-native-height:520px">
+<div class="cfx-toolbar" aria-label="Chart controls"><button class="cfx-tool" type="button" data-cfx-reset="true">Reset</button></div>
+<div class="cfx-stage">
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="520" viewBox="0 0 1180 520" role="img" aria-labelledby="cfx5fc0b461-title cfx5fc0b461-desc" preserveAspectRatio="xMidYMid meet" style="max-width:100%;height:auto;display:block" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-series-key-0="DC01-WAW" data-cfx-series-name-0="DC01-WAW" data-cfx-series-source-points-0="96" data-cfx-series-rendered-points-0="96" data-cfx-series-key-1="DC02-WAW" data-cfx-series-name-1="DC02-WAW" data-cfx-series-source-points-1="96" data-cfx-series-rendered-points-1="96" data-cfx-series-key-2="DC03-KRK" data-cfx-series-name-2="DC03-KRK" data-cfx-series-source-points-2="96" data-cfx-series-rendered-points-2="96" data-cfx-series-key-3="DC04-GDN" data-cfx-series-name-3="DC04-GDN" data-cfx-series-source-points-3="90" data-cfx-series-rendered-points-3="90" data-cfx-series-key-4="DC05-FRA" data-cfx-series-name-4="DC05-FRA" data-cfx-series-source-points-4="96" data-cfx-series-rendered-points-4="96" data-cfx-series-key-5="DC06-FRA" data-cfx-series-name-5="DC06-FRA" data-cfx-series-source-points-5="96" data-cfx-series-rendered-points-5="96" data-cfx-series-key-6="DC07-LON" data-cfx-series-name-6="DC07-LON" data-cfx-series-source-points-6="96" data-cfx-series-rendered-points-6="96" data-cfx-series-key-7="DC08-NYC" data-cfx-series-name-7="DC08-NYC" data-cfx-series-source-points-7="96" data-cfx-series-rendered-points-7="96">
+<title id="cfx5fc0b461-title">Domain controller availability</title>
+<desc id="cfx5fc0b461-desc">Domain controller availability with 8 data series: DC01-WAW, DC02-WAW, DC03-KRK, DC04-GDN, DC05-FRA, DC06-FRA, DC07-LON, DC08-NYC.</desc>
+<defs>
+<style>#cfx5fc0b461 text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none} #cfx5fc0b461 .cfx-crisp-stroke,#cfx5fc0b461 .cfx-guide-stroke,#cfx5fc0b461 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision} #cfx5fc0b461 .cfx-guide-stroke{shape-rendering:crispEdges} #cfx5fc0b461 .cfx-interactive-region[data-cfx-role="dotted-map-connector"]{pointer-events:stroke} #cfx5fc0b461 .cfx-interactive-region:hover,#cfx5fc0b461 .cfx-interactive-region:focus{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}</style>
+<filter id="cfx5fc0b461-softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.044"/><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.1"/></filter>
+<linearGradient id="cfx5fc0b461-cardSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="100%" stop-color="#F7F7F8" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx5fc0b461-plotSurface" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F9FBFD" stop-opacity="1"/><stop offset="100%" stop-color="#F0F2F5" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx5fc0b461-plotClip"><rect x="76" y="112" width="1068" height="334" rx="8"/></clipPath>
+<linearGradient id="cfx5fc0b461-area0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.32"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill0" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3F76ED" stop-opacity="1"/><stop offset="100%" stop-color="#235DDD" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.32"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2BB0EC" stop-opacity="1"/><stop offset="100%" stop-color="#0D9BDB" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.32"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#2DC190" stop-opacity="1"/><stop offset="100%" stop-color="#0FAE79" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.32"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F6AA28" stop-opacity="1"/><stop offset="100%" stop-color="#E6950A" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area4" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="0.32"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill4" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F15A5A" stop-opacity="1"/><stop offset="100%" stop-color="#E14040" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area5" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.32"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill5" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#9970F7" stop-opacity="1"/><stop offset="100%" stop-color="#8356E7" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area6" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="0.32"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill6" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#EE5EA5" stop-opacity="1"/><stop offset="100%" stop-color="#DE4490" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-area7" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="0.32"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.02"/></linearGradient>
+<linearGradient id="cfx5fc0b461-seriesFill7" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#30C1B1" stop-opacity="1"/><stop offset="100%" stop-color="#13AD9C" stop-opacity="0.94"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill0" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#2563EB" stop-opacity="1"/><stop offset="100%" stop-color="#2563EB" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill1" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="1"/><stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill2" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="1"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill3" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="1"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill4" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EF4444" stop-opacity="1"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill5" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="1"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill6" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#EC4899" stop-opacity="1"/><stop offset="100%" stop-color="#EC4899" stop-opacity="0.78"/></linearGradient>
+<linearGradient id="cfx5fc0b461-sliceFill7" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#14B8A6" stop-opacity="1"/><stop offset="100%" stop-color="#14B8A6" stop-opacity="0.78"/></linearGradient>
+</defs>
+<g id="cfx5fc0b461">
+<rect data-cfx-role="card-surface" x="14" y="14" width="1152" height="492" rx="12" fill="url(#cfx5fc0b461-cardSurface)" filter="url(#cfx5fc0b461-softShadow)"/>
+<rect data-cfx-role="card-border" class="cfx-crisp-stroke" x="14.5" y="14.5" width="1151" height="491" rx="11.5" fill="none" stroke="rgba(148,163,184,0.361)"/>
+<rect data-cfx-role="card-inner-highlight" class="cfx-crisp-stroke" x="15.5" y="15.5" width="1149" height="489" rx="10.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.42"/>
+<rect x="76" y="112" width="1068" height="334" rx="8" fill="url(#cfx5fc0b461-plotSurface)"/>
+<rect class="cfx-crisp-stroke" x="76.5" y="112.5" width="1067" height="333" rx="7.5" fill="none" stroke="rgba(148,163,184,0.188)"/>
+<rect data-cfx-role="plot-inner-highlight" class="cfx-crisp-stroke" x="77" y="113" width="1066" height="332" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.32"/>
+<text data-cfx-role="chart-title" x="40" y="52" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="750">Domain controller availability</text>
+<text data-cfx-role="chart-subtitle" x="40" y="79" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400">15-minute rollups over the last 24 hours; gaps mean no data was collected</text>
+<g data-cfx-role="state-timeline">
+<defs><pattern id="cfx5fc0b461-stateHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#fff" stroke-opacity="0.45" stroke-width="1.5"/></pattern></defs>
+<line data-cfx-role="state-timeline-grid" class="cfx-guide-stroke" x1="160.5" y1="130.6" x2="160.5" y2="356.6" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.35" stroke-dasharray="3 4"/>
+<text data-cfx-role="state-timeline-tick-label" x="168.396" y="377.6" text-anchor="start" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400">18:00</text>
+<line data-cfx-role="state-timeline-grid" class="cfx-guide-stroke" x1="388.5" y1="130.6" x2="388.5" y2="356.6" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.35" stroke-dasharray="3 4"/>
+<text data-cfx-role="state-timeline-tick-label" x="388.515" y="377.6" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400">2026-09-25</text>
+<line data-cfx-role="state-timeline-grid" class="cfx-guide-stroke" x1="616.5" y1="130.6" x2="616.5" y2="356.6" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.35" stroke-dasharray="3 4"/>
+<text data-cfx-role="state-timeline-tick-label" x="616.634" y="377.6" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400">06:00</text>
+<line data-cfx-role="state-timeline-grid" class="cfx-guide-stroke" x1="844.5" y1="130.6" x2="844.5" y2="356.6" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.35" stroke-dasharray="3 4"/>
+<text data-cfx-role="state-timeline-tick-label" x="844.753" y="377.6" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400">12:00</text>
+<line data-cfx-role="state-timeline-grid" class="cfx-guide-stroke" x1="1072.5" y1="130.6" x2="1072.5" y2="356.6" stroke="rgba(148,163,184,0.275)" stroke-width="1" opacity="0.35" stroke-dasharray="3 4"/>
+<text data-cfx-role="state-timeline-tick-label" x="1064.873" y="377.6" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400">18:00</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="134.555" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="144.725" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC01-WAW</text>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="0" data-cfx-label="DC01-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 18:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC01-WAW · Degraded · 2026-09-24 18:00 UTC – 2026-09-24 18:15 UTC (15m)" x="160.396" y="134.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC01-WAW · Degraded · 2026-09-24 18:00 UTC – 2026-09-24 18:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="1" data-cfx-label="DC01-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:15 UTC" data-cfx-end="2026-09-25 00:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC01-WAW · Up · 2026-09-24 18:15 UTC – 2026-09-25 00:15 UTC (6h)" x="169.901" y="134.555" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC01-WAW · Up · 2026-09-24 18:15 UTC – 2026-09-25 00:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="25" data-cfx-label="DC01-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 00:15 UTC" data-cfx-end="2026-09-25 00:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC01-WAW · Degraded · 2026-09-25 00:15 UTC – 2026-09-25 00:30 UTC (15m)" x="398.02" y="134.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC01-WAW · Degraded · 2026-09-25 00:15 UTC – 2026-09-25 00:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="26" data-cfx-label="DC01-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-25 00:30 UTC" data-cfx-end="2026-09-25 06:30 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC01-WAW · Up · 2026-09-25 00:30 UTC – 2026-09-25 06:30 UTC (6h)" x="407.525" y="134.555" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC01-WAW · Up · 2026-09-25 00:30 UTC – 2026-09-25 06:30 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="50" data-cfx-label="DC01-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 06:30 UTC" data-cfx-end="2026-09-25 06:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC01-WAW · Degraded · 2026-09-25 06:30 UTC – 2026-09-25 06:45 UTC (15m)" x="635.644" y="134.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC01-WAW · Degraded · 2026-09-25 06:30 UTC – 2026-09-25 06:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="51" data-cfx-label="DC01-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-25 06:45 UTC" data-cfx-end="2026-09-25 12:45 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC01-WAW · Up · 2026-09-25 06:45 UTC – 2026-09-25 12:45 UTC (6h)" x="645.149" y="134.555" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC01-WAW · Up · 2026-09-25 06:45 UTC – 2026-09-25 12:45 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="75" data-cfx-label="DC01-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 12:45 UTC" data-cfx-end="2026-09-25 13:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC01-WAW · Degraded · 2026-09-25 12:45 UTC – 2026-09-25 13:00 UTC (15m)" x="873.268" y="134.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC01-WAW · Degraded · 2026-09-25 12:45 UTC – 2026-09-25 13:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="0" data-cfx-series-key="DC01-WAW" data-cfx-point="76" data-cfx-label="DC01-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-25 13:00 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="5h" role="img" aria-label="DC01-WAW · Up · 2026-09-25 13:00 UTC – 2026-09-25 18:00 UTC (5h)" x="882.773" y="134.555" width="190.099" height="20.34" rx="1.5" fill="#1D8A52"><title>DC01-WAW · Up · 2026-09-25 13:00 UTC – 2026-09-25 18:00 UTC (5h)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="144.725" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">95.8%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="162.805" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="172.975" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC02-WAW</text>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="0" data-cfx-label="DC02-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 18:30 UTC" data-cfx-meta-duration="30m" role="img" aria-label="DC02-WAW · Up · 2026-09-24 18:00 UTC – 2026-09-24 18:30 UTC (30m)" x="160.396" y="162.805" width="19.01" height="20.34" rx="1.5" fill="#1D8A52"><title>DC02-WAW · Up · 2026-09-24 18:00 UTC – 2026-09-24 18:30 UTC (30m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="2" data-cfx-label="DC02-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 18:30 UTC" data-cfx-end="2026-09-24 18:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC02-WAW · Degraded · 2026-09-24 18:30 UTC – 2026-09-24 18:45 UTC (15m)" x="179.406" y="162.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC02-WAW · Degraded · 2026-09-24 18:30 UTC – 2026-09-24 18:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="3" data-cfx-label="DC02-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:45 UTC" data-cfx-end="2026-09-25 00:45 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC02-WAW · Up · 2026-09-24 18:45 UTC – 2026-09-25 00:45 UTC (6h)" x="188.911" y="162.805" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC02-WAW · Up · 2026-09-24 18:45 UTC – 2026-09-25 00:45 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="27" data-cfx-label="DC02-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 00:45 UTC" data-cfx-end="2026-09-25 01:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC02-WAW · Degraded · 2026-09-25 00:45 UTC – 2026-09-25 01:00 UTC (15m)" x="417.03" y="162.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC02-WAW · Degraded · 2026-09-25 00:45 UTC – 2026-09-25 01:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="28" data-cfx-label="DC02-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-25 01:00 UTC" data-cfx-end="2026-09-25 07:00 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC02-WAW · Up · 2026-09-25 01:00 UTC – 2026-09-25 07:00 UTC (6h)" x="426.535" y="162.805" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC02-WAW · Up · 2026-09-25 01:00 UTC – 2026-09-25 07:00 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="52" data-cfx-label="DC02-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 07:00 UTC" data-cfx-end="2026-09-25 07:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC02-WAW · Degraded · 2026-09-25 07:00 UTC – 2026-09-25 07:15 UTC (15m)" x="654.654" y="162.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC02-WAW · Degraded · 2026-09-25 07:00 UTC – 2026-09-25 07:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="53" data-cfx-label="DC02-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-25 07:15 UTC" data-cfx-end="2026-09-25 13:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC02-WAW · Up · 2026-09-25 07:15 UTC – 2026-09-25 13:15 UTC (6h)" x="664.159" y="162.805" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC02-WAW · Up · 2026-09-25 07:15 UTC – 2026-09-25 13:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="77" data-cfx-label="DC02-WAW · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 13:15 UTC" data-cfx-end="2026-09-25 13:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC02-WAW · Degraded · 2026-09-25 13:15 UTC – 2026-09-25 13:30 UTC (15m)" x="892.278" y="162.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC02-WAW · Degraded · 2026-09-25 13:15 UTC – 2026-09-25 13:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="1" data-cfx-series-key="DC02-WAW" data-cfx-point="78" data-cfx-label="DC02-WAW · Up" data-cfx-status="up" data-cfx-start="2026-09-25 13:30 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="4h 30m" role="img" aria-label="DC02-WAW · Up · 2026-09-25 13:30 UTC – 2026-09-25 18:00 UTC (4h 30m)" x="901.783" y="162.805" width="171.089" height="20.34" rx="1.5" fill="#1D8A52"><title>DC02-WAW · Up · 2026-09-25 13:30 UTC – 2026-09-25 18:00 UTC (4h 30m)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="172.975" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">95.8%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="191.055" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="201.225" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC03-KRK</text>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="0" data-cfx-label="DC03-KRK · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 19:00 UTC" data-cfx-meta-duration="1h" role="img" aria-label="DC03-KRK · Up · 2026-09-24 18:00 UTC – 2026-09-24 19:00 UTC (1h)" x="160.396" y="191.055" width="38.02" height="20.34" rx="1.5" fill="#1D8A52"><title>DC03-KRK · Up · 2026-09-24 18:00 UTC – 2026-09-24 19:00 UTC (1h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="4" data-cfx-label="DC03-KRK · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 19:00 UTC" data-cfx-end="2026-09-24 19:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC03-KRK · Degraded · 2026-09-24 19:00 UTC – 2026-09-24 19:15 UTC (15m)" x="198.416" y="191.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC03-KRK · Degraded · 2026-09-24 19:00 UTC – 2026-09-24 19:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="5" data-cfx-label="DC03-KRK · Up" data-cfx-status="up" data-cfx-start="2026-09-24 19:15 UTC" data-cfx-end="2026-09-25 01:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC03-KRK · Up · 2026-09-24 19:15 UTC – 2026-09-25 01:15 UTC (6h)" x="207.921" y="191.055" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC03-KRK · Up · 2026-09-24 19:15 UTC – 2026-09-25 01:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="29" data-cfx-label="DC03-KRK · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 01:15 UTC" data-cfx-end="2026-09-25 01:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC03-KRK · Degraded · 2026-09-25 01:15 UTC – 2026-09-25 01:30 UTC (15m)" x="436.04" y="191.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC03-KRK · Degraded · 2026-09-25 01:15 UTC – 2026-09-25 01:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="30" data-cfx-label="DC03-KRK · Up" data-cfx-status="up" data-cfx-start="2026-09-25 01:30 UTC" data-cfx-end="2026-09-25 07:30 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC03-KRK · Up · 2026-09-25 01:30 UTC – 2026-09-25 07:30 UTC (6h)" x="445.545" y="191.055" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC03-KRK · Up · 2026-09-25 01:30 UTC – 2026-09-25 07:30 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="54" data-cfx-label="DC03-KRK · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 07:30 UTC" data-cfx-end="2026-09-25 07:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC03-KRK · Degraded · 2026-09-25 07:30 UTC – 2026-09-25 07:45 UTC (15m)" x="673.664" y="191.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC03-KRK · Degraded · 2026-09-25 07:30 UTC – 2026-09-25 07:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="55" data-cfx-label="DC03-KRK · Up" data-cfx-status="up" data-cfx-start="2026-09-25 07:45 UTC" data-cfx-end="2026-09-25 09:00 UTC" data-cfx-meta-duration="1h 15m" role="img" aria-label="DC03-KRK · Up · 2026-09-25 07:45 UTC – 2026-09-25 09:00 UTC (1h 15m)" x="683.169" y="191.055" width="47.525" height="20.34" rx="1.5" fill="#1D8A52"><title>DC03-KRK · Up · 2026-09-25 07:45 UTC – 2026-09-25 09:00 UTC (1h 15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="60" data-cfx-label="DC03-KRK · Down" data-cfx-status="down" data-cfx-start="2026-09-25 09:00 UTC" data-cfx-end="2026-09-25 09:45 UTC" data-cfx-meta-duration="45m" data-cfx-meta-detail="LDAP bind failed" role="img" aria-label="DC03-KRK · Down · 2026-09-25 09:00 UTC – 2026-09-25 09:45 UTC (45m) · LDAP bind failed" x="730.694" y="191.055" width="28.515" height="20.34" rx="1.5" fill="#D4302F"><title>DC03-KRK · Down · 2026-09-25 09:00 UTC – 2026-09-25 09:45 UTC (45m) · LDAP bind failed</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="63" data-cfx-label="DC03-KRK · Recovering" data-cfx-status="recovering" data-cfx-start="2026-09-25 09:45 UTC" data-cfx-end="2026-09-25 10:30 UTC" data-cfx-meta-duration="45m" role="img" aria-label="DC03-KRK · Recovering · 2026-09-25 09:45 UTC – 2026-09-25 10:30 UTC (45m)" x="759.209" y="191.055" width="28.515" height="20.34" rx="1.5" fill="#0C8AA8"><title>DC03-KRK · Recovering · 2026-09-25 09:45 UTC – 2026-09-25 10:30 UTC (45m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="66" data-cfx-label="DC03-KRK · Up" data-cfx-status="up" data-cfx-start="2026-09-25 10:30 UTC" data-cfx-end="2026-09-25 13:45 UTC" data-cfx-meta-duration="3h 15m" role="img" aria-label="DC03-KRK · Up · 2026-09-25 10:30 UTC – 2026-09-25 13:45 UTC (3h 15m)" x="787.724" y="191.055" width="123.565" height="20.34" rx="1.5" fill="#1D8A52"><title>DC03-KRK · Up · 2026-09-25 10:30 UTC – 2026-09-25 13:45 UTC (3h 15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="79" data-cfx-label="DC03-KRK · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 13:45 UTC" data-cfx-end="2026-09-25 14:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC03-KRK · Degraded · 2026-09-25 13:45 UTC – 2026-09-25 14:00 UTC (15m)" x="911.288" y="191.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC03-KRK · Degraded · 2026-09-25 13:45 UTC – 2026-09-25 14:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="2" data-cfx-series-key="DC03-KRK" data-cfx-point="80" data-cfx-label="DC03-KRK · Up" data-cfx-status="up" data-cfx-start="2026-09-25 14:00 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="4h" role="img" aria-label="DC03-KRK · Up · 2026-09-25 14:00 UTC – 2026-09-25 18:00 UTC (4h)" x="920.793" y="191.055" width="152.079" height="20.34" rx="1.5" fill="#1D8A52"><title>DC03-KRK · Up · 2026-09-25 14:00 UTC – 2026-09-25 18:00 UTC (4h)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="201.225" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">89.6%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="219.305" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="229.475" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC04-GDN</text>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="0" data-cfx-label="DC04-GDN · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 19:30 UTC" data-cfx-meta-duration="1h 30m" role="img" aria-label="DC04-GDN · Up · 2026-09-24 18:00 UTC – 2026-09-24 19:30 UTC (1h 30m)" x="160.396" y="219.305" width="57.03" height="20.34" rx="1.5" fill="#1D8A52"><title>DC04-GDN · Up · 2026-09-24 18:00 UTC – 2026-09-24 19:30 UTC (1h 30m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="6" data-cfx-label="DC04-GDN · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 19:30 UTC" data-cfx-end="2026-09-24 19:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC04-GDN · Degraded · 2026-09-24 19:30 UTC – 2026-09-24 19:45 UTC (15m)" x="217.426" y="219.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC04-GDN · Degraded · 2026-09-24 19:30 UTC – 2026-09-24 19:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="7" data-cfx-label="DC04-GDN · Up" data-cfx-status="up" data-cfx-start="2026-09-24 19:45 UTC" data-cfx-end="2026-09-25 01:45 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC04-GDN · Up · 2026-09-24 19:45 UTC – 2026-09-25 01:45 UTC (6h)" x="226.931" y="219.305" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC04-GDN · Up · 2026-09-24 19:45 UTC – 2026-09-25 01:45 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="31" data-cfx-label="DC04-GDN · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 01:45 UTC" data-cfx-end="2026-09-25 02:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC04-GDN · Degraded · 2026-09-25 01:45 UTC – 2026-09-25 02:00 UTC (15m)" x="455.05" y="219.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC04-GDN · Degraded · 2026-09-25 01:45 UTC – 2026-09-25 02:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="32" data-cfx-label="DC04-GDN · Up" data-cfx-status="up" data-cfx-start="2026-09-25 02:00 UTC" data-cfx-end="2026-09-25 04:00 UTC" data-cfx-meta-duration="2h" role="img" aria-label="DC04-GDN · Up · 2026-09-25 02:00 UTC – 2026-09-25 04:00 UTC (2h)" x="464.555" y="219.305" width="76.04" height="20.34" rx="1.5" fill="#1D8A52"><title>DC04-GDN · Up · 2026-09-25 02:00 UTC – 2026-09-25 04:00 UTC (2h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="40" data-cfx-label="DC04-GDN · Up" data-cfx-status="up" data-cfx-start="2026-09-25 05:30 UTC" data-cfx-end="2026-09-25 08:00 UTC" data-cfx-meta-duration="2h 30m" role="img" aria-label="DC04-GDN · Up · 2026-09-25 05:30 UTC – 2026-09-25 08:00 UTC (2h 30m)" x="597.624" y="219.305" width="95.05" height="20.34" rx="1.5" fill="#1D8A52"><title>DC04-GDN · Up · 2026-09-25 05:30 UTC – 2026-09-25 08:00 UTC (2h 30m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="50" data-cfx-label="DC04-GDN · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 08:00 UTC" data-cfx-end="2026-09-25 08:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC04-GDN · Degraded · 2026-09-25 08:00 UTC – 2026-09-25 08:15 UTC (15m)" x="692.674" y="219.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC04-GDN · Degraded · 2026-09-25 08:00 UTC – 2026-09-25 08:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="51" data-cfx-label="DC04-GDN · Up" data-cfx-status="up" data-cfx-start="2026-09-25 08:15 UTC" data-cfx-end="2026-09-25 14:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC04-GDN · Up · 2026-09-25 08:15 UTC – 2026-09-25 14:15 UTC (6h)" x="702.179" y="219.305" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC04-GDN · Up · 2026-09-25 08:15 UTC – 2026-09-25 14:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="75" data-cfx-label="DC04-GDN · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 14:15 UTC" data-cfx-end="2026-09-25 14:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC04-GDN · Degraded · 2026-09-25 14:15 UTC – 2026-09-25 14:30 UTC (15m)" x="930.298" y="219.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC04-GDN · Degraded · 2026-09-25 14:15 UTC – 2026-09-25 14:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="3" data-cfx-series-key="DC04-GDN" data-cfx-point="76" data-cfx-label="DC04-GDN · Up" data-cfx-status="up" data-cfx-start="2026-09-25 14:30 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="3h 30m" role="img" aria-label="DC04-GDN · Up · 2026-09-25 14:30 UTC – 2026-09-25 18:00 UTC (3h 30m)" x="939.803" y="219.305" width="133.069" height="20.34" rx="1.5" fill="#1D8A52"><title>DC04-GDN · Up · 2026-09-25 14:30 UTC – 2026-09-25 18:00 UTC (3h 30m)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="229.475" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">95.6%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="247.555" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="257.725" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC05-FRA</text>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="0" data-cfx-label="DC05-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 20:00 UTC" data-cfx-meta-duration="2h" role="img" aria-label="DC05-FRA · Up · 2026-09-24 18:00 UTC – 2026-09-24 20:00 UTC (2h)" x="160.396" y="247.555" width="76.04" height="20.34" rx="1.5" fill="#1D8A52"><title>DC05-FRA · Up · 2026-09-24 18:00 UTC – 2026-09-24 20:00 UTC (2h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="8" data-cfx-label="DC05-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 20:00 UTC" data-cfx-end="2026-09-24 20:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC05-FRA · Degraded · 2026-09-24 20:00 UTC – 2026-09-24 20:15 UTC (15m)" x="236.436" y="247.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC05-FRA · Degraded · 2026-09-24 20:00 UTC – 2026-09-24 20:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="9" data-cfx-label="DC05-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-24 20:15 UTC" data-cfx-end="2026-09-25 02:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC05-FRA · Up · 2026-09-24 20:15 UTC – 2026-09-25 02:15 UTC (6h)" x="245.941" y="247.555" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC05-FRA · Up · 2026-09-24 20:15 UTC – 2026-09-25 02:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="33" data-cfx-label="DC05-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 02:15 UTC" data-cfx-end="2026-09-25 02:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC05-FRA · Degraded · 2026-09-25 02:15 UTC – 2026-09-25 02:30 UTC (15m)" x="474.06" y="247.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC05-FRA · Degraded · 2026-09-25 02:15 UTC – 2026-09-25 02:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="34" data-cfx-label="DC05-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-25 02:30 UTC" data-cfx-end="2026-09-25 08:30 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC05-FRA · Up · 2026-09-25 02:30 UTC – 2026-09-25 08:30 UTC (6h)" x="483.565" y="247.555" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC05-FRA · Up · 2026-09-25 02:30 UTC – 2026-09-25 08:30 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="58" data-cfx-label="DC05-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 08:30 UTC" data-cfx-end="2026-09-25 08:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC05-FRA · Degraded · 2026-09-25 08:30 UTC – 2026-09-25 08:45 UTC (15m)" x="711.684" y="247.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC05-FRA · Degraded · 2026-09-25 08:30 UTC – 2026-09-25 08:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="59" data-cfx-label="DC05-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-25 08:45 UTC" data-cfx-end="2026-09-25 14:45 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC05-FRA · Up · 2026-09-25 08:45 UTC – 2026-09-25 14:45 UTC (6h)" x="721.189" y="247.555" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC05-FRA · Up · 2026-09-25 08:45 UTC – 2026-09-25 14:45 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="83" data-cfx-label="DC05-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 14:45 UTC" data-cfx-end="2026-09-25 15:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC05-FRA · Degraded · 2026-09-25 14:45 UTC – 2026-09-25 15:00 UTC (15m)" x="949.308" y="247.555" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC05-FRA · Degraded · 2026-09-25 14:45 UTC – 2026-09-25 15:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="4" data-cfx-series-key="DC05-FRA" data-cfx-point="84" data-cfx-label="DC05-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-25 15:00 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="3h" role="img" aria-label="DC05-FRA · Up · 2026-09-25 15:00 UTC – 2026-09-25 18:00 UTC (3h)" x="958.813" y="247.555" width="114.06" height="20.34" rx="1.5" fill="#1D8A52"><title>DC05-FRA · Up · 2026-09-25 15:00 UTC – 2026-09-25 18:00 UTC (3h)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="257.725" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">95.8%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="275.805" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="285.975" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC06-FRA</text>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="0" data-cfx-label="DC06-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 20:00 UTC" data-cfx-meta-duration="2h" role="img" aria-label="DC06-FRA · Up · 2026-09-24 18:00 UTC – 2026-09-24 20:00 UTC (2h)" x="160.396" y="275.805" width="76.04" height="20.34" rx="1.5" fill="#1D8A52"><title>DC06-FRA · Up · 2026-09-24 18:00 UTC – 2026-09-24 20:00 UTC (2h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="8" data-cfx-label="DC06-FRA · Maintenance" data-cfx-status="maintenance" data-cfx-start="2026-09-24 20:00 UTC" data-cfx-end="2026-09-24 22:00 UTC" data-cfx-meta-duration="2h" role="img" aria-label="DC06-FRA · Maintenance · 2026-09-24 20:00 UTC – 2026-09-24 22:00 UTC (2h)" x="236.436" y="275.805" width="76.04" height="20.34" rx="1.5" fill="#6B5BD2"><title>DC06-FRA · Maintenance · 2026-09-24 20:00 UTC – 2026-09-24 22:00 UTC (2h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="16" data-cfx-label="DC06-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-24 22:00 UTC" data-cfx-end="2026-09-25 02:45 UTC" data-cfx-meta-duration="4h 45m" role="img" aria-label="DC06-FRA · Up · 2026-09-24 22:00 UTC – 2026-09-25 02:45 UTC (4h 45m)" x="312.475" y="275.805" width="180.594" height="20.34" rx="1.5" fill="#1D8A52"><title>DC06-FRA · Up · 2026-09-24 22:00 UTC – 2026-09-25 02:45 UTC (4h 45m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="35" data-cfx-label="DC06-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 02:45 UTC" data-cfx-end="2026-09-25 03:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC06-FRA · Degraded · 2026-09-25 02:45 UTC – 2026-09-25 03:00 UTC (15m)" x="493.07" y="275.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC06-FRA · Degraded · 2026-09-25 02:45 UTC – 2026-09-25 03:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="36" data-cfx-label="DC06-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-25 03:00 UTC" data-cfx-end="2026-09-25 09:00 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC06-FRA · Up · 2026-09-25 03:00 UTC – 2026-09-25 09:00 UTC (6h)" x="502.575" y="275.805" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC06-FRA · Up · 2026-09-25 03:00 UTC – 2026-09-25 09:00 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="60" data-cfx-label="DC06-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 09:00 UTC" data-cfx-end="2026-09-25 09:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC06-FRA · Degraded · 2026-09-25 09:00 UTC – 2026-09-25 09:15 UTC (15m)" x="730.694" y="275.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC06-FRA · Degraded · 2026-09-25 09:00 UTC – 2026-09-25 09:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="61" data-cfx-label="DC06-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-25 09:15 UTC" data-cfx-end="2026-09-25 15:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC06-FRA · Up · 2026-09-25 09:15 UTC – 2026-09-25 15:15 UTC (6h)" x="740.199" y="275.805" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC06-FRA · Up · 2026-09-25 09:15 UTC – 2026-09-25 15:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="85" data-cfx-label="DC06-FRA · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 15:15 UTC" data-cfx-end="2026-09-25 15:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC06-FRA · Degraded · 2026-09-25 15:15 UTC – 2026-09-25 15:30 UTC (15m)" x="968.318" y="275.805" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC06-FRA · Degraded · 2026-09-25 15:15 UTC – 2026-09-25 15:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="5" data-cfx-series-key="DC06-FRA" data-cfx-point="86" data-cfx-label="DC06-FRA · Up" data-cfx-status="up" data-cfx-start="2026-09-25 15:30 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="2h 30m" role="img" aria-label="DC06-FRA · Up · 2026-09-25 15:30 UTC – 2026-09-25 18:00 UTC (2h 30m)" x="977.823" y="275.805" width="95.05" height="20.34" rx="1.5" fill="#1D8A52"><title>DC06-FRA · Up · 2026-09-25 15:30 UTC – 2026-09-25 18:00 UTC (2h 30m)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="285.975" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">88.5%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="304.055" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="314.225" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC07-LON</text>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="0" data-cfx-label="DC07-LON · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 21:00 UTC" data-cfx-meta-duration="3h" role="img" aria-label="DC07-LON · Up · 2026-09-24 18:00 UTC – 2026-09-24 21:00 UTC (3h)" x="160.396" y="304.055" width="114.06" height="20.34" rx="1.5" fill="#1D8A52"><title>DC07-LON · Up · 2026-09-24 18:00 UTC – 2026-09-24 21:00 UTC (3h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="12" data-cfx-label="DC07-LON · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 21:00 UTC" data-cfx-end="2026-09-24 21:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC07-LON · Degraded · 2026-09-24 21:00 UTC – 2026-09-24 21:15 UTC (15m)" x="274.456" y="304.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC07-LON · Degraded · 2026-09-24 21:00 UTC – 2026-09-24 21:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="13" data-cfx-label="DC07-LON · Up" data-cfx-status="up" data-cfx-start="2026-09-24 21:15 UTC" data-cfx-end="2026-09-25 03:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC07-LON · Up · 2026-09-24 21:15 UTC – 2026-09-25 03:15 UTC (6h)" x="283.961" y="304.055" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC07-LON · Up · 2026-09-24 21:15 UTC – 2026-09-25 03:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="37" data-cfx-label="DC07-LON · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 03:15 UTC" data-cfx-end="2026-09-25 03:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC07-LON · Degraded · 2026-09-25 03:15 UTC – 2026-09-25 03:30 UTC (15m)" x="512.08" y="304.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC07-LON · Degraded · 2026-09-25 03:15 UTC – 2026-09-25 03:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="38" data-cfx-label="DC07-LON · Up" data-cfx-status="up" data-cfx-start="2026-09-25 03:30 UTC" data-cfx-end="2026-09-25 09:30 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC07-LON · Up · 2026-09-25 03:30 UTC – 2026-09-25 09:30 UTC (6h)" x="521.585" y="304.055" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC07-LON · Up · 2026-09-25 03:30 UTC – 2026-09-25 09:30 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="62" data-cfx-label="DC07-LON · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 09:30 UTC" data-cfx-end="2026-09-25 09:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC07-LON · Degraded · 2026-09-25 09:30 UTC – 2026-09-25 09:45 UTC (15m)" x="749.704" y="304.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC07-LON · Degraded · 2026-09-25 09:30 UTC – 2026-09-25 09:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="63" data-cfx-label="DC07-LON · Up" data-cfx-status="up" data-cfx-start="2026-09-25 09:45 UTC" data-cfx-end="2026-09-25 11:30 UTC" data-cfx-meta-duration="1h 45m" role="img" aria-label="DC07-LON · Up · 2026-09-25 09:45 UTC – 2026-09-25 11:30 UTC (1h 45m)" x="759.209" y="304.055" width="66.535" height="20.34" rx="1.5" fill="#1D8A52"><title>DC07-LON · Up · 2026-09-25 09:45 UTC – 2026-09-25 11:30 UTC (1h 45m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="70" data-cfx-label="DC07-LON · Not observable" data-cfx-status="notObservable" data-cfx-start="2026-09-25 11:30 UTC" data-cfx-end="2026-09-25 14:00 UTC" data-cfx-meta-duration="2h 30m" role="img" aria-label="DC07-LON · Not observable · 2026-09-25 11:30 UTC – 2026-09-25 14:00 UTC (2h 30m)" x="825.743" y="304.055" width="95.05" height="20.34" rx="1.5" fill="#7C818A"><title>DC07-LON · Not observable · 2026-09-25 11:30 UTC – 2026-09-25 14:00 UTC (2h 30m)</title></rect>
+<rect data-cfx-role="state-segment-hatch" x="825.743" y="304.055" width="95.05" height="20.34" rx="1.5" fill="url(#cfx5fc0b461-stateHatch)" pointer-events="none"/>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="80" data-cfx-label="DC07-LON · Up" data-cfx-status="up" data-cfx-start="2026-09-25 14:00 UTC" data-cfx-end="2026-09-25 15:45 UTC" data-cfx-meta-duration="1h 45m" role="img" aria-label="DC07-LON · Up · 2026-09-25 14:00 UTC – 2026-09-25 15:45 UTC (1h 45m)" x="920.793" y="304.055" width="66.535" height="20.34" rx="1.5" fill="#1D8A52"><title>DC07-LON · Up · 2026-09-25 14:00 UTC – 2026-09-25 15:45 UTC (1h 45m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="87" data-cfx-label="DC07-LON · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 15:45 UTC" data-cfx-end="2026-09-25 16:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC07-LON · Degraded · 2026-09-25 15:45 UTC – 2026-09-25 16:00 UTC (15m)" x="987.328" y="304.055" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC07-LON · Degraded · 2026-09-25 15:45 UTC – 2026-09-25 16:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="6" data-cfx-series-key="DC07-LON" data-cfx-point="88" data-cfx-label="DC07-LON · Up" data-cfx-status="up" data-cfx-start="2026-09-25 16:00 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="2h" role="img" aria-label="DC07-LON · Up · 2026-09-25 16:00 UTC – 2026-09-25 18:00 UTC (2h)" x="996.833" y="304.055" width="76.04" height="20.34" rx="1.5" fill="#1D8A52"><title>DC07-LON · Up · 2026-09-25 16:00 UTC – 2026-09-25 18:00 UTC (2h)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="314.225" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">95.3%</text>
+<rect data-cfx-role="state-lane-track" x="160.396" y="332.305" width="912.477" height="20.34" rx="1.5" fill="rgba(148,163,184,0.275)" opacity="0.35"/>
+<text data-cfx-role="state-lane-label" x="146.396" y="342.475" text-anchor="end" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">DC08-NYC</text>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="0" data-cfx-label="DC08-NYC · Up" data-cfx-status="up" data-cfx-start="2026-09-24 18:00 UTC" data-cfx-end="2026-09-24 21:30 UTC" data-cfx-meta-duration="3h 30m" role="img" aria-label="DC08-NYC · Up · 2026-09-24 18:00 UTC – 2026-09-24 21:30 UTC (3h 30m)" x="160.396" y="332.305" width="133.069" height="20.34" rx="1.5" fill="#1D8A52"><title>DC08-NYC · Up · 2026-09-24 18:00 UTC – 2026-09-24 21:30 UTC (3h 30m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="14" data-cfx-label="DC08-NYC · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-24 21:30 UTC" data-cfx-end="2026-09-24 21:45 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC08-NYC · Degraded · 2026-09-24 21:30 UTC – 2026-09-24 21:45 UTC (15m)" x="293.465" y="332.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC08-NYC · Degraded · 2026-09-24 21:30 UTC – 2026-09-24 21:45 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="15" data-cfx-label="DC08-NYC · Up" data-cfx-status="up" data-cfx-start="2026-09-24 21:45 UTC" data-cfx-end="2026-09-25 03:45 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC08-NYC · Up · 2026-09-24 21:45 UTC – 2026-09-25 03:45 UTC (6h)" x="302.97" y="332.305" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC08-NYC · Up · 2026-09-24 21:45 UTC – 2026-09-25 03:45 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="39" data-cfx-label="DC08-NYC · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 03:45 UTC" data-cfx-end="2026-09-25 04:00 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC08-NYC · Degraded · 2026-09-25 03:45 UTC – 2026-09-25 04:00 UTC (15m)" x="531.09" y="332.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC08-NYC · Degraded · 2026-09-25 03:45 UTC – 2026-09-25 04:00 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="40" data-cfx-label="DC08-NYC · Up" data-cfx-status="up" data-cfx-start="2026-09-25 04:00 UTC" data-cfx-end="2026-09-25 10:00 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC08-NYC · Up · 2026-09-25 04:00 UTC – 2026-09-25 10:00 UTC (6h)" x="540.595" y="332.305" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC08-NYC · Up · 2026-09-25 04:00 UTC – 2026-09-25 10:00 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="64" data-cfx-label="DC08-NYC · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 10:00 UTC" data-cfx-end="2026-09-25 10:15 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC08-NYC · Degraded · 2026-09-25 10:00 UTC – 2026-09-25 10:15 UTC (15m)" x="768.714" y="332.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC08-NYC · Degraded · 2026-09-25 10:00 UTC – 2026-09-25 10:15 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="65" data-cfx-label="DC08-NYC · Up" data-cfx-status="up" data-cfx-start="2026-09-25 10:15 UTC" data-cfx-end="2026-09-25 16:15 UTC" data-cfx-meta-duration="6h" role="img" aria-label="DC08-NYC · Up · 2026-09-25 10:15 UTC – 2026-09-25 16:15 UTC (6h)" x="778.219" y="332.305" width="228.119" height="20.34" rx="1.5" fill="#1D8A52"><title>DC08-NYC · Up · 2026-09-25 10:15 UTC – 2026-09-25 16:15 UTC (6h)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="89" data-cfx-label="DC08-NYC · Degraded" data-cfx-status="degraded" data-cfx-start="2026-09-25 16:15 UTC" data-cfx-end="2026-09-25 16:30 UTC" data-cfx-meta-duration="15m" role="img" aria-label="DC08-NYC · Degraded · 2026-09-25 16:15 UTC – 2026-09-25 16:30 UTC (15m)" x="1006.338" y="332.305" width="9.505" height="20.34" rx="1.5" fill="#C78404"><title>DC08-NYC · Degraded · 2026-09-25 16:15 UTC – 2026-09-25 16:30 UTC (15m)</title></rect>
+<rect data-cfx-role="state-segment" data-cfx-series="7" data-cfx-series-key="DC08-NYC" data-cfx-point="90" data-cfx-label="DC08-NYC · Up" data-cfx-status="up" data-cfx-start="2026-09-25 16:30 UTC" data-cfx-end="2026-09-25 18:00 UTC" data-cfx-meta-duration="1h 30m" role="img" aria-label="DC08-NYC · Up · 2026-09-25 16:30 UTC – 2026-09-25 18:00 UTC (1h 30m)" x="1015.843" y="332.305" width="57.03" height="20.34" rx="1.5" fill="#1D8A52"><title>DC08-NYC · Up · 2026-09-25 16:30 UTC – 2026-09-25 18:00 UTC (1h 30m)</title></rect>
+<text data-cfx-role="state-lane-summary" x="1130" y="342.475" text-anchor="end" dominant-baseline="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">95.8%</text>
+<text data-cfx-role="state-summary-header" x="1130" y="122.6" text-anchor="end" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Available</text>
+<line data-cfx-role="state-timeline-axis" x1="160.396" y1="356.6" x2="1072.873" y2="356.6" stroke="rgba(71,85,105,0.627)" stroke-width="1.2"/>
+<text data-cfx-role="state-timeline-x-axis-title" x="616.634" y="400.2" text-anchor="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600">UTC</text>
+<rect data-cfx-role="state-legend-swatch" data-cfx-status="up" x="369.943" y="427" width="10" height="10" rx="1.5" fill="#1D8A52"/>
+<text data-cfx-role="state-legend-label" x="385.943" y="432" text-anchor="start" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Up</text>
+<rect data-cfx-role="state-legend-swatch" data-cfx-status="degraded" x="418.604" y="427" width="10" height="10" rx="1.5" fill="#C78404"/>
+<text data-cfx-role="state-legend-label" x="434.604" y="432" text-anchor="start" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Degraded</text>
+<rect data-cfx-role="state-legend-swatch" data-cfx-status="down" x="502.86" y="427" width="10" height="10" rx="1.5" fill="#D4302F"/>
+<text data-cfx-role="state-legend-label" x="518.86" y="432" text-anchor="start" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Down</text>
+<rect data-cfx-role="state-legend-swatch" data-cfx-status="recovering" x="566.481" y="427" width="10" height="10" rx="1.5" fill="#0C8AA8"/>
+<text data-cfx-role="state-legend-label" x="582.481" y="432" text-anchor="start" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Recovering</text>
+<rect data-cfx-role="state-legend-swatch" data-cfx-status="maintenance" x="656.622" y="427" width="10" height="10" rx="1.5" fill="#6B5BD2"/>
+<text data-cfx-role="state-legend-label" x="672.622" y="432" text-anchor="start" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Maintenance</text>
+<rect data-cfx-role="state-legend-swatch" data-cfx-status="notObservable" x="756.107" y="427" width="10" height="10" rx="1.5" fill="#7C818A"/>
+<rect data-cfx-role="state-segment-hatch" x="756.107" y="427" width="10" height="10" rx="1.5" fill="url(#cfx5fc0b461-stateHatch)" pointer-events="none"/>
+<text data-cfx-role="state-legend-label" x="772.107" y="432" text-anchor="start" dominant-baseline="middle" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400">Not observable</text>
+</g>
+</g>
+</svg>
+
+<div class="cfx-brush-box" hidden></div>
+<div class="cfx-crosshair" hidden>
+<span class="cfx-crosshair__line cfx-crosshair__line--x"></span><span class="cfx-crosshair__line cfx-crosshair__line--y"></span><span class="cfx-crosshair__label" data-cfx-crosshair-label="true"></span></div>
+<div class="cfx-compare-tray" data-cfx-compare-tray="true" aria-live="polite" hidden></div>
+</div>
+<div class="cfx-tooltip" role="status" aria-live="polite" hidden></div>
+</section>
+</main>
+<script>(() => {
+  const featureAliases = {
+    ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair', 'CompareMarkers']
+  };
+  const featureTokens = (root) => (root.dataset.cfxInteractionFeatures || '')
+    .split(',')
+    .map((feature) => feature.trim())
+    .filter(Boolean);
+  const hasFeature = (root, name) => featureTokens(root).some((feature) => feature.toLowerCase() === name.toLowerCase()
+    || (featureAliases[feature] || []).some((alias) => alias.toLowerCase() === name.toLowerCase()));
+  const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
+  const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
+  const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
+  const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
+  const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const targetFocusNode = (node) => {
+    // Only the renderer-owned cell link is a mark's alternate keyboard target.
+    const link = node.parentElement;
+    return link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]') ? link : node;
+  };
+  const seriesLegend = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeries === undefined) return null;
+    const root = node.closest('.cfx-interactive-chart');
+    if (root) {
+      const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
+      const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
+      return data.cfxPoint === undefined
+        ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
+        : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
+          || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined);
+    }
+    return null;
+  };
+  const seriesLabel = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesName) return data.cfxSeriesName;
+    const legend = seriesLegend(node);
+    if (legend) return (legend.dataset || {}).cfxSeriesName || (legend.dataset || {}).cfxLabel || legend.getAttribute('aria-label') || legend.textContent || '';
+    const svg = node.closest('svg');
+    const mapped = svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-name-' + data.cfxSeries) : '';
+    if (mapped) return mapped;
+    if (data.cfxSeries === undefined) return '';
+    return 'Series ' + data.cfxSeries;
+  };
+  const seriesKey = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxSeriesKey) return data.cfxSeriesKey;
+    const legend = seriesLegend(node);
+    if (legend) return (legend.dataset || {}).cfxSeriesKey || seriesLabel(legend);
+    const svg = node.closest('svg');
+    return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
+  };
+  const sourcePointIndex = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
+    const svg = node.closest('svg');
+    const sourceIndices = svg ? svg.getAttribute('data-cfx-series-source-indices-' + data.cfxSeries) : '';
+    if (!sourceIndices) return data.cfxPoint;
+    const index = Number(data.cfxPoint);
+    const mapped = sourceIndices.split(',')[index];
+    return mapped === undefined || mapped === '' ? data.cfxPoint : mapped;
+  };
+  const renderedTargetKind = (node) => {
+    const data = node.dataset || {};
+    const role = data.cfxRole || '';
+    if (data.cfxTargetKind) return data.cfxTargetKind;
+    if (role === 'legend-item') return 'legend';
+    if (role.indexOf('annotation') === 0) return 'annotation';
+    if (data.cfxRegion !== undefined) return 'region';
+    if (data.cfxNode !== undefined) return 'node';
+    if (role.indexOf('link') >= 0 || role.indexOf('connector') >= 0 || role.indexOf('edge') >= 0) return 'link';
+    if (data.cfxPoint !== undefined) return 'point';
+    if (data.cfxSeries !== undefined) return 'series';
+    return 'element';
+  };
+  const renderedTargetId = (node, kind) => {
+    const data = node.dataset || {};
+    if (data.cfxTargetId) return data.cfxTargetId;
+    if (kind === 'series') return seriesKey(node) || data.cfxSeries || '';
+    if (kind === 'point') return `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node) || '0'}`;
+    if (kind === 'region') return data.cfxRegion || data.cfxId || data.cfxLabel || '';
+    if (kind === 'node') return data.cfxNode || data.cfxId || data.cfxLabel || '';
+    if (kind === 'link') return data.cfxId || [data.cfxSource, data.cfxTarget].filter(Boolean).join('->') || data.cfxLabel || '';
+    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node)}`;
+    if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
+    return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
+  };
+  const applyRenderedTargetContract = (root) => {
+    Array.from(root.querySelectorAll(renderedTargetSelector)).filter(isInteractiveTarget).forEach((node) => {
+      if (node.closest('defs')) return;
+      const kind = renderedTargetKind(node);
+      const id = renderedTargetId(node, kind);
+      if (!kind || !id) return;
+      node.setAttribute('data-cfx-target-kind', kind);
+      node.setAttribute('data-cfx-target-id', id);
+    });
+  };
+  const text = (node) => {
+    const data = node.dataset || {};
+    const aria = node.getAttribute('aria-label');
+    if (aria) return aria;
+    const label = data.cfxLabel || data.cfxText || '';
+    const parts = [];
+    if (label) parts.push(label);
+    else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
+    if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
+    if (data.cfxPoint !== undefined) parts.push('Point ' + data.cfxPoint);
+    const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
+    if (value) parts.push('Value ' + value);
+    return parts.join(' / ');
+  };
+  const targetIdentity = (node) => {
+    const data = node.dataset || {};
+    const targetKind = renderedTargetKind(node);
+    return {
+      targetKind,
+      targetId: renderedTargetId(node, targetKind),
+      id: data.cfxId || node.id || '',
+      role: data.cfxRole || '',
+      label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
+      series: data.cfxSeries,
+      seriesKey: seriesKey(node),
+      point: data.cfxPoint,
+      sourcePoint: sourcePointIndex(node),
+      value: data.cfxValue || data.cfxY || data.cfxEnd || '',
+      kind: data.cfxKind || ''
+    };
+  };
+  const metaLabel = (attributeName) => attributeName
+    .replace(/^data-cfx-meta-/i, '')
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+  const metadataRows = (node) => Array.from(node.attributes || [])
+    .filter((attribute) => attribute.name.toLowerCase().indexOf('data-cfx-meta-') === 0 && attribute.value !== '')
+    .map((attribute) => ({ name: metaLabel(attribute.name), value: attribute.value }));
+  const rowName = (node, key, fallback) => {
+    const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
+    return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
+  };
+  const tooltipRows = (node) => {
+    const data = node.dataset || {};
+    const rows = [];
+    const push = (name, value) => {
+      if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
+    };
+    push('Role', data.cfxRole ? data.cfxRole.replace(/-/g, ' ') : '');
+    push('Series', seriesLabel(node));
+    push('Point', data.cfxPoint);
+    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    push('Y', data.cfxY || data.cfxValue);
+    push('End', data.cfxEnd);
+    push('Target', data.cfxTarget);
+    push('Status', data.cfxStatus);
+    push(rowName(node, 'level', 'Level'), data.cfxLevel);
+    push('Kind', data.cfxKind);
+    push('Percent', data.cfxPercent);
+    push('Delta', data.cfxDelta);
+    push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
+    metadataRows(node).forEach((row) => push(row.name, row.value));
+    return rows;
+  };
+  const renderTip = (tip, node) => {
+    const label = text(node);
+    if (!label) return false;
+    tip.replaceChildren();
+    const title = document.createElement('div');
+    title.className = 'cfx-tooltip__title';
+    title.textContent = label;
+    tip.appendChild(title);
+    const rows = tooltipRows(node);
+    if (rows.length) {
+      const list = document.createElement('dl');
+      list.className = 'cfx-tooltip__meta';
+      rows.forEach((row) => {
+        const term = document.createElement('dt');
+        term.textContent = row.name;
+        const value = document.createElement('dd');
+        value.textContent = row.value;
+        list.appendChild(term);
+        list.appendChild(value);
+      });
+      tip.appendChild(list);
+    }
+    return true;
+  };
+  const showTip = (root, tip, node, event) => {
+    if (!hasFeature(root, 'Tooltips')) return;
+    if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!renderTip(tip, node)) return;
+    tip.hidden = false;
+    moveTip(tip, event, node);
+  };
+  const moveTip = (tip, event, node) => {
+    if (!event || tip.hidden) return;
+    let clientX = event.clientX;
+    let clientY = event.clientY;
+    if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
+      const rect = node.getBoundingClientRect();
+      clientX = rect.left + rect.width / 2;
+      clientY = rect.top + rect.height / 2;
+    }
+    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+      clientX = 24;
+      clientY = 24;
+    }
+    const tipWidth = tip.offsetWidth || 0;
+    const tipHeight = tip.offsetHeight || 0;
+    const maxX = Math.max(8, window.innerWidth - tipWidth - 8);
+    const maxY = Math.max(8, window.innerHeight - tipHeight - 8);
+    const x = Math.max(8, Math.min(maxX, clientX + 14));
+    const y = Math.max(8, Math.min(maxY, clientY + 14));
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  };
+  const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
+  const compareItems = (root) => {
+    const items = [];
+    const seen = new Set();
+    root.querySelectorAll('.cfx-selected').forEach((node) => {
+      const target = targetIdentity(node);
+      const key = targetKey(target);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      items.push({ label: text(node) || target.label || target.role || target.id || 'Target', target });
+    });
+    return items;
+  };
+  const selectedTargets = (root) => compareItems(root).map((item) => item.target);
+  const renderCompare = (root) => {
+    const tray = root.querySelector('[data-cfx-compare-tray]');
+    if (!tray || !hasFeature(root, 'CompareMarkers')) return [];
+    const items = compareItems(root);
+    tray.replaceChildren();
+    if (!items.length) {
+      tray.hidden = true;
+      root.removeAttribute('data-cfx-compare-count');
+      return items;
+    }
+    tray.hidden = false;
+    root.dataset.cfxCompareCount = String(items.length);
+    const summary = document.createElement('div');
+    summary.className = 'cfx-compare-tray__summary';
+    summary.textContent = 'Compare ' + items.length;
+    tray.appendChild(summary);
+    items.slice(0, 6).forEach((item, index) => {
+      const chip = document.createElement('button');
+      chip.className = 'cfx-compare-chip';
+      chip.type = 'button';
+      chip.textContent = item.label;
+      chip.dataset.cfxCompareIndex = String(index);
+      chip.title = item.label;
+      chip.addEventListener('click', () => {
+        clearHover(root, false, false);
+        if (applyHoverByTarget(root, item.target)) {
+          recordFocusTrail(root, item.target, true, true);
+          emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
+        }
+      });
+      tray.appendChild(chip);
+    });
+    if (items.length > 6) {
+      const more = document.createElement('span');
+      more.className = 'cfx-compare-tray__more';
+      more.textContent = '+' + (items.length - 6);
+      tray.appendChild(more);
+    }
+    const clear = document.createElement('button');
+    clear.className = 'cfx-compare-clear';
+    clear.type = 'button';
+    clear.textContent = 'Clear';
+    clear.setAttribute('data-cfx-compare-clear', 'true');
+    clear.addEventListener('click', () => {
+      clearSelections(root);
+      publishCompare(root, true);
+    });
+    tray.appendChild(clear);
+    return items;
+  };
+  const publishCompare = (root, sync) => {
+    const items = renderCompare(root);
+    if (!hasFeature(root, 'CompareMarkers')) return items;
+    const targets = items.map((item) => item.target);
+    emitHostEvent(root, 'cfxcompare', { count: targets.length, targets });
+    if (sync !== false) emitSync(root, { action: 'compare', count: targets.length, targets });
+    return items;
+  };
+  const hideTip = (root, tip, force) => {
+    if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    tip.hidden = true;
+    tip.classList.remove('cfx-tooltip--pinned');
+    root.removeAttribute('data-cfx-tooltip-pinned');
+    root.removeAttribute('data-cfx-pinned-target');
+  };
+  const pinTip = (root, tip, node, event) => {
+    if (!hasFeature(root, 'Tooltips') || !renderTip(tip, node)) return;
+    const target = targetIdentity(node);
+    const key = targetKey(target);
+    const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;
+    if (pinned) {
+      hideTip(root, tip, true);
+      emitHostEvent(root, 'cfxtooltip', { pinned: false, target });
+      return;
+    }
+    tip.hidden = false;
+    tip.classList.add('cfx-tooltip--pinned');
+    root.dataset.cfxTooltipPinned = 'true';
+    root.dataset.cfxPinnedTarget = key;
+    moveTip(tip, event, node);
+    emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+  };
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const getState = (root) => ({
+    zoom: Number(root.dataset.cfxZoom || '1'),
+    panX: Number(root.dataset.cfxPanX || '0'),
+    panY: Number(root.dataset.cfxPanY || '0')
+  });
+  const applyViewport = (root, state) => {
+    state.zoom = clamp(state.zoom, 0.5, 6);
+    state.panX = clamp(state.panX, -4000, 4000);
+    state.panY = clamp(state.panY, -4000, 4000);
+    root.dataset.cfxZoom = state.zoom.toFixed(3);
+    root.dataset.cfxPanX = state.panX.toFixed(1);
+    root.dataset.cfxPanY = state.panY.toFixed(1);
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    stage.style.setProperty('--cfx-zoom', state.zoom);
+    stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
+    stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
+  };
+  const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
+  const emitHostEvent = (root, name, detail) => {
+    root.dispatchEvent(new CustomEvent(name, { detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
+  };
+  const emitSync = (root, payload) => {
+    if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
+    const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
+    root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
+    document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
+      if (sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
+    });
+  };
+  const applyMode = (root, mode) => {
+    root.dataset.cfxMode = mode || '';
+    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
+      button.setAttribute('aria-pressed', button.dataset.cfxModeButton === root.dataset.cfxMode ? 'true' : 'false');
+    });
+  };
+  const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
+  const resetViewport = (root) => {
+    applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+    root.dataset.cfxBrush = '';
+    root.dataset.cfxMode = '';
+    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+  };
+  const storeInteractionState = (root, snapshot) => {
+    try {
+      root.dataset.cfxInteractionSnapshot = JSON.stringify(snapshot);
+    } catch {
+      root.removeAttribute('data-cfx-interaction-snapshot');
+    }
+  };
+  const captureInteractionState = (root, source) => {
+    const snapshot = {
+      version: 1,
+      chartId: root.dataset.cfxChartId || '',
+      source: source || '',
+      viewport: getState(root),
+      mode: root.dataset.cfxMode || '',
+      brush: root.dataset.cfxBrush || '',
+      selectedTargets: selectedTargets(root),
+      compareCount: Number(root.dataset.cfxCompareCount || '0'),
+      scenario: {
+        id: root.dataset.cfxActiveScenario || '',
+        stepIndex: root.dataset.cfxActiveScenarioStep || '',
+        progress: root.dataset.cfxScenarioProgress || '',
+        playback: root.dataset.cfxScenarioPlayback || ''
+      }
+    };
+    storeInteractionState(root, snapshot);
+    return snapshot;
+  };
+  const publishInteractionState = (root, source, sync) => {
+    if (!hasFeature(root, 'StateBookmarks')) return null;
+    const snapshot = captureInteractionState(root, source || 'host');
+    emitHostEvent(root, 'cfxstate', { source: source || 'host', snapshot });
+    if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
+    return snapshot;
+  };
+  const applyInteractionState = (root, snapshot, emit, sync) => {
+    if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
+    if (snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
+    if (snapshot.mode !== undefined) applyMode(root, snapshot.mode || '');
+    if (snapshot.brush !== undefined) root.dataset.cfxBrush = snapshot.brush || '';
+    const scenario = snapshot.scenario || {};
+    if (scenario.id !== undefined) {
+      setScenario(root, scenario.id || '', false, false);
+      if (scenario.id && scenario.stepIndex !== undefined && scenario.stepIndex !== '') setScenarioStep(root, scenario.stepIndex, false, false);
+      const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+      if (scenario.playback === 'playing' && route && route.steps.length) {
+        const current = Number(root.dataset.cfxActiveScenarioStep || '-1');
+        const next = Number.isFinite(current) ? current + 1 : 0;
+        startScenarioPlayback(root, route, next, false, false);
+      } else if (scenario.playback) {
+        setScenarioPlaybackState(root, scenario.playback, route, false);
+      }
+    }
+    applySelectionSetByTargets(root, snapshot.selectedTargets || [], true);
+    renderCompare(root);
+    storeInteractionState(root, snapshot);
+    if (emit !== false) emitHostEvent(root, 'cfxstateapplied', { snapshot });
+    if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
+  };
+  const zoomBy = (root, factor) => {
+    if (!hasFeature(root, 'Zoom')) return;
+    const state = getState(root);
+    state.zoom *= factor;
+    applyViewport(root, state);
+    emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+    emitSync(root, { action: 'viewport', state: getState(root) });
+  };
+  const serializeSvg = (root) => {
+    const svg = root.querySelector('.cfx-stage svg');
+    return svg ? { svg, data: new XMLSerializer().serializeToString(svg) } : null;
+  };
+  const downloadBlob = (root, blob, extension, format) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = (root.dataset.cfxChartId || 'chart') + '.' + extension;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    emitHostEvent(root, 'cfxexport', { format });
+  };
+  const svgSize = (svg) => {
+    const viewBox = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
+    const rect = svg.getBoundingClientRect ? svg.getBoundingClientRect() : { width: 0, height: 0 };
+    const width = Math.max(1, Math.round((viewBox && viewBox.width) || (svg.width && svg.width.baseVal ? svg.width.baseVal.value : 0) || rect.width || 800));
+    const height = Math.max(1, Math.round((viewBox && viewBox.height) || (svg.height && svg.height.baseVal ? svg.height.baseVal.value : 0) || rect.height || 450));
+    return { width, height };
+  };
+  const exportSvg = (root) => {
+    if (!hasFeature(root, 'Export')) return;
+    const serialized = serializeSvg(root);
+    if (!serialized) return;
+    downloadBlob(root, new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' }), 'svg', 'svg');
+  };
+  const exportPng = (root) => {
+    if (!hasFeature(root, 'Export')) return;
+    const serialized = serializeSvg(root);
+    if (!serialized) return;
+    const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
+    const sourceUrl = URL.createObjectURL(source);
+    const image = new Image();
+    image.onload = () => {
+      const size = svgSize(serialized.svg);
+      const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
+      const canvas = document.createElement('canvas');
+      canvas.width = size.width * scale;
+      canvas.height = size.height * scale;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        URL.revokeObjectURL(sourceUrl);
+        return;
+      }
+      context.setTransform(scale, 0, 0, scale, 0, 0);
+      context.clearRect(0, 0, size.width, size.height);
+      context.drawImage(image, 0, 0, size.width, size.height);
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(sourceUrl);
+        if (blob) downloadBlob(root, blob, 'png', 'png');
+      }, 'image/png');
+    };
+    image.onerror = () => URL.revokeObjectURL(sourceUrl);
+    image.src = sourceUrl;
+  };
+  const seriesTarget = (node) => {
+    const data = node.dataset || {};
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node) };
+  };
+  const seriesTargetToken = (target) => target ? [target.series ?? '', target.point ?? ''].join(':') : '';
+  const matchesLocalSeriesTarget = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    return data.cfxSeries === String(target.series) && (target.point === undefined || data.cfxPoint === String(target.point));
+  };
+  const resolveSeriesTarget = (root, target) => {
+    if (!target || !target.seriesKey) return null;
+    const legends = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
+    let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
+    if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
+    if (!matchingSeries.length) return null;
+    if (target.point === undefined) {
+      const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
+      return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
+    }
+    const exactLabel = matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
+    const exactPoint = matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
+    return seriesTarget(exactLabel || exactPoint || matchingSeries.find((item) => (item.dataset || {}).cfxPoint === undefined) || matchingSeries[0]);
+  };
+  const setSeriesMuted = (root, target, muted) => {
+    root.querySelectorAll('[data-cfx-series]').forEach((node) => {
+      if (!matchesLocalSeriesTarget(node, target)) return;
+      const role = node.dataset ? node.dataset.cfxRole || '' : '';
+      if (role.indexOf('legend') === 0) {
+        node.dataset.cfxMuted = muted ? 'true' : 'false';
+        return;
+      }
+      node.classList.toggle('cfx-series-muted', muted);
+    });
+  };
+  const setSeriesIsolation = (root, target, isolated) => {
+    root.querySelectorAll('[data-cfx-series]').forEach((node) => {
+      const data = node.dataset || {};
+      const role = data.cfxRole || '';
+      const sameSeries = matchesLocalSeriesTarget(node, target);
+      if (role.indexOf('legend') === 0) {
+        if (isolated && sameSeries) {
+          data.cfxIsolated = 'true';
+          node.setAttribute('aria-current', 'true');
+        } else {
+          delete data.cfxIsolated;
+          node.removeAttribute('aria-current');
+        }
+        return;
+      }
+      node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
+    });
+    if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
+    else root.removeAttribute('data-cfx-isolated-series');
+  };
+  const toggleSeriesFocus = (root, item, emit, sync) => {
+    if (!hasFeature(root, 'LegendToggles')) return;
+    const target = seriesTarget(item);
+    if (target.series === undefined) return;
+    const isolated = root.dataset.cfxIsolatedSeries !== seriesTargetToken(target);
+    setSeriesIsolation(root, target, isolated);
+    emitHostEvent(root, 'cfxseriesfocus', { ...target, isolated });
+    if (sync !== false) emitSync(root, { action: 'series-focus', target, isolated });
+  };
+  const toggleSeries = (root, item) => {
+    if (!hasFeature(root, 'LegendToggles')) return;
+    const target = seriesTarget(item);
+    if (target.series === undefined) return;
+    if (root.dataset.cfxIsolatedSeries) setSeriesIsolation(root, null, false);
+    const muted = item.dataset.cfxMuted !== 'true';
+    setSeriesMuted(root, target, muted);
+    emitHostEvent(root, 'cfxseries', { ...target, muted });
+    emitSync(root, { action: 'series', target, muted });
+  };
+  const toggleSelection = (root, node) => {
+    if (!hasFeature(root, 'Selection')) return;
+    const selected = !node.classList.contains('cfx-selected');
+    setNodeSelected(node, selected);
+    const target = targetIdentity(node);
+    emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
+    emitSync(root, { action: 'selection', label: text(node), selected, target });
+    publishCompare(root, true);
+  };
+  const setNodeSelected = (node, selected) => {
+    node.classList.toggle('cfx-selected', selected);
+    node.setAttribute('aria-selected', selected ? 'true' : 'false');
+  };
+  const setNodeHovered = (node, hovered, related) => {
+    node.classList.toggle('cfx-hovered', hovered);
+    node.classList.toggle('cfx-hover-related', related && !hovered);
+  };
+  const targetRelated = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    if (target.seriesKey && seriesKey(node) === target.seriesKey) return true;
+    if (!target.seriesKey && target.series !== undefined && data.cfxSeries === String(target.series)) return true;
+    if (target.point !== undefined && data.cfxPoint === String(target.point)) return true;
+    if (target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
+    return false;
+  };
+  const clearHover = (root, emit, sync) => {
+    root.removeAttribute('data-cfx-hovering');
+    root.removeAttribute('data-cfx-hover-label');
+    root.removeAttribute('data-cfx-hover-key');
+    clearReveals(root, 'hover');
+    clearReveals(root, 'crosshair');
+    clearReveals(root, 'navigate');
+    root.querySelectorAll('.cfx-hovered,.cfx-hover-related').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related'));
+    if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
+    if (sync !== false) emitSync(root, { action: 'hover-clear' });
+  };
+  const applyHoverByTarget = (root, target) => {
+    if (!target) return false;
+    let matched = false;
+    root.querySelectorAll(targetSelector).forEach((node) => {
+      const hovered = matchesTargetIdentity(node, target);
+      const related = !hovered && targetRelated(node, target);
+      if (hovered || related) matched = true;
+      setNodeHovered(node, hovered, related);
+    });
+    if (matched) {
+      root.dataset.cfxHovering = 'true';
+      root.dataset.cfxHoverLabel = target.label || target.role || target.id || '';
+    }
+    return matched;
+  };
+  const clearFocusTrail = (root) => {
+    root._cfxFocusTrail = [];
+    root.removeAttribute('data-cfx-trail-count');
+    root.querySelectorAll('.cfx-trail').forEach((node) => {
+      node.classList.remove('cfx-trail');
+      delete node.dataset.cfxTrailIndex;
+    });
+  };
+  const applyFocusTrail = (root, trail) => {
+    clearFocusTrail(root);
+    const targets = (trail || []).slice(0, 5);
+    if (!targets.length || !hasFeature(root, 'FocusTrail')) return [];
+    root._cfxFocusTrail = targets;
+    root.dataset.cfxTrailCount = String(targets.length);
+    targets.forEach((target, index) => {
+      root.querySelectorAll(targetSelector).forEach((node) => {
+        if (!matchesTargetIdentity(node, target)) return;
+        node.classList.add('cfx-trail');
+        node.dataset.cfxTrailIndex = String(index + 1);
+      });
+    });
+    return targets;
+  };
+  const recordFocusTrail = (root, target, emit, sync) => {
+    if (!target || !hasFeature(root, 'FocusTrail')) return [];
+    const key = targetKey(target);
+    if (!key) return [];
+    const existing = root._cfxFocusTrail || [];
+    const trail = [target, ...existing.filter((item) => targetKey(item) !== key)].slice(0, 5);
+    applyFocusTrail(root, trail);
+    if (emit !== false) emitHostEvent(root, 'cfxtrail', { target, trail, count: trail.length });
+    if (sync !== false) emitSync(root, { action: 'trail', target, trail, count: trail.length });
+    return trail;
+  };
+  const revealLayer = (root) => {
+    let layer = root.querySelector('[data-cfx-reveal-layer]');
+    if (layer) return layer;
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return null;
+    layer = document.createElement('div');
+    layer.className = 'cfx-reveal-layer';
+    layer.dataset.cfxRevealLayer = 'true';
+    layer.setAttribute('aria-live', 'polite');
+    layer.hidden = true;
+    stage.appendChild(layer);
+    return layer;
+  };
+  const clearReveals = (root, source) => {
+    if (source && root.dataset.cfxRevealSource && root.dataset.cfxRevealSource !== source) return;
+    const layer = root.querySelector('[data-cfx-reveal-layer]');
+    if (layer) {
+      layer.replaceChildren();
+      layer.hidden = true;
+    }
+    root.removeAttribute('data-cfx-reveal-count');
+    root.removeAttribute('data-cfx-reveal-source');
+  };
+  const revealText = (node, target) => {
+    const data = node.dataset || {};
+    if (data.cfxLabel || data.cfxText) return data.cfxLabel || data.cfxText;
+    if (target && target.label) return target.label;
+    if (data.cfxSeries !== undefined && data.cfxPoint === undefined) return seriesLabel(node);
+    if (data.cfxPoint !== undefined) return text(node);
+    return text(node) || (target ? target.role || target.id : '') || 'Target';
+  };
+  const revealNodes = (root, nodes, emit, sync, source) => {
+    if (!hasFeature(root, 'RevealLabels')) return [];
+    const layer = revealLayer(root);
+    const stage = root.querySelector('.cfx-stage');
+    if (!layer || !stage) return [];
+    const stageRect = stage.getBoundingClientRect();
+    const shown = [];
+    const seen = new Set();
+    const placed = [];
+    const overlaps = (candidate) => placed.some((item) => candidate.left < item.right + 6 && candidate.right + 6 > item.left && candidate.top < item.bottom + 6 && candidate.bottom + 6 > item.top);
+    layer.replaceChildren();
+    layer.hidden = false;
+    (nodes || []).forEach((node) => {
+      if (!node || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
+      const target = targetIdentity(node);
+      const labelText = revealText(node, target);
+      const key = [labelText, target.series ?? '', target.point ?? '', target.value || ''].join('|');
+      if (!key || seen.has(key) || shown.length >= 6) return;
+      const rect = node.getBoundingClientRect();
+      if (!rect.width && !rect.height) return;
+      seen.add(key);
+      const label = document.createElement('span');
+      label.className = 'cfx-reveal-label';
+      label.textContent = labelText;
+      label.dataset.cfxRevealIndex = String(shown.length + 1);
+      label.title = label.textContent;
+      label.style.left = (rect.left + rect.width / 2 - stageRect.left) + 'px';
+      label.style.top = (rect.top - stageRect.top) + 'px';
+      layer.appendChild(label);
+      const halfWidth = label.offsetWidth / 2;
+      const maxX = Math.max(8 + halfWidth, stageRect.width - halfWidth - 8);
+      const maxY = Math.max(0, stageRect.height - label.offsetHeight - 8);
+      const centerX = clamp(rect.left + rect.width / 2 - stageRect.left, 8 + halfWidth, maxX);
+      const preferredTop = clamp(rect.top - stageRect.top - label.offsetHeight - 8, 8, maxY);
+      const belowTop = clamp(rect.bottom - stageRect.top + 8, 8, maxY);
+      const candidates = [preferredTop, belowTop];
+      for (let offset = 1; offset <= 6; offset++) {
+        candidates.push(clamp(preferredTop - offset * (label.offsetHeight + 6), 8, maxY));
+        candidates.push(clamp(belowTop + offset * (label.offsetHeight + 6), 8, maxY));
+      }
+      let top = candidates.find((candidateTop) => !overlaps({ left: centerX - halfWidth, right: centerX + halfWidth, top: candidateTop, bottom: candidateTop + label.offsetHeight }));
+      if (top === undefined) {
+        label.remove();
+        return;
+      }
+      label.style.left = centerX + 'px';
+      label.style.top = top + 'px';
+      placed.push({ left: centerX - halfWidth, right: centerX + halfWidth, top, bottom: top + label.offsetHeight });
+      shown.push(target);
+    });
+    if (!shown.length) {
+      clearReveals(root);
+      return [];
+    }
+    root.dataset.cfxRevealCount = String(shown.length);
+    if (source) root.dataset.cfxRevealSource = source;
+    else root.removeAttribute('data-cfx-reveal-source');
+    if (emit !== false) emitHostEvent(root, 'cfxreveal', { target: shown[0], targets: shown, count: shown.length, source: source || '' });
+    if (sync !== false) emitSync(root, { action: 'reveal', target: shown[0], targets: shown, count: shown.length, source: source || '' });
+    return shown;
+  };
+  const revealTargets = (root, targets, emit, sync, source) => {
+    if (!targets || !targets.length) return [];
+    const nodes = [];
+    const seen = new Set();
+    targets.forEach((target) => {
+      root.querySelectorAll(targetSelector).forEach((node) => {
+        if (!matchesTargetIdentity(node, target)) return;
+        const key = targetKey(targetIdentity(node));
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        nodes.push(node);
+      });
+    });
+    return revealNodes(root, nodes, emit, sync, source);
+  };
+  const setHover = (root, node, emit, sync) => {
+    const target = targetIdentity(node);
+    clearHover(root, false, false);
+    applyHoverByTarget(root, target);
+    root.dataset.cfxHoverKey = targetKey(target);
+    recordFocusTrail(root, target, emit, sync);
+    revealNodes(root, [node], emit, sync, 'hover');
+    if (emit !== false) emitHostEvent(root, 'cfxhover', { label: text(node), target });
+    if (sync !== false) emitSync(root, { action: 'hover', label: text(node), target });
+  };
+  const hideCrosshair = (root, crosshair) => {
+    if (crosshair) crosshair.hidden = true;
+    root.removeAttribute('data-cfx-crosshair');
+  };
+  const nearestPoint = (root, event) => {
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return null;
+    const stageRect = stage.getBoundingClientRect();
+    if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    let best = null;
+    root.querySelectorAll('[data-cfx-point]').forEach((node) => {
+      if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
+      const box = node.getBoundingClientRect();
+      if (!box.width && !box.height) return;
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      const dx = x - event.clientX;
+      const dy = y - event.clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (!best || distance < best.distance) best = { node, x, y, distance };
+    });
+    return best && best.distance <= 120 ? best : null;
+  };
+  const showCrosshair = (root, crosshair, point, event, emit) => {
+    if (!crosshair || !point) return;
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    crosshair.hidden = false;
+    crosshair.style.setProperty('--cfx-crosshair-x', (point.x - rect.left) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', (point.y - rect.top) + 'px');
+    const label = crosshair.querySelector('[data-cfx-crosshair-label]');
+    if (label) label.textContent = text(point.node);
+    const target = targetIdentity(point.node);
+    root.dataset.cfxCrosshair = targetKey(target);
+    if (emit !== false) {
+      emitHostEvent(root, 'cfxcrosshair', { label: text(point.node), target, x: event.clientX, y: event.clientY });
+      emitSync(root, { action: 'crosshair', label: text(point.node), target });
+    }
+  };
+  const updateNearestPoint = (root, crosshair, tip, event) => {
+    if (!hasFeature(root, 'Crosshair')) return;
+    const point = nearestPoint(root, event);
+    if (!point) {
+      hideCrosshair(root, crosshair);
+      clearHover(root, true, true);
+      return;
+    }
+    const target = targetIdentity(point.node);
+    const key = targetKey(target);
+    if (root.dataset.cfxHoverKey !== key) {
+      setHover(root, point.node, true, true);
+      showCrosshair(root, crosshair, point, event, true);
+      showTip(root, tip, point.node, event);
+    } else {
+      showCrosshair(root, crosshair, point, event, false);
+      moveTip(tip, event, point.node);
+    }
+  };
+  const focusAdjacentTarget = (root, node, key) => {
+    const targets = interactiveTargets(root);
+    if (!targets.length) return false;
+    const current = Math.max(0, targets.indexOf(node));
+    let next = current;
+    if (key === 'Home') next = 0;
+    else if (key === 'End') next = targets.length - 1;
+    else if (key === 'ArrowLeft' || key === 'ArrowUp') next = current <= 0 ? targets.length - 1 : current - 1;
+    else if (key === 'ArrowRight' || key === 'ArrowDown') next = current >= targets.length - 1 ? 0 : current + 1;
+    else return false;
+    const targetNode = targets[next];
+    if (!targetNode) return false;
+    const focusNode = targetFocusNode(targetNode);
+    if (focusNode.focus) {
+      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
+    }
+    const target = targetIdentity(targetNode);
+    emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });
+    emitSync(root, { action: 'navigate', label: text(targetNode), target, index: next, count: targets.length, key });
+    return true;
+  };
+  const applySelectionByLabel = (root, label, selected) => {
+    if (!label) return;
+    root.querySelectorAll(targetSelector).forEach((node) => {
+      if (text(node) === label) setNodeSelected(node, selected);
+    });
+  };
+  const matchesTargetIdentity = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.id) return node.id === target.id || data.cfxId === target.id;
+    if (target.seriesKey) {
+      if (seriesKey(node) !== target.seriesKey) return false;
+      if (target.point !== undefined) return data.cfxPoint === String(target.point);
+      return !target.role || data.cfxRole === target.role;
+    }
+    if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
+    if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
+    if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
+    if (target.role && data.cfxRole === target.role && target.value && (data.cfxValue === target.value || data.cfxY === target.value || data.cfxEnd === target.value)) return true;
+    return false;
+  };
+  const applySelectionByTarget = (root, target, selected) => {
+    if (!target) return false;
+    let matched = false;
+    root.querySelectorAll(targetSelector).forEach((node) => {
+      if (!matchesTargetIdentity(node, target)) return;
+      matched = true;
+      setNodeSelected(node, selected);
+    });
+    return matched;
+  };
+  const clearSelections = (root) => {
+    root.querySelectorAll('.cfx-selected').forEach((node) => {
+      node.classList.remove('cfx-selected');
+      node.removeAttribute('aria-selected');
+    });
+  };
+  const applySelectionSetByTargets = (root, targets, replace) => {
+    if (replace !== false) clearSelections(root);
+    let count = 0;
+    (targets || []).forEach((target) => {
+      if (applySelectionByTarget(root, target, true)) count++;
+    });
+    return count;
+  };
+  const nodeCenterInRect = (node, rect) => {
+    const box = node.getBoundingClientRect();
+    if (!box.width && !box.height) return null;
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
+    return { x, y };
+  };
+  const selectTargetsInBox = (root, rect, append) => {
+    if (!hasFeature(root, 'Selection')) return [];
+    if (!append) clearSelections(root);
+    const targets = [];
+    root.querySelectorAll(lassoSelector).forEach((node) => {
+      if (node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!nodeCenterInRect(node, rect)) return;
+      setNodeSelected(node, true);
+      targets.push(targetIdentity(node));
+    });
+    return targets;
+  };
+  const applySync = (root, detail) => {
+    if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
+    else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
+    else if (detail.action === 'selection') {
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      renderCompare(root);
+    } else if (detail.action === 'lasso') {
+      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+      renderCompare(root);
+    } else if (detail.action === 'compare') {
+      applySelectionSetByTargets(root, detail.targets || [], true);
+      renderCompare(root);
+    }
+    else if (detail.action === 'hover') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target);
+      revealTargets(root, [detail.target], false, false, detail.source || 'hover');
+    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
+    else if (detail.action === 'crosshair' || detail.action === 'navigate') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target);
+      revealTargets(root, [detail.target], false, false, detail.action);
+    }
+    else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
+    else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
+    else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
+    else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
+    else if (detail.action === 'series') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesMuted(root, target, detail.muted === true);
+    }
+    else if (detail.action === 'series-focus') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesIsolation(root, target, detail.isolated === true);
+    }
+    else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
+    else if (detail.action === 'scenario-step') {
+      if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
+      setScenarioStep(root, detail.index, false, false);
+    }
+  };
+  const readJson = (value, fallback) => {
+    try {
+      const parsed = JSON.parse(value || '');
+      return parsed === null || parsed === undefined ? fallback : parsed;
+    } catch {
+      return fallback;
+    }
+  };
+  const scenarioUrlParam = (root, name) => {
+    if (root.dataset.cfxDeepLinkState !== 'true') return '';
+    try {
+      const params = new URL(window.location.href).searchParams;
+      return params.get(scenarioUrlKey(root, name)) || params.get(name) || '';
+    } catch { return ''; }
+  };
+  const scenarioUrlKey = (root, name) => {
+    const chartId = (root.dataset.cfxChartId || 'chart').replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'chart';
+    return 'cfx-' + chartId + '-' + name;
+  };
+  const syncScenarioUrl = (root, scenarioId, stepIndex) => {
+    if (root.dataset.cfxDeepLinkState !== 'true' || !window.history || !window.history.replaceState) return;
+    try {
+      const url = new URL(window.location.href);
+      const scenarioKey = scenarioUrlKey(root, 'scenario');
+      const stepKey = scenarioUrlKey(root, 'scenarioStep');
+      scenarioId ? url.searchParams.set(scenarioKey, scenarioId) : url.searchParams.delete(scenarioKey);
+      stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex);
+      url.searchParams.delete('scenario');
+      url.searchParams.delete('scenarioStep');
+      window.history.replaceState(window.history.state, '', url);
+    } catch { }
+  };
+  const scenarioButton = (root, scenarioId) => Array.from(root.querySelectorAll('[data-cfx-scenario]')).find((button) => (button.dataset.cfxScenario || '') === scenarioId) || null;
+  const scenarioRoute = (root, scenarioId) => {
+    const button = scenarioButton(root, scenarioId);
+    if (!button || !scenarioId) return null;
+    return {
+      id: scenarioId,
+      label: button.dataset.cfxScenarioLabel || button.textContent.trim(),
+      description: button.dataset.cfxScenarioDescription || '',
+      color: button.dataset.cfxScenarioColor || '',
+      steps: readJson(button.dataset.cfxScenarioSteps || '[]', []),
+      metadata: readJson(button.dataset.cfxScenarioMetadata || '{}', {}),
+      playbackDelayMilliseconds: Number(button.dataset.cfxScenarioPlaybackDelay || '900'),
+      loopPlayback: button.dataset.cfxScenarioLoop === 'true',
+      autoPlay: button.dataset.cfxScenarioAutoplay === 'true',
+      focusMode: button.dataset.cfxScenarioFocusMode || 'highlight'
+    };
+  };
+  const scenarioTargetMatches = (node, step) => {
+    const data = node.dataset || {};
+    const kind = step.targetKind || '';
+    const target = step.targetId || '';
+    if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
+    const seriesOrdinalTarget = /^(0|[1-9]\d*)$/.test(target);
+    if (kind === 'series' && (seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target)) return true;
+    if (kind === 'point' && data.cfxPoint === target) return true;
+    if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
+    if (kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0 && (data.cfxLabel === target || data.cfxKind === target || data.cfxValue === target || data.cfxId === target || node.id === target)) return true;
+    if (kind === 'element' && (data.cfxId === target || node.id === target)) return true;
+    if (data.cfxRole === kind && (data.cfxLabel === target || data.cfxText === target || data.cfxValue === target || data.cfxY === target)) return true;
+    return false;
+  };
+  const scenarioTargetCandidates = (root, route) => {
+    const visualKinds = new Set(['series', 'point', 'annotation', 'region', 'node', 'link', 'legend']);
+    const roleKinds = new Set((route ? route.steps : [])
+      .map((step) => step.targetKind || '')
+      .filter((kind) => kind && kind !== 'element' && !visualKinds.has(kind)));
+    const candidates = new Set(Array.from(root.querySelectorAll('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]'))
+      .filter((node) => visualKinds.has(renderedTargetKind(node)) || roleKinds.has((node.dataset || {}).cfxRole || '')));
+    const elementIds = new Set((route ? route.steps : [])
+      .filter((step) => (step.targetKind || '') === 'element' && step.targetId)
+      .map((step) => step.targetId));
+    if (elementIds.size) {
+      root.querySelectorAll('[id]').forEach((node) => {
+        if (!elementIds.has(node.id) || node.closest('defs')) return;
+        if (node.querySelector('.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-role],[data-cfx-series],[data-cfx-point],[data-cfx-id]')) return;
+        candidates.add(node);
+      });
+    }
+    return Array.from(candidates);
+  };
+  const scenarioTargets = (root, route, stepIndex) => {
+    const matches = new Set();
+    if (!route) return matches;
+    const steps = stepIndex === undefined || stepIndex === null ? route.steps : route.steps.filter((_, index) => index === Number(stepIndex));
+    scenarioTargetCandidates(root, route).forEach((node) => {
+      if (steps.some((step) => scenarioTargetMatches(node, step))) matches.add(node);
+    });
+    return matches;
+  };
+  const scenarioRevealTargets = (route, stepIndex, targets) => {
+    const step = route && route.steps ? route.steps[Number(stepIndex)] : null;
+    // A series step already highlights its complete visual family. Revealing every
+    // matching mark adds duplicate badges that obscure the chart instead of
+    // clarifying the route; precise point/annotation steps still reveal labels.
+    if (step && (step.targetKind || '') === 'series') return [];
+    return Array.from(targets);
+  };
+  const renderScenarioPanel = (root, route) => {
+    const panel = root.querySelector('[data-cfx-scenario-panel]');
+    if (!panel) return;
+    const title = panel.querySelector('[data-cfx-scenario-panel-title]');
+    const meta = panel.querySelector('[data-cfx-scenario-panel-meta]');
+    const steps = panel.querySelector('[data-cfx-scenario-panel-steps]');
+    if (!route) {
+      panel.removeAttribute('data-cfx-panel-active-scenario');
+      panel.style.removeProperty('--cfx-scenario-color');
+      if (title) title.textContent = 'All';
+      if (meta) meta.textContent = 'All chart data visible';
+      if (steps) steps.replaceChildren();
+      return;
+    }
+    panel.setAttribute('data-cfx-panel-active-scenario', route.id);
+    if (route.color) panel.style.setProperty('--cfx-scenario-color', route.color);
+    else panel.style.removeProperty('--cfx-scenario-color');
+    if (title) title.textContent = route.label || route.id;
+    if (meta) {
+      const pairs = Object.entries(route.metadata || {}).slice(0, 2).map(([key, value]) => key + ': ' + value);
+      meta.textContent = [route.description, route.steps.length ? route.steps.length + ' steps' : '', ...pairs].filter(Boolean).join(' / ');
+    }
+    if (steps) {
+      steps.replaceChildren();
+      route.steps.forEach((step, index) => {
+        const item = document.createElement('li');
+        item.setAttribute('data-cfx-scenario-step-index', String(index + 1));
+        item.setAttribute('data-cfx-scenario-target-kind', step.targetKind || '');
+        item.setAttribute('data-cfx-scenario-target-id', step.targetId || '');
+        if (step.durationMilliseconds) item.setAttribute('data-cfx-scenario-step-duration', String(step.durationMilliseconds));
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.textContent = step.label || step.targetId || '';
+        steps.appendChild(item);
+      });
+    }
+  };
+  const updateScenarioProgress = (root, route, stepIndex) => {
+    const progress = root.querySelector('[data-cfx-scenario-progress]');
+    const count = route && route.steps ? route.steps.length : 0;
+    const hasStep = stepIndex !== undefined && stepIndex !== null && stepIndex !== '';
+    const current = count && hasStep ? clamp(Number(stepIndex) + 1, 0, count) : 0;
+    const percent = count ? Math.round((current / count) * 100) : 0;
+    const label = 'Step ' + current + ' / ' + count;
+    if (progress) {
+      progress.hidden = !count;
+      progress.style.setProperty('--cfx-scenario-progress', percent + '%');
+      progress.setAttribute('aria-valuemax', String(count));
+      progress.setAttribute('aria-valuenow', String(current));
+      progress.setAttribute('aria-valuetext', label);
+      const textNode = progress.querySelector('[data-cfx-scenario-progress-text]');
+      if (textNode) textNode.textContent = label;
+    }
+    const scrubber = root.querySelector('[data-cfx-scenario-scrubber]');
+    if (scrubber) {
+      scrubber.disabled = !count;
+      scrubber.max = String(Math.max(1, count));
+      scrubber.value = String(Math.max(1, current));
+      scrubber.setAttribute('aria-valuetext', label);
+    }
+    if (count) root.dataset.cfxScenarioProgress = current + '/' + count;
+    else root.removeAttribute('data-cfx-scenario-progress');
+    return { current, count, percent, label };
+  };
+  const clearScenarioStep = (root) => {
+    const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+    root.removeAttribute('data-cfx-active-scenario-step');
+    root.querySelectorAll('.cfx-scenario-step-active,.cfx-scenario-step-muted').forEach((node) => node.classList.remove('cfx-scenario-step-active', 'cfx-scenario-step-muted'));
+    root.querySelectorAll('[data-cfx-scenario-step-index]').forEach((node) => node.removeAttribute('aria-current'));
+    updateScenarioProgress(root, route, null);
+  };
+  const setScenarioStep = (root, stepIndex, emit, sync) => {
+    const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+    if (!route || !route.steps.length) return;
+    const index = clamp(Number(stepIndex) || 0, 0, route.steps.length - 1);
+    const targets = scenarioTargets(root, route, index);
+    root.dataset.cfxActiveScenarioStep = String(index);
+    root.querySelectorAll('.cfx-scenario-active').forEach((node) => {
+      const active = targets.has(node);
+      node.classList.toggle('cfx-scenario-step-active', active);
+      node.classList.toggle('cfx-scenario-step-muted', !active && route.focusMode === 'spotlight');
+    });
+    root.querySelectorAll('[data-cfx-scenario-step-index]').forEach((node) => {
+      node.getAttribute('data-cfx-scenario-step-index') === String(index + 1) ? node.setAttribute('aria-current', 'step') : node.removeAttribute('aria-current');
+    });
+    const progress = updateScenarioProgress(root, route, index);
+    const trail = Array.from(targets).map((node) => targetIdentity(node)).slice(0, 5);
+    if (trail.length && hasFeature(root, 'FocusTrail')) {
+      applyFocusTrail(root, trail);
+      if (emit !== false) emitHostEvent(root, 'cfxtrail', { target: trail[0], trail, count: trail.length, source: 'scenario-step' });
+      if (sync !== false) emitSync(root, { action: 'trail', target: trail[0], trail, count: trail.length, source: 'scenario-step' });
+    }
+    revealNodes(root, scenarioRevealTargets(route, index, targets), emit, sync, 'scenario-step');
+    syncScenarioUrl(root, route.id, index);
+    if (emit !== false) emitHostEvent(root, 'cfxscenariostep', { scenarioId: route.id, index, step: route.steps[index], progress });
+    if (sync !== false) emitSync(root, { action: 'scenario-step', scenarioId: route.id, index, progress });
+  };
+  const setScenario = (root, scenarioId, emit, sync) => {
+    const route = scenarioRoute(root, scenarioId);
+    const previousPlayback = root.dataset.cfxScenarioPlayback || '';
+    stopScenarioPlayback(root, 'idle', emit !== false && previousPlayback && previousPlayback !== 'idle');
+    clearScenarioStep(root);
+    clearReveals(root);
+    root.querySelectorAll('.cfx-scenario-active,.cfx-scenario-muted').forEach((node) => node.classList.remove('cfx-scenario-active', 'cfx-scenario-muted'));
+    root.querySelectorAll('[data-cfx-scenario]').forEach((button) => button.setAttribute('aria-pressed', (button.dataset.cfxScenario || '') === (route ? route.id : '') ? 'true' : 'false'));
+    if (!route) {
+      root.removeAttribute('data-cfx-active-scenario');
+      renderScenarioPanel(root, null);
+      updateScenarioProgress(root, null, null);
+      syncScenarioUrl(root, '', '');
+      if (emit !== false) emitHostEvent(root, 'cfxscenarioclear', {});
+      if (sync !== false) emitSync(root, { action: 'scenario', scenarioId: '' });
+      return;
+    }
+    root.dataset.cfxActiveScenario = route.id;
+    if (route.color) root.style.setProperty('--cfx-scenario-color', route.color);
+    else root.style.removeProperty('--cfx-scenario-color');
+    const targets = scenarioTargets(root, route, null);
+    scenarioTargetCandidates(root, route).forEach((node) => {
+      const active = targets.has(node);
+      node.classList.toggle('cfx-scenario-active', active);
+      node.classList.toggle('cfx-scenario-muted', !active && route.focusMode === 'spotlight');
+    });
+    renderScenarioPanel(root, route);
+    updateScenarioProgress(root, route, null);
+    syncScenarioUrl(root, route.id, '');
+    if (emit !== false) emitHostEvent(root, 'cfxscenario', { scenarioId: route.id, label: route.label, description: route.description, color: route.color, steps: route.steps, metadata: route.metadata });
+    if (sync !== false) emitSync(root, { action: 'scenario', scenarioId: route.id });
+  };
+  const stepScenario = (root, delta) => {
+    const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+    if (!route || !route.steps.length) return;
+    const current = Number(root.dataset.cfxActiveScenarioStep || (delta > 0 ? '-1' : route.steps.length));
+    setScenarioStep(root, current + delta, true, true);
+  };
+  const scenarioPlaybackDelay = (root, route, stepIndex) => {
+    const step = route && route.steps && Number.isFinite(Number(stepIndex)) ? route.steps[Number(stepIndex)] : null;
+    const delay = Number((step && step.durationMilliseconds) || (route && route.playbackDelayMilliseconds) || root.dataset.cfxScenarioPlaybackDelay || '900');
+    return Number.isFinite(delay) && delay >= 200 ? delay : 900;
+  };
+  const setScenarioPlaybackState = (root, state, route, emit) => {
+    const normalized = state || 'idle';
+    root.dataset.cfxScenarioPlayback = normalized;
+    root.querySelectorAll('[data-cfx-scenario-step-control="play"]').forEach((button) => {
+      const playing = normalized === 'playing';
+      button.setAttribute('aria-pressed', playing ? 'true' : 'false');
+      button.textContent = playing ? (button.dataset.cfxScenarioPauseLabel || 'Pause') : (button.dataset.cfxScenarioPlayLabel || 'Play');
+      button.title = playing ? 'Pause scenario' : 'Play scenario';
+    });
+    if (emit !== false) {
+      emitHostEvent(root, 'cfxscenarioplayback', {
+        state: normalized,
+        scenarioId: route ? route.id : (root.dataset.cfxActiveScenario || ''),
+        stepIndex: root.dataset.cfxActiveScenarioStep || '',
+        progress: root.dataset.cfxScenarioProgress || '',
+        delay: scenarioPlaybackDelay(root, route, root.dataset.cfxActiveScenarioStep)
+      });
+    }
+  };
+  const stopScenarioPlayback = (root, state, emit) => {
+    if (root._cfxScenarioPlayback) window.clearTimeout(root._cfxScenarioPlayback);
+    root._cfxScenarioPlayback = null;
+    setScenarioPlaybackState(root, state || 'idle', scenarioRoute(root, root.dataset.cfxActiveScenario || ''), emit);
+  };
+  const playScenario = (root, emit) => {
+    const route = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+    if (!route || !route.steps.length) return;
+    if (root._cfxScenarioPlayback) {
+      stopScenarioPlayback(root, 'paused', emit);
+      return;
+    }
+    let index = Number(root.dataset.cfxActiveScenarioStep || '-1') + 1;
+    if (!Number.isFinite(index) || index >= route.steps.length) index = 0;
+    startScenarioPlayback(root, route, index, emit, true);
+  };
+  const startScenarioPlayback = (root, route, stepIndex, emit, advanceNow) => {
+    if (!route || !route.steps.length) return;
+    setScenarioPlaybackState(root, 'playing', route, emit);
+    let index = Number(stepIndex);
+    if (!Number.isFinite(index) || index < 0) index = 0;
+    if (index >= route.steps.length && route.loopPlayback) index = 0;
+    const advance = () => {
+      if (index >= route.steps.length) {
+        if (route.loopPlayback) index = 0;
+        else {
+          stopScenarioPlayback(root, 'finished', emit);
+          return;
+        }
+      }
+      const current = index++;
+      setScenarioStep(root, current, true, true);
+      root._cfxScenarioPlayback = window.setTimeout(advance, scenarioPlaybackDelay(root, route, current));
+    };
+    if (advanceNow !== false) advance();
+    else root._cfxScenarioPlayback = window.setTimeout(advance, scenarioPlaybackDelay(root, route, Number(root.dataset.cfxActiveScenarioStep || '0')));
+  };
+  const copyScenarioLink = (root) => {
+    syncScenarioUrl(root, root.dataset.cfxActiveScenario || '', root.dataset.cfxActiveScenarioStep || '');
+    const url = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {});
+    emitHostEvent(root, 'cfxscenariolink', { url });
+  };
+  document.querySelectorAll('.cfx-interactive-chart').forEach((root) => {
+    if (root.dataset.cfxRuntimeBound === 'true') return;
+    root.dataset.cfxRuntimeBound = 'true';
+    const tip = root.querySelector('.cfx-tooltip');
+    const stage = root.querySelector('.cfx-stage');
+    const brush = root.querySelector('.cfx-brush-box');
+    const crosshair = root.querySelector('.cfx-crosshair');
+    const compareTray = root.querySelector('[data-cfx-compare-tray]');
+    if (!tip) return;
+    applyRenderedTargetContract(root);
+    applyViewport(root, getState(root));
+    renderCompare(root);
+    if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
+    if (hasFeature(root, 'StateBookmarks')) {
+      root.addEventListener('cfx-capture-state', (event) => {
+        const detail = event.detail || {};
+        publishInteractionState(root, detail.source || 'host', detail.sync);
+      });
+      root.addEventListener('cfx-apply-state', (event) => {
+        const detail = event.detail || {};
+        applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
+      });
+    }
+    const targets = interactiveTargets(root);
+    targets.forEach((node) => {
+      const focusNode = targetFocusNode(node);
+      if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
+      node.addEventListener('pointerenter', (event) => {
+        setHover(root, node, true, true);
+        showTip(root, tip, node, event);
+      });
+      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
+      node.addEventListener('pointerleave', () => {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+      focusNode.addEventListener('focus', (event) => {
+        setHover(root, node, true, true);
+        showTip(root, tip, node, event);
+      });
+      focusNode.addEventListener('blur', () => {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+      focusNode.addEventListener('click', (event) => {
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
+          if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
+          else toggleSeries(root, node);
+        }
+        else {
+          toggleSelection(root, node);
+          pinTip(root, tip, node, event);
+        }
+      });
+      focusNode.addEventListener('keydown', (event) => {
+        if (!hasFeature(root, 'KeyboardNavigation')) return;
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
+          event.preventDefault();
+          toggleSeriesFocus(root, node, true, true);
+          return;
+        }
+        if (focusAdjacentTarget(root, node, event.key)) {
+          event.preventDefault();
+          return;
+        }
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        // Enter on a link must retain native navigation. Space selects the cell without following the link.
+        if (focusNode !== node && event.key === 'Enter') return;
+        event.preventDefault();
+        if (focusNode !== node) {
+          toggleSelection(root, node);
+          pinTip(root, tip, node, event);
+          return;
+        }
+        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
+        else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+    });
+    root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
+      button.addEventListener('click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
+    });
+    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
+      button.addEventListener('click', () => setMode(root, button.dataset.cfxModeButton || ''));
+    });
+    root.querySelectorAll('[data-cfx-export]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (button.dataset.cfxExport === 'png') exportPng(root);
+        else exportSvg(root);
+      });
+    });
+    root.querySelectorAll('[data-cfx-scenario]').forEach((button) => {
+      button.addEventListener('click', () => setScenario(root, button.dataset.cfxScenario || '', true));
+    });
+    if (hasFeature(root, 'Scenarios')) {
+      root.addEventListener('cfx-set-scenario', (event) => {
+        const detail = event.detail || {};
+        setScenario(root, detail.scenarioId || '', true, true);
+      });
+      root.addEventListener('cfx-clear-scenario', () => setScenario(root, '', true, true));
+    }
+    if (hasFeature(root, 'StepPlayback')) {
+      root.querySelectorAll('[data-cfx-scenario-step-control]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const action = button.dataset.cfxScenarioStepControl || '';
+          if (action === 'previous') stepScenario(root, -1);
+          else if (action === 'next') stepScenario(root, 1);
+          else if (action === 'play') playScenario(root);
+          else if (action === 'reset') { stopScenarioPlayback(root, 'paused'); clearScenarioStep(root); clearReveals(root); }
+          else if (action === 'link') copyScenarioLink(root);
+        });
+      });
+      root.addEventListener('cfx-set-scenario-step', (event) => {
+        const detail = event.detail || {};
+        if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
+        const index = detail.index !== undefined ? detail.index : detail.stepIndex;
+        setScenarioStep(root, index, true, true);
+      });
+      root.addEventListener('cfx-clear-scenario-step', () => {
+        stopScenarioPlayback(root, 'paused');
+        clearScenarioStep(root);
+        clearReveals(root);
+      });
+      root.addEventListener('cfx-play-scenario', (event) => {
+        const detail = event.detail || {};
+        if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
+        playScenario(root);
+      });
+      root.addEventListener('cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
+      const scrubber = root.querySelector('[data-cfx-scenario-scrubber]');
+      if (scrubber) scrubber.addEventListener('input', () => {
+        stopScenarioPlayback(root, 'paused');
+        setScenarioStep(root, Number(scrubber.value) - 1, true, true);
+      });
+      const stepsList = root.querySelector('[data-cfx-scenario-panel-steps]');
+      if (stepsList) {
+        const focusStep = (target) => {
+          const item = target instanceof Element ? target.closest('[data-cfx-scenario-step-index]') : null;
+          if (item && stepsList.contains(item)) setScenarioStep(root, Number(item.getAttribute('data-cfx-scenario-step-index')) - 1, true, true);
+        };
+        stepsList.addEventListener('click', (event) => focusStep(event.target));
+        stepsList.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          focusStep(event.target);
+        });
+      }
+    }
+    if (hasFeature(root, 'Scenarios')) {
+      const initialScenario = scenarioUrlParam(root, 'scenario') || root.dataset.cfxActiveScenario || '';
+      const initialScenarioStep = scenarioUrlParam(root, 'scenarioStep');
+      setScenario(root, initialScenario, false, false);
+      if (hasFeature(root, 'StepPlayback') && initialScenarioStep) setScenarioStep(root, initialScenarioStep, false, false);
+      const initialRoute = scenarioRoute(root, root.dataset.cfxActiveScenario || '');
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
+    }
+    if (stage) {
+      stage.addEventListener('wheel', (event) => {
+        if (!hasFeature(root, 'Zoom')) return;
+        event.preventDefault();
+        zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
+      }, { passive: false });
+      let drag = null;
+      stage.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
+          const state = getState(root);
+          drag = { mode: 'pan', id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+          stage.setPointerCapture(event.pointerId);
+        } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
+          const rect = stage.getBoundingClientRect();
+          drag = { mode: 'brush', id: event.pointerId, left: event.clientX - rect.left, top: event.clientY - rect.top };
+          brush.hidden = false;
+          brush.style.left = drag.left + 'px';
+          brush.style.top = drag.top + 'px';
+          brush.style.width = '0px';
+          brush.style.height = '0px';
+          stage.setPointerCapture(event.pointerId);
+        }
+      });
+      stage.addEventListener('pointermove', (event) => {
+        if (!drag || drag.id !== event.pointerId) {
+          updateNearestPoint(root, crosshair, tip, event);
+          return;
+        }
+        if (drag.mode === 'pan') {
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
+        } else if (drag.mode === 'brush' && brush) {
+          const rect = stage.getBoundingClientRect();
+          const x = clamp(event.clientX - rect.left, 0, rect.width);
+          const y = clamp(event.clientY - rect.top, 0, rect.height);
+          const left = Math.min(drag.left, x);
+          const top = Math.min(drag.top, y);
+          brush.style.left = left + 'px';
+          brush.style.top = top + 'px';
+          brush.style.width = Math.abs(x - drag.left) + 'px';
+          brush.style.height = Math.abs(y - drag.top) + 'px';
+        }
+      });
+      stage.addEventListener('pointerup', (event) => {
+        if (!drag || drag.id !== event.pointerId) return;
+        if (drag.mode === 'brush' && brush) {
+          root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
+          const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const replaceSelection = !event.shiftKey;
+          emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
+          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
+          emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
+          if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: replaceSelection });
+          publishCompare(root, true);
+        } else if (drag.mode === 'pan') {
+          emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+          emitSync(root, { action: 'viewport', state: getState(root) });
+        }
+        stage.releasePointerCapture(event.pointerId);
+        drag = null;
+      });
+      stage.addEventListener('pointerleave', () => {
+        hideCrosshair(root, crosshair);
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+      stage.addEventListener('pointercancel', () => {
+        drag = null;
+        hideCrosshair(root, crosshair);
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      });
+    }
+    const reset = root.querySelector('[data-cfx-reset]');
+    if (reset) reset.addEventListener('click', () => {
+      resetViewport(root);
+      emitHostEvent(root, 'cfxreset', {});
+      emitHostEvent(root, 'cfxviewport', { state: getState(root) });
+      emitSync(root, { action: 'viewport', state: getState(root) });
+      clearSelections(root);
+      root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
+      root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
+      setSeriesIsolation(root, null, false);
+      clearFocusTrail(root);
+      clearReveals(root);
+      if (brush) brush.hidden = true;
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
+      publishCompare(root, true);
+    });
+  });
+})();
+</script>
+</body>
+</html>

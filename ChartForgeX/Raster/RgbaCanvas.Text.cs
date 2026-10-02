@@ -1,9 +1,19 @@
 using System;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
+    /// <summary>How text drawn on this canvas is fitted to the output pixel grid; buffers it draws text through inherit it.</summary>
+    internal TextHinting TextHinting { get; set; }
+
+    /// <summary>Output pixels per canvas unit, the grid text is fitted to.</summary>
+    internal int OutputScale => _outputScale;
+
+    // A text buffer has one pixel per canvas unit; its grid is this canvas's only at an output scale of one.
+    private TextHinting BufferHinting => _outputScale == 1 ? TextHinting : TextHinting.None;
+
     public void DrawTextTiny(double x, double y, string text, ChartColor color, int scale = 2) {
         DrawTextTiny(x, y, text, color, scale, italic: false);
     }
@@ -51,8 +61,7 @@ internal sealed partial class RgbaCanvas {
 
     private void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth, bool emphasized, TrueTypeFont? font) {
         if (string.IsNullOrEmpty(text) || color.A == 0 || maximumWidth <= 0) return;
-        var naturalWidth = MeasureTextWidthWithFont(text, fontSize, font);
-        if (emphasized && text.Length > 0) naturalWidth += EmphasisOffset(fontSize);
+        var naturalWidth = emphasized ? MeasureTextEmphasizedWidthWithFont(text, fontSize, font, italic: false) : MeasureTextWidthWithFont(text, fontSize, font);
         if (naturalWidth <= maximumWidth) {
             if (emphasized) DrawTextEmphasized(x, y, text, color, fontSize, font);
             else DrawText(x, y, text, color, fontSize, font);
@@ -63,7 +72,7 @@ internal sealed partial class RgbaCanvas {
             ? TinyFont.Height * FallbackScaleForFontSize(fontSize)
             : font.LineHeight(Math.Max(1, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
-        var buffer = new RgbaCanvas(bufferWidth, naturalHeight, _supersamplingScale, font, 1, useDefaultOutlineFont: false);
+        var buffer = new RgbaCanvas(bufferWidth, naturalHeight, _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
         if (emphasized) buffer.DrawTextEmphasized(0, 0, text, color, fontSize, font);
         else buffer.DrawText(0, 0, text, color, fontSize, font);
         var pixels = buffer.ToOutputPixels();
@@ -87,8 +96,15 @@ internal sealed partial class RgbaCanvas {
 
     internal void DrawTextEmphasized(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font, bool italic) {
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
+        var bold = EmphasisFace(font);
+        if (bold != null) {
+            DrawText(x, y, text, color, fontSize, bold, italic);
+            return;
+        }
+
         DrawText(x, y, text, color, fontSize, font, italic);
-        DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize, font, italic);
+        if (font != null) font.Draw(this, x + EmphasisOffset(fontSize), y, text, color, Math.Max(1, fontSize), italic, syntheticBoldCopyOnly: true);
+        else DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize, font, italic);
     }
 
     public static double MeasureTextTinyWidth(string text, int scale) => MeasureTextTinyWidth(text, scale, null);
@@ -122,11 +138,20 @@ internal sealed partial class RgbaCanvas {
             ? font.Measure(text, Math.Max(1, fontSize), italic)
             : MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize)) + (italic && text.Length > 0 ? TrueTypeFont.ItalicOverhang(fontSize) : 0);
 
-    public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) =>
-        string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont) + EmphasisOffset(fontSize);
+    public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => MeasureTextEmphasizedWidth(text, fontSize, outlineFont, italic: false);
 
-    internal static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) =>
-        string.IsNullOrEmpty(text) ? 0 : MeasureTextWidth(text, fontSize, outlineFont, italic) + EmphasisOffset(fontSize);
+    internal static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) {
+        if (string.IsNullOrEmpty(text)) return 0;
+        var bold = EmphasisFace(outlineFont ?? DefaultOutlineFont);
+        var primary = outlineFont ?? DefaultOutlineFont;
+        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidth(text, fontSize, outlineFont, italic) + (primary == null || primary.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
+    }
+
+    private static double MeasureTextEmphasizedWidthWithFont(string text, double fontSize, TrueTypeFont? font, bool italic) {
+        if (string.IsNullOrEmpty(text)) return 0;
+        var bold = EmphasisFace(font);
+        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidthWithFont(text, fontSize, font, italic) + (font == null || font.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
+    }
 
     internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);
 

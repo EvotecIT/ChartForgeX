@@ -169,6 +169,85 @@ using var output = File.Create("wallpaper-output.png");
 wallpaper.Write(output, RasterImageFormat.Png, new RasterImageOptions { PngCompressionLevel = 9 });
 ```
 
+### Shapes, gradients, and SVG backdrops
+
+`ImageComposition` draws antialiased circles, ellipses, arcs, and gradient rectangles directly, with the same coverage model the SVG rasterizer uses for fills and strokes:
+
+```csharp
+var card = ImageComposition.Create(1200, 630, ChartColor.FromHex("#0A0D12"))
+    .FillRectangleRadialGradient(0, 0, 1200, 630, 1200, 0, 700, ChartColor.FromRgba(44, 95, 240, 51), ChartColor.FromRgba(44, 95, 240, 0))
+    .FillRectangleLinearGradient(84, 538, 260, 42, ChartColor.FromHex("#3BCBB5"), ChartColor.FromHex("#7399FF"), angle: 0, radius: 21)
+    .FillCircle(120, 90, 26, ChartColor.FromHex("#2C5FF0"))
+    .StrokeCircle(120, 90, 34, ChartColors.White, thickness: 1.5)
+    .DrawProgressRing(965, 270, 96, 18, fraction: 0.72, trackColor: ChartColor.FromHex("#222A38"), color: ChartColor.FromHex("#FF6D7A"))
+    .DrawArc(965, 270, 120, startAngle: -90, sweepAngle: 90, ChartColors.White, thickness: 2, ImageLineCap.Butt);
+```
+
+Angles are in degrees, clockwise on screen from three o'clock, so `-90` starts at twelve o'clock. `DrawArc` takes `ImageLineCap.Butt`, `Round` (the default), or `Square`. `DrawProgressRing` paints a full track and a round-capped arc for `fraction` of it; a fraction of one or more fills the ring. Linear gradient angles follow the same convention: `0` runs left to right and `90` top to bottom. A radial gradient's center is in composition coordinates and may sit outside the rectangle, which is how a corner glow is drawn; fade to the same color with zero alpha to avoid a gray fringe.
+
+When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:
+
+```csharp
+var composition = ImageComposition.FromImage(SvgRasterizer.ToImage(backdropSvg));
+composition.DrawText(84, 196, 650, title, titleStyle, TextWrapMode.Word, maximumLines: 3);
+```
+
+Stroked SVG circles, ellipses, arcs, rounded rectangles, and curved paths are flattened to the output resolution and outlined as one shape, so they are as smooth as fills at any stroke width. `stroke-linecap` (`butt`, `round`, `square`), `stroke-linejoin` (`miter`, `round`, `bevel`), `stroke-miterlimit`, and `stroke-dasharray` are honoured. A gradient used as a stroke paint is drawn in its first stop color.
+
+### Fonts for composed text
+
+Text drawn from a `FontSpec` (`ImageComposition.DrawText` and `TextLayoutEngine`) picks its face in this order:
+
+1. `FontSpec.FromFile(path)` — that font file, always. This is the only choice that renders identically on every host, so ship the font with the application when the output must not vary.
+2. `FontSpec.FromFamily("Inter, Segoe UI, sans-serif")` — the first family of the stack that is registered with `FontRegistry` (below) or installed, at the face closest to `Weight` and `Italic` (Segoe UI at 700 is Segoe UI Bold). Installed families are read from the operating system's font folders the first time a named family is requested. TrueType and CFF outlines are both read: `.ttf`, `.otf`, and `.ttc`/`.otc` collections, including CID-keyed CJK fonts such as Noto Sans CJK; CFF2 variable fonts draw their default instance.
+3. The generic fallback for the stack — a serif, monospace, or sans-serif face known to ship with Windows, macOS, or common Linux distributions — with its bold or italic sibling when one is installed.
+
+When no real bold or italic face exists, bold is synthesized by emboldening and italic by shearing the regular face. A variable font renders its default instance; its axes are not applied.
+
+SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its computed `font-family` stack, `font-weight` (numbers from 1 to 1000, `normal`, `bold`, and `bolder`/`lighter` relative to the parent), and `font-style` (`italic` or `oblique`), whether they come from attributes, `style="..."`, a stylesheet, an ancestor `<g>`, or a `<tspan>`. Text without a `font-family` uses the sans-serif fallback. Each run is placed so its face's own baseline sits on the `y` coordinate, as a browser places it.
+
+`VisualCanvas` uses `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.PortableEstimate` by default. Registered fonts provide exact fitting and line metrics; other families use portable estimates so fitting, wrapping, ellipsis, column widths, and row heights do not depend on the generating host's installed fonts. Register the application's font files to combine deterministic layout with accurate measurement. Set `TextMeasurementMode.InstalledFonts` explicitly when layout should use fonts installed on the current host.
+
+`VisualCanvasTheme.FontFamily` (set directly or through `VisualDesignTokens`), a key/value block's `FontFamilyName`, and `MonospaceFontFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. PNG draws the matching registered or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas.Theme)` to measure a key/value block with the canvas's measurement mode.
+
+#### Characters the face does not have, right-to-left text, and Arabic
+
+A face rarely covers every script a server name, user name, or vendor title can contain. Raster text is therefore drawn per character cluster (a base character with its combining marks, joiners, and variation selectors), each by the first face that has all of it:
+
+1. the face chosen above;
+2. the families that follow it in the requested stack (`"Inter, Noto Sans JP, sans-serif"` draws Japanese in Noto Sans JP);
+3. every family registered with `FontRegistry`;
+4. the platform's broad-coverage fonts, where installed: on Windows Segoe UI, Segoe UI Symbol, Segoe UI Emoji, Microsoft YaHei, Microsoft JhengHei, Yu Gothic, Malgun Gothic, Nirmala UI, Leelawadee UI, Ebrima, Gadugi, and Arial Unicode MS; on Linux the Noto families and DejaVu Sans; on macOS PingFang, Hiragino, Apple SD Gothic Neo, Geeza Pro, and similar.
+
+Each fallback family is matched to the run's weight and slant, and when that face lacks the character its other faces are tried, so bold Arabic in a Segoe UI Black headline comes from Segoe UI Bold or Regular. A character no face has takes the chosen face's `.notdef` advance and draws nothing. Coverage is answered from each file's `cmap` alone and cached per code point, so a fallback face is read only when it draws something, and text that the chosen face covers entirely never consults the chain. Measuring, wrapping, fitting, and drawing all use the same clusters, so fitted text with fallback characters stays inside its box. A combining sequence such as `e` + U+0301 is drawn as the precomposed `é` when the face has it.
+
+Lines are reordered for display with the Unicode Bidirectional Algorithm (UAX #9): explicit embeddings, overrides, and isolates, weak and neutral types, paired brackets, whitespace reset, and mirrored brackets at right-to-left levels. The paragraph direction is left-to-right, as SVG and CSS default to, so PNG output orders `Server שרת-01 (ראשי)` exactly as a browser shows the SVG. Arabic letters take their initial, medial, final, or isolated forms from their neighbours' Unicode joining types, drawn with the face's Arabic Presentation Forms (Forms-B, and Forms-A for common Persian and Urdu letters), and lam followed by alef becomes the lam-alef ligature. Hebrew needs only reordering.
+
+Emoji are drawn from the emoji font's monochrome outlines (Segoe UI Emoji on Windows) in the text color; a cluster with U+FE0F, or a pictograph that defaults to emoji presentation, tries the emoji font first. Colour layers and bitmap emoji are not drawn.
+
+Not handled yet: complex-script shaping beyond Arabic joining (Indic conjuncts and vowel reordering, Thai and Khmer clusters), mark positioning from GPOS (marks use their default offset), and emoji ZWJ sequences, which draw as their separate pictographs.
+
+#### Small text
+
+Text drawn at 12 output pixels or smaller is lightly hinted, independently of the font: the run's baseline moves to a whole pixel and each glyph is stretched vertically so its face's x-height and cap height also land on whole pixels. Nothing moves horizontally, so advances, widths, wrapping, and fitting are exactly those of unhinted text. Larger text is drawn as designed. Set `TextStyle.Hinting = TextHinting.None` for composed text, or `ChartOptions.PngTextHinting = TextHinting.None` for chart PNGs, where exact outline geometry matters more than crisp rows, such as frames of an animation that moves text by fractions of a pixel. SVG `<text>` is hinted in its own glyph buffer, which is then placed on a whole pixel row when it is only translated. Stems are not darkened, and horizontal positions keep their fractions.
+
+On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship `.ttf` files with the application and register them.
+
+`FontRegistry` registers font files once, process-wide and thread-safely, and every raster path then finds them by family name: chart, grid, topology, and visual block themes, VisualCanvas themes and design tokens, `FontSpec.FromFamily`, and SVG `font-family`:
+
+```csharp
+FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Regular.ttf"));
+FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Bold.ttf"), weight: 700);
+FontRegistry.RegisterDirectory(Path.Combine(fonts, "brand")); // each file under its own family, weight, and slant
+FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); // fallback for stacks ending in sans-serif, and for hosts with no fonts
+
+var chart = Chart.Create().WithTheme(ChartTheme.ReportDark().WithFontFamily("Inter, sans-serif"));
+```
+
+A registered family is matched before an installed family of the same name, with the same weight and slant rules, and only its registered faces are considered, so register each weight you use; a missing bold is synthesized. `RegisterFile` and `RegisterDirectory` read the family, weight, and italic flag from each file's own tables. `FontRegistry.Clear()` removes every registration.
+
+Chart, grid, topology, and visual block PNG renderers resolve their theme font stack (and a text style's `FontFamily`) the same way, at regular weight, and draw emphasized text such as titles, legends, and data labels with that family's real bold face, measuring it with the same face, so `ChartFontStacks.SystemSans` draws Segoe UI on Windows as the SVG does in a browser. An explicit `PngFontPath` keeps its synthesized emphasis. `chart.GetPngFontInfo()` reports the resolved face. `TextMeasurementMode.InstalledFonts` measures with the same regular and bold faces, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
+
 For user-supplied files, use `RasterImageDecoder.TryRead(...)`, `RasterImageDecoder.TryDecode(...)`, `ImageComposition.TryFromFile(...)`, or `ImageComposition.TryFromBytes(...)` when unsupported or corrupt images should be handled as a normal validation result instead of an exception.
 
 `VisualCanvasPlacement` resolves layer coordinates from a named anchor. For `TopLeft`, offsets move right and down from the top-left edge. For `BottomRight`, positive offsets are insets from the right and bottom edges, so `VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 20, 20)` places a layer 20 pixels from the bottom-right corner. Center anchors use offsets as signed nudges from the centered position.
