@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Raster;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -31,8 +32,7 @@ public sealed class HeatmapColumnLabelTests {
         Assert.All(labels, label => Assert.True(Number(label, "y") > cellBottom, "Labels hang below the cells."));
         // The longest label, drawn at 45 degrees, must end above the legend that follows it.
         var legendTop = ByRole(svg, "state-legend-swatch").Min(swatch => Number(swatch, "y"));
-        var drop = Math.Sin(Math.PI / 4) * Checks.Max(check => check.Length) * tickSize * 0.58;
-        Assert.True(labels.Max(label => Number(label, "y")) + drop <= legendTop, "Rotated labels must not run into the legend.");
+        Assert.All(labels, label => Assert.True(RotatedLabelBottom(label, -45) <= legendTop + 1, "Rotated labels must not run into the legend."));
         Assert.NotEqual(Matrix().ToPng(), chart.ToPng());
     }
 
@@ -74,10 +74,8 @@ public sealed class HeatmapColumnLabelTests {
         var svg = XDocument.Parse(chart.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
         Assert.All(labels, label => Assert.StartsWith("rotate(60 ", (string?)label.Attribute("transform"), StringComparison.Ordinal));
-        var tickSize = chart.Options.Theme.TickLabelFontSize;
-        var drop = Math.Sin(Math.PI / 3) * Math.Min(120, Checks.Max(check => check.Length) * tickSize * 0.58);
         var scaleTop = ByRole(svg, "heatmap-scale-step").Min(step => Number(step, "y"));
-        Assert.True(labels.Max(label => Number(label, "y")) + drop <= scaleTop + 1, "The scale sits below the rotated labels.");
+        Assert.All(labels, label => Assert.True(RotatedLabelBottom(label, 60) <= scaleTop + 1, "The scale sits below the rotated labels."));
         Assert.True(scaleTop + 8 <= chart.Options.Size.Height);
         // The chart-wide x-axis band is not reserved a second time on top of the heatmap's own label band.
         Assert.All(ByRole(svg, "heatmap-cell"), cell => Assert.True(Number(cell, "height") >= 12, "Rows keep a readable height."));
@@ -108,6 +106,16 @@ public sealed class HeatmapColumnLabelTests {
     }
 
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
+
+    private static double RotatedLabelBottom(XElement label, double angle) {
+        // Check the drawn text, including any trimming, against the following mark. Character-count estimates
+        // can be wider than the installed font and report an overlap where the rendered label actually fits.
+        var fontSize = Number(label, "font-size");
+        var text = new TextStyle { Font = new FontSpec { Family = (string)label.Attribute("font-family")!, Weight = 700 }, FontSize = fontSize };
+        var width = TextLayoutEngine.Measure(label.Value, text).Width;
+        var radians = Math.Abs(angle) * Math.PI / 180;
+        return Number(label, "y") + Math.Sin(radians) * width + Math.Cos(radians) * fontSize * 1.2 / 2;
+    }
 
     private static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, CultureInfo.InvariantCulture);
 }
