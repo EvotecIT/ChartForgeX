@@ -11,7 +11,8 @@
     return true;
   };
   const webGlEdgeMesh = (root, state, byId, palette, dense, moving, scale, compact, pointLimit) => {
-    const stamp = JSON.stringify([dense, moving, scale, compact, pointLimit, palette.edge, palette.selected, palette.paper]);
+    const movingScale = moving ? viewport(root).scale : 0;
+    const stamp = JSON.stringify([dense, moving, movingScale, scale, compact, pointLimit, palette.edge, palette.selected, palette.paper]);
     if (webGlMeshCurrent(root.__cfxGraphEdgeMesh, state, stamp)) return root.__cfxGraphEdgeMesh;
     const mesh = { positions: [], colors: [], fallbackEdges: [], nodes: state.nodes, edges: state.edges,
       clusters: state.clusters, stamp, coordinates: new Float64Array(state.nodes.length * 2),
@@ -27,7 +28,8 @@
       const paths = edge.dashed ? webGlDashedPaths(points, edge.dashPattern) : [points];
       if (!paths) { mesh.fallbackEdges.push({ edge, paint }); return; }
       const color = webGlColor(paint.color, paint.alpha);
-      paths.forEach(path => webGlStrokePath(mesh, path, paint.width, color));
+      const caps = !moving || !dense || paint.width * scale * movingScale >= 1;
+      paths.forEach(path => webGlStrokePath(mesh, path, paint.width, color, caps));
       if (paint.arrows) {
         const arrowColor = webGlColor(paint.color, paint.arrowAlpha);
         for (const side of ['source', 'target']) {

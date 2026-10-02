@@ -220,3 +220,18 @@ test('renderer switches transfer surface focus and preserve focus on host contro
   const toolbar = api.graphVirtualElement('graph-toolbar', {}, []); doc.activeElement = toolbar;
   api.setGraphRenderer(root, 'canvas'); assert.equal(doc.activeElement, toolbar);
 });
+
+test('dense motion keeps stroke width while eliding subpixel caps and restoring them on zoom or settlement', () => {
+  const { api, root, edge, state, palette } = runtime();
+  edge.dashed = false; edge.strokeWidth = 5;
+  const moving = api.webGlEdgeMesh(root, state, state.byId, palette, true, true, .1);
+  assert.equal(moving.positions.length, 12);
+  const y = moving.positions.filter((_, index) => index % 2 === 1);
+  close(Math.max(...y) - Math.min(...y), 5);
+  root.setAttribute('data-cfx-viewport-scale', '4');
+  const zoomed = api.webGlEdgeMesh(root, state, state.byId, palette, true, true, .1);
+  assert.notEqual(zoomed, moving); assert.ok(zoomed.positions.length > moving.positions.length);
+  root.setAttribute('data-cfx-viewport-scale', '1');
+  const settled = api.webGlEdgeMesh(root, state, state.byId, palette, true, false, .1);
+  assert.ok(settled.positions.length > moving.positions.length);
+});

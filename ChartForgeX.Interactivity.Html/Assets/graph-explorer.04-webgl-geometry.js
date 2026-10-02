@@ -59,7 +59,7 @@
     mesh.positions.push(a.x, a.y, b.x, b.y, c.x, c.y);
     mesh.colors.push(...color, ...color, ...color);
   };
-  const webGlStrokePath = (mesh, input, width, color) => {
+  const webGlStrokePath = (mesh, input, width, color, caps = true) => {
     const points = input.filter((point, index) => !index || Math.hypot(point.x - input[index - 1].x, point.y - input[index - 1].y) > 1e-8);
     if (points.length < 2) return;
     const half = width / 2, normals = [];
@@ -79,6 +79,8 @@
       webGlTriangle(mesh, a.left, a.right, b.left, color);
       webGlTriangle(mesh, b.left, a.right, b.right, color);
     }
+    // During dense motion, caps smaller than a device pixel do not need extra triangles.
+    if (!caps) return;
     // Round caps meet the ribbon without overlapping translucent interiors.
     for (const index of [0, points.length - 1]) {
       const center = points[index], normal = normals[index === 0 ? 0 : normals.length - 1];
