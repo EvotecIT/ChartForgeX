@@ -67,7 +67,8 @@ public sealed class HeatmapColumnLabelTests {
 
     [Fact]
     public void ToSvg_RotatedLabelsOnANumericHeatmap_PutTheScaleBelowThem() {
-        var chart = Chart.Create().WithSize(520, 360).WithXAxisLabelAngle(60).WithXLabels(Checks)
+        // Leave space for the label band measured from the installed font, including wider Linux/macOS fallbacks.
+        var chart = Chart.Create().WithSize(520, 380).WithXAxisLabelAngle(60).WithXLabels(Checks)
             .AddHeatmapRow("DC01", Enumerable.Range(0, Checks.Length).Select(i => (double)(i * 7 % 10)).ToArray())
             .AddHeatmapRow("DC02", Enumerable.Range(0, Checks.Length).Select(i => (double)(i * 3 % 10)).ToArray());
         var svg = XDocument.Parse(chart.ToSvg());
