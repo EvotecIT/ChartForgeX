@@ -164,7 +164,11 @@
       gl.disableVertexAttribArray(runtime.stroke); gl.vertexAttrib4f(runtime.stroke, 0, 0, 0, 0);
       gl.disableVertexAttribArray(runtime.point); gl.vertexAttrib2f(runtime.point, 1, 1);
       gl.uniform1i(runtime.points, 0);
-      gl.drawArrays(gl.TRIANGLES, 0, mesh.positions.length / 2);
+      if (mesh.lineVertices) {
+        gl.lineWidth(1);
+        gl.drawArrays(gl.LINES, mesh.triangleVertices, mesh.lineVertices);
+      }
+      if (mesh.triangleVertices) gl.drawArrays(gl.TRIANGLES, 0, mesh.triangleVertices);
     }
     webGlDrawNodes(runtime, mesh.nodePoints);
     gl.disable(gl.BLEND);

@@ -59,6 +59,11 @@
     mesh.positions.push(a.x, a.y, b.x, b.y, c.x, c.y);
     mesh.colors.push(...color, ...color, ...color);
   };
+  const webGlThinLine = (mesh, a, b, color, coverage) => {
+    mesh.linePositions.push(a.x, a.y, b.x, b.y);
+    const alpha = color[3] * coverage;
+    mesh.lineColors.push(color[0], color[1], color[2], alpha, color[0], color[1], color[2], alpha);
+  };
   const webGlStrokePath = (mesh, input, width, color, caps = true) => {
     const points = input.filter((point, index) => !index || Math.hypot(point.x - input[index - 1].x, point.y - input[index - 1].y) > 1e-8);
     if (points.length < 2) return;
