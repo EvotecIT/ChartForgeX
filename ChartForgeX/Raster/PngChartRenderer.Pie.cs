@@ -287,7 +287,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawSliceLegend(RgbaCanvas c, Chart chart, ChartSeries series, IReadOnlyList<PngIndexedPieValue> values, ChartRect plot, double total) {
         var fontSize = PngLegendFontSize(chart);
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         const double swatchSize = ChartVisualPrimitives.SliceLegendSwatchSize;
         var area = PngSliceLegendArea(chart, plot, values);
         var rows = BuildPngSliceLegendRows(chart, series, values, total, area.Width, area.Height);
@@ -345,7 +345,7 @@ public sealed partial class PngChartRenderer {
     private static double PngSliceLegendWidestItem(Chart chart, IReadOnlyList<PngIndexedPieValue> values, int visible) {
         var widest = 0.0;
         var total = Math.Max(0.000001, PngSliceLegendTotal(values));
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < visible; i++) {
             var label = SliceLabel(chart, values[i].Point, values[i].PointIndex);
@@ -373,7 +373,7 @@ public sealed partial class PngChartRenderer {
         var x = 0.0;
         var vertical = PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition);
         var maxX = Math.Max(1, width);
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < values.Count; i++) {
             var pointIndex = values[i].PointIndex;

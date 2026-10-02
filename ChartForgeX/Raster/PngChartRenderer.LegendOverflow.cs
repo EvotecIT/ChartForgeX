@@ -7,7 +7,7 @@ namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
     private static void DrawLegendOverflow(RgbaCanvas canvas, Chart chart, ChartRect area, double y, int omitted) {
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var label = LegendRowBudget.Summary(omitted);
         var fontSize = TextFontSizeForEmphasizedWidth(label, Math.Max(8, area.Width), PngLegendFontSize(chart), style);
         var rowWidth = Math.Min(area.Width, EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true));

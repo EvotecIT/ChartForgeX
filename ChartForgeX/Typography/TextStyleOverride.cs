@@ -134,6 +134,20 @@ public sealed class TextStyleOverride {
 
     internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
 
+    internal TextStyleOverride WithDefaultFontWeight(int weight) {
+        if (FontWeight != null) return this;
+        var copy = (TextStyleOverride)MemberwiseClone();
+        copy.FontWeight = weight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return copy;
+    }
+
+    internal TextStyleOverride WithDefaultFontFamily(string family) {
+        if (FontFamily != null) return this;
+        var copy = (TextStyleOverride)MemberwiseClone();
+        copy.FontFamily = family;
+        return copy;
+    }
+
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
     private static int ResolveWeight(string value, int fallback) {

@@ -10,6 +10,31 @@ namespace ChartForgeX.Tests;
 /// on hosts without it.
 /// </summary>
 public sealed class RasterTextQualityTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SynthesizedBoldKeepsTheRequestedOpacity(bool bitmap) {
+        TrueTypeFont? font = bitmap ? null : TrueTypeFont.TryLoadDefault();
+        if (!bitmap && font == null) return;
+        var canvas = new RgbaCanvas(120, 80, 1, font, 1, useDefaultOutlineFont: false);
+        canvas.DrawTextEmphasized(10, 10, "A", ChartColor.FromRgba(20, 40, 60, 128), 32, font);
+        byte[] pixels = canvas.Pixels;
+        Assert.Contains(Enumerable.Range(0, pixels.Length / 4).Select(i => pixels[i * 4 + 3]), alpha => alpha > 0);
+        Assert.All(Enumerable.Range(0, pixels.Length / 4), i => Assert.InRange(pixels[i * 4 + 3], (byte)0, (byte)128));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(4)]
+    public void ThinHorizontalFillRetainsAreaAtEveryPixelPhase(int scale) {
+        foreach (double phase in new[] { .05, .17, .32, .48, .65, .82 }) {
+            var canvas = new RgbaCanvas(20, 20, scale);
+            canvas.FillPolygon(new[] { new ChartPoint(5, 5 + phase), new ChartPoint(15, 5 + phase), new ChartPoint(15, 5.1 + phase), new ChartPoint(5, 5.1 + phase) }, ChartColors.White);
+            double total = Enumerable.Range(0, canvas.Pixels.Length / 4).Sum(i => (double)canvas.Pixels[i * 4 + 3]);
+            Assert.InRange(total / (scale * scale), 250, 260);
+        }
+    }
+
     [Fact]
     public void SmallRegularTextKeepsThinHorizontalStems() {
         if (TrueTypeFont.TryLoadDefault() == null) return;

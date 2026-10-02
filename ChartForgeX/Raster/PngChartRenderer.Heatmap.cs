@@ -48,11 +48,11 @@ public sealed partial class PngChartRenderer {
         var axisBottomBase = rotatedLabels
             ? columnLabelsReserve + (numericScale ? PngHeatmapRotatedScaleReserve : 0)
             : numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? columnLabelsReserve : 10;
-        var xTitleHeight = string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextBoundsHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 8;
+        var xTitleHeight = string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextBoundsHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle.WithDefaultFontWeight(600)) + 8;
         var axesBottomReserve = chart.Options.ShowAxes ? axisBottomBase + xTitleHeight : 0;
         var legendBounds = plot;
         var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
-            ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: false), plot.Left, plot.Width, Math.Max(0, plot.Height - axesBottomReserve - 18))
+            ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle.WithDefaultFontWeight(600), emphasized: false), plot.Left, plot.Width, Math.Max(0, plot.Height - axesBottomReserve - 18))
             : Array.Empty<ChartStateCategoryLegendItem>();
         var legendHeight = ChartStateCategoryLegend.Height(chart, legend);
         var legendTop = plot.Bottom - legendHeight + 4;
@@ -152,7 +152,7 @@ public sealed partial class PngChartRenderer {
 
         if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels && rotatedLabels) {
             DrawRotatedHeatmapColumnLabels(c, chart, plot, columnValues, cellWidth, gap, tickFontSize, tickHeight, widestColumnLabel);
-            DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart), plot.Bottom + columnLabelsReserve + EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle));
+            DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart), plot.Bottom + columnLabelsReserve + EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle.WithDefaultFontWeight(600)));
         } else if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels) {
             for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
                 var label = FormatX(chart, columnValues[columnIndex]);

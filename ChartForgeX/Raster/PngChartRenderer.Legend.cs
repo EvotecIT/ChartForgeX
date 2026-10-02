@@ -28,9 +28,9 @@ public sealed partial class PngChartRenderer {
                 var series = chart.Series[item.SeriesIndex];
                 DrawLegendSymbol(c, series.Kind, itemX, y - 5, item.Color, theme.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var labelMaxWidth = System.Math.Max(8, item.Width - symbolWidth - 14);
-                var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize, chart.Options.LegendStyle);
-                var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth, chart.Options.LegendStyle);
-                if (label.Length > 0) DrawPngTextStyled(c, itemX + symbolWidth + 8, y - EstimatePngStyledTextHeight(labelFontSize, chart.Options.LegendStyle) + 3, label, chart.Options.LegendStyle, theme.MutedText, labelFontSize, emphasized: true);
+                var labelFontSize = TextFontSizeForEmphasizedWidth(item.Label, labelMaxWidth, fontSize, chart.Options.LegendStyle.WithDefaultFontWeight(600));
+                var label = TrimReadablePngLabelToWidth(item.Label, labelFontSize, labelMaxWidth, chart.Options.LegendStyle.WithDefaultFontWeight(600));
+                if (label.Length > 0) DrawPngTextStyled(c, itemX + symbolWidth + 8, y - EstimatePngStyledTextHeight(labelFontSize, chart.Options.LegendStyle.WithDefaultFontWeight(600)) + 3, label, chart.Options.LegendStyle.WithDefaultFontWeight(600), theme.MutedText, labelFontSize, emphasized: true);
             }
 
             y += rowHeight;
@@ -48,8 +48,8 @@ public sealed partial class PngChartRenderer {
         var x = 0.0;
         foreach (var entry in BuildPngLegendEntries(chart)) {
             var itemWidth = vertical
-                ? System.Math.Min(maxX, 46 + EstimatePngStyledTextWidth(entry.Label, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: true) + 18)
-                : LegendRowBudget.HorizontalItemWidth(chart.Options.LegendStyle.TransformText(entry.RawLabel, System.Globalization.CultureInfo.InvariantCulture), PngLegendFontSize(chart), maxX, 52);
+                ? System.Math.Min(maxX, 46 + EstimatePngStyledTextWidth(entry.Label, PngLegendFontSize(chart), chart.Options.LegendStyle.WithDefaultFontWeight(600), emphasized: true) + 18)
+                : LegendRowBudget.HorizontalItemWidth(chart.Options.LegendStyle.WithDefaultFontWeight(600).TransformText(entry.RawLabel, System.Globalization.CultureInfo.InvariantCulture), PngLegendFontSize(chart), maxX, 52);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new PngLegendRow();
                 rows.Add(row);
@@ -65,7 +65,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static string PngLegendLabel(Chart chart, int index) =>
-        TrimReadablePngLabelToWidth(chart.Series[index].Name, PngLegendFontSize(chart), PngLegendLabelMaxWidth(chart), chart.Options.LegendStyle);
+        TrimReadablePngLabelToWidth(chart.Series[index].Name, PngLegendFontSize(chart), PngLegendLabelMaxWidth(chart), chart.Options.LegendStyle.WithDefaultFontWeight(600));
 
     private static System.Collections.Generic.List<PngLegendEntry> BuildPngLegendEntries(Chart chart) {
         if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !chart.Series[0].ShowInLegend || !CanUsePointLegend(chart.Series[0])) {
@@ -84,7 +84,7 @@ public sealed partial class PngChartRenderer {
             var rawIndex = VisualPointRawIndex(series, i);
             if (rawIndex < 0 || rawIndex >= series.Points.Count) continue;
             var label = LegendPointLabel(chart, series.Points[rawIndex], i);
-            label = TrimReadablePngLabelToWidth(label, PngLegendFontSize(chart), PngLegendLabelMaxWidth(chart), chart.Options.LegendStyle);
+            label = TrimReadablePngLabelToWidth(label, PngLegendFontSize(chart), PngLegendLabelMaxWidth(chart), chart.Options.LegendStyle.WithDefaultFontWeight(600));
             pointEntries.Add(new PngLegendEntry(0, i, LegendPointLabel(chart, series.Points[rawIndex], i), label, PngLegendPointColor(chart, series, 0, i)));
         }
 
@@ -187,8 +187,8 @@ public sealed partial class PngChartRenderer {
         if (LegendRowBudget.MaximumRows(chart, availableHeight) == 0) return 0;
         var visible = LegendRowBudget.VisibleVerticalEntryCount(chart, entries.Count, availableHeight);
         var widest = 0.0;
-        for (var index = 0; index < visible; index++) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(entries[index].Label, fontSize, chart.Options.LegendStyle, emphasized: true));
-        if (visible < entries.Count) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(LegendRowBudget.Summary(entries.Count - visible), fontSize, chart.Options.LegendStyle, emphasized: true));
+        for (var index = 0; index < visible; index++) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(entries[index].Label, fontSize, chart.Options.LegendStyle.WithDefaultFontWeight(600), emphasized: true));
+        if (visible < entries.Count) widest = System.Math.Max(widest, EstimatePngStyledTextWidth(LegendRowBudget.Summary(entries.Count - visible), fontSize, chart.Options.LegendStyle.WithDefaultFontWeight(600), emphasized: true));
         return System.Math.Min(240, System.Math.Max(124, widest + 54));
     }
 

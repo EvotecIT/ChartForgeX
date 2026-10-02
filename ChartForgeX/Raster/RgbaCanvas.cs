@@ -55,19 +55,20 @@ internal sealed partial class RgbaCanvas {
     }
 
     public void FillRoundedRect(double x, double y, double width, double height, double radius, ChartColor color) {
-        FillRoundedRectPixels(x * _scale, y * _scale, width * _scale, height * _scale, radius * _scale, color, color);
+        FillRoundedRectContours(x, y, width, height, radius, color);
     }
 
     public void FillRoundedRectVerticalGradient(double x, double y, double width, double height, double radius, ChartColor topColor, ChartColor bottomColor) {
-        FillRoundedRectPixels(x * _scale, y * _scale, width * _scale, height * _scale, radius * _scale, topColor, bottomColor);
+        FillRectLinearGradient(x, y, width, height, radius, new ChartPoint(x, y), new ChartPoint(x, y + height),
+            new[] { new RasterGradientStop(0, topColor), new RasterGradientStop(1, bottomColor) });
     }
 
     public void StrokeRoundedRect(double x, double y, double width, double height, double radius, ChartColor color, double thickness = 1) {
-        StrokeRoundedRectPixels(x * _scale, y * _scale, width * _scale, height * _scale, radius * _scale, color, Math.Max(1, thickness * _scale));
+        StrokeRoundedRectContours(x, y, width, height, radius, color, thickness);
     }
 
     public void DrawCircle(double cx, double cy, double radius, ChartColor color) {
-        DrawSoftCirclePixels(cx * _scale, cy * _scale, radius * _scale, color);
+        FillEllipse(cx, cy, radius, radius, color);
     }
 
     public void DrawCircleOutline(double cx, double cy, double radius, ChartColor color, double thickness = 1) {
@@ -82,14 +83,12 @@ internal sealed partial class RgbaCanvas {
         var fullCircle = Math.Abs(endAngle - startAngle) >= Math.PI * 2 - 0.000001;
         var start = fullCircle ? 0 : NormalizeAngle(startAngle);
         var end = fullCircle ? Math.PI * 2 : NormalizeAngle(endAngle);
-        DrawArcPixels(cx * _scale, cy * _scale, radius * _scale, start, end, color, Math.Max(1, thickness * _scale), lineCap);
+        StrokeArc(cx, cy, radius, start, fullCircle ? Math.PI * 2 : ArcSweep(start, end), color, thickness, lineCap);
     }
 
     public void FillPolygon(IReadOnlyList<ChartPoint> points, ChartColor color) {
         if (points.Count < 3) return;
-        var scaled = new List<ChartPoint>(points.Count);
-        foreach (var point in points) scaled.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
-        FillPolygonPixels(scaled, color, color);
+        FillContours(new[] { new List<ChartPoint>(points) }, color);
     }
 
     public void FillCompoundPolygon(IReadOnlyList<List<ChartPoint>> rings, ChartColor color) {
@@ -107,9 +106,10 @@ internal sealed partial class RgbaCanvas {
 
     public void FillPolygonVerticalGradient(IReadOnlyList<ChartPoint> points, ChartColor topColor, ChartColor bottomColor) {
         if (points.Count < 3) return;
-        var scaled = new List<ChartPoint>(points.Count);
-        foreach (var point in points) scaled.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
-        FillPolygonPixels(scaled, topColor, bottomColor);
+        double top = double.PositiveInfinity, bottom = double.NegativeInfinity;
+        foreach (ChartPoint point in points) { top = Math.Min(top, point.Y); bottom = Math.Max(bottom, point.Y); }
+        FillContoursLinearGradient(new[] { new List<ChartPoint>(points) }, new ChartPoint(0, top), new ChartPoint(0, bottom),
+            new[] { new RasterGradientStop(0, topColor), new RasterGradientStop(1, bottomColor) }, RasterGradientSpreadMethod.Pad);
     }
 
     public void FillRingSlice(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double endAngle, ChartColor color) {
@@ -158,12 +158,13 @@ internal sealed partial class RgbaCanvas {
             var targetX = targetX0 + dx;
             var targetY = targetY0 + dy;
             if (targetX < 0 || targetY < 0 || targetX >= _pixelWidth || targetY >= _pixelHeight) continue;
-            var color = SampleImageBilinear(
+            var color = SampleImageFiltered(
                 rgba,
                 sourceWidth,
                 sourceHeight,
                 sourceX + (dx + 0.5) * sourceRectWidth / scaledDestinationWidth - 0.5,
-                sourceY + (dy + 0.5) * sourceRectHeight / scaledDestinationHeight - 0.5);
+                sourceY + (dy + 0.5) * sourceRectHeight / scaledDestinationHeight - 0.5,
+                sourceRectWidth / scaledDestinationWidth, sourceRectHeight / scaledDestinationHeight);
             if (color.A == 0) continue;
             BlendPixel(targetX, targetY, color);
         }
@@ -332,44 +333,6 @@ internal sealed partial class RgbaCanvas {
         for (var yy = y1; yy < y2; yy++) for (var xx = x1; xx < x2; xx++) BlendPixel(xx, yy, color);
     }
 
-    private void FillRoundedRectPixels(double x, double y, double width, double height, double radius, ChartColor topColor, ChartColor bottomColor) {
-        var feather = 1.0;
-        var x1 = Math.Max(0, (int)Math.Floor(x - feather)); var y1 = Math.Max(0, (int)Math.Floor(y - feather));
-        var x2 = Math.Min(_pixelWidth, (int)Math.Ceiling(x + width + feather)); var y2 = Math.Min(_pixelHeight, (int)Math.Ceiling(y + height + feather));
-        for (var yy = y1; yy < y2; yy++) for (var xx = x1; xx < x2; xx++) {
-            var color = GradientColor(topColor, bottomColor, (yy + 0.5 - y) / Math.Max(0.000001, height));
-            var distance = RoundedRectSignedDistance(xx + 0.5, yy + 0.5, x, y, width, height, radius);
-            if (distance <= 0) {
-                BlendPixel(xx, yy, color);
-            } else if (distance < feather) {
-                BlendPixel(xx, yy, WithOpacity(color, feather - distance));
-            }
-        }
-    }
-
-    private void StrokeRoundedRectPixels(double x, double y, double width, double height, double radius, ChartColor color, double thickness) {
-        if (width <= 0 || height <= 0 || thickness <= 0) return;
-        var feather = 1.0;
-        var x1 = Math.Max(0, (int)Math.Floor(x - feather)); var y1 = Math.Max(0, (int)Math.Floor(y - feather));
-        var x2 = Math.Min(_pixelWidth, (int)Math.Ceiling(x + width + feather)); var y2 = Math.Min(_pixelHeight, (int)Math.Ceiling(y + height + feather));
-        var strokeRadius = thickness / 2.0;
-        var centerInset = strokeRadius;
-        var centerWidth = Math.Max(0.000001, width - thickness);
-        var centerHeight = Math.Max(0.000001, height - thickness);
-        var centerRadius = Math.Max(0, radius - strokeRadius);
-
-        for (var yy = y1; yy < y2; yy++) for (var xx = x1; xx < x2; xx++) {
-            var px = xx + 0.5;
-            var py = yy + 0.5;
-            var distance = Math.Abs(RoundedRectSignedDistance(px, py, x + centerInset, y + centerInset, centerWidth, centerHeight, centerRadius));
-            if (distance <= strokeRadius) {
-                BlendPixel(xx, yy, color);
-            } else if (distance < strokeRadius + feather) {
-                BlendPixel(xx, yy, WithOpacity(color, strokeRadius + feather - distance));
-            }
-        }
-    }
-
     private static double RoundedRectSignedDistance(double px, double py, double x, double y, double width, double height, double radius) {
         if (width <= 0 || height <= 0) return double.PositiveInfinity;
         radius = Math.Max(0, Math.Min(radius, Math.Min(width, height) / 2));
@@ -382,82 +345,6 @@ internal sealed partial class RgbaCanvas {
         var outside = Math.Sqrt(outsideX * outsideX + outsideY * outsideY);
         var inside = Math.Min(Math.Max(qx, qy), 0);
         return outside + inside - radius;
-    }
-
-    private void DrawCirclePixels(double cx, double cy, double radius, ChartColor color) {
-        var r2 = radius * radius;
-        var x1 = Math.Max(0, (int)Math.Floor(cx - radius)); var y1 = Math.Max(0, (int)Math.Floor(cy - radius));
-        var x2 = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(cx + radius)); var y2 = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(cy + radius));
-        for (var y = y1; y <= y2; y++) for (var x = x1; x <= x2; x++) {
-            var dx = x + .5 - cx; var dy = y + .5 - cy;
-            if (dx * dx + dy * dy <= r2) BlendPixel(x, y, color);
-        }
-    }
-
-    private void DrawLinePixels(double x0, double y0, double x1, double y1, double thickness, ChartColor color) {
-        if (thickness <= 0 || color.A == 0) return;
-
-        var radius = Math.Max(0.5, thickness / 2.0);
-        var feather = 1.0;
-        var minX = Math.Max(0, (int)Math.Floor(Math.Min(x0, x1) - radius - feather));
-        var minY = Math.Max(0, (int)Math.Floor(Math.Min(y0, y1) - radius - feather));
-        var maxX = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(Math.Max(x0, x1) + radius + feather));
-        var maxY = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(Math.Max(y0, y1) + radius + feather));
-        var vx = x1 - x0;
-        var vy = y1 - y0;
-        var lengthSquared = vx * vx + vy * vy;
-
-        if (lengthSquared <= 0.000001) {
-            DrawSoftCirclePixels(x0, y0, radius, color);
-            return;
-        }
-
-        for (var y = minY; y <= maxY; y++) for (var x = minX; x <= maxX; x++) {
-            var px = x + 0.5;
-            var py = y + 0.5;
-            var t = ((px - x0) * vx + (py - y0) * vy) / lengthSquared;
-            t = Math.Max(0, Math.Min(1, t));
-            var closestX = x0 + vx * t;
-            var closestY = y0 + vy * t;
-            var dx = px - closestX;
-            var dy = py - closestY;
-            var distance = Math.Sqrt(dx * dx + dy * dy);
-            if (distance <= radius) {
-                BlendPixel(x, y, color);
-            } else if (distance < radius + feather) {
-                BlendPixel(x, y, WithOpacity(color, radius + feather - distance));
-            }
-        }
-    }
-
-    private void DrawArcPixels(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness, RasterLineCap lineCap) {
-        if (radius <= 0 || thickness <= 0 || color.A == 0) return;
-        var strokeRadius = Math.Max(0.5, thickness / 2.0);
-        var feather = 1.0;
-        var outer = radius + strokeRadius + feather;
-        var x1 = Math.Max(0, (int)Math.Floor(cx - outer));
-        var y1 = Math.Max(0, (int)Math.Floor(cy - outer));
-        var x2 = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(cx + outer));
-        var y2 = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(cy + outer));
-        var fullCircle = ArcSweep(startAngle, endAngle) >= Math.PI * 2 - 0.000001;
-
-        for (var y = y1; y <= y2; y++) for (var x = x1; x <= x2; x++) {
-            var dx = x + 0.5 - cx;
-            var dy = y + 0.5 - cy;
-            var distanceFromCenter = Math.Sqrt(dx * dx + dy * dy);
-            var distance = Math.Abs(distanceFromCenter - radius);
-            if (!fullCircle && !AngleInArc(Math.Atan2(dy, dx), startAngle, endAngle)) continue;
-            if (distance <= strokeRadius) {
-                BlendPixel(x, y, color);
-            } else if (distance < strokeRadius + feather) {
-                BlendPixel(x, y, WithOpacity(color, strokeRadius + feather - distance));
-            }
-        }
-
-        if (!fullCircle && lineCap == RasterLineCap.Round) {
-            DrawSoftCirclePixels(cx + Math.Cos(startAngle) * radius, cy + Math.Sin(startAngle) * radius, strokeRadius, color);
-            DrawSoftCirclePixels(cx + Math.Cos(endAngle) * radius, cy + Math.Sin(endAngle) * radius, strokeRadius, color);
-        }
     }
 
     private void DrawSoftCirclePixels(double cx, double cy, double radius, ChartColor color) {
@@ -478,38 +365,6 @@ internal sealed partial class RgbaCanvas {
         }
     }
 
-    private void FillPolygonPixels(IReadOnlyList<ChartPoint> points, ChartColor topColor, ChartColor bottomColor) {
-        if (points.Count < 3) return;
-        var minX = double.PositiveInfinity;
-        var maxX = double.NegativeInfinity;
-        var minY = double.PositiveInfinity;
-        var maxY = double.NegativeInfinity;
-        foreach (var point in points) {
-            minX = Math.Min(minX, point.X);
-            maxX = Math.Max(maxX, point.X);
-            minY = Math.Min(minY, point.Y);
-            maxY = Math.Max(maxY, point.Y);
-        }
-
-        var feather = 1.0;
-        var xStart = Math.Max(0, (int)Math.Floor(minX - feather));
-        var xEnd = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(maxX + feather));
-        var yStart = Math.Max(0, (int)Math.Floor(minY - feather));
-        var yEnd = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(maxY + feather));
-
-        for (var y = yStart; y <= yEnd; y++) for (var x = xStart; x <= xEnd; x++) {
-            var px = x + 0.5;
-            var py = y + 0.5;
-            var color = GradientColor(topColor, bottomColor, (py - minY) / Math.Max(0.000001, maxY - minY));
-            if (PointInPolygon(px, py, points)) {
-                BlendPixel(x, y, color);
-            } else {
-                var distance = Math.Sqrt(DistanceToPolygonSquared(px, py, points));
-                if (distance < feather) BlendPixel(x, y, WithOpacity(color, feather - distance));
-            }
-        }
-    }
-
     private static bool PointInPolygon(double px, double py, IReadOnlyList<ChartPoint> points) {
         var inside = false;
         for (int i = 0, j = points.Count - 1; i < points.Count; j = i++) {
@@ -521,44 +376,14 @@ internal sealed partial class RgbaCanvas {
         return inside;
     }
 
-    private static double DistanceToPolygonSquared(double px, double py, IReadOnlyList<ChartPoint> points) {
-        var min = double.PositiveInfinity;
-        for (var i = 0; i < points.Count; i++) {
-            var a = points[i];
-            var b = points[(i + 1) % points.Count];
-            min = Math.Min(min, DistanceToSegmentSquared(px, py, a.X, a.Y, b.X, b.Y));
-        }
-
-        return min;
-    }
-
-    private static double DistanceToSegmentSquared(double px, double py, double x0, double y0, double x1, double y1) {
-        var vx = x1 - x0;
-        var vy = y1 - y0;
-        var lengthSquared = vx * vx + vy * vy;
-        if (lengthSquared <= 0.000001) {
-            var dx = px - x0;
-            var dy = py - y0;
-            return dx * dx + dy * dy;
-        }
-
-        var t = ((px - x0) * vx + (py - y0) * vy) / lengthSquared;
-        t = Math.Max(0, Math.Min(1, t));
-        var closestX = x0 + vx * t;
-        var closestY = y0 + vy * t;
-        var cx = px - closestX;
-        var cy = py - closestY;
-        return cx * cx + cy * cy;
-    }
-
-    private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule, int subScanlines = 0) {
+    private void FillContoursPixels(IReadOnlyList<List<ChartPoint>> contours, ChartColor color, RasterFillRule fillRule, int subScanlines = 0, int secondContourStart = int.MaxValue) {
         if (contours.Count == 0) return;
         ScanFillCoverage(contours, fillRule, (y, xStart, xEnd, rowCoverage) => {
             for (var x = xStart; x <= xEnd; x++) {
                 var coverage = rowCoverage[x];
                 if (coverage > 0) BlendPixel(x, y, coverage >= FullCoverage ? color : WithOpacity(color, coverage));
             }
-        }, subScanlines);
+        }, subScanlines, secondContourStart);
     }
 
     private void FillRingSlicePixels(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double endAngle, ChartColor color) {
@@ -610,10 +435,10 @@ internal sealed partial class RgbaCanvas {
         return startAngle <= endAngle ? angle >= startAngle && angle <= endAngle : angle >= startAngle || angle <= endAngle;
     }
 
-    private void DrawGlyph(int x, int y, char ch, ChartColor color, int scale, bool italic) {
+    private void DrawGlyph(int x, int y, char ch, ChartColor color, int scale, bool italic, double boldOffset = 0) {
         var glyph = TinyFont.GetBitmap(ch);
         var thickness = Math.Max(1.4, scale * 0.8);
-        var radius = thickness / 2.0;
+        var paths = new List<IReadOnlyList<ChartPoint>>();
         for (var row = 0; row < TinyFont.Height; row++) {
             for (var col = 0; col < TinyFont.Width; col++) {
                 if (!GlyphCell(glyph, row, col)) continue;
@@ -623,32 +448,45 @@ internal sealed partial class RgbaCanvas {
                 var connected = false;
                 if (GlyphCell(glyph, row, col + 1)) {
                     var right = GlyphCenter(row, col + 1);
-                    DrawStrokePixels(cx, cy, right.X, right.Y, thickness, color);
+                    AddStroke(center, right);
                     connected = true;
                 }
 
                 if (GlyphCell(glyph, row + 1, col)) {
                     var down = GlyphCenter(row + 1, col);
-                    DrawStrokePixels(cx, cy, down.X, down.Y, thickness, color);
+                    AddStroke(center, down);
                     connected = true;
                 }
 
                 if (GlyphCell(glyph, row + 1, col + 1) && !GlyphCell(glyph, row, col + 1) && !GlyphCell(glyph, row + 1, col)) {
                     var downRight = GlyphCenter(row + 1, col + 1);
-                    DrawStrokePixels(cx, cy, downRight.X, downRight.Y, thickness, color);
+                    AddStroke(center, downRight);
                     connected = true;
                 }
 
                 if (GlyphCell(glyph, row + 1, col - 1) && !GlyphCell(glyph, row, col - 1) && !GlyphCell(glyph, row + 1, col)) {
                     var downLeft = GlyphCenter(row + 1, col - 1);
-                    DrawStrokePixels(cx, cy, downLeft.X, downLeft.Y, thickness, color);
+                    AddStroke(center, downLeft);
                     connected = true;
                 }
 
-                if (!connected) DrawSoftCirclePixels(cx, cy, radius, color);
+                if (!connected) paths.Add(new[] { new ChartPoint(cx / _scale, cy / _scale) });
             }
         }
 
+        if (boldOffset > 0) {
+            int count = paths.Count;
+            for (int i = 0; i < count; i++) {
+                var shifted = new List<ChartPoint>(paths[i].Count);
+                foreach (ChartPoint point in paths[i]) shifted.Add(new ChartPoint(point.X + boldOffset, point.Y));
+                paths.Add(shifted);
+            }
+        }
+        StrokePolylines(paths, color, thickness / _scale, RasterLineCap.Round, RasterLineJoin.Round);
+
+        void AddStroke(ChartPoint start, ChartPoint stop) => paths.Add(new[] {
+            new ChartPoint(start.X / _scale, start.Y / _scale), new ChartPoint(stop.X / _scale, stop.Y / _scale)
+        });
         ChartPoint GlyphCenter(int row, int col) {
             var italicOffset = italic ? (TinyFont.Height - 1 - row) * scale * TrueTypeFont.ObliqueShear : 0;
             return new ChartPoint(x + (col + 0.5) * scale + italicOffset, y + (row + 0.5) * scale);
@@ -658,10 +496,6 @@ internal sealed partial class RgbaCanvas {
     private static bool GlyphCell(byte[] glyph, int row, int col) {
         if (row < 0 || row >= TinyFont.Height || col < 0 || col >= TinyFont.Width) return false;
         return ((glyph[row] >> (TinyFont.Width - 1 - col)) & 1) == 1;
-    }
-
-    private void DrawStrokePixels(double x0, double y0, double x1, double y1, double thickness, ChartColor color) {
-        DrawLinePixels(x0, y0, x1, y1, thickness, color);
     }
 
     private static ChartColor WithOpacity(ChartColor color, double opacity) {

@@ -6,10 +6,10 @@ namespace ChartForgeX.Core;
 
 /// <summary>
 /// Chooses how many straight segments a curve needs so its polygon stays within a fraction of
-/// a device pixel of the true curve, and builds the common curved outlines that way.
+/// a device pixel of the true curve, subject to a bounded segment count, and builds common outlines.
 /// </summary>
 internal static class ChartCurveFlattening {
-    /// <summary>Largest distance, in device pixels, between a flattened curve and the curve itself.</summary>
+    /// <summary>Target distance, in device pixels, between a flattened curve and the curve itself.</summary>
     internal const double Tolerance = 0.05;
     private const int MaximumSegments = 2048;
 
@@ -19,7 +19,7 @@ internal static class ChartCurveFlattening {
         if (!(radius > 0) || !(sweep > 0) || double.IsInfinity(radius) || double.IsInfinity(sweep)) return 1;
         var step = radius <= Tolerance ? Math.PI / 2 : 2 * Math.Acos(1 - Tolerance / radius);
         step = Math.Max(Math.PI / 720, Math.Min(Math.PI / 4, step));
-        return Math.Max(1, Math.Min(MaximumSegments, (int)Math.Ceiling(sweep / step - 0.000001)));
+        return (int)Math.Max(1, Math.Min(MaximumSegments, Math.Ceiling(sweep / step - 0.000001)));
     }
 
     /// <summary>Segments for a quadratic Bézier whose control points are given in units of <paramref name="pixelsPerUnit"/>.</summary>
@@ -79,8 +79,8 @@ internal static class ChartCurveFlattening {
     }
 
     private static int SegmentsForDeviation(double deviation) {
-        if (!(deviation > 0) || double.IsInfinity(deviation)) return 1;
-        return Math.Max(1, Math.Min(MaximumSegments, (int)Math.Ceiling(Math.Sqrt(deviation / Tolerance))));
+        if (!(deviation > 0)) return 1;
+        return (int)Math.Max(1, Math.Min(MaximumSegments, Math.Ceiling(Math.Sqrt(deviation / Tolerance))));
     }
 
     private static double Length(double x, double y) => Math.Sqrt(x * x + y * y);

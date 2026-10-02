@@ -18,6 +18,9 @@ public sealed partial class PngChartRenderer {
     [ThreadStatic]
     private static bool CurrentOutlineFontIsExplicit;
 
+    [ThreadStatic]
+    private static string? CurrentFontFamily;
+
     /// <summary>
     /// Resolves the font that would be used for PNG text rendering.
     /// </summary>
@@ -47,8 +50,10 @@ public sealed partial class PngChartRenderer {
         var outlineFont = explicitOutlineFont ?? TypographyFontResolver.ResolveThemeFont(t.FontFamily);
         var previousOutlineFont = CurrentOutlineFont;
         var previousOutlineFontIsExplicit = CurrentOutlineFontIsExplicit;
+        var previousFontFamily = CurrentFontFamily;
         CurrentOutlineFont = outlineFont;
         CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
+        CurrentFontFamily = t.FontFamily;
         try {
             var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale) { TextHinting = o.PngTextHinting };
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
@@ -268,6 +273,7 @@ public sealed partial class PngChartRenderer {
         } finally {
             CurrentOutlineFont = previousOutlineFont;
             CurrentOutlineFontIsExplicit = previousOutlineFontIsExplicit;
+            CurrentFontFamily = previousFontFamily;
             emphasis.Dispose();
         }
     }
@@ -352,7 +358,7 @@ public sealed partial class PngChartRenderer {
     private static void DrawHeader(RgbaCanvas c, Chart chart) {
         var theme = chart.Options.Theme;
         var maxWidth = Math.Max(24, chart.Options.Size.Width - 80);
-        var titleStyle = chart.Options.TitleStyle;
+        var titleStyle = chart.Options.TitleStyle.WithDefaultFontWeight(750);
         var titleFontSize = TextFontSizeForEmphasizedWidth(chart.Title, maxWidth, PngStyleFontSize(titleStyle, theme.TitleFontSize), titleStyle);
         var title = TrimReadablePngLabelToWidth(chart.Title, titleFontSize, maxWidth, titleStyle);
         if (title.Length > 0) DrawPngTextStyled(c, 40, ChartLayout.HeaderTitleBaseline - EstimatePngStyledTextHeight(titleFontSize, titleStyle) + 1, title, titleStyle, theme.Text, titleFontSize, emphasized: true);

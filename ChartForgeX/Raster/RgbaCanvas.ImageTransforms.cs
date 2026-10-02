@@ -17,7 +17,9 @@ internal sealed partial class RgbaCanvas {
         if (sourceWidth <= 0 || sourceHeight <= 0) return;
         if (rgba.Length < sourceWidth * sourceHeight * 4) throw new ArgumentException("RGBA buffer is smaller than the requested source dimensions.", nameof(rgba));
         var determinant = a * d - b * c;
-        if (Math.Abs(determinant) < 0.000000001) return;
+        if (double.IsNaN(determinant) || double.IsInfinity(determinant) || Math.Abs(determinant) < 0.000000001) return;
+        double footprintX = Math.Sqrt(d * d + c * c) / Math.Abs(determinant) / _scale;
+        double footprintY = Math.Sqrt(b * b + a * a) / Math.Abs(determinant) / _scale;
 
         TransformImagePoint(0, 0, a, b, c, d, e, f, out var x0, out var y0);
         TransformImagePoint(sourceWidth, 0, a, b, c, d, e, f, out var x1, out var y1);
@@ -36,7 +38,7 @@ internal sealed partial class RgbaCanvas {
             var sourceX = (d * translatedX - c * translatedY) / determinant;
             var sourceY = (-b * translatedX + a * translatedY) / determinant;
             if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth || sourceY >= sourceHeight) continue;
-            var color = SampleImageBilinear(rgba, sourceWidth, sourceHeight, sourceX - 0.5, sourceY - 0.5);
+            var color = SampleImageFiltered(rgba, sourceWidth, sourceHeight, sourceX - 0.5, sourceY - 0.5, footprintX, footprintY);
             if (color.A > 0) BlendPixel(targetX, targetY, color);
         }
     }

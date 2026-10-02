@@ -9,6 +9,27 @@ namespace ChartForgeX.Raster;
 /// Shapes painted through the contour fill, so curved fills and strokes share one coverage model.
 /// </summary>
 internal sealed partial class RgbaCanvas {
+    private void FillRoundedRectContours(double x, double y, double width, double height, double radius, ChartColor color) {
+        if (!(width > 0) || !(height > 0)) return;
+        FillContours(new[] { ChartCurveFlattening.RoundedRectangle(x, y, width, height, radius, radius, _scale) }, color, RasterFillRule.NonZero);
+    }
+
+    private void StrokeRoundedRectContours(double x, double y, double width, double height, double radius, ChartColor color,
+        double thickness, IReadOnlyList<double>? dashArray = null) {
+        if (!(width > 0) || !(height > 0) || !(thickness > 0) || double.IsInfinity(thickness)) return;
+        if (thickness >= Math.Min(width, height)) {
+            if (dashArray == null) FillRoundedRectContours(x, y, width, height, radius, color);
+            return;
+        }
+        double half = thickness / 2;
+        var ring = ChartCurveFlattening.RoundedRectangle(x + half, y + half, width - thickness, height - thickness,
+            Math.Max(0, radius - half), Math.Max(0, radius - half), _scale);
+        // SVG rectangle dash phase starts at the top edge after the top-left corner.
+        var first = ring[ring.Count - 1];
+        ring.RemoveAt(ring.Count - 1); ring.Insert(0, first); ring.Add(first);
+        StrokePolylines(new[] { ring }, color, thickness, RasterLineCap.Butt, RasterLineJoin.Miter, dashArray);
+    }
+
     /// <summary>
     /// Strokes polylines as one shape: overlapping segments, joins, and caps are united before
     /// painting, so a translucent stroke keeps an even tone. A polyline whose last point repeats
@@ -35,7 +56,9 @@ internal sealed partial class RgbaCanvas {
                 continue;
             }
 
-            foreach (var dash in RasterStroker.Dash(device, pattern)) RasterStroker.AppendOutline(dash, width, lineCap, lineJoin, miterLimit, 1, outline);
+            double padding = width * Math.Max(1, miterLimit);
+            foreach (var dash in RasterStroker.Dash(device, pattern, -padding, -padding, _pixelWidth + padding, _pixelHeight + padding))
+                RasterStroker.AppendOutline(dash, width, lineCap, lineJoin, miterLimit, 1, outline);
         }
 
         FillContoursPixels(outline, color, RasterFillRule.NonZero, StrokeSubScanlines);
