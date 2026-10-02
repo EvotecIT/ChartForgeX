@@ -42,6 +42,7 @@ internal static partial class SvgRasterRenderer {
 
         var markerAncestors = new List<SvgRasterElement>(ancestors);
         var markerStyle = SvgRasterStyle.Resolve(SvgRasterStyle.Default, marker, definitions.StyleSheet, markerAncestors);
+        ReportUnsupportedFilter(marker, markerStyle, definitions);
         markerAncestors.Add(marker);
         foreach (var child in marker.Children) RenderElement(canvas, child, markerStyle, markerMatrix, definitions, width, height, referenceDepth + 1, markerAncestors, new SvgRasterViewport(viewBox.Width, viewBox.Height));
     }

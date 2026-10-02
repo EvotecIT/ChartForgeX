@@ -18,7 +18,9 @@ internal static class PngReader {
         return true;
     }
 
-    public static RgbaImage Decode(byte[] data) {
+    public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
+        var decodeLimits = limits ?? RasterDecodeLimits.Default;
+        decodeLimits.ValidateInput(data);
         if (!IsPng(data)) throw new NotSupportedException("Input is not a PNG image.");
         var offset = Signature.Length;
         var width = 0;
@@ -27,6 +29,9 @@ internal static class PngReader {
         var colorType = 0;
         byte[]? palette = null;
         byte[]? transparency = null;
+        var headerSeen = false;
+        var dataSeen = false;
+        var endSeen = false;
         using var idat = new MemoryStream();
 
         while (offset + 12 <= data.Length) {
@@ -35,40 +40,51 @@ internal static class PngReader {
             var type = Encoding.ASCII.GetString(data, offset, 4);
             var typeOffset = offset;
             offset += 4;
-            if (length < 0 || offset + length + 4 > data.Length) throw new InvalidDataException("PNG chunk length exceeds the input size.");
+            if (length < 0 || (long)offset + length + 4 > data.Length) throw new InvalidDataException("PNG chunk length exceeds the input size.");
             var expectedCrc = ReadUInt32(data, offset + length);
             var actualCrc = Crc32(data, typeOffset, checked(4 + length));
             if (expectedCrc != actualCrc) throw new InvalidDataException("PNG chunk CRC does not match.");
             if (type == "IHDR") {
+                if (headerSeen || typeOffset != Signature.Length + 4 || length != 13) throw new InvalidDataException("PNG must begin with one 13-byte IHDR chunk.");
+                headerSeen = true;
                 width = checked((int)ReadUInt32(data, offset));
                 height = checked((int)ReadUInt32(data, offset + 4));
                 bitDepth = data[offset + 8];
                 colorType = data[offset + 9];
+                decodeLimits.ValidateDimensions(width, height);
+                if (data[offset + 10] != 0 || data[offset + 11] != 0) throw new NotSupportedException("Unsupported PNG compression or filter method.");
                 if (data[offset + 12] != 0) throw new NotSupportedException("Interlaced PNG images are not supported.");
             } else if (type == "PLTE") {
+                if (!headerSeen || dataSeen || length == 0 || length > 768 || length % 3 != 0) throw new InvalidDataException("PNG palette is invalid or out of order.");
                 palette = Slice(data, offset, length);
             } else if (type == "tRNS") {
+                if (!headerSeen || dataSeen) throw new InvalidDataException("PNG transparency is out of order.");
                 transparency = Slice(data, offset, length);
             } else if (type == "IDAT") {
+                if (!headerSeen) throw new InvalidDataException("PNG data precedes its header.");
+                dataSeen = true;
                 idat.Write(data, offset, length);
             } else if (type == "IEND") {
+                if (!headerSeen || !dataSeen || length != 0) throw new InvalidDataException("PNG end chunk is invalid or out of order.");
+                endSeen = true;
                 break;
+            } else if (!headerSeen) {
+                throw new InvalidDataException("PNG must begin with IHDR.");
             }
 
             offset += length + 4;
         }
 
-        if (width <= 0 || height <= 0) throw new InvalidDataException("PNG image is missing a valid IHDR chunk.");
+        if (!headerSeen || !dataSeen || !endSeen) throw new InvalidDataException("PNG is missing required image chunks.");
         var components = ComponentsFor(colorType);
         if (bitDepth != 8 && !((colorType == 0 || colorType == 3) && (bitDepth == 1 || bitDepth == 2 || bitDepth == 4))) {
             throw new NotSupportedException("Supported PNG bit depths are 8-bit for all recognized color types and 1, 2, or 4-bit grayscale and indexed images.");
         }
         if (colorType == 3 && palette == null) throw new InvalidDataException("Indexed PNG image is missing a palette.");
-        var raw = InflateZlib(idat.ToArray());
         var bitsPerPixel = checked(components * bitDepth);
-        var stride = checked((width * bitsPerPixel + 7) / 8);
+        var stride = checked((int)(((long)width * bitsPerPixel + 7) / 8));
         var expected = checked(height * (stride + 1));
-        if (raw.Length < expected) throw new InvalidDataException("PNG image data is shorter than expected.");
+        var raw = InflateZlib(idat.ToArray(), expected);
         var unfiltered = Unfilter(raw, width, height, Math.Max(1, (bitsPerPixel + 7) / 8), stride);
         var samples = bitDepth == 8 ? unfiltered : ExpandPackedSamples(unfiltered, width, height, bitDepth, colorType == 0);
         return ToRgba(samples, width, height, colorType, bitDepth, palette, transparency);
@@ -85,16 +101,21 @@ internal static class PngReader {
         }
     }
 
-    private static byte[] InflateZlib(byte[] data) {
+    private static byte[] InflateZlib(byte[] data, int expectedLength) {
         if (data.Length < 6) throw new InvalidDataException("PNG zlib stream is too short.");
         if ((data[0] & 0x0F) != 8) throw new NotSupportedException("Only deflate-compressed PNG zlib streams are supported.");
         if (((data[0] << 8) + data[1]) % 31 != 0) throw new InvalidDataException("PNG zlib header checksum is invalid.");
         if ((data[1] & 0x20) != 0) throw new NotSupportedException("PNG zlib streams with preset dictionaries are not supported.");
         using var input = new MemoryStream(data, 2, data.Length - 6);
         using var deflate = new DeflateStream(input, CompressionMode.Decompress);
-        using var output = new MemoryStream();
-        deflate.CopyTo(output);
-        var inflated = output.ToArray();
+        var inflated = new byte[expectedLength];
+        var offset = 0;
+        while (offset < inflated.Length) {
+            var count = deflate.Read(inflated, offset, inflated.Length - offset);
+            if (count == 0) throw new InvalidDataException("PNG image data is shorter than expected.");
+            offset += count;
+        }
+        if (deflate.ReadByte() != -1) throw new InvalidDataException("PNG image data exceeds the declared scanline size.");
         if (ReadUInt32(data, data.Length - 4) != Adler32(inflated)) throw new InvalidDataException("PNG zlib Adler-32 checksum does not match.");
         return inflated;
     }

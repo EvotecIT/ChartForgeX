@@ -7,12 +7,15 @@ namespace ChartForgeX.Raster;
 internal static class GifReader {
     public static bool IsGif(byte[] data) => data != null && data.Length >= 6 && data[0] == (byte)'G' && data[1] == (byte)'I' && data[2] == (byte)'F' && data[3] == (byte)'8' && (data[4] == (byte)'7' || data[4] == (byte)'9') && data[5] == (byte)'a';
 
-    public static RgbaImage Decode(byte[] data) {
+    public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
+        var decodeLimits = limits ?? RasterDecodeLimits.Default;
+        decodeLimits.ValidateInput(data);
         if (!IsGif(data)) throw new InvalidDataException("Input is not a GIF image.");
         var reader = new Reader(data);
         reader.Skip(6);
         var canvasWidth = reader.UInt16();
         var canvasHeight = reader.UInt16();
+        decodeLimits.ValidateDimensions(canvasWidth, canvasHeight);
         RasterAllocationGuard.Calculate(canvasWidth, canvasHeight, 1, 1);
         var screenFlags = reader.Byte();
         var backgroundColorIndex = reader.Byte();

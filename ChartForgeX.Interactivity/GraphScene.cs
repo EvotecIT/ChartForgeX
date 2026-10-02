@@ -161,6 +161,7 @@ public sealed class GraphScene {
             var visiting = new HashSet<string>(StringComparer.Ordinal);
             var current = id;
             while (parents.TryGetValue(current, out var parent)) {
+                if (complete.Contains(current)) break;
                 if (!visiting.Add(current)) throw new InvalidOperationException("Graph scene " + itemKind + " hierarchy contains a parent cycle at: " + current);
                 current = parent;
             }

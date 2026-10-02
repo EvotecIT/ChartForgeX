@@ -131,6 +131,18 @@ canvas.SavePng("wallpaper-with-info.png");
 
 `AddImageFile(...)`, `AddImageBytes(...)`, and `AddHeroBadgeImageFile(...)` are available when an image should be placed into an existing canvas region or inside the central hero badge. The dependency-free decoder supports baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Hosts that need unsupported image variants can decode them before handing RGBA pixels to `AddRasterImage(...)` or `AddHeroBadge(...)`.
 
+All raster decoders bound encoded input and pixel counts before allocating image buffers. The defaults are 64 MiB of input and 67,108,864 pixels (256 MiB of RGBA output). Codec working buffers use additional memory. Set smaller limits for uploads or other untrusted input; the same options work with files, byte arrays, and non-seekable streams:
+
+```csharp
+var limits = new RasterDecodeOptions {
+    MaximumEncodedBytes = 8 * 1024 * 1024,
+    MaximumPixels = 4_000_000
+};
+var uploadedImage = RasterImageDecoder.Read(uploadStream, limits);
+```
+
+`Read` leaves the supplied stream open. Oversized input, invalid dimensions, and PNG data that expands beyond its declared scanlines throw `InvalidDataException`; `TryRead` and `TryDecode` return `false`. Applications that intentionally decode larger trusted images can increase the limits explicitly.
+
 ```csharp
 var brandedCanvas = VisualCanvas.CreateSocialPreview()
     .AddHeroBadgeImageFile(
@@ -192,6 +204,17 @@ var composition = ImageComposition.FromImage(SvgRasterizer.ToImage(backdropSvg))
 composition.DrawText(84, 196, 650, title, titleStyle, TextWrapMode.Word, maximumLines: 3);
 ```
 
+Use `SvgRasterizer.Rasterize(svg)` when the host needs to see rendering losses as well as pixels:
+
+```csharp
+var result = SvgRasterizer.Rasterize(backdropSvg);
+foreach (var warning in result.Diagnostics)
+    Console.WriteLine($"{warning.Code}: {warning.ElementName}#{warning.ElementId}: {warning.Message}");
+var composition = ImageComposition.FromImage(result.Image);
+```
+
+Diagnostics identify unsupported visible elements (`SFR001`, including `foreignObject` and `textPath`), ignored filters (`SFR002`, including CSS filters), undecodable embedded images (`SFR003`), and unresolved or depth-limited `use` references (`SFR004`). Nested SVG images retain these diagnostics. At most 256 entries are returned; `SFR999` reports truncation. `Rasterize(svg, strict: true)` throws `NotSupportedException` when diagnostics are present. `ToImage` and `ToPng` retain their best-effort behavior. An empty diagnostic list does not guarantee complete browser SVG fidelity; shaping, stroke paints, and other subset limitations still apply.
+
 Stroked SVG circles, ellipses, arcs, rounded rectangles, and curved paths are flattened to the output resolution and outlined as one shape, so they are as smooth as fills at any stroke width. `stroke-linecap` (`butt`, `round`, `square`), `stroke-linejoin` (`miter`, `round`, `bevel`), `stroke-miterlimit`, and `stroke-dasharray` are honoured. A gradient used as a stroke paint is drawn in its first stop color.
 
 ### Fonts for composed text
@@ -244,7 +267,7 @@ FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); /
 var chart = Chart.Create().WithTheme(ChartTheme.ReportDark().WithFontFamily("Inter, sans-serif"));
 ```
 
-A registered family is matched before an installed family of the same name, with the same weight and slant rules, and only its registered faces are considered, so register each weight you use; a missing bold is synthesized. `RegisterFile` and `RegisterDirectory` read the family, weight, and italic flag from each file's own tables. `FontRegistry.Clear()` removes every registration.
+A registered family is matched before an installed family of the same name, with the same weight and slant rules, and only its registered faces are considered, so register each weight you use; a missing bold is synthesized. `RegisterFile` and `RegisterDirectory` read the family, weight, and italic flag from each file's own tables. Missing or invalid font files can be retried after they become available. The file cache detects changes to file size or modification time and retains at most 128 files and 64 MiB of font payloads. `FontRegistry.Clear()` removes every registration and clears the file cache; use it before re-registering a replacement that retains its original size and timestamp.
 
 Chart, grid, topology, and visual block PNG renderers resolve their theme font stack (and a text style's `FontFamily`) the same way, at regular weight, and draw emphasized text such as titles, legends, and data labels with that family's real bold face, measuring it with the same face, so `ChartFontStacks.SystemSans` draws Segoe UI on Windows as the SVG does in a browser. An explicit `PngFontPath` keeps its synthesized emphasis. `chart.GetPngFontInfo()` reports the resolved face. `TextMeasurementMode.InstalledFonts` measures with the same regular and bold faces, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
 

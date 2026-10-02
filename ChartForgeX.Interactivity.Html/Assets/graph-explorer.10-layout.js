@@ -137,7 +137,7 @@
       role: attr(node, 'data-cfx-role'),
       metadata: metadataDetail(node)
     });
-  const selectedItems = (root) => items(root, '.cfx-graph-selected').map(node => selectionDetail(root, node));
+  const selectedItems = (root) => items(root, '[data-cfx-role="graph-node"].cfx-graph-selected,[data-cfx-role="graph-edge"].cfx-graph-selected,[data-cfx-role="graph-cluster"].cfx-graph-selected').map(node => selectionDetail(root, node));
   const updateSelectionState = (root) => {
     syncSelectedEdgeLabels(root); const details = selectedItems(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => item.setAttribute('aria-pressed', item.classList.contains('cfx-graph-selected') ? 'true' : 'false'));

@@ -10,13 +10,16 @@ internal static class TiffReader {
         ((data[0] == (byte)'I' && data[1] == (byte)'I' && data[2] == 42 && data[3] == 0) ||
          (data[0] == (byte)'M' && data[1] == (byte)'M' && data[2] == 0 && data[3] == 42));
 
-    public static RgbaImage Decode(byte[] data) {
+    public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
+        var decodeLimits = limits ?? RasterDecodeLimits.Default;
+        decodeLimits.ValidateInput(data);
         if (!IsTiff(data)) throw new NotSupportedException("Input is not a TIFF image.");
         var little = data[0] == (byte)'I';
         var ifdOffset = checked((int)ReadUInt32(data, 4, little));
         var entries = ReadEntries(data, ifdOffset, little);
         var width = checked((int)GetRequiredValue(data, entries, 256, little));
         var height = checked((int)GetRequiredValue(data, entries, 257, little));
+        decodeLimits.ValidateDimensions(width, height);
         var compression = GetValue(data, entries, 259, little, 1);
         var photometric = GetValue(data, entries, 262, little, 2);
         var samplesPerPixel = checked((int)GetValue(data, entries, 277, little, photometric == 0 || photometric == 1 ? 1u : 3u));

@@ -308,6 +308,10 @@ const snapshot = graph.get("service-estate");
 
 `update` is the trusted host-level atomic patch operation. An editable user surface uses the narrower capability-checked operation:
 
+Both C# and browser patches reject node-parent and cluster-parent cycles before changing the document. An omitted or `null` edge style width inherits the renderer default; an explicit width must be a finite positive number. Export and state replay preserve inherited widths.
+
+A successful host `update` that changes nodes, edges, or clusters clears undo and redo history and emits `cfxgraphhistory` with `action: "host-update"`. This prevents an older user snapshot from removing newer host data. Rejected updates and viewport-only updates retain history. Use `change` for user edits that should remain undoable.
+
 ```javascript
 graph.change("service-estate", {
   upsertNodes: [{ id: "queue", label: "Priority queue", x: 460, y: 190 }]
@@ -323,6 +327,8 @@ const positions = graph.positions("service-estate");
 Enable editing with `UseSuperTopologyDefaults(enableManipulation: true)` or by enabling `Manipulation`, `IncrementalUpdates`, and `History`, then grant only the required `GraphManipulationOptions` capabilities. `change` validates references and permissions before dispatching the cancelable `cfxgraphbeforechange` event. Accepted changes dispatch `cfxgraphchange`; rejected or canceled changes do not enter history. Cluster structure remains a trusted-host `update` concern.
 
 Set `HtmlGraphExplorerOptions.PersistInteractionState = true` to restore positions, viewport, selection, focus, hierarchy, and cluster state from a scene-scoped browser key. Set `InteractionStateStorageKey` when a host needs its own namespace. Persistence is off by default. It never changes the host model or static SVG/PNG output.
+
+Captured selection uses `{ role, id }` entries, so a node and edge may share an id without changing each other's selection on replay. Older plain-id entries restore only when the id identifies one graph item; ambiguous entries are skipped. The generated `graph-state-replay-svg.html`, `graph-state-replay-canvas.html`, and `graph-state-replay-webgl.html` examples expose capture and restore controls over the same scene.
 
 The API also exposes `export(target, "svg" | "png" | "json")`. Export remains interceptable through the cancelable `cfxgraphexport` event.
 

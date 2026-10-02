@@ -48,7 +48,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - The dense route planner does not see fixed (`Orthogonal`, `Straight`, `Curved`) or waypoint edges; count them as occupied corridors when a chart mixes them with obstacle-avoiding edges.
 - `VisualArtifact.NaturalSize` of a topology is the requested viewport, while the rendered canvas is the prepared one (it grows with the content and, with `ReadableDenseLayout` on `DenseGrouped`, also shrinks to it); report the prepared size without feeding it back into `PreserveNaturalSize` renders.
 - Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
-- Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
+- Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: extend loss diagnostics to additional unsupported paint and text behavior, and add richer text shaping through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
 - Keep every generated topology SVG/PNG pair in the shared numeric visual baseline; add dense routing and geographic fixtures to that gate whenever those renderers grow.

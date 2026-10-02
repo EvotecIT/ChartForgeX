@@ -1,4 +1,5 @@
 import { readdir, readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,6 +17,7 @@ const { default: mermaid } = await import('mermaid');
 const root = fileURLToPath(new URL('.', import.meta.url));
 const fixtures = join(root, 'fixtures');
 const files = (await readdir(fixtures)).filter((file) => file.endsWith('.mmd')).sort();
+const fixtureFiles = new Set(await readdir(fixtures));
 
 if (files.length === 0) {
   throw new Error('No Mermaid conformance fixtures found.');
@@ -32,6 +34,14 @@ for (const file of files) {
   const source = await readFile(join(fixtures, file), 'utf8');
   try {
     await mermaid.parse(source, { suppressErrors: false });
+    const expectedFile = file.replace(/\.mmd$/, '.expected.json');
+    if (fixtureFiles.has(expectedFile)) {
+      const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
+      const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
+      const vertices = diagram.db.getVertices();
+      assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
+      assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
+    }
   } catch (error) {
     failures.push(`${file}: ${error?.message ?? error}`);
   }

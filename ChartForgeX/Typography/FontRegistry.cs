@@ -81,6 +81,7 @@ public static class FontRegistry {
         lock (Gate) {
             _families = new Dictionary<string, List<InstalledFontFace>>(StringComparer.OrdinalIgnoreCase);
             TypographyFontResolver.ClearCache();
+            TrueTypeFont.ClearFileCache();
         }
     }
 

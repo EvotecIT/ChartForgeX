@@ -24,7 +24,7 @@ public sealed partial class MermaidParser {
             return result;
         }
 
-        var descriptor = ResolveDiagramKind(header.Value.Text);
+        var descriptor = ResolveDiagramKind(header.Value.Text.Split(';')[0]);
         if (descriptor.Kind == MermaidDiagramKind.Unknown) {
             Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Error, "Unknown Mermaid diagram type '" + FirstToken(header.Value.Text) + "'.");
             return result;
@@ -112,7 +112,9 @@ public sealed partial class MermaidParser {
             Direction = ParseFlowchartDirection(descriptor.Direction)
         };
 
-        MermaidFlowchartParser.ParseStatements(document, lines, header.Line + 1, result);
+        var separator = header.Text.IndexOf(';');
+        MermaidFlowchartParser.ParseStatements(document, lines, separator < 0 ? header.Line + 1 : header.Line, result,
+            separator < 0 ? 0 : header.Column + separator);
 
         return document;
     }

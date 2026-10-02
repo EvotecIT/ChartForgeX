@@ -59,6 +59,7 @@ internal sealed class SvgRasterStyle {
     public string FillRule { get; set; } = "nonzero";
     public string ClipRule { get; set; } = "nonzero";
     public string? ClipPath { get; set; }
+    public string? Filter { get; set; }
     public double FontSize { get; set; }
     public string? FontFamily { get; set; }
     /// <summary>The computed CSS weight from 1 through 1000; <c>bolder</c> and <c>lighter</c> are resolved against the parent.</summary>
@@ -193,6 +194,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "fill-rule");
         AddAttribute(declarations, element, "clip-rule");
         AddAttribute(declarations, element, "clip-path");
+        AddAttribute(declarations, element, "filter");
         AddAttribute(declarations, element, "stroke");
         AddAttribute(declarations, element, "stroke-width");
         AddAttribute(declarations, element, "paint-order");
@@ -262,6 +264,9 @@ internal sealed class SvgRasterStyle {
                 break;
             case "clip-rule":
                 style.ClipRule = value.Trim();
+                break;
+            case "filter":
+                style.Filter = value.Trim();
                 break;
             case "clip-path":
                 style.ClipPath = value.Trim();

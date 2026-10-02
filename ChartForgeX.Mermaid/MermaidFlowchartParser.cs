@@ -6,23 +6,20 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidFlowchartParser {
     private static readonly string[] LabelSuffixOperators = { "-.->", "-->", "==>", "---", "--o", "--x" };
 
-    public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result) {
+    public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result, int firstOffset = 0) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         if (lines == null) throw new ArgumentNullException(nameof(lines));
         if (result == null) throw new ArgumentNullException(nameof(result));
 
         var nodes = new Dictionary<string, MermaidFlowchartNode>(StringComparer.Ordinal);
         var subgraphs = new Stack<MermaidFlowchartSubgraph>();
-        for (var index = firstBodyLine - 1; index < lines.Length; index++) {
-            var raw = lines[index];
-            var trimmed = raw.Trim();
+        foreach (var statement in MermaidFlowchartStatements.Read(lines, firstBodyLine, firstOffset)) {
+            var trimmed = statement.Text;
             if (trimmed.Length == 0 || IsComment(trimmed)) continue;
-
-            var column = LeadingWhitespace(raw) + 1;
-            var span = new MermaidSourceSpan(index + 1, column, trimmed.Length);
-            document.Statements.Add(new MermaidRawStatement(trimmed, span));
+            var span = statement.Span;
+            document.Statements.Add(statement);
             if (TryParseSubgraphStart(document, trimmed, span, subgraphs)) continue;
-            if (IsSubgraphEnd(trimmed, subgraphs)) continue;
+            if (IsSubgraphEnd(trimmed, subgraphs, span, result)) continue;
             if (TryParseClassDefinition(document, trimmed, span)) continue;
             if (TryParseClassAssignment(document, nodes, trimmed, span)) continue;
             if (TryParseStyleAssignment(document, nodes, trimmed, span)) continue;
@@ -31,13 +28,17 @@ internal static class MermaidFlowchartParser {
             ParseStatement(document, nodes, trimmed, span, subgraphs.Count == 0 ? null : subgraphs.Peek(), result);
         }
 
+        foreach (var subgraph in subgraphs) MermaidParserUtilities.Add(result, subgraph.Span, MermaidDiagnosticSeverity.Error, "Flowchart subgraph '" + subgraph.Id + "' must close with 'end'.");
         ApplyClassDefinitions(document);
         ApplyLinkStyles(document);
     }
 
     private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph, MermaidParseResult<MermaidDocument> result) {
         var position = 0;
-        if (!TryParseNode(text, ref position, span, out var current)) return;
+        if (!TryParseNode(text, ref position, span, out var current)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unsupported flowchart statement: " + text);
+            return;
+        }
         if (subgraph != null && current.SubgraphId == null) current.SubgraphId = subgraph.Id;
         AddOrUpdateNode(document, nodes, current);
         if (subgraph != null) AddNodeToSubgraph(subgraph, current.Id);
@@ -45,7 +46,7 @@ internal static class MermaidFlowchartParser {
         while (TryParseEdgeOperator(text, ref position, out var edgeOperator, out var label)) {
             if (!TryParseNode(text, ref position, span, out var target)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart edge operator '" + edgeOperator + "' is missing a target node.");
-                break;
+                return;
             }
 
             if (subgraph != null && target.SubgraphId == null) target.SubgraphId = subgraph.Id;
@@ -56,6 +57,8 @@ internal static class MermaidFlowchartParser {
             document.Edges.Add(edge);
             current = target;
         }
+        SkipWhitespace(text, ref position);
+        if (position < text.Length) MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + position, text.Length - position), MermaidDiagnosticSeverity.Error, "Flowchart statement contains malformed or unsupported trailing syntax.");
     }
 
     private static void AddOrUpdateNode(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, MermaidFlowchartNode candidate) {
@@ -122,9 +125,10 @@ internal static class MermaidFlowchartParser {
         return true;
     }
 
-    private static bool IsSubgraphEnd(string text, Stack<MermaidFlowchartSubgraph> subgraphs) {
+    private static bool IsSubgraphEnd(string text, Stack<MermaidFlowchartSubgraph> subgraphs, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!string.Equals(text, "end", StringComparison.OrdinalIgnoreCase)) return false;
         if (subgraphs.Count > 0) subgraphs.Pop();
+        else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart 'end' has no open subgraph.");
         return true;
     }
 
@@ -247,7 +251,15 @@ internal static class MermaidFlowchartParser {
 
     private static bool ReadDelimited(string text, ref int position, string open, string close, MermaidFlowchartNodeShape nodeShape, out MermaidFlowchartNodeShape shape, out string? label) {
         var contentStart = position + open.Length;
-        var closeIndex = text.IndexOf(close, contentStart, StringComparison.Ordinal);
+        var closeIndex = -1;
+        char quote = '\0';
+        for (var index = contentStart; index < text.Length; index++) {
+            var ch = text[index];
+            if (quote != '\0') {
+                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
+            } else if (ch == '"' || (ch == '\'' && index == contentStart)) quote = ch;
+            else if (StartsWith(text, index, close)) { closeIndex = index; break; }
+        }
         if (closeIndex < 0) {
             shape = MermaidFlowchartNodeShape.Default;
             label = null;
@@ -274,7 +286,9 @@ internal static class MermaidFlowchartParser {
         if (position == start) return false;
 
         edgeOperator = text.Substring(start, position - start);
-        return LooksLikeOperator(edgeOperator);
+        if (LooksLikeOperator(edgeOperator)) return true;
+        position = start;
+        return false;
     }
 
     private static bool TryParsePipeLabelOperator(string text, ref int position, out string edgeOperator, out string? label) {

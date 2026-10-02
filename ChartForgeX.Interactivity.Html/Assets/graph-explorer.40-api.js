@@ -250,7 +250,7 @@
   };
   const graphExplorerApi = {
     get: target => { const root = graphApiRoot(target); return root ? exportGraphJson(root) : null; },
-    update: (target, patch) => applyGraphRuntimePatch(target, patch),
+    update: (target, patch) => applyGraphHostPatch(target, patch),
     change: (target, patch, source, label) => { const root = graphApiRoot(target); return root ? requestGraphChange(root, patch, source || 'api', label || 'Graph change') : false; },
     captureState: (target, source) => { const root = graphApiRoot(target); return root ? captureGraphInteractionState(root, source || 'api') : null; },
     applyState: (target, state) => { const root = graphApiRoot(target); return root ? applyGraphInteractionState(root, state, { source: 'api', persist: true }) : false; },

@@ -21,9 +21,10 @@ internal sealed class SvgRasterDefinitions {
     private readonly List<string> _styleBlocks = new();
 
     private SvgRasterStyleSheet _styleSheet = SvgRasterStyleSheet.Empty;
+    public SvgRasterDiagnostics? Diagnostics { get; private set; }
 
     public static SvgRasterDefinitions From(SvgRasterDocument document) {
-        var definitions = new SvgRasterDefinitions();
+        var definitions = new SvgRasterDefinitions { Diagnostics = document.Diagnostics };
         var ancestors = new List<SvgRasterElement> { document.Root };
         foreach (var child in document.Children) definitions.Collect(child, ancestors);
         definitions._styleSheet = SvgRasterStyleSheet.Parse(definitions._styleBlocks);

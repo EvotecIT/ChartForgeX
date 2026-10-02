@@ -6,7 +6,9 @@ namespace ChartForgeX.Raster;
 internal static class BmpReader {
     public static bool IsBmp(byte[] data) => data != null && data.Length >= 2 && data[0] == (byte)'B' && data[1] == (byte)'M';
 
-    public static RgbaImage Decode(byte[] data) {
+    public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
+        var decodeLimits = limits ?? RasterDecodeLimits.Default;
+        decodeLimits.ValidateInput(data);
         if (!IsBmp(data)) throw new NotSupportedException("Input is not a BMP image.");
         if (data.Length < 54) throw new InvalidDataException("BMP image is too short.");
         var pixelOffset = ReadInt32(data, 10);
@@ -24,9 +26,10 @@ internal static class BmpReader {
         if (bitsPerPixel != 8 && bitsPerPixel != 24 && bitsPerPixel != 32) throw new NotSupportedException("Only 8-bit indexed, 24-bit, and 32-bit BMP images are supported.");
 
         var height = Math.Abs(rawHeight);
+        decodeLimits.ValidateDimensions(width, height);
         var topDown = rawHeight < 0;
         var stride = checked(((width * bitsPerPixel) + 31) / 32 * 4);
-        if (pixelOffset < 0 || pixelOffset + stride * height > data.Length) throw new InvalidDataException("BMP pixel data exceeds the input size.");
+        if (pixelOffset < 0 || (long)pixelOffset + (long)stride * height > data.Length) throw new InvalidDataException("BMP pixel data exceeds the input size.");
         var rgba = new byte[checked(width * height * 4)];
         if (bitsPerPixel == 8) {
             DecodeIndexed(data, pixelOffset, dibSize, colorsUsed, width, height, topDown, stride, rgba);
