@@ -56,9 +56,11 @@ internal static class GraphStateReplayExample {
           document.getElementById('state-host-update').onclick = () => {
             api.change(root, { upsertNodes: [{ ...api.get(root).nodes.find(node => node.id === 'db'), label: 'Database edited' }] }, 'example', 'Rename database');
             const before = root.dataset.cfxGraphUndoCount;
+            let undoDuringPatch;
+            root.addEventListener('cfxgraphpatch', () => { undoDuringPatch = api.undo(root); }, { once: true });
             api.update(root, { upsertNodes: [{ id: 'host-data', label: 'New host data', x: 680, y: 360 }] });
             const undone = api.undo(root);
-            inspect('host updated', { beforeUndoCount: before, afterUndoCount: root.dataset.cfxGraphUndoCount, undone, hostDataRetained: api.get(root).nodes.some(node => node.id === 'host-data') });
+            inspect('host updated', { beforeUndoCount: before, afterUndoCount: root.dataset.cfxGraphUndoCount, undoDuringPatch, undone, hostDataRetained: api.get(root).nodes.some(node => node.id === 'host-data') });
           };
           inspect('ready');
         })();

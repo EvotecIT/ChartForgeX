@@ -90,6 +90,7 @@ internal static partial class JpegReader {
     }
 
     private static void ParseFrame(byte[] data, int offset, int length, JpegState state, RasterDecodeLimits limits) {
+        if (state.Frame != null) throw new InvalidDataException("JPEG images must contain only one frame header.");
         if (length < 6) throw new InvalidDataException("Invalid JPEG frame header.");
         var precision = data[offset];
         if (precision != 8) throw new NotSupportedException("Only 8-bit JPEG images are supported.");

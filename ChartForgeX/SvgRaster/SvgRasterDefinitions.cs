@@ -141,6 +141,7 @@ internal sealed class SvgRasterDefinitions {
 
         if (string.Equals(element.Name, "pattern", StringComparison.Ordinal) && element.TryGet("id", out var patternId) && !string.IsNullOrWhiteSpace(patternId)) {
             _patternElements[patternId] = element;
+            _elementAncestors[element] = ancestors.ToArray();
         }
 
         if (string.Equals(element.Name, "clipPath", StringComparison.Ordinal) && element.TryGet("id", out var clipId) && !string.IsNullOrWhiteSpace(clipId)) {
@@ -229,7 +230,8 @@ internal sealed class SvgRasterMask {
 }
 
 internal sealed class SvgRasterPattern {
-    private SvgRasterPattern(double x, double y, double width, double height, bool userSpaceOnUse, bool contentUserSpaceOnUse, SvgRasterMatrix transform, string? viewBox, string? preserveAspectRatio, IReadOnlyList<SvgRasterElement> children) {
+    private SvgRasterPattern(SvgRasterElement element, double x, double y, double width, double height, bool userSpaceOnUse, bool contentUserSpaceOnUse, SvgRasterMatrix transform, string? viewBox, string? preserveAspectRatio, IReadOnlyList<SvgRasterElement> children) {
+        Element = element;
         X = x;
         Y = y;
         Width = width;
@@ -242,6 +244,7 @@ internal sealed class SvgRasterPattern {
         Children = children;
     }
 
+    public SvgRasterElement Element { get; }
     public double X { get; }
     public double Y { get; }
     public double Width { get; }
@@ -258,6 +261,7 @@ internal sealed class SvgRasterPattern {
         var contentUnits = element.Get("patternContentUnits");
         var children = element.Children.Count == 0 && inherited != null ? inherited.Children : element.Children;
         return new SvgRasterPattern(
+            element,
             SvgRasterGradientValues.ParseCoordinate(element.Get("x"), inherited?.X ?? 0),
             SvgRasterGradientValues.ParseCoordinate(element.Get("y"), inherited?.Y ?? 0),
             SvgRasterGradientValues.ParseCoordinate(element.Get("width"), inherited?.Width ?? 0),

@@ -3,6 +3,17 @@ using System;
 namespace ChartForgeX.SvgRaster;
 
 internal static partial class SvgRasterRenderer {
+    private static void ReportUnsupportedClipElement(SvgRasterElement element, SvgRasterDefinitions definitions) {
+        switch (element.Name) {
+            case "svg": case "g": case "a":
+            case "path": case "rect": case "circle": case "ellipse": case "polygon": case "line":
+                return;
+            default:
+                definitions.Diagnostics?.Report("SFR001", "The SVG element is outside the supported clipping subset.", element);
+                return;
+        }
+    }
+
     private static void ReportUnsupportedElement(SvgRasterElement element, SvgRasterStyle style, SvgRasterDefinitions definitions) {
         if (style.Displayed && style.VisibilityVisible && style.Opacity > 0 && !IsDefinitionElement(element.Name))
             definitions.Diagnostics?.Report("SFR001", "The SVG element is outside the supported raster subset.", element);

@@ -13,6 +13,7 @@ internal static partial class SmokeTests {
             ("flowchart-basic.mmd", typeof(MermaidFlowchartDocument)),
             ("flowchart-advanced.mmd", typeof(MermaidFlowchartDocument)),
             ("flowchart-compact.mmd", typeof(MermaidFlowchartDocument)),
+            ("flowchart-quoted-shapes.mmd", typeof(MermaidFlowchartDocument)),
             ("sequence-basic.mmd", typeof(MermaidSequenceDocument)),
             ("sequence-rich.mmd", typeof(MermaidSequenceDocument)),
             ("class-basic.mmd", typeof(MermaidClassDocument)),

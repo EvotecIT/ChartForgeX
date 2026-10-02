@@ -232,7 +232,14 @@ internal static class MermaidFlowchartParser {
 
     private static bool ReadBracketSlashShape(string text, ref int position, char openingSlash, out MermaidFlowchartNodeShape shape, out string? label) {
         var contentStart = position + 2;
+        char quote = '\0';
         for (var index = contentStart; index < text.Length - 1; index++) {
+            var ch = text[index];
+            if (quote != '\0') {
+                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
+                continue;
+            }
+            if (ch == '"' || (ch == '\'' && index == contentStart)) { quote = ch; continue; }
             if (text[index + 1] != ']') continue;
             if (text[index] != '/' && text[index] != '\\') continue;
 

@@ -38,16 +38,28 @@ test('snapshots preserve role-qualified selection and ignore selected decorative
 test('successful host document updates clear stale undo snapshots and rejected updates retain history', () => {
   const {root}=fixture();
   const events=[];
-  const update=new Function('graphApiRoot','applyGraphRuntimePatch','items','attr','emit',source(['14-state-history'])+'\nreturn applyGraphHostPatch;')(
-    target=>target,(_root,patch)=>{ if(patch.invalid) throw new Error('invalid'); return {nodeCount:3}; },
-    ()=>[],attr,(_root,_name,detail)=>events.push(detail));
+  const apiSource=source(['40-api']);
+  const patchSource=apiSource.slice(apiSource.indexOf('  const applyGraphRuntimePatch ='),apiSource.indexOf('  const graphExplorerApi ='));
+  const ignored=['stopWorkerPhysics','stopMainPhysics','upsertGraphCluster','upsertGraphEdge','syncSvgThemeColors','performanceGate','applyLayout','syncGraphItemTabStops'];
+  let observeHostUpdate=false;
+  const environment={...Object.fromEntries(ignored.map(name=>[name,()=>{}])),graphApiRoot:target=>target,
+    items,attr,setGraphAttribute:(item,name,value)=>{ if(value===undefined || value===null || value==='') delete item.attributes[name]; else item.setAttribute(name,value); },
+    idList:value=>value.split(',').filter(Boolean),hasFeature:(_root,name)=>['IncrementalUpdates','History'].includes(name),
+    graphState:root=>({...root.state,edges:[],clusters:[]}),
+    upsertGraphNode:(_root,node)=>{ if(!root.elements.some(item=>attr(item,'data-node-id')===node.id)) root.elements.push(element('graph-node',node.id)); },
+    applyFilters:()=>{ if(observeHostUpdate) assert.equal(runtime.traverseGraphHistory(root,'undo'),false); },
+    emit:(_root,name,detail)=>{ events.push({name,detail}); if(observeHostUpdate && name==='cfxgraphpatch') assert.equal(runtime.traverseGraphHistory(root,'undo'),false); }};
+  const runtime=new Function(...Object.keys(environment),source(['14-state-history','39-patch-validation'])+patchSource+'\nreturn {applyGraphRuntimePatch,traverseGraphHistory};')(...Object.values(environment));
+  const update=patch=>runtime.applyGraphRuntimePatch(root,patch,{hostUpdate:true});
   root.__cfxGraphHistory={undo:[{state:{document:{nodes:[]}}}],redo:[{}],applying:false};
-  assert.throws(()=>update(root,{invalid:true}),/invalid/);
+  assert.throws(()=>update({upsertNodes:[{id:'shared',parentId:'shared'}]}),/parent cycle/);
   assert.equal(root.__cfxGraphHistory.undo.length,1);
-  update(root,{fit:true}); assert.equal(root.__cfxGraphHistory.undo.length,1);
-  assert.equal(update(root,{upsertNodes:[{id:'host-data'}]}).nodeCount,3);
+  update({fit:true}); assert.equal(root.__cfxGraphHistory.undo.length,1);
+  events.length=0; observeHostUpdate=true;
+  update({upsertNodes:[{id:'host-data'}]});
   assert.equal(root.__cfxGraphHistory.undo.length,0); assert.equal(root.__cfxGraphHistory.redo.length,0);
-  assert.equal(events[0].action,'host-update');
+  assert.equal(events.find(event=>event.name==='cfxgraphhistory').detail.action,'host-update');
+  assert.equal(root.elements.some(item=>attr(item,'data-node-id')==='host-data'),true);
 });
 
 test('export preserves inherited edge width and explicit widths', () => {

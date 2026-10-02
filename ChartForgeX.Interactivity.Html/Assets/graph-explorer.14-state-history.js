@@ -109,17 +109,11 @@
     if (history.undo.length > limit) history.undo.splice(0, history.undo.length - limit);
     history.redo.length = 0; syncGraphHistoryControls(root);
   };
-  const applyGraphHostPatch = (target, patch) => {
-    const root = graphApiRoot(target);
-    const result = applyGraphRuntimePatch(root, patch);
-    // A document snapshot predating a host update must never undo newer host data.
-    if (['upsertNodes', 'upsertEdges', 'upsertClusters', 'removeNodeIds', 'removeEdgeIds', 'removeClusterIds'].some(name => Array.isArray(patch?.[name]) && patch[name].length > 0)) {
-      const history = graphHistory(root);
-      history.undo.length = 0; history.redo.length = 0;
-      syncGraphHistoryControls(root);
-      emit(root, 'cfxgraphhistory', { graphId: attr(root, 'data-cfx-graph-id'), action: 'host-update', undoCount: 0, redoCount: 0 });
-    }
-    return result;
+  const clearGraphHostHistory = root => {
+    // Clear stale snapshots before mutation can dispatch synchronous observer callbacks.
+    const history = graphHistory(root);
+    history.undo.length = 0; history.redo.length = 0;
+    syncGraphHistoryControls(root);
   };
   const traverseGraphHistory = (root, direction) => {
     if (!hasFeature(root, 'History')) return false;

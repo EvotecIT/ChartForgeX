@@ -38,6 +38,20 @@ public sealed class MermaidFlowchartConsumptionTests {
     }
 
     [Theory]
+    [InlineData("/", "/", "Text /] label", MermaidFlowchartNodeShape.Parallelogram)]
+    [InlineData("\\", "\\", "Text \\] label", MermaidFlowchartNodeShape.ParallelogramAlt)]
+    [InlineData("/", "\\", "Text \\] label", MermaidFlowchartNodeShape.Trapezoid)]
+    [InlineData("\\", "/", "Text /] label", MermaidFlowchartNodeShape.TrapezoidAlt)]
+    public void QuotedSlashShapeDelimitersRemainLabelContent(string open, string close, string label, MermaidFlowchartNodeShape shape) {
+        var source = "flowchart LR; A[" + open + "\"" + label + "\"" + close + "] --> B; B --> C";
+        var result = new MermaidParser().ParseFlowchart(source);
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal(label, result.Document!.Nodes[0].Text);
+        Assert.Equal(shape, result.Document.Nodes[0].Shape);
+        Assert.Equal(2, result.Document.Edges.Count);
+    }
+
+    [Theory]
     [InlineData("flowchart LR\nA[Broken --> B")]
     [InlineData("flowchart LR\nsubgraph G\nA --> B")]
     [InlineData("flowchart LR\nend")]

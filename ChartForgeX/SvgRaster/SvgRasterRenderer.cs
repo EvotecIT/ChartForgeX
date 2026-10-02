@@ -299,6 +299,7 @@ internal static partial class SvgRasterRenderer {
             var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
             var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
             if (symbolWidth <= 0 || symbolHeight <= 0) return;
+            ReportUnsupportedFilter(referenced, symbolStyle, definitions);
             var symbolViewport = new SvgRasterViewport(symbolWidth, symbolHeight);
             useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
             var viewportClip = !string.Equals(symbolStyle.Overflow, "visible", StringComparison.OrdinalIgnoreCase)
@@ -466,6 +467,7 @@ internal static partial class SvgRasterRenderer {
             frame.Origin.X,
             frame.Origin.Y);
         if (!tileToCanvas.TryInvert(out var canvasToTile)) return false;
+        ReportUnsupportedFilter(pattern.Element, ResolveReferencedStyle(SvgRasterStyle.Default, pattern.Element, definitions), definitions);
         var tileCanvas = new RgbaCanvas(tileWidth, tileHeight, 1);
         var contentMatrix = PatternContentMatrix(pattern, matrix, objectMatrix, objectToCanvas, canvasToTile, objectPaint.HasValue, tileWidth, tileHeight);
         var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
@@ -531,6 +533,7 @@ internal static partial class SvgRasterRenderer {
         if (!TryVisibleBounds(targetPixels, width, height, matrix, out var paintedBounds)) return;
         var bounds = TryObjectBounds(targetElement, targetStyle, targetAncestors, definitions, viewport, out var objectBounds) ? objectBounds : paintedBounds;
         var content = new RgbaCanvas(width, height, 1);
+        ReportUnsupportedFilter(maskDefinition.Element, maskDefinition.RootStyle, definitions);
         var maskMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(maskDefinition.Element.Get("transform")));
         if (!maskDefinition.ContentUserSpaceOnUse) {
             maskMatrix = matrix
@@ -563,7 +566,10 @@ internal static partial class SvgRasterRenderer {
             viewport = nested.UserViewport;
         }
         if (string.Equals(element.Name, "use", StringComparison.Ordinal)) {
-            if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) return;
+            if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) {
+                definitions.Diagnostics?.Report("SFR004", "The SVG reference is missing or exceeds the supported reference depth.", element);
+                return;
+            }
             var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
             var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
             if (IsSymbolElement(referenced)) {
@@ -595,6 +601,7 @@ internal static partial class SvgRasterRenderer {
             return;
         }
         if (style.VisibilityVisible) {
+            ReportUnsupportedClipElement(element, definitions);
             var contours = ClipContours(element, matrix, viewport);
             if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
         }

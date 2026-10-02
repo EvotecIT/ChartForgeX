@@ -45,6 +45,40 @@ public sealed class SvgRasterDiagnosticTests {
     }
 
     [Fact]
+    public void ReferencedDefinitionRootsRetainFilterDiagnostics() {
+        foreach (var body in new[] {
+            "<defs><symbol id='effect' filter='blur(2px)'><rect width='20' height='20'/></symbol></defs><use href='#effect'/>",
+            "<defs><mask id='effect' filter='blur(2px)'><rect width='20' height='20' fill='white'/></mask></defs><rect width='20' height='20' mask='url(#effect)'/>",
+            "<style>defs .filtered{filter:var(--effect)}</style><defs style='--effect:blur(2px)'><pattern id='effect' class='filtered' patternUnits='userSpaceOnUse' width='8' height='8'><rect width='8' height='8'/></pattern></defs><rect width='20' height='20' fill='url(#effect)'/>",
+            "<defs><pattern id='base' patternUnits='userSpaceOnUse' width='8' height='8'><rect width='8' height='8'/></pattern><pattern id='effect' href='#base' filter='blur(2px)'/></defs><rect width='20' height='20' fill='url(#effect)'/>"
+        }) {
+            var source = Svg(body);
+            var diagnostic = Assert.Single(SvgRasterizer.Rasterize(source).Diagnostics);
+            Assert.Equal("SFR002", diagnostic.Code);
+            Assert.Equal("effect", diagnostic.ElementId);
+            Assert.Contains("SFR002", Assert.Throws<NotSupportedException>(() => SvgRasterizer.Rasterize(source, strict: true)).Message);
+        }
+    }
+
+    [Theory]
+    [InlineData("<text id='unsupported' x='0' y='15'>X</text>", "SFR001")]
+    [InlineData("<polyline id='unsupported' points='0,0 20,0 20,20'/>", "SFR001")]
+    [InlineData("<use id='unsupported' href='#absent'/>", "SFR004")]
+    public void AppliedClippingContentReportsUnsupportedGeometryAndReferences(string content, string code) {
+        var source = Svg("<defs><clipPath id='clip'>" + content + "</clipPath></defs><rect width='20' height='20' clip-path='url(#clip)'/>");
+        var diagnostic = Assert.Single(SvgRasterizer.Rasterize(source).Diagnostics);
+        Assert.Equal(code, diagnostic.Code);
+        Assert.Equal("unsupported", diagnostic.ElementId);
+        Assert.Throws<NotSupportedException>(() => SvgRasterizer.Rasterize(source, strict: true));
+    }
+
+    [Fact]
+    public void ClippingSilhouettesIgnorePaintFiltersWithoutLossWarnings() {
+        var source = Svg("<defs><clipPath id='clip' filter='blur(2px)'><rect width='20' height='20' filter='blur(2px)'/></clipPath></defs><rect width='20' height='20' clip-path='url(#clip)'/>");
+        Assert.Empty(SvgRasterizer.Rasterize(source, strict: true).Diagnostics);
+    }
+
+    [Fact]
     public void SupportedAndUnusedDefinitionContentDoesNotProduceLossWarnings() {
         var result = SvgRasterizer.Rasterize(Svg("<defs><filter id='unused'><feGaussianBlur stdDeviation='3'/></filter></defs><metadata>source</metadata><linearGradient id='unused-gradient'><stop offset='0'/></linearGradient><rect width='20' height='20' filter='none'/><foreignObject display='none'/>"), strict: true);
         Assert.Empty(result.Diagnostics);

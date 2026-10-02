@@ -123,7 +123,7 @@ graph.Options.Performance.MaxInteractiveWebGlNodes = 30000;
 graph.Options.Performance.MaxInteractiveWebGlEdges = 80000;
 ```
 
-WebGL currently renders topology as status-aware lines and points. Use SVG for small image-rich views and WebGL for dense overview exploration; hierarchy navigation lets one application move naturally between those levels.
+WebGL currently renders topology as status-aware lines and points. Node and edge labels, detailed shapes, and per-edge widths require SVG or Canvas. Use SVG for small image-rich views and WebGL for dense overview exploration; hierarchy navigation lets one application move naturally between those levels.
 
 ## Runtime physics and dragging
 
@@ -310,7 +310,7 @@ const snapshot = graph.get("service-estate");
 
 Both C# and browser patches reject node-parent and cluster-parent cycles before changing the document. An omitted or `null` edge style width inherits the renderer default; an explicit width must be a finite positive number. Export and state replay preserve inherited widths.
 
-A successful host `update` that changes nodes, edges, or clusters clears undo and redo history and emits `cfxgraphhistory` with `action: "host-update"`. This prevents an older user snapshot from removing newer host data. Rejected updates and viewport-only updates retain history. Use `change` for user edits that should remain undoable.
+A successful host `update` that changes nodes, edges, or clusters clears undo and redo history before applying the patch or notifying observers, and emits `cfxgraphhistory` with `action: "host-update"`. This prevents an older user snapshot from removing newer host data, including when an event handler calls `undo`. Rejected updates and viewport-only updates retain history. Use `change` for user edits that should remain undoable.
 
 ```javascript
 graph.change("service-estate", {

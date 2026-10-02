@@ -17,6 +17,28 @@ public sealed class RasterDecodeLimitTests {
         Assert.False(RasterImageDecoder.TryDecode(encoded, out _));
     }
 
+    [Theory]
+    [InlineData(0xC0, 0xC0)]
+    [InlineData(0xC0, 0xC2)]
+    [InlineData(0xC2, 0xC0)]
+    [InlineData(0xC2, 0xC2)]
+    public void JpegRejectsAdditionalFramesBeforeAllocatingTheirComponentBuffers(int first, int subsequent) {
+        using var input = new MemoryStream(); input.Write(new byte[] { 255, 216 });
+        for (var frame = 0; frame < 100; frame++) {
+            var marker = (byte)(frame == 0 ? first : subsequent);
+            input.Write(new byte[] { 255, marker, 0, 11, 8, 1, 0, 1, 0, 1, 1, 17, 0, 255, 218, 0, 8, 1, 1, 0, 0, marker == 0xC0 ? (byte)63 : (byte)0, 0 });
+        }
+        input.Write(new byte[] { 255, 217 });
+        var encoded = input.ToArray();
+        var limits = new RasterDecodeOptions { MaximumPixels = 65536, MaximumEncodedBytes = 8192 };
+        var allocated = GC.GetAllocatedBytesForCurrentThread();
+        var error = Assert.Throws<InvalidDataException>(() => RasterImageDecoder.Decode(encoded, limits));
+        allocated = GC.GetAllocatedBytesForCurrentThread() - allocated;
+        Assert.Contains("one frame header", error.Message);
+        Assert.True(allocated < 1024 * 1024, "Repeated frame headers must not retain additional JPEG component arrays.");
+        Assert.False(RasterImageDecoder.TryDecode(encoded, limits, out _));
+    }
+
     [Fact]
     public void EncodedLimitsApplyToBytesFilesAndNonSeekableStreams() {
         var encoded = Png(1, 1, new byte[] { 0, 255, 0, 0, 255 });

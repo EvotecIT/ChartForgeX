@@ -218,6 +218,8 @@
     patch = patch || {};
     const graphChanged = ['upsertNodes', 'upsertEdges', 'upsertClusters', 'removeNodeIds', 'removeEdgeIds', 'removeClusterIds'].some(name => Array.isArray(patch[name]) && patch[name].length > 0);
     validateGraphPatch(root, patch);
+    const resetHistory = graphChanged && options?.hostUpdate === true;
+    if (resetHistory) clearGraphHostHistory(root);
     if (graphChanged) { stopWorkerPhysics(root, true); stopMainPhysics(root, true); }
     const removeNodes = graphPatchIds(patch.removeNodeIds), removeEdges = graphPatchIds(patch.removeEdgeIds), removeClusters = graphPatchIds(patch.removeClusterIds);
     if (patch.removeIncidentReferences !== false && removeNodes.size) items(root, '[data-cfx-role="graph-edge"]').forEach(edge => { if (removeNodes.has(attr(edge, 'data-source-node-id')) || removeNodes.has(attr(edge, 'data-target-node-id'))) removeEdges.add(attr(edge, 'data-edge-id')); });
@@ -245,12 +247,13 @@
     syncGraphItemTabStops(root);
     if (graphChanged && options?.reheat === false && hasFeature(root, 'RuntimePhysics')) { root.dataset.cfxGraphPhysicsReason = options.reason || 'graph-patch'; pausePhysics(root); }
     else if (graphChanged && attr(root, 'data-cfx-graph-reheat-patch') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'graph-patch', { rebuild: true, fit: false });
+    if (resetHistory) emit(root, 'cfxgraphhistory', { graphId: attr(root, 'data-cfx-graph-id'), action: 'host-update', undoCount: 0, redoCount: 0 });
     emit(root, 'cfxgraphpatch', { graphId: attr(root, 'data-cfx-graph-id'), nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length });
     return { nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length };
   };
   const graphExplorerApi = {
     get: target => { const root = graphApiRoot(target); return root ? exportGraphJson(root) : null; },
-    update: (target, patch) => applyGraphHostPatch(target, patch),
+    update: (target, patch) => applyGraphRuntimePatch(target, patch, { hostUpdate: true }),
     change: (target, patch, source, label) => { const root = graphApiRoot(target); return root ? requestGraphChange(root, patch, source || 'api', label || 'Graph change') : false; },
     captureState: (target, source) => { const root = graphApiRoot(target); return root ? captureGraphInteractionState(root, source || 'api') : null; },
     applyState: (target, state) => { const root = graphApiRoot(target); return root ? applyGraphInteractionState(root, state, { source: 'api', persist: true }) : false; },
