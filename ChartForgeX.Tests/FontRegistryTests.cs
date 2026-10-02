@@ -18,6 +18,34 @@ public sealed class FontRegistryTests : IDisposable {
     private const string Family = "CFX Registered Serif";
 
     [Fact]
+    public void ChartTitleUsesTheRequestedNumericWeightWithoutChangingTheStyle() {
+        if (!TryGetGeorgia(out var regular, out var bold)) return;
+        FontRegistry.Register(Family, regular, weight: 600);
+        FontRegistry.Register(Family, bold, weight: 700);
+        var chart = BarChart(Family);
+        chart.Options.TitleStyle.FontWeight = "600";
+        byte[] semibold = new PngChartRenderer().Render(chart);
+        Assert.Equal("600", chart.Options.TitleStyle.FontWeight);
+        chart.Options.TitleStyle.FontWeight = "700";
+        Assert.NotEqual(semibold, new PngChartRenderer().Render(chart));
+        chart.Options.TitleStyle.FontWeight = null;
+        _ = new PngChartRenderer().Render(chart);
+        Assert.Null(chart.Options.TitleStyle.FontWeight);
+    }
+
+    [Fact]
+    public void GridTitleUsesTheRequestedNumericFaceFromItsTheme() {
+        if (!TryGetGeorgia(out var regular,out var bold)) return;
+        FontRegistry.Register(Family,regular,weight:600); FontRegistry.Register(Family,bold,weight:700);
+        var grid=ChartGrid.Create().WithTitle("Numeric grid title").Add(BarChart(Family));
+        grid.TitleStyle.FontWeight="600";
+        byte[] semibold=new PngChartGridRenderer().Render(grid);
+        grid.TitleStyle.FontWeight="700";
+        Assert.NotEqual(semibold,new PngChartGridRenderer().Render(grid));
+        Assert.Null(grid.TitleStyle.FontFamily);
+    }
+
+    [Fact]
     public void UnpairedAliasPreservesAnEarlierThemesEmphasisPair() {
         if (!TryGetGeorgia(out var regularPath, out _)) return;
         FontRegistry.Register(Family, regularPath);

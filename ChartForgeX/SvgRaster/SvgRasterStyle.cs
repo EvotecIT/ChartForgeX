@@ -56,6 +56,7 @@ internal sealed class SvgRasterStyle {
     public string StrokeLineJoin { get; set; } = "miter";
     public double StrokeMiterLimit { get; set; } = 4;
     public IReadOnlyList<double>? StrokeDashArray { get; set; }
+    public double StrokeDashOffset { get; set; }
     public string FillRule { get; set; } = "nonzero";
     public string ClipRule { get; set; } = "nonzero";
     public string? ClipPath { get; set; }
@@ -98,6 +99,7 @@ internal sealed class SvgRasterStyle {
             StrokeLineJoin = StrokeLineJoin,
             StrokeMiterLimit = StrokeMiterLimit,
             StrokeDashArray = StrokeDashArray,
+            StrokeDashOffset = StrokeDashOffset,
             FillRule = FillRule,
             ClipRule = ClipRule,
             FontSize = FontSize,
@@ -200,6 +202,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "stroke-linejoin");
         AddAttribute(declarations, element, "stroke-miterlimit");
         AddAttribute(declarations, element, "stroke-dasharray");
+        AddAttribute(declarations, element, "stroke-dashoffset");
         AddAttribute(declarations, element, "opacity");
         AddAttribute(declarations, element, "fill-opacity");
         AddAttribute(declarations, element, "stroke-opacity");
@@ -293,6 +296,9 @@ internal sealed class SvgRasterStyle {
                 break;
             case "stroke-dasharray":
                 style.StrokeDashArray = ParseDashArray(value);
+                break;
+            case "stroke-dashoffset":
+                style.StrokeDashOffset = ParseLength(value, style.StrokeDashOffset);
                 break;
             case "opacity":
                 style.Opacity = ParseOpacity(value, style.Opacity);

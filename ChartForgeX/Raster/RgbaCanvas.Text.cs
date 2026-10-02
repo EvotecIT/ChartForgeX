@@ -18,14 +18,14 @@ internal sealed partial class RgbaCanvas {
         DrawTextTiny(x, y, text, color, scale, italic: false);
     }
 
-    internal void DrawTextTiny(double x, double y, string text, ChartColor color, int scale, bool italic) {
+    internal void DrawTextTiny(double x, double y, string text, ChartColor color, int scale, bool italic, double boldOffset = 0) {
         var font = _outlineFont;
-        if (font != null && font.Draw(this, x, y, text, color, OutlineFontSize(scale), italic)) return;
+        if (font != null && font.Draw(this, x, y, text, color, OutlineFontSize(scale), italic, boldOffset)) return;
 
         var cursor = (int)Math.Round(x * _scale);
         var glyphScale = Math.Max(1, scale * _scale);
         foreach (var ch in text) {
-            DrawGlyph(cursor, (int)Math.Round(y * _scale), ch, color, glyphScale, italic);
+            DrawGlyph(cursor, (int)Math.Round(y * _scale), ch, color, glyphScale, italic, boldOffset);
             cursor += TinyFont.AdvanceFor(ch) * glyphScale;
         }
     }
@@ -102,9 +102,8 @@ internal sealed partial class RgbaCanvas {
             return;
         }
 
-        DrawText(x, y, text, color, fontSize, font, italic);
-        if (font != null) font.Draw(this, x + EmphasisOffset(fontSize), y, text, color, Math.Max(1, fontSize), italic, syntheticBoldCopyOnly: true);
-        else DrawText(x + EmphasisOffset(fontSize), y, text, color, fontSize, font, italic);
+        if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize), italic, EmphasisOffset(fontSize))) return;
+        DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize), italic, EmphasisOffset(fontSize));
     }
 
     public static double MeasureTextTinyWidth(string text, int scale) => MeasureTextTinyWidth(text, scale, null);

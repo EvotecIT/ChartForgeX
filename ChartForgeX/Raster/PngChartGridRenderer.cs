@@ -34,11 +34,13 @@ public sealed class PngChartGridRenderer {
             output.FillRoundedRectVerticalGradient(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
         }
         if (layout.HeaderHeight > 0) {
+            var titleStyle = grid.TitleStyle.WithDefaultFontWeight(800).WithDefaultFontFamily(theme.FontFamily);
+            var subtitleStyle = grid.SubtitleStyle.WithDefaultFontWeight(400).WithDefaultFontFamily(theme.FontFamily);
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
-            var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
-            var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) DrawStyledText(output, grid.Padding, Math.Max(0, grid.Padding - titleFontSize * 0.3), ChartTextFitting.TrimEnd(grid.Title, titleFontSize, headerWidth, (text, size) => MeasureStyledTextWidth(output, text, size, grid.TitleStyle, emphasized: true)), grid.TitleStyle, theme.Text, titleFontSize, emphasized: true);
-            if (grid.Subtitle.Length > 0) DrawStyledText(output, grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize * 0.3, ChartTextFitting.TrimEnd(grid.Subtitle, subtitleFontSize, headerWidth, (text, size) => MeasureStyledTextWidth(output, text, size, grid.SubtitleStyle, emphasized: false)), grid.SubtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
+            var titleFontSize = StyleFontSize(titleStyle, theme.TitleFontSize);
+            var subtitleFontSize = StyleFontSize(subtitleStyle, theme.SubtitleFontSize);
+            if (grid.Title.Length > 0) DrawStyledText(output, grid.Padding, Math.Max(0, grid.Padding - titleFontSize * 0.3), ChartTextFitting.TrimEnd(grid.Title, titleFontSize, headerWidth, (text, size) => MeasureStyledTextWidth(output, text, size, titleStyle, emphasized: true)), titleStyle, theme.Text, titleFontSize, emphasized: true);
+            if (grid.Subtitle.Length > 0) DrawStyledText(output, grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize * 0.3, ChartTextFitting.TrimEnd(grid.Subtitle, subtitleFontSize, headerWidth, (text, size) => MeasureStyledTextWidth(output, text, size, subtitleStyle, emphasized: false)), subtitleStyle, theme.MutedText, subtitleFontSize, emphasized: false);
         }
 
         foreach (var cell in layout.Cells) {
@@ -56,35 +58,25 @@ public sealed class PngChartGridRenderer {
 
     private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
-    private static TrueTypeFont? StyleFont(TextStyleOverride style) => style.FontFamily == null ? null : TypographyFontResolver.ResolveThemeFont(style.FontFamily);
-
-    private static bool StyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
-
+    private static ResolvedTypeface StyleFace(TextStyleOverride style, bool fallback) =>
+        TypographyFontResolver.ResolveFace(style.FontFamily ?? "sans-serif",style.ResolveFontWeight(fallback ? 700 : 400),style.Italic);
     private static double MeasureStyledTextWidth(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
         text = style.TransformText(text, CultureInfo.InvariantCulture);
         return MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
     }
 
     private static double MeasureStyledTextWidthCore(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
-        var font = StyleFont(style);
-        if (font == null) return StyleEmphasized(style, emphasized) ? canvas.MeasureTextEmphasizedWidth(text, fontSize, style.Italic) : canvas.MeasureTextWidth(text, fontSize, style.Italic);
-        return StyleEmphasized(style, emphasized)
-            ? RgbaCanvas.MeasureTextEmphasizedWidth(text, fontSize, font, style.Italic)
-            : RgbaCanvas.MeasureTextWidthWithFont(text, fontSize, font, style.Italic);
+        var face = StyleFace(style,emphasized);
+        return face.SynthesizeBold ? RgbaCanvas.MeasureTextEmphasizedWidth(text,fontSize,face.Font,face.SynthesizeItalic)
+            : RgbaCanvas.MeasureTextWidthWithFont(text,fontSize,face.Font,face.SynthesizeItalic);
     }
-
     private static void DrawStyledText(RgbaCanvas canvas, double x, double y, string text, TextStyleOverride style, ChartColor fallback, double fontSize, bool emphasized) {
         text = style.TransformText(text, CultureInfo.InvariantCulture);
         var color = StyleColor(style, fallback);
-        var font = StyleFont(style);
+        var face = StyleFace(style,emphasized);
         y += style.Baseline == TextBaseline.Superscript ? -fontSize * 0.35 : style.Baseline == TextBaseline.Subscript ? fontSize * 0.22 : 0;
-        if (StyleEmphasized(style, emphasized)) {
-            if (font == null) canvas.DrawTextEmphasized(x, y, text, color, fontSize, style.Italic);
-            else canvas.DrawTextEmphasized(x, y, text, color, fontSize, font, style.Italic);
-        } else {
-            if (font == null) canvas.DrawText(x, y, text, color, fontSize, style.Italic);
-            else canvas.DrawText(x, y, text, color, fontSize, font, style.Italic);
-        }
+        if (face.SynthesizeBold) canvas.DrawTextEmphasized(x,y,text,color,fontSize,face.Font,face.SynthesizeItalic);
+        else canvas.DrawText(x,y,text,color,fontSize,face.Font,face.SynthesizeItalic);
         if (text.Length == 0) return;
         var width = MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);
         var thickness = Math.Max(1, fontSize / 13.0);

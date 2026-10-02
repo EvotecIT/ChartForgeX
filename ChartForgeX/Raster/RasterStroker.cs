@@ -10,7 +10,7 @@ namespace ChartForgeX.Raster;
 /// joins, and caps) that all wind the same way, so their non-zero union is the stroke: one fill
 /// paints it with the coverage of any other shape and no pixel is blended twice.
 /// </summary>
-internal static class RasterStroker {
+internal static partial class RasterStroker {
     private const double Epsilon = 0.000000001;
     private const int MaximumDashes = 100000;
 
@@ -54,80 +54,6 @@ internal static class RasterStroker {
         for (var i = 1; i < count - 1; i++) AddJoin(output, path[i], directions[i - 1], directions[i], half, join, miterLimit, pixelsPerUnit);
         AddCap(output, path[0], new ChartPoint(-directions[0].X, -directions[0].Y), half, cap, pixelsPerUnit);
         AddCap(output, path[count - 1], directions[segments - 1], half, cap, pixelsPerUnit);
-    }
-
-    /// <summary>Splits a polyline into the painted runs of a dash pattern; joins inside a run are kept.</summary>
-    internal static List<List<ChartPoint>> Dash(IReadOnlyList<ChartPoint> points, IReadOnlyList<double> pattern) {
-        var runs = new List<List<ChartPoint>>();
-        var lengths = new List<double>(pattern.Count * 2);
-        var total = 0.0;
-        foreach (var value in pattern) {
-            if (value < 0 || double.IsNaN(value) || double.IsInfinity(value)) {
-                runs.Add(new List<ChartPoint>(points));
-                return runs;
-            }
-            lengths.Add(value);
-            total += value;
-        }
-
-        if (lengths.Count % 2 == 1) {
-            var odd = lengths.Count;
-            for (var i = 0; i < odd; i++) lengths.Add(lengths[i]);
-            total *= 2;
-        }
-
-        var pathLength = 0.0;
-        for (var i = 1; i < points.Count; i++) pathLength += Distance(points[i - 1], points[i]);
-        if (lengths.Count == 0 || !(total > 0) || pathLength <= Epsilon || pathLength / total * lengths.Count > MaximumDashes) {
-            runs.Add(new List<ChartPoint>(points));
-            return runs;
-        }
-
-        var dashIndex = 0;
-        var remaining = lengths[0];
-        var painting = true;
-        List<ChartPoint>? run = points.Count > 0 ? new List<ChartPoint> { points[0] } : null;
-        for (var i = 1; i < points.Count; i++) {
-            var a = points[i - 1];
-            var b = points[i];
-            var length = Distance(a, b);
-            if (length <= Epsilon) continue;
-            var consumed = 0.0;
-            while (length - consumed > remaining) {
-                consumed += remaining;
-                var t = consumed / length;
-                var boundary = new ChartPoint(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
-                if (painting) {
-                    run!.Add(boundary);
-                    runs.Add(run);
-                    run = null;
-                } else {
-                    run = new List<ChartPoint> { boundary };
-                }
-
-                painting = !painting;
-                dashIndex = (dashIndex + 1) % lengths.Count;
-                remaining = lengths[dashIndex];
-            }
-
-            remaining -= length - consumed;
-            if (painting) run!.Add(b);
-        }
-
-        if (painting && run != null) runs.Add(run);
-        // Zero gaps and a painted closed-path seam are contiguous strokes, with joins rather than caps.
-        for (var i = runs.Count - 1; i > 0; i--) {
-            if (!Same(runs[i - 1][runs[i - 1].Count - 1], runs[i][0])) continue;
-            runs[i - 1].AddRange(runs[i].GetRange(1, runs[i].Count - 1));
-            runs.RemoveAt(i);
-        }
-        if (runs.Count > 1 && points.Count > 1 && Same(points[0], points[points.Count - 1]) &&
-            Same(runs[runs.Count - 1][runs[runs.Count - 1].Count - 1], runs[0][0])) {
-            var last = runs[runs.Count - 1];
-            last.AddRange(runs[0].GetRange(1, runs[0].Count - 1));
-            runs.RemoveAt(0);
-        }
-        return runs;
     }
 
     private static void AddJoin(List<List<ChartPoint>> output, ChartPoint vertex, ChartPoint incoming, ChartPoint outgoing, double half, RasterLineJoin join, double miterLimit, double pixelsPerUnit) {

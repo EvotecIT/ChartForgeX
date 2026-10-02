@@ -8,7 +8,7 @@ namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
     private static void DrawStateCategoryLegend(RgbaCanvas c, Chart chart, IReadOnlyList<ChartStateCategoryLegendItem> legend, double top, ChartRect bounds) {
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var legendStyle = style;
         var fontSize = PngLegendFontSize(chart);
         var legendFontSize = fontSize;

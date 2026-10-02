@@ -334,6 +334,16 @@ report.SaveTiff("scorecards.tiff");
 
 Role styles use one shared contract in charts, chart grids, SVG, static HTML, and the dependency-free raster pipeline. That means the same color, family, size, weight, italic, decoration, baseline, and casing choices reach PNG, GIF, JPEG, BMP, PPM, and TIFF rather than being reinterpreted by each encoder.
 
+Chart PNG text resolves numeric font weights for both measurement and painting. Titles, axis titles,
+and legends use their SVG role weights when a style does not override them. Registered faces keep
+font selection reproducible across hosts; simulated bold combines its coverage before painting,
+so translucent text retains its opacity.
+
+Raster curves and rounded borders share the outline stroker, and thin contour details contribute
+their area between sample rows. Image reduction filters premultiplied colors over the source
+footprint. SVG raster strokes retain gradient or pattern paint, dash offsets, and affine outline
+transforms instead of reducing those properties to a solid color or average stroke width.
+
 ```csharp
 using ChartForgeX.Typography;
 

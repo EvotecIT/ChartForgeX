@@ -28,11 +28,11 @@ internal sealed partial class RgbaCanvas {
     /// Scan-converts closed contours into per-pixel coverage. Horizontal coverage is exact on
     /// every scanline; vertical coverage comes from the sub-scanlines of each pixel row.
     /// </summary>
-    private void ScanFillCoverage(IReadOnlyList<List<ChartPoint>> contours, RasterFillRule fillRule, FillCoverageRow row, int subScanlines = 0) {
-        var edges = BuildFillEdges(contours, fillRule, out var minY, out var maxY);
+    private void ScanFillCoverage(IReadOnlyList<List<ChartPoint>> contours, RasterFillRule fillRule, FillCoverageRow row, int subScanlines = 0, int secondContourStart = int.MaxValue) {
+        var edges = BuildFillEdges(contours, fillRule, out var minY, out var maxY, secondContourStart);
         if (edges.Length == 0) return;
-        var yStart = Math.Max(0, (int)Math.Floor(minY));
-        var yEnd = Math.Min(_pixelHeight - 1, (int)Math.Ceiling(maxY));
+        var yStart = (int)Math.Max(0, Math.Min(_pixelHeight, Math.Floor(minY)));
+        var yEnd = (int)Math.Max(-1, Math.Min(_pixelHeight - 1, Math.Ceiling(maxY)));
         if (yStart > yEnd) return;
 
         var samples = subScanlines > 0 ? subScanlines : _scale == 1 ? UnscaledFillSubScanlines : 1;
@@ -43,23 +43,38 @@ internal sealed partial class RgbaCanvas {
         var intersections = new List<FillIntersection>();
         var next = 0;
         var spans = new FillSpans();
+        var rowBoundaries = new List<double>();
         for (var y = yStart; y <= yEnd; y++) {
             var rowSamples = samples > 1 && RowIsUniform(edges, active, next, y) ? 1 : samples;
-            var weight = 1.0 / rowSamples;
-            for (var sample = 0; sample < rowSamples; sample++) {
-                var scanY = y + (sample + 0.5) / rowSamples;
+            rowBoundaries.Clear();
+            for (int sample = 0; sample <= rowSamples; sample++) rowBoundaries.Add(y + sample / (double)rowSamples);
+            foreach (int edgeIndex in active) {
+                if (edges[edgeIndex].Bottom > y && edges[edgeIndex].Bottom < y + 1) rowBoundaries.Add(edges[edgeIndex].Bottom);
+            }
+            for (int edgeIndex = next; edgeIndex < edges.Length && edges[edgeIndex].Top < y + 1; edgeIndex++) {
+                if (edges[edgeIndex].Top > y) rowBoundaries.Add(edges[edgeIndex].Top);
+                if (edges[edgeIndex].Bottom > y && edges[edgeIndex].Bottom < y + 1) rowBoundaries.Add(edges[edgeIndex].Bottom);
+            }
+            rowBoundaries.Sort();
+            for (var sample = 1; sample < rowBoundaries.Count; sample++) {
+                double weight = rowBoundaries[sample] - rowBoundaries[sample - 1];
+                if (weight <= 0) continue;
+                var scanY = (rowBoundaries[sample] + rowBoundaries[sample - 1]) / 2;
                 AdvanceActiveEdges(edges, active, intersections, ref next, scanY);
                 if (intersections.Count < 2) continue;
                 if (fillRule == RasterFillRule.EvenOdd) {
                     for (var i = 0; i + 1 < intersections.Count; i += 2) AddSpanCoverage(coverage, intersections[i].X, intersections[i + 1].X, weight, spans);
                 } else {
                     var winding = 0;
+                    var secondWinding = 0;
                     var left = 0.0;
                     for (var i = 0; i < intersections.Count; i++) {
-                        var previous = winding;
-                        winding += intersections[i].Winding;
-                        if (previous == 0 && winding != 0) left = intersections[i].X;
-                        else if (previous != 0 && winding == 0) AddSpanCoverage(coverage, left, intersections[i].X, weight, spans);
+                        bool previous = winding != 0 || secondWinding != 0;
+                        if (intersections[i].SecondShape) secondWinding += intersections[i].Winding;
+                        else winding += intersections[i].Winding;
+                        bool inside = winding != 0 || secondWinding != 0;
+                        if (!previous && inside) left = intersections[i].X;
+                        else if (previous && !inside) AddSpanCoverage(coverage, left, intersections[i].X, weight, spans);
                     }
                 }
             }
@@ -101,7 +116,7 @@ internal sealed partial class RgbaCanvas {
             var edge = edges[active[index]];
             if (edge.Bottom <= scanY) continue;
             active[kept] = active[index];
-            crossings[kept] = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding);
+            crossings[kept] = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding, edge.SecondShape);
             kept++;
         }
 
@@ -128,7 +143,7 @@ internal sealed partial class RgbaCanvas {
         for (; next < edges.Length && edges[next].Top <= scanY; next++) {
             var edge = edges[next];
             if (edge.Bottom <= scanY) continue;
-            var crossing = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding);
+            var crossing = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding, edge.SecondShape);
             var j = crossings.Count - 1;
             crossings.Add(crossing);
             active.Add(next);
@@ -190,13 +205,15 @@ internal sealed partial class RgbaCanvas {
         spans.Add(first, last);
     }
 
-    private static FillEdge[] BuildFillEdges(IReadOnlyList<List<ChartPoint>> contours, RasterFillRule fillRule, out double minY, out double maxY) {
+    private static FillEdge[] BuildFillEdges(IReadOnlyList<List<ChartPoint>> contours, RasterFillRule fillRule, out double minY, out double maxY, int secondContourStart) {
         minY = double.PositiveInfinity;
         maxY = double.NegativeInfinity;
         var count = 0;
         foreach (var contour in contours) count += contour.Count;
         var edges = new List<FillEdge>(count);
+        int contourIndex = 0;
         foreach (var contour in contours) {
+            bool secondShape = contourIndex++ >= secondContourStart;
             for (var i = 0; i < contour.Count; i++) {
                 var a = contour[i];
                 var b = contour[(i + 1) % contour.Count];
@@ -205,7 +222,7 @@ internal sealed partial class RgbaCanvas {
                 var downward = b.Y > a.Y;
                 var top = downward ? a : b;
                 var bottom = downward ? b : a;
-                edges.Add(new FillEdge(top.Y, bottom.Y, top.X, (bottom.X - top.X) / (bottom.Y - top.Y), fillRule == RasterFillRule.NonZero ? downward ? 1 : -1 : 0));
+                edges.Add(new FillEdge(top.Y, bottom.Y, top.X, (bottom.X - top.X) / (bottom.Y - top.Y), fillRule == RasterFillRule.NonZero ? downward ? 1 : -1 : 0, secondShape));
                 minY = Math.Min(minY, top.Y);
                 maxY = Math.Max(maxY, bottom.Y);
             }
@@ -231,23 +248,27 @@ internal sealed partial class RgbaCanvas {
         public readonly double X;
         public readonly double Slope;
         public readonly int Winding;
+        public readonly bool SecondShape;
 
-        public FillEdge(double top, double bottom, double x, double slope, int winding) {
+        public FillEdge(double top, double bottom, double x, double slope, int winding, bool secondShape) {
             Top = top;
             Bottom = bottom;
             X = x;
             Slope = slope;
             Winding = winding;
+            SecondShape = secondShape;
         }
     }
 
     private readonly struct FillIntersection {
         public readonly double X;
         public readonly int Winding;
+        public readonly bool SecondShape;
 
-        public FillIntersection(double x, int winding) {
+        public FillIntersection(double x, int winding, bool secondShape) {
             X = x;
             Winding = winding;
+            SecondShape = secondShape;
         }
     }
 

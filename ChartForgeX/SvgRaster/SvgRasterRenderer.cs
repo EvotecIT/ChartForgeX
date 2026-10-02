@@ -416,12 +416,6 @@ internal static partial class SvgRasterRenderer {
     }
 
     // Every subpath is outlined and painted as one shape, so curved strokes get the same coverage as fills.
-    private static void Stroke(RgbaCanvas canvas, IReadOnlyList<List<ChartPoint>> contours, SvgRasterStyle style, double scale, SvgRasterDefinitions definitions) {
-        var stroke = ResolveColor(style.Stroke, style.Opacity * style.StrokeOpacity, definitions);
-        if (stroke.A == 0 || style.StrokeWidth <= 0 || contours.Count == 0) return;
-        canvas.StrokePolylines(contours, stroke, style.StrokeWidth * scale, LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin), ScaledDashArray(style.StrokeDashArray, scale), style.StrokeMiterLimit);
-    }
-
     private static ChartColor ResolveColor(SvgRasterPaint paint, double opacity, SvgRasterDefinitions definitions) {
         if (paint.IsNone) return ChartColor.Transparent;
         if (paint.Color.HasValue) return WithOpacity(paint.Color.Value, opacity);

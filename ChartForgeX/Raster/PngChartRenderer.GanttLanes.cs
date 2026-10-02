@@ -15,7 +15,7 @@ public sealed partial class PngChartRenderer {
         var t = chart.Options.Theme;
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = PngTickFontSize(chart);
-        var legendStyle = chart.Options.LegendStyle;
+        var legendStyle = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var legendFontSize = PngLegendFontSize(chart);
         var labelWidth = 0.0;
         var summaryWidth = model.SummaryHeader == null ? 0 : EstimatePngStyledTextWidth(model.SummaryHeader, tickFontSize, tickStyle, emphasized: true);
@@ -29,7 +29,7 @@ public sealed partial class PngChartRenderer {
         var nowReserve = model.NowVisible && ShowXAxis(chart) ? textHeight + ChartStateTimelineModel.TopLabelGap : 0;
         var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
         var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, PngXAxisTitleOffset(chart, tickLabels)
-            + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 4));
+            + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle.WithDefaultFontWeight(600)) + 4));
         var legend = chart.Options.ShowLegend
             ? model.Legend.Layout(text => EstimatePngStyledTextWidth(text, legendFontSize, legendStyle, emphasized: false), bounds.Left, bounds.Width,
                 ChartStateTimelineModel.LegendBudgetHeight(ChartStateTimelineModel.LanePlotArea(chart, bounds, model.HasSummary, model.SummaryHeader, labelWidth, summaryWidth, textHeight, 0, nowReserve, axisLabelReserve, 0).Height))

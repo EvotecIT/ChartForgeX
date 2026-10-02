@@ -74,7 +74,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawRadialBarLegend(RgbaCanvas c, Chart chart, ChartRect plot, ChartSeries series) {
         var fontSize = PngLegendFontSize(chart);
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var area = PngRadialBarLegendArea(chart, plot, series);
         var rows = BuildPngRadialBarLegendRows(chart, series, area.Width, area.Height);
         var y = PngRadialBarLegendStartY(chart, area, rows.Count);
@@ -124,7 +124,7 @@ public sealed partial class PngChartRenderer {
 
     private static double PngRadialBarLegendWidestItem(Chart chart, ChartSeries series, int visible) {
         var widest = 0.0;
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < visible; i++) {
             var label = SliceLabel(chart, series.Points[i], i);
@@ -152,7 +152,7 @@ public sealed partial class PngChartRenderer {
         var x = 0.0;
         var vertical = PngIsLeftLegend(chart.Options.LegendPosition) || PngIsRightLegend(chart.Options.LegendPosition);
         var maxX = Math.Max(1, width);
-        var style = chart.Options.LegendStyle;
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
         var fontSize = PngLegendFontSize(chart);
         for (var i = 0; i < series.Points.Count; i++) {
             var value = FormatValue(chart, series.Points[i].Y);
