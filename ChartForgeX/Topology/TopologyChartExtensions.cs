@@ -121,6 +121,18 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
+    /// Sets the render options used when a render, prepare, diagnostics, or export call passes none.
+    /// </summary>
+    /// <param name="chart">The topology chart.</param>
+    /// <param name="options">The options to draw the chart with by default, or null to clear them. The chart keeps its own copy.</param>
+    /// <returns>The current topology chart.</returns>
+    public static TopologyChart WithRenderOptions(this TopologyChart chart, TopologyRenderOptions? options) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        chart.DefaultRenderOptions = options?.Clone();
+        return chart;
+    }
+
+    /// <summary>
     /// Sets the topology legend.
     /// </summary>
     /// <param name="chart">The topology chart.</param>

@@ -12,7 +12,8 @@ public readonly struct ChartHeatmapCell {
     /// <summary>Initializes a categorical heatmap cell.</summary>
     /// <param name="state">The state key, for example <c>pass</c> or <c>critical</c>.</param>
     /// <param name="text">Optional short text drawn inside the cell, for example a count.</param>
-    /// <param name="tooltip">Optional tooltip text. When null, the tooltip names the row, column, and state.</param>
+    /// <param name="tooltip">Optional tooltip text, appended to the accessible name and hover text of the cell, which
+    /// always name the row, column, and state (<c>row, column: state. tooltip</c>).</param>
     /// <param name="href">Optional link opened from the cell in SVG and HTML output. Relative, fragment, <c>http</c>,
     /// <c>https</c>, and <c>mailto</c> links are accepted; other schemes such as <c>javascript:</c> are rejected.</param>
     public ChartHeatmapCell(string state, string? text = null, string? tooltip = null, string? href = null) {

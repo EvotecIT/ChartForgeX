@@ -25,7 +25,11 @@ public sealed partial class ChartOptions {
         get => _barVisualStyle.Kind;
         set {
             if (!Enum.IsDefined(typeof(ChartBarStyle), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown bar style.");
-            BarVisualStyle = value == ChartBarStyle.SegmentedCapsule ? ChartBarVisualStyle.DashboardCapsule() : ChartBarVisualStyle.Solid();
+            BarVisualStyle = value switch {
+                ChartBarStyle.SegmentedCapsule => ChartBarVisualStyle.DashboardCapsule(),
+                ChartBarStyle.Flat => ChartBarVisualStyle.Flat(),
+                _ => ChartBarVisualStyle.Solid()
+            };
         }
     }
 

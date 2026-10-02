@@ -27,7 +27,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         var textHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
-        var nowReserve = model.NowVisible && ShowXAxis(chart) ? textHeight + 8 : 0;
+        var nowReserve = model.NowVisible && ShowXAxis(chart) ? textHeight + ChartStateTimelineModel.TopLabelGap : 0;
         var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
         var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, SvgXAxisBottomReserve(chart, tickLabels, bounds.Width));
         var legend = chart.Options.ShowLegend
@@ -45,7 +45,7 @@ public sealed partial class SvgChartRenderer {
         var band = model.Band(plot);
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("g").Attribute("data-cfx-role", "gantt-lanes").EndStartElement().Line();
-        WriteStateCategoryHatchPattern(writer, hatchId);
+        WriteStateCategoryHatchPattern(writer, hatchId, chart);
 
         foreach (var tick in model.Ticks) {
             var x = model.X(tick, plot);
@@ -90,6 +90,7 @@ public sealed partial class SvgChartRenderer {
                 var y = model.BarTop(plot, top, placed.SubRow);
                 var summary = model.ItemSummary(row, placed);
                 var radius = Math.Min(ChartGanttLaneModel.BarRadius, Math.Min(width, band) / 2);
+                var mark = ChartStateMark.For(chart, placed.Category);
                 writer.StartElement("rect")
                     .Attribute("data-cfx-role", "gantt-lane-item")
                     .Attribute("data-cfx-series", row.SeriesIndex)
@@ -107,16 +108,16 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("role", "img")
                     .Attribute("aria-label", summary)
                     .Attribute("x", left).Attribute("y", y).Attribute("width", width).Attribute("height", band)
-                    .Attribute("rx", radius)
-                    .Attribute("fill", placed.Category.Color.ToCss())
+                    .Attribute("rx", radius);
+                WriteStateMarkFill(writer, mark)
                     .EndStartElement()
                     .StartElement("title").Text(summary).EndElement()
                     .EndElement().Line();
-                if (placed.Category.Hatched) WriteStateCategoryHatch(writer, hatchId, left, y, width, band, radius, "gantt-lane-item-hatch");
+                WriteStateMarkLines(writer, hatchId, mark, left, y, width, band, radius, "gantt-lane-item-hatch");
                 var text = placed.Item.Label;
                 if (text != null && width >= EstimateSvgStyledTextWidth(chart, text, tickFontSize, tickStyle, emphasized: true) + ChartGanttLaneModel.LabelPadding * 2 && band >= textHeight + 2) {
                     writer.StartElement("g").Attribute("pointer-events", "none").EndStartElement();
-                    WriteStateCategoryText(writer, chart, "gantt-lane-item-label", text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, "start", tickFontSize, tickStyle, "600", true, ChartColorMath.TextOnBackground(placed.Category.Color));
+                    WriteStateCategoryText(writer, chart, "gantt-lane-item-label", text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, "start", tickFontSize, tickStyle, "600", true, paint: ChartMarkText.OnStateMark(chart, mark).Paint);
                     writer.EndElement().Line();
                 }
             }
@@ -128,7 +129,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
-            WriteStateCategoryText(writer, chart, "gantt-lanes-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - 8, "end", tickFontSize, tickStyle, "600", false);
+            WriteStateCategoryText(writer, chart, "gantt-lanes-summary-header", TrimSvgLabelToWidth(chart, model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle, emphasized: true), bounds.Right - 2, plot.Top - ChartStateTimelineModel.SummaryHeaderOffset, "end", tickFontSize, tickStyle, "600", false);
         }
 
         if (model.NowVisible) {
@@ -140,7 +141,7 @@ public sealed partial class SvgChartRenderer {
                 if (label.Length > 0) {
                     var half = EstimateSvgStyledTextWidth(chart, label, tickFontSize, tickStyle, emphasized: true) / 2;
                     var center = Math.Max(plot.Left + 2 + half, Math.Min(plot.Right - 2 - half, x));
-                    WriteStateCategoryText(writer, chart, "gantt-lanes-now-label", label, center, plot.Top - 6, "middle", tickFontSize, tickStyle, "700", false, t.Text);
+                    WriteStateCategoryText(writer, chart, "gantt-lanes-now-label", label, center, plot.Top - ChartStateTimelineModel.SummaryHeaderOffset, "middle", tickFontSize, tickStyle, "700", false, t.Text);
                 }
             }
         }

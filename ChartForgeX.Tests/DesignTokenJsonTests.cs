@@ -72,7 +72,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal(status.Medium.Fill, states[1].Color);
         Assert.Equal(status.Critical.Fill, states[2].Color);
         Assert.Equal(status.Low.Fill, states[3].Color);
-        Assert.True(states[5].Hatched && states[6].Hatched && !states[0].Hatched);
+        Assert.Equal(new[] { ChartStatePattern.Solid, ChartStatePattern.Hatched, ChartStatePattern.Outlined }, new[] { states[0].Pattern, states[5].Pattern, states[6].Pattern });
         Assert.Equal(new[] { "critical", "high", "medium", "low", "info" }, status.SeverityCategories().Select(state => state.Key).ToArray());
         Assert.Equal(new[] { "pass", "notEvaluated", "couldNotEvaluate" }, status.OutcomeCategories().Select(state => state.Key).ToArray());
     }
@@ -150,18 +150,25 @@ public sealed class DesignTokenJsonTests {
     [Fact]
     public void FromJson_Ramps_MapSequentialAndDivergingPerMode() {
         var light = VisualDesignTokens.FromJson(GraphiteJson);
-        Assert.Equal(new[] { "#86B6EF", "#5598E7", "#2A78D6", "#1C5CAB", "#104281" }, light.SequentialRamp!.Select(color => color.ToHex()).ToArray());
+        Assert.Equal(new[] { "#9AB8DC", "#5598E7", "#2A78D6", "#1C5CAB", "#104281" }, light.SequentialRamp!.Select(color => color.ToHex()).ToArray());
         Assert.Equal(new[] { "#F0A39D", "#E0645B", "#B8292A" }, light.DivergingRamp!.Negative.Select(color => color.ToHex()).ToArray());
         Assert.Equal("#ECEEF0", light.DivergingRamp.Neutral.ToHex());
-        Assert.Equal("#1C5CAB", light.DivergingRamp.Positive[2].ToHex());
+        Assert.Equal(new[] { "#9AB8DC", "#2A78D6", "#1C5CAB" }, light.DivergingRamp.Positive.Select(color => color.ToHex()).ToArray());
         var dark = VisualDesignTokens.FromJson(GraphiteJson, VisualThemeMode.Dark);
-        Assert.Equal("#184F95", dark.SequentialRamp![0].ToHex());
+        Assert.Equal("#324C6E", dark.SequentialRamp![0].ToHex());
+        Assert.Equal("#3987E5", dark.DivergingRamp!.Positive[1].ToHex());
         Assert.Equal("#2B2E34", dark.DivergingRamp!.Neutral.ToHex());
 
         var scale = light.DivergingRamp.ToMapColorScale(0);
         Assert.Equal("#B8292A", scale.LowColor.ToHex());
         Assert.Equal("#1C5CAB", scale.HighColor.ToHex());
         Assert.Equal(0, scale.MidpointValue);
+        Assert.Equal(new[] { "#B8292A", "#E0645B", "#F0A39D", "#ECEEF0" }, scale.Colors.Take(4).Select(color => color.ToHex()).ToArray());
+        Assert.Equal(7, scale.Colors.Count);
+        Assert.Equal("#ECEEF0", scale.MidpointColor!.Value.ToHex());
+        Assert.Equal("#E0645B", scale.ColorFor(-2, -3, 3).ToHex());
+        Assert.Equal(light.SequentialRamp!.Select(color => color.ToHex()), light.ToSequentialMapColorScale()!.Colors.Select(color => color.ToHex()));
+        Assert.Equal("#2A78D6", light.ToSequentialMapColorScale()!.ColorFor(50, 0, 100).ToHex());
         Assert.Equal("#104281", light.ToSequentialMapColorScale()!.HighColor.ToHex());
         Assert.Equal(light.SequentialRamp![0], light.Clone().SequentialRamp![0]);
     }
@@ -181,7 +188,7 @@ public sealed class DesignTokenJsonTests {
 
     [Fact]
     public void FromJson_InvalidRamps_NameThePath() {
-        var shortRamp = Regex.Replace(GraphiteJson, @"""sequential"": \[\s*""#86b6ef"",(?:\s*""#[0-9a-f]{6}"",?)*\s*\]","\"sequential\": [\"#86b6ef\"]");
+        var shortRamp = Regex.Replace(GraphiteJson, @"""sequential"": \[\s*""#9ab8dc"",(?:\s*""#[0-9a-f]{6}"",?)*\s*\]","\"sequential\": [\"#9ab8dc\"]");
         Assert.Contains("light.ramps.sequential", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(shortRamp)).Message, StringComparison.Ordinal);
         var badArm = GraphiteJson.Replace("\"#e0645b\"", "\"red\"");
         Assert.Contains("light.ramps.diverging.negative[1]", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(badArm)).Message, StringComparison.Ordinal);
@@ -195,7 +202,9 @@ public sealed class DesignTokenJsonTests {
         var chart = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 200d, 400d });
         chart.Options.HeatmapRelativeScale = true;
         var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell").Select(element => (string)element.Attribute("fill")!).ToArray();
-        Assert.Equal(new[] { tokens.SequentialRamp![0].ToCss(), tokens.SequentialRamp[2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills);
+        // A zero count takes the neutral surface; the ramp colours the counts above it.
+        Assert.Equal(new[] { tokens.SequentialRamp![2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills.Skip(1).ToArray());
+        Assert.DoesNotContain(fills[0], tokens.SequentialRamp.Select(colour => colour.ToCss()));
         var explicitColour = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 400d }, ChartColor.FromHex("#0f9f8c"));
         Assert.DoesNotContain(tokens.SequentialRamp[4].ToCss(), explicitColour.ToSvg(), StringComparison.OrdinalIgnoreCase);
         var withRamp = chart.ToPng();

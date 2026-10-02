@@ -19,7 +19,7 @@ public sealed class CategoricalHeatmapTests {
         Assert.Equal(new[] { "pass", "critical", "notEvaluated", "pass", "critical" }, cells.Select(cell => (string)cell.Attribute("data-cfx-status")!).ToArray());
         Assert.Equal(new[] { Pass.ToCss(), Critical.ToCss(), Neutral.ToCss() }, cells.Take(3).Select(cell => (string)cell.Attribute("fill")!).ToArray());
         Assert.Equal("DC01, LDAP: Critical", (string)cells[1].Attribute("aria-label")!);
-        Assert.Equal("Backup is 9 days old", Title(cells[4]));
+        Assert.Equal("DC02, Backup: Critical. Backup is 9 days old", Title(cells[4]));
 
         var links = ByRole(svg, "heatmap-cell-link");
         Assert.Equal(new[] { "#dc01-ldap", "evidence/dc02.html#backup" }, links.Select(link => (string)link.Attribute("href")!).ToArray());
@@ -83,8 +83,7 @@ public sealed class CategoricalHeatmapTests {
     public void Cell_UnsafeHref_IsRejected(string href) => Assert.Throws<ArgumentException>(() => new ChartHeatmapCell("pass", href: href));
 
     [Fact]
-    public void Validation_RejectsEmptyRowsMixedRowsAndDuplicateCategories() {
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddHeatmapCategoryRow("DC01", null, null));
+    public void Validation_RejectsStatelessCellsMixedRowsAndDuplicateCategories() {
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHeatmapCategoryRow("DC01", default(ChartHeatmapCell)));
         Assert.Throws<ArgumentException>(() => new ChartHeatmapCell(" "));
 
@@ -112,11 +111,13 @@ public sealed class CategoricalHeatmapTests {
     }
 
     [Fact]
-    public void ToSvg_LinkedCells_UseOneTabStopAndExposeStateLabel() {
+    public void ToSvg_OnlyLinkedCellsAreTabStopsAndCellsExposeStateLabel() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
         var cells = ByRole(svg, "heatmap-cell");
-        Assert.Null(cells[1].Attribute("tabindex"));
-        Assert.Equal("0", (string?)cells[0].Attribute("tabindex"));
+        // A static cell is named for screen readers but is not a tab stop; a linked cell is reached through its link.
+        Assert.All(cells, cell => Assert.Null(cell.Attribute("tabindex")));
+        Assert.Equal("DC01, LDAP: Critical", (string?)cells[1].Attribute("aria-label"));
+        Assert.NotEmpty(ByRole(svg, "heatmap-cell-link"));
         Assert.Equal("Not evaluated", (string?)cells[2].Attribute("data-cfx-meta-state"));
     }
 
@@ -158,7 +159,7 @@ public sealed class CategoricalHeatmapTests {
         var ids = cells.Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray();
         Assert.All(ids, id => Assert.False(string.IsNullOrEmpty(id)));
         Assert.Equal(4, ids.Distinct().Count());
-        Assert.All(cells, cell => Assert.Equal("Open evidence", Title(cell)));
+        Assert.All(cells, cell => Assert.EndsWith(": pass. Open evidence", Title(cell), StringComparison.Ordinal));
         Assert.Equal(ids, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray());
     }
 
@@ -239,7 +240,7 @@ public sealed class CategoricalHeatmapTests {
         .WithStateCategories(
             new ChartStateCategory("pass", "Passed", Pass),
             new ChartStateCategory("critical", "Critical", Critical),
-            new ChartStateCategory("notEvaluated", "Not evaluated", Neutral, hatched: true))
+            new ChartStateCategory("notEvaluated", "Not evaluated", Neutral, ChartStatePattern.Hatched))
         .WithXLabels("Replication", "LDAP", "Backup")
         .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass"), new ChartHeatmapCell("critical", "3", href: "#dc01-ldap"), new ChartHeatmapCell("notEvaluated"))
         .AddHeatmapCategoryRow("DC02", new ChartHeatmapCell("pass"), null, new ChartHeatmapCell("critical", "1", "Backup is 9 days old", "evidence/dc02.html#backup"));

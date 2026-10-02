@@ -35,7 +35,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-longitude-label=\"113.921 E\"", StringComparison.Ordinal), "Dotted map points should expose human-readable longitude labels.");
         Assert(svg.Contains("data-cfx-latitude-label=\"0.789 S\"", StringComparison.Ordinal), "Dotted map points should expose human-readable latitude labels.");
         Assert(svg.Contains("<title>Indonesia: 0.789 S, 113.921 E</title>", StringComparison.Ordinal), "Dotted map points should expose native SVG hover titles.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"dotted-map-point\"", StringComparison.Ordinal), "Dotted map points should be keyboard-focusable interactive SVG regions.");
+        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"dotted-map-point\"", StringComparison.Ordinal), "Dotted map points should be named interactive SVG regions without a tab stop of their own.");
         Assert(svg.Contains("fill=\"#22C55E\"", StringComparison.Ordinal), "Dotted map points should honor per-point colors.");
         var darkSvg = Chart.Create()
             .WithTheme(ChartTheme.ReportDark())
@@ -248,7 +248,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-connector-halo\"") == 2, "Dotted maps should render a subtle route halo so connectors stay readable over land texture.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-connector\" data-cfx-connector=") == 2, "Dotted maps should render route connectors before point markers.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-connector-arrow\"") == 2, "Dotted map connectors should render directional arrowheads.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" tabindex=\"0\" focusable=\"true\" data-cfx-role=\"dotted-map-connector\"", StringComparison.Ordinal), "Dotted map connectors should be keyboard-focusable interactive SVG regions.");
+        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"dotted-map-connector\"", StringComparison.Ordinal), "Dotted map connectors should be named interactive SVG regions without a tab stop of their own.");
         Assert(svg.Contains("style=\"--cfx-interactive-focus-stroke-width:", StringComparison.Ordinal), "Interactive dotted map connector routes should carry a connector-sized focus stroke.");
         Assert(svg.Contains(".cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{pointer-events:stroke}", StringComparison.Ordinal), "Interactive dotted map connector routes should target the visible stroke for pointer interactions.");
         Assert(svg.Contains("role=\"img\" aria-label=\"Spain to Warsaw:", StringComparison.Ordinal), "Dotted map connectors should expose accessible route summaries.");

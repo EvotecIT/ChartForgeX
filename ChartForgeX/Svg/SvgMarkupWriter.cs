@@ -61,6 +61,17 @@ internal sealed class SvgMarkupWriter {
         return this;
     }
 
+    /// <summary>
+    /// Writes a paint attribute. A typed paint is a token the renderer resolves against its colour variables when the
+    /// SVG is finished (see <see cref="Themes.SvgPaint.Resolve"/>), so it is written without escaping.
+    /// </summary>
+    public SvgMarkupWriter Paint(string name, Themes.SvgPaint paint) {
+        if (!paint.IsRaw || paint.Value == null) return Attribute(name, paint.Value);
+        AppendAttributeName(name);
+        _builder.Append("=\"").Append(paint.Value).Append('"');
+        return this;
+    }
+
     public SvgMarkupWriter Attribute(string name, double value) {
         EnsureFinite(value, nameof(value));
         AppendAttributeName(name);

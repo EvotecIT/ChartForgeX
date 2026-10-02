@@ -5,6 +5,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -189,6 +190,7 @@ public sealed partial class SvgChartRenderer {
             if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
                 DrawSvgSegmentedBar(sb, chart, s, index, pointIndex, id, p.X, p.Y, baseValue, x, top, barWidth, height);
             } else {
+                var flat = chart.Options.BarVisualStyle.Kind == ChartBarStyle.Flat;
                 AppendSvg(sb, writer => writer
                     .StartElement("rect")
                     .Attribute("data-cfx-role", "bar")
@@ -197,18 +199,18 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-x", p.X)
                     .Attribute("data-cfx-y", p.Y)
                     .Attribute("data-cfx-base", baseValue)
-                    .Attribute("data-cfx-color", PointColor(chart, s, index, pointIndex).ToHex())
+                    .Paint("data-cfx-color", DataColor(PointColor(chart, s, index, pointIndex)))
                     .Attribute("x", x)
                     .Attribute("y", top)
                     .Attribute("width", barWidth)
                     .Attribute("height", height)
                     .Attribute("rx", radius)
-                    .Attribute("fill", BarFill(chart, s, index, pointIndex, id))
-                    .Attribute("opacity", ChartVisualPrimitives.BarFillOpacity)
+                    .Paint("fill", flat ? SvgPaint.Of(PointColor(chart, s, index, pointIndex), SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)))
+                    .Attribute("opacity", flat ? null : SvgMarkupWriter.FormatNumber(ChartVisualPrimitives.BarFillOpacity))
                     .EndEmptyElement()
                     .Line());
                 DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, x, top, barWidth, height, radius, "bar-pattern");
-                DrawSvgBarHighlight(sb, x, top, barWidth, height);
+                if (!flat) DrawSvgBarHighlight(sb, x, top, barWidth, height);
             }
             if (ShouldDrawDataLabels(chart, s)) {
                 var label = FormatDataLabel(chart, s, pointIndex, p.Y);

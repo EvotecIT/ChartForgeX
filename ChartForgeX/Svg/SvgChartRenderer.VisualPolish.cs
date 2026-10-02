@@ -43,7 +43,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("height", Math.Max(0, height - inset * 2))
             .Attribute("rx", Math.Max(0, radius - inset))
             .Attribute("fill", "none")
-            .Attribute("stroke", ChartColor.White.ToCss())
+            .Paint("stroke", Themes.SvgPaint.Literal(ChartColor.White))
             .Attribute("stroke-opacity", opacity)
             .EndEmptyElement()
             .Line());

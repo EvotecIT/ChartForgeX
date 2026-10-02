@@ -39,8 +39,11 @@ public sealed partial class Chart {
     /// <param name="segments">The lane's intervals. They are sorted by start, then end, then input order; overlaps are drawn
     /// in that order, and rendered point indices (<c>data-cfx-point</c>) follow the sorted order.</param>
     /// <param name="summary">Optional text for the summary column, for example <c>99.2%</c>.</param>
+    /// <param name="group">Optional group the lane is listed under. Consecutive lanes with the same group share one
+    /// header row; a lane without a group after a grouped one is set apart by a small gap. Group names are lane labels and are
+    /// hidden with the y-axis.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null) {
+    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null) {
         if (name == null) throw new ArgumentNullException(nameof(name));
         if (segments == null) throw new ArgumentNullException(nameof(segments));
         var ordered = new List<ChartStateTimelineSegment>();
@@ -55,7 +58,8 @@ public sealed partial class Chart {
             .Select(item => item.Segment).ToList();
         var series = new ChartSeries(name, ChartSeriesKind.StateTimeline, ordered.ConvertAll(segment => new ChartPoint(segment.Start, segment.End))) {
             ShowInLegend = false,
-            LaneSummary = summary
+            LaneSummary = summary,
+            LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
         };
         foreach (var segment in ordered) {
             series.PointLabels.Add(segment.State);

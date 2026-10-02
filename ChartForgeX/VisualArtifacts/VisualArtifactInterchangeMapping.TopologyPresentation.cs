@@ -83,7 +83,8 @@ public static partial class VisualArtifactInterchangeMapping {
             : artifact.Accessibility.IsDecorative;
     }
 
-    private static VisualArtifactInterchangeLegend? MapLegend(TopologyLegend? legend) {
+    private static VisualArtifactInterchangeLegend? MapLegend(TopologyChart chart) {
+        var legend = chart.Legend;
         if (legend == null) return null;
         var mapped = new VisualArtifactInterchangeLegend { Title = legend.Title };
         foreach (TopologyLegendItem item in legend.Items) {
@@ -97,7 +98,8 @@ public static partial class VisualArtifactInterchangeMapping {
                 IconId = item.IconId,
                 Color = item.Color,
                 BackgroundColor = item.BackgroundColor,
-                LineStyle = item.LineStyle
+                // Edge items carry the style the renderers draw, so a consumer does not have to resolve Auto itself.
+                LineStyle = item.Kind == TopologyLegendItemKind.Edge ? TopologyRenderPrimitives.LegendLineStyle(chart, item) : item.LineStyle
             });
         }
         return mapped;

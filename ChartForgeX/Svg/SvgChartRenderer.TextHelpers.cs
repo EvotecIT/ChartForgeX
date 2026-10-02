@@ -3,11 +3,16 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
+    private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) =>
+        DrawSvgTextCenteredX(sb, chart, role, text, centerX, y, SvgPaint.Plain(fill), fontSize, maxWidth, fontWeight, stroke, strokeWidth, middleBaseline, style);
+
+    /// <summary>Draws centred text whose fill is a typed paint; a colour set on <paramref name="style"/> still wins.</summary>
+    private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, SvgPaint fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
         var preferredFontSize = fontSize;
         var resolvedStyle = style ?? new TextStyleOverride();
         var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));
@@ -19,7 +24,7 @@ public sealed partial class SvgChartRenderer {
         if (!string.IsNullOrEmpty(role)) writer.Attribute("data-cfx-role", role);
         writer.Attribute("x", centerX).Attribute("y", y).Attribute("text-anchor", "middle");
         if (middleBaseline) writer.Attribute("dominant-baseline", "middle");
-        writer.Attribute("fill", StyleColor(style, fill).ToCss());
+        writer.Paint("fill", style?.Color is { } styleColor ? SvgPaint.Plain(styleColor) : fill);
         if (stroke.HasValue && strokeWidth > 0) {
             writer.Attribute("stroke", stroke.Value.ToCss()).Attribute("stroke-width", strokeWidth).Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round");
         }

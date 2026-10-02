@@ -46,6 +46,14 @@ public sealed partial class PngChartRenderer {
             DrawXAxisTickLabel(c, chart, plot, label, x, tick, labelTicks.Select(model.FormatTick).ToArray());
         }
 
+        foreach (var group in model.Groups) {
+            var top = model.GroupTop(plot, group);
+            if (group.Offset > 0) c.DrawLine(bounds.Left, top, bounds.Right, top, t.Grid, ChartVisualPrimitives.GridStrokeWidth);
+            if (!ShowYAxis(chart) || group.Name.Length == 0) continue;
+            var groupLabel = TrimReadablePngLabelToWidth(group.Name, tickFontSize, bounds.Width, tickStyle);
+            if (groupLabel.Length > 0) DrawStateCategoryText(c, groupLabel, bounds.Left, top + model.GroupHeight(plot, group) / 2, tickStyle, t.Text, tickFontSize, true);
+        }
+
         var band = model.LaneBand(plot);
         for (var laneIndex = 0; laneIndex < model.Lanes.Count; laneIndex++) {
             var lane = model.Lanes[laneIndex];
@@ -60,8 +68,7 @@ public sealed partial class PngChartRenderer {
 
             foreach (var segment in lane.Segments) {
                 if (!model.TrySegmentSpan(segment, plot, out var left, out var width)) continue;
-                c.FillRoundedRect(left, y, width, band, Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2), segment.State.Color);
-                if (segment.State.Hatched) DrawStateCategoryHatch(c, left, y, width, band);
+                DrawStateMark(c, ChartStateMark.For(chart, segment.State), left, y, width, band, Math.Min(ChartStateTimelineModel.SegmentRadius, width / 2));
             }
 
             if (model.HasSummary && !string.IsNullOrWhiteSpace(lane.Summary)) {
@@ -72,7 +79,7 @@ public sealed partial class PngChartRenderer {
 
         if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
             var header = TrimReadablePngLabelToWidth(model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle);
-            DrawPngTextStyled(c, bounds.Right - 2 - EstimatePngStyledTextWidth(header, tickFontSize, tickStyle, emphasized: true), plot.Top - 8 - PngStyledTextBottomExtent(tickFontSize, tickStyle), header, tickStyle, t.MutedText, tickFontSize, emphasized: true);
+            DrawPngTextStyled(c, bounds.Right - 2 - EstimatePngStyledTextWidth(header, tickFontSize, tickStyle, emphasized: true), plot.Top - ChartStateTimelineModel.SummaryHeaderOffset - PngStyledTextBottomExtent(tickFontSize, tickStyle), header, tickStyle, t.MutedText, tickFontSize, emphasized: true);
         }
 
         if (ShowXAxis(chart)) {

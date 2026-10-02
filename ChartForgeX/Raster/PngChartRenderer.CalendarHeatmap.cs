@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -8,108 +7,81 @@ namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
     private static void DrawCalendarHeatmap(RgbaCanvas c, Chart chart, ChartRect basePlot) {
-        ChartSeries? series = null;
-        foreach (var item in chart.Series) if (item.Kind == ChartSeriesKind.CalendarHeatmap) { series = item; break; }
-        if (series == null || series.Points.Count == 0) return;
-        var cells = CalendarHeatmapCells(series);
-        if (cells.Count == 0) return;
+        var model = ChartCalendarHeatmapModel.Build(chart);
+        if (model == null) return;
 
         var t = chart.Options.Theme;
-        var minDate = cells[0].Date;
-        var maxDate = cells[0].Date;
-        var min = cells[0].Value;
-        var max = cells[0].Value;
-        foreach (var item in cells) {
-            if (item.Date < minDate) minDate = item.Date;
-            if (item.Date > maxDate) maxDate = item.Date;
-            if (item.Value < min) min = item.Value;
-            if (item.Value > max) max = item.Value;
+        var (leftReserve, topReserve, bottomReserve) = PngCalendarReserves(chart, model);
+        var layout = model.Layout(basePlot, leftReserve, topReserve, bottomReserve);
+
+        DrawCalendarHeatmapPngAxes(c, chart, model, layout);
+        var hasZero = false;
+        for (var day = model.Start; day <= model.End; day = day.AddDays(1)) {
+            var hasValue = model.TryGetDay(day, out var entry);
+            hasZero |= hasValue && model.IsZero(entry.Value) && !entry.Color.HasValue;
+            var color = hasValue ? model.Color(entry.Value, entry.Color) : ChartHeatmapSurface.CalendarEmptyColor(chart);
+            var x = layout.X(model.Column(day));
+            var y = layout.Y(model.Row(day));
+            c.FillRoundedRect(x, y, layout.Cell, layout.Cell, layout.Radius, color);
+            c.StrokeRoundedRect(x, y, layout.Cell, layout.Cell, layout.Radius, ApplyOpacity(t.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
         }
 
-        var start = CalendarWeekStart(minDate);
-        var end = CalendarWeekEnd(maxDate);
-        var columns = Math.Max(1, ((end - start).Days / 7) + 1);
+        if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapPngScale(c, chart, model, layout.X0 + layout.GridWidth, layout.Y0 + layout.GridHeight + 20, layout.Cell, model.EmptyDays > 0, hasZero);
+    }
+
+    /// <summary>Returns the space a calendar keeps for weekday labels, month labels, and its scale.</summary>
+    private static (double Left, double Top, double Bottom) PngCalendarReserves(Chart chart, ChartCalendarHeatmapModel model) {
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = PngTickFontSize(chart);
         var tickHeight = EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle);
-        var leftReserve = chart.Options.ShowAxes ? Math.Max(34, EstimatePngStyledTextWidth("Wed", tickFontSize, tickStyle, emphasized: false) + 12) : 6;
-        var topReserve = chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6;
-        var bottomReserve = chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8;
-        var plot = new ChartRect(basePlot.Left + leftReserve, basePlot.Top + topReserve, Math.Max(1, basePlot.Width - leftReserve - 8), Math.Max(1, basePlot.Height - topReserve - bottomReserve));
-        var gap = columns > 32 ? 2.5 : 3.5;
-        var cell = Math.Max(1, Math.Min((plot.Width - gap * (columns - 1)) / columns, (plot.Height - gap * 6) / 7));
-        var gridWidth = columns * cell + (columns - 1) * gap;
-        var gridHeight = 7 * cell + 6 * gap;
-        var x0 = plot.Left + Math.Max(0, (plot.Width - gridWidth) / 2);
-        var y0 = plot.Top + Math.Max(0, (plot.Height - gridHeight) / 2);
-        var radius = Math.Min(4, cell * 0.22);
-        var byDate = new Dictionary<DateTime, CalendarHeatmapCell>();
-        foreach (var item in cells) byDate[item.Date] = item;
-        var hasEmptyCells = false;
-
-        DrawCalendarHeatmapPngAxes(c, chart, start, maxDate, x0, y0, cell, gap);
-        for (var day = start; day <= end; day = day.AddDays(1)) {
-            var column = (day - start).Days / 7;
-            var row = (int)day.DayOfWeek;
-            var hasValue = byDate.TryGetValue(day, out var entry);
-            hasEmptyCells |= !hasValue;
-            var value = hasValue ? entry.Value : 0;
-            var color = hasValue ? ChartHeatmapSurface.CalendarColor(chart, series, entry.Color, value, min, max) : ChartHeatmapSurface.CalendarEmptyColor(chart);
-            var x = x0 + column * (cell + gap);
-            var y = y0 + row * (cell + gap);
-            c.FillRoundedRect(x, y, cell, cell, radius, color);
-            c.StrokeRoundedRect(x, y, cell, cell, radius, ApplyOpacity(t.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
-        }
-
-        if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapPngScale(c, chart, series, min, max, x0 + gridWidth, y0 + gridHeight + 20, cell, hasEmptyCells);
+        var widestDay = 0.0;
+        for (var row = 0; row < 7; row++) widestDay = Math.Max(widestDay, EstimatePngStyledTextWidth(model.DayName(row), tickFontSize, tickStyle, emphasized: false));
+        return (chart.Options.ShowAxes ? Math.Max(34, widestDay + 12) : 6,
+            chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6,
+            chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8);
     }
 
-    private static void DrawCalendarHeatmapPngAxes(RgbaCanvas c, Chart chart, DateTime start, DateTime end, double x0, double y0, double cell, double gap) {
+    private static void DrawCalendarHeatmapPngAxes(RgbaCanvas c, Chart chart, ChartCalendarHeatmapModel model, ChartCalendarLayout layout) {
         if (!chart.Options.ShowAxes) return;
-        var t = chart.Options.Theme;
+        var style = chart.Options.TickLabelStyle;
         var fontSize = PngTickFontSize(chart);
-        DrawCalendarHeatmapPngTick(c, chart, x0 - 8, y0 + 1 * (cell + gap) + cell / 2, "Mon", rightAligned: true, emphasized: false);
-        DrawCalendarHeatmapPngTick(c, chart, x0 - 8, y0 + 3 * (cell + gap) + cell / 2, "Wed", rightAligned: true, emphasized: false);
-        DrawCalendarHeatmapPngTick(c, chart, x0 - 8, y0 + 5 * (cell + gap) + cell / 2, "Fri", rightAligned: true, emphasized: false);
+        foreach (var row in model.LabelledRows(layout)) {
+            DrawCalendarHeatmapPngTick(c, chart, layout.X0 - 8, layout.Y(row) + layout.Cell / 2, model.DayName(row), rightAligned: true, emphasized: false);
+        }
 
-        var month = new DateTime(start.Year, start.Month, 1);
-        while (month < start) month = month.AddMonths(1);
-        var lastX = x0 - 40;
-        while (month <= end) {
-            var column = Math.Max(0, (month - start).Days / 7);
-            var x = x0 + column * (cell + gap);
-            if (x - lastX >= 28) {
-                DrawPngTextStyled(c, x, y0 - EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) - 4 - PngStyledTextTopExtent(fontSize, chart.Options.TickLabelStyle), month.ToString("MMM", System.Globalization.CultureInfo.InvariantCulture), chart.Options.TickLabelStyle, t.MutedText, fontSize, emphasized: true);
-                lastX = x;
-            }
-
-            month = month.AddMonths(1);
+        foreach (var (month, x) in model.MonthLabels(layout)) {
+            DrawPngTextStyled(c, x, layout.Y0 - EstimatePngStyledTextBoundsHeight(fontSize, style) - 4 - PngStyledTextTopExtent(fontSize, style), model.MonthName(month), style, chart.Options.Theme.MutedText, fontSize, emphasized: true);
         }
     }
 
-    private static void DrawCalendarHeatmapPngScale(RgbaCanvas c, Chart chart, ChartSeries series, double min, double max, double right, double y, double cell, bool showNoData) {
-        var t = chart.Options.Theme;
+    private static void DrawCalendarHeatmapPngScale(RgbaCanvas c, Chart chart, ChartCalendarHeatmapModel model, double right, double y, double cell, bool showNoData, bool showZero) {
+        var labels = chart.Options.Labels;
         var size = Math.Max(7, Math.Min(12, cell));
         var gap = Math.Max(2, size * 0.28);
         var width = 5 * size + 4 * gap;
         var fontSize = PngTickFontSize(chart);
-        var noDataWidth = showNoData ? size + gap : 0;
+        var extraWidth = (showNoData ? size + gap : 0) + (showZero ? size + gap : 0);
         var style = chart.Options.TickLabelStyle;
-        var x = right - noDataWidth - width - EstimatePngStyledTextWidth("More", fontSize, style, emphasized: false) - 10;
-        var lessLabelX = x - EstimatePngStyledTextWidth("Less", fontSize, style, emphasized: false) - 8;
+        var x = right - extraWidth - width - EstimatePngStyledTextWidth(labels.More, fontSize, style, emphasized: false) - 10;
+        var lessLabelX = x - EstimatePngStyledTextWidth(labels.Less, fontSize, style, emphasized: false) - 8;
         if (showNoData) {
             c.FillRoundedRect(x, y, size, size, Math.Min(3, size * 0.22), ChartHeatmapSurface.CalendarEmptyColor(chart));
             x += size + gap;
         }
 
-        DrawCalendarHeatmapPngTick(c, chart, lessLabelX, y + size / 2, "Less", rightAligned: false, emphasized: false);
+        if (showZero) {
+            c.FillRoundedRect(x, y, size, size, Math.Min(3, size * 0.22), ChartHeatmapSurface.ZeroColor(chart));
+            x += size + gap;
+        }
+
+        DrawCalendarHeatmapPngTick(c, chart, lessLabelX, y + size / 2, labels.Less, rightAligned: false, emphasized: false);
         for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, i / 4.0);
-            var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
+            var value = model.ScaleValue(i);
+            var color = ChartHeatmapSurface.CalendarColor(chart, model.Series, null, value, model.RampMin, model.Max);
             c.FillRoundedRect(x + i * (size + gap), y, size, size, Math.Min(3, size * 0.22), color);
         }
 
-        DrawCalendarHeatmapPngTick(c, chart, x + width + 8, y + size / 2, "More", rightAligned: false, emphasized: false);
+        DrawCalendarHeatmapPngTick(c, chart, x + width + 8, y + size / 2, labels.More, rightAligned: false, emphasized: false);
     }
 
     private static void DrawCalendarHeatmapPngTick(RgbaCanvas c, Chart chart, double x, double middle, string text, bool rightAligned, bool emphasized) {
@@ -121,31 +93,5 @@ public sealed partial class PngChartRenderer {
         DrawPngTextStyled(c, drawX, drawY, text, style, chart.Options.Theme.MutedText, fontSize, emphasized);
     }
 
-    private static List<CalendarHeatmapCell> CalendarHeatmapCells(ChartSeries series) {
-        var cells = new List<CalendarHeatmapCell>();
-        for (var i = 0; i < series.Points.Count; i++) {
-            var color = i < series.PointColors.Count ? series.PointColors[i] : null;
-            cells.Add(new CalendarHeatmapCell(DateTime.FromOADate(series.Points[i].X).Date, series.Points[i].Y, color));
-        }
-
-        return cells;
-    }
-
-    private static DateTime CalendarWeekStart(DateTime date) => date.Date.AddDays(-(int)date.DayOfWeek);
-
-    private static DateTime CalendarWeekEnd(DateTime date) => date.Date.AddDays(6 - (int)date.DayOfWeek);
-
     private static bool IsCalendarHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.CalendarHeatmap);
-
-    private readonly struct CalendarHeatmapCell {
-        public readonly DateTime Date;
-        public readonly double Value;
-        public readonly ChartColor? Color;
-
-        public CalendarHeatmapCell(DateTime date, double value, ChartColor? color) {
-            Date = date;
-            Value = value;
-            Color = color;
-        }
-    }
 }

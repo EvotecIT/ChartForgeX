@@ -7,12 +7,15 @@ public sealed partial class Chart {
     /// <summary>
     /// Adds a categorical heatmap row. Each cell's state is coloured through <see cref="ChartOptions.StateCategories"/>
     /// (see <see cref="WithStateCategories(ChartStateCategory[])"/>), so status colours never come from a numeric ramp.
-    /// Cells are assigned to columns one through N; null cells are masked and keep their column position.
+    /// Cells are assigned to columns one through N; null cells are masked and keep their column position. A row may
+    /// have no visible cells, for an entity nothing is known about: it keeps its label and an empty row.
     /// </summary>
     /// <param name="name">The row name.</param>
     /// <param name="cells">The row cells in column order.</param>
+    /// <param name="group">Optional group the row is listed under. Consecutive rows with the same group share one
+    /// header row; a row without a group after a grouped one is set apart by a small gap.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell?> cells) {
+    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell?> cells, string? group = null) {
         EnsureCanAddSeries();
         if (name == null) throw new ArgumentNullException(nameof(name));
         if (cells == null) throw new ArgumentNullException(nameof(cells));
@@ -27,8 +30,12 @@ public sealed partial class Chart {
             visible.Add(cell.Value);
         }
 
-        if (visible.Count == 0) throw new ArgumentException("Categorical heatmap rows must contain at least one visible cell.", nameof(cells));
-        var series = new ChartSeries(name, ChartSeriesKind.Heatmap, points) { HeatmapColumnCount = column, ShowInLegend = false };
+        var series = new ChartSeries(name, ChartSeriesKind.Heatmap, points) {
+            HeatmapColumnCount = column,
+            ShowInLegend = false,
+            IsCategoricalHeatmapRow = true,
+            LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
+        };
         foreach (var cell in visible) {
             series.HeatmapCells.Add(cell);
             series.PointLabels.Add(cell.Text);
@@ -41,12 +48,13 @@ public sealed partial class Chart {
     /// <summary>Adds a categorical heatmap row with every column filled.</summary>
     /// <param name="name">The row name.</param>
     /// <param name="cells">The row cells in column order.</param>
+    /// <param name="group">Optional group the row is listed under.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell> cells) {
+    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell> cells, string? group = null) {
         if (cells == null) throw new ArgumentNullException(nameof(cells));
         var nullable = new List<ChartHeatmapCell?>();
         foreach (var cell in cells) nullable.Add(cell);
-        return AddHeatmapCategoryRow(name, nullable);
+        return AddHeatmapCategoryRow(name, nullable, group);
     }
 
     /// <summary>Adds a categorical heatmap row from cells in column order; null cells are masked.</summary>

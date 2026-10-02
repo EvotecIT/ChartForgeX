@@ -4,6 +4,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -34,15 +35,15 @@ public sealed partial class SvgChartRenderer {
                 if (pointIndex < 0) continue;
                 var value = FindHeatmapValue(series, columns[columnIndex]);
                 var cx = layout.Left + layout.HexWidth / 2 + columnIndex * layout.ColumnStep + (rowIndex % 2) * layout.HexWidth / 2;
-                var color = ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
+                var blend = ChartHeatmapSurface.CellBlend(chart, series.Color, value, min, max);
                 var ratio = ChartHeatmapSurface.Ratio(chart, value, min, max);
                 var status = ChartHeatmapSurface.CellStatus(chart, ratio);
                 var summary = series.Name + ", " + FormatX(chart, columns[columnIndex]) + ": " + FormatValue(chart, value);
                 if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
-                WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, color, status, ChartHeatmapSurface.Level(ratio), summary);
+                WriteHexbinCell(body, chart, rowIndex, columnIndex, cx, cy, layout.Radius, blend.Paint, status, ChartHeatmapSurface.Level(ratio), summary);
                 if (ShouldDrawDataLabels(chart, series) && layout.Radius >= 16) {
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
-                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartColorMath.TextOnBackground(color), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), layout.HexWidth - 8, "750", style: dataStyle);
+                    DrawSvgTextCenteredX(body, chart, "data-label", FormatDataLabel(chart, series, pointIndex, value), cx, cy + chart.Options.Theme.DataLabelFontSize * 0.35, ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max).Paint, StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), layout.HexWidth - 8, "750", style: dataStyle);
                 }
             }
         }
@@ -59,7 +60,7 @@ public sealed partial class SvgChartRenderer {
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) DrawSvgYAxisTitle(body, chart, plot, Math.Max(24, plot.Left - 86), "hexbin-heatmap-y-axis-title");
         }
 
-        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color);
+        if (chart.Options.ShowHeatmapScale) DrawHeatmapScale(body, chart, plot, min, max, rows[0].Color, plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY);
 
         AppendSvg(sb, writer => writer
             .StartElement("g")
@@ -75,12 +76,10 @@ public sealed partial class SvgChartRenderer {
             .Line());
     }
 
-    private static void WriteHexbinCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, double cx, double cy, double radius, ChartColor color, string? status, int level, string summary) {
+    private static void WriteHexbinCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, double cx, double cy, double radius, SvgPaint fill, string? status, int level, string summary) {
         AppendSvg(sb, writer => writer
             .StartElement("polygon")
             .Attribute("class", "cfx-interactive-region")
-            .Attribute("tabindex", "0")
-            .Attribute("focusable", "true")
             .Attribute("data-cfx-role", "hexbin-cell")
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)
@@ -89,8 +88,8 @@ public sealed partial class SvgChartRenderer {
             .Attribute("role", "img")
             .Attribute("aria-label", summary)
             .Attribute("points", HexbinPointsAttribute(cx, cy, radius))
-            .Attribute("fill", color.ToCss())
-            .Attribute("stroke", chart.Options.Theme.CardBackground.ToCss())
+            .Paint("fill", fill)
+            .Paint("stroke", SvgPaint.Of(chart.Options.Theme.CardBackground, SvgColorRole.Surface))
             .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
             .Attribute("stroke-width", Math.Max(1, ChartVisualPrimitives.HeatmapCellBorderStrokeWidth + 0.8))
             .EndStartElement()

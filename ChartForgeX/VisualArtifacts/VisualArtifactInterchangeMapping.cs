@@ -70,7 +70,7 @@ public static partial class VisualArtifactInterchangeMapping {
         VisualArtifact artifact,
         TopologyChart topology,
         TopologyRenderOptions? renderOptions) {
-        var options = (renderOptions ?? new TopologyRenderOptions()).CloneForRendering();
+        var options = topology.ResolveRenderOptions(renderOptions).CloneForRendering();
         var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
         MapPreparedTopology(envelope, artifact, prepared, options);
     }
@@ -111,7 +111,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Height = prepared.Viewport.Height;
         envelope.Presentation = new VisualArtifactInterchangePresentation {
             Theme = MapTheme(prepared.Theme ?? TopologyTheme.Light()),
-            Legend = MapLegend(prepared.Legend)
+            Legend = MapLegend(prepared)
         };
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) {
             envelope.Presentation.MapViewport = new VisualArtifactInterchangeMapViewport {

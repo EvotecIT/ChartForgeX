@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -61,7 +62,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("x", chart.Viewport.Width / 2)
             .Attribute("y", bannerY + 39)
             .Attribute("text-anchor", "middle")
-            .Attribute("fill", "#FFFFFF")
+            .Paint("fill", ContrastWhite)
             .Attribute("font-size", fontSize)
             .Attribute("font-weight", "700")
             .Text(title));

@@ -37,7 +37,7 @@ public sealed partial class SvgChartRenderer {
         var regionStrokeWidth = Math.Max(0, chart.Options.MapRegionStrokeWidth);
         var hasMissing = definition.Regions.Any(tile => !data.ContainsKey(tile.Code));
         var missingCount = definition.Regions.Count(tile => !data.ContainsKey(tile.Code));
-        var containerSummary = series.Name + " tile map with " + data.Count.ToString(CultureInfo.InvariantCulture) + " filled regions and " + missingCount.ToString(CultureInfo.InvariantCulture) + " missing regions";
+        var containerSummary = chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.TileMapGroup, chart.Title, new[] { series.Name }, data.Count, missingCount, mapName: definition.Name));
 
         sb.AppendLine($"<g data-cfx-role=\"tile-map\" data-cfx-map-kind=\"{Escape(definition.Id)}\" data-cfx-map-id=\"{Escape(definition.Id)}\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-region-count=\"{definition.Regions.Count}\" data-cfx-filled-region-count=\"{data.Count}\" data-cfx-missing-region-count=\"{missingCount}\" data-cfx-min-value=\"{F(sourceMin)}\" data-cfx-max-value=\"{F(sourceMax)}\" data-cfx-map-color-scale=\"{(chart.Options.MapColorScale == null ? "default" : "custom")}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");
         if (chart.Options.ShowMapSurface) DrawTileMapSvgSurface(sb, chart, x0, y0, width, height, tileSize);
@@ -51,12 +51,10 @@ public sealed partial class SvgChartRenderer {
             var y = y0 + tile.Row * (tileSize + gap);
             var points = HexTilePoints(x, y, tileSize);
             var regionName = tile.Name;
-            var summary = regionName + " (" + tile.Code + "): " + (hasValue ? FormatValue(chart, value) : "No data");
+            var summary = regionName + " (" + tile.Code + "): " + (hasValue ? FormatValue(chart, value) : chart.Options.Labels.NoData);
             AppendSvg(sb, 768, writer => {
                 writer.StartElement("polygon")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", "tile-map-region")
                     .Attribute("data-cfx-region", tile.Code)
                     .Attribute("data-cfx-region-name", regionName)
@@ -108,27 +106,23 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var size = Math.Max(8, Math.Min(13, tileSize * 0.32));
         var gap = Math.Max(2, size * 0.3);
-        var width = 5 * size + 4 * gap;
+        var steps = ChartHeatmapSurface.MapScaleStepCount(chart);
+        var width = steps * size + (steps - 1) * gap;
         var x = right - width;
         if (hasMissing) DrawMapSvgNoDataScale(sb, chart, "tile-map", x, y, size, plot);
         WriteMapSvgTick(sb, chart, "tile-map-scale-label", ChartHeatmapSurface.MapLowLabel(chart), x - 8, y + size / 2, "end", middleBaseline: true);
-        for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
-            var ratio = ChartHeatmapSurface.MapRatio(chart, value, min, max);
-            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
-            AppendSvg(sb, 256, writer => writer.StartElement("rect").Attribute("data-cfx-role", "tile-map-scale-step").Attribute("data-cfx-value", value).Attribute("data-cfx-status", ChartHeatmapSurface.Status(ratio)).Attribute("x", x + i * (size + gap)).Attribute("y", y).Attribute("width", size).Attribute("height", size).Attribute("rx", Math.Min(3, size * 0.22)).Attribute("fill", color.ToCss()).EndEmptyElement().Line());
-        }
+        WriteMapSvgScaleSteps(sb, chart, series, min, max, "tile-map", x, y, size, gap, Math.Min(3, size * 0.22));
         WriteMapSvgTick(sb, chart, "tile-map-scale-label", ChartHeatmapSurface.MapHighLabel(chart), x + width + 8, y + size / 2, "start", middleBaseline: true);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            WriteMapSvgTick(sb, chart, "tile-map-scale-midpoint-label", midpointLabel, x + 2 * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
+            WriteMapSvgTick(sb, chart, "tile-map-scale-midpoint-label", midpointLabel, x + ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps) * (size + gap) + size / 2, y + size + StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize) + 2, "middle", value: ChartHeatmapSurface.MapScaleMidpoint(chart, min, max));
         }
     }
 
     private static void DrawMapSvgNoDataScale(StringBuilder sb, Chart chart, string rolePrefix, double valueScaleX, double y, double size, ChartRect plot) {
         var t = chart.Options.Theme;
         var noData = ChartHeatmapSurface.MapNoDataColor(chart);
-        const string label = "No data";
+        var label = chart.Options.Labels.NoData;
         var labelWidth = EstimateSvgStyledTextWidth(chart, label, StyleFontSize(chart.Options.TickLabelStyle, t.TickLabelFontSize), chart.Options.TickLabelStyle);
         var width = size + 5 + labelWidth;
         var x = valueScaleX - width - 18;

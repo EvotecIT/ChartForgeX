@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -18,7 +19,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-cfx-motion-source", plan.SourceId)
             .Attribute("data-cfx-motion-kind", "route-pulse");
         var duration = MotionDuration(options.Motion!);
-        var tourPathId = SafeElementId(chart.Id, "motion-tour", plan.SourceId);
+        var tourPathId = TopologySvgIds.Element(chart, options, "motion-tour", plan.SourceId);
         layer.Element("path", path => path
             .Attribute("id", tourPathId)
             .Class(prefix + "__motion-tour-path")
@@ -32,7 +33,7 @@ public sealed partial class TopologySvgRenderer {
             var edge = entry.Edge;
             var points = EdgePoints(chart, edge, nodes);
             var color = MotionColor(entry, plan, options, theme);
-            var pathId = SafeElementId(chart.Id, "motion-route", edge.Id + "-" + index.ToString(CultureInfo.InvariantCulture));
+            var pathId = TopologySvgIds.Element(chart, options, "motion-route", edge.Id + "-" + index.ToString(CultureInfo.InvariantCulture));
             layer.Element("path", path => {
                 path
                     .Attribute("id", pathId)
@@ -41,7 +42,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-edge-id", edge.Id)
                     .Attribute("d", EdgePath(chart, edge, nodes, points, options))
                     .Attribute("fill", "none")
-                    .Attribute("stroke", color)
+                    .Paint("stroke", color)
                     .Attribute("stroke-width", System.Math.Max(2.5, options.Motion!.MarkerRadius * 0.7))
                     .Attribute("stroke-linecap", "round")
                     .Attribute("stroke-linejoin", "round")
@@ -68,14 +69,14 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("data-cfx-motion-source", plan.SourceId)
             .Attribute("data-cfx-motion-kind", "route-pulse");
         var duration = MotionDuration(options.Motion!);
-        var tourPathId = SafeElementId(chart.Id, "motion-tour", plan.SourceId);
+        var tourPathId = TopologySvgIds.Element(chart, options, "motion-tour", plan.SourceId);
         layer.Element("circle", circle => {
             circle
                 .Class(prefix + "__motion-marker")
                 .Attribute("data-cfx-role", "topology-motion-marker")
                 .Attribute("data-cfx-motion-source", plan.SourceId)
                 .Attribute("r", options.Motion!.MarkerRadius)
-                .Attribute("fill", MotionMarkerColor(plan, options, theme))
+                .Paint("fill", MotionMarkerColor(plan, options, theme))
                 .Attribute("stroke", theme.Background)
                 .Attribute("stroke-width", "2")
                 .Attribute("opacity", "0.95");
@@ -105,7 +106,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("cy", CenterY(node))
                     .Attribute("r", options.Motion!.MarkerRadius + 2)
                     .Attribute("fill", "none")
-                    .Attribute("stroke", color)
+                    .Paint("stroke", color)
                     .Attribute("stroke-width", "2")
                     .Attribute("opacity", "0.22");
                 circle.Element("animate", animate => animate
@@ -126,19 +127,19 @@ public sealed partial class TopologySvgRenderer {
         root.AddElement(layer);
     }
 
-    private static string MotionColor(TopologyMotionEntry entry, TopologyMotionPlan plan, TopologyRenderOptions options, TopologyTheme theme) {
-        if (!string.IsNullOrWhiteSpace(options.Motion?.MarkerColor)) return options.Motion!.MarkerColor!.Trim();
-        if (!string.IsNullOrWhiteSpace(plan.Color)) return plan.Color!;
-        if (!string.IsNullOrWhiteSpace(entry.Edge.Color)) return entry.Edge.Color!.Trim();
-        return theme.StatusColor(entry.Edge.Status);
+    private static SvgPaint MotionColor(TopologyMotionEntry entry, TopologyMotionPlan plan, TopologyRenderOptions options, TopologyTheme theme) {
+        if (!string.IsNullOrWhiteSpace(options.Motion?.MarkerColor)) return SvgPaint.Plain(options.Motion!.MarkerColor!.Trim());
+        if (!string.IsNullOrWhiteSpace(plan.Color)) return SvgPaint.Plain(plan.Color!);
+        if (!string.IsNullOrWhiteSpace(entry.Edge.Color)) return SvgPaint.Plain(entry.Edge.Color!.Trim());
+        return StatusColorPaint(theme.StatusColor(entry.Edge.Status));
     }
 
-    private static string MotionMarkerColor(TopologyMotionPlan plan, TopologyRenderOptions options, TopologyTheme theme) {
-        if (!string.IsNullOrWhiteSpace(options.Motion?.MarkerColor)) return options.Motion!.MarkerColor!.Trim();
-        if (!string.IsNullOrWhiteSpace(plan.Color)) return plan.Color!;
+    private static SvgPaint MotionMarkerColor(TopologyMotionPlan plan, TopologyRenderOptions options, TopologyTheme theme) {
+        if (!string.IsNullOrWhiteSpace(options.Motion?.MarkerColor)) return SvgPaint.Plain(options.Motion!.MarkerColor!.Trim());
+        if (!string.IsNullOrWhiteSpace(plan.Color)) return SvgPaint.Plain(plan.Color!);
         var first = plan.Entries.Count == 0 ? null : plan.Entries[0].Edge;
-        if (!string.IsNullOrWhiteSpace(first?.Color)) return first!.Color!.Trim();
-        return first == null ? theme.Accent : theme.StatusColor(first.Status);
+        if (!string.IsNullOrWhiteSpace(first?.Color)) return SvgPaint.Plain(first!.Color!.Trim());
+        return first == null ? SvgPaint.Plain(theme.Accent) : StatusColorPaint(theme.StatusColor(first.Status));
     }
 
     private static string MotionTourPath(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyRenderOptions options, TopologyMotionPlan plan) {
@@ -155,11 +156,11 @@ public sealed partial class TopologySvgRenderer {
         return hasPoint ? builder.ToString() : "M 0 0";
     }
 
-    private static string MotionNodeColor(TopologyNode node, TopologyMotionPlan plan, TopologyRenderOptions options, TopologyTheme theme) {
-        if (!string.IsNullOrWhiteSpace(options.Motion?.MarkerColor)) return options.Motion!.MarkerColor!.Trim();
-        if (!string.IsNullOrWhiteSpace(plan.Color)) return plan.Color!;
-        if (!string.IsNullOrWhiteSpace(node.Color)) return node.Color!.Trim();
-        return theme.StatusColor(node.Status);
+    private static SvgPaint MotionNodeColor(TopologyNode node, TopologyMotionPlan plan, TopologyRenderOptions options, TopologyTheme theme) {
+        if (!string.IsNullOrWhiteSpace(options.Motion?.MarkerColor)) return SvgPaint.Plain(options.Motion!.MarkerColor!.Trim());
+        if (!string.IsNullOrWhiteSpace(plan.Color)) return SvgPaint.Plain(plan.Color!);
+        if (!string.IsNullOrWhiteSpace(node.Color)) return SvgPaint.Plain(node.Color!.Trim());
+        return StatusColorPaint(theme.StatusColor(node.Status));
     }
 
     private static string MotionDuration(TopologyMotionOptions motion) =>

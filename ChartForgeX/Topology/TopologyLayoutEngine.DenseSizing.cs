@@ -74,6 +74,26 @@ internal static partial class TopologyLayoutEngine {
         return Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(count))));
     }
 
+    private const double DenseRowGutter = 34;
+    // A route lane needs about this much height; the base gutter holds six lanes between the clearances.
+    private const double DenseLaneHeight = 3;
+    private const int DenseBaseLanes = 6;
+    private const double DenseMaximumExtraRowGutter = 30;
+
+    /// <summary>
+    /// Returns the gap between card rows of a group. Readable dense layouts widen it when many routed edges end in the
+    /// group, so the routes that run between the rows fit side by side instead of on top of each other. Only the height
+    /// grows: panel widths, and with them the wrapped rows, stay as they are.
+    /// </summary>
+    private static double DenseRowGap(TopologyChart chart, IList<TopologyNode> nodes, int rows) {
+        if (!UsesReadableDenseLayout(chart) || nodes.Count == 0 || chart.Edges.Count == 0) return DenseRowGutter;
+        var ids = new HashSet<string>(nodes.Select(node => node.Id), StringComparer.Ordinal);
+        var routed = chart.Edges.Count(edge => edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
+            (ids.Contains(edge.SourceNodeId) || ids.Contains(edge.TargetNodeId)));
+        var lanes = (int)Math.Ceiling(routed / (double)Math.Max(1, rows));
+        return DenseRowGutter + Math.Min(DenseMaximumExtraRowGutter, DenseLaneHeight * Math.Max(0, lanes - DenseBaseLanes));
+    }
+
     private static double DenseCaptionHeight(TopologyChart chart, IList<TopologyNode> nodes) =>
         nodes.Select(node => TopologyNodeFootprint.Caption(chart, node).Height).DefaultIfEmpty(0).Max();
 
@@ -128,13 +148,13 @@ internal static partial class TopologyLayoutEngine {
         if (policy == TopologyGroupLayoutPolicy.PairRows) {
             var pairMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max() + DenseCaptionHeight(chart, nodes);
             var pairRows = (int)Math.Ceiling(nodes.Count / 2.0);
-            return Math.Max(170, 98 + pairRows * (pairMaxNodeHeight + 34));
+            return Math.Max(170, 98 + pairRows * (pairMaxNodeHeight + DenseRowGap(chart, nodes, pairRows)));
         }
 
         if (policy == TopologyGroupLayoutPolicy.Grid && UsesReadableDenseLayout(chart)) {
             var gridMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max() + DenseCaptionHeight(chart, nodes);
             var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(nodes.Count));
-            return Math.Max(170, 98 + gridRows * (gridMaxNodeHeight + 34));
+            return Math.Max(170, 98 + gridRows * (gridMaxNodeHeight + DenseRowGap(chart, nodes, gridRows)));
         }
 
         if (policy == TopologyGroupLayoutPolicy.MiniMesh) {

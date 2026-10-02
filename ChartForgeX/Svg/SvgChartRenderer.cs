@@ -33,32 +33,6 @@ public sealed partial class SvgChartRenderer {
         sb.Append('<').Append('/').Append(name).Append('>').AppendLine();
     }
 
-    private static void AppendLinearGradient(StringBuilder sb, string id, string x1, string x2, string y1, string y2, string startColor, double startOpacity, string endColor, double endOpacity) {
-        AppendSvg(sb, writer => writer
-            .StartElement("linearGradient")
-            .Attribute("id", id)
-            .Attribute("x1", x1)
-            .Attribute("x2", x2)
-            .Attribute("y1", y1)
-            .Attribute("y2", y2)
-            .EndStartElement()
-            .StartElement("stop")
-            .Attribute("offset", "0%")
-            .Attribute("stop-color", startColor)
-            .Attribute("stop-opacity", startOpacity)
-            .EndEmptyElement()
-            .StartElement("stop")
-            .Attribute("offset", "100%")
-            .Attribute("stop-color", endColor)
-            .Attribute("stop-opacity", endOpacity)
-            .EndEmptyElement()
-            .EndElement()
-            .Line());
-    }
-
-    private static void AppendBarSurfaceGradient(StringBuilder sb, string id, ChartColor color) =>
-        AppendLinearGradient(sb, id, "0", "0", "0", "1", ChartMarkSurface.BarGradientTop(color).ToHex(), 1, ChartMarkSurface.BarGradientBottom(color).ToHex(), 0.94);
-
     /// <summary>
     /// Renders the specified chart to SVG.
     /// </summary>
@@ -77,6 +51,23 @@ public sealed partial class SvgChartRenderer {
     internal string RenderForInteraction(Chart chart, string idScope) => Render(chart, idScope, includeInteractionTargets: true);
 
     private string Render(Chart chart, string idScope, bool includeInteractionTargets) {
+        var variables = chart.Options.SvgColorVariables;
+        var bound = RenderBound(chart, idScope, includeInteractionTargets);
+        return SvgPaint.Resolve(variables?.Apply(bound) ?? bound, variables);
+    }
+
+    /// <summary>
+    /// Renders a grid panel. A chart with its own colour variables resolves its paints with them but keeps derived
+    /// literals as tokens, so the grid's variables, applied to the whole grid afterwards, cannot map them by value; a
+    /// chart without variables leaves every paint to the grid.
+    /// </summary>
+    internal string RenderGridPanel(Chart chart, string idScope) {
+        var variables = chart.Options.SvgColorVariables;
+        var bound = RenderBound(chart, idScope, includeInteractionTargets: false);
+        return variables == null ? bound : SvgPaint.Resolve(variables.Apply(bound), variables, keepLiterals: true);
+    }
+
+    private string RenderBound(Chart chart, string idScope, bool includeInteractionTargets) {
         ChartGuards.RenderCompatibility(chart);
         var provisionalId = BuildProvisionalId(chart, idScope);
         var svg = RenderCore(chart, provisionalId, includeInteractionTargets);
@@ -88,7 +79,7 @@ public sealed partial class SvgChartRenderer {
         var t = o.Theme;
         var w = o.Size.Width;
         var h = o.Size.Height;
-        var plot = PlotArea(chart);
+        var plot = CalendarFrame(chart, PlotArea(chart));
         var barCoordinateMap = ChartBarCoordinateMap.Create(chart);
         var range = ChartRange.FromChart(chart, barCoordinateMap);
         IReadOnlyList<double> xTicks = Array.Empty<double>();
@@ -147,7 +138,7 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, writer => writer
                 .StartElement("title")
                 .Attribute("id", $"{id}-title")
-                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX chart" : chart.Title))
+                .Text(accessibility.Name ?? (string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Labels.UntitledChart : chart.Title))
                 .EndElement()
                 .Line());
             AppendSvg(sb, writer => writer
@@ -160,7 +151,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvgStart(sb, writer => writer.StartElement("defs").EndStartElement().Line());
         AppendSvg(sb, writer => writer
             .StartElement("style")
-            .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}")
+            .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}" + ForcedColorsRule(chart, id))
             .EndElement()
             .Line());
         WriteSvgCardShadowFilter(sb, id, t);
@@ -640,7 +631,8 @@ public sealed partial class SvgChartRenderer {
         }
 
         var bottomReserve = 0.0;
-        if (ShowXAxis(chart)) {
+        // A matrix heatmap reserves the band under it for its own column labels (see ApplyHeatmapLabelReserve).
+        if (ShowXAxis(chart) && !IsHeatmapChart(chart)) {
             bottomReserve += SvgXAxisBottomReserve(chart, null, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right);
         }
 

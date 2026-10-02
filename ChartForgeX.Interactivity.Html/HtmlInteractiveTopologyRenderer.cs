@@ -12,13 +12,15 @@ public sealed class HtmlInteractiveTopologyRenderer {
 
     /// <summary>Renders a self-contained interactive topology HTML fragment.</summary>
     public string RenderFragment(TopologyChart chart, TopologyRenderOptions? options = null) {
-        options = Prepare(options);
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options = Prepare(options ?? chart.DefaultRenderOptions);
         return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: true) + InteractionScriptTag(options);
     }
 
     /// <summary>Renders interactive topology markup without CSS or JavaScript assets.</summary>
     public string RenderFragmentWithoutAssets(TopologyChart chart, TopologyRenderOptions? options = null) {
-        options = Prepare(options);
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options = Prepare(options ?? chart.DefaultRenderOptions);
         return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false);
     }
 
@@ -37,9 +39,9 @@ public sealed class HtmlInteractiveTopologyRenderer {
     /// <returns>A complete HTML document.</returns>
     public string RenderPage(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options = Prepare(options);
+        options = Prepare(options ?? chart.DefaultRenderOptions);
         var theme = chart.Theme ?? TopologyTheme.Light();
-        var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX topology" : chart.Title!;
+        var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()

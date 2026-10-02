@@ -24,6 +24,39 @@ public sealed class DenseTopologyLayoutTests {
         Assert.Single(prepared.Groups.Select(group => group.Y).Distinct());
     }
 
+    [Theory]
+    [InlineData(TopologyLayoutDirection.LeftToRight, 660)]
+    [InlineData(TopologyLayoutDirection.BottomToTop, 1400)]
+    public void FewSites_OneRowOfCards_SizePanelsAndCanvasToTheirContent(TopologyLayoutDirection direction, int height) {
+        // Two and one controllers per site in a viewport much taller than the content: the panels take the height of
+        // their cards and captions, share one height per row, and the legend follows them instead of the viewport bottom.
+        var chart = TopologyChart.Create().WithId("small").WithTitle("Replication").WithViewport(1180, height, 24)
+            .WithLayout(TopologyLayoutMode.DenseGrouped, direction).WithLegend(TopologyLegend.Default());
+        var counts = new[] { 2, 1, 2 };
+        for (var site = 0; site < counts.Length; site++) {
+            chart.AddAutoGroup("s" + site, "Site " + site);
+            for (var dc = 0; dc < counts[site]; dc++) chart.AddAutoNode("s" + site + "-dc" + dc, "S" + site + "-DC" + dc, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "s" + site, width: 64, height: 40);
+        }
+
+        chart.AddEdge("e0", "s0-dc0", "s1-dc0", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("e1", "s1-dc0", "s2-dc1", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+            .AddEdge("e2", "s0-dc1", "s2-dc0", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeEdgeLabels = false };
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
+
+        Assert.Single(prepared.Groups.Select(group => group.Height).Distinct());
+        foreach (var group in prepared.Groups) {
+            var contentBottom = prepared.Nodes.Where(node => node.GroupId == group.Id).Max(node => node.Y + TopologyNodeFootprint.Height(prepared, node));
+            Assert.InRange(group.Y + group.Height - contentBottom, 0, 120);
+        }
+
+        var legendTop = prepared.Viewport.Height - prepared.Viewport.Padding - (TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport) - 24);
+        Assert.InRange(legendTop - prepared.Groups.Max(group => group.Y + group.Height), 20, 60);
+        Assert.True(prepared.Viewport.Height < height, $"The canvas should shrink to its content, was {prepared.Viewport.Height}.");
+        // The first row of panels sits under the title in both directions, bottom-to-top included.
+        Assert.InRange(prepared.Groups.Min(group => group.Y), 90, 130);
+    }
+
     [Fact]
     public void DefaultOptions_KeepClassicDenseLayout() {
         var classic = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
@@ -96,7 +129,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_FractionalCoordinates_StayStrictlyOrthogonal() {
+    public void PlannedRoute_FractionalCoordinates_StayStrictlyOrthogonal() {
         var chart = TopologyChart.Create().WithId("cup-fraction").WithViewport(860, 440, 0).WithLegend(null)
             .AddNode("a", "A", 20.37, 200.21, width: 60.3, height: 40.1)
             .AddNode("b", "B", 640.13, 200.77, width: 60.3, height: 40.1)
@@ -116,7 +149,7 @@ public sealed class DenseTopologyLayoutTests {
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MazeRoute_BottomPort_DoesNotCrossItsTileCaption(bool sourceBottom) {
+    public void PlannedRoute_BottomPort_DoesNotCrossItsTileCaption(bool sourceBottom) {
         var chart = CupChart().WithEdgePorts("a-b", sourceBottom ? TopologyEdgePort.Bottom : TopologyEdgePort.Right,
             sourceBottom ? TopologyEdgePort.Left : TopologyEdgePort.Bottom);
         var layout = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
@@ -132,7 +165,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_StaysWithinRenderedViewport() {
+    public void PlannedRoute_StaysWithinRenderedViewport() {
         var chart = TopologyChart.Create().WithId("viewport-maze").WithViewport(360, 240, 0).WithLegend(null)
             .AddNode("a", "A", 20, 100, width: 50, height: 40)
             .AddNode("b", "B", 290, 100, width: 50, height: 40)
@@ -147,7 +180,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_InferredBlockedPort_UsesClearAlternateSide() {
+    public void PlannedRoute_InferredBlockedPort_UsesClearAlternateSide() {
         var chart = TopologyChart.Create().WithId("blocked-inferred-port").WithViewport(860, 440, 0).WithLegend(null)
             .AddNode("a", "Source", 20, 200, width: 60, height: 40)
             .AddNode("b", "Target", 640, 200, width: 60, height: 40)
@@ -277,7 +310,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeCache_RecomputesAfterViewportExpands() {
+    public void RoutePlan_RecomputesAfterViewportExpands() {
         var chart = CupChart().WithId("viewport-cache")
             .AddNode("roof", "Roof", 560, 0, width: 40, height: 100)
             .WithEdgePorts("a-b", TopologyEdgePort.Bottom, TopologyEdgePort.Left);
@@ -294,7 +327,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeCache_DuplicateEdgeIds_KeepOppositeEndpoints() {
+    public void RoutePlan_DuplicateEdgeIds_KeepOppositeEndpoints() {
         var chart = CupChart().AddEdge("a-b", "b", "a", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         chart.RenderOptions = TileOptions;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -323,7 +356,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_NamedOffset_AvoidsCardAfterEndpointPlacement() {
+    public void PlannedRoute_NamedOffset_AvoidsCardAfterEndpointPlacement() {
         var chart = TopologyChart.Create().WithId("named-maze").WithViewport(860, 440, 0).WithLegend(null)
             .AddNode("a", "A", 20, 200, width: 60, height: 40)
             .AddNode("b", "B", 640, 200, width: 60, height: 40)
@@ -351,7 +384,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_FanSpreading_DoesNotIntroduceCardCrossing() {
+    public void PlannedRoute_FanSpreading_DoesNotIntroduceCardCrossing() {
         const double blockerX = 85;
         const double blockerY = 195;
         var chart = TopologyChart.Create().WithId("fan-obstacle").WithViewport(860, 440, 0).WithLegend(null)
@@ -412,7 +445,7 @@ public sealed class DenseTopologyLayoutTests {
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var route = TopologyEdgeRouter.Route(chart, chart.Edges.Single(), nodes["a"], nodes["b"]);
-        Assert.Equal("aligned-direct", route.Diagnostics.Corridor);
+        Assert.Equal(TopologyEdgeRouter.PlannedCorridor, route.Diagnostics.Corridor);
 
         var points = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges.Single(), nodes);
         Assert.Equal(132, points[0].Y, 3);
@@ -424,7 +457,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_RespectsTitleAndLegendContentBounds() {
+    public void PlannedRoute_RespectsTitleAndLegendContentBounds() {
         var chart = TopologyChart.Create().WithId("header-footer-maze").WithViewport(860, 440, 0)
             .WithTitle("Replication topology")
             .WithLegend(TopologyLegend.Default().AddNodeKind("Server", TopologyNodeKind.Server, symbol: "S"))
@@ -445,7 +478,7 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void MazeRoute_HiddenTitle_UsesTheAvailableTopCorridor() {
+    public void PlannedRoute_HiddenTitle_UsesTheAvailableTopCorridor() {
         var chart = TopologyChart.Create().WithId("hidden-title-corridor").WithViewport(500, 220, 0)
             .WithTitle("This title is not rendered").WithLegend(null)
             .AddNode("a", "A", 30, 80, width: 60, height: 30)

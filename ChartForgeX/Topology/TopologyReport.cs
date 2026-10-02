@@ -97,7 +97,7 @@ public static partial class TopologyChartExtensions {
         var pageOptions = renderOptions.Clone();
         pageOptions.IncludeLegend = false;
         var source = TopologyLayoutEngine.Clone(chart);
-        source.Title = string.IsNullOrWhiteSpace(source.Title) ? "Topology report" : source.Title;
+        source.Title = string.IsNullOrWhiteSpace(source.Title) ? source.Labels.UntitledReport : source.Title;
         var pages = new List<TopologyChart>();
         var nodePages = new Dictionary<string, int>(StringComparer.Ordinal);
         var orderedNodeIds = new List<string>();
@@ -135,6 +135,7 @@ public static partial class TopologyChartExtensions {
                 page.Accessibility.Description = source.Accessibility.Description;
                 page.Accessibility.Language = source.Accessibility.Language;
                 page.Accessibility.IsDecorative = source.Accessibility.IsDecorative;
+                page.Labels = source.Labels.Clone();
                 pages.Add(page); x = margin; y = header; rowHeight = 0;
                 pageNodeIds.Clear(); pageEdgeCount = 0;
                 addedEdges = incidentEdges[node.Id].Count(edge => edge.SourceNodeId == node.Id && edge.TargetNodeId == node.Id);
@@ -174,7 +175,7 @@ public static partial class TopologyChartExtensions {
     private static TopologyChart BuildReportOverview(TopologyChart source, List<TopologyChart> pages,
         List<TopologyReportLink> links, TopologyReportOptions options) {
         var overview = TopologyChart.Create().WithId((source.Id ?? "topology") + "-overview")
-            .WithTitle(source.Title ?? "Topology report")
+            .WithTitle(source.Title ?? source.Labels.UntitledReport)
             .WithSubtitle(source.Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects across " + pages.Count.ToString(CultureInfo.InvariantCulture) + " detail pages")
             .WithViewport(options.PageWidth, options.PageHeight)
             .WithLayout(TopologyLayoutMode.Matrix);
@@ -183,6 +184,7 @@ public static partial class TopologyChartExtensions {
         overview.Accessibility.Description = source.Accessibility.Description;
         overview.Accessibility.Language = source.Accessibility.Language;
         overview.Accessibility.IsDecorative = source.Accessibility.IsDecorative;
+        overview.Labels = source.Labels.Clone();
         for (int i = 0; i < pages.Count; i++) {
             overview.AddAutoNode(ReportPageNodeId(i + 1, pages.Count), "Page " + (i + 1).ToString(CultureInfo.InvariantCulture),
                 subtitle: pages[i].Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects", width: 160, height: 72);

@@ -2331,6 +2331,91 @@
       }
     },
     {
+      "name": "report-host-flat-histogram",
+      "width": 760,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 33,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496589,
+        "minTransparentPixels": 50611,
+        "minDistinctColors": 998,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "report-host-rotated-matrix",
+      "width": 620,
+      "height": 440,
+      "svg": {
+        "minVisualNodes": 63,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496549,
+        "minTransparentPixels": 49051,
+        "minDistinctColors": 1275,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "report-host-short-calendar",
+      "width": 760,
+      "height": 230,
+      "svg": {
+        "minVisualNodes": 68,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 306009,
+        "minTransparentPixels": 43591,
+        "minDistinctColors": 821,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "report-host-themed-calendar",
+      "width": 760,
+      "height": 300,
+      "svg": {
+        "minVisualNodes": 58,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 408629,
+        "minTransparentPixels": 47371,
+        "minDistinctColors": 1804,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "report-host-themed-status-counts",
+      "width": 760,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 55,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496589,
+        "minTransparentPixels": 50611,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "report-summary-metric-strip",
       "width": 980,
       "height": 294,
@@ -2344,6 +2429,23 @@
         "minVisiblePixels": 576240,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "reporting-change-calendar",
+      "width": 760,
+      "height": 360,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 496589,
+        "minTransparentPixels": 50611,
+        "minDistinctColors": 907,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2401,24 +2503,7 @@
     {
       "name": "reporting-state-timeline",
       "width": 1180,
-      "height": 520,
-      "svg": {
-        "minVisualNodes": 82,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 1150309,
-        "minTransparentPixels": 76891,
-        "minDistinctColors": 1654,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "reporting-status-matrix",
-      "width": 1180,
-      "height": 520,
+      "height": 620,
       "svg": {
         "minVisualNodes": 89,
         "maxClippedTextNodes": 0,
@@ -2426,8 +2511,25 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1150309,
-        "minTransparentPixels": 76891,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
+        "minDistinctColors": 1678,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "reporting-status-matrix",
+      "width": 1180,
+      "height": 620,
+      "svg": {
+        "minVisualNodes": 89,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1380909,
+        "minTransparentPixels": 82291,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2819,6 +2921,23 @@
         "outputScale": 2,
         "minVisiblePixels": 797808,
         "minTransparentPixels": 62192,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "target-tile-map-diverging-steps-light",
+      "width": 980,
+      "height": 500,
+      "svg": {
+        "minVisualNodes": 67,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 912589,
+        "minTransparentPixels": 67411,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }

@@ -150,7 +150,7 @@ public static class VisualArtifactRendering {
     }
 
     internal static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions) {
-        var topologyOptions = renderOptions?.Topology?.CloneForRendering();
+        var topologyOptions = (renderOptions?.Topology ?? (artifact.Model as TopologyChart)?.DefaultRenderOptions)?.CloneForRendering();
         if (!artifact.PreserveNaturalSize) return topologyOptions;
         if (topologyOptions == null) return new TopologyRenderOptions { FitContentToViewport = true };
         topologyOptions.FitContentToViewport = true;

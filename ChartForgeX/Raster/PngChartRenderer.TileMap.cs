@@ -76,30 +76,26 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawTileMapPngScale(RgbaCanvas c, Chart chart, ChartSeries series, double min, double max, bool hasMissing, double right, double y, double tileSize, ChartRect plot) {
-        var t = chart.Options.Theme;
         var size = Math.Max(8, Math.Min(13, tileSize * 0.32));
         var gap = Math.Max(2, size * 0.3);
-        var width = 5 * size + 4 * gap;
+        var steps = ChartHeatmapSurface.MapScaleStepCount(chart);
+        var width = steps * size + (steps - 1) * gap;
         var x = right - width;
         var fontSize = PngTickFontSize(chart);
         if (hasMissing) DrawMapPngNoDataScale(c, chart, x, y, size, fontSize, plot);
         var lowLabel = ChartHeatmapSurface.MapLowLabel(chart);
         DrawMapPngTick(c, chart, x - EstimatePngStyledTextWidth(lowLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) - 8, y + size / 2, lowLabel, emphasized: false);
-        for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, i / 4.0);
-            var color = ChartHeatmapSurface.MapColor(chart, null, series.Color ?? t.Palette[0], value, min, max);
-            c.FillRoundedRect(x + i * (size + gap), y, size, size, Math.Min(3, size * 0.22), color);
-        }
+        DrawMapPngScaleSteps(c, chart, series, min, max, x, y, size, gap, Math.Min(3, size * 0.22));
         var highLabel = ChartHeatmapSurface.MapHighLabel(chart);
         DrawMapPngTick(c, chart, x + width + 8, y + size / 2, highLabel, emphasized: false);
         var midpointLabel = ChartHeatmapSurface.MapMidpointLabel(chart);
         if (midpointLabel != null) {
-            DrawMapPngTick(c, chart, x + 2 * (size + gap) + size / 2 - EstimatePngStyledTextWidth(midpointLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) / 2, y + size + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, midpointLabel, emphasized: false);
+            DrawMapPngTick(c, chart, x + ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps) * (size + gap) + size / 2 - EstimatePngStyledTextWidth(midpointLabel, fontSize, chart.Options.TickLabelStyle, emphasized: false) / 2, y + size + 2 + EstimatePngStyledTextBoundsHeight(fontSize, chart.Options.TickLabelStyle) / 2, midpointLabel, emphasized: false);
         }
     }
 
     private static void DrawMapPngNoDataScale(RgbaCanvas c, Chart chart, double valueScaleX, double y, double size, double fontSize, ChartRect plot) {
-        const string label = "No data";
+        var label = chart.Options.Labels.NoData;
         var width = size + 5 + EstimatePngTextWidth(label, fontSize);
         var x = valueScaleX - width - 18;
         if (x < plot.Left) {

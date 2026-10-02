@@ -46,7 +46,7 @@ public sealed partial class PngChartRenderer {
                 c.DrawDashedLine(centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorStrokeWidth, ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap);
             }
 
-                DrawGradientBar(c, centerX - barWidth / 2, top, barWidth, height, Math.Min(6, barWidth / 4), color);
+                DrawBarBody(c, chart, centerX - barWidth / 2, top, barWidth, height, Math.Min(6, barWidth / 4), color);
                 if (ShouldDrawDataLabels(chart, series)) {
                     var label = step.IsTotal ? FormatValue(chart, step.End) : FormatSignedValue(chart, step.Delta);
                     var pointIndex = step.IsTotal ? -1 : i;

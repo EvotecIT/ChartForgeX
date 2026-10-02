@@ -15,6 +15,42 @@ internal static class ReportingExamples {
         WriteStatusMatrix(output, pngOutputScale);
         WriteIncidentLanes(output, pngOutputScale);
         WriteHourWeekday(output, pngOutputScale);
+        WriteChangeCalendar(output, pngOutputScale);
+        ReportHostExamples.Write(output, pngOutputScale);
+    }
+
+    private static string Days(int count) => count + (count == 1 ? " Tag" : " Tage");
+
+    private static void WriteChangeCalendar(string output, ChartPngOutputScale pngOutputScale) {
+        // Two weeks of configuration changes in a report localized to German: weeks start on Monday, the days, months,
+        // and scale words come from the host, days without changes are neutral, and cells grow to fill the card.
+        var counts = new[] { 3, 0, 5, 2, 7, 0, 0, 1, 4, 0, 9, 2, 0, 0 };
+        var start = new DateTime(2026, 9, 7);
+        var items = counts.Select((count, day) => new ChartCalendarHeatmapItem(start.AddDays(day), count)).ToArray();
+        var chart = Chart.Create()
+            .WithTitle("Konfigurationsänderungen pro Tag")
+            .WithSubtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(760, 360)
+            .WithPngOutputScale(pngOutputScale)
+            .WithCalendarHeatmapCells(maximumSize: 30)
+            .WithLabels(labels => {
+                labels.Less = "Weniger";
+                labels.More = "Mehr";
+                labels.NoData = "Keine Daten";
+                labels.AccessibleTextFormatter = facts => facts.Kind switch {
+                    ChartDescriptionKind.CalendarHeatmapGroup => facts.SeriesNames[0] + " vom " + facts.FirstDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + " bis " + facts.LastDate!.Value.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + ": Tage mit Änderungen " + facts.Count + " von " + (facts.Count + facts.ZeroCount) + (facts.MissingCount > 0 ? ", " + Days(facts.MissingCount) + " ohne Daten" : string.Empty),
+                    ChartDescriptionKind.CalendarHeatmap => (facts.Title ?? "Diagramm") + ": Kalender, Tage mit Änderungen " + facts.Count + " von " + (facts.Count + facts.ZeroCount),
+                    _ => null
+                };
+            })
+            .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"), DayOfWeek.Monday,
+                new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" },
+                new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" });
+
+        chart.SaveSvg(Path.Combine(output, "reporting-change-calendar.svg"));
+        chart.SaveHtml(Path.Combine(output, "reporting-change-calendar.html"));
+        chart.SavePng(Path.Combine(output, "reporting-change-calendar.png"));
     }
 
     private static void WriteHourWeekday(string output, ChartPngOutputScale pngOutputScale) {
@@ -74,33 +110,37 @@ internal static class ReportingExamples {
     }
 
     private static void WriteStatusMatrix(string output, ChartPngOutputScale pngOutputScale) {
-        // Graphite palette v1 (light): a failed check is coloured by its severity; not evaluated is neutral and hatched.
+        // Graphite palette v1 (light): a failed check is coloured by its severity. The three neutral outcomes differ by
+        // pattern, not colour: not evaluated is hatched, could not evaluate is outlined. Passed is quiet so findings stand out.
         var chart = Chart.Create()
             .WithTitle("Directory health by domain controller")
-            .WithSubtitle("Worst finding per check; select a cell to open its evidence")
+            .WithSubtitle("Worst finding per check, grouped by site; select a cell to open its evidence")
             .WithTheme(ChartTheme.ReportLight())
-            .WithSize(1180, 520)
+            .WithSize(1180, 620)
             .WithPngOutputScale(pngOutputScale)
             .WithStateCategories(
-                new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")),
+                new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52"), emphasis: ChartStateEmphasis.Quiet),
                 new ChartStateCategory("low", "Low", ChartColor.FromHex("#0c8aa8")),
                 new ChartStateCategory("medium", "Medium", ChartColor.FromHex("#c78404")),
                 new ChartStateCategory("high", "High", ChartColor.FromHex("#dd5a17")),
                 new ChartStateCategory("critical", "Critical", ChartColor.FromHex("#d4302f")),
-                new ChartStateCategory("notEvaluated", "Not evaluated", ChartColor.FromHex("#7c818a"), hatched: true))
+                new ChartStateCategory("notEvaluated", "Not evaluated", ChartColor.FromHex("#7c818a"), ChartStatePattern.Hatched),
+                new ChartStateCategory("couldNotEvaluate", "Could not evaluate", ChartColor.FromHex("#7c818a"), ChartStatePattern.Outlined))
             .WithXLabels("Replication", "SYSVOL", "DNS", "Time sync", "LDAP", "Kerberos", "Certificates", "Backups", "Services", "Disk");
         var severities = new[] { "pass", "pass", "pass", "low", "pass", "medium", "pass", "high", "pass", "critical" };
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
+        var sites = new[] { "Poland", "Poland", "Poland", "Poland", "Germany", "Germany", "United Kingdom", "United States" };
         for (var row = 0; row < names.Length; row++) {
             var cells = new ChartHeatmapCell?[10];
-            for (var column = 0; column < cells.Length; column++) {
+            // Nothing is known about the last server yet: its row stays in the matrix without cells.
+            for (var column = 0; column < cells.Length && row != names.Length - 1; column++) {
                 if (row == 6 && column == 7) continue;
-                var state = row == 3 && column >= 8 ? "notEvaluated" : severities[(row * 7 + column * 3) % severities.Length];
-                var findings = state is "pass" or "notEvaluated" ? null : ((row + column) % 4 + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                cells[column] = new ChartHeatmapCell(state, findings, href: "#" + names[row].ToLowerInvariant() + "-check-" + (column + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                var state = row == 3 && column >= 8 ? "notEvaluated" : row == 5 && column is 2 or 3 ? "couldNotEvaluate" : severities[(row * 7 + column * 3) % severities.Length];
+                var findings = state is "pass" or "notEvaluated" or "couldNotEvaluate" ? null : ((row + column) % 4 + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                cells[column] = new ChartHeatmapCell(state, findings, state == "couldNotEvaluate" ? "The collector timed out" : null, "#" + names[row].ToLowerInvariant() + "-check-" + (column + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
 
-            chart.AddHeatmapCategoryRow(names[row], cells);
+            chart.AddHeatmapCategoryRow(names[row], cells, sites[row]);
         }
 
         chart.SaveSvg(Path.Combine(output, "reporting-status-matrix.svg"));
@@ -117,13 +157,14 @@ internal static class ReportingExamples {
             new ChartStateCategory("down", "Down", ChartColor.FromHex("#d4302f")),
             new ChartStateCategory("recovering", "Recovering", ChartColor.FromHex("#0c8aa8")),
             new ChartStateCategory("maintenance", "Maintenance", ChartColor.FromHex("#6b5bd2")),
-            new ChartStateCategory("notObservable", "Not observable", ChartColor.FromHex("#7c818a"), hatched: true)
+            new ChartStateCategory("notObservable", "Not observable", ChartColor.FromHex("#7c818a"), ChartStatePattern.Hatched),
+            new ChartStateCategory("unknown", "Unknown", ChartColor.FromHex("#7c818a"), ChartStatePattern.Outlined)
         };
         var chart = Chart.Create()
             .WithTitle("Domain controller availability")
-            .WithSubtitle("15-minute rollups over the last 24 hours; gaps mean no data was collected")
+            .WithSubtitle("15-minute rollups over the last 24 hours, grouped by site; gaps mean no data was collected")
             .WithTheme(ChartTheme.ReportLight())
-            .WithSize(1180, 520)
+            .WithSize(1180, 620)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(states)
@@ -131,6 +172,7 @@ internal static class ReportingExamples {
         chart.Options.LaneSummaryHeader = "Available";
         var start = WindowStart.AddHours(12);
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
+        var sites = new[] { "Poland", "Poland", "Poland", "Poland", "Germany", "Germany", "United Kingdom", "United States" };
         for (var lane = 0; lane < names.Length; lane++) {
             var segments = new List<ChartStateTimelineSegment>();
             var up = 0.0;
@@ -140,11 +182,11 @@ internal static class ReportingExamples {
                 if (state == null) continue;
                 var from = start.AddMinutes(bucket * 15);
                 segments.Add(new ChartStateTimelineSegment(from, from.AddMinutes(15), state, state == "down" ? "LDAP bind failed" : null));
-                if (state != "notObservable") observed += 15;
+                if (state is not ("notObservable" or "unknown")) observed += 15;
                 if (state == "up") up += 15;
             }
 
-            chart.AddStateTimelineLane(names[lane], segments, (up / observed).ToString("0.0%", System.Globalization.CultureInfo.InvariantCulture));
+            chart.AddStateTimelineLane(names[lane], segments, (up / observed).ToString("0.0%", System.Globalization.CultureInfo.InvariantCulture), sites[lane]);
         }
 
         chart.SaveSvg(Path.Combine(output, "reporting-state-timeline.svg"));
@@ -162,6 +204,7 @@ internal static class ReportingExamples {
         if (lane == 2 && bucket is >= 60 and < 63) return "down";
         if (lane == 2 && bucket is >= 63 and < 66) return "recovering";
         if (lane == 6 && bucket is >= 70 and < 80) return "notObservable";
+        if (lane == 7 && bucket is >= 20 and < 30) return "unknown";
         var hash = (lane * 7919 + bucket * 104729) % 97;
         return hash < 4 ? "degraded" : "up";
     }

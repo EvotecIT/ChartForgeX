@@ -60,7 +60,7 @@ public static partial class TopologyChartExtensions {
     /// </summary>
     public static PreparedTopology Prepare(this TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        var effective = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var validator = new TopologyChartValidator();
         var sourceValidation = validator.ValidateScenarioReferences(chart);
         if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);

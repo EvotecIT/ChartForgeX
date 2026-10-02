@@ -26,7 +26,7 @@ public sealed partial class PngChartRenderer {
         }
 
         var textHeight = EstimatePngStyledTextBoundsHeight(tickFontSize, tickStyle);
-        var nowReserve = model.NowVisible && ShowXAxis(chart) ? textHeight + 8 : 0;
+        var nowReserve = model.NowVisible && ShowXAxis(chart) ? textHeight + ChartStateTimelineModel.TopLabelGap : 0;
         var tickLabels = model.Ticks.Select(model.FormatTick).ToArray();
         var axisLabelReserve = Math.Max(ChartStateTimelineModel.AxisReserve, PngXAxisTitleOffset(chart, tickLabels)
             + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 4));
@@ -77,11 +77,11 @@ public sealed partial class PngChartRenderer {
                 if (!model.TrySpan(placed, plot, out var left, out var width)) continue;
                 var y = model.BarTop(plot, top, placed.SubRow);
                 var radius = Math.Min(ChartGanttLaneModel.BarRadius, Math.Min(width, band) / 2);
-                c.FillRoundedRect(left, y, width, band, radius, placed.Category.Color);
-                if (placed.Category.Hatched) DrawStateCategoryHatch(c, left, y, width, band, radius);
+                var mark = ChartStateMark.For(chart, placed.Category);
+                DrawStateMark(c, mark, left, y, width, band, radius);
                 var text = placed.Item.Label;
                 if (text != null && width >= EstimatePngStyledTextWidth(text, tickFontSize, tickStyle, emphasized: true) + ChartGanttLaneModel.LabelPadding * 2 && band >= textHeight + 2) {
-                    DrawStateCategoryText(c, text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, tickStyle, ChartColorMath.TextOnBackground(placed.Category.Color), tickFontSize, true);
+                    DrawStateCategoryText(c, text, left + ChartGanttLaneModel.LabelPadding, y + band / 2, tickStyle, ChartMarkText.OnStateMark(chart, mark).Color, tickFontSize, true);
                 }
             }
 
@@ -93,7 +93,7 @@ public sealed partial class PngChartRenderer {
 
         if (model.HasSummary && !string.IsNullOrWhiteSpace(model.SummaryHeader)) {
             var header = TrimReadablePngLabelToWidth(model.SummaryHeader!, tickFontSize, ChartStateTimelineModel.SummaryColumnWidth(bounds, summaryWidth), tickStyle);
-            DrawPngTextStyled(c, bounds.Right - 2 - EstimatePngStyledTextWidth(header, tickFontSize, tickStyle, emphasized: true), plot.Top - 8 - PngStyledTextBottomExtent(tickFontSize, tickStyle), header, tickStyle, t.MutedText, tickFontSize, emphasized: true);
+            DrawPngTextStyled(c, bounds.Right - 2 - EstimatePngStyledTextWidth(header, tickFontSize, tickStyle, emphasized: true), plot.Top - ChartStateTimelineModel.SummaryHeaderOffset - PngStyledTextBottomExtent(tickFontSize, tickStyle), header, tickStyle, t.MutedText, tickFontSize, emphasized: true);
         }
 
         if (model.NowVisible) {
@@ -104,7 +104,7 @@ public sealed partial class PngChartRenderer {
                 if (label.Length > 0) {
                     var width = EstimatePngStyledTextWidth(label, tickFontSize, tickStyle, emphasized: true);
                     var labelX = Math.Max(plot.Left + 2, Math.Min(plot.Right - 2 - width, x - width / 2));
-                    DrawPngTextStyled(c, labelX, plot.Top - 6 - PngStyledTextBottomExtent(tickFontSize, tickStyle), label, tickStyle, t.Text, tickFontSize, emphasized: true);
+                    DrawPngTextStyled(c, labelX, plot.Top - ChartStateTimelineModel.SummaryHeaderOffset - PngStyledTextBottomExtent(tickFontSize, tickStyle), label, tickStyle, t.Text, tickFontSize, emphasized: true);
                 }
             }
         }

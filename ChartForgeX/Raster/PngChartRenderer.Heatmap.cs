@@ -41,8 +41,15 @@ public sealed partial class PngChartRenderer {
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         var categories = categorical ? new ChartStateCategoryLegend(chart) : null;
         var numericScale = chart.Options.ShowHeatmapScale && !categorical;
-        var axisBottomBase = numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? tickHeight + 24 : 10;
-        var axesBottomReserve = chart.Options.ShowAxes ? axisBottomBase + (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextBoundsHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 8) : 0;
+        var widestColumnLabel = 0.0;
+        if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels) foreach (var column in columnValues) widestColumnLabel = Math.Max(widestColumnLabel, EstimatePngStyledTextWidth(FormatX(chart, column), tickFontSize, tickStyle, emphasized: true));
+        var rotatedLabels = chart.Options.ShowHeatmapColumnLabels && ChartHeatmapColumnLabels.IsRotated(chart);
+        var columnLabelsReserve = ChartHeatmapColumnLabels.Reserve(chart, widestColumnLabel, tickHeight);
+        var axisBottomBase = rotatedLabels
+            ? columnLabelsReserve + (numericScale ? PngHeatmapRotatedScaleReserve : 0)
+            : numericScale ? Math.Max(56, tickHeight + 44) : chart.Options.ShowHeatmapColumnLabels ? columnLabelsReserve : 10;
+        var xTitleHeight = string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 0 : EstimatePngStyledTextBoundsHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle) + 8;
+        var axesBottomReserve = chart.Options.ShowAxes ? axisBottomBase + xTitleHeight : 0;
         var legendBounds = plot;
         var legend = categories != null && chart.Options.ShowHeatmapScale && chart.Options.ShowLegend
             ? categories.Layout(text => EstimatePngStyledTextWidth(text, PngLegendFontSize(chart), chart.Options.LegendStyle, emphasized: false), plot.Left, plot.Width, Math.Max(0, plot.Height - axesBottomReserve - 18))
@@ -56,17 +63,34 @@ public sealed partial class PngChartRenderer {
         var leftLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Left) ? sideLabelWidth + 22 : 0;
         var rightLabelReserve = HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Right) || HasHeatmapSideLabels(chart, rows, ChartDataLabelPlacement.Outside) ? sideLabelWidth + 22 : 0;
         var labelBounds = new ChartRect(plot.X + labelWidth + labelGap, plot.Y, Math.Max(1, plot.Width - labelWidth - labelGap), Math.Max(1, plot.Height - bottomReserve));
+        // Rotated labels slant beyond their column; the plot moves in on that side so the outermost label fits.
+        if (rotatedLabels && chart.Options.ShowAxes) {
+            if (ChartHeatmapColumnLabels.EndsAtColumn(chart)) leftLabelReserve += ChartHeatmapColumnLabels.SideReserve(chart, widestColumnLabel, tickHeight, labelBounds.X + leftLabelReserve);
+            else rightLabelReserve += ChartHeatmapColumnLabels.SideReserve(chart, widestColumnLabel, tickHeight, chart.Options.Size.Width - (labelBounds.Right - rightLabelReserve));
+        }
+
         plot = new ChartRect(labelBounds.X + leftLabelReserve, labelBounds.Y, Math.Max(1, labelBounds.Width - leftLabelReserve - rightLabelReserve), labelBounds.Height);
-        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columnValues.Count, plot.Height / rows.Count) * 0.05));
-        var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, plot.Height, columnValues.Count, rows.Count, chart.Options.HeatmapCellGap ?? autoGap);
+        var rowLayout = ChartHeatmapRowLayout.Build(chart, rows, plot.Height);
+        var rowsHeight = Math.Max(1, plot.Height - rowLayout.HeadersHeight);
+        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columnValues.Count, rowsHeight / rows.Count) * 0.05));
+        var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, rowsHeight, columnValues.Count, rows.Count, chart.Options.HeatmapCellGap ?? autoGap);
         var cellWidth = Math.Max(1, (plot.Width - gap * (columnValues.Count - 1)) / columnValues.Count);
-        var cellHeight = Math.Max(1, (plot.Height - gap * (rows.Count - 1)) / rows.Count);
+        var cellHeight = rowLayout.CellHeight(plot.Height, gap, rows.Count);
         var autoRadius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
         var radius = Math.Min(chart.Options.HeatmapCellRadius ?? autoRadius, Math.Min(cellWidth, cellHeight) / 2);
 
+        var groupLeft = chart.Options.ShowAxes ? Math.Max(4, plot.Left - 10 - rowLabelMaxWidth) : plot.Left;
+        foreach (var group in rowLayout.Groups) {
+            var top = rowLayout.GroupTop(plot.Top, group, cellHeight, gap);
+            if (group.BeforeRow > 0) c.DrawLine(groupLeft, top - gap / 2, plot.Right, top - gap / 2, chart.Options.Theme.Grid, ChartVisualPrimitives.GridStrokeWidth);
+            if (group.Name.Length == 0 || group.Height < tickFontSize) continue;
+            var groupLabel = TrimReadablePngLabelToWidth(group.Name, tickFontSize, Math.Max(8, plot.Right - groupLeft), tickStyle);
+            if (groupLabel.Length > 0) DrawStateCategoryText(c, groupLabel, groupLeft, top + group.Height / 2, tickStyle, chart.Options.Theme.Text, tickFontSize, true);
+        }
+
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             var series = rows[rowIndex];
-            var y = plot.Top + rowIndex * (cellHeight + gap);
+            var y = rowLayout.RowTop(plot.Top, rowIndex, cellHeight, gap);
             if (chart.Options.ShowAxes) {
                 var rowLabelFontSize = TextFontSizeForEmphasizedWidth(series.Name, rowLabelMaxWidth, tickFontSize, tickStyle);
                 var rowLabel = TrimReadablePngLabelToWidth(series.Name, rowLabelFontSize, rowLabelMaxWidth, tickStyle);
@@ -82,10 +106,12 @@ public sealed partial class PngChartRenderer {
                 var x = plot.Left + columnIndex * (cellWidth + gap);
                 var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
                 var category = cell.HasValue ? categories!.Resolve(cell.Value.State) : null;
-                var color = category?.Color ?? ChartHeatmapSurface.Color(chart, series.Color, value, min, max);
-                c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
-                if (category?.Hatched == true) DrawStateCategoryHatch(c, x, y, cellWidth, cellHeight, radius);
-                c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
+                ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
+                var color = mark?.Surface ?? ChartHeatmapSurface.CellColor(chart, series.Color, value, min, max);
+                if (mark.HasValue) DrawStateMark(c, mark.Value, x, y, cellWidth, cellHeight, radius);
+                else c.FillRoundedRect(x, y, cellWidth, cellHeight, radius, color);
+                // An outlined state draws its own border in the state colour instead of the card-coloured cell border.
+                if (mark?.Outlined != true) c.StrokeRoundedRect(x, y, cellWidth, cellHeight, radius, ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.HeatmapCellBorderOpacity), ChartVisualPrimitives.HeatmapCellBorderStrokeWidth);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
                 var dataFontSize = PngDataLabelFontSize(chart, series, pointIndex);
                 if (cell.HasValue) dataFontSize = ChartHeatmapSurface.CategoricalLabelFontSize(dataFontSize);
@@ -102,7 +128,8 @@ public sealed partial class PngChartRenderer {
                     var label = categoricalLabel ?? FormatDataLabel(chart, series, pointIndex, value);
                     var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, ChartColorMath.TextOnBackground(color), color, dataFontSize, dataStyle);
+                        var cellText = mark.HasValue ? ChartMarkText.OnStateMark(chart, mark.Value) : ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max);
+                        DrawReadablePngLabelCentered(c, new ChartRect(x, y, cellWidth, cellHeight), label, cellText.Color, color, dataFontSize, dataStyle);
                     } else {
                         var heatmapLabelWidth = EstimatePngStyledTextWidth(label, dataFontSize, dataStyle, emphasized: true);
                         var heatmapLabelHeight = EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle);
@@ -123,7 +150,10 @@ public sealed partial class PngChartRenderer {
             }
         }
 
-        if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels) {
+        if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels && rotatedLabels) {
+            DrawRotatedHeatmapColumnLabels(c, chart, plot, columnValues, cellWidth, gap, tickFontSize, tickHeight, widestColumnLabel);
+            DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart), plot.Bottom + columnLabelsReserve + EstimatePngStyledTextHeight(PngXAxisTitleFontSize(chart), chart.Options.AxisTitleStyle));
+        } else if (chart.Options.ShowAxes && chart.Options.ShowHeatmapColumnLabels) {
             for (var columnIndex = 0; columnIndex < columnValues.Count; columnIndex++) {
                 var label = FormatX(chart, columnValues[columnIndex]);
                 var columnLabelWidth = Math.Max(8, cellWidth + gap);
@@ -138,7 +168,33 @@ public sealed partial class PngChartRenderer {
             DrawDetailAxisTitles(c, chart, plot, DetailTextScale(chart));
         }
         if (legend.Count > 0) DrawStateCategoryLegend(c, chart, legend, legendTop, legendBounds);
-        else if (numericScale) DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize);
+        else if (numericScale) {
+            var scaleTop = chart.Options.ShowAxes && rotatedLabels ? plot.Bottom + columnLabelsReserve + xTitleHeight + 4 : plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
+            DrawHeatmapScale(c, chart, plot, min, max, rows[0].Color, tickFontSize, scaleTop);
+        }
+    }
+
+    /// <summary>Height the numeric scale takes under rotated column labels: the swatches and their value labels.</summary>
+    private const double PngHeatmapRotatedScaleReserve = 34;
+
+    /// <summary>
+    /// Draws rotated column labels at the tick font size, anchored under their columns as rotated x-axis labels are,
+    /// skipping columns when neighbouring labels would overlap.
+    /// </summary>
+    private static void DrawRotatedHeatmapColumnLabels(RgbaCanvas c, Chart chart, ChartRect plot, IReadOnlyList<double> columns, double cellWidth, double gap, double fontSize, double textHeight, double widestLabel) {
+        var style = chart.Options.TickLabelStyle;
+        var angle = ChartHeatmapColumnLabels.Angle(chart);
+        var step = ChartHeatmapColumnLabels.Step(chart, cellWidth + gap, textHeight, widestLabel);
+        for (var columnIndex = 0; columnIndex < columns.Count; columnIndex += step) {
+            var x = plot.Left + columnIndex * (cellWidth + gap) + cellWidth / 2;
+            var label = TrimReadablePngLabelToWidth(FormatX(chart, columns[columnIndex]), fontSize, ChartHeatmapColumnLabels.MaximumLength(chart, x, textHeight), style);
+            if (label.Length == 0) continue;
+            var width = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: true);
+            var height = EstimatePngStyledTextHeight(fontSize, style);
+            // As in SVG, the label ends at its column for negative angles and starts there for positive ones.
+            var originX = ChartHeatmapColumnLabels.EndsAtColumn(chart) ? width : 0;
+            DrawPngTextStyledRotated(c, x, plot.Bottom + ChartHeatmapColumnLabels.RotatedOffset, label, style, chart.Options.Theme.MutedText, fontSize, angle, originX, height / 2.0, emphasized: true);
+        }
     }
 
     private static bool IsHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.Heatmap);
@@ -167,7 +223,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static bool ShouldReserveHeatmapValueLabels(Chart chart, ChartSeries series) {
-        if (series.HeatmapCells.Count > 0 || chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
+        if (series.IsCategoricalHeatmapRow || chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Hidden) return false;
         return chart.Options.HeatmapValueTextMode == ChartHeatmapValueTextMode.Always || ShouldDrawDataLabels(chart, series);
     }
 
@@ -176,18 +232,18 @@ public sealed partial class PngChartRenderer {
         for (var i = 1; i <= series.HeatmapColumnCount.Value; i++) columns.Add(i);
     }
 
-    private static void DrawHeatmapScale(RgbaCanvas c, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor, double fontSize) {
+    private static void DrawHeatmapScale(RgbaCanvas c, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor, double fontSize, double top) {
         const int steps = ChartVisualPrimitives.HeatmapScaleSteps;
         const double width = ChartVisualPrimitives.HeatmapScaleWidth;
         const double height = ChartVisualPrimitives.HeatmapScaleHeight;
         var x = plot.Right - width;
-        var y = plot.Bottom + ChartVisualPrimitives.HeatmapScaleOffsetY;
+        var y = top;
         var stepWidth = width / steps;
 
         for (var i = 0; i < steps; i++) {
             var ratio = i / (double)(steps - 1);
             var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, ratio);
-            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.Color(chart, highColor, value, min, max));
+            c.FillRoundedRect(x + i * stepWidth, y, stepWidth + ChartVisualPrimitives.HeatmapScaleStepOverlap, height, ChartVisualPrimitives.HeatmapScaleRadius, ChartHeatmapSurface.CellColor(chart, highColor, value, min, max));
         }
 
         var labelMaxWidth = Math.Max(18, width * 0.46);

@@ -1,108 +1,78 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawCalendarHeatmap(StringBuilder sb, Chart chart, ChartRect basePlot) {
-        var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.CalendarHeatmap);
-        if (series == null || series.Points.Count == 0) return;
-        var cells = CalendarHeatmapCells(series);
-        if (cells.Count == 0) return;
+        var model = ChartCalendarHeatmapModel.Build(chart);
+        if (model == null) return;
 
         var t = chart.Options.Theme;
-        var minDate = cells.Min(item => item.Date);
-        var maxDate = cells.Max(item => item.Date);
-        var start = CalendarWeekStart(minDate);
-        var end = CalendarWeekEnd(maxDate);
-        var columns = Math.Max(1, ((end - start).Days / 7) + 1);
-        var min = cells.Min(item => item.Value);
-        var max = cells.Max(item => item.Value);
-        var sourceMin = min;
-        var sourceMax = max;
-
-        var tickStyle = chart.Options.TickLabelStyle;
-        var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
-        var tickHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
-        var leftReserve = chart.Options.ShowAxes ? Math.Max(34, EstimateSvgStyledTextWidth(chart, "Wed", tickFontSize, tickStyle) + 12) : 6;
-        var topReserve = chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6;
-        var bottomReserve = chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8;
-        var plot = new ChartRect(basePlot.Left + leftReserve, basePlot.Top + topReserve, Math.Max(1, basePlot.Width - leftReserve - 8), Math.Max(1, basePlot.Height - topReserve - bottomReserve));
-        var gap = columns > 32 ? 2.5 : 3.5;
-        var cell = Math.Max(1, Math.Min((plot.Width - gap * (columns - 1)) / columns, (plot.Height - gap * 6) / 7));
-        var gridWidth = columns * cell + (columns - 1) * gap;
-        var gridHeight = 7 * cell + 6 * gap;
-        var x0 = plot.Left + Math.Max(0, (plot.Width - gridWidth) / 2);
-        var y0 = plot.Top + Math.Max(0, (plot.Height - gridHeight) / 2);
-        var radius = Math.Min(4, cell * 0.22);
-        var byDate = cells.ToDictionary(item => item.Date, item => item);
-        var totalDays = (end - start).Days + 1;
-        var filledDays = byDate.Count;
-        var emptyDays = Math.Max(0, totalDays - filledDays);
-        var hasEmptyCells = emptyDays > 0;
-        var startText = start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var endText = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var containerSummary = series.Name + " calendar heatmap from " + startText + " to " + endText + " with " + filledDays.ToString(CultureInfo.InvariantCulture) + " filled days and " + emptyDays.ToString(CultureInfo.InvariantCulture) + " empty days";
+        var labels = chart.Options.Labels;
+        var (leftReserve, topReserve, bottomReserve) = CalendarReserves(chart, model);
+        var layout = model.Layout(basePlot, leftReserve, topReserve, bottomReserve);
+        var startText = model.DateText(model.Start);
+        var endText = model.DateText(model.End);
 
         var writer = new SvgMarkupWriter(4096);
         writer
             .StartElement("g")
             .Attribute("data-cfx-role", "calendar-heatmap")
-            .Attribute("data-cfx-label-level", chart.Options.Labels.LevelOverride)
-            .Attribute("data-cfx-label", series.Name)
+            .Attribute("data-cfx-label-level", labels.LevelOverride)
+            .Attribute("data-cfx-label", model.Series.Name)
             .Attribute("data-cfx-start-date", startText)
             .Attribute("data-cfx-end-date", endText)
-            .Attribute("data-cfx-day-count", totalDays)
-            .Attribute("data-cfx-filled-day-count", filledDays)
-            .Attribute("data-cfx-empty-day-count", emptyDays)
-            .Attribute("data-cfx-min-value", sourceMin)
-            .Attribute("data-cfx-max-value", sourceMax)
+            .Attribute("data-cfx-day-count", model.TotalDays)
+            .Attribute("data-cfx-filled-day-count", model.FilledDays)
+            .Attribute("data-cfx-empty-day-count", model.EmptyDays)
+            .Attribute("data-cfx-first-day", model.FirstDay.ToString())
+            .Attribute("data-cfx-min-value", model.Min)
+            .Attribute("data-cfx-max-value", model.Max)
+            .Attribute("data-cfx-cell-size", layout.Cell)
             .Attribute("role", "group")
-            .Attribute("aria-label", containerSummary)
+            .Attribute("aria-label", model.Summary())
             .EndStartElement()
             .Line();
-        DrawCalendarHeatmapSvgAxes(writer, chart, start, maxDate, x0, y0, cell, gap);
-        for (var day = start; day <= end; day = day.AddDays(1)) {
-            var column = (day - start).Days / 7;
-            var row = (int)day.DayOfWeek;
-            var hasValue = byDate.TryGetValue(day, out var entry);
+        DrawCalendarHeatmapSvgAxes(writer, chart, model, layout);
+        var hasZero = false;
+        for (var day = model.Start; day <= model.End; day = day.AddDays(1)) {
+            var column = model.Column(day);
+            var row = model.Row(day);
+            var hasValue = model.TryGetDay(day, out var entry);
             var value = hasValue ? entry.Value : 0;
-            var ratio = hasValue ? ChartHeatmapSurface.CalendarRatio(value, min, max) : 0;
-            int? level = hasValue ? ChartHeatmapSurface.Level(ratio) : null;
-            var status = hasValue ? null : "empty";
-            var color = hasValue ? ChartHeatmapSurface.CalendarColor(chart, series, entry.Color, value, min, max) : ChartHeatmapSurface.CalendarEmptyColor(chart);
-            var x = x0 + column * (cell + gap);
-            var y = y0 + row * (cell + gap);
-            var dateText = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var summary = hasValue ? series.Name + ", " + dateText + ": " + FormatValue(chart, value) : series.Name + ", " + dateText + ": No data";
+            hasZero |= hasValue && model.IsZero(value) && !entry.Color.HasValue;
+            int? level = hasValue ? model.Level(value) : null;
+            var fill = hasValue ? model.Blend(value, entry.Color) : ChartHeatmapSurface.CalendarEmptyBlend(chart);
+            var dateText = model.DateText(day);
+            var summary = model.Series.Name + ", " + labels.FormatDate(day) + ": " + (hasValue ? FormatValue(chart, value) : labels.NoData);
+            // A static cell carries an accessible name but is not a tab stop; the interactive HTML adapter adds focus.
             writer
                 .StartElement("rect")
                 .Attribute("class", "cfx-interactive-region")
-                .Attribute("tabindex", "0")
-                .Attribute("focusable", "true")
                 .Attribute("data-cfx-role", "calendar-heatmap-cell")
                 .Attribute("data-cfx-date", dateText)
                 .Attribute("data-cfx-week-index", column)
-                .Attribute("data-cfx-weekday-index", row)
+                .Attribute("data-cfx-weekday-index", (int)day.DayOfWeek)
                 .Attribute("data-cfx-value", value)
                 .OptionalAttribute("data-cfx-level", level)
                 .Attribute("data-cfx-empty", !hasValue)
-                .Attribute("data-cfx-status", status)
+                .Attribute("data-cfx-status", hasValue ? null : "empty")
                 .Attribute("role", "img")
                 .Attribute("aria-label", summary)
-                .Attribute("x", x)
-                .Attribute("y", y)
-                .Attribute("width", cell)
-                .Attribute("height", cell)
-                .Attribute("rx", radius)
-                .Attribute("fill", color.ToCss())
-                .Attribute("stroke", t.CardBackground.ToCss())
+                .Attribute("data-cfx-row", row)
+                .Attribute("x", layout.X(column))
+                .Attribute("y", layout.Y(row))
+                .Attribute("width", layout.Cell)
+                .Attribute("height", layout.Cell)
+                .Attribute("rx", layout.Radius)
+                .Paint("fill", fill.Paint)
+                .Paint("stroke", SvgPaint.Of(t.CardBackground, SvgColorRole.Surface))
                 .Attribute("stroke-opacity", ChartVisualPrimitives.HeatmapCellBorderOpacity)
                 .Attribute("stroke-width", ChartVisualPrimitives.HeatmapCellBorderStrokeWidth)
                 .EndStartElement()
@@ -113,85 +83,98 @@ public sealed partial class SvgChartRenderer {
                 .Line();
         }
 
-        if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapSvgScale(writer, chart, series, min, max, x0 + gridWidth, y0 + gridHeight + 20, cell, hasEmptyCells);
+        if (chart.Options.ShowHeatmapScale) DrawCalendarHeatmapSvgScale(writer, chart, model, layout.X0 + layout.GridWidth, layout.Y0 + layout.GridHeight + 20, layout.Cell, model.EmptyDays > 0, hasZero);
         writer.EndElement().Line();
         sb.Append(writer.Build());
     }
 
-    private static void DrawCalendarHeatmapSvgAxes(SvgMarkupWriter writer, Chart chart, DateTime start, DateTime end, double x0, double y0, double cell, double gap) {
+    /// <summary>Returns the space a calendar keeps for weekday labels, month labels, and its scale.</summary>
+    private static (double Left, double Top, double Bottom) CalendarReserves(Chart chart, ChartCalendarHeatmapModel model) {
+        var tickStyle = chart.Options.TickLabelStyle;
+        var tickFontSize = StyleFontSize(tickStyle, chart.Options.Theme.TickLabelFontSize);
+        var tickHeight = EstimateSvgStyledTextHeight(tickFontSize, tickStyle);
+        var widestDay = 0.0;
+        for (var row = 0; row < 7; row++) widestDay = Math.Max(widestDay, EstimateSvgStyledTextWidth(chart, model.DayName(row), tickFontSize, tickStyle));
+        return (chart.Options.ShowAxes ? Math.Max(34, widestDay + 12) : 6,
+            chart.Options.ShowAxes ? Math.Max(24, tickHeight + 10) : 6,
+            chart.Options.ShowHeatmapScale ? Math.Max(38, tickHeight + 22) : 8);
+    }
+
+    /// <summary>Returns the frame of a calendar chart (see <see cref="ChartCalendarHeatmapModel.Frame"/>), or the plot of other charts.</summary>
+    private static ChartRect CalendarFrame(Chart chart, ChartRect plot) =>
+        IsCalendarHeatmapChart(chart) ? ChartCalendarHeatmapModel.Frame(chart, plot) : plot;
+
+    private static void DrawCalendarHeatmapSvgAxes(SvgMarkupWriter writer, Chart chart, ChartCalendarHeatmapModel model, ChartCalendarLayout layout) {
         if (!chart.Options.ShowAxes) return;
-        var t = chart.Options.Theme;
-        var rows = new[] { (1, "Mon"), (3, "Wed"), (5, "Fri") };
-        foreach (var item in rows) {
-            var y = y0 + item.Item1 * (cell + gap) + cell / 2;
-            WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-weekday-label", item.Item2, x0 - 8, y, "end", emphasized: false, middleBaseline: true);
+        foreach (var row in model.LabelledRows(layout)) {
+            WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-weekday-label", model.DayName(row), layout.X0 - 8, layout.Y(row) + layout.Cell / 2, "end", emphasized: false, middleBaseline: true);
         }
 
-        var month = new DateTime(start.Year, start.Month, 1);
-        while (month < start) month = month.AddMonths(1);
-        var lastX = x0 - 40;
-        while (month <= end) {
-            var column = Math.Max(0, (month - start).Days / 7);
-            var x = x0 + column * (cell + gap);
-            if (x - lastX >= 28) {
-                WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-month-label", month.ToString("MMM", CultureInfo.InvariantCulture), x, y0 - 8, "start", emphasized: true, middleBaseline: false);
-                lastX = x;
-            }
-
-            month = month.AddMonths(1);
+        foreach (var (month, x) in model.MonthLabels(layout)) {
+            WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-month-label", model.MonthName(month), x, layout.Y0 - 8, "start", emphasized: true, middleBaseline: false);
         }
     }
 
-    private static void DrawCalendarHeatmapSvgScale(SvgMarkupWriter writer, Chart chart, ChartSeries series, double min, double max, double right, double y, double cell, bool showNoData) {
+    private static void DrawCalendarHeatmapSvgScale(SvgMarkupWriter writer, Chart chart, ChartCalendarHeatmapModel model, double right, double y, double cell, bool showNoData, bool showZero) {
         var t = chart.Options.Theme;
+        var labels = chart.Options.Labels;
         var size = Math.Max(7, Math.Min(12, cell));
         var gap = Math.Max(2, size * 0.28);
         var width = 5 * size + 4 * gap;
-        var noDataWidth = showNoData ? size + gap : 0;
+        var extraWidth = (showNoData ? size + gap : 0) + (showZero ? size + gap : 0);
         var tickStyle = chart.Options.TickLabelStyle;
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
-        var x = right - noDataWidth - width - EstimateSvgStyledTextWidth(chart, "More", tickFontSize, tickStyle) - 10;
+        var x = right - extraWidth - width - EstimateSvgStyledTextWidth(chart, labels.More, tickFontSize, tickStyle) - 10;
         var lessLabelX = x - 8;
         if (showNoData) {
-            var noData = ChartHeatmapSurface.CalendarEmptyColor(chart);
-            writer
-                .StartElement("rect")
-                .Attribute("data-cfx-role", "calendar-heatmap-scale-no-data")
-                .Attribute("data-cfx-status", "empty")
-                .Attribute("x", x)
-                .Attribute("y", y)
-                .Attribute("width", size)
-                .Attribute("height", size)
-                .Attribute("rx", Math.Min(3, size * 0.22))
-                .Attribute("fill", noData.ToCss())
-                .EndStartElement()
-                .StartElement("title")
-                .Text("No data")
-                .EndElement()
-                .EndElement()
-                .Line();
+            WriteCalendarScaleSwatch(writer, "calendar-heatmap-scale-no-data", "empty", x, y, size, ChartHeatmapSurface.CalendarEmptyBlend(chart).Paint, labels.NoData);
             x += size + gap;
         }
 
-        WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "Less", lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
+        if (showZero) {
+            WriteCalendarScaleSwatch(writer, "calendar-heatmap-scale-zero", null, x, y, size, ChartHeatmapSurface.ZeroBlend(chart).Paint, FormatValue(chart, 0));
+            x += size + gap;
+        }
+
+        WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", labels.Less, lessLabelX, y + size / 2, "end", emphasized: false, middleBaseline: true);
         for (var i = 0; i < 5; i++) {
-            var value = ChartHeatmapSurface.InterpolateObservedRange(min, max, i / 4.0);
-            var color = ChartHeatmapSurface.CalendarColor(chart, series, null, value, min, max);
+            var value = model.ScaleValue(i);
+            var color = ChartHeatmapSurface.CalendarBlend(chart, model.Series, null, value, model.RampMin, model.Max).Paint;
             writer
                 .StartElement("rect")
                 .Attribute("data-cfx-role", "calendar-heatmap-scale-step")
-                .Attribute("data-cfx-level", i)
+                .Attribute("data-cfx-level", model.ScaleLevel(i))
                 .Attribute("data-cfx-value", value)
                 .Attribute("x", x + i * (size + gap))
                 .Attribute("y", y)
                 .Attribute("width", size)
                 .Attribute("height", size)
                 .Attribute("rx", Math.Min(3, size * 0.22))
-                .Attribute("fill", color.ToCss())
+                .Paint("fill", color)
                 .EndEmptyElement()
                 .Line();
         }
-        WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", "More", x + width + 8, y + size / 2, "start", emphasized: false, middleBaseline: true);
+
+        WriteCalendarHeatmapSvgTick(writer, chart, "calendar-heatmap-scale-label", labels.More, x + width + 8, y + size / 2, "start", emphasized: false, middleBaseline: true);
+    }
+
+    private static void WriteCalendarScaleSwatch(SvgMarkupWriter writer, string role, string? status, double x, double y, double size, SvgPaint color, string title) {
+        writer
+            .StartElement("rect")
+            .Attribute("data-cfx-role", role)
+            .Attribute("data-cfx-status", status)
+            .Attribute("x", x)
+            .Attribute("y", y)
+            .Attribute("width", size)
+            .Attribute("height", size)
+            .Attribute("rx", Math.Min(3, size * 0.22))
+            .Paint("fill", color)
+            .EndStartElement()
+            .StartElement("title")
+            .Text(title)
+            .EndElement()
+            .EndElement()
+            .Line();
     }
 
     private static void WriteCalendarHeatmapSvgTick(SvgMarkupWriter writer, Chart chart, string role, string text, double x, double y, string anchor, bool emphasized, bool middleBaseline) {
@@ -204,31 +187,5 @@ public sealed partial class SvgChartRenderer {
         WriteSvgStyledTextContent(writer, style, StyleText(style, text)).EndElement().Line();
     }
 
-    private static List<CalendarHeatmapCell> CalendarHeatmapCells(ChartSeries series) {
-        var cells = new List<CalendarHeatmapCell>();
-        for (var i = 0; i < series.Points.Count; i++) {
-            var color = i < series.PointColors.Count ? series.PointColors[i] : null;
-            cells.Add(new CalendarHeatmapCell(DateTime.FromOADate(series.Points[i].X).Date, series.Points[i].Y, color));
-        }
-
-        return cells;
-    }
-
-    private static DateTime CalendarWeekStart(DateTime date) => date.Date.AddDays(-(int)date.DayOfWeek);
-
-    private static DateTime CalendarWeekEnd(DateTime date) => date.Date.AddDays(6 - (int)date.DayOfWeek);
-
     private static bool IsCalendarHeatmapChart(Chart chart) => ChartSeriesKindTraits.ContainsKind(chart, ChartSeriesKind.CalendarHeatmap);
-
-    private readonly struct CalendarHeatmapCell {
-        public readonly DateTime Date;
-        public readonly double Value;
-        public readonly ChartColor? Color;
-
-        public CalendarHeatmapCell(DateTime date, double value, ChartColor? color) {
-            Date = date;
-            Value = value;
-            Color = color;
-        }
-    }
 }

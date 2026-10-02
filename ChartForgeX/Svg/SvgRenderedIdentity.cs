@@ -18,7 +18,8 @@ internal static class SvgRenderedIdentity {
     }
 
     public static string CreateFinalId(string svg, string finalPrefix, string idScope, string separator = "-") {
-        var canonicalSvg = svg.Replace("\r\n", "\n");
+        // Ids hash the markup as it reads without colour variables, so typed paint tokens do not change them.
+        var canonicalSvg = Themes.SvgPaint.Resolve(svg, null).Replace("\r\n", "\n");
         return finalPrefix + separator + StableHash(idScope ?? string.Empty, canonicalSvg);
     }
 

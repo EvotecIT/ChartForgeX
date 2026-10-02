@@ -8,6 +8,8 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 
+using ChartForgeX.Svg;
+
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
@@ -318,8 +320,9 @@ internal static partial class TopologyRenderPrimitives {
         }
     }
 
-    // A grid-searched route may leave through a different side than the inferred port; spreading along the recorded side
-    // would then push the endpoint off the card, so it only applies when the end leg runs along the port's axis.
+    // In a readable dense layout an edge the route planner could not connect falls back to the corridor candidates,
+    // which may leave through a different side than the inferred port; spreading along the recorded side would then
+    // push the endpoint off the card, so it only applies when the end leg runs along the port's axis.
     private static bool LegMatchesPort(TopologyChart chart, TopologyEdge edge, ChartPoint end, ChartPoint next, TopologyEdgePort port) {
         if (!TopologyLayoutEngine.UsesReadableDenseLayout(chart) || edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0) return true;
         var horizontal = Math.Abs(end.Y - next.Y) < 0.01;
@@ -566,9 +569,9 @@ internal static partial class TopologyRenderPrimitives {
 
     public static string CssFontFamily(string value) => value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
 
-    public static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+    public static string Escape(string value) => SvgMarkupWriter.EscapeText(value);
 
-    public static string EscapeAttr(string value) => Escape(value).Replace("\"", "&quot;");
+    public static string EscapeAttr(string value) => SvgMarkupWriter.EscapeAttribute(value);
 
     public static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 

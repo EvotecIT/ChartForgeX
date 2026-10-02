@@ -52,7 +52,8 @@ public sealed class TopologyRenderOptions {
     /// <summary>
     /// Gets or sets whether <see cref="TopologyLayoutMode.DenseGrouped"/> uses the readable dense layout for large
     /// replication-style maps: left-to-right or right-to-left layouts with more than six groups wrap site panels into
-    /// rows no wider than the viewport, <see cref="TopologyGroupLayoutPolicy.Auto"/> groups of 10–24 nodes keep cards in a
+    /// rows no wider than the viewport, site panels take the height of their content (panels in one row share a height)
+    /// and the canvas height follows the content instead of the requested viewport height, <see cref="TopologyGroupLayoutPolicy.Auto"/> groups of 10–24 nodes keep cards in a
     /// grid (only larger groups collapse to dots), card spacing reserves room for tile captions, and obstacle-avoiding
     /// routes treat captions as part of the card and fall back to a grid search when a route would cross another card.
     /// Off by default so existing dense charts render unchanged.
@@ -184,6 +185,35 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets the CSS class prefix.</summary>
     public string? CssClassPrefix { get; set; } = "cfx-topology";
+
+    /// <summary>
+    /// Gets or sets an optional scope put in front of every SVG id the render emits (title, description, filters, arrow
+    /// and endpoint markers, groups, nodes, edges, callouts, motion paths, and the <c>cfxi-</c> ids of icon artwork
+    /// imported from SVG packs) and of the CSS rules scoped to the root id, so several renders of the same chart can
+    /// share one document. Null or white space (the default) keeps the ids based on the chart id alone. Class names and
+    /// <c>data-*</c> attributes do not change, and ids inside hand-written <see cref="TopologyIconArtwork.InlineSvg"/>
+    /// artwork without the <c>cfxi-</c> prefix are not scoped.
+    /// </summary>
+    public string? IdScope { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS custom properties the SVG writes for mapped colours, with the literal colour as fallback
+    /// (see <see cref="ChartForgeX.Themes.SvgColorVariables"/>); null (the default) writes literal colours. PNG output
+    /// always uses literal colours.
+    /// </summary>
+    public ChartForgeX.Themes.SvgColorVariables? SvgColorVariables { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether SVG output keeps status marks in their colours in forced-colours mode (Windows high contrast),
+    /// as <c>ChartOptions.PinStateColorsInForcedColors</c> does for charts: edges and their arrow and endpoint markers,
+    /// node status badges, group status dots, geographic callout status chips, node detail status dots, and status line
+    /// and dot legend swatches get <c>forced-color-adjust:none</c>. Node and group cards, whose labels sit on the canvas,
+    /// and geographic region hulls, which lie under such labels, keep following forced colours. The rule is written in a
+    /// <c>&lt;style&gt;</c> element even when <see cref="IncludeCss"/> is off. Off by default. A host that also remaps its colour variables in
+    /// forced-colours mode must keep the values these marks use, because custom properties are not affected by
+    /// <c>forced-color-adjust</c>. PNG output is not affected.
+    /// </summary>
+    public bool PinStateColorsInForcedColors { get; set; }
 
     /// <summary>Gets or sets an optional focused topology view.</summary>
     public TopologyView? View { get; set; }
@@ -346,6 +376,7 @@ public sealed class TopologyRenderOptions {
         snapshot.Motion = Motion?.Clone();
         snapshot.View = View?.Clone();
         snapshot.IconCatalog = IconCatalog?.Clone();
+        snapshot.SvgColorVariables = SvgColorVariables?.Clone();
         snapshot.HighlightStatuses = new List<TopologyHealthStatus>(HighlightStatuses);
         snapshot.HighlightGroupIds = new List<string>(HighlightGroupIds);
         snapshot.HighlightNodeIds = new List<string>(HighlightNodeIds);

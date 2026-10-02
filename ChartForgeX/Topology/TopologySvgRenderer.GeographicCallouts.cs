@@ -3,6 +3,7 @@ using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -22,7 +23,7 @@ public sealed partial class TopologySvgRenderer {
             var parent = AddOptionalLink(layer, group.Href, prefix, options);
             var element = parent.Element("g", item => {
                 item
-                    .Attribute("id", SafeElementId(chart.Id, "geo-callout", group.Id))
+                    .Attribute("id", TopologySvgIds.Element(chart, options, "geo-callout", group.Id))
                     .Class(prefix + "__geo-callout " + prefix + "__group " + prefix + "__group--" + CssToken(group.Status.ToString()) + (selected ? " " + prefix + "--selected" : string.Empty) + highlight.CssClass(prefix, highlighted) + CustomCssClasses(group.CssClass))
                     .Attribute("data-cfx-role", "topology-group")
                     .Attribute("data-cfx-visual-role", "topology-geographic-callout")
@@ -50,13 +51,13 @@ public sealed partial class TopologySvgRenderer {
             });
 
             if (options.IncludeTooltips && !string.IsNullOrWhiteSpace(group.Tooltip)) element.Element("title", title => title.Text(group.Tooltip!));
-            AddGeographicCalloutBody(element, callout, prefix, theme, selected, chart.Id);
+            AddGeographicCalloutBody(element, callout, prefix, theme, selected, TopologySvgIds.Root(chart, options));
         }
 
         root.AddElement(layer);
     }
 
-    private static void AddGeographicCalloutBody(SvgElement element, TopologyGeographicCallout callout, string prefix, TopologyTheme theme, bool selected, string? chartId) {
+    private static void AddGeographicCalloutBody(SvgElement element, TopologyGeographicCallout callout, string prefix, TopologyTheme theme, bool selected, string rootId) {
         var x = callout.X;
         var y = callout.Y;
         var leader = TopologyGeographicCalloutPrimitives.LeaderPoints(callout);
@@ -108,7 +109,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("stroke", callout.AccentColor)
             .Attribute("stroke-width", selected ? TopologyGeographicCalloutPrimitives.CardSelectedStrokeWidth : TopologyGeographicCalloutPrimitives.CardStrokeWidth)
             .Attribute("stroke-opacity", selected ? TopologyGeographicCalloutPrimitives.CardSelectedStrokeOpacity : TopologyGeographicCalloutPrimitives.CardStrokeOpacity)
-            .Attribute("filter", "url(#" + SanitizeId(chartId ?? "topology") + "-shadow)"));
+            .Attribute("filter", "url(#" + rootId + "-shadow)"));
         element.Element("rect", rect => rect
             .Attribute("x", x)
             .Attribute("y", y)
@@ -168,7 +169,7 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("cx", points[i].X)
                     .Attribute("cy", points[i].Y)
                     .Attribute("r", TopologyGeographicCalloutPrimitives.MiniTopologyNodeRadius)
-                    .Attribute("fill", color)
+                    .Paint("fill", StatusColorPaint(color))
                     .Attribute("stroke", theme.Background)
                     .Attribute("stroke-width", TopologyGeographicCalloutPrimitives.MiniTopologyNodeStrokeWidth));
             }
@@ -189,18 +190,18 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("width", width)
                     .Attribute("height", TopologyGeographicCalloutPrimitives.StatusChipHeight)
                     .Attribute("rx", TopologyGeographicCalloutPrimitives.StatusChipRadius)
-                    .Attribute("fill", StatusFill(color, theme.Background))
-                    .Attribute("stroke", color)
+                    .Paint("fill", StatusPaint(color, theme.Background))
+                    .Paint("stroke", StatusColorPaint(color))
                     .Attribute("stroke-opacity", TopologyGeographicCalloutPrimitives.StatusChipStrokeOpacity));
                 group.Element("circle", circle => circle
                     .Attribute("cx", x + offset + TopologyGeographicCalloutPrimitives.StatusChipDotX)
                     .Attribute("cy", y + TopologyGeographicCalloutPrimitives.StatusChipRadius)
                     .Attribute("r", TopologyGeographicCalloutPrimitives.StatusChipDotRadius)
-                    .Attribute("fill", color));
+                    .Paint("fill", StatusColorPaint(color)));
                 group.Element("text", textNode => textNode
                     .Attribute("x", x + offset + TopologyGeographicCalloutPrimitives.StatusChipTextX)
                     .Attribute("y", y + TopologyGeographicCalloutPrimitives.StatusChipTextSvgBaseline)
-                    .Attribute("fill", color)
+                    .Paint("fill", StatusColorPaint(color))
                     .Attribute("font-size", TopologyGeographicCalloutPrimitives.StatusChipTextFontSize)
                     .Attribute("font-weight", "800")
                     .Text(text));

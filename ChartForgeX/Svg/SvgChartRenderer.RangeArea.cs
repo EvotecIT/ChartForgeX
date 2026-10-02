@@ -4,6 +4,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -43,14 +44,14 @@ public sealed partial class SvgChartRenderer {
             .EndStartElement()
             .Line();
         WriteRangeAreaPath(writer, "range-area", index, lower.Count, BuildClosedPolygonPath(upperPath, lowerPath), $"url(#{id}-area{index})", null, null, null);
-        WriteRangeAreaPath(writer, "range-area-midline", index, middle.Count, middleLine, "none", color.ToCss(), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaMidlineOpacity, true);
+        WriteRangeAreaPath(writer, "range-area-midline", index, middle.Count, middleLine, "none", SvgPaint.Plain(color), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaMidlineOpacity, true);
         foreach (var layer in ChartLineVisualLayers.Build(color, series.StrokeWidth, style)) {
             if (!layer.IsVisible) continue;
             var upperStrokeWidth = layer.IsForeground ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, layer.StrokeWidth) : layer.StrokeWidth;
             var lowerStrokeWidth = layer.IsForeground ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, layer.StrokeWidth) : layer.StrokeWidth;
             var lowerOpacity = layer.IsForeground ? ChartVisualPrimitives.RangeAreaLowerStrokeOpacity : (double?)layer.Opacity;
-            WriteRangeAreaPath(writer, "range-area-upper" + layer.RoleSuffix, index, upper.Count, upperLine, "none", layer.Color.ToCss(), upperStrokeWidth, layer.Opacity < 1 ? layer.Opacity : null);
-            WriteRangeAreaPath(writer, "range-area-lower" + layer.RoleSuffix, index, lower.Count, lowerLine, "none", layer.Color.ToCss(), lowerStrokeWidth, lowerOpacity);
+            WriteRangeAreaPath(writer, "range-area-upper" + layer.RoleSuffix, index, upper.Count, upperLine, "none", LayerPaint(layer), upperStrokeWidth, layer.Opacity < 1 ? layer.Opacity : null);
+            WriteRangeAreaPath(writer, "range-area-lower" + layer.RoleSuffix, index, lower.Count, lowerLine, "none", LayerPaint(layer), lowerStrokeWidth, lowerOpacity);
         }
         writer.EndElement().Line();
         sb.Append(writer.Build());
@@ -69,7 +70,7 @@ public sealed partial class SvgChartRenderer {
         }
     }
 
-    private static void WriteRangeAreaPath(SvgMarkupWriter writer, string role, int seriesIndex, int intervalCount, string path, string fill, string? stroke, double? strokeWidth, double? opacity, bool dashed = false) {
+    private static void WriteRangeAreaPath(SvgMarkupWriter writer, string role, int seriesIndex, int intervalCount, string path, string fill, SvgPaint? stroke, double? strokeWidth, double? opacity, bool dashed = false) {
         writer
             .StartElement("path")
             .Attribute("data-cfx-role", role)
@@ -79,7 +80,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", fill);
         if (stroke != null) {
             writer
-                .Attribute("stroke", stroke)
+                .Paint("stroke", stroke.Value)
                 .Attribute("stroke-width", strokeWidth.GetValueOrDefault())
                 .Attribute("stroke-linecap", "round")
                 .Attribute("stroke-linejoin", "round");

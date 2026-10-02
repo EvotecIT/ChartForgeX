@@ -17,13 +17,14 @@ internal static class MapExamples {
         Save(CreateRegionMap(), output, "revenue-region-map-us-states-light", pngOutputScale);
         Save(CreateIndustrialBirthsRegionMap(), output, "industrial-births-region-map-us-states-light", pngOutputScale);
         Save(CreateTileMap(), output, "revenue-tile-map-us-states-light", pngOutputScale);
+        Save(CreateTargetTileMap(), output, "target-tile-map-diverging-steps-light", pngOutputScale);
         if (includeExternalCatalogMaps) SaveOptionalCatalogRegionMapExamples(output, pngOutputScale);
     }
 
     private static Chart CreateCalendarHeatmap() {
         return Chart.Create()
             .WithTitle("Developer Consistency Calendar")
-            .WithSubtitle("Contribution-style day grid with focusable SVG regions and native hover titles")
+            .WithSubtitle("Contribution-style day grid with named SVG regions and native hover titles")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(980, 420)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
@@ -247,10 +248,33 @@ internal static class MapExamples {
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
     }
 
+    private static Chart CreateTargetTileMap() {
+        // A seven-step diverging ramp: three steps below target, a neutral target, three steps above.
+        var scale = ChartMapColorScale
+            .Diverging(
+                new[] { ChartColor.FromHex("#B8292A"), ChartColor.FromHex("#E0645B"), ChartColor.FromHex("#F0A39D") },
+                ChartColor.FromHex("#ECEEF0"),
+                new[] { ChartColor.FromHex("#9AB8DC"), ChartColor.FromHex("#2A78D6"), ChartColor.FromHex("#1C5CAB") },
+                100)
+            .WithValueRange(70, 130)
+            .WithLabels("70%", "Target", "130%");
+        var states = StateRevenue().Select(item => new ChartRegionMapItem(item.Region, 70 + (item.Value * 7 % 61))).ToArray();
+
+        return Chart.Create()
+            .WithTitle("Attainment Against Target")
+            .WithSubtitle("Every step of a seven-colour diverging ramp, on the map and in the legend")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(980, 500)
+            .WithLegend(false)
+            .WithMapColorScale(scale)
+            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .AddTileMap("Attainment", ChartTileMapCatalog.Get("us-states"), states);
+    }
+
     private static Chart CreateRegionMap() {
         return Chart.Create()
             .WithTitle("Revenue Region Map")
-            .WithSubtitle("Catalog-backed SVG geometry with keyboard-focusable regions")
+            .WithSubtitle("Catalog-backed SVG geometry with named regions")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(980, 560)
             .WithLegend(false)

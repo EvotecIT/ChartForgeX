@@ -23,19 +23,25 @@ public sealed partial class PngChartRenderer {
 
             var state = item.Category!;
             var swatchY = rowCenter - ChartStateCategoryLegend.Swatch / 2;
-            c.FillRoundedRect(item.X, swatchY, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.SwatchRadius, state.Color);
-            if (state.Hatched) DrawStateCategoryHatch(c, item.X, swatchY, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.Swatch);
+            DrawStateMark(c, ChartStateMark.For(chart, state), item.X, swatchY, ChartStateCategoryLegend.Swatch, ChartStateCategoryLegend.Swatch);
             var labelWidth = Math.Max(8, bounds.Right - item.X - ChartStateCategoryLegend.Swatch - 6);
             var label = TrimReadablePngLabelToWidth(state.Label, legendFontSize, labelWidth, legendStyle);
             DrawStateCategoryText(c, label, item.X + ChartStateCategoryLegend.Swatch + 6, rowCenter, legendStyle, t.MutedText, legendFontSize, false);
         }
     }
 
-    private static void DrawStateCategoryHatch(RgbaCanvas c, double x, double y, double width, double height, double radius = ChartStateCategoryLegend.SwatchRadius) {
-        var color = ApplyOpacity(ChartColor.White, ChartStateCategoryLegend.HatchOpacity);
-        foreach (var line in ChartPatternLineGeometry.Build(ChartFillPattern.DiagonalForward, x, y, width, height, Math.Min(radius, width / 2), ChartStateCategoryLegend.HatchSpacing * 1.4142)) {
-            c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.5);
+    /// <summary>Draws a state mark: its fill at the mark's strength, its line pattern, and its dashed outline.</summary>
+    private static void DrawStateMark(RgbaCanvas c, ChartStateMark mark, double x, double y, double width, double height, double radius = ChartStateCategoryLegend.SwatchRadius) {
+        c.FillRoundedRect(x, y, width, height, radius, ApplyOpacity(mark.Color, mark.FillOpacity));
+        if (mark.Lines != ChartFillPattern.None) {
+            var color = ApplyOpacity(mark.LineColor, ChartStateCategoryLegend.HatchOpacity);
+            foreach (var line in ChartPatternLineGeometry.Build(mark.Lines, x, y, width, height, Math.Min(radius, width / 2), ChartStateCategoryLegend.HatchSpacing * 1.4142)) {
+                c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, ChartStateMark.PatternLineWidth);
+            }
         }
+
+        // The dashed outline sits inside the mark on the centre line the SVG outline rectangle uses.
+        if (mark.Outlined) c.StrokeRoundedRectDashed(x, y, width, height, Math.Min(radius, width / 2), ApplyOpacity(mark.Color, mark.OutlineOpacity), ChartStateMark.OutlineWidth, ChartStateMark.OutlineDash, ChartStateMark.OutlineGap);
     }
 
     private static void DrawStateCategoryText(RgbaCanvas c, string text, double x, double centerY, TextStyleOverride style, ChartColor color, double fontSize, bool emphasized) {

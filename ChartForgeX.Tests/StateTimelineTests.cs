@@ -400,11 +400,12 @@ public sealed class StateTimelineTests {
     }
 
     private static Chart CreateChart() {
-        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(showTimeZone: true)
+        // Tall enough for three readable lanes below the summary header and above the axis, its title, and the legend.
+        var chart = Chart.Create().WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
                 new ChartStateCategory("up", "Up", Up),
                 new ChartStateCategory("down", "Down", Down),
-                new ChartStateCategory("notObservable", "Not observable", Neutral, hatched: true))
+                new ChartStateCategory("notObservable", "Not observable", Neutral, ChartStatePattern.Hatched))
             .AddStateTimelineLane("DC01", new[] {
                 new ChartStateTimelineSegment(Day, Day.AddHours(6), "up"),
                 new ChartStateTimelineSegment(Day.AddHours(6), Day.AddHours(9), "down", "LDAP bind failed"),

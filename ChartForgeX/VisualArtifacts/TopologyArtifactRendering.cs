@@ -37,7 +37,8 @@ public static class TopologyArtifactRendering {
     }
 
     internal static void RefreshRegions(VisualArtifact artifact, TopologyChart topology, TopologyRenderOptions? renderOptions) {
-        renderOptions ??= new TopologyRenderOptions();
+        // Preparing writes the text measurement onto the options, so the chart's stored options are copied first.
+        renderOptions ??= topology.DefaultRenderOptions?.CloneForRendering() ?? new TopologyRenderOptions();
         var prepared = TopologyLayoutEngine.Prepare(topology, renderOptions.View, renderOptions);
         artifact.Regions.Clear();
         foreach (var group in prepared.Groups) artifact.Regions.Add(Region(group.Id, "topology-group", group.Label, group.X, group.Y, group.Width, group.Height, group.Href, group.Tooltip));

@@ -5,6 +5,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -28,7 +29,7 @@ public sealed partial class SvgChartRenderer {
         var maxLongitude = series.Points.Max(point => point.X);
         var minLatitude = series.Points.Min(point => point.Y);
         var maxLatitude = series.Points.Max(point => point.Y);
-        var containerSummary = series.Name + " dotted map with " + series.Points.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " highlighted " + (series.Points.Count == 1 ? "point" : "points");
+        var containerSummary = chart.Options.Labels.Describe(new ChartDescriptionFacts(ChartDescriptionKind.DottedMapGroup, chart.Title, new[] { series.Name }, series.Points.Count));
 
         var valueAttributes = valueRange.HasValue ? $" data-cfx-valued-point-count=\"{valuedPointCount}\" data-cfx-min-value=\"{F(valueRange.Value.Min)}\" data-cfx-max-value=\"{F(valueRange.Value.Max)}\"" : string.Empty;
         sb.AppendLine($"<g data-cfx-role=\"dotted-map\" data-cfx-map-kind=\"world-dotted\" data-cfx-label=\"{Escape(series.Name)}\" data-cfx-projection=\"equirectangular\" data-cfx-point-count=\"{series.Points.Count}\" data-cfx-visible-point-count=\"{visiblePoints}\" data-cfx-connector-count=\"{visibleConnectors}\"{valueAttributes} data-cfx-viewport=\"{Escape(viewport.Name)}\" data-cfx-viewport-min-longitude=\"{F(viewport.MinimumLongitude)}\" data-cfx-viewport-max-longitude=\"{F(viewport.MaximumLongitude)}\" data-cfx-viewport-min-latitude=\"{F(viewport.MinimumLatitude)}\" data-cfx-viewport-max-latitude=\"{F(viewport.MaximumLatitude)}\" data-cfx-min-longitude=\"{F(minLongitude)}\" data-cfx-max-longitude=\"{F(maxLongitude)}\" data-cfx-min-latitude=\"{F(minLatitude)}\" data-cfx-max-latitude=\"{F(maxLatitude)}\" role=\"group\" aria-label=\"{Escape(containerSummary)}\">");
@@ -73,8 +74,6 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, 768, writer => {
                 writer.StartElement("circle")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", "dotted-map-point")
                     .Attribute("data-cfx-point", i)
                     .Attribute("data-cfx-label", label);
@@ -168,8 +167,6 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, 1024, writer => {
                 writer.StartElement("path")
                     .Attribute("class", "cfx-interactive-region")
-                    .Attribute("tabindex", "0")
-                    .Attribute("focusable", "true")
                     .Attribute("data-cfx-role", "dotted-map-connector")
                     .Attribute("data-cfx-connector", i)
                     .Attribute("data-cfx-label", connector.Label)
@@ -541,7 +538,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("x2", end.X)
                     .Attribute("y2", end.Y)
                     .Attribute("class", ChartVisualPrimitives.SvgPremiumStrokeClass)
-                    .Attribute("stroke", layer.Color.ToCss())
+                    .Paint("stroke", LayerPaint(layer))
                     .Attribute("stroke-width", layer.StrokeWidth)
                     .Attribute("stroke-linecap", "round");
                 if (layer.Opacity < 1) writer.Attribute("opacity", layer.Opacity);

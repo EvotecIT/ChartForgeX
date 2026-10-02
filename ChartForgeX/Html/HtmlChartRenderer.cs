@@ -48,10 +48,10 @@ public sealed class HtmlChartRenderer {
     public string RenderPage(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var bg = chart.Options.TransparentBackground ? chart.Options.Theme.CardBackground : chart.Options.Theme.Background;
-        var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX chart" : chart.Title;
+        var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Labels.UntitledChart : chart.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
-            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("html").Attribute("lang", chart.Accessibility.Language ?? "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, CssFontFamily(chart.Options.Theme.FontFamily)) + ".chartforgex-chart{width:min(100%," + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-chart svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-chart{width:100%;max-width:none}.chartforgex-chart svg{width:100%;height:auto}"));
         writer.EndElement().Line()

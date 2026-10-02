@@ -20,6 +20,8 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>An HTML fragment.</returns>
     public string RenderFragment(TopologyChart chart, TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         return RenderFragmentCore(chart, options, includeAssets: true, assetSource: "inline");
     }
@@ -31,6 +33,8 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>An HTML fragment that expects the caller to register topology HTML assets.</returns>
     public string RenderFragmentWithoutAssets(TopologyChart chart, TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         return RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host");
     }
@@ -41,7 +45,7 @@ public sealed partial class TopologyHtmlRenderer {
 
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        options = (options ?? new TopologyRenderOptions()).CloneForRendering();
+        options = chart.ResolveRenderOptions(options).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
         var theme = chart.Theme ?? TopologyTheme.Light();
@@ -155,14 +159,15 @@ public sealed partial class TopologyHtmlRenderer {
     /// <returns>A complete HTML page.</returns>
     public string RenderPage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
+        options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         options ??= new TopologyRenderOptions();
         var theme = chart.Theme ?? TopologyTheme.Light();
-        var title = string.IsNullOrWhiteSpace(chart.Title) ? "ChartForgeX topology" : chart.Title!;
+        var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var cssPrefix = CssClassPrefix(options);
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
-            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("html").Attribute("lang", string.IsNullOrWhiteSpace(chart.Accessibility.Language) ? "en" : chart.Accessibility.Language).EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background));
         writer.EndElement().Line()

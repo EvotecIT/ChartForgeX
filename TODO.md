@@ -17,6 +17,8 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - A fallback face lighter than a bold run (Segoe UI Bold drawing Arabic in a Segoe UI Black title) is drawn at its own weight; embolden such glyphs per cluster, with the advance kept, to match a browser's synthetic bold.
 - SVG raster strokes: paint gradient and pattern strokes instead of their first stop color, and apply `stroke-dashoffset` and non-uniform transforms to the stroke outline.
 - Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
+- Static SVG and PNG charts are drawn in one time zone (UTC or `ChartAxis.TimeZone`) and cannot follow the reader's zone; hosts with a local/UTC switch label them as fixed. Following the reader needs a browser-side redraw of time-axis ticks, labels, and tooltips (for example from the `data-cfx-start`/`data-cfx-end` instants) in `ChartForgeX.Interactivity.Html`.
+- Colour roles for SVG variables cover lines, bars, histograms, calendars, matrix and hexbin heatmaps with their cell text, state marks and Gantt lane labels, and topology tints, contrast white, and arrow and endpoint markers (keyed by status, muted, or explicit colour order). Still written as literal derived colours: the gradients of funnel, Sankey, tree, treemap, timeline, and Gantt task marks, and the card and plot surface gradients (whose blend depends on the surface luminance, so a drawn card differs between light and dark). The interactive graph explorer (`ChartForgeX.Interactivity.Html`) still names its arrow markers after the edge colour.
 
 ## Interactivity
 
@@ -39,9 +41,13 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Topology
 
-- Give grid-searched (maze) topology routes route-lane separation and overlap scoring against other maze routes; today parallel edges that both fall back to the maze share one middle path.
+- Reduce crossings between planned dense routes: the planner charges for a crossing during the search and orders lanes by where routes turn, but it does not yet re-route earlier edges or swap lanes after all routes are known.
+- Let planned dense routes share a trunk on request (edges of one kind into one node), for hosts that prefer a bus to separate lanes.
+- Widen column gutters, not only row gaps, when many routed edges end in a group; this needs a width budget so wrapped panels still fit the viewport.
+- Outside `ReadableDenseLayout`, obstacle-avoiding routes still avoid a left-aligned estimate of the group header instead of the centered block the renderers draw (`TopologyGroupHeader`); switching changes curated examples, so do it together with a gallery review.
+- The dense route planner does not see fixed (`Orthogonal`, `Straight`, `Curved`) or waypoint edges; count them as occupied corridors when a chart mixes them with obstacle-avoiding edges.
+- `VisualArtifact.NaturalSize` of a topology is the requested viewport, while the rendered canvas is the prepared one (it grows with the content and, with `ReadableDenseLayout` on `DenseGrouped`, also shrinks to it); report the prepared size without feeding it back into `PreserveNaturalSize` renders.
 - Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
-- Tune label-clearance and route-overlap weights with real dense examples. The wrapped replication fixtures place most site-link labels more than 60 px from their route and allow up to two label overlaps per tier; keep labels next to their routes and lower `labelOverlapCeiling` in `TopologyReplicationBudgetTests`.
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: reusable diagnostics and richer text shaping should be added through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
 - Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.

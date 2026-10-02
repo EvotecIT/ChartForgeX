@@ -1,4 +1,5 @@
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -23,7 +24,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("rx", IsMonitoringDashboardStyle(options) ? 12 : 14)
             .Attribute("fill", theme.Card)
             .Attribute("stroke", theme.Border)
-            .Attribute("filter", "url(#" + SanitizeId(chart.Id ?? "topology") + "-shadow)"));
+            .Attribute("filter", "url(#" + TopologySvgIds.Root(chart, options) + "-shadow)"));
         if (options.CanvasSurfaceStyle == TopologyCanvasSurfaceStyle.PanelGrid) AddCanvasGrid(layer, x, y, width, height, theme);
         root.AddElement(layer);
     }
@@ -55,7 +56,7 @@ public sealed partial class TopologySvgRenderer {
         }
     }
 
-    private static void AddArrowMarker(SvgElement defs, string id, string color, TopologyRenderOptions options) {
+    private static void AddArrowMarker(SvgElement defs, string id, SvgPaint color, TopologyRenderOptions options) {
         defs.Element("marker", marker => {
             marker
                 .Attribute("id", id)
@@ -69,22 +70,22 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("overflow", "visible");
             switch (options.ArrowMarkerStyle) {
                 case TopologyArrowMarkerStyle.Chevron:
-                    marker.Element("path", path => path.Attribute("d", "M 2.2 1.6 L 7.4 5 L 2.2 8.4").Attribute("fill", "none").Attribute("stroke", color).Attribute("stroke-width", 1.85).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round"));
+                    marker.Element("path", path => path.Attribute("d", "M 2.2 1.6 L 7.4 5 L 2.2 8.4").Attribute("fill", "none").Paint("stroke", color).Attribute("stroke-width", 1.85).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round"));
                     break;
                 case TopologyArrowMarkerStyle.Diamond:
-                    marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Attribute("fill", color));
+                    marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Paint("fill", color));
                     break;
                 case TopologyArrowMarkerStyle.Circle:
-                    marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 5).Attribute("r", 3.4).Attribute("fill", color));
+                    marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 5).Attribute("r", 3.4).Paint("fill", color));
                     break;
                 default:
-                    marker.Element("path", path => path.Attribute("d", "M 0 0 L 10 5 L 0 10 z").Attribute("fill", color));
+                    marker.Element("path", path => path.Attribute("d", "M 0 0 L 10 5 L 0 10 z").Paint("fill", color));
                     break;
             }
         });
     }
 
-    private static void AddEndpointMarker(SvgElement defs, string id, string color, TopologyMarkerKind kind, TopologyRenderOptions options) {
+    private static void AddEndpointMarker(SvgElement defs, string id, SvgPaint color, TopologyMarkerKind kind, TopologyRenderOptions options) {
         if (kind == TopologyMarkerKind.Arrow) {
             AddArrowMarker(defs, id, color, options);
             return;
@@ -100,19 +101,14 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("markerUnits", "userSpaceOnUse")
                 .Attribute("orient", "auto-start-reverse")
                 .Attribute("overflow", "visible");
-            if (kind == TopologyMarkerKind.Circle) marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 5).Attribute("r", 3.4).Attribute("fill", color));
-            else if (kind == TopologyMarkerKind.Diamond) marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Attribute("fill", color));
+            if (kind == TopologyMarkerKind.Circle) marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 5).Attribute("r", 3.4).Paint("fill", color));
+            else if (kind == TopologyMarkerKind.Diamond) marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Paint("fill", color));
         });
     }
 
-    private static string ArrowMarkerId(string svgId, string color) => svgId + "-arrow-" + ArrowMarkerToken(color);
+    /// <summary>Returns the id of the arrow marker for a marker key (see <see cref="TopologySvgMarkerKeys"/>).</summary>
+    private static string ArrowMarkerId(string svgId, string markerKey) => svgId + "-arrow-" + markerKey;
 
-    private static string EndpointMarkerId(string svgId, string color, TopologyMarkerKind kind) => svgId + "-" + kind.ToString().ToLowerInvariant() + "-" + ArrowMarkerToken(color);
-
-    private static string ArrowMarkerToken(string color) {
-        var value = string.IsNullOrWhiteSpace(color) ? "current" : color.Trim().ToLowerInvariant();
-        var sb = new System.Text.StringBuilder(value.Length);
-        foreach (var c in value) sb.Append(char.IsLetterOrDigit(c) ? c : '-');
-        return sb.ToString().Trim('-');
-    }
+    /// <summary>Returns the id of a circle or diamond endpoint marker for a marker key.</summary>
+    private static string EndpointMarkerId(string svgId, string markerKey, TopologyMarkerKind kind) => svgId + "-" + kind.ToString().ToLowerInvariant() + "-" + markerKey;
 }

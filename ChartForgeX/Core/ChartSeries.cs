@@ -116,6 +116,9 @@ public sealed class ChartSeries {
     /// <summary>Gets categorical heatmap cells aligned with <see cref="Points"/>; empty for numeric heatmap rows.</summary>
     internal List<ChartHeatmapCell> HeatmapCells { get; } = new();
 
+    /// <summary>Gets or sets whether this heatmap row holds categorical cells; such a row may have no cells at all.</summary>
+    internal bool IsCategoricalHeatmapRow { get; set; }
+
     /// <summary>Gets optional per-segment tooltip details for state timeline lanes.</summary>
     internal List<string?> StateTimelineDetails { get; } = new();
 
@@ -127,6 +130,15 @@ public sealed class ChartSeries {
 
     /// <summary>Gets or sets the group header a Gantt lane is listed under.</summary>
     internal string? LaneGroup { get; set; }
+
+    /// <summary>Gets or sets the weekday of the top row of a calendar heatmap.</summary>
+    internal DayOfWeek CalendarFirstDay { get; set; }
+
+    /// <summary>Gets or sets the calendar weekday names indexed by <see cref="DayOfWeek"/>, or null for invariant abbreviations.</summary>
+    internal string[]? CalendarDayNames { get; set; }
+
+    /// <summary>Gets or sets the calendar month names, January first, or null for invariant abbreviations.</summary>
+    internal string[]? CalendarMonthNames { get; set; }
 
     /// <summary>
     /// Gets optional point-level data labels. Null entries use the formatted point value.
