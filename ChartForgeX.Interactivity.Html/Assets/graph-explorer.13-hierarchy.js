@@ -28,7 +28,7 @@
     for (let level = 0; level < depth && frontier.length; level += 1) {
       const next = [];
       frontier.forEach(parentId => (children.get(parentId) || []).forEach(childId => {
-        if (visibleIds.add(childId)) next.push(childId);
+        if (!visibleIds.has(childId)) { visibleIds.add(childId); next.push(childId); }
       }));
       frontier = next;
     }

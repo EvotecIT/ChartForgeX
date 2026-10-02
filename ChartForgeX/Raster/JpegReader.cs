@@ -20,9 +20,11 @@ internal static partial class JpegReader {
 
     public static bool IsJpeg(byte[] data) => data != null && data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF;
 
-    public static RgbaImage Decode(byte[] data) {
+    public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
+        var decodeLimits = limits ?? RasterDecodeLimits.Default;
+        decodeLimits.ValidateInput(data);
         if (!IsJpeg(data)) throw new NotSupportedException("Input is not a JPEG image.");
-        var state = Parse(data);
+        var state = Parse(data, decodeLimits);
         if (state.Frame == null) throw new InvalidDataException("JPEG image is missing a frame header.");
         if (state.Scans.Count == 0) throw new InvalidDataException("JPEG image is missing scan data.");
         if (state.Progressive) DecodeProgressiveScans(data, state);
@@ -30,7 +32,7 @@ internal static partial class JpegReader {
         return BuildImage(state);
     }
 
-    private static JpegState Parse(byte[] data) {
+    private static JpegState Parse(byte[] data, RasterDecodeLimits limits) {
         var state = new JpegState();
         var offset = 2;
         while (offset < data.Length) {
@@ -55,11 +57,11 @@ internal static partial class JpegReader {
             switch (marker) {
                 case 0xC0:
                     state.Progressive = false;
-                    ParseFrame(data, segment, segmentLength, state);
+                    ParseFrame(data, segment, segmentLength, state, limits);
                     break;
                 case 0xC2:
                     state.Progressive = true;
-                    ParseFrame(data, segment, segmentLength, state);
+                    ParseFrame(data, segment, segmentLength, state, limits);
                     break;
                 case 0xC4:
                     ParseHuffmanTables(data, segment, segmentLength, state);
@@ -87,12 +89,14 @@ internal static partial class JpegReader {
         return state;
     }
 
-    private static void ParseFrame(byte[] data, int offset, int length, JpegState state) {
+    private static void ParseFrame(byte[] data, int offset, int length, JpegState state, RasterDecodeLimits limits) {
+        if (state.Frame != null) throw new InvalidDataException("JPEG images must contain only one frame header.");
         if (length < 6) throw new InvalidDataException("Invalid JPEG frame header.");
         var precision = data[offset];
         if (precision != 8) throw new NotSupportedException("Only 8-bit JPEG images are supported.");
         var height = ReadUInt16(data, offset + 1);
         var width = ReadUInt16(data, offset + 3);
+        limits.ValidateDimensions(width, height);
         var componentCount = data[offset + 5];
         if (componentCount != 1 && componentCount != 3) throw new NotSupportedException("Only grayscale and three-component JPEG images are supported.");
         if (length < 6 + componentCount * 3) throw new InvalidDataException("JPEG frame component data is truncated.");
@@ -114,8 +118,9 @@ internal static partial class JpegReader {
         foreach (var component in frame.Components) {
             component.WidthInBlocks = DivideRoundUp(DivideRoundUp(width * component.H, frame.MaxH), 8);
             component.HeightInBlocks = DivideRoundUp(DivideRoundUp(height * component.V, frame.MaxV), 8);
-            component.Coefficients = new int[component.WidthInBlocks * component.HeightInBlocks * 64];
-            component.Samples = new byte[component.WidthInBlocks * component.HeightInBlocks * 64];
+            var sampleCount = checked(component.WidthInBlocks * component.HeightInBlocks * 64);
+            component.Coefficients = new int[sampleCount];
+            component.Samples = new byte[sampleCount];
         }
 
         state.Frame = frame;

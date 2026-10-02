@@ -1,5 +1,18 @@
   const graphPatchIds = (values) => new Set((values || []).map(value => String(value)));
   const graphPatchHas = (value, name) => Object.prototype.hasOwnProperty.call(value || {}, name);
+  const validateGraphParents = (values, itemKind) => {
+    const complete = new Set();
+    values.forEach((_, id) => {
+      const visiting = new Set();
+      let current = id;
+      while (values.get(current)?.parentId) {
+        if (complete.has(current)) break;
+        if (visiting.has(current)) throw new Error(`Graph patch ${itemKind} hierarchy contains a parent cycle at '${current}'.`);
+        visiting.add(current); current = values.get(current).parentId;
+      }
+      visiting.forEach(visited => complete.add(visited));
+    });
+  };
   const graphPatchClusters = (root, patch, nodeIds, removedNodes) => {
     const removedClusters = graphPatchIds(patch.removeClusterIds);
     const clusters = new Map(items(root, '[data-cfx-role="graph-cluster"]').filter(cluster => !removedClusters.has(attr(cluster, 'data-cluster-id'))).map(cluster => [attr(cluster, 'data-cluster-id'), { parentId: attr(cluster, 'data-cluster-parent'), nodeIds: new Set(idList(attr(cluster, 'data-cluster-node-ids'))) }]));
@@ -21,6 +34,7 @@
       if (cluster.parentId && !clusters.has(cluster.parentId)) throw new Error(`Graph patch cluster '${clusterId}' references missing parent '${cluster.parentId}'.`);
       cluster.nodeIds.forEach(nodeId => { if (!nodeIds.has(nodeId)) throw new Error(`Graph patch cluster '${clusterId}' references missing node '${nodeId}'.`); });
     });
+    validateGraphParents(clusters, 'cluster');
     return clusters;
   };
   const validateGraphPatch = (root, patch) => {
@@ -29,6 +43,7 @@
     (patch.upsertNodes || []).forEach(node => { if (!node?.id) throw new Error('Graph patch nodes require stable ids.'); nodes.set(String(node.id), { parentId: String(node.parentId || ''), clusterId: String(node.clusterId || '') }); });
     const nodeIds = new Set(nodes.keys());
     nodes.forEach((node, nodeId) => { if (node.parentId && !nodeIds.has(node.parentId)) throw new Error(`Graph patch node '${nodeId}' references missing parent '${node.parentId}'.`); });
+    validateGraphParents(nodes, 'node');
     const clusters = graphPatchClusters(root, patch, nodeIds, removedNodes);
     const removedClusters = graphPatchIds(patch.removeClusterIds);
     const declaredMembership = new Map();
@@ -50,6 +65,8 @@
     });
     (patch.upsertEdges || []).forEach(edge => {
       if (!edge?.id) throw new Error('Graph patch edges require stable ids.');
+      const width = edge.style?.width;
+      if (width !== undefined && width !== null && width !== '' && (!Number.isFinite(Number(width)) || Number(width) <= 0)) throw new Error(`Graph patch edge '${edge.id}' width must be finite and greater than zero.`);
       const source = String(edge.sourceNodeId || edge.source || ''), target = String(edge.targetNodeId || edge.target || '');
       edges.set(String(edge.id), { source, target });
     });

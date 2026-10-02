@@ -26,7 +26,15 @@ public static class SvgRasterizer {
     /// dimensions. Use this instead of <see cref="ToPng(string, RasterImageOptions)"/> when the pixels
     /// go straight into a composition, so they are not encoded and decoded on the way.
     /// </summary>
-    public static RgbaImage ToImage(string svg, int? width = null, int? height = null) {
+    public static RgbaImage ToImage(string svg, int? width = null, int? height = null) => Rasterize(svg, width, height).Image;
+
+    /// <summary>Rasterizes SVG and reports encountered unsupported content. Strict mode rejects output with diagnostics.</summary>
+    /// <param name="svg">The SVG document.</param>
+    /// <param name="width">Optional output width.</param>
+    /// <param name="height">Optional output height.</param>
+    /// <param name="strict">Whether to throw instead of returning pixels when loss diagnostics are present.</param>
+    /// <returns>Pixels and bounded diagnostics for the supported SVG subset.</returns>
+    public static SvgRasterizationResult Rasterize(string svg, int? width = null, int? height = null, bool strict = false) {
         if (string.IsNullOrWhiteSpace(svg)) throw new ArgumentException("SVG content cannot be empty.", nameof(svg));
         if (width.HasValue && width.Value <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Width must be greater than zero.");
         if (height.HasValue && height.Value <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Height must be greater than zero.");
@@ -66,10 +74,13 @@ public static class SvgRasterizer {
         } catch (Exception ex) when (ex is FormatException || ex is InvalidOperationException || ex is ArgumentException) {
             throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.", ex);
         }
+        parsed.Diagnostics = new SvgRasterDiagnostics();
         if (!SvgRasterRenderer.TryRenderDocument(parsed, Attribute(root, "preserveAspectRatio"), targetWidth, targetHeight, out byte[] rgba)) {
             throw new NotSupportedException("SVG content could not be rasterized by ChartForgeX.");
         }
-        return new RgbaImage(targetWidth, targetHeight, rgba);
+        var diagnostics = parsed.Diagnostics.Snapshot();
+        if (strict && diagnostics.Count != 0) throw new NotSupportedException("SVG rasterization encountered unsupported content: " + string.Join(", ", diagnostics.Select(item => item.Code)) + ". Use Rasterize without strict mode to inspect diagnostics.");
+        return new SvgRasterizationResult(new RgbaImage(targetWidth, targetHeight, rgba), diagnostics);
     }
 
     /// <summary>Rasterizes UTF-8 SVG bytes to RGBA pixels.</summary>

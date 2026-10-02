@@ -18,8 +18,6 @@ internal sealed partial class TrueTypeFont {
     internal TrueTypeFont WithRenderingIdentity() => (TrueTypeFont)MemberwiseClone();
     internal const double ObliqueShear = 0.22;
     private const string CoverageProbe = "ChartForgeX 0123456789";
-    private static readonly object FontCacheLock = new();
-    private static readonly Dictionary<string, TrueTypeFont?> FontCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly byte[] _data;
     private readonly Dictionary<string, int> _tables;
     private readonly FontCmap _cmap;
@@ -106,37 +104,6 @@ internal sealed partial class TrueTypeFont {
         var automatic = TypographyFontResolver.ResolveFace(themeFontFamily, 400, italic: false);
         if (automatic.Font != null) return new PngFontInfo(PngFontSource.Automatic, themeFontFamily, requestedPath, collectionIndex, faceName, automatic.Path, automatic.Font.CollectionIndex, automatic.Font.DisplayName);
         return new PngFontInfo(PngFontSource.BuiltIn, themeFontFamily, requestedPath, collectionIndex, faceName, null, null, "ChartForgeX Tiny");
-    }
-
-    public static TrueTypeFont? TryLoadFromPath(string? path) => TryLoadFromPath(path, null, null);
-
-    public static TrueTypeFont? TryLoadFromPath(string? path, int? collectionIndex) => TryLoadFromPath(path, collectionIndex, null);
-
-    public static TrueTypeFont? TryLoadFromPath(string? path, int? collectionIndex, string? faceName) {
-        if (string.IsNullOrWhiteSpace(path)) return null;
-        try {
-            var fullPath = Path.GetFullPath(path);
-            var cacheKey = fullPath + "#" + (collectionIndex.HasValue ? collectionIndex.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "auto") + "#" + (faceName ?? string.Empty);
-            lock (FontCacheLock) {
-                if (FontCache.TryGetValue(cacheKey, out var cached)) return cached;
-            }
-
-            var font = File.Exists(fullPath) ? TryLoad(File.ReadAllBytes(fullPath), collectionIndex, faceName) : null;
-            lock (FontCacheLock) {
-                // Two threads may read the same file; both get the instance cached first.
-                if (FontCache.TryGetValue(cacheKey, out var raced)) return raced;
-                FontCache[cacheKey] = font;
-            }
-
-            return font;
-        } catch (IOException) {
-        } catch (UnauthorizedAccessException) {
-        } catch (ArgumentException) {
-        } catch (NotSupportedException) {
-        } catch (IndexOutOfRangeException) {
-        }
-
-        return null;
     }
 
     public static TrueTypeFont? TryLoad(byte[] data) => TryLoad(data, null, null);

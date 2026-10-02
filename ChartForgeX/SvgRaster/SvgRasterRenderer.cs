@@ -48,6 +48,7 @@ internal static partial class SvgRasterRenderer {
         var definitions = SvgRasterDefinitions.From(document);
         var canvas = new RgbaCanvas(width, height, 1);
         var rootStyle = SvgRasterStyle.Resolve(SvgRasterStyle.Default, document.Root, definitions.StyleSheet);
+        ReportUnsupportedFilter(document.Root, rootStyle, definitions);
         var matrix = SvgRasterMatrix.FromFit(document.ViewBox, width, height, preserveAspectRatio)
             .Multiply(SvgRasterMatrix.ParseTransform(document.Root.Get("transform")));
         var viewport = new SvgRasterViewport(document.ViewBox.Width, document.ViewBox.Height);
@@ -96,6 +97,7 @@ internal static partial class SvgRasterRenderer {
         var matrix = nestedViewport.HasValue ? ApplyNestedSvgViewport(element, elementMatrix, nestedViewport.Value) : elementMatrix;
         var childViewport = nestedViewport?.UserViewport ?? viewport;
         if (IsDefinitionElement(element.Name)) return;
+        ReportUnsupportedFilter(element, style, definitions);
         var hasClipPath = definitions.TryGetClipPath(ParseReference(style.ClipPath) ?? ReferenceId(element, "clip-path"), out var clipPath);
         var hasMask = definitions.TryGetMask(ReferenceId(element, "mask"), out var maskDefinition);
         var compositeOpacity = RequiresOpacityLayer(element, style) && style.Opacity < 0.999;
@@ -159,6 +161,7 @@ internal static partial class SvgRasterRenderer {
         switch (element.Name) {
             case "g":
             case "svg":
+            case "a":
                 break;
             case "use":
                 RenderUse(canvas, element, style, matrix, definitions, width, height, referenceDepth, ancestors, viewport);
@@ -191,8 +194,11 @@ internal static partial class SvgRasterRenderer {
                 RenderText(canvas, element, style, matrix, definitions, width, height, ancestors, viewport);
                 return;
             case "image":
-                if (style.VisibilityVisible) RenderImage(canvas, element, style, matrix, referenceDepth, viewport);
+                if (style.VisibilityVisible) RenderImage(canvas, element, style, matrix, referenceDepth, viewport, definitions);
                 return;
+            default:
+                ReportUnsupportedElement(element, style, definitions);
+                break;
         }
 
         ancestors.Add(element);
@@ -200,7 +206,7 @@ internal static partial class SvgRasterRenderer {
         ancestors.RemoveAt(ancestors.Count - 1);
     }
 
-    private static void RenderImage(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, int imageDepth, SvgRasterViewport viewport) {
+    private static void RenderImage(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, int imageDepth, SvgRasterViewport viewport, SvgRasterDefinitions definitions) {
         var width = HorizontalLength(element, "width", viewport);
         var height = VerticalLength(element, "height", viewport);
         if (width <= 0 || height <= 0 || style.Opacity <= 0) return;
@@ -210,7 +216,10 @@ internal static partial class SvgRasterRenderer {
         var xAxis = matrix.Transform(new ChartPoint(x + width, y));
         var yAxis = matrix.Transform(new ChartPoint(x, y + height));
         (var localWidth, var localHeight) = ResolveTransformedImageDimensions(origin, xAxis, yAxis, canvas.Width, canvas.Height);
-        if (!TryDecodeImage(element.Get("href"), imageDepth, localWidth, localHeight, element.Get("preserveAspectRatio"), out var image)) return;
+        if (!TryDecodeImage(element.Get("href"), imageDepth, localWidth, localHeight, element.Get("preserveAspectRatio"), out var image, definitions.Diagnostics)) {
+            definitions.Diagnostics?.Report("SFR003", "The embedded image could not be decoded within the supported formats and limits. External image URLs are not fetched.", element);
+            return;
+        }
         var pixels = style.Opacity >= 0.999 ? image.Pixels : ApplyOpacity(image.Pixels, style.Opacity);
         var placement = SvgRasterImagePlacement.Resolve(localWidth, localHeight, image.Width, image.Height, element.Get("preserveAspectRatio"));
         var imageBox = new RgbaCanvas(localWidth, localHeight, 1);
@@ -240,7 +249,7 @@ internal static partial class SvgRasterRenderer {
         return string.Equals(compact, "circle(50%)", StringComparison.OrdinalIgnoreCase) || string.Equals(compact, "circle(closest-side)", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool TryDecodeImage(string? href, int imageDepth, int targetWidth, int targetHeight, string? preserveAspectRatio, out RgbaImage image) {
+    private static bool TryDecodeImage(string? href, int imageDepth, int targetWidth, int targetHeight, string? preserveAspectRatio, out RgbaImage image, SvgRasterDiagnostics? diagnostics = null) {
         image = default;
         if (imageDepth >= 4 || string.IsNullOrWhiteSpace(href) || !href!.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) return false;
         var comma = href.IndexOf(',');
@@ -253,6 +262,7 @@ internal static partial class SvgRasterRenderer {
                     ? Encoding.UTF8.GetString(Convert.FromBase64String(payload))
                     : Uri.UnescapeDataString(payload);
                 var document = SvgRasterParser.ParseDocument(markup);
+                document.Diagnostics = diagnostics;
                 var embeddedWidth = Math.Max(1, targetWidth);
                 var embeddedHeight = Math.Max(1, targetHeight);
                 var rgba = RenderDocument(document, preserveAspectRatio, embeddedWidth, embeddedHeight, imageDepth + 1);
@@ -276,7 +286,10 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static void RenderUse(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
-        if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) return;
+        if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) {
+            definitions.Diagnostics?.Report("SFR004", "The SVG reference is missing or exceeds the supported reference depth.", element);
+            return;
+        }
         var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
         var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
         if (IsSymbolElement(referenced)) {
@@ -286,6 +299,7 @@ internal static partial class SvgRasterRenderer {
             var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
             var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
             if (symbolWidth <= 0 || symbolHeight <= 0) return;
+            ReportUnsupportedFilter(referenced, symbolStyle, definitions);
             var symbolViewport = new SvgRasterViewport(symbolWidth, symbolHeight);
             useMatrix = useMatrix.Multiply(SvgRasterMatrix.ParseTransform(referenced.Get("transform")));
             var viewportClip = !string.Equals(symbolStyle.Overflow, "visible", StringComparison.OrdinalIgnoreCase)
@@ -453,6 +467,7 @@ internal static partial class SvgRasterRenderer {
             frame.Origin.X,
             frame.Origin.Y);
         if (!tileToCanvas.TryInvert(out var canvasToTile)) return false;
+        ReportUnsupportedFilter(pattern.Element, ResolveReferencedStyle(SvgRasterStyle.Default, pattern.Element, definitions), definitions);
         var tileCanvas = new RgbaCanvas(tileWidth, tileHeight, 1);
         var contentMatrix = PatternContentMatrix(pattern, matrix, objectMatrix, objectToCanvas, canvasToTile, objectPaint.HasValue, tileWidth, tileHeight);
         var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
@@ -518,6 +533,7 @@ internal static partial class SvgRasterRenderer {
         if (!TryVisibleBounds(targetPixels, width, height, matrix, out var paintedBounds)) return;
         var bounds = TryObjectBounds(targetElement, targetStyle, targetAncestors, definitions, viewport, out var objectBounds) ? objectBounds : paintedBounds;
         var content = new RgbaCanvas(width, height, 1);
+        ReportUnsupportedFilter(maskDefinition.Element, maskDefinition.RootStyle, definitions);
         var maskMatrix = matrix.Multiply(SvgRasterMatrix.ParseTransform(maskDefinition.Element.Get("transform")));
         if (!maskDefinition.ContentUserSpaceOnUse) {
             maskMatrix = matrix
@@ -550,7 +566,10 @@ internal static partial class SvgRasterRenderer {
             viewport = nested.UserViewport;
         }
         if (string.Equals(element.Name, "use", StringComparison.Ordinal)) {
-            if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) return;
+            if (referenceDepth >= 8 || !definitions.TryGetElement(HrefReferenceId(element), out var referenced)) {
+                definitions.Diagnostics?.Report("SFR004", "The SVG reference is missing or exceeds the supported reference depth.", element);
+                return;
+            }
             var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
             var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
             if (IsSymbolElement(referenced)) {
@@ -582,6 +601,7 @@ internal static partial class SvgRasterRenderer {
             return;
         }
         if (style.VisibilityVisible) {
+            ReportUnsupportedClipElement(element, definitions);
             var contours = ClipContours(element, matrix, viewport);
             if (contours.Count > 0) mask.FillContours(contours, ChartColor.FromRgba(255, 255, 255, 255), FillRule(style.ClipRule));
         }
@@ -647,7 +667,9 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static bool IsDefinitionElement(string name) =>
-        string.Equals(name, "defs", StringComparison.Ordinal) || string.Equals(name, "userDefs", StringComparison.Ordinal) || string.Equals(name, "pattern", StringComparison.Ordinal) || string.Equals(name, "clipPath", StringComparison.Ordinal) || string.Equals(name, "mask", StringComparison.Ordinal) || string.Equals(name, "style", StringComparison.Ordinal) || IsSymbolElement(name) || string.Equals(name, "title", StringComparison.Ordinal) || string.Equals(name, "desc", StringComparison.Ordinal);
+        name is "defs" or "userDefs" or "pattern" or "clipPath" or "mask" or "style" or "title" or "desc"
+            or "metadata" or "filter" or "linearGradient" or "radialGradient" or "stop" or "marker"
+        || IsSymbolElement(name);
 
     private static string? ReferenceId(SvgRasterElement element, string propertyName) {
         var value = element.Get(propertyName);

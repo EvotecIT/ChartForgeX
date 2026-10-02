@@ -48,8 +48,13 @@ internal static partial class SvgRasterRenderer {
             }
 
             var span = content.Element;
-            if (span == null || !string.Equals(span.Name, "tspan", StringComparison.Ordinal)) continue;
+            if (span == null) continue;
+            if (!string.Equals(span.Name, "tspan", StringComparison.Ordinal)) {
+                ReportUnsupportedElement(span, SvgRasterStyle.Resolve(style, span, definitions.StyleSheet, ancestors), definitions);
+                continue;
+            }
             var spanStyle = SvgRasterStyle.Resolve(style, span, definitions.StyleSheet, ancestors);
+            ReportUnsupportedFilter(span, spanStyle, definitions);
             if (!spanStyle.Displayed) continue;
             var positioned = span.TryGet("x", out _) || span.TryGet("y", out _);
             if (span.TryGet("x", out _)) {

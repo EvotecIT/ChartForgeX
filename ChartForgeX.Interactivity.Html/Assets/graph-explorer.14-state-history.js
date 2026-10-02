@@ -10,7 +10,7 @@
     source: source || 'api',
     capturedAt: new Date().toISOString(),
     viewport: viewport(root),
-    selection: (root.dataset.cfxGraphSelectionIds || '').split(',').filter(Boolean),
+    selection: selectedItems(root).map(item => ({ role: item.role, id: item.id })),
     focus: graphFocusSnapshot(root),
     hierarchy: { rootNodeId: root.dataset.cfxGraphHierarchyRoot || '', depth: Number(root.dataset.cfxGraphHierarchyDepth || attr(root, 'data-cfx-graph-hierarchy-depth') || 0) },
     clusters: items(root, '[data-cfx-role="graph-cluster"]').map(cluster => ({ id: attr(cluster, 'data-cluster-id'), collapsed: attr(cluster, 'data-cluster-collapsed') === 'true' })),
@@ -38,12 +38,17 @@
     (snapshots || []).forEach(snapshot => applyClusterState(root, !!snapshot.collapsed, String(snapshot.id || ''), { reheat: false }));
   };
   const restoreGraphSelection = (root, ids) => {
+    const graphItems = items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]');
+    const identity = item => attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
+    const counts = new Map();
+    graphItems.forEach(item => { const id = identity(item); counts.set(id, (counts.get(id) || 0) + 1); });
     const selected = new Set((ids || []).map(value => {
       if (value && typeof value === 'object') return `${String(value.role || '')}:${String(value.id || '')}`;
-      return `:${String(value)}`;
+      const id = String(value);
+      return counts.get(id) === 1 ? `:${id}` : '';
     }));
-    items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => {
-      const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
+    graphItems.forEach(item => {
+      const id = identity(item);
       const role = attr(item, 'data-cfx-role');
       item.classList.toggle('cfx-graph-selected', selected.has(`${role}:${id}`) || selected.has(`:${id}`));
     });
@@ -52,7 +57,10 @@
   };
   const graphSnapshotPatch = (root, snapshot) => {
     const current = graphSnapshotDocument(root), document = snapshot.document;
-    const retained = (values, upserts) => values.filter(id => !(upserts || []).some(item => String(item.id) === String(id)));
+    const retained = (values, upserts) => {
+      const ids = new Set((upserts || []).map(item => String(item.id)));
+      return values.filter(id => !ids.has(String(id)));
+    };
     return {
       removeNodeIds: retained(current.nodes.map(node => node.id), document.nodes),
       removeEdgeIds: retained(current.edges.map(edge => edge.id), document.edges),
@@ -100,6 +108,12 @@
     history.undo.push({ label: label || 'Graph change', state: snapshot || captureGraphInteractionState(root, 'history') });
     if (history.undo.length > limit) history.undo.splice(0, history.undo.length - limit);
     history.redo.length = 0; syncGraphHistoryControls(root);
+  };
+  const clearGraphHostHistory = root => {
+    // Clear stale snapshots before mutation can dispatch synchronous observer callbacks.
+    const history = graphHistory(root);
+    history.undo.length = 0; history.redo.length = 0;
+    syncGraphHistoryControls(root);
   };
   const traverseGraphHistory = (root, direction) => {
     if (!hasFeature(root, 'History')) return false;

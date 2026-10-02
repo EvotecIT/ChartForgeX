@@ -8,12 +8,15 @@ namespace ChartForgeX.Raster;
 internal static class PpmReader {
     public static bool IsPpm(byte[] data) => data != null && data.Length >= 2 && data[0] == (byte)'P' && (data[1] == (byte)'3' || data[1] == (byte)'6');
 
-    public static RgbaImage Decode(byte[] data) {
+    public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
+        var decodeLimits = limits ?? RasterDecodeLimits.Default;
+        decodeLimits.ValidateInput(data);
         if (!IsPpm(data)) throw new NotSupportedException("Input is not a PPM image.");
         var reader = new PpmTokenReader(data);
         var magic = reader.NextToken();
         var width = ParsePositive(reader.NextToken(), "width");
         var height = ParsePositive(reader.NextToken(), "height");
+        decodeLimits.ValidateDimensions(width, height);
         var maxValue = ParsePositive(reader.NextToken(), "max value");
         if (maxValue > 255) throw new NotSupportedException("Only PPM images with max value up to 255 are supported.");
         return magic == "P6" ? DecodeBinary(data, reader.Position, width, height, maxValue) : DecodeAscii(reader, width, height, maxValue);
