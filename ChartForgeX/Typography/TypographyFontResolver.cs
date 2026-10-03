@@ -23,6 +23,9 @@ internal readonly struct ResolvedTypeface {
 }
 
 internal static class TypographyFontResolver {
+    /// <summary>Applies text language after face selection, preserving weight, slant and fallback families.</summary>
+    internal static ResolvedTypeface WithLanguage(ResolvedTypeface face, string? tag) =>
+        tag == null ? face : new ResolvedTypeface(face.Font?.WithLanguage(tag == "normal" ? null : tag), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;

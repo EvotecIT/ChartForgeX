@@ -176,7 +176,7 @@ public sealed partial class ImageComposition {
         if (text.Length == 0 || style.Color.A == 0) return this;
 
         var layout = TextLayoutEngine.Layout(text, width, style, wrapMode, maximumLines, trimming);
-        var face = TypographyFontResolver.ResolveFace(style.Font);
+        var face = TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.Font), style.OpenTypeLanguageTag);
         var fontSize = style.EffectiveFontSize;
         var hinting = _canvas.TextHinting;
         _canvas.TextHinting = style.Hinting;

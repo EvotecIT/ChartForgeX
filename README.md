@@ -334,7 +334,7 @@ report.SaveTiff("scorecards.tiff");
 
 ## Typography
 
-Role styles use one shared contract in charts, chart grids, SVG, static HTML, and the dependency-free raster pipeline. That means the same color, family, size, weight, italic, decoration, baseline, and casing choices reach PNG, GIF, JPEG, BMP, PPM, and TIFF rather than being reinterpreted by each encoder.
+Role styles use one shared contract in charts, chart grids, SVG, static HTML, and the dependency-free raster pipeline. That means the same color, family, size, weight, italic, decoration, baseline, casing, and font-language choices reach PNG, GIF, JPEG, BMP, PPM, and TIFF rather than being reinterpreted by each encoder.
 
 Chart PNG text resolves numeric font weights for both measurement and painting. Titles, axis titles,
 and legends use their SVG role weights when a style does not override them. Registered faces keep
@@ -372,6 +372,8 @@ var chart = Chart.Create()
 ```
 
 `TextDecorationStyle` supports single, double, dotted, dashed, and wavy lines. `WithSubscript()` and `WithSuperscript()` select script placement. `TextCaseTransform` supports upper, lower, title, sentence, and toggle case; transforms are applied before measurement, fitting, wrapping, and rendering. SVG and HTML expose one native decoration-pattern value per text run, so when underline and strikethrough are combined with different patterns they use the underline pattern together; the raster owner can draw the two patterns independently.
+
+Select a font's localized forms with `TextStyle.OpenTypeLanguageTag = "SRB"`, or a chart role override such as `.WithTickLabelStyle(style => style.WithOpenTypeLanguage("SRB"))`. The tag selects that font's GSUB/GPOS language system for measurement and drawing, including fallback faces. Tags such as `SRB` (Serbian) and `TRK` (Turkish) are case-sensitive OpenType tags, not culture names. A missing tag uses the font's default system. Null keeps the default on a complete style and inherits on an override; `WithOpenTypeLanguage("normal")` resets an override to the default. SVG carries this choice through CSS `font-language-override`, so native SVG display also depends on the browser's support and available fonts. The `language-forms-showcase` gallery example uses localized Serbian italic labels.
 
 Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series.
 

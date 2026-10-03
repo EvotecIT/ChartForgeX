@@ -14,6 +14,7 @@ public sealed class TextStyleOverride {
     private TextDecorationStyle? _strikethroughStyle;
     private TextBaseline? _baseline;
     private TextCaseTransform? _textCase;
+    private string? _openTypeLanguageTag;
 
     /// <summary>Gets or sets the optional text color override.</summary>
     public ChartColor? Color { get; set; }
@@ -23,6 +24,13 @@ public sealed class TextStyleOverride {
 
     /// <summary>Gets or sets the optional CSS font-weight override.</summary>
     public string? FontWeight { get => _fontWeight; set => _fontWeight = OptionalText(value); }
+
+    /// <summary>Gets or sets the optional OpenType language-system tag, such as SRB or TRK.
+    /// A null override retains the fallback style's language; normal selects the font's default.</summary>
+    public string? OpenTypeLanguageTag {
+        get => _openTypeLanguageTag;
+        set => _openTypeLanguageTag = value?.Trim().Equals("normal", StringComparison.OrdinalIgnoreCase) == true ? "normal" : OpenTypeLanguage.Normalize(value);
+    }
 
     /// <summary>Gets or sets the optional font size override.</summary>
     public double? FontSize {
@@ -67,7 +75,7 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets a value indicating whether this instance contains explicit overrides.</summary>
-    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue;
+    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null;
 
     /// <summary>Resolves these overrides over a complete text style without mutating the fallback.</summary>
     public TextStyle Resolve(TextStyle fallback) {
@@ -84,6 +92,7 @@ public sealed class TextStyleOverride {
         else if (Strikethrough) resolved.StrikethroughStyle = TextDecorationStyle.Single;
         if (Baseline.HasValue) resolved.Baseline = Baseline.Value;
         if (TextCase.HasValue) resolved.TextCase = TextCase.Value;
+        if (OpenTypeLanguageTag != null) resolved.OpenTypeLanguageTag = OpenTypeLanguageTag == "normal" ? null : OpenTypeLanguageTag;
         return resolved;
     }
 
@@ -128,6 +137,9 @@ public sealed class TextStyleOverride {
 
     /// <summary>Sets a display-time casing transform.</summary>
     public TextStyleOverride WithTextCase(TextCaseTransform textCase) { TextCase = textCase; return this; }
+
+    /// <summary>Sets the font's language system; normal restores its default language system.</summary>
+    public TextStyleOverride WithOpenTypeLanguage(string languageTag) { OpenTypeLanguageTag = languageTag ?? throw new ArgumentNullException(nameof(languageTag)); return this; }
 
     /// <summary>Transforms text according to this override.</summary>
     public string TransformText(string text, System.Globalization.CultureInfo? culture = null) => TextCaseTransformer.Apply(text, TextCase ?? TextCaseTransform.None, culture);

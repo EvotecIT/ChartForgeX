@@ -15,6 +15,7 @@ public sealed class TextStyle {
     private TextBaseline _baseline;
     private TextCaseTransform _textCase;
     private TextHinting _hinting;
+    private string? _openTypeLanguageTag;
 
     /// <summary>Gets or sets the font selection.</summary>
     public FontSpec Font { get => _font; set => _font = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -90,6 +91,14 @@ public sealed class TextStyle {
         set { ValidateEnum(value, nameof(value)); _hinting = value; }
     }
 
+    /// <summary>Gets or sets the OpenType language-system tag (for example, SRB or TRK).
+    /// Null selects the font's default language system. Tags are case-sensitive and padded to four
+    /// characters; an absent language in a font falls back to its default. This is not a culture name.</summary>
+    public string? OpenTypeLanguageTag {
+        get => _openTypeLanguageTag;
+        set => _openTypeLanguageTag = OpenTypeLanguage.Normalize(value);
+    }
+
     /// <summary>Gets the font size used to measure and render this style.</summary>
     public double EffectiveFontSize => Baseline == TextBaseline.Normal ? FontSize : FontSize * 0.65;
 
@@ -104,7 +113,8 @@ public sealed class TextStyle {
         StrikethroughStyle = StrikethroughStyle,
         Baseline = Baseline,
         TextCase = TextCase,
-        Hinting = Hinting
+        Hinting = Hinting,
+        OpenTypeLanguageTag = OpenTypeLanguageTag
     };
 
     /// <summary>Creates a text style using the supplied size and color.</summary>

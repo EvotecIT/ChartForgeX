@@ -6,6 +6,7 @@ namespace ChartForgeX.Svg;
 public sealed partial class SvgChartRenderer {
     private static void WriteSvgTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride? style) {
         if (style == null) return;
+        if (style.OpenTypeLanguageTag != null) writer.Attribute("style", style.OpenTypeLanguageTag == "normal" ? "font-language-override:normal" : "font-language-override:'" + style.OpenTypeLanguageTag + "'");
         if (style.Italic) writer.Attribute("font-style", "italic");
         var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
         var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
