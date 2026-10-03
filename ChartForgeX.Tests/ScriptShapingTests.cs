@@ -62,6 +62,12 @@ public sealed class ScriptShapingTests {
     [InlineData("indic-legacy")]
     public void TeluguDoesNotConvertAnUnrequestedInitialRaIntoABelowBaseForm(string name) =>
         Assert.Equal(new ushort[] { 3, 4, 1 }, Glyphs(Font(name), "ర్క"));
+    [Fact]
+    public void ModernBelowFormsCanPrecedeTheMainConsonant() {
+        var face = Font("indic-modern");
+        Assert.Equal(new ushort[] { 13, 4, 2 }, Glyphs(face, "क्र्त"));
+        Assert.Equal(105, face.Measure("क्र्त", 100), 6);
+    }
     [Theory]
     [InlineData("indic-reph-modern")]
     [InlineData("indic-reph-legacy")]
@@ -85,7 +91,7 @@ public sealed class ScriptShapingTests {
         var face = Font("indic-modern"); var glyphs = TextShaper.Shape(face, text);
         Assert.Contains(glyphs, glyph => glyph.Glyph == 0);
         Assert.Equal(glyphs.Sum(glyph => glyph.Advance ?? glyph.Face.AdvanceWidth(glyph.Glyph)) / 10, face.Measure(text, 100), 6);
-        Assert.Contains(Paint(face, text), value => value != 0);
+        Assert.Contains(Paint(face, text).Where((value, index) => index % 4 == 3), alpha => alpha > 0);
         Assert.Same(glyphs, TextShaper.Shape(face, text));
     }
     [Theory]

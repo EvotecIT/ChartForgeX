@@ -57,7 +57,7 @@ internal static partial class ScriptShaper {
                 if (i > baseIndex) glyph.ScriptPosition = below[i] ? Below : Post;
                 if (i < baseIndex) glyph.Features |= 32u;
                 if (i > baseIndex) glyph.Features |= 64u | 128u | 256u;
-                if (!modern && profile.ModernTag == "dev2" && i < baseIndex) glyph.Features |= 64u;
+                if (profile.BelowBeforeBase(modern) && i < baseIndex) glyph.Features |= 64u;
             }
         }
         if (reph) {
@@ -77,7 +77,7 @@ internal static partial class ScriptShaper {
                 while (next < glyphs.Count && IsJoiner(glyphs[next].CodePoint)) next++;
                 glyph.ScriptPosition = next > baseIndex && next < glyphs.Count && IsBase(glyphs[next]) ? glyphs[next].ScriptPosition : glyphs[i - 1].ScriptPosition;
                 if (glyph.ScriptPosition > Base) glyph.Features |= 64u | 128u | 256u;
-                if (!modern && profile.ModernTag == "dev2" && glyph.ScriptPosition < Base) glyph.Features |= 64u;
+                if (profile.BelowBeforeBase(modern) && glyph.ScriptPosition < Base) glyph.Features |= 64u;
             }
         }
         // ZWNJ requests the explicit virama; ZWJ requests a half form instead of a full conjunct.

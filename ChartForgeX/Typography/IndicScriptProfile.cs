@@ -13,6 +13,7 @@ internal readonly struct IndicScriptProfile {
     internal readonly int Halant, Ra;
     internal readonly byte RephPosition, TopMatra, BottomMatra, RightMatra;
     internal readonly IndicRephMode RephMode;
+    internal bool BelowBeforeBase(bool modern) => modern ? ModernTag != "tel2" && ModernTag != "knd2" : ModernTag == "dev2";
     internal static bool TryGet(string script, out IndicScriptProfile profile) {
         profile = script switch {
             "deva" => new("dev2", 0x094d, 0x0930, 8, right: 7),
