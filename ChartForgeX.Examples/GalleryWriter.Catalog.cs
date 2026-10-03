@@ -263,6 +263,8 @@ public static partial class GalleryWriter {
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",
             "composition-shapes",
             "styled-multilingual-text",
+            "script-shaping-showcase",
+            "colour-emoji-showcase",
             "theme-font-showcase-grid",
             "brand-kit-showcase-grid",
             "palette-swatch-showcase-grid",

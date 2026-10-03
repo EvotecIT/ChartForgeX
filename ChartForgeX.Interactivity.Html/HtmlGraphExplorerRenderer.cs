@@ -162,7 +162,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append(">Use the graph controls to search, filter, fit, or export. In the graph, use arrow keys to move between items and Enter or Space to select. Drag nodes to rearrange the topology.</p>");
         WriteStageControls(writer, scene, options, clusters);
         WriteManipulationPanel(writer, scene, options, graphId);
-        writer.Append("<canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
+        writer.Append("<canvas class=\"cfx-graph-underlay\" data-cfx-role=\"graph-underlay\" width=\"960\" height=\"560\" aria-hidden=\"true\"></canvas><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
         Attribute(writer, "aria-label", scene.Title + ". Interactive graph. Use arrow keys to move between nodes and Enter or Space to select.");
         Attribute(writer, "aria-describedby", graphId + "-instructions");
         writer.Append("></canvas><canvas class=\"cfx-graph-webgl\" data-cfx-role=\"graph-webgl\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");

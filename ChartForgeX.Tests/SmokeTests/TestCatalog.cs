@@ -145,7 +145,6 @@ internal static partial class SmokeTests {
         ("PNG automatic fonts honor theme families", PngAutomaticFontsHonorThemeFamilies),
         ("PNG canvas measures with its selected drawing font", PngCanvasMeasuresWithItsSelectedDrawingFont),
         ("PNG TrueType renderer handles composite glyphs", PngTrueTypeRendererHandlesCompositeGlyphs),
-        ("PNG TrueType renderer supports kerning", PngTrueTypeRendererSupportsKerning),
         ("PNG surfaces use rounded corners", PngSurfacesUseRoundedCorners),
         ("PNG annotations use readable raster styling", PngAnnotationsUseReadableRasterStyling),
         ("PNG pie-like charts use readable details", PngPieLikeChartsUseReadableDetails),

@@ -16,7 +16,7 @@ namespace ChartForgeX.Typography;
 /// in. Registering a generic family name (<c>sans-serif</c>, <c>serif</c>, <c>monospace</c>) sets the
 /// face that stacks ending in that keyword fall back to, and a registered <c>sans-serif</c> is also
 /// the last resort on a host with no usable fonts, such as a bare Linux container. TrueType and CFF
-/// outlines are supported (<c>.ttf</c>, <c>.otf</c>, <c>.ttc</c>, <c>.otc</c>). All members are thread-safe.
+/// outlines and colour-only emoji faces are supported (<c>.ttf</c>, <c>.otf</c>, <c>.ttc</c>, <c>.otc</c>). All members are thread-safe.
 /// </remarks>
 public static class FontRegistry {
     private static readonly object Gate = new();
@@ -37,14 +37,14 @@ public static class FontRegistry {
     /// <param name="path">The OpenType font or collection file (<c>.ttf</c>, <c>.otf</c>, <c>.ttc</c>, <c>.otc</c>).</param>
     /// <param name="weight">The CSS weight of this face, 1 through 1000.</param>
     /// <param name="italic">True when this face is the italic of the family.</param>
-    /// <param name="collectionIndex">The face within a <c>.ttc</c> or <c>.otc</c> collection; the first text face when omitted.</param>
-    /// <exception cref="ArgumentException">The family is empty or the file is not a readable OpenType text font.</exception>
+    /// <param name="collectionIndex">The face within a <c>.ttc</c> or <c>.otc</c> collection; the first usable text or colour face when omitted.</param>
+    /// <exception cref="ArgumentException">The family is empty or the file is not a readable OpenType text or colour font.</exception>
     public static void Register(string family, string path, int weight = 400, bool italic = false, int? collectionIndex = null) {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("Font family must not be empty.", nameof(family));
         if (weight < 1 || weight > 1000) throw new ArgumentOutOfRangeException(nameof(weight), weight, "Font weight must be from 1 through 1000.");
         var fullPath = FullPath(path);
         var font = TrueTypeFont.TryLoadFromPath(fullPath, collectionIndex);
-        if (font == null || !font.IsTextFace) throw new ArgumentException("The file is not a readable OpenType text font: " + path, nameof(path));
+        if (font == null || !font.IsTextFace) throw new ArgumentException("The file is not a readable OpenType text or colour font: " + path, nameof(path));
         Add(new[] { new InstalledFontFace(fullPath, font.CollectionIndex, family.Trim(), null, weight, 5, italic) });
     }
 

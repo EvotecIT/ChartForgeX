@@ -287,7 +287,7 @@
   };
   const edgeArrowGeometry = (edge, control, side, size = 8) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
-    const route = edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
+    const route = !loop && edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
     const sourceSide = side === 'source';
     const from = route ? (sourceSide ? route[1] : route[route.length - 2]) : sourceSide ? (loop?.c1 || control || edge.target) : loop?.c2 || control || edge.source;
     const target = route ? (sourceSide ? route[0] : route[route.length - 1]) : sourceSide ? (loop?.start || edge.source) : loop?.end || edge.target;

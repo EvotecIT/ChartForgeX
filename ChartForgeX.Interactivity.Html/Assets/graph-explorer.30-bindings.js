@@ -65,7 +65,7 @@
         emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
         return;
       } finally {
-        if (root.classList.contains('cfx-graph-render-canvas')) drawCanvas(root, state);
+        drawCanvas(root, root.__cfxGraphState || graphState(root));
       }
       mime = 'image/png';
     }
@@ -74,8 +74,8 @@
     if (!emit(root, 'cfxgraphexport', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, mimeType: mime, content }, { cancelable: true })) return;
     downloadExport(name, mime, content);
   };
-  const preloadCanvasImages = (root, state) => Promise.all(state.nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => new Promise(resolve => {
-    const image = graphImage(node.imageUrl, () => resolve());
+  const preloadCanvasImages = (root, state) => Promise.all([...new Set(state.nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => node.imageUrl))].map(url => new Promise(resolve => {
+    const image = graphImage(url);
     if (!image || image.complete) {
       resolve();
       return;
@@ -84,11 +84,14 @@
     const done = () => {
       if (settled) return;
       settled = true;
+      image.removeEventListener?.('load', done);
+      image.removeEventListener?.('error', done);
+      clearTimeout(timeout);
       resolve();
     };
+    const timeout = setTimeout(done, 1500);
     image.addEventListener?.('load', done, { once: true });
     image.addEventListener?.('error', done, { once: true });
-    setTimeout(done, 1500);
   })));
   const exportSvgContent = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
@@ -198,11 +201,7 @@
     else {
       const configured = attr(root, 'data-cfx-graph-renderer');
       const renderer = configured === 'webgl' && webGlAvailable(root) ? 'webgl' : configured === 'canvas' || configured === 'webgl' ? 'canvas' : 'svg';
-      root.classList.toggle('cfx-graph-render-canvas', renderer === 'canvas');
-      root.classList.toggle('cfx-graph-render-webgl', renderer === 'webgl');
-      root.classList.toggle('cfx-graph-render-svg', renderer === 'svg');
-      root.dataset.cfxGraphRendererActive = renderer; syncRendererAccessibility(root, renderer);
-      syncGraphItemTabStops(root);
+      setGraphRenderer(root, renderer);
     }
     applySemanticZoom(root, viewport(root).scale);
     performanceGate(root);
