@@ -230,6 +230,7 @@ public static partial class GalleryWriter {
             "visual-readable-dense-replication",
             "visual-topology-shared-trunks",
             "visual-topology-mixed-routing",
+            "visual-topology-fallback-attachments",
             "visual-reusable-regional-topology",
             "visual-service-dependency-map",
             "visual-site-distribution-map",

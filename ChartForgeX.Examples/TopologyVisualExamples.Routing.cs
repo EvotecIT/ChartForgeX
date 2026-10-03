@@ -12,7 +12,18 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-topology-mixed-routing", BuildMixedRouteOccupancy(), "Mixed Route Occupancy",
             "Obstacle-avoiding routing accounts for a fixed waypoint corridor without changing its authored geometry.",
             new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, IncludeEdgeLabels = false }.WithMonitoringDashboardStyle());
+        SaveTopology(target, artifacts, "visual-topology-fallback-attachments", BuildFallbackAttachments(), "Fallback Route Attachments",
+            "A corridor route leaves each card on its port axis and turns clear of a wide tile caption.",
+            new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeLegend = false });
     }
+
+    private static TopologyChart BuildFallbackAttachments() => TopologyChart.Create().WithId("fallback-route-attachments")
+        .WithTitle("Fallback Route Attachments").WithViewport(600, 440, 24).WithLegend(null)
+        .AddNode("source", "Source caption extends far beyond its narrow card", 80, 100, width: 60, height: 40)
+        .AddNode("target", "Target", 145, 160, width: 60, height: 40)
+        .AddEdge("relationship", "source", "target", direction: VisualLinkDirection.Forward,
+            routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+        .WithEdgePorts("relationship", TopologyEdgePort.Right, TopologyEdgePort.Left);
 
     private static TopologyChart BuildSharedIncomingTrunks() {
         var chart = TopologyChart.Create().WithId("shared-incoming-trunks")

@@ -39,8 +39,8 @@ public static partial class TopologyLayoutDiagnostics {
                 if (group.HeaderBounds.HasValue && Crosses(edge.Points, group.HeaderBounds.Value)) report.RouteCrossings.Add(new TopologyLayoutRouteCrossingDiagnostic(TopologyLayoutRouteCrossingKind.GroupHeader, edge.Id, group.Id));
             }
 
-            edge.SourceAttached = nodeBounds.TryGetValue(edge.SourceNodeId, out var source) && PointsAt(edge.Points, fromStart: true, source.Bounds);
-            edge.TargetAttached = nodeBounds.TryGetValue(edge.TargetNodeId, out var target) && PointsAt(edge.Points, fromStart: false, target.Bounds);
+            edge.SourceAttached = nodeBounds.TryGetValue(edge.SourceNodeId, out var source) && RouteEndPointsAtNode(edge.Points, fromStart: true, source.Bounds);
+            edge.TargetAttached = nodeBounds.TryGetValue(edge.TargetNodeId, out var target) && RouteEndPointsAtNode(edge.Points, fromStart: false, target.Bounds);
         }
 
         for (var i = 0; i < report.Edges.Count; i++) {
@@ -105,7 +105,7 @@ public static partial class TopologyLayoutDiagnostics {
     /// a leg that stops beside the node and runs along its side is not. Diagonal and curved ends arrive at any angle, so
     /// they are attached when they stop within reach of the node.
     /// </summary>
-    private static bool PointsAt(IReadOnlyList<ChartPoint> points, bool fromStart, ChartRect node) {
+    internal static bool RouteEndPointsAtNode(IReadOnlyList<ChartPoint> points, bool fromStart, ChartRect node) {
         if (points.Count < 2) return false;
         var end = fromStart ? points[0] : points[points.Count - 1];
         var step = fromStart ? 1 : -1;
