@@ -1,8 +1,8 @@
   // Sample the same trimmed routes and curves used by Canvas and SVG. Curves have
   // a bounded tessellation cost and tighten with display scale, including high DPI.
   const webGlEdgePoints = (edge, control, scale) => {
-    if (edgeHasRoute(edge)) return routeRenderPoints(edge);
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
+    if (!loop && edgeHasRoute(edge)) return routeRenderPoints(edge);
     const ends = loop ? { source: loop.start, target: loop.end } : edgeRenderEndpoints(edge, control);
     if (!loop && !control) return [ends.source, ends.target];
     const bend = loop ? Math.hypot(loop.c1.x - loop.c2.x, loop.c1.y - loop.c2.y)

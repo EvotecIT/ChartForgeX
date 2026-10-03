@@ -65,7 +65,7 @@
         emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
         return;
       } finally {
-        if (root.classList.contains('cfx-graph-render-canvas') || root.classList.contains('cfx-graph-render-webgl')) drawCanvas(root, state);
+        if (root.classList.contains('cfx-graph-render-canvas') || root.classList.contains('cfx-graph-render-webgl')) drawCanvas(root, root.__cfxGraphState || graphState(root));
       }
       mime = 'image/png';
     }

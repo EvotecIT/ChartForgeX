@@ -19,10 +19,11 @@ function runtime() {
   const viewport = fs.readFileSync(path.join(assets, 'graph-explorer.05-viewport.js'), 'utf8').split('  const clusterMetrics')[0];
   const nodes = fs.readFileSync(path.join(assets, 'graph-explorer.03-canvas-nodes.js'), 'utf8');
   const bindings = fs.readFileSync(path.join(assets, 'graph-explorer.30-bindings.js'), 'utf8');
-  const preload = bindings.slice(bindings.indexOf('  const preloadCanvasImages'), bindings.indexOf('  const exportSvgContent'));
-  const host = { Image, drawCanvas: (root, state) => redraws.push({ root, state }), graphState: () => { throw new Error('Reconstructed live image state'); },
+  const exports = bindings.slice(bindings.indexOf('  const exportGraph ='), bindings.indexOf('  const exportSvgContent'));
+  const host = { Image, drawCanvas: (root, state, options) => redraws.push({ root, state, options }), graphState: () => { throw new Error('Reconstructed live image state'); },
+    attr: () => 'graph', emit: () => false, downloadExport: () => { throw new Error('Canceled export downloaded'); },
     setTimeout: callback => { timers.add(callback); return callback; }, clearTimeout: callback => timers.delete(callback) };
-  vm.runInNewContext(viewport + nodes + preload + '\nthis.api = { drawNodeMark, preloadCanvasImages };', host);
+  vm.runInNewContext(viewport + nodes + exports + '\nthis.api = { drawNodeMark, preloadCanvasImages, exportGraph };', host);
   const context = new Proxy({}, { get: (target, key) => target[key] || (() => {}), set: (target, key, value) => (target[key] = value, true) });
   return { api: host.api, images, redraws, timers, context };
 }
@@ -39,6 +40,25 @@ test('shared loading image redraws each connected graph once and retains its lat
     images[0].finish(completion);
     assert.equal(redraws.length, 2);
     roots.slice(0, 2).forEach((root, index) => { assert.equal(redraws[index].root, root); assert.equal(redraws[index].state, root.__cfxGraphState); });
+  }
+});
+
+test('PNG export restores the current graph after a concurrent update, including capture failure', async () => {
+  for (const renderer of ['canvas', 'webgl']) for (const captureFails of [false, true]) {
+    const { api, images, redraws } = runtime();
+    const requested = { nodes: [{ shape: 'image', imageUrl: 'https://host/image.png' }] }, current = { nodes: [] };
+    const canvas = { toDataURL: () => { if (captureFails) throw new Error('capture'); return 'data:image/png;base64,proof'; } };
+    const root = { __cfxGraphState: requested, dataset: {}, querySelector: () => canvas,
+      classList: { contains: name => name === 'cfx-graph-render-' + renderer } };
+    const exported = api.exportGraph(root, 'png');
+    root.__cfxGraphState = current;
+    images[0].finish('load');
+    await exported;
+    assert.equal(redraws[0].state, requested, 'export keeps its request-time scene');
+    assert.ok(redraws[0].options.force);
+    assert.equal(redraws.at(-1).state, current, 'live restoration retains the concurrent graph update');
+    assert.equal(redraws.at(-1).options, undefined);
+    assert.equal(root.__cfxGraphState, current);
   }
 });
 
