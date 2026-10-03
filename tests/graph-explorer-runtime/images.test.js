@@ -44,7 +44,7 @@ test('shared loading image redraws each connected graph once and retains its lat
 });
 
 test('PNG export restores the current graph after a concurrent update, including capture failure', async () => {
-  for (const renderer of ['canvas', 'webgl']) for (const captureFails of [false, true]) {
+  for (const renderer of ['svg', 'canvas', 'webgl']) for (const captureFails of [false, true]) {
     const { api, images, redraws } = runtime();
     const requested = { nodes: [{ shape: 'image', imageUrl: 'https://host/image.png' }] }, current = { nodes: [] };
     const canvas = { toDataURL: () => { if (captureFails) throw new Error('capture'); return 'data:image/png;base64,proof'; } };
