@@ -19,6 +19,7 @@ internal static partial class ExpressiveExamples {
         SaveChart(CreateDashboardSegmentedHorizontalPreview(), output, "dashboard-segmented-horizontal-style", pngOutputScale);
         SaveChart(CreateDashboardPremiumTrendPreview(), output, "dashboard-premium-trend-style", pngOutputScale);
         SaveChart(CreateTextStyleShowcase(), output, "text-style-showcase-editorial", pngOutputScale);
+        SaveChart(CreateFontLayoutShowcase(), output, "font-layout-showcase", pngOutputScale);
         SaveChart(CreateControlPartition(), output, "control-partition-sunburst-aurora", pngOutputScale);
         SaveChart(CreateAudiencePictorial(), output, "audience-pictorial-candy", pngOutputScale);
         SaveChart(CreateSupportThemesWordCloud(), output, "support-themes-word-cloud-editorial", pngOutputScale);

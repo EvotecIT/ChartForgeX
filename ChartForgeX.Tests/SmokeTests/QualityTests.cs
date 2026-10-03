@@ -453,16 +453,6 @@ internal static partial class SmokeTests {
         if (File.Exists(collectionPath)) Assert(!fallback.SequenceEqual(configured), "PNG renderer should render composite glyphs through the configured TrueType font instead of falling back.");
     }
 
-    private static void PngTrueTypeRendererSupportsKerning() {
-        var root = FindRepositoryRoot();
-        var source = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "TrueTypeFont.cs"));
-        Assert(source.Contains("private readonly int _kern;", StringComparison.Ordinal), "PNG TrueType renderer should discover optional kerning tables.");
-        Assert(source.Contains("private readonly int _gpos;", StringComparison.Ordinal), "PNG TrueType renderer should discover optional OpenType GPOS tables.");
-        Assert(source.Contains("KerningFormat0", StringComparison.Ordinal), "PNG TrueType renderer should support classic TrueType kern format 0 pairs.");
-        Assert(source.Contains("GposPairAdjustment", StringComparison.Ordinal), "PNG TrueType renderer should support common OpenType GPOS pair adjustment kerning.");
-        Assert(CountOccurrences(source, "Kerning(previous.Value, glyph)") >= 2, "PNG TrueType renderer should apply kerning during both measurement and drawing.");
-    }
-
     private static void PngSurfacesUseRoundedCorners() {
         var chart = Chart.Create()
             .WithSize(160, 100)

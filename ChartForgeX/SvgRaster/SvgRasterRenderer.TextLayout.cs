@@ -10,7 +10,8 @@ internal static partial class SvgRasterRenderer {
     private static bool NeedsWholeChunkShaping(SvgRasterElement element) {
         var codePoints = new List<int>();
         AppendTextCodePoints(element, codePoints);
-        return UnicodeBidi.NeedsResolution(codePoints) || ArabicShaping.MayJoin(codePoints);
+        foreach (var codePoint in codePoints) if (!TextShaper.IsSimple(codePoint)) return true;
+        return false;
     }
 
     private static void AppendTextCodePoints(SvgRasterElement element, List<int> codePoints) {

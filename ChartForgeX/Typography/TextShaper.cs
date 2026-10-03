@@ -9,16 +9,21 @@ namespace ChartForgeX.Typography;
 
 /// <summary>One glyph of shaped text: the face that draws it and its glyph id, in visual order.</summary>
 internal readonly struct ShapedGlyph {
-    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0) {
+    public ShapedGlyph(TrueTypeFont face, ushort glyph, int sourceIndex = 0, double? advance = null, double offsetX = 0, double offsetY = 0) {
         Face = face;
         Glyph = glyph;
         SourceIndex = sourceIndex;
+        Advance = advance; OffsetX = offsetX; OffsetY = offsetY;
     }
 
     public TrueTypeFont Face { get; }
     public ushort Glyph { get; }
     /// <summary>Index of the logical source cluster in Unicode code points, before visual reordering.</summary>
     public int SourceIndex { get; }
+    /// <summary>Font-unit advance after layout; null retains the unshaped face's legacy pair kerning.</summary>
+    public double? Advance { get; }
+    public double OffsetX { get; }
+    public double OffsetY { get; }
 }
 
 /// <summary>
@@ -31,8 +36,10 @@ internal readonly struct ShapedGlyph {
 /// level, as SVG and CSS text default to, with mirrored brackets. Default-ignorable characters
 /// (joiners, bidi controls, variation selectors, soft hyphens) draw nothing.
 /// </summary>
-internal static class TextShaper {
+internal static partial class TextShaper {
     private const int MaximumCachedRuns = 1024;
+    private const int MaximumCachedTextLength = 4096;
+    private const int MaximumCachedGlyphs = 65536;
     private static readonly ConditionalWeakTable<TrueTypeFont, RunCache> Caches = new();
 
     /// <summary>
@@ -46,11 +53,13 @@ internal static class TextShaper {
 
     /// <summary>The glyphs of <paramref name="text"/> in visual order, cached per face.</summary>
     internal static IReadOnlyList<ShapedGlyph> Shape(TrueTypeFont primary, string text) {
+        if (text.Length > MaximumCachedTextLength) return ShapeCore(primary, text);
         var cache = Caches.GetValue(primary, _ => new RunCache());
         var version = FontFallbackChain.Version;
         lock (cache) {
             if (cache.Version != version) {
                 cache.Runs.Clear();
+                cache.GlyphCount = 0;
                 cache.Version = version;
             }
 
@@ -60,8 +69,10 @@ internal static class TextShaper {
         var shaped = ShapeCore(primary, text);
         lock (cache) {
             if (cache.Version == version) {
-                if (cache.Runs.Count >= MaximumCachedRuns) cache.Runs.Clear();
+                if (cache.Runs.TryGetValue(text, out var concurrent)) return concurrent;
+                if (cache.Runs.Count >= MaximumCachedRuns || cache.GlyphCount + shaped.Length > MaximumCachedGlyphs) { cache.Runs.Clear(); cache.GlyphCount = 0; }
                 cache.Runs[text] = shaped;
+                cache.GlyphCount += shaped.Length;
             }
         }
 
@@ -73,6 +84,7 @@ internal static class TextShaper {
         ShapeCore(faces[0], text, faces, owners);
 
     private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null) {
+        if (faces == null && TryShapeAscii(primary, text, out var simple)) return simple;
         var codePoints = new List<int>(text.Length);
         for (var index = 0; index < text.Length;) codePoints.Add(TrueTypeFont.ReadCodePoint(text, ref index));
         var clusters = Segment(codePoints, owners);
@@ -80,30 +92,21 @@ internal static class TextShaper {
         foreach (var cluster in clusters) {
             if (faces != null) { primary = faces[cluster.Start]; chain = null; }
             AssignFace(primary, ref chain, codePoints, cluster);
+            ComposeHebrew(cluster);
+            RetainJoiners(codePoints, cluster);
         }
         if (ArabicShaping.MayJoin(codePoints)) Join(clusters);
 
-        var order = new int[clusters.Count];
-        for (var i = 0; i < order.Length; i++) order[i] = i;
+        byte[]? levels = null;
         if (UnicodeBidi.NeedsResolution(codePoints)) {
-            var levels = UnicodeBidi.ResolveLevels(codePoints, 0);
-            var clusterLevels = new byte[clusters.Count];
+            levels = UnicodeBidi.ResolveLevels(codePoints, 0);
             for (var i = 0; i < clusters.Count; i++) {
                 var cluster = clusters[i];
-                clusterLevels[i] = levels[cluster.Start];
-                if ((clusterLevels[i] & 1) == 1 && cluster.Output.Count > 0) Mirror(cluster);
+                if ((levels[cluster.Start] & 1) == 1 && cluster.Output.Count > 0) Mirror(cluster);
             }
-
-            order = UnicodeBidi.VisualOrder(clusterLevels);
         }
 
-        var glyphs = new List<ShapedGlyph>(codePoints.Count);
-        foreach (var index in order) {
-            var cluster = clusters[index];
-            foreach (var cp in cluster.Output) glyphs.Add(new ShapedGlyph(cluster.Face!, cluster.Face!.MapGlyph(cp), cluster.Start));
-        }
-
-        return glyphs.ToArray();
+        return ShapeFontRuns(codePoints, clusters, levels);
     }
 
     // A base character and what attaches to it: marks, joiners and what they join, variation selectors, emoji modifiers, tags.
@@ -193,17 +196,20 @@ internal static class TextShaper {
 
         var result = new List<int>();
         for (var index = 0; index < composed.Length;) result.Add(TrueTypeFont.ReadCodePoint(composed, ref index));
-        return result.Count < visible.Count ? result : null;
+        if (result.Count != visible.Count) return result;
+        for (var i = 0; i < result.Count; i++) if (result[i] != visible[i]) return result;
+        return null;
     }
 
     // Arabic contextual forms over the clusters' base letters, with the lam-alef ligature.
     private static void Join(List<Cluster> clusters) {
         var letters = new int[clusters.Count];
-        for (var i = 0; i < letters.Length; i++) letters[i] = clusters[i].Output.Count == 0 ? clusters[i].First : clusters[i].Base;
+        for (var i = 0; i < letters.Length; i++) letters[i] = clusters[i].Base == 0 ? clusters[i].First : clusters[i].Base;
         var forms = ArabicShaping.ResolveForms(letters);
         for (var i = 0; i < clusters.Count; i++) {
             var cluster = clusters[i];
             if (cluster.Output.Count == 0) continue;
+            if (UsesArabicLayout(cluster.Face!)) continue;
             if (cluster.Base == 0x0644 && i + 1 < clusters.Count) {
                 var alef = clusters[i + 1];
                 var ligature = ArabicShaping.LamAlef(alef.Base, forms[i] == ArabicForm.Final || forms[i] == ArabicForm.Medial);
@@ -257,6 +263,7 @@ internal static class TextShaper {
 
     private sealed class RunCache {
         public int Version { get; set; }
+        public int GlyphCount { get; set; }
         public Dictionary<string, ShapedGlyph[]> Runs { get; } = new(StringComparer.Ordinal);
     }
 }

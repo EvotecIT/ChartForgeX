@@ -4,6 +4,17 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateFontLayoutShowcase() => Chart.Create()
+        .WithTitle("Font substitutions and attached marks")
+        .WithSubtitle("One glyph layout for measurement and PNG painting")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(860, 440)
+        .WithXAxis("Labels in the selected font stack")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Leelawadee UI', sans-serif").WithFontSize(24))
+        .WithXLabels("office", "affine", "بِبّ", "สวัสดี")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+
     private static ChartGrid CreateThemeShowcaseGrid() {
         var auroraThemePreview = Chart.Create()
             .WithTitle("Aurora")

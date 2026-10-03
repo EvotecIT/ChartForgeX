@@ -195,9 +195,15 @@ internal static partial class SvgRasterRenderer {
 
     private static double DrawTextRun(RgbaCanvas? canvas, string text, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, IReadOnlyList<ShapedGlyph>? glyphs = null) {
         if (text.Length == 0) return 0;
+        glyphs ??= SvgTextFace(style).Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text) : null;
         if (measureOnly) {
             var measuredAdvance = PreparedAdvance(text, style.FontSize, SvgTextFace(style), glyphs);
             if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline, SvgTextFace(style).Font) + BaselineShiftOffset(style), PreparedPaintWidth(text, style.FontSize, SvgTextFace(style), IsItalic(style.FontStyle), glyphs), SvgTextPaintHeight(style, SvgTextFace(style).Font), matrix);
+            var ink = glyphs == null ? null : SvgTextFace(style).Font?.MeasureGlyphInk(glyphs, style.FontSize, IsItalic(style.FontStyle));
+            if (style.VisibilityVisible && ink.HasValue) {
+                var box = ink.Value;
+                paintBounds.Include(x + box.X, TextTop(y, style.FontSize, style.DominantBaseline, SvgTextFace(style).Font) + BaselineShiftOffset(style) + box.Y, box.Width, box.Height, matrix);
+            }
             return measuredAdvance;
         }
         if (canvas == null) throw new InvalidOperationException("SVG text rendering requires a target canvas.");
@@ -222,8 +228,8 @@ internal static partial class SvgRasterRenderer {
         var drawX = x;
         var drawY = TextTop(y, style.FontSize, style.DominantBaseline, font) + BaselineShiftOffset(style);
         var strokeRadius = strokeColor.A == 0 ? 0 : Math.Max(1, (int)Math.Ceiling(style.StrokeWidth * renderScale / 2.0));
-        var padding = Math.Max(2, (int)Math.Ceiling(fontSize * 0.2) + strokeRadius);
         var textHeight = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, font));
+        var padding = (int)Math.Ceiling(TextInkPadding(font, glyphs, fontSize, italic, width, textHeight, Math.Max(2, Math.Ceiling(fontSize * 0.2) + strokeRadius)));
         var underlineThickness = Math.Max(1, fontSize / 13.0);
         // Decorations sit relative to the face's own baseline, which is its ascent below the buffer top.
         var ascent = TextAscent(fontSize, font);
@@ -289,6 +295,7 @@ internal static partial class SvgRasterRenderer {
         const double minimumScale = 0.000000000001;
         var scale = Math.Max(minimumScale, requestedScale);
         var face = SvgTextFace(style);
+        glyphs ??= face.Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text) : null;
         var italic = IsItalic(style.FontStyle);
         for (var attempt = 0; attempt < 8; attempt++) {
             var fontSize = Math.Max(1, style.FontSize * scale);
@@ -298,7 +305,7 @@ internal static partial class SvgRasterRenderer {
                 var thickness = Math.Max(1, fontSize / 13.0);
                 height = Math.Max(height, fontSize + 2 + TextDecorationMetrics.OuterExtent(DecorationStyle(style.UnderlineDecorationStyle), thickness));
             }
-            var padding = Math.Max(2, Math.Ceiling(fontSize * 0.2 + style.StrokeWidth * scale / 2.0));
+            var padding = TextInkPadding(face.Font, glyphs, fontSize, italic, width, height, Math.Max(2, Math.Ceiling(fontSize * 0.2 + style.StrokeWidth * scale / 2.0)));
             var pixels = (width + padding * 2) * (height + padding * 2);
             var axisLimit = Math.Max(1024, Math.Min(32768, Math.Max(canvas.Width, canvas.Height) * 2));
             var reduction = Math.Min(1, Math.Min(axisLimit / (width + padding * 2), axisLimit / (height + padding * 2)));
@@ -310,6 +317,17 @@ internal static partial class SvgRasterRenderer {
             scale = reduced;
         }
         throw new InvalidOperationException("SVG text paint exceeds the supported intermediate raster budget.");
+    }
+
+    private static double TextInkPadding(TrueTypeFont? font, IReadOnlyList<ShapedGlyph>? glyphs, double size, bool italic, double width, double height, double padding) {
+        if (font == null || glyphs == null) return padding;
+        var positioned = false;
+        foreach (var glyph in glyphs) if (glyph.Advance.HasValue) { positioned = true; break; }
+        if (!positioned) return padding;
+        var ink = font.MeasureGlyphInk(glyphs, size, italic);
+        if (!ink.HasValue) return padding;
+        var box = ink.Value;
+        return Math.Max(padding, 2 + Math.Max(Math.Max(-box.X, box.X + box.Width - width), Math.Max(-box.Y, box.Y + box.Height - height)));
     }
 
     private static bool HasVisibleTextFillAndStroke(SvgRasterStyle style) =>

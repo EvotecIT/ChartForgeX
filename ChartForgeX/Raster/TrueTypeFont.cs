@@ -9,9 +9,9 @@ namespace ChartForgeX.Raster;
 
 /// <summary>
 /// An OpenType face read without a platform font engine: TrueType (<c>glyf</c>) or CFF/CFF2
-/// outlines, <c>kern</c> and GPOS pair kerning. Text that needs more than the face itself, such as
-/// characters it does not cover, right-to-left runs, or Arabic joining, is shaped by
-/// <see cref="TextShaper"/> into glyphs from this face and its fallback faces.
+/// outlines, <c>kern</c> and OpenType layout tables. <see cref="TextShaper"/> selects
+/// fallback faces, resolves bidi and joining, and executes substitutions and positioning
+/// before measurement and painting consume the same glyph run.
 /// </summary>
 internal sealed partial class TrueTypeFont {
     /// <summary>Shares immutable font data while giving a rendering context its own face identity.</summary>
@@ -25,7 +25,8 @@ internal sealed partial class TrueTypeFont {
     private readonly int _glyf;
     private readonly int _head;
     private readonly int _hmtx;
-    private readonly int _gpos;
+    private readonly OpenTypeLayout _layout;
+    private readonly IReadOnlyDictionary<string, int> _tableLengths;
     private readonly int _kern;
     private readonly int _loca;
     private readonly int _name;
@@ -46,9 +47,10 @@ internal sealed partial class TrueTypeFont {
     private double? _xHeight;
     private double? _capHeight;
 
-    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null) {
+    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null) {
         _data = data;
         _tables = tables;
+        _tableLengths = lengths;
         _collectionIndex = collectionIndex;
         _compact = compact;
         _root = root ?? this;
@@ -61,7 +63,6 @@ internal sealed partial class TrueTypeFont {
         _head = tables["head"];
         var hhea = tables["hhea"];
         _hmtx = tables["hmtx"];
-        _gpos = tables.TryGetValue("GPOS", out var gpos) ? gpos : -1;
         _kern = tables.TryGetValue("kern", out var kern) ? kern : -1;
         _name = tables.TryGetValue("name", out var name) ? name : -1;
         _os2 = tables.TryGetValue("OS/2", out var os2) && os2 + 64 <= data.Length ? os2 : -1;
@@ -71,6 +72,7 @@ internal sealed partial class TrueTypeFont {
         _descender = ReadInt16(_data, hhea + 6);
         _numHMetrics = ReadUInt16(_data, hhea + 34);
         _numGlyphs = ReadUInt16(_data, tables["maxp"] + 4);
+        _layout = root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs);
     }
 
     public static TrueTypeFont? TryLoadDefault() {
@@ -158,12 +160,12 @@ internal sealed partial class TrueTypeFont {
         }
 
         foreach (var required in new[] { "cmap", "head", "hhea", "hmtx", "maxp" }) if (!tables.ContainsKey(required)) return null;
-        if (tables.ContainsKey("glyf") && tables.ContainsKey("loca")) return new TrueTypeFont(data, tables, collectionIndex, null, null, Array.Empty<string>());
+        if (tables.ContainsKey("glyf") && tables.ContainsKey("loca")) return new TrueTypeFont(data, tables, lengths, collectionIndex, null, null, Array.Empty<string>());
         CompactFontOutlines? compact = null;
         var unitsPerEm = ReadUInt16(data, tables["head"] + 18);
         if (tables.TryGetValue("CFF ", out var cff)) compact = CompactFontOutlines.TryRead(data, cff, lengths["CFF "], cff2: false, unitsPerEm);
         else if (tables.TryGetValue("CFF2", out var cff2)) compact = CompactFontOutlines.TryRead(data, cff2, lengths["CFF2"], cff2: true, unitsPerEm);
-        return compact == null ? null : new TrueTypeFont(data, tables, collectionIndex, compact, null, Array.Empty<string>());
+        return compact == null ? null : new TrueTypeFont(data, tables, lengths, collectionIndex, compact, null, Array.Empty<string>());
     }
 
     /// <summary>
@@ -181,7 +183,7 @@ internal sealed partial class TrueTypeFont {
             if (_root._views.TryGetValue(key, out var view)) return view;
             var names = new string[families.Count];
             for (var i = 0; i < names.Length; i++) names[i] = families[i];
-            view = new TrueTypeFont(_data, _tables, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic);
+            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic);
             _root._views[key] = view;
             return view;
         }
@@ -207,6 +209,7 @@ internal sealed partial class TrueTypeFont {
     internal bool HasCompactOutlines => _compact != null;
 
     internal int UnitsPerEm => Math.Max(1, _unitsPerEm);
+    internal OpenTypeLayout Layout => _layout;
 
     /// <summary>The x-height in font units: the OS/2 value, or the top of <c>x</c>.</summary>
     internal double XHeight => _xHeight ??= Os2Height(86) ?? GlyphTop('x') ?? _unitsPerEm * 0.5;
@@ -223,6 +226,7 @@ internal sealed partial class TrueTypeFont {
     public double Measure(string text, double fontSize) => Measure(text, fontSize, italic: false);
 
     internal double Measure(string text, double fontSize, bool italic) {
+        if (_layout.HasLayout("latn")) return MeasureShaped(text, fontSize) + (italic && text.Length > 0 ? ItalicOverhang(fontSize) : 0);
         var scale = ScaleFor(fontSize);
         var width = 0.0;
         ushort? previous = null;
@@ -258,20 +262,7 @@ internal sealed partial class TrueTypeFont {
         var baseline = fit?.Baseline ?? y + _ascender * scale;
         var rendered = false;
         if (!IsSimpleRun(text)) {
-            TrueTypeFont? previousFace = null;
-            ushort previousGlyph = 0;
-            foreach (var shaped in TextShaper.Shape(this, text)) {
-                var face = shaped.Face;
-                var faceScale = face.ScaleFor(fontSize);
-                if (ReferenceEquals(face, previousFace)) cursor += face.Kerning(previousGlyph, shaped.Glyph) * faceScale;
-                double glyphBoldOffset = ReferenceEquals(face, this) || face.Weight < 600 ? boldOffset : 0;
-                rendered |= face.DrawGlyph(canvas, shaped.Glyph, cursor, baseline, faceScale, italic && !face.IsItalic, color, fit, glyphBoldOffset);
-                cursor += face.AdvanceWidth(shaped.Glyph) * faceScale;
-                previousFace = face;
-                previousGlyph = shaped.Glyph;
-            }
-
-            return rendered;
+            return DrawGlyphs(canvas, x, y, TextShaper.Shape(this, text), color, fontSize, italic, boldOffset: boldOffset);
         }
 
         ushort? previous = null;
@@ -296,25 +287,12 @@ internal sealed partial class TrueTypeFont {
         return true;
     }
 
-    private double MeasureShaped(string text, double fontSize) {
-        var width = 0.0;
-        TrueTypeFont? previousFace = null;
-        ushort previousGlyph = 0;
-        foreach (var shaped in TextShaper.Shape(this, text)) {
-            var face = shaped.Face;
-            var faceScale = face.ScaleFor(fontSize);
-            if (ReferenceEquals(face, previousFace)) width += face.Kerning(previousGlyph, shaped.Glyph) * faceScale;
-            width += face.AdvanceWidth(shaped.Glyph) * faceScale;
-            previousFace = face;
-            previousGlyph = shaped.Glyph;
-        }
-
-        return width;
-    }
+    private double MeasureShaped(string text, double fontSize) => MeasureGlyphs(TextShaper.Shape(this, text), fontSize);
 
     // True when every character is drawn by this face exactly as written: no fallback, reordering,
-    // joining, or composition. Plain Latin text never leaves this path.
+    // joining, composition, or OpenType layout.
     private bool IsSimpleRun(string text) {
+        if (_layout.HasLayout("latn")) return false;
         for (var index = 0; index < text.Length;) {
             var codePoint = ReadCodePoint(text, ref index);
             if (!TextShaper.IsSimple(codePoint) || MapGlyph(codePoint) == 0) return false;
@@ -366,7 +344,7 @@ internal sealed partial class TrueTypeFont {
     }
 
     internal int Kerning(ushort left, ushort right) {
-        return KernPairAdjustment(left, right) + GposPairAdjustment(left, right);
+        return KernPairAdjustment(left, right);
     }
 
     private int KernPairAdjustment(ushort left, ushort right) {
@@ -404,140 +382,6 @@ internal sealed partial class TrueTypeFont {
         }
 
         return 0;
-    }
-
-    private int GposPairAdjustment(ushort left, ushort right) {
-        if (_gpos < 0 || !InBounds(_gpos, 10) || ReadUInt16(_data, _gpos) != 1) return 0;
-        var featureList = _gpos + ReadUInt16(_data, _gpos + 6);
-        var lookupList = _gpos + ReadUInt16(_data, _gpos + 8);
-        if (!InBounds(featureList, 2) || !InBounds(lookupList, 2)) return 0;
-
-        var adjustment = 0;
-        var seen = new HashSet<ushort>();
-        foreach (var lookupIndex in GposFeatureLookupIndexes(featureList, "kern")) {
-            if (seen.Add(lookupIndex)) adjustment += GposPairAdjustmentFromLookup(lookupList, lookupIndex, left, right);
-        }
-
-        return adjustment;
-    }
-
-    private IEnumerable<ushort> GposFeatureLookupIndexes(int featureList, string featureTag) {
-        var featureCount = ReadUInt16(_data, featureList);
-        for (var i = 0; i < featureCount; i++) {
-            var record = featureList + 2 + i * 6;
-            if (!InBounds(record, 6)) yield break;
-            if (!TagEquals(record, featureTag)) continue;
-            var feature = featureList + ReadUInt16(_data, record + 4);
-            if (!InBounds(feature, 4)) yield break;
-            var lookupCount = ReadUInt16(_data, feature + 2);
-            for (var lookup = 0; lookup < lookupCount; lookup++) {
-                var indexOffset = feature + 4 + lookup * 2;
-                if (!InBounds(indexOffset, 2)) yield break;
-                yield return ReadUInt16(_data, indexOffset);
-            }
-        }
-    }
-
-    private int GposPairAdjustmentFromLookup(int lookupList, ushort lookupIndex, ushort left, ushort right) {
-        var lookupCount = ReadUInt16(_data, lookupList);
-        if (lookupIndex >= lookupCount) return 0;
-        var lookupOffset = lookupList + 2 + lookupIndex * 2;
-        if (!InBounds(lookupOffset, 2)) return 0;
-        var lookup = lookupList + ReadUInt16(_data, lookupOffset);
-        if (!InBounds(lookup, 6) || ReadUInt16(_data, lookup) != 2) return 0;
-
-        var adjustment = 0;
-        var subtableCount = ReadUInt16(_data, lookup + 4);
-        for (var i = 0; i < subtableCount; i++) {
-            var subtableOffset = lookup + 6 + i * 2;
-            if (!InBounds(subtableOffset, 2)) break;
-            adjustment += GposPairAdjustmentFromSubtable(lookup + ReadUInt16(_data, subtableOffset), left, right);
-        }
-
-        return adjustment;
-    }
-
-    private int GposPairAdjustmentFromSubtable(int subtable, ushort left, ushort right) {
-        if (!InBounds(subtable, 10) || ReadUInt16(_data, subtable) != 1) return 0;
-        var coverage = subtable + ReadUInt16(_data, subtable + 2);
-        var valueFormat1 = ReadUInt16(_data, subtable + 4);
-        var valueFormat2 = ReadUInt16(_data, subtable + 6);
-        var pairSetCount = ReadUInt16(_data, subtable + 8);
-        var coverageIndex = CoverageIndex(coverage, left);
-        if (coverageIndex < 0 || coverageIndex >= pairSetCount) return 0;
-
-        var pairSetOffset = subtable + 10 + coverageIndex * 2;
-        if (!InBounds(pairSetOffset, 2)) return 0;
-        var pairSet = subtable + ReadUInt16(_data, pairSetOffset);
-        if (!InBounds(pairSet, 2)) return 0;
-
-        var value1Size = ValueRecordSize(valueFormat1);
-        var value2Size = ValueRecordSize(valueFormat2);
-        var recordSize = 2 + value1Size + value2Size;
-        var low = 0;
-        var high = ReadUInt16(_data, pairSet) - 1;
-        while (low <= high) {
-            var mid = low + (high - low) / 2;
-            var record = pairSet + 2 + mid * recordSize;
-            if (!InBounds(record, recordSize)) return 0;
-            var candidate = ReadUInt16(_data, record);
-            if (candidate == right) return ReadValueRecordXAdvance(record + 2, valueFormat1);
-            if (candidate < right) low = mid + 1;
-            else high = mid - 1;
-        }
-
-        return 0;
-    }
-
-    private int CoverageIndex(int coverage, ushort glyph) {
-        if (!InBounds(coverage, 4)) return -1;
-        var format = ReadUInt16(_data, coverage);
-        if (format == 1) {
-            var count = ReadUInt16(_data, coverage + 2);
-            var low = 0;
-            var high = count - 1;
-            while (low <= high) {
-                var mid = low + (high - low) / 2;
-                var offset = coverage + 4 + mid * 2;
-                if (!InBounds(offset, 2)) return -1;
-                var candidate = ReadUInt16(_data, offset);
-                if (candidate == glyph) return mid;
-                if (candidate < glyph) low = mid + 1;
-                else high = mid - 1;
-            }
-
-            return -1;
-        }
-
-        if (format != 2) return -1;
-        var rangeCount = ReadUInt16(_data, coverage + 2);
-        for (var i = 0; i < rangeCount; i++) {
-            var range = coverage + 4 + i * 6;
-            if (!InBounds(range, 6)) return -1;
-            var start = ReadUInt16(_data, range);
-            var end = ReadUInt16(_data, range + 2);
-            if (glyph < start || glyph > end) continue;
-            return ReadUInt16(_data, range + 4) + glyph - start;
-        }
-
-        return -1;
-    }
-
-    private int ReadValueRecordXAdvance(int offset, ushort valueFormat) {
-        if ((valueFormat & 0x0001) != 0) offset += 2;
-        if ((valueFormat & 0x0002) != 0) offset += 2;
-        if ((valueFormat & 0x0004) == 0) return 0;
-        return InBounds(offset, 2) ? ReadInt16(_data, offset) : 0;
-    }
-
-    private static int ValueRecordSize(ushort valueFormat) {
-        var size = 0;
-        for (var bit = 1; bit <= 0x0080; bit <<= 1) if ((valueFormat & bit) != 0) size += 2;
-        return size;
-    }
-
-    private bool TagEquals(int offset, string tag) {
-        return InBounds(offset, 4) && _data[offset] == tag[0] && _data[offset + 1] == tag[1] && _data[offset + 2] == tag[2] && _data[offset + 3] == tag[3];
     }
 
     private static ushort ReadUInt16(byte[] data, int offset) => (ushort)((data[offset] << 8) | data[offset + 1]);

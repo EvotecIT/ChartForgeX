@@ -25,21 +25,25 @@ internal sealed partial class TrueTypeFont {
 
     /// <summary>Advance for a visual glyph, including pair kerning when the previous glyph uses the same face.</summary>
     internal static double GlyphAdvance(ShapedGlyph glyph, ShapedGlyph? previous, double fontSize) =>
-        (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
-            ? glyph.Face.Kerning(previous.Value.Glyph, glyph.Glyph) : 0)) * glyph.Face.ScaleFor(fontSize);
+        (glyph.Advance ?? (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && !previous.Value.Advance.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
+            ? glyph.Face.Kerning(previous.Value.Glyph, glyph.Glyph) : 0))) * glyph.Face.ScaleFor(fontSize);
 
     /// <summary>Paints a pre-shaped visual run at the primary face's baseline, preserving fallback face metrics.</summary>
-    internal void DrawGlyphs(RgbaCanvas canvas, double x, double y, IReadOnlyList<ShapedGlyph> glyphs, ChartColor color, double fontSize, bool italic, bool syntheticBoldCopyOnly = false) {
+    internal bool DrawGlyphs(RgbaCanvas canvas, double x, double y, IReadOnlyList<ShapedGlyph> glyphs, ChartColor color, double fontSize, bool italic, bool syntheticBoldCopyOnly = false, double boldOffset = 0) {
         var fit = GlyphGridFit.Create(canvas, fontSize, y + Ascent(fontSize));
         var baseline = fit?.Baseline ?? y + Ascent(fontSize);
         ShapedGlyph? previous = null;
+        var rendered = false;
         foreach (var glyph in glyphs) {
             var scale = glyph.Face.ScaleFor(fontSize);
-            if (previous.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)) x += glyph.Face.Kerning(previous.Value.Glyph, glyph.Glyph) * scale;
+            var advance = GlyphAdvance(glyph, previous, fontSize);
+            x += advance - GlyphAdvance(glyph, null, fontSize);
             if (!syntheticBoldCopyOnly || ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600)
-                glyph.Face.DrawGlyph(canvas, glyph.Glyph, x, baseline, scale, italic && !glyph.Face.IsItalic, color, fit);
-            x += glyph.Face.AdvanceWidth(glyph.Glyph) * scale;
+                rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit,
+                    ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600 ? boldOffset : 0);
+            x += GlyphAdvance(glyph, null, fontSize);
             previous = glyph;
         }
+        return rendered;
     }
 }
