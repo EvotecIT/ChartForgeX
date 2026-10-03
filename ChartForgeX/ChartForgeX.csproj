@@ -40,7 +40,7 @@
   <ItemGroup>
     <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />
     <None Include="..\assets\ChartForgeX.png" Pack="true" PackagePath="\" />
-    <None Update="Typography\Unicode-LICENSE.txt" Pack="true" PackagePath="licenses/Unicode-LICENSE.txt" />
+    <None Include="Typography\Unicode-LICENSE.txt" Pack="true" PackagePath="licenses/Unicode-LICENSE.txt" />
     <EmbeddedResource Include="Topology\Assets\topology.css" LogicalName="ChartForgeX.Topology.Assets.topology.css" />
   </ItemGroup>
 </Project>
