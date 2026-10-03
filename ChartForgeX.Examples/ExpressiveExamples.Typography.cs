@@ -4,6 +4,39 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateColourEmojiShowcase() => Chart.Create()
+        .WithTitle("Colour emoji in report labels")
+        .WithSubtitle("Font palettes, joined sequences and bitmap strikes use the same glyph layout")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Faces · symbols · joined sequences")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif").WithFontSize(32))
+        .WithXLabels("😀", "❤️", "👩‍💻", "👨‍👩‍👧‍👦", "🏳️‍🌈")
+        .AddBar("Observed", Points(32, 48, 43, 66, 51), ChartColor.FromHex("#2563eb"));
+
+    private static Chart CreateFontLayoutShowcase() => Chart.Create()
+        .WithTitle("Font substitutions and attached marks")
+        .WithSubtitle("One glyph layout for measurement and PNG painting")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(860, 440)
+        .WithXAxis("Labels in the selected font stack")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Leelawadee UI', sans-serif").WithFontSize(24))
+        .WithXLabels("office", "affine", "بِبّ", "สวัสดี")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+
+    private static Chart CreateScriptShapingShowcase() => Chart.Create()
+        .WithTitle("Syllables in the selected font")
+        .WithSubtitle("Conjuncts, pre-base vowels and attached marks share one text layout")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Devanagari · Bengali · Tamil · Thai · Khmer")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Leelawadee UI', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Thai', 'Noto Sans Khmer', sans-serif").WithFontSize(28))
+        .WithXLabels("क्षेत्र", "ক্ষেত্র", "தமிழ்", "น้ำ", "ខ្មែរ")
+        .AddBar("Observed", Points(32, 48, 43, 66, 51), ChartColor.FromHex("#2563eb"));
+
     private static ChartGrid CreateThemeShowcaseGrid() {
         var auroraThemePreview = Chart.Create()
             .WithTitle("Aurora")

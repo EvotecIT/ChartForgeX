@@ -138,6 +138,23 @@
       }
     },
     {
+      "name": "colour-emoji-showcase",
+      "width": 960,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 816131,
+        "minTransparentPixels": 67069,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "control-contribution-polar-area-light",
       "width": 760,
       "height": 460,
@@ -1341,6 +1358,23 @@
         "minVisiblePixels": 643195,
         "minTransparentPixels": 56005,
         "minDistinctColors": 1852,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "font-layout-showcase",
+      "width": 860,
+      "height": 440,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 695251,
+        "minTransparentPixels": 61549,
+        "minDistinctColors": 1005,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2650,6 +2684,23 @@
         "minVisiblePixels": 912589,
         "minTransparentPixels": 67411,
         "minDistinctColors": 1878,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "script-shaping-showcase",
+      "width": 960,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 816131,
+        "minTransparentPixels": 67069,
+        "minDistinctColors": 1070,
         "maxEdgeInkPixels": 0
       }
     },

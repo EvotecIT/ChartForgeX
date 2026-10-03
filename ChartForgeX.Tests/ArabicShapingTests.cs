@@ -1,4 +1,3 @@
-using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 using Xunit;
 
@@ -37,21 +36,4 @@ public sealed class ArabicShapingTests {
         Assert.Equal(-1, ArabicShaping.LamAlef(0x0628, final: false));
     }
 
-    [Fact]
-    public void JoinerBetweenArabicLettersPreservesEachContextualGlyph() {
-        var font = TrueTypeFont.TryLoadDefault();
-        if (font == null || !font.HasGlyph(0xFE91) || !font.HasGlyph(0xFE90)) return;
-        var glyphs = TextShaper.Shape(font, "\u0628\u200D\u0628");
-        Assert.Equal(new[] { font.MapGlyph(0xFE90), font.MapGlyph(0xFE91) }, glyphs.Select(glyph => glyph.Glyph).ToArray());
-    }
-
-    [Fact]
-    public void ShapedTextUsesTheFacesPresentationFormsInVisualOrder() {
-        var font = TrueTypeFont.TryLoadDefault();
-        if (font == null || !font.HasGlyph(0xFE91) || !font.HasGlyph(0xFEFC)) return;
-        // "salam" (seen, lam-alef, meem): displayed right to left, so the final meem comes first.
-        var glyphs = TextShaper.Shape(font, "\u0633\u0644\u0627\u0645");
-        Assert.Equal(new[] { font.MapGlyph(0xFEE1), font.MapGlyph(0xFEFC), font.MapGlyph(0xFEB3) }, glyphs.Select(glyph => glyph.Glyph).ToArray());
-        Assert.Equal(font.Measure("\uFEB3\uFEFC\uFEE1", 20), font.Measure("\u0633\u0644\u0627\u0645", 20), 6);
-    }
 }

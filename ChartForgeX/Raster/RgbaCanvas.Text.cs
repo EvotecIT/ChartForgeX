@@ -72,15 +72,17 @@ internal sealed partial class RgbaCanvas {
             ? TinyFont.Height * FallbackScaleForFontSize(fontSize)
             : font.LineHeight(Math.Max(1, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
-        var buffer = new RgbaCanvas(bufferWidth, naturalHeight, _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
-        if (emphasized) buffer.DrawTextEmphasized(0, 0, text, color, fontSize, font);
-        else buffer.DrawText(0, 0, text, color, fontSize, font);
+        var bounds = TextBufferBounds(text, fontSize, font, false, emphasized, bufferWidth, naturalHeight);
+        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
+        if (emphasized) buffer.DrawTextEmphasized(-bounds.X, -bounds.Y, text, color, fontSize, font);
+        else buffer.DrawText(-bounds.X, -bounds.Y, text, color, fontSize, font);
         var pixels = buffer.ToOutputPixels();
+        var horizontalScale = Math.Max(1, (int)Math.Floor(maximumWidth)) / (double)bufferWidth;
         DrawImageScaled(
-            (int)Math.Round(x),
-            (int)Math.Round(y),
-            Math.Max(1, (int)Math.Floor(maximumWidth)),
-            naturalHeight,
+            (int)Math.Round(x + bounds.X * horizontalScale),
+            (int)Math.Round(y + bounds.Y),
+            Math.Max(1, (int)Math.Round(buffer.OutputWidth * horizontalScale)),
+            buffer.OutputHeight,
             buffer.OutputWidth,
             buffer.OutputHeight,
             pixels);

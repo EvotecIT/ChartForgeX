@@ -8,6 +8,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Fixtures\OpenType\*.ttf" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
     <ProjectReference Include="..\ChartForgeX.Examples\ChartForgeX.Examples.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
