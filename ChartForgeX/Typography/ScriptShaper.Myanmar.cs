@@ -29,12 +29,7 @@ internal static partial class ScriptShaper {
             face.Layout.Apply(syllable, tag, Common, required: true, budget: budget);
             StableOrder(syllable);
             var reordered = syllable;
-            // Anusvara directly following below vowels belongs before that complete vowel block.
-            for (var i = 1; i < reordered.Count; i++) if (reordered[i].CodePoint == 0x1036) {
-                var target = i;
-                while (target > 0 && MyanmarBelowVowel(reordered[target - 1].CodePoint)) target--;
-                if (target < i) { var glyph = reordered[i]; reordered.RemoveAt(i); reordered.Insert(target, glyph); }
-            }
+            ReorderMyanmarAnusvara(reordered);
             foreach (var feature in MyanmarForms) Feature(face.Layout, reordered, tag, feature, budget);
             foreach (var glyph in reordered) glyph.SkipForSubstitution = glyph.Ignorable;
             face.Layout.Apply(reordered, tag, Presentation, budget: budget);
@@ -57,6 +52,20 @@ internal static partial class ScriptShaper {
     }
     private static bool MyanmarPreVowel(int cp) => cp == 0x1031 || cp == 0x1084;
     private static bool MyanmarBelowVowel(int cp) => cp == 0x102f || cp == 0x1030 || cp == 0x1058 || cp == 0x1059;
+
+    // Each contiguous block is stably partitioned once; repeated marks cannot rescan or shift it.
+    private static void ReorderMyanmarAnusvara(List<LayoutGlyph> glyphs) {
+        for (var start = 0; start < glyphs.Count;) {
+            if (!MyanmarBelowVowel(glyphs[start].CodePoint)) { start++; continue; }
+            var end = start + 1;
+            while (end < glyphs.Count && (MyanmarBelowVowel(glyphs[end].CodePoint) || glyphs[end].CodePoint == 0x1036)) end++;
+            var block = new LayoutGlyph[end - start]; var at = 0;
+            for (var i = start; i < end; i++) if (glyphs[i].CodePoint == 0x1036) block[at++] = glyphs[i];
+            for (var i = start; i < end; i++) if (glyphs[i].CodePoint != 0x1036) block[at++] = glyphs[i];
+            for (var i = start; i < end; i++) glyphs[i] = block[i - start];
+            start = end;
+        }
+    }
 
     private static int MyanmarSyllableEnd(List<LayoutGlyph> glyphs, int from) {
         var cursor = from;

@@ -75,3 +75,10 @@ build('myanmar-no-circle', myanmar, ['mym2'], rules, circle=False)
 build('myanmar-preprocessed', myanmar, ['mym2'], 'feature ccmp { sub ra asat halant by reph; } ccmp;' + rules)
 primary = dict(myanmar); del primary[0x1000]
 build('myanmar-primary', primary, ['mym2'], rules)
+
+# The shared normalisation owner must not compose vowel pieces across an explicit joiner.
+joiner_vowels = {0xc95:'ka',0xcc6:'e',0xcc2:'aa',0xcd5:'i',0xcca:'o',0xccb:'au',
+                 0xc15:'ga',0xc46:'u',0xc56:'anusvara',0xc48:'postYa'}
+build('indic-joiner-vowels', joiner_vowels, ['knd2','tel2'], '''
+feature ccmp { sub ka e aa i by au; sub ga u anusvara by postYa; } ccmp;
+''')

@@ -10,7 +10,7 @@ internal static partial class ScriptShaper {
     private static void ShapeSinhala(TrueTypeFont face, List<LayoutGlyph> glyphs, string tag, OpenTypeLayout.LayoutExecution budget) {
         var result = new List<LayoutGlyph>(glyphs.Count);
         for (var from = 0; from < glyphs.Count;) {
-            var end = SinhalaSyllableEnd(glyphs, from);
+            var end = SyllableEnd(glyphs, from, sinhalaJoiners: true);
             var syllable = glyphs.GetRange(from, end - from);
             var originalCount = syllable.Count; DottedCircle(face, syllable);
             Decompose(face, syllable);
@@ -50,15 +50,10 @@ internal static partial class ScriptShaper {
         glyphs.Clear(); glyphs.AddRange(result);
     }
 
-    private static int SinhalaSyllableEnd(List<LayoutGlyph> glyphs, int from) {
-        var end = SyllableEnd(glyphs, from);
-        for (var i = from + 1; i < end; i++) if (IsBase(glyphs[i])) {
-            var previous = i - 1;
-            var joiner = false;
-            while (previous >= from && IsJoiner(glyphs[previous].CodePoint)) { joiner |= glyphs[previous].CodePoint == 0x200d; previous--; }
-            if (previous >= from && glyphs[previous].CodePoint == 0x0dca && previous > from && glyphs[previous - 1].CodePoint == 0x200d) joiner = true;
-            if (!joiner) return i;
-        }
-        return end;
+    private static bool HasSinhalaJoiner(List<LayoutGlyph> glyphs, int from, int nextBase) {
+        var previous = nextBase - 1;
+        var joiner = false;
+        while (previous >= from && IsJoiner(glyphs[previous].CodePoint)) { joiner |= glyphs[previous].CodePoint == 0x200d; previous--; }
+        return joiner || previous > from && glyphs[previous].CodePoint == 0x0dca && glyphs[previous - 1].CodePoint == 0x200d;
     }
 }

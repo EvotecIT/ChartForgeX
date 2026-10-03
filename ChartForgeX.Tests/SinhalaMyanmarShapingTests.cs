@@ -101,6 +101,38 @@ public sealed class SinhalaMyanmarShapingTests {
         Assert.Equal(expected, glyphs.Select(g => g.Glyph));
     }
 
+    [Theory]
+    [InlineData("ಕೋ", new ushort[] { 23 })]
+    [InlineData("ಕ\u200dೋ", new ushort[] { 1, 7, 8, 10 })]
+    [InlineData("ಕೆ\u200cೂೕ", new ushort[] { 1, 7, 8, 10 })]
+    [InlineData("కై", new ushort[] { 22 })]
+    [InlineData("క\u200dై", new ushort[] { 2, 18, 19 })]
+    [InlineData("కె\u200cౖ", new ushort[] { 2, 18, 19 })]
+    public void CanonicalIndicVowelsDoNotMoveAnExplicitJoinerToTheClusterEnd(string text, ushort[] expected) =>
+        Assert.Equal(expected, TextShaper.Shape(Font("indic-joiner-vowels"), text).Select(g => g.Glyph));
+
+    [Fact]
+    public void RepeatedSinhalaSyllablesRetainEachUnjoinedBase() {
+        var glyphs = TextShaper.Shape(Font("sinhala-script"), string.Concat(Enumerable.Repeat("ක්", 8192)));
+        Assert.Equal(8192, glyphs.Count); Assert.All(glyphs, glyph => Assert.Equal(21, glyph.Glyph));
+    }
+
+    [Fact]
+    public void RepeatedMyanmarAnusvaraRetainsStableOrderAcrossTheWholeBelowVowelBlock() {
+        var glyphs = TextShaper.Shape(Font("myanmar-script"), "က" + new string('\u102f', 8192) + new string('\u1036', 8192));
+        Assert.Equal(16385, glyphs.Count); Assert.Equal(1, glyphs[0].Glyph);
+        Assert.All(glyphs.Skip(1).Take(8192), glyph => Assert.Equal(19, glyph.Glyph));
+        Assert.All(glyphs.Skip(8193), glyph => Assert.Equal(18, glyph.Glyph));
+    }
+
+    [Theory]
+    [InlineData("sinhala-script", "ක\u200d්ක", '\u0dd9', new ushort[] { 1, 5 }, 7, 1)]
+    [InlineData("indic-modern", "त्क", '\u093f', new ushort[] { 2, 4 }, 5, 1)]
+    public void RepeatedPreVowelsStayAfterTheSurvivingHalant(string name, string prefix, char mark, ushort[] before, ushort vowel, ushort after) {
+        var glyphs = TextShaper.Shape(Font(name), prefix + new string(mark, 8192));
+        Assert.Equal(before.Concat(Enumerable.Repeat(vowel, 8192)).Append(after), glyphs.Select(g => g.Glyph));
+    }
+
     private static byte[] Paint(TrueTypeFont face, string text) {
         var canvas = new RgbaCanvas(250, 180, 2, face, 1, useDefaultOutlineFont: false);
         face.Draw(canvas, 10, 30, text, ChartColor.Black, 100);

@@ -105,7 +105,7 @@ internal static partial class ScriptShaper {
         var rephBefore = rephGlyph?.Glyph;
         var prefOutputs = new List<LayoutGlyph>();
         foreach (var feature in IndicForms) {
-            if (feature == "half") foreach (var glyph in glyphs) glyph.SkipForSubstitution = glyph.CodePoint == 0x200d;
+            foreach (var glyph in glyphs) glyph.SkipForSubstitution = feature == "half" && glyph.CodePoint == 0x200d;
             if (feature == "pref") {
                 var before = glyphs.ToArray(); var ids = new ushort[before.Length];
                 for (var i = 0; i < before.Length; i++) ids[i] = before[i].Glyph;
@@ -133,7 +133,7 @@ internal static partial class ScriptShaper {
             for (var i = 0; i < target; i++) if (glyphs[i].Glyph == halant.Glyph && glyphs[i].ComponentClusters == null) target = AfterJoiners(glyphs, i + 1);
             glyphs.Insert(target, glyph);
         }
-        foreach (var glyph in glyphs) { glyph.SkipForSubstitution = glyph.Ignorable; glyph.Features &= ~4u; }
+        foreach (var glyph in glyphs) { glyph.SkipForSubstitution = glyph.Ignorable && glyph.CodePoint != 0x200c; glyph.Features &= ~4u; }
         if (wordInitial) foreach (var glyph in glyphs) if (glyph.ScriptPosition == PreMatra) glyph.Features |= 4u;
         Feature(layout, glyphs, tag, "init", budget);
         layout.Apply(glyphs, tag, Presentation, budget: budget);
@@ -151,8 +151,13 @@ internal static partial class ScriptShaper {
         var baseAt = glyphs.IndexOf(baseGlyph); var target = 0;
         for (var i = 0; i < baseAt; i++) if (glyphs[i].Glyph == halant && glyphs[i].ComponentClusters == null) target = AfterJoiners(glyphs, i + 1);
         if (target == 0) return;
-        var matras = glyphs.FindAll(glyph => glyph.ScriptPosition == PreMatra);
-        foreach (var matra in matras) { var at = glyphs.IndexOf(matra); glyphs.RemoveAt(at); if (at < target) target--; }
+        var matras = new List<LayoutGlyph>(); var write = 0; var adjustedTarget = target;
+        for (var read = 0; read < glyphs.Count; read++) {
+            var glyph = glyphs[read];
+            if (glyph.ScriptPosition == PreMatra) { matras.Add(glyph); if (read < target) adjustedTarget--; }
+            else glyphs[write++] = glyph;
+        }
+        glyphs.RemoveRange(write, glyphs.Count - write); target = adjustedTarget;
         glyphs.InsertRange(target, matras);
     }
 }

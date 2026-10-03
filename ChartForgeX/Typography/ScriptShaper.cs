@@ -44,7 +44,7 @@ internal static partial class ScriptShaper {
     private static bool IsBase(LayoutGlyph glyph) => IsConsonant(glyph) || IndicCharacterData.Category(glyph.CodePoint) == IndicCategory.Vowel || glyph.CodePoint == 0x25cc || glyph.CodePoint == 0xa0;
 
     /// <summary>Consonants connected by a halant remain one syllable; ordinary adjacent letters begin another.</summary>
-    private static int SyllableEnd(List<LayoutGlyph> glyphs, int from, bool numberBase = false) {
+    private static int SyllableEnd(List<LayoutGlyph> glyphs, int from, bool numberBase = false, bool sinhalaJoiners = false) {
         var first = IndicCharacterData.Category(glyphs[from].CodePoint);
         if (!IsBase(glyphs[from]) && (first == IndicCategory.Other || first == IndicCategory.Number && !numberBase)) return from + 1;
         var connected = first == IndicCategory.Halant || first == IndicCategory.Repha;
@@ -55,7 +55,7 @@ internal static partial class ScriptShaper {
             if (kind == IndicCategory.Halant) { connected = true; continue; }
             if (IsJoiner(cp)) continue;
             if (kind == IndicCategory.Consonant || kind == IndicCategory.Vowel) {
-                if (!connected) break;
+                if (!connected || sinhalaJoiners && !HasSinhalaJoiner(glyphs, from, i)) break;
                 hasBase = true; connected = false; continue;
             }
             if (kind == IndicCategory.Matra || kind == IndicCategory.Nukta || kind == IndicCategory.Sign || kind == IndicCategory.Accent || kind == IndicCategory.Shifter || kind == IndicCategory.Medial) continue;

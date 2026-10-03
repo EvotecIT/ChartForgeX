@@ -164,14 +164,15 @@ internal static partial class TextShaper {
         }
 
         // A base with marks: the composed character when a face has it, otherwise the sequence, in one face.
-        // Sinhala's explicit joiner must retain its location while the script owner decomposes vowels.
+        // Explicit script joiners must retain their location while the script owner decomposes vowels.
         // Composing only visible scalars would move the retained joiner to the end of the cluster.
-        var sinhalaJoiner = OpenTypeScriptData.Script(visible[0]) == "sinh";
-        if (sinhalaJoiner) {
-            sinhalaJoiner = false;
-            for (var i = cluster.Start; i < cluster.Start + cluster.Count; i++) if (IsJoinerCodePoint(codePoints[i])) { sinhalaJoiner = true; break; }
+        var script = OpenTypeScriptData.Script(visible[0]);
+        var scriptJoiner = script == "sinh" || IndicScriptProfile.TryGet(script, out _);
+        if (scriptJoiner) {
+            scriptJoiner = false;
+            for (var i = cluster.Start; i < cluster.Start + cluster.Count; i++) if (IsJoinerCodePoint(codePoints[i])) { scriptJoiner = true; break; }
         }
-        var composed = sinhalaJoiner ? null : Compose(visible);
+        var composed = scriptJoiner ? null : Compose(visible);
         if (!emoji && composed != null && Covers(primary, composed)) { cluster.Output.AddRange(composed); return; }
         if (!emoji && Covers(primary, visible)) { cluster.Output.AddRange(visible); return; }
         chain ??= FontFallbackChain.For(primary);
