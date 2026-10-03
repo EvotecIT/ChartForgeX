@@ -94,6 +94,25 @@ test('labels choose contrast against their actual background in light and dark t
   const colors = api.graphReadableNodeColors(root, a.el, api.graphThemePalette(root));
   assert.ok(api.graphColorContrast(colors.label, '#2563eb') >= 4.5);
 });
+test('translucent label plates and cards choose contrast against the composited surface', () => {
+  const { api, root, a } = runtime();
+  root.setAttribute('data-cfx-graph-theme-active', 'dark');
+  const palette = api.graphThemePalette(root);
+  for (const card of [false, true]) {
+    a.el.setAttribute('data-node-card', String(card));
+    a.el.setAttribute('data-node-label-color', 'rgba(255,255,255,.1)');
+    for (const surface of ['rgba(255,255,255,.1)', '#fff1', '#ffffff1a', 'rgb(100% 100% 100% / 10%)', 'rgba(255,255,255,0)']) {
+      a.el.setAttribute(card ? 'data-node-background-color' : 'data-node-label-background-color', surface);
+      const colors = api.graphReadableNodeColors(root, a.el, palette);
+      assert.ok(api.graphColorContrast(colors.label, colors.halo) >= 4.5, surface);
+      assert.ok(api.graphColorContrast(colors.secondary, colors.halo) >= 4.5, surface);
+      assert.notEqual(colors.label, 'rgba(255,255,255,.1)');
+      assert.notEqual(colors.label, '#0f172a');
+      if (surface === 'rgba(255,255,255,.1)') assert.equal(colors.halo, 'rgb(35, 42, 54)');
+      if (surface === 'rgba(255,255,255,0)') assert.equal(colors.halo, 'rgb(11, 18, 32)');
+    }
+  }
+});
 
 test('materialized virtual SVG card details use the same readable colours as physical and Canvas cards', () => {
   const { api, root, a } = runtime();
@@ -129,22 +148,44 @@ test('the shared node layer retains labels, badges and selected details through 
   a.el.classList.add('cfx-graph-selected');
   api.drawCanvasNodes(context, root, [a], true, true); assert.ok(text.includes('Service') && text.includes('Detail'));
 });
-test('GPU edge colours retain the opacity of supported rgba styles', () => {
-  const { api } = runtime(), color = api.webGlColor('rgba(15, 118, 110, 0.5)', .6);
-  close(color[0], 15 / 255); close(color[3], .3);
+test('GPU styles retain CSS alpha independently of neighbourhood opacity', () => {
+  const { api } = runtime();
+  for (const [style, rgb, alpha] of [['rgba(15, 118, 110, 0.5)', [15,118,110], .5], ['#0f766e80', [15,118,110], 128/255], ['#0f78', [0,255,119], 136/255], ['rgb(100% 0% 0% / 25%)', [255,0,0], .25], ['rgba(255,255,255,0)', [255,255,255], 0]]) {
+    const color = api.webGlColor(style, .6);
+    rgb.forEach((channel, index) => close(color[index], channel / 255)); close(color[3], .6 * alpha);
+  }
 });
-test('compact GPU marks retain node fill, border and status dots while richer marks use the shared layer', () => {
+test('homogeneous compact GPU marks retain node fill, border and status dots', () => {
   const { api, state, a, b, palette } = runtime();
   a.backgroundColor = '#7c3aed'; a.borderColor = '#c4b5fd'; a.el.setAttribute('data-cfx-status', 'warning');
-  b.shape = 'diamond';
   const points = api.webGlNodePoints(state, palette, true, false, 1, 1024);
-  assert.equal(points.nodes.size, 1); assert.ok(points.nodes.has(a)); assert.ok(!points.nodes.has(b));
-  assert.equal(points.positions.length, 4);
+  assert.equal(points.nodes.size, 2); assert.ok(points.nodes.has(a) && points.nodes.has(b));
+  assert.equal(points.positions.length, 6);
   close(points.sizes[0], 25.5); close(points.colors[0], 124 / 255); close(points.strokes[0], 196 / 255);
-  close(points.positions[2], a.x - a.size * .8); close(points.sizes[2], 11);
+  close(points.positions[4], a.x - a.size * .8); close(points.sizes[4], 11);
   assert.equal(api.webGlNodePoints(state, palette, true, false, 3, 64).nodes.size, 0);
   a.icon = 'X'; assert.equal(api.webGlNodePoints(state, palette, true, false, 1, 1024).nodes.size, 0);
-  assert.equal(api.webGlNodePoints(state, palette, true, true, 1, 1024).nodes.size, 1);
+  assert.equal(api.webGlNodePoints(state, palette, true, true, 1, 1024).nodes.size, 2);
+});
+test('mixed and driver-limited marks preserve authored body order before all status details', () => {
+  const { api, root, state, a, b, palette } = runtime();
+  a.backgroundColor = '#ef4444'; b.backgroundColor = '#2563eb';
+  a.el.setAttribute('data-cfx-status', 'warning'); b.el.setAttribute('data-cfx-status', 'healthy');
+  a.x = b.x = 100; a.y = b.y = 100;
+  for (const [shape, moving, limit] of [['box', false, 1024], ['diamond', true, 1024], ['circle', false, 100]]) {
+    a.shape = shape; a.size = shape === 'circle' ? 40 : 12;
+    for (const nodes of [[a,b], [b,a]]) {
+      state.nodes = nodes;
+      const points = api.webGlNodePoints(state, palette, true, moving, 1, limit);
+      const paints = Array.from(points.colors.filter((_, index) => index % 4 === 0), (_, index) => Array.from(points.colors.slice(index * 4, index * 4 + 3), channel => Math.round(channel * 255)));
+      const context = new Proxy({}, {
+        get(target, key) { return target[key] || (() => { if (key === 'fill') paints.push(target.fillStyle); }); },
+        set(target, key, value) { target[key] = value; return true; }
+      });
+      api.drawCanvasNodes(context, root, nodes, true, moving, points.nodes);
+      assert.deepEqual(paints, nodes.map(node => node.backgroundColor).concat(nodes.map(node => node === a ? '#f59e0b' : '#22c55e')));
+    }
+  }
 });
 test('context loss and restoration retain the canonical graph state through Canvas fallback', () => {
   const script = fs.readFileSync(path.join(assets, 'graph-explorer.04-webgl.js'), 'utf8');

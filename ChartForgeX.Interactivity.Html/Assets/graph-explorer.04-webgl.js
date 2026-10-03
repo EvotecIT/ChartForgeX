@@ -102,11 +102,8 @@
   };
   const webGlAvailable = (root) => !!webGlRuntime(root);
   const webGlColor = (value, alpha, fallback) => {
-    const rgb = graphColorRgb(value) || fallback || [37, 99, 235];
-    const source = graphLiteralColorRgb(value) ? String(value || '').trim() : String(graphColorContext?.fillStyle || value || '');
-    const rgba = source.match(/^rgba\([^)]*,\s*([\d.]+)\s*\)$/i);
-    const opacity = rgba ? Math.max(0, Math.min(1, Number(rgba[1]))) : 1;
-    return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, alpha * opacity];
+    const rgba = graphColorRgba(value) || [...(fallback || [37, 99, 235]), 1];
+    return [rgba[0] / 255, rgba[1] / 255, rgba[2] / 255, alpha * rgba[3]];
   };
   const webGlResize = (runtime, size) => {
     const rect = runtime.canvas.getBoundingClientRect();

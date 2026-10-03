@@ -1,6 +1,15 @@
   const webGlNodePoints = (state, palette, compact, moving, scale, limit) => {
     const points = { positions: [], colors: [], strokes: [], sizes: [], nodes: new Set() }, statusPoints = [];
     if (!compact && !moving) return points;
+    // The GPU surface sits beneath Canvas. Keep mixed mark bodies in one shared
+    // pass so authored node order and the later status/detail pass stay intact.
+    const eligible = (node) => {
+      if (node.shape !== 'circle' || node.card || node.shadow && !moving || node.icon && !moving) return false;
+      const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
+      // Include the driver's point limit at maximum semantic zoom and DPR.
+      return (node.size * 2 + paint.width) * scale * 4 <= limit && 11 * scale * 4 <= limit;
+    };
+    if (state.nodes.some(node => visible(node.el) && !eligible(node))) return points;
     const point = (x, y, radius, width, fill, stroke, alpha) => {
       points.positions.push(x, y);
       points.colors.push(...webGlColor(fill, alpha));
@@ -8,11 +17,8 @@
       points.sizes.push(2 * radius + width, Math.max(0, (radius - width / 2) / (radius + width / 2)));
     };
     state.nodes.forEach(node => {
-      if (!visible(node.el) || node.shape !== 'circle' || node.card || node.shadow && !moving || node.icon && !moving) return;
+      if (!visible(node.el)) return;
       const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
-      // Larger circles remain in Canvas when the driver's point range cannot
-      // represent them at maximum semantic zoom, including device pixel ratio.
-      if ((node.size * 2 + paint.width) * scale * 4 > limit || 11 * scale * 4 > limit) return;
       const alpha = node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1;
       points.nodes.add(node);
       point(node.x, node.y, node.size, paint.width, paint.fill, paint.stroke, alpha);

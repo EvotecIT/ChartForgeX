@@ -45,17 +45,23 @@
     if (status === 'critical') return { stroke: '#ef4444', fill: palette.dark ? 'rgba(239,68,68,.20)' : 'rgba(239,68,68,.16)' };
     return { stroke: palette.clusterStroke, fill: palette.clusterFill };
   };
-  const graphLiteralColorRgb = (value) => {
+  const graphLiteralColorRgba = (value) => {
     const source = String(value || '').trim();
-    if (/^#[0-9a-f]{3}$/i.test(source)) return source.slice(1).split('').map(part => parseInt(part + part, 16));
-    if (/^#[0-9a-f]{6}$/i.test(source)) return [parseInt(source.slice(1, 3), 16), parseInt(source.slice(3, 5), 16), parseInt(source.slice(5, 7), 16)];
-    const match = source.match(/^rgba?\(\s*([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)/i);
-    return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
+    if (/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(source)) {
+      const hex = source.length <= 5 ? source.slice(1).split('').map(part => part + part).join('') : source.slice(1);
+      return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16), hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1];
+    }
+    const match = source.match(/^rgba?\(([^)]+)\)$/i);
+    if (!match) return null;
+    const parts = match[1].trim().split(/\s*[,/]\s*|\s+/);
+    if (parts.length < 3 || parts.length > 4 || parts.some(part => !/^[+-]?(?:\d*\.)?\d+%?$/.test(part))) return null;
+    const channel = (part, maximum) => Math.max(0, Math.min(maximum, parseFloat(part) * (part.endsWith('%') ? maximum / 100 : 1)));
+    return [channel(parts[0], 255), channel(parts[1], 255), channel(parts[2], 255), parts.length === 4 ? channel(parts[3], 1) : 1];
   };
   let graphColorContext = null;
-  const graphColorRgb = (value) => {
+  const graphColorRgba = (value) => {
     const source = String(value || '').trim();
-    const literal = graphLiteralColorRgb(source);
+    const literal = graphLiteralColorRgba(source);
     if (literal) return literal;
     if (!source || typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
     try {
@@ -65,10 +71,16 @@
       graphColorContext.fillStyle = source;
       const resolved = String(graphColorContext.fillStyle || '');
       if (resolved === '#010203') return null;
-      return graphLiteralColorRgb(resolved);
+      return graphLiteralColorRgba(resolved);
     } catch {
       return null;
     }
+  };
+  const graphColorRgb = (value) => graphColorRgba(value)?.slice(0, 3) || null;
+  const graphCompositeColor = (value, background) => {
+    const rgba = graphColorRgba(value), paper = graphColorRgb(background);
+    if (!rgba || !paper || rgba[3] === 1) return value;
+    return `rgb(${rgba.slice(0, 3).map((channel, index) => Math.round(channel * rgba[3] + paper[index] * (1 - rgba[3]))).join(', ')})`;
   };
   const graphColorLuminance = (rgb) => {
     const linear = rgb.map(channel => {
@@ -78,7 +90,7 @@
     return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
   };
   const graphColorContrast = (first, second) => {
-    const a = graphColorRgb(first), b = graphColorRgb(second);
+    const a = graphColorRgb(graphCompositeColor(first, second)), b = graphColorRgb(second);
     if (!a || !b) return Number.POSITIVE_INFINITY;
     const firstLuminance = graphColorLuminance(a), secondLuminance = graphColorLuminance(b);
     return (Math.max(firstLuminance, secondLuminance) + .05) / (Math.min(firstLuminance, secondLuminance) + .05);
@@ -91,7 +103,8 @@
   const graphReadableNodeColors = (root, node, palette) => {
     const card = attr(node, 'data-node-card') === 'true';
     const requestedBackground = attr(node, card ? 'data-node-background-color' : 'data-node-label-background-color');
-    const background = graphColorRgb(requestedBackground) ? requestedBackground : card ? palette.card : palette.paper;
+    const surface = graphColorRgba(requestedBackground) ? requestedBackground : card ? palette.card : palette.paper;
+    const background = graphCompositeColor(surface, palette.paper);
     const preferred = attr(node, 'data-node-label-color');
     const choose = (requested, fallback) => {
       const candidates = [requested, fallback, '#f8fafc', '#0f172a']

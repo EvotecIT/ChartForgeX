@@ -123,7 +123,7 @@ graph.Options.Performance.MaxInteractiveWebGlNodes = 30000;
 graph.Options.Performance.MaxInteractiveWebGlEdges = 80000;
 ```
 
-WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer. Round-capped dash cycles smaller than half a physical pixel render as a continuous stroke when their caps cover the gaps; zooming in restores the visible pattern.
+WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer. Mixed mark scenes draw all node bodies in that layer to preserve overlap order, while routes retain GPU batching. Round-capped dash cycles smaller than half a physical pixel render as a continuous stroke when their caps cover the gaps; zooming in restores the visible pattern.
 
 During dense motion, strokes below one physical pixel use opacity proportional to their width. Zooming into the scene or settling physics restores full stroke geometry.
 
