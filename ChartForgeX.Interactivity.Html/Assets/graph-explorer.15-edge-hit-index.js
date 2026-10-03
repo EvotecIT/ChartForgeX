@@ -1,6 +1,6 @@
   // Bounds use the control hull, so curved routes and self loops cannot escape
   // the broad phase. Exact distance checks retain the existing picking tolerance.
-  const updateEdgeHitEntry = (entry, byId) => {
+  const updateGraphEdgeBounds = (entry, byId, padding = 0) => {
     const rendered = visualEdge(entry.edge, byId);
     const control = edgeControl(rendered);
     const endpoints = edgeRenderEndpoints(rendered, control);
@@ -8,7 +8,7 @@
     const route = !loop && edgeHasRoute(rendered) ? routeRenderPoints(rendered) : null;
     const points = loop ? [loop.start, loop.c1, loop.c2, loop.end]
       : route || (control ? [endpoints.source, control, endpoints.target] : [endpoints.source, endpoints.target]);
-    const tolerance = Math.max(8, entry.edge.weight + 6);
+    const tolerance = Math.max(8, entry.edge.weight + 6, padding);
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     points.forEach(point => {
       minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
@@ -64,6 +64,20 @@
     }
     return candidates;
   };
+  // Overlapping marks on different surfaces share one ordered Canvas pass.
+  // The bound caps work for pathological dense overlap without losing order.
+  const graphBoundsFallback = (entries, initial) => {
+    const fallback = new Set(initial), pending = [...fallback];
+    const tree = buildGraphBoundsTree(entries.filter(entry => !fallback.has(entry)));
+    let work = 0;
+    while (pending.length && fallback.size < entries.length) {
+      const overlaps = graphBoundsCandidates(tree, pending.pop());
+      work += overlaps.length;
+      if (work > 100000) return new Set(entries);
+      overlaps.forEach(entry => { if (!fallback.has(entry)) { fallback.add(entry); pending.push(entry); } });
+    }
+    return fallback;
+  };
   const edgeHitCandidates = (root, state, point) => {
     const version = root.__cfxGraphHitVersion || 0;
     let cache = root.__cfxGraphEdgeHitIndex;
@@ -72,7 +86,7 @@
       const edges = state.edges.filter(edge => visible(edge.el) && edgeHasVisibleEndpoints(edge, state.byId));
       const reuse = cache?.state === state && cache.entries.length === edges.length && cache.entries.every((entry, index) => entry.edge === edges[index]);
       const entries = reuse ? cache.entries : edges.map((edge, order) => ({ edge, order }));
-      entries.forEach(entry => updateEdgeHitEntry(entry, state.byId));
+      entries.forEach(entry => updateGraphEdgeBounds(entry, state.byId));
       const tree = reuse ? cache.tree : buildGraphBoundsTree(entries.slice());
       if (reuse) refitEdgeHitTree(tree);
       cache = { state, version, entries, tree };

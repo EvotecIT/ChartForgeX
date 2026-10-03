@@ -74,8 +74,8 @@
     if (!emit(root, 'cfxgraphexport', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, mimeType: mime, content }, { cancelable: true })) return;
     downloadExport(name, mime, content);
   };
-  const preloadCanvasImages = (root, state) => Promise.all(state.nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => new Promise(resolve => {
-    const image = graphImage(node.imageUrl, () => resolve());
+  const preloadCanvasImages = (root, state) => Promise.all([...new Set(state.nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => node.imageUrl))].map(url => new Promise(resolve => {
+    const image = graphImage(url);
     if (!image || image.complete) {
       resolve();
       return;
@@ -84,11 +84,14 @@
     const done = () => {
       if (settled) return;
       settled = true;
+      image.removeEventListener?.('load', done);
+      image.removeEventListener?.('error', done);
+      clearTimeout(timeout);
       resolve();
     };
+    const timeout = setTimeout(done, 1500);
     image.addEventListener?.('load', done, { once: true });
     image.addEventListener?.('error', done, { once: true });
-    setTimeout(done, 1500);
   })));
   const exportSvgContent = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');

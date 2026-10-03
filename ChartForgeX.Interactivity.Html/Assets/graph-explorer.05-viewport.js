@@ -1,5 +1,8 @@
   const imageCache = new Map();
   const imageLoadCallbacks = new Map();
+  const graphImageRedraw = (root) => root.__cfxGraphImageRedraw ||= () => {
+    if (root.isConnected !== false) drawCanvas(root, root.__cfxGraphState || graphState(root));
+  };
   const graphImage = (url, onload) => {
     if (!url) return null;
     if (imageCache.has(url)) {

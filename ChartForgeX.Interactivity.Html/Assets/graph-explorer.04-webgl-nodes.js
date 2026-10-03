@@ -14,17 +14,8 @@
       // status dots. Spatially separate circles can retain the GPU batch.
       const margin = .5 / Math.max(.001, scale * .2);
       const entries = visibleNodes.map(node => graphNodeMarkBounds(node, compact, moving, margin));
-      const pending = entries.filter(entry => !gpuNodes.has(entry.node));
-      const tree = buildGraphBoundsTree(entries.filter(entry => gpuNodes.has(entry.node)));
-      let work = 0;
-      while (pending.length && gpuNodes.size) {
-        const overlaps = graphBoundsCandidates(tree, pending.pop());
-        work += overlaps.length;
-        // Dense overlapping scenes still paint correctly through the shared
-        // pass without unbounded pair comparisons on every physics frame.
-        if (work > 100000) { gpuNodes.clear(); break; }
-        overlaps.forEach(entry => { if (gpuNodes.delete(entry.node)) pending.push(entry); });
-      }
+      const fallback = graphBoundsFallback(entries, entries.filter(entry => !gpuNodes.has(entry.node)));
+      fallback.forEach(entry => gpuNodes.delete(entry.node));
     }
     const point = (x, y, radius, width, fill, stroke, alpha) => {
       points.positions.push(x, y);

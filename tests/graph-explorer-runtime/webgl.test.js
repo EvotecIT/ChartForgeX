@@ -80,6 +80,29 @@ test('retained geometry survives viewport movement and invalidates for drag, sel
   const resized = api.webGlEdgeMesh(root, state, state.byId, palette, true, false, 2); assert.notEqual(resized, themed);
   state.edges = [{ ...edge, strokeWidth: 9 }]; assert.notEqual(mesh(), resized);
 });
+test('crossing fallback routes share authored order transitively while separate routes retain GPU geometry', () => {
+  const { api, root, a, b, edge, state, palette } = runtime();
+  const node = (id, x, y) => ({ ...a, id, x, y, el: api.graphVirtualElement('graph-node', {}, []) });
+  const c = node('c', 200, 0), d = node('d', 200, 200), e = node('e', 150, 170), f = node('f', 250, 170), g = node('g', 500, 500), h = node('h', 600, 500);
+  state.nodes.push(c, d, e, f, g, h); state.byId = new Map(state.nodes.map(node => [node.id, node]));
+  edge.dashed = true; edge.dashPattern = [.000001, .000001];
+  state.edges = [edge, ...[[c, d], [e, f], [g, h]].map(([source, target], i) => ({ ...edge, id: 'other' + i, source, target, dashed: false, el: api.graphVirtualElement('graph-edge', {}, []) }))];
+  const mesh = api.webGlEdgeMesh(root, state, state.byId, palette, false, false, 1);
+  assert.deepEqual(Array.from(mesh.fallbackEdges, item => item.edge.id), ['e', 'other0', 'other1']);
+  assert.ok(mesh.positions.length > 0);
+  assert.ok(mesh.positions.filter((_, i) => i % 2 === 0).every(x => x > 450));
+});
+test('mixed moving GPU primitives submit strokes and arrowheads in authored edge order', () => {
+  const { api, root, edge, state, palette } = runtime();
+  edge.strokeWidth = 12; edge.label = ''; edge.el.classList.add('cfx-graph-selected');
+  const thin = { ...edge, id: 'thin', strokeWidth: 1, sourceArrow: true, strokeColor: '#ef4444', el: api.graphVirtualElement('graph-edge', { class: 'cfx-graph-neighborhood-related' }, []) };
+  thin.el.classList.add('cfx-graph-neighborhood-related');
+  state.edges = [edge, thin];
+  const mesh = api.webGlEdgeMesh(root, state, state.byId, palette, true, true, .1);
+  assert.deepEqual(Array.from(mesh.batches, batch => batch.mode), ['TRIANGLES', 'LINES', 'TRIANGLES']);
+  assert.equal(mesh.batches[1].start, mesh.triangleVertices);
+  assert.equal(mesh.batches.reduce((sum, batch) => sum + batch.count, 0), mesh.positions.length / 2);
+});
 test('labels choose contrast against their actual background in light and dark themes', () => {
   const { api, root, a } = runtime();
   a.el.setAttribute('data-node-background-color', '#2563eb');

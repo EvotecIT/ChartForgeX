@@ -49,7 +49,7 @@
       context.arc(node.x, node.y, node.size + 3, 0, Math.PI * 2);
       context.fill();
       context.stroke();
-      const image = graphImage(node.imageUrl, () => drawCanvas(root, graphState(root)));
+      const image = graphImage(node.imageUrl, graphImageRedraw(root));
       if (image && image.complete && image.naturalWidth > 0) {
         try {
           context.save();
@@ -71,7 +71,7 @@
       else context.rect(node.x - width / 2, node.y - height / 2, width, height);
       context.fill();
       context.stroke();
-      const image = graphImage(node.imageUrl, () => drawCanvas(root, graphState(root)));
+      const image = graphImage(node.imageUrl, graphImageRedraw(root));
       if (image && image.complete && image.naturalWidth > 0) {
         try {
           context.drawImage(image, node.x - width / 2 + 3, node.y - height / 2 + 3, Math.max(1, width - 6), Math.max(1, height - 6));
