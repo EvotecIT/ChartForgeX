@@ -3166,7 +3166,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 835,
+      "height": 846,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
@@ -3183,7 +3183,7 @@
     {
       "name": "visual-evidence-timeline-relationship",
       "width": 980,
-      "height": 598,
+      "height": 612,
       "svg": {
         "minVisualNodes": 69,
         "maxClippedTextNodes": 0,
@@ -3302,7 +3302,7 @@
     {
       "name": "visual-mini-correlation-map",
       "width": 920,
-      "height": 490,
+      "height": 474,
       "svg": {
         "minVisualNodes": 66,
         "maxClippedTextNodes": 0,
@@ -3619,6 +3619,23 @@
         "minVisiblePixels": 555520,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-topology-fallback-attachments",
+      "width": 600,
+      "height": 440,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 1
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 132000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 320,
         "maxEdgeInkPixels": 0
       }
     },
