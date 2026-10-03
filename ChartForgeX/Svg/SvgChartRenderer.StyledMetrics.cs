@@ -12,7 +12,8 @@ public sealed partial class SvgChartRenderer {
     private static double MeasureSvgStyledTextWidth(Chart chart, string text, double fontSize, TextStyleOverride style, bool emphasized = false) {
         var resolved = new TextStyle {
             Font = FontSpec.FromFamily(StyleFontFamily(chart, style)),
-            FontSize = fontSize
+            FontSize = fontSize,
+            OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag
         };
         resolved.Font.Italic = style.Italic;
         var weight = style.ResolveFontWeight(emphasized ? 700 : 400);

@@ -25,10 +25,18 @@ internal readonly struct RadialBarRingLayout {
         var measurement = new TextMeasurementContext(style.FontFamily ?? chart.Options.Theme.FontFamily);
         var value = style.TransformText(centerLabel, CultureInfo.InvariantCulture);
         var name = style.TransformText(series.Name, CultureInfo.InvariantCulture);
-        var widest = Math.Max(measurement.Measure(value, valueFontSize, bold: true), measurement.Measure(name, nameFontSize, bold: true));
+        var widest = Math.Max(Width(value, valueFontSize), Width(name, nameFontSize));
         var gap = Math.Max(4, Math.Min(8, outerRadius * 0.10));
         var height = valueFontSize * 1.2 + gap + nameFontSize * 1.2;
         return Math.Max(widest / 2.0 + 10, height / 2.0 + 8);
+
+        double Width(string text, double size) {
+            if (style.OpenTypeLanguageTag == null) return measurement.Measure(text, size, bold: true);
+            var resolved = new TextStyle { Font = FontSpec.FromFamily(style.FontFamily ?? chart.Options.Theme.FontFamily), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
+            resolved.Font.Weight = style.ResolveFontWeight(700);
+            resolved.Font.Italic = style.Italic;
+            return TextLayoutEngine.Measure(text, resolved).Width;
+        }
     }
 
     internal static RadialBarRingLayout Create(double outerRadius, int count, double strokeScale, double requestedCenterRadius = 0) {

@@ -1,10 +1,13 @@
 using ChartForgeX.Composition;
 using ChartForgeX.Core;
+using ChartForgeX.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
+using System.Xml.Linq;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -103,6 +106,68 @@ public sealed class TextLanguageTests {
         var page = Assert.Single(grid.Paginate(1));
         Assert.Equal("BGR ", page.Grid.TitleStyle.OpenTypeLanguageTag);
         Assert.Contains("font-language-override:'BGR '", new SvgChartGridRenderer().Render(page.Grid));
+    }
+
+    [Fact]
+    public void SvgAxisFittingReservesTheLocalizedAdvanceWidth() {
+        var path = Path.Combine(Path.GetTempPath(), "cfx-language-" + Guid.NewGuid().ToString("N") + ".ttf");
+        File.WriteAllBytes(path, Bytes());
+        try {
+            FontRegistry.Register("CFX Language Fitting", path);
+            var chart = Chart.Create().WithSize(400, 300).WithXLabels("бббббб").WithXAxisLabelAngle(0)
+                .WithTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
+                .AddBar("Value", new[] { new ChartPoint(0, 1) });
+            XElement Label() => XDocument.Parse(new SvgChartRenderer().Render(chart)).Descendants()
+                .Single(e => (string?)e.Attribute("data-cfx-role") == "x-axis-label");
+            var before = Label();
+            chart.Options.TickLabelStyle.WithOpenTypeLanguage("BGR");
+            var selected = Label();
+            var beforeSize = double.Parse(before.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            var selectedSize = double.Parse(selected.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            Assert.True(selectedSize < beforeSize, "Wider localized glyphs must use a smaller fitted size.");
+            Assert.True(Font().WithLanguage("BGR ").Measure(selected.Value, selectedSize) <= Font().Measure(before.Value, beforeSize) + 1);
+        } finally { FontRegistry.Clear(); File.Delete(path); }
+    }
+
+    [Fact]
+    public void HtmlGridHeadersPreserveLanguageAndExplicitDefaultReset() {
+        var grid = new ChartGrid { Title = "бб", Subtitle = "HH" }; grid.Add(Chart.Create());
+        grid.TitleStyle.WithOpenTypeLanguage("SRB"); grid.SubtitleStyle.WithOpenTypeLanguage("normal");
+        var renderer = new HtmlChartGridRenderer();
+        foreach (var html in new[] { renderer.RenderFragment(grid), renderer.RenderPage(grid) }) {
+            var decoded = System.Net.WebUtility.HtmlDecode(html);
+            Assert.Contains("font-language-override:'SRB '", decoded);
+            Assert.Contains("font-language-override:normal", decoded);
+        }
+    }
+
+    [Fact]
+    public void SvgGridTrimmingKeepsLocalizedHeaderInsideItsAvailableWidth() {
+        var path = Path.Combine(Path.GetTempPath(), "cfx-language-" + Guid.NewGuid().ToString("N") + ".ttf");
+        File.WriteAllBytes(path, Bytes());
+        try {
+            FontRegistry.Register("CFX Language Grid", path);
+            var grid = new ChartGrid { Title = "бббббб" }; grid.Add(Chart.Create().WithSize(400, 300));
+            grid.TitleStyle.WithFontFamily("CFX Language Grid").WithFontSize(100).WithWeight("400").WithOpenTypeLanguage("BGR");
+            var doc = XDocument.Parse(new SvgChartGridRenderer().Render(grid));
+            var header = doc.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "grid-title");
+            var width = double.Parse(doc.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture) - grid.Padding * 2;
+            Assert.True(Font().WithLanguage("BGR ").Measure(header.Value, 100) <= width, "Localized header must be trimmed using shaped widths.");
+        } finally { FontRegistry.Clear(); File.Delete(path); }
+    }
+
+    [Fact]
+    public void RadialCenterClearanceIncludesTheSelectedLanguageForms() {
+        var path = Path.Combine(Path.GetTempPath(), "cfx-language-" + Guid.NewGuid().ToString("N") + ".ttf");
+        File.WriteAllBytes(path, Bytes());
+        try {
+            FontRegistry.Register("CFX Language Radial", path);
+            var chart = Chart.Create().AddRadialBar("бб", new[] { new ChartPoint(0, 40) });
+            chart.Options.ShowRadialBarCenterLabel = true;
+            var style = new TextStyleOverride().WithFontFamily("CFX Language Radial").WithWeight("400").WithOpenTypeLanguage("BGR");
+            var radius = RadialBarRingLayout.RequestedCenterRadius(chart, chart.Series[0], 300, "бб", 100, 1, style);
+            Assert.True(radius * 2 >= Font().WithLanguage("BGR ").Measure("бб", 100) + 20, "The ring must reserve localized text and horizontal padding.");
+        } finally { FontRegistry.Clear(); File.Delete(path); }
     }
 
     [Fact]
