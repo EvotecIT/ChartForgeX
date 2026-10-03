@@ -163,6 +163,12 @@ test('accelerated SVG export replaces the live scene once with routes before mar
     assert.equal(layers[2].children[0].getAttribute('data-cfx-role'), 'graph-node');
     assert.equal(layers[3].children[0].getAttribute('data-cfx-role'), 'graph-node-details');
   }
+  state.edges[0].el.classList.add('cfx-graph-neighborhood-hidden');
+  api.materializeAcceleratedSvg(root, clone, state);
+  assert.equal(viewport.querySelectorAll('[data-cfx-role="graph-edge-label"]').length, 0);
+  state.edges[0].el.classList.remove('cfx-graph-neighborhood-hidden');
+  api.materializeAcceleratedSvg(root, clone, state);
+  assert.equal(viewport.querySelectorAll('[data-cfx-role="graph-edge-label"]').length, 1);
 });
 test('the shared node layer retains labels, badges and selected details through compact and moving states', () => {
   const { api, root, a } = runtime(), text = [], paths = [];
@@ -213,6 +219,19 @@ test('transitive mixed overlaps share one ordered pass while distant circles ret
   });
   api.drawCanvasNodes(context, root, state.nodes, true, false, points.nodes);
   assert.deepEqual(paints, ['#ef4444','#2563eb','#22c55e']);
+});
+test('selected polygon miter tips retain body order with a later circle at DPR two', () => {
+  const { api, root, state, a, b, palette } = runtime();
+  a.shape = 'star'; a.x = b.x = 100; a.y = 100; a.size = 40; b.y = 32; b.size = 4;
+  a.backgroundColor = '#ef4444'; b.backgroundColor = '#2563eb'; a.el.classList.add('cfx-graph-selected');
+  const points = api.webGlNodePoints(state, palette, true, false, 2, 512), paints = [];
+  for (let index = 0; index < points.colors.length; index += 4) paints.push('#' + Array.from(points.colors.slice(index, index + 3), channel => Math.round(channel * 255).toString(16).padStart(2,'0')).join(''));
+  const context = new Proxy({}, {
+    get(target, key) { return target[key] || (() => { if (key === 'fill') paints.push(target.fillStyle); }); },
+    set(target, key, value) { target[key] = value; return true; }
+  });
+  api.drawCanvasNodes(context, root, state.nodes, true, false, points.nodes);
+  assert.deepEqual(paints, ['#ef4444','#2563eb']);
 });
 test('mixed and driver-limited marks preserve authored body order before all status details', () => {
   const { api, root, state, a, b, palette } = runtime();

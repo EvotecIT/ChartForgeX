@@ -99,7 +99,7 @@
     const classes = ['cfx-graph-edge-label'];
     if (edge.el.classList.contains('cfx-graph-selected')) classes.push('cfx-graph-label-selected');
     if (edge.el.classList.contains('cfx-graph-neighborhood-related')) classes.push('cfx-graph-neighborhood-related');
-    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden',
+    ['cfx-graph-hidden', 'cfx-graph-cluster-collapsed-member', 'cfx-graph-hierarchy-hidden', 'cfx-graph-neighborhood-hidden',
       'cfx-graph-bundle-member', 'cfx-graph-overview-member'].forEach(name => {
       if (edge.el.classList.contains(name)) classes.push(name);
     });
@@ -136,7 +136,7 @@
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       edges.appendChild(path);
-      if (!visibleOnly || !root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-neighborhood-related'))
+      if (visible(edge.el) && (!visibleOnly || !root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-neighborhood-related')))
         appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
     });
     const palette = graphThemePalette(root);

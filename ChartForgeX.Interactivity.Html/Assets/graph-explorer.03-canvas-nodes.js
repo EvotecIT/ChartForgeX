@@ -5,7 +5,10 @@
   let graphNodeMeasureContext = null;
   const graphNodeMarkBounds = (node, compact, moving, margin) => {
     const extents = nodeShapeExtents(node), paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
-    const padding = paint.width / 2 + margin + (node.shape === 'image' ? 3 : 0) + (node.shadow && !moving ? 32 : 0);
+    // Canvas's default miter limit is 10; angular strokes can extend beyond
+    // half the width at star/triangle tips and rectangle corners.
+    const angular = ['box', 'imageRect', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database'].includes(node.shape);
+    const padding = paint.width * (angular ? 5 : .5) + margin + (node.shape === 'image' ? 3 : 0) + (node.shadow && !moving ? 32 : 0);
     const bounds = { node, minX: node.x - extents.x - padding, maxX: node.x + extents.x + padding, minY: node.y - extents.y - padding, maxY: node.y + extents.y + padding };
     const include = (x, y, halfWidth, halfHeight) => {
       bounds.minX = Math.min(bounds.minX, x - halfWidth - margin); bounds.maxX = Math.max(bounds.maxX, x + halfWidth + margin);
