@@ -7,10 +7,11 @@ namespace ChartForgeX.Raster;
 internal sealed class ColorPaintBrush {
     private readonly ColorGlyphPaint _paint;
     private readonly LinearRgba[] _colors;
-    internal ColorPaintBrush(ColorGlyphPaint paint, ColorFontData font, Primitives.ChartColor foreground) {
-        _paint = paint; _colors = new LinearRgba[paint.Stops.Length];
-        for (var i = 0; i < _colors.Length; i++) _colors[i] = LinearRgba.From(font.Color(paint.Stops[i].PaletteIndex, foreground), paint.Stops[i].Alpha);
+    internal ColorPaintBrush(ColorGlyphPaint paint, ColorFontData font, Primitives.ChartColor foreground, LinearRgba[]? colors = null) {
+        _paint = paint; _colors = colors ?? new LinearRgba[paint.Stops.Length];
+        if (colors == null) for (var i = 0; i < _colors.Length; i++) _colors[i] = LinearRgba.From(font.Color(paint.Stops[i].PaletteIndex, foreground), paint.Stops[i].Alpha);
     }
+    internal LinearRgba[] Colors => _colors;
     internal LinearRgba Sample(double x, double y) {
         var g = _paint.Geometry; double amount;
         if (_paint.Kind == ColorPaintKind.Linear) {

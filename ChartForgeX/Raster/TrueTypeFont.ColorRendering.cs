@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
@@ -13,18 +14,33 @@ internal sealed partial class TrueTypeFont {
         if (paint != null) try {
             var work = 8192; var ink = PaintInk(paint, SvgRasterMatrix.Identity, ref work, 0);
             if (ink.Valid) {
-                var device = SvgRasterMatrix.Scale(canvas.DeviceScale, canvas.DeviceScale).Multiply(matrix);
-                var box = TransformBox(ink.Rectangle, device); if (!box.HasValue) return true;
-                var left = (int)Math.Min(canvas.DeviceWidth, Math.Max(0, Math.Floor(box.Value.X) - 1));
-                var top = (int)Math.Min(canvas.DeviceHeight, Math.Max(0, Math.Floor(box.Value.Y) - 1));
-                var right = (int)Math.Max(0, Math.Min(canvas.DeviceWidth, Math.Ceiling(box.Value.X + box.Value.Width) + 1));
-                var bottom = (int)Math.Max(0, Math.Min(canvas.DeviceHeight, Math.Ceiling(box.Value.Y + box.Value.Height) + 1));
-                if (right <= left || bottom <= top) return true;
-                var width = right - left; var height = bottom - top;
-                if ((long)width * height > 1024 * 1024) throw new FontLayoutException();
-                var context = new ColorPaintRenderer(this, _colors, width, height, foreground);
-                var pixels = context.Render(paint, SvgRasterMatrix.Translate(-left, -top).Multiply(device), 0);
-                canvas.DrawDeviceColors(left, top, width, height, pixels, foreground.A / 255.0); return true;
+                var visits = 8192; var passes = PaintPasses(paint, ref visits, 0);
+                var density = (double)canvas.DeviceScale;
+                while (true) {
+                    var device = SvgRasterMatrix.Scale(density, density).Multiply(matrix);
+                    var box = TransformBox(ink.Rectangle, device); if (!box.HasValue) return true;
+                    var left = (int)Math.Min(canvas.Width * density, Math.Max(0, Math.Floor(box.Value.X) - 1));
+                    var top = (int)Math.Min(canvas.Height * density, Math.Max(0, Math.Floor(box.Value.Y) - 1));
+                    var right = (int)Math.Max(0, Math.Min(canvas.Width * density, Math.Ceiling(box.Value.X + box.Value.Width) + 1));
+                    var bottom = (int)Math.Max(0, Math.Min(canvas.Height * density, Math.Ceiling(box.Value.Y + box.Value.Height) + 1));
+                    if (right <= left || bottom <= top) return true;
+                    var width = right - left; var height = bottom - top; var area = (long)width * height;
+                    if (area <= 1024 * 1024 && area * passes <= ColorPaintRenderer.MaximumOperations) {
+                        var context = new ColorPaintRenderer(this, _colors, width, height, foreground);
+                        var pixels = context.Render(paint, SvgRasterMatrix.Translate(-left, -top).Multiply(device), 0);
+                        if (density == canvas.DeviceScale) canvas.DrawDeviceColors(left, top, width, height, pixels, foreground.A / 255.0);
+                        else {
+                            var rgba = new byte[width * height * 4];
+                            for (var i = 0; i < pixels.Length; i++) { var color = pixels[i].ToColor(foreground.A / 255.0);
+                                rgba[i * 4] = color.R; rgba[i * 4 + 1] = color.G; rgba[i * 4 + 2] = color.B; rgba[i * 4 + 3] = color.A; }
+                            canvas.DrawImageTransformed(width, height, rgba, 1 / density, 0, 0, 1 / density, left / density, top / density);
+                        }
+                        return true;
+                    }
+                    // Reduce internal antialias sampling before abandoning a valid colour glyph.
+                    if (density <= 1) throw new FontLayoutException();
+                    density = Math.Max(1, density / 2);
+                }
             }
         } catch (FontLayoutException) { /* Invalid or excessive optional paints fall back to usable monochrome outlines. */ }
         var bitmap = _colors.Bitmaps.Nearest(glyph, Math.Abs(scale) * UnitsPerEm * canvas.FontStrikeScale);
@@ -43,7 +59,9 @@ internal sealed partial class TrueTypeFont {
         private readonly ColorFontData _font;
         private readonly int _width, _height, _length;
         private readonly ChartColor _foreground;
-        private int _remaining = 16 * 1024 * 1024;
+        private readonly Dictionary<ColorPaintStop[], LinearRgba[]> _lines = new();
+        internal const int MaximumOperations = 16 * 1024 * 1024;
+        private int _remaining = MaximumOperations;
         internal ColorPaintRenderer(TrueTypeFont face, ColorFontData font, int width, int height, ChartColor foreground) {
             _face = face; _font = font; _width = width; _height = height; _length = width * height; _foreground = foreground;
         }
@@ -80,7 +98,8 @@ internal sealed partial class TrueTypeFont {
                         var color = LinearRgba.From(_font.Color(paint.PaletteIndex, _foreground), paint.Alpha);
                         for (var i = 0; i < _length; i++) fill[i] = color;
                     } else if (matrix.TryInvert(out var inverse)) {
-                        var brush = new ColorPaintBrush(paint, _font, _foreground);
+                        _lines.TryGetValue(paint.Stops, out var colors);
+                        var brush = new ColorPaintBrush(paint, _font, _foreground, colors); _lines[paint.Stops] = brush.Colors;
                         for (var y = 0; y < _height; y++) for (var x = 0; x < _width; x++) {
                             var point = inverse.Transform(new ChartPoint(x + 0.5, y + 0.5)); fill[y * _width + x] = brush.Sample(point.X, point.Y);
                         }

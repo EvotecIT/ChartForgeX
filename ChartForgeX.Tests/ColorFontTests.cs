@@ -46,6 +46,36 @@ public sealed class ColorFontTests {
         var pixel=Pixel(canvas,text=="😁"?60:80,90);
         Assert.InRange(pixel[0],expected[0]-4,expected[0]+4);Assert.InRange(pixel[2],expected[2]-4,expected[2]+4);Assert.Equal(255,pixel[3]);
     }
+    [Theory]
+    [InlineData("😃")] [InlineData("😈")]
+    public void SweepAndBaseInstanceVariableSweepUseTheEncodedAngleBias(string text) {
+        var canvas=Draw(Font("color-colr1"),text);
+        var right=Pixel(canvas,80,70);var left=Pixel(canvas,40,70);
+        Assert.True(right[0]>right[2]+50);Assert.True(left[2]>left[0]+50);
+        Assert.Equal(new byte[]{0,0,255,255},Pixel(canvas,40,100));
+    }
+    [Theory]
+    [InlineData(1)] [InlineData(2)]
+    public void DetailedVectorGlyphsKeepColourAndOpacityAtHighSamplingDensity(int dpr) {
+        var face=Font("color-detailed");var canvas=new RgbaCanvas(220,220,4,face,dpr,useDefaultOutlineFont:false);
+        Assert.True(face.Draw(canvas,40,40,"😀",new ChartColor(0,255,0,128),100));
+        Assert.Equal(new byte[]{255,0,0,128},Pixel(canvas,50*dpr,100*dpr));
+        Assert.Equal(100,face.Measure("😀",100),6);
+    }
+    [Fact]
+    public void SharedColourLinesDoNotAmplifyRetainedStopArrays() {
+        var face=Font("color-shared-stops");var run=TextShaper.Shape(face,"😀");
+        var before=GC.GetAllocatedBytesForCurrentThread();var ink=face.MeasureGlyphInk(run,100,false)!.Value;
+        var allocated=GC.GetAllocatedBytesForCurrentThread()-before;
+        Assert.Equal(-20,ink.X,4);Assert.Equal(80,ink.Width,4);
+        Assert.InRange(allocated,0,8*1024*1024);
+    }
+    [Fact]
+    public void ExcessiveDistinctGradientStopsFallBackToUsableOutlines() {
+        var face=Font("color-stop-budget");var canvas=Draw(face,"😀",color:ChartColor.FromRgb(0,255,0));
+        Assert.Equal(new byte[]{0,255,0,255},Pixel(canvas,50,100));
+        Assert.Equal(2,face.MeasureGlyphInk(TextShaper.Shape(face,"😀"),100,false)!.Value.X,4);
+    }
     [Fact]
     public void ClipBoxesBoundUnboundedPaintsAndReferencedGlyphs() {
         var face=Font("color-colr1");var glyphs=TextShaper.Shape(face,"😆");var ink=face.MeasureGlyphInk(glyphs,100,false)!.Value;

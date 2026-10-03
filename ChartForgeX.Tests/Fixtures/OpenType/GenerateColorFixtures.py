@@ -47,12 +47,14 @@ def layers():return dict(Format=1,Layers=[glyph('left',solid(0)),glyph('right',s
 PALETTE=[(1,0,0,1),(0,0,1,1),(0,1,0,1)]
 f=font('COLR0');f['CPAL']=buildCPAL([PALETTE,[(1,1,0,1),(1,0,1,1),(0,1,1,1)]])
 f['COLR']=buildCOLR({'layers':[('left',0),('right',1),('fg',65535)],'couple':[('left',0),('right',1)]},version=0,glyphMap=f.getReverseGlyphMap());save(f,'color-colr0')
+f=font('Detailed Layers');f['CPAL']=buildCPAL([PALETTE]);f['COLR']=buildCOLR({'layers':[('left',0)]*96},version=0,glyphMap=f.getReverseGlyphMap());save(f,'color-detailed')
 paints={'layers':layers(),'couple':layers(),
  'linear':glyph('left',dict(Format=4,ColorLine=line(),x0=-200,y0=0,x1=600,y1=0,x2=-200,y2=700)),
  'radial':glyph('left',dict(Format=6,ColorLine=line(),x0=200,y0=300,r0=0,x1=200,y1=300,r1=400)),
  'sweep':glyph('left',dict(Format=8,ColorLine=line(),centerX=200,centerY=300,startAngle=0,endAngle=180)),
  'transform':dict(Format=14,Paint=glyph('left',solid(2)),dx=500,dy=300),
  'clip':solid(0),'reference':dict(Format=14,Paint=dict(Format=11,Glyph='clip'),dx=100,dy=100)}
+paints['cycle']=glyph('left',dict(Format=9,ColorLine=dict(Extend=0,ColorStop=[dict(StopOffset=0,PaletteIndex=0,Alpha=1,VarIndexBase=0xffffffff),dict(StopOffset=1,PaletteIndex=1,Alpha=1,VarIndexBase=0xffffffff)]),centerX=200,centerY=300,startAngle=0,endAngle=180,VarIndexBase=0xffffffff))
 for i in range(28):paints['mode'+str(i)]=dict(Format=32,SourcePaint=glyph('right',solid(1,.5)),CompositeMode=i,BackdropPaint=glyph('left',solid(0,.75)))
 for i in range(12,32,2):
  p=dict(Format=i,Paint=glyph('left',solid(2)))
@@ -102,3 +104,22 @@ for index_format,image_format in ((1,17),(3,18),(2,19),(4,17),(5,19)):
   del f['glyf'];del f['loca']
   for table in f['cmap'].tables:table.cmap={cp:g for cp,g in table.cmap.items() if cp>=128}
  save(f,'color-cbdt'+str(index_format))
+
+# Many paints can share one encoded colour line. Distinct lines must still consume a byte budget.
+for shared in (True,False):
+ count=2000 if shared else 20;groups=(count+249)//250;entries=groups+count
+ base=34;root_paint=base+10;layer_list=root_paint+6;nodes=layer_list+4+entries*4
+ group_offsets=[nodes+i*6 for i in range(groups)];leaf_start=nodes+groups*6
+ leaf_offsets=[leaf_start+i*22 for i in range(count)];line_start=leaf_start+count*22
+ line_data=struct.pack('>BH',0,4096)+b''.join(struct.pack('>hHh',round(i/4095*16384),i%2,16384) for i in range(4096))
+ data=struct.pack('>HHIIHIIIII',1,0,0,0,0,base,layer_list,0,0,0)
+ data+=struct.pack('>IH',1,NAMES.index('layers'))+struct.pack('>I',root_paint-base)+struct.pack('>BBI',1,groups,0)
+ data+=struct.pack('>I',entries)+b''.join(struct.pack('>I',o-layer_list) for o in group_offsets+leaf_offsets)
+ data+=b''.join(struct.pack('>BBI',1,min(250,count-i*250),groups+i*250) for i in range(groups))
+ for i,o in enumerate(leaf_offsets):
+  data+=bytes([10])+int(6).to_bytes(3,'big')+struct.pack('>H',NAMES.index('left'))
+  target=line_start+(0 if shared else i*len(line_data))
+  data+=bytes([4])+int(target-o-6).to_bytes(3,'big')+struct.pack('>hhhhhh',-200,0,600,0,-200,700)
+ data+=line_data*(1 if shared else count)
+ f=font('Shared stops' if shared else 'Stop budget');f['CPAL']=buildCPAL([PALETTE]);raw(f,'COLR',data)
+ save(f,'color-shared-stops' if shared else 'color-stop-budget')

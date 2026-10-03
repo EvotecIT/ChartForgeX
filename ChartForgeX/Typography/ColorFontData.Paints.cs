@@ -5,10 +5,14 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Typography;
 
 internal sealed partial class ColorFontData {
-    private ColorGlyphPaint? ReadVersion1(FontTableReader table, ushort glyph) {
+    private ColorGlyphPaint? ReadVersion1(FontTableReader table, ushort glyph, out int bytes) {
+        bytes = 0;
         table.Require(0, 34);
         var root = PaintOffset(table, glyph); if (root < 0) return null;
-        return Clip(table, glyph, ReadPaint(table, root, new PaintReadContext(), 0));
+        var context = new PaintReadContext();
+        var paint = Clip(table, glyph, ReadPaint(table, root, context, 0));
+        context.Allocate(384); bytes = context.Bytes;
+        return paint;
     }
     private static int PaintOffset(FontTableReader table, ushort glyph) {
         var list = table.Offset(0, 14, optional: true, wide: true); if (list < 0) return -1;
@@ -47,12 +51,14 @@ internal sealed partial class ColorFontData {
         if (depth > 64 || --context.Remaining < 0 || !context.Active.Add(at)) throw new FontLayoutException();
         try {
             if (context.Read.TryGetValue(at, out var existing)) return existing;
+            context.Allocate(384); // Node, small child/geometry arrays and graph dictionary entries.
             var format = table.U8(at); ColorGlyphPaint result;
             if (format == 1) {
                 var count = table.U8(at + 1); var first = table.U32(at + 2);
                 var list = table.Offset(0, 18, wide: true); var length = table.U32(list);
                 if ((long)first + count > length) throw new FontLayoutException();
-                table.Require(list + 4, CountBytes(length, 4)); var children = new ColorGlyphPaint[count];
+                table.Require(list + 4, CountBytes(length, 4)); context.Allocate(count * 8);
+                var children = new ColorGlyphPaint[count];
                 for (var i = 0; i < count; i++) children[i] = ReadPaint(table, table.Offset(list, table.Record(list + 4, (long)first + i, 4), wide: true), context, depth + 1);
                 result = new ColorGlyphPaint { Kind = ColorPaintKind.Layers, Children = children };
             } else if (format == 2 || format == 3) {
@@ -61,9 +67,9 @@ internal sealed partial class ColorFontData {
             } else if (format >= 4 && format <= 9) {
                 var basic = format - (format & 1); var variable = (format & 1) != 0;
                 var size = basic == 8 ? 12 : 16; table.Require(at, size + (variable ? 4 : 0));
-                var line = Relative24(table, at, at + 1); var stops = Stops(table, line, variable);
+                var line = Relative24(table, at, at + 1); var stops = Stops(table, line, variable, context);
                 var geometry = new double[basic == 8 ? 4 : 6];
-                for (var i = 0; i < geometry.Length; i++) geometry[i] = basic == 8 && i >= 2 ? table.F2Dot14(at + 4 + i * 2) * Math.PI :
+                for (var i = 0; i < geometry.Length; i++) geometry[i] = basic == 8 && i >= 2 ? (table.F2Dot14(at + 4 + i * 2) + 1) * Math.PI :
                     basic == 6 && (i == 2 || i == 5) ? table.U16(at + 4 + i * 2) : table.I16(at + 4 + i * 2);
                 result = new ColorGlyphPaint { Kind = basic == 4 ? ColorPaintKind.Linear : basic == 6 ? ColorPaintKind.Radial : ColorPaintKind.Sweep,
                     Geometry = geometry, Stops = stops, Extend = table.U8(line) <= 2 ? table.U8(line) : 0 };
@@ -86,15 +92,18 @@ internal sealed partial class ColorFontData {
             context.Read[at] = result; return result;
         } finally { context.Active.Remove(at); }
     }
-    private ColorPaintStop[] Stops(FontTableReader table, int at, bool variable) {
+    private ColorPaintStop[] Stops(FontTableReader table, int at, bool variable, PaintReadContext context) {
+        var key = (long)at * 2 + (variable ? 1 : 0);
+        if (context.Lines.TryGetValue(key, out var cached)) return cached;
         var count = table.U16(at + 1); if (count > 4096) throw new FontLayoutException();
-        var stride = variable ? 10 : 6; table.Require(at + 3, count * stride); var stops = new ColorPaintStop[count];
+        var stride = variable ? 10 : 6; table.Require(at + 3, count * stride);
+        context.Allocate(64 + count * 32); var stops = new ColorPaintStop[count];
         for (var i = 0; i < count; i++) {
             var record = at + 3 + i * stride; var palette = table.U16(record + 2); CheckPalette(palette);
             stops[i] = new ColorPaintStop(table.F2Dot14(record), palette, Alpha(table.F2Dot14(record + 4)), i);
         }
         Array.Sort(stops, (a, b) => { var compare = a.Offset.CompareTo(b.Offset); return compare == 0 ? a.Order.CompareTo(b.Order) : compare; });
-        return stops;
+        context.Lines[key] = stops; return stops;
     }
     private static int CountBytes(uint count, int stride) {
         var length = (long)count * stride; if (length > int.MaxValue) throw new FontLayoutException(); return (int)length;
@@ -106,7 +115,10 @@ internal sealed partial class ColorFontData {
     private static double Alpha(double value) => Math.Max(0, Math.Min(1, value));
     private sealed class PaintReadContext {
         internal int Remaining = 4096;
+        internal int Bytes;
+        internal void Allocate(int bytes) { if (Bytes > MaximumGraphBytes - bytes) throw new FontLayoutException(); Bytes += bytes; }
         internal readonly HashSet<int> Active = new();
         internal readonly Dictionary<int, ColorGlyphPaint> Read = new();
+        internal readonly Dictionary<long, ColorPaintStop[]> Lines = new();
     }
 }
