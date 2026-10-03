@@ -21,24 +21,26 @@
     }
     return points;
   };
-  // Sharp joins use the native stroker's miter/bevel policy. GPU ribbons cover
-  // turns whose miter fits within one stroke width, without clipping the corner.
+  // Native strokes unite joins, folds and crossings before applying opacity.
+  // Independent GPU ribbons are safe only along one nonzero forward direction.
   const webGlStrokeSupported = (points) => {
-    let previousX = 0, previousY = 0, hasPrevious = false;
+    let directionX = 0, directionY = 0, hasDirection = false;
     for (let index = 1; index < points.length; index++) {
       const dx = points[index].x - points[index - 1].x, dy = points[index].y - points[index - 1].y;
       const length = Math.hypot(dx, dy);
       if (length <= 1e-8) continue;
       const x = dx / length, y = dy / length;
-      if (hasPrevious && previousX * x + previousY * y < -.5) return false;
-      previousX = x; previousY = y; hasPrevious = true;
+      if (hasDirection && (directionX * x + directionY * y <= 0 || Math.abs(directionX * y - directionY * x) > 1e-8)) return false;
+      if (!hasDirection) { directionX = x; directionY = y; hasDirection = true; }
     }
-    return true;
+    return hasDirection;
   };
-  const webGlDashedPaths = (points, pattern) => {
+  const webGlDashedPaths = (points, pattern, width = 0) => {
     const dash = (pattern || []).filter(value => Number.isFinite(value) && value >= 0);
     if (!dash.length || !dash.some(value => value > 0)) return [points];
     if (dash.length % 2) dash.push(...dash);
+    // Overlapping round caps belong to one native stroke, not separate alpha blends.
+    if (dash.some((part, index) => index % 2 && part < width)) return null;
     const total = points.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - points[index].x, point.y - points[index].y), 0);
     // Extremely fine patterns stay in the native Canvas stroker rather than
     // producing unbounded JavaScript geometry. Normal routes remain on the GPU.

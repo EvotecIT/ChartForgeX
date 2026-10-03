@@ -61,17 +61,42 @@ test('dash phase continues through route corners and excessive patterns use the 
   assert.ok(api.webGlDashedPaths([{ x: 0, y: 0 }, { x: 20, y: 0 }], [0, 5]).every(path => path.length > 1));
 });
 
-test('sharp route joins use ordered native strokes while ordinary and repeated-point routes retain GPU geometry', () => {
-  for (const angle of [0, 115, 150, -150, 160, 180]) for (const repeated of [false, true]) {
+test('route turns use ordered native strokes while straight and repeated-point routes retain GPU geometry', () => {
+  for (const angle of [0, 45, 90, 115, 150, -150, 160, 180]) for (const repeated of [false, true]) {
     const { api, root, a, b, edge, state, palette } = runtime();
     const radians = angle * Math.PI / 180;
     b.x = 300 + Math.cos(radians) * 150; b.y = 100 + Math.sin(radians) * 150;
     edge.routePoints = [{ x: a.x, y: a.y }, { x: 300, y: 100 }, ...(repeated ? [{ x: 300, y: 100 }] : []), { x: b.x, y: b.y }];
     edge.dashPattern = []; edge.strokeWidth = 20;
     const mesh = api.webGlEdgeMesh(root, state, state.byId, palette, false, false, 1);
-    const sharp = Math.abs(angle) > 120;
-    assert.equal(mesh.fallbackEdges.length, sharp ? 1 : 0, 'turn ' + angle);
-    assert.equal(mesh.positions.length > 0, !sharp);
+    const native = angle !== 0;
+    assert.equal(mesh.fallbackEdges.length, native ? 1 : 0, 'turn ' + angle);
+    assert.equal(mesh.positions.length > 0, !native);
+  }
+});
+
+test('crossing routes, sampled curves, loops and collapsed paths use the native stroke union', () => {
+  for (const kind of ['crossing', 'curve', 'loop', 'collapsed', 'repeated']) {
+    const { api, root, a, b, edge, state, palette } = runtime();
+    edge.strokeWidth = 20;
+    if (kind === 'crossing') edge.routePoints = [{ x: 100, y: 100 }, { x: 300, y: 100 }, { x: 300, y: 200 }, { x: 200, y: 200 }, { x: 200, y: 0 }];
+    if (kind === 'curve') { edge.shape = 'curve'; edge.curvature = 100; b.x = 120; }
+    if (kind === 'loop') edge.target = a;
+    if (kind === 'collapsed' || kind === 'repeated') { b.x = a.x; b.y = a.y; }
+    if (kind === 'repeated') edge.routePoints = [a, a, a];
+    const mesh = api.webGlEdgeMesh(root, state, state.byId, palette, false, false, 1);
+    assert.equal(mesh.fallbackEdges.length, 1, kind);
+    assert.equal(mesh.positions.length, 0, kind);
+  }
+});
+
+test('overlapping round dash caps use native stroking while separated caps retain GPU batching', () => {
+  for (const pattern of [[9, 5], [9], [9, 25]]) {
+    const { api, root, edge, state, palette } = runtime();
+    edge.dashed = true; edge.dashPattern = pattern; edge.strokeWidth = 20;
+    const mesh = api.webGlEdgeMesh(root, state, state.byId, palette, false, false, 1);
+    assert.equal(mesh.fallbackEdges.length, pattern.at(-1) < 20 ? 1 : 0);
+    assert.equal(mesh.positions.length > 0, pattern.at(-1) >= 20);
   }
 });
 
