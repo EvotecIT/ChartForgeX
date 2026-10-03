@@ -68,6 +68,8 @@ internal static partial class TopologyDenseRoutePlanner {
             var junction = new ChartPoint(next.X + (previous.X - next.X) * trunkLength / length,
                 next.Y + (previous.Y - next.Y) * trunkLength / length);
             var suffix = leader.Points.Skip(tailIndex + 1).ToArray();
+            var sharedSuffix = new[] { junction }.Concat(suffix).ToList();
+            var leaderPrefix = leader.Points.Take(tailIndex + 1).Concat(new[] { junction }).ToList();
             var outside = routes.Where(route => !members.Contains(route)).ToList();
             var joined = false;
             foreach (var branch in members.Skip(1)) {
@@ -85,6 +87,8 @@ internal static partial class TopologyDenseRoutePlanner {
                         if (TouchesObstacle(scene, probe) || RouteLength(candidate) > RouteLength(branch.Points) * 1.3 + 96) continue;
                         var after = Interaction(candidate, outside, fixedRoutes, null);
                         if (after.Crossings > before.Crossings || after.Shared > before.Shared + 0.01) continue;
+                        if (WorsensTrunkSiblings(branch, candidate, prefix, sharedSuffix, leader, leaderPrefix,
+                            members, paintRoutes, trunkOwners)) continue;
                         if (best == null || RouteLength(candidate) < RouteLength(best)) best = candidate;
                     }
                 }
@@ -101,6 +105,28 @@ internal static partial class TopologyDenseRoutePlanner {
                 paintRoutes[leader.Request.Edge] = leader.Points.Take(tailIndex + 2).ToList();
             }
         }
+    }
+
+    private static bool WorsensTrunkSiblings(PlannedRoute branch, List<ChartPoint> candidate, List<ChartPoint> prefix,
+        List<ChartPoint> suffix, PlannedRoute leader, List<ChartPoint> leaderPrefix, List<PlannedRoute> members,
+        Dictionary<TopologyEdge, List<ChartPoint>> paintRoutes, Dictionary<TopologyEdge, TopologyEdge> trunkOwners) {
+        foreach (var peer in members) {
+            if (ReferenceEquals(peer, branch)) continue;
+            var before = Interaction(branch.Points, peer.Points);
+            var after = Interaction(candidate, peer.Points);
+            if (ReferenceEquals(peer, leader) || trunkOwners.TryGetValue(peer.Request.Edge, out var owner) &&
+                ReferenceEquals(owner, leader.Request.Edge)) {
+                var peerPrefix = ReferenceEquals(peer, leader) ? leaderPrefix : paintRoutes[peer.Request.Edge];
+                // Only the common suffix is intentional. Prefix crossings and prefix/tail overdraw still count.
+                var prefixes = Interaction(prefix, peerPrefix);
+                var branchTail = Interaction(prefix, suffix);
+                var peerTail = Interaction(suffix, peerPrefix);
+                after = (prefixes.Crossings + branchTail.Crossings + peerTail.Crossings,
+                    prefixes.Shared + branchTail.Shared + peerTail.Shared);
+            }
+            if (after.Crossings > before.Crossings || after.Shared > before.Shared + 0.01) return true;
+        }
+        return false;
     }
 
     private static bool SameFirstLeg(IReadOnlyList<ChartPoint> original, IReadOnlyList<ChartPoint> candidate) =>

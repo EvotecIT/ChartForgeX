@@ -1018,7 +1018,8 @@
       const activeTrunkScore = edge => {
         const classes = edge.classList;
         return (classes.contains('cfx-topology-html-selected') ? 16 : 0) +
-          (classes.contains('cfx-topology-html-scenario-step-active') ? 8 : 0) +
+          (classes.contains('cfx-topology-html-scenario-step-active') ? 64 : 0) +
+          (classes.contains('cfx-topology-html-scenario-preview') ? 32 : 0) +
           (classes.contains('cfx-topology-html-scenario-active') ? 4 : 0) +
           (classes.contains('cfx-topology-html-related') ? 2 : 0) +
           (classes.contains('cfx-topology-html-hover-related') || classes.contains('cfx-topology-html-hovered') ? 1 : 0);
@@ -1028,10 +1029,21 @@
           const owner = attr(tail, 'data-trunk-owner-id');
           const members = sharedTrunkMembers.get(owner) || [];
           let target = null;
+          let targetOpacity = -1;
+          let targetScore = -1;
           for (const member of members) {
-            if (getComputedStyle(member).display === 'none' || getComputedStyle(member).visibility === 'hidden') continue;
-            if (!target || activeTrunkScore(member) > activeTrunkScore(target) ||
-              activeTrunkScore(member) === activeTrunkScore(target) && attr(member, 'data-edge-id') === owner) target = member;
+            const style = getComputedStyle(member);
+            if (style.display === 'none' || style.visibility === 'hidden') continue;
+            // Scenario and host focus can mute a selected member. Keep the tail on the brightest visible route.
+            const value = parseFloat(style.opacity);
+            const opacity = Number.isFinite(value) ? value : 1;
+            const score = activeTrunkScore(member);
+            if (!target || opacity > targetOpacity || opacity === targetOpacity &&
+              (score > targetScore || score === targetScore && attr(member, 'data-edge-id') === owner)) {
+              target = member;
+              targetOpacity = opacity;
+              targetScore = score;
+            }
           }
           if (target && tail.parentElement !== target) target.appendChild(tail);
           const display = target ? '' : 'none';

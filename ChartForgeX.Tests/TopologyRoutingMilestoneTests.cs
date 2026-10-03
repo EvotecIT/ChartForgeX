@@ -10,6 +10,58 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyRoutingMilestoneTests {
     [Theory]
+    [InlineData(TopologyLayoutMode.Matrix, false)]
+    [InlineData(TopologyLayoutMode.Matrix, true)]
+    [InlineData(TopologyLayoutMode.DenseGrouped, false)]
+    [InlineData(TopologyLayoutMode.DenseGrouped, true)]
+    public void PreservedViewExportsKeepTheSameOutputDimensions(TopologyLayoutMode mode, bool explicitSize) {
+        var chart = DenseRouteFixture.Mesh(12, 24, 20).WithViewport(600, 300).WithLayout(mode);
+        chart.WithRenderOptions(Options());
+        var artifact = chart.ToVisualArtifact();
+        if (explicitSize) artifact.NaturalSize = new VisualArtifactSize(480, 240);
+        artifact.PreserveNaturalSize = true;
+        var size = artifact.NaturalSize!.Value;
+        var view = Options();
+        view.View = new TopologyView { NodeIds = { chart.Nodes[0].Id, chart.Nodes[1].Id }, IncludeNodeGroups = false };
+        var renderOptions = new VisualArtifactRenderOptions { Topology = view };
+        var envelope = artifact.ToInterchangeEnvelope(renderOptions);
+        var svg = XDocument.Parse(artifact.ToSvg(renderOptions));
+        var png = ChartForgeX.Raster.PngReader.Decode(artifact.ToPng(renderOptions));
+        Assert.Equal(size.Width, envelope.Width);
+        Assert.Equal(size.Height, envelope.Height);
+        Assert.Equal(size.Width, double.Parse(svg.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(size.Height, double.Parse(svg.Root.Attribute("height")!.Value, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal((int)Math.Ceiling(size.Width), png.Width);
+        Assert.Equal((int)Math.Ceiling(size.Height), png.Height);
+        var layoutInput = explicitSize ? DenseRouteFixture.Mesh(12, 24, 20).WithViewport(size.Width, size.Height).WithLayout(mode) : chart;
+        var expected = layoutInput.Prepare(view).ToInterchangeEnvelope();
+        Assert.Equal(expected.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)),
+            envelope.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)));
+        Assert.Equal(2, envelope.Nodes.Count);
+    }
+
+    [Fact]
+    public void SharedTrunksDoNotIntroduceSiblingCrossingsOrPrefixOverdraw() {
+        var chart = TopologyChart.Create().WithId("sibling-trunks").WithViewport(1200, 760).WithLegend(null)
+            .AddNode("target", "Service", 1000, 300, width: 100, height: 44);
+        var positions = new[] { (640, 500), (640, 324), (220, 324), (780, 324), (780, 148), (500, 324) };
+        for (var i = 0; i < positions.Length; i++) {
+            chart.AddNode("n" + i, "Input " + i, positions[i].Item1, positions[i].Item2, width: 100, height: 44)
+                .AddEdge("e" + i, "n" + i, "target", kind: TopologyEdgeKind.Dependency, status: TopologyHealthStatus.Healthy,
+                    direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
+                .WithEdgePorts("e" + i, TopologyEdgePort.Right, TopologyEdgePort.Left);
+        }
+        var plain = Options();
+        var shared = plain.Clone();
+        shared.ShareIncomingTrunks = true;
+        var before = chart.Prepare(plain).Analyze();
+        var after = chart.Prepare(shared).Analyze();
+        Assert.True(ProperCrossings(after) <= ProperCrossings(before));
+        Assert.DoesNotContain(after.RouteOverlaps, overlap => !overlap.IsIntentional);
+        Assert.All(after.Edges, edge => Assert.True(edge.SourceAttached && edge.TargetAttached));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void ArtifactNaturalSizeUsesPreparedGeometry(bool fit) {
@@ -196,6 +248,8 @@ public sealed class TopologyRoutingMilestoneTests {
         for (var first = 0; first < report.Edges.Count; first++) for (var second = first + 1; second < report.Edges.Count; second++) {
             var a = report.Edges[first].Points;
             var b = report.Edges[second].Points;
+            var intentional = report.RouteOverlaps.FirstOrDefault(overlap => overlap.IsIntentional &&
+                overlap.FirstEdgeId == report.Edges[first].Id && overlap.SecondEdgeId == report.Edges[second].Id)?.Length ?? 0;
             var locations = new HashSet<(long, long)>();
             for (var i = 1; i < a.Count; i++) for (var j = 1; j < b.Count; j++) {
                 var dx = a[i].X - a[i - 1].X;
@@ -211,10 +265,26 @@ public sealed class TopologyRoutingMilestoneTests {
                 if (t < -1e-6 || t > 1 + 1e-6 || u < -1e-6 || u > 1 + 1e-6) continue;
                 var point = new ChartPoint(a[i - 1].X + t * dx, a[i - 1].Y + t * dy);
                 if (new[] { a[0], a.Last(), b[0], b.Last() }.Any(end => Math.Abs(end.X - point.X) + Math.Abs(end.Y - point.Y) < 0.01)) continue;
+                if (intentional > 0 && DistanceFromTarget(a, point) <= intentional + 0.01 &&
+                    DistanceFromTarget(b, point) <= intentional + 0.01) continue;
                 locations.Add(((long)Math.Round(point.X * 100), (long)Math.Round(point.Y * 100)));
             }
             count += locations.Count;
         }
         return count;
+    }
+
+    private static double DistanceFromTarget(IReadOnlyList<ChartPoint> route, ChartPoint point) {
+        var distance = 0.0;
+        for (var index = route.Count - 1; index > 0; index--) {
+            var a = route[index];
+            var b = route[index - 1];
+            var length = Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+            var toA = Math.Abs(point.X - a.X) + Math.Abs(point.Y - a.Y);
+            var toB = Math.Abs(point.X - b.X) + Math.Abs(point.Y - b.Y);
+            if (Math.Abs(toA + toB - length) < 0.01) return distance + toA;
+            distance += length;
+        }
+        return double.PositiveInfinity;
     }
 }

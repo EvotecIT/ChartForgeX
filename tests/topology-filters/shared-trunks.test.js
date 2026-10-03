@@ -4,6 +4,38 @@ const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('../mermaid-conformance/node_modules/jsdom');
 
+test('scenario preview and step emphasis retain the complete shared relationship', async () => {
+  const css = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX/Topology/Assets/topology.css'), 'utf8');
+  const dom = new JSDOM(`<style>${css}</style><div id="chart" class="cfx-topology-wrapper"><svg>
+    <g data-cfx-role="topology-edge" data-edge-id="a" data-trunk-owner-id="a">
+      <g data-cfx-role="topology-shared-trunk-tail" data-trunk-owner-id="a"><path marker-end="url(#arrow)"/></g>
+    </g>
+    <g data-cfx-role="topology-edge" data-edge-id="b" data-trunk-owner-id="a"></g>
+  </svg></div>`, { pretendToBeVisual: true, runScripts: 'outside-only' });
+  try {
+    const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/topology-interaction.source/65-shared-trunks.js'), 'utf8');
+    dom.window.eval(`const wrapper=document.querySelector('#chart');const attr=(element,name)=>element.getAttribute(name)||'';${source}`);
+    const [a, b] = dom.window.document.querySelectorAll('[data-cfx-role="topology-edge"]');
+    const tail = dom.window.document.querySelector('[data-cfx-role="topology-shared-trunk-tail"]');
+    const frame = () => new Promise(resolve => dom.window.requestAnimationFrame(() => dom.window.requestAnimationFrame(resolve)));
+    a.classList.add('cfx-topology-html-selected', 'cfx-topology-html-scenario-preview-muted');
+    b.classList.add('cfx-topology-html-scenario-preview');
+    await frame();
+    assert.equal(tail.parentElement, b);
+    assert.equal(dom.window.getComputedStyle(tail.parentElement).opacity, '1');
+    a.setAttribute('class', 'cfx-topology-html-selected cfx-topology-html-scenario-active cfx-topology-html-scenario-step-muted');
+    b.setAttribute('class', 'cfx-topology-html-scenario-active cfx-topology-html-scenario-step-active');
+    await frame();
+    assert.equal(tail.parentElement, b);
+    assert.equal(dom.window.getComputedStyle(tail.parentElement).opacity, '1');
+    a.setAttribute('class', 'cfx-topology-html-selected cfx-topology-html-scenario-muted');
+    b.setAttribute('class', 'cfx-topology-html-scenario-active');
+    await frame();
+    assert.equal(tail.parentElement, b);
+    assert.equal(dom.window.document.querySelectorAll('[marker-end]').length, 1);
+  } finally { dom.window.close(); }
+});
+
 test('one shared tail follows the active visible relationship through focus and filtering', async () => {
   const dom = new JSDOM(`<div id="chart"><svg>
     <g data-cfx-role="topology-edge" data-edge-id="a" data-trunk-owner-id="a">
