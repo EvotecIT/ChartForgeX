@@ -67,6 +67,7 @@ internal static partial class TextShaper {
         }
 
         var shaped = ShapeCore(primary, text);
+        if (shaped.Length > MaximumCachedGlyphs) return shaped;
         lock (cache) {
             if (cache.Version == version) {
                 if (cache.Runs.TryGetValue(text, out var concurrent)) return concurrent;

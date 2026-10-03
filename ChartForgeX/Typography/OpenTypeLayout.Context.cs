@@ -46,7 +46,7 @@ internal sealed partial class OpenTypeLayout {
                 if (!Match(table, cursor, afterCount, glyphs, last, 1, flags, filter, format, afterClass, null)) continue;
                 cursor += afterCount * 2; recordCount = table.U16(cursor); cursor += 2;
             }
-            return ApplyContext(table, list, cursor, recordCount, inputs, glyphs, positioning, execution, depth);
+            return ApplyContext(table, list, cursor, recordCount, inputs, glyphs, flags, filter, positioning, execution, depth);
         }
         return -1;
     }
@@ -81,19 +81,14 @@ internal sealed partial class OpenTypeLayout {
             if (!MatchCoverages(table, at, cursor, afterCount, glyphs, glyphs.IndexOf(inputs[inputs.Count - 1]), 1, flags, filter, false, null)) return -1;
             cursor += afterCount * 2; recordCount = table.U16(cursor); cursor += 2;
         }
-        return ApplyContext(table, list, cursor, recordCount, inputs, glyphs, positioning, execution, depth);
+        return ApplyContext(table, list, cursor, recordCount, inputs, glyphs, flags, filter, positioning, execution, depth);
     }
-    private int ApplyContext(FontTableReader table, int list, int at, int count, List<LayoutGlyph> inputs, List<LayoutGlyph> glyphs, bool positioning, LayoutExecution execution, int depth) {
+    private int ApplyContext(FontTableReader table, int list, int at, int count, List<LayoutGlyph> inputs, List<LayoutGlyph> glyphs, int flags, int filter, bool positioning, LayoutExecution execution, int depth) {
+        var start = glyphs.IndexOf(inputs[0]);
         var last = glyphs.IndexOf(inputs[inputs.Count - 1]);
-        var following = last + 1 < glyphs.Count ? glyphs[last + 1] : null;
-        ApplyRecords(table, list, at, count, inputs, glyphs, positioning, execution, depth);
-        // A matched context consumes its input sequence. Track glyph identities across expansion and ligation.
-        if (following == null) return glyphs.Count;
-        var next = glyphs.IndexOf(following);
-        if (next >= 0) return next;
-        var end = -1;
-        foreach (var input in inputs) end = Math.Max(end, glyphs.IndexOf(input));
-        return end >= 0 ? end + 1 : glyphs.Count;
+        var end = last + 1;
+        ApplyRecords(table, list, at, count, start, ref end, flags, filter, glyphs, positioning, execution, depth);
+        return Math.Max(start, Math.Min(end, glyphs.Count));
     }
     private bool MatchCoverages(FontTableReader table, int origin, int at, int count, List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, bool includeFirst, List<LayoutGlyph>? matches) {
         if (count > 256) throw new FontLayoutException();
@@ -105,14 +100,19 @@ internal sealed partial class OpenTypeLayout {
         }
         return true;
     }
-    private void ApplyRecords(FontTableReader table, int list, int at, int count, List<LayoutGlyph> inputs, List<LayoutGlyph> glyphs, bool positioning, LayoutExecution execution, int depth) {
+    private void ApplyRecords(FontTableReader table, int list, int at, int count, int start, ref int end, int flags, int filter, List<LayoutGlyph> glyphs, bool positioning, LayoutExecution execution, int depth) {
         if (count > 256) throw new FontLayoutException();
         table.Require(at, count * 4);
         for (var i = 0; i < count; i++) {
             var sequence = table.U16(at + i * 4);
-            if (sequence >= inputs.Count) throw new FontLayoutException();
-            var index = glyphs.IndexOf(inputs[sequence]);
-            if (index >= 0) Execute(table, list, Lookup(table, list, table.U16(at + i * 4 + 2)), glyphs, index, positioning, execution, depth + 1);
+            if (sequence >= end - start) throw new FontLayoutException();
+            var index = start;
+            for (var s = 0; s < sequence && index >= 0; s++) index = Next(glyphs, index, 1, flags, filter);
+            if (index < 0 || index >= end) throw new FontLayoutException();
+            var before = glyphs.Count;
+            Execute(table, list, Lookup(table, list, table.U16(at + i * 4 + 2)), glyphs, index, positioning, execution, depth + 1);
+            // SequenceIndex addresses the current sequence, including changes made by earlier records.
+            end += glyphs.Count - before;
         }
     }
 }

@@ -181,4 +181,41 @@ public sealed class OpenTypeLayoutTests {
         for (var y = 0; y < 10; y++) for (var x = 10; x < 40; x++) if (pixels[(y * 180 + x) * 4 + 3] != 0) ink++;
         Assert.True(ink > 0, "Fitting the advance must preserve ink above the font's ascent.");
     }
+    [Theory]
+    [InlineData("context-sequence", "HOxe", new ushort[] { 1, 7, 8 })]
+    [InlineData("context-expansion", "HOe", new ushort[] { 1, 2, 7, 4 })]
+    public void ContextRecordsAddressTheSequenceChangedByEarlierRecords(string fixture, string text, ushort[] expected) =>
+        Assert.Equal(expected, TextShaper.Shape(Font(fixture), text).Select(glyph => glyph.Glyph));
+    [Theory]
+    [InlineData("mark-filter")]
+    [InlineData("mark-attachment-filter")]
+    public void MarkAttachmentSkipsMarksExcludedByTheLookupFilter(string fixture) {
+        var glyphs = TextShaper.Shape(Font(fixture), "H\u0301\u0300\u0301");
+        Assert.Equal(new double[] { 0, 700, -100, 900 }, glyphs.Select(glyph => glyph.OffsetY));
+        Assert.Equal(60, TrueTypeFont.MeasureGlyphs(glyphs, 100), 6);
+    }
+    [Theory]
+    [InlineData("script-routing", "ṪẶ")]
+    [InlineData("script-routing", "ἀἁ")]
+    [InlineData("script-routing", "Ꙁꙁ")]
+    [InlineData("script-routing", "\U0001DF00\U0001DF01")]
+    [InlineData("greek-only", "ἀἁ")]
+    public void ExtendedScriptLettersUseTheirFontsLayoutInMeasurementAndDrawing(string fixture, string text) {
+        var face = Font(fixture);
+        Assert.Equal(102, face.Measure(text, 100), 6);
+        var canvas = new RgbaCanvas(160, 110, 1, face, 1, useDefaultOutlineFont: false);
+        face.Draw(canvas, 0, 0, text, ChartColor.Black, 100);
+        var expected = new RgbaCanvas(160, 110, 1, face, 1, useDefaultOutlineFont: false);
+        face.DrawGlyphs(expected, 0, 0, TextShaper.Shape(face, text), ChartColor.Black, 100, false);
+        Assert.Equal(expected.ToOutputPixels(), canvas.ToOutputPixels());
+    }
+    [Fact]
+    public void RotatedTextPreservesMarksBeyondItsOriginalFixedPadding() {
+        var face = Font("positioning");
+        var canvas = new RgbaCanvas(240, 240, 1, face, 1, useDefaultOutlineFont: false);
+        canvas.DrawTextRotated(90, 90, "H" + new string('\u0301', 4), ChartColor.Black, 100, 90, 0, 0);
+        var pixels = canvas.ToOutputPixels(); var ink = 0;
+        for (var y = 115; y < 140; y++) for (var x = 140; x < 160; x++) if (pixels[(y * 240 + x) * 4 + 3] != 0) ink++;
+        Assert.True(ink > 0, "Rotation must retain the fourth mark before transforming the glyph surface.");
+    }
 }

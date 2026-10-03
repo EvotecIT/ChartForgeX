@@ -108,26 +108,7 @@ internal static partial class TextShaper {
         }
         glyphs.Clear(); glyphs.AddRange(reversed);
     }
-    private static string ScriptOf(int cp) => cp switch {
-        >= 0x0600 and <= 0x08ff => "arab",
-        >= 0x0590 and <= 0x05ff => "hebr",
-        >= 0x0900 and <= 0x097f => "deva",
-        >= 0x0980 and <= 0x09ff => "beng",
-        >= 0x0a80 and <= 0x0aff => "gujr",
-        >= 0x0a00 and <= 0x0a7f => "guru",
-        >= 0x0b00 and <= 0x0b7f => "orya",
-        >= 0x0b80 and <= 0x0bff => "taml",
-        >= 0x0c00 and <= 0x0c7f => "telu",
-        >= 0x0c80 and <= 0x0cff => "knda",
-        >= 0x0d00 and <= 0x0d7f => "mlym",
-        >= 0x0e00 and <= 0x0e7f => "thai",
-        >= 0x0e80 and <= 0x0eff => "lao ",
-        >= 0x1780 and <= 0x17ff => "khmr",
-        >= 0x0370 and <= 0x03ff => "grek",
-        >= 0x0400 and <= 0x052f => "cyrl",
-        >= 0x0041 and <= 0x005a or >= 0x0061 and <= 0x007a or >= 0x00c0 and <= 0x02af => "latn",
-        _ => "DFLT"
-    };
+    private static string ScriptOf(int cp) => OpenTypeScriptData.Script(cp);
     private sealed class FontRun {
         internal FontRun(TrueTypeFont face, string script, int owner, byte level) { Face = face; Script = script; Owner = owner; Level = level; }
         internal readonly TrueTypeFont Face;

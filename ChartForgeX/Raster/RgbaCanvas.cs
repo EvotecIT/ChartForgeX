@@ -223,12 +223,13 @@ internal sealed partial class RgbaCanvas {
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
         contentHeight += Math.Abs(baselineOffset);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(textWidth + padding * 2), (int)Math.Ceiling(contentHeight + padding * 2), _scale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
-        var textY = padding + baselineOffset;
-        if (emphasized) buffer.DrawTextEmphasized(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
-        else buffer.DrawText(padding, textY, text, color, fontSize, buffer._outlineFont, italic);
-        RasterTextDecoration.Draw(buffer, padding, padding + textWidth, textY + fontSize + 2, underlineStyle, color, decorationThickness);
-        RasterTextDecoration.Draw(buffer, padding, padding + textWidth, textY + fontSize * 0.55, strikethroughStyle, color, decorationThickness);
+        var bounds = TextBufferBounds(text, fontSize, font, italic, emphasized, textWidth, contentHeight, padding, baselineOffset);
+        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _scale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
+        var textY = -bounds.Y + baselineOffset; var bufferedTextX = -bounds.X;
+        if (emphasized) buffer.DrawTextEmphasized(bufferedTextX, textY, text, color, fontSize, buffer._outlineFont, italic);
+        else buffer.DrawText(bufferedTextX, textY, text, color, fontSize, buffer._outlineFont, italic);
+        RasterTextDecoration.Draw(buffer, bufferedTextX, bufferedTextX + textWidth, textY + fontSize + 2, underlineStyle, color, decorationThickness);
+        RasterTextDecoration.Draw(buffer, bufferedTextX, bufferedTextX + textWidth, textY + fontSize * 0.55, strikethroughStyle, color, decorationThickness);
 
         var radians = degrees * Math.PI / 180.0;
         var cos = Math.Cos(radians);
@@ -239,8 +240,8 @@ internal sealed partial class RgbaCanvas {
             var alpha = buffer.Pixels[source + 3];
             if (alpha == 0) continue;
 
-            var localX = (sx + 0.5) / _scale - padding - originX;
-            var localY = (sy + 0.5) / _scale - padding - originY;
+            var localX = (sx + 0.5) / _scale + bounds.X - originX;
+            var localY = (sy + 0.5) / _scale + bounds.Y - originY;
             var destX = anchorX + localX * cos - localY * sin;
             var destY = anchorY + localX * sin + localY * cos;
             BlendPixel(

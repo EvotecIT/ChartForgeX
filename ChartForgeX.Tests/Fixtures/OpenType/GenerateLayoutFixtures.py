@@ -108,3 +108,44 @@ feature medi { script arab; sub beh by beh.medi; } medi;
 feature fina { script arab; sub beh by beh.fina; } fina;
 feature rlig { script arab; sub lam alef by lamalef; } rlig;
 """)
+
+def context_records(font):
+    for lookup in font['GSUB'].table.LookupList.Lookup:
+        if lookup.LookupType not in (5, 6):
+            continue
+        for sub in lookup.SubTable:
+            if sub.Format == 3:
+                yield sub.SubstLookupRecord
+            else:
+                for rules in getattr(sub, 'ChainSubRuleSet', getattr(sub, 'SubRuleSet', [])):
+                    if rules:
+                        for rule in getattr(rules, 'ChainSubRule', getattr(rules, 'SubRule', [])):
+                            yield rule.SubstLookupRecord
+
+sequence = build('context-sequence', '''
+lookup Lig { sub O x by F; } Lig;
+lookup Adjust { sub e by box; } Adjust;
+feature ccmp { sub H' O' lookup Lig x' e' lookup Adjust; } ccmp;
+''')
+for records in context_records(sequence):
+    records[-1].SequenceIndex = 2  # The fourth input follows the ligature at updated index 2.
+sequence.save(ROOT / 'context-sequence.ttf')
+build('context-expansion', '''
+lookup Expand { sub O by O x; } Expand;
+lookup Adjust { sub x by F; } Adjust;
+feature ccmp { sub H' O' lookup Expand e' lookup Adjust; } ccmp;
+''')
+FILTERED_MARKS = '''
+markClass acute <anchor 0 0> @top;
+markClass grave <anchor 0 0> @bottom;
+@TopFilter=[acute];
+feature mark { pos base H <anchor 300 700> mark @top <anchor 300 -100> mark @bottom; } mark;
+feature mkmk { lookupflag %s @TopFilter; pos mark acute <anchor 0 200> mark @top; } mkmk;
+'''
+build('mark-filter', FILTERED_MARKS % 'UseMarkFilteringSet')
+build('mark-attachment-filter', FILTERED_MARKS % 'MarkAttachmentType')
+MAP.update({0x1E6A:'H',0x1EB6:'O',0x1F00:'H',0x1F01:'O',0xA640:'H',0xA641:'O',0x1DF00:'H',0x1DF01:'O'})
+build('script-routing', '''
+feature kern { script latn; pos H O -80; script grek; pos H O -80; script cyrl; pos H O -80; } kern;
+''')
+build('greek-only', 'feature kern { script grek; pos H O -80; } kern;')

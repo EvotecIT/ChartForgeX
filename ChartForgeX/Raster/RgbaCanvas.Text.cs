@@ -72,25 +72,15 @@ internal sealed partial class RgbaCanvas {
             ? TinyFont.Height * FallbackScaleForFontSize(fontSize)
             : font.LineHeight(Math.Max(1, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
-        var left = 0; var top = 0; var right = bufferWidth; var bottom = naturalHeight;
-        var inkFace = emphasized ? EmphasisFace(font) ?? font : font;
-        if (inkFace != null) {
-            var ink = inkFace.MeasureGlyphInk(TextShaper.Shape(inkFace, text), fontSize, italic: false);
-            if (ink.HasValue) {
-                var bounds = ink.Value;
-                left = Math.Min(0, (int)Math.Floor(bounds.X)); top = Math.Min(0, (int)Math.Floor(bounds.Y));
-                right = Math.Max(right, (int)Math.Ceiling(bounds.X + bounds.Width + (emphasized ? EmphasisOffset(fontSize) : 0)));
-                bottom = Math.Max(bottom, (int)Math.Ceiling(bounds.Y + bounds.Height));
-            }
-        }
-        var buffer = new RgbaCanvas(right - left, bottom - top, _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
-        if (emphasized) buffer.DrawTextEmphasized(-left, -top, text, color, fontSize, font);
-        else buffer.DrawText(-left, -top, text, color, fontSize, font);
+        var bounds = TextBufferBounds(text, fontSize, font, false, emphasized, bufferWidth, naturalHeight);
+        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
+        if (emphasized) buffer.DrawTextEmphasized(-bounds.X, -bounds.Y, text, color, fontSize, font);
+        else buffer.DrawText(-bounds.X, -bounds.Y, text, color, fontSize, font);
         var pixels = buffer.ToOutputPixels();
         var horizontalScale = Math.Max(1, (int)Math.Floor(maximumWidth)) / (double)bufferWidth;
         DrawImageScaled(
-            (int)Math.Round(x + left * horizontalScale),
-            (int)Math.Round(y + top),
+            (int)Math.Round(x + bounds.X * horizontalScale),
+            (int)Math.Round(y + bounds.Y),
             Math.Max(1, (int)Math.Round(buffer.OutputWidth * horizontalScale)),
             buffer.OutputHeight,
             buffer.OutputWidth,

@@ -226,17 +226,13 @@ internal sealed partial class TrueTypeFont {
     public double Measure(string text, double fontSize) => Measure(text, fontSize, italic: false);
 
     internal double Measure(string text, double fontSize, bool italic) {
-        if (_layout.HasLayout("latn")) return MeasureShaped(text, fontSize) + (italic && text.Length > 0 ? ItalicOverhang(fontSize) : 0);
+        if (!IsSimpleRun(text)) return MeasureShaped(text, fontSize) + (italic && text.Length > 0 ? ItalicOverhang(fontSize) : 0);
         var scale = ScaleFor(fontSize);
         var width = 0.0;
         ushort? previous = null;
         for (var index = 0; index < text.Length;) {
             var codePoint = ReadCodePoint(text, ref index);
-            var glyph = TextShaper.IsSimple(codePoint) ? MapGlyph(codePoint) : (ushort)0;
-            if (glyph == 0) {
-                width = MeasureShaped(text, fontSize);
-                break;
-            }
+            var glyph = MapGlyph(codePoint);
 
             if (previous.HasValue) width += Kerning(previous.Value, glyph) * scale;
             width += AdvanceWidth(glyph) * scale;
@@ -296,6 +292,7 @@ internal sealed partial class TrueTypeFont {
         for (var index = 0; index < text.Length;) {
             var codePoint = ReadCodePoint(text, ref index);
             if (!TextShaper.IsSimple(codePoint) || MapGlyph(codePoint) == 0) return false;
+            if (_layout.HasLayout(OpenTypeScriptData.Script(codePoint))) return false;
         }
 
         return true;

@@ -1345,6 +1345,23 @@
       }
     },
     {
+      "name": "font-layout-showcase",
+      "width": 860,
+      "height": 440,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 695251,
+        "minTransparentPixels": 61549,
+        "minDistinctColors": 1005,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "forecast-envelope-rangeband-dark",
       "width": 760,
       "height": 460,
