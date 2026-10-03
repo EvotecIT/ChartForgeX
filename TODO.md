@@ -38,6 +38,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Topology
 
+- Keep readable-layout route ends pointing at their nodes when bounded dense planning falls back to corridor routing. Inferred ports must retain a valid exit leg even when a horizontal or vertical fallback corridor is preferred.
 - Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
 - Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: extend loss diagnostics to additional unsupported paint and text behavior, and add richer text shaping through typed parser/renderer stages rather than ad hoc string handling.
 - Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
