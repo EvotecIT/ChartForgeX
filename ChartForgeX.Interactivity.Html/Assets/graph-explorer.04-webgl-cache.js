@@ -30,7 +30,8 @@
     const entries = state.edges.filter(edge => visible(edge.el) && edgeHasVisibleEndpoints(edge, byId)).map(edge => {
       const paint = graphEdgePaint(root, edge, byId, palette, dense, moving);
       const points = webGlEdgePoints(paint.rendered, paint.control, scale * 4);
-      const paths = edge.dashed ? webGlDashedPaths(points, edge.dashPattern) : [points];
+      let paths = edge.dashed ? webGlDashedPaths(points, edge.dashPattern) : [points];
+      if (paths?.some(path => !webGlStrokeSupported(path))) paths = null;
       return { edge, paint, paths };
     });
     let fallback = new Set(entries.filter(entry => !entry.paths));

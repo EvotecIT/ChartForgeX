@@ -64,6 +64,7 @@ internal static class GraphRichRenderingExample {
         <section aria-label="Renderer exercise" style="margin:16px auto;padding:16px;max-width:960px">
           <button id="rich-select">Select the wide route</button>
           <button id="rich-patch">Update the route and node</button>
+          <button id="rich-join">Show a sharp routed corner</button>
           <button id="rich-lose">Lose WebGL context</button>
           <button id="rich-restore">Restore WebGL context</button>
           <button id="rich-preview">Preview PNG export</button>
@@ -97,6 +98,13 @@ internal static class GraphRichRenderingExample {
           document.getElementById('rich-lose').onclick = () => {
             contextExtension = root.querySelector('[data-cfx-role="graph-webgl"]').getContext('webgl2')?.getExtension('WEBGL_lose_context');
             contextExtension?.loseContext(); setTimeout(() => report('context lost'), 100);
+          };
+          document.getElementById('rich-join').onclick = () => {
+            const edge = api.get(root).edges.find(item => item.id === 'route');
+            api.update(root, { upsertEdges: [{ ...edge, label: 'Sharp routed join',
+              routePoints: [{ x: 180, y: 295 }, { x: 560, y: 400 }, { x: 320, y: 500 }, { x: 765, y: 295 }],
+              style: { ...edge.style, width: 12 } }] });
+            report('sharp join');
           };
           document.getElementById('rich-restore').onclick = () => { contextExtension?.restoreContext(); setTimeout(() => report('context restored'), 100); };
           document.getElementById('rich-preview').onclick = async () => {

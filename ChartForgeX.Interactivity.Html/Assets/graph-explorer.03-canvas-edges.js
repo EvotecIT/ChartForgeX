@@ -45,7 +45,12 @@
       pattern.reduce((sum, part) => sum + part, 0) * (pattern.length % 2 ? 2 : 1) * pixelScale < .5 &&
       pattern.every(part => part <= paint.width);
     context.setLineDash(covered ? [] : pattern);
+    // SVG and dependency-free PNG use the SVG default miter limit of four.
+    // Restore the context policy before drawing node marks and labels.
+    const miterLimit = context.miterLimit;
+    context.miterLimit = 4;
     context.stroke();
+    context.miterLimit = miterLimit;
     context.setLineDash([]);
     context.globalAlpha = 1;
     if (paint.arrows) {

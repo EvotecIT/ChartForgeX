@@ -21,6 +21,20 @@
     }
     return points;
   };
+  // Sharp joins use the native stroker's miter/bevel policy. GPU ribbons cover
+  // turns whose miter fits within one stroke width, without clipping the corner.
+  const webGlStrokeSupported = (points) => {
+    let previousX = 0, previousY = 0, hasPrevious = false;
+    for (let index = 1; index < points.length; index++) {
+      const dx = points[index].x - points[index - 1].x, dy = points[index].y - points[index - 1].y;
+      const length = Math.hypot(dx, dy);
+      if (length <= 1e-8) continue;
+      const x = dx / length, y = dy / length;
+      if (hasPrevious && previousX * x + previousY * y < -.5) return false;
+      previousX = x; previousY = y; hasPrevious = true;
+    }
+    return true;
+  };
   const webGlDashedPaths = (points, pattern) => {
     const dash = (pattern || []).filter(value => Number.isFinite(value) && value >= 0);
     if (!dash.length || !dash.some(value => value > 0)) return [points];

@@ -60,6 +60,30 @@ test('dash phase continues through route corners and excessive patterns use the 
   assert.equal(api.webGlDashedPaths([{ x: 0, y: 0 }, { x: 20, y: 0 }], [0, 0]).length, 1);
   assert.ok(api.webGlDashedPaths([{ x: 0, y: 0 }, { x: 20, y: 0 }], [0, 5]).every(path => path.length > 1));
 });
+
+test('sharp route joins use ordered native strokes while ordinary and repeated-point routes retain GPU geometry', () => {
+  for (const angle of [0, 115, 150, -150, 160, 180]) for (const repeated of [false, true]) {
+    const { api, root, a, b, edge, state, palette } = runtime();
+    const radians = angle * Math.PI / 180;
+    b.x = 300 + Math.cos(radians) * 150; b.y = 100 + Math.sin(radians) * 150;
+    edge.routePoints = [{ x: a.x, y: a.y }, { x: 300, y: 100 }, ...(repeated ? [{ x: 300, y: 100 }] : []), { x: b.x, y: b.y }];
+    edge.dashPattern = []; edge.strokeWidth = 20;
+    const mesh = api.webGlEdgeMesh(root, state, state.byId, palette, false, false, 1);
+    const sharp = Math.abs(angle) > 120;
+    assert.equal(mesh.fallbackEdges.length, sharp ? 1 : 0, 'turn ' + angle);
+    assert.equal(mesh.positions.length > 0, !sharp);
+  }
+});
+
+test('Canvas route strokes use the SVG miter limit without changing later node strokes', () => {
+  const { api, root, edge, state, palette } = runtime();
+  const limits = [], context = { miterLimit: 10, beginPath() {}, moveTo() {}, lineTo() {}, setLineDash() {}, stroke() { limits.push(this.miterLimit); } };
+  const paint = api.graphEdgePaint(root, edge, state.byId, palette, false, false);
+  edge.dashed = false;
+  api.drawCanvasEdge(context, root, edge, { ...paint, labels: false, arrows: false }, palette);
+  assert.deepEqual(limits, [4]);
+  assert.equal(context.miterLimit, 10);
+});
 test('WebGL shares Canvas edge widths, emphasis and label LOD decisions', () => {
   const { api, root, edge, state, palette } = runtime();
   let paint = api.graphEdgePaint(root, edge, state.byId, palette, true, false);
