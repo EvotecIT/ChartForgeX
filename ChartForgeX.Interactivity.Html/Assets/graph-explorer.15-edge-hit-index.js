@@ -29,7 +29,7 @@
   };
   // Bulk-pack an eight-way tree with spatial tiles. Sorting each level once
   // avoids recursively sorting the same geometry at every binary split.
-  const buildEdgeHitTree = (entries) => {
+  const buildGraphBoundsTree = (entries) => {
     if (!entries.length) return null;
     let level = entries, leaves = true;
     do {
@@ -53,6 +53,17 @@
     } while (level.length > 1);
     return level[0];
   };
+  const graphBoundsCandidates = (tree, bounds) => {
+    const candidates = [], pending = tree ? [tree] : [];
+    const intersects = item => bounds.minX <= item.maxX && bounds.maxX >= item.minX && bounds.minY <= item.maxY && bounds.maxY >= item.minY;
+    while (pending.length) {
+      const current = pending.pop();
+      if (!intersects(current)) continue;
+      if (current.entries) current.entries.forEach(entry => { if (intersects(entry)) candidates.push(entry); });
+      else pending.push(...current.children);
+    }
+    return candidates;
+  };
   const edgeHitCandidates = (root, state, point) => {
     const version = root.__cfxGraphHitVersion || 0;
     let cache = root.__cfxGraphEdgeHitIndex;
@@ -62,7 +73,7 @@
       const reuse = cache?.state === state && cache.entries.length === edges.length && cache.entries.every((entry, index) => entry.edge === edges[index]);
       const entries = reuse ? cache.entries : edges.map((edge, order) => ({ edge, order }));
       entries.forEach(entry => updateEdgeHitEntry(entry, state.byId));
-      const tree = reuse ? cache.tree : buildEdgeHitTree(entries.slice());
+      const tree = reuse ? cache.tree : buildGraphBoundsTree(entries.slice());
       if (reuse) refitEdgeHitTree(tree);
       cache = { state, version, entries, tree };
       root.__cfxGraphEdgeHitIndex = cache;
@@ -71,13 +82,5 @@
       root.dataset[counter] = String(Number(root.dataset[counter] || 0) + 1);
       root.dataset.cfxGraphEdgeHitIndexMs = String(performance.now() - started);
     }
-    const candidates = [], pending = cache.tree ? [cache.tree] : [];
-    const contains = item => point.x >= item.minX && point.x <= item.maxX && point.y >= item.minY && point.y <= item.maxY;
-    while (pending.length) {
-      const tree = pending.pop();
-      if (!contains(tree)) continue;
-      if (tree.entries) tree.entries.forEach(entry => { if (contains(entry)) candidates.push(entry); });
-      else pending.push(...tree.children);
-    }
-    return candidates;
+    return graphBoundsCandidates(cache.tree, { minX: point.x, maxX: point.x, minY: point.y, maxY: point.y });
   };

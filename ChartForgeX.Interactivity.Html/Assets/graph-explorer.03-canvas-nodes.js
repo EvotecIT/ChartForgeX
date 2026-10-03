@@ -2,6 +2,27 @@
     fill: node.backgroundColor || '#2563eb', stroke: selected ? '#f59e0b' : node.borderColor || '#eff6ff',
     width: selected ? 5 : compact ? 1.5 : 3
   });
+  let graphNodeMeasureContext = null;
+  const graphNodeMarkBounds = (node, compact, moving, margin) => {
+    const extents = nodeShapeExtents(node), paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
+    const padding = paint.width / 2 + margin + (node.shape === 'image' ? 3 : 0) + (node.shadow && !moving ? 32 : 0);
+    const bounds = { node, minX: node.x - extents.x - padding, maxX: node.x + extents.x + padding, minY: node.y - extents.y - padding, maxY: node.y + extents.y + padding };
+    const include = (x, y, halfWidth, halfHeight) => {
+      bounds.minX = Math.min(bounds.minX, x - halfWidth - margin); bounds.maxX = Math.max(bounds.maxX, x + halfWidth + margin);
+      bounds.minY = Math.min(bounds.minY, y - halfHeight - margin); bounds.maxY = Math.max(bounds.maxY, y + halfHeight + margin);
+    };
+    if (node.icon && !moving) {
+      let width = Array.from(node.icon).length * 12;
+      if (typeof document?.createElement === 'function') {
+        graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
+        if (graphNodeMeasureContext) { graphNodeMeasureContext.font = 'bold 12px Segoe UI, Arial, sans-serif'; width = graphNodeMeasureContext.measureText(node.icon).width; }
+      }
+      include(node.card ? node.x - extents.x + 28 : node.x, node.y + 1, width / 2, 12);
+    }
+    const status = attr(node.el, 'data-cfx-status').toLowerCase();
+    if (status && status !== 'unknown') include(node.card ? node.x + extents.x - 15 : node.x - node.size * .8, node.card ? node.y + extents.y - 14 : node.y - node.size * .8, 5.5, 5.5);
+    return bounds;
+  };
   const drawNodeMark = (context, node, selected, compact, root, moving) => {
     const paint = graphNodeMarkPaint(node, selected, compact);
     context.fillStyle = paint.fill;

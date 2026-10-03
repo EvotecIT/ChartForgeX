@@ -115,18 +115,15 @@
     group.appendChild(label);
     return label;
   };
-  const drawAcceleratedSvgRuntime = (root, state) => {
-    if (attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || root.dataset.cfxGraphRendererActive !== 'svg') return false;
-    const viewport = root.querySelector('[data-cfx-role="graph-viewport"]');
-    if (!viewport) return false;
+  const appendAcceleratedSvgScene = (root, viewport, state, visibleOnly) => {
     viewport.querySelector('[data-cfx-role="graph-accelerated-runtime"]')?.remove();
-    const document = root.ownerDocument;
+    const document = viewport.ownerDocument;
     const runtime = svgNode(document, 'g', { 'data-cfx-role': 'graph-accelerated-runtime', 'data-cfx-runtime-overlay': 'true' });
     const edges = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true' });
     const edgeLabels = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true', 'pointer-events': 'none' });
     const marks = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true' });
     const details = svgNode(document, 'g', { class: 'cfx-graph-node-details-layer', 'data-cfx-runtime-overlay': 'true', 'pointer-events': 'none' });
-    state.edges.filter(edge => visible(edge.el)).forEach(edge => {
+    state.edges.filter(edge => !visibleOnly || visible(edge.el)).forEach(edge => {
       const rendered = visualEdge(edge, state.byId);
       const path = svgNode(document, 'path', {
         class: attr(edge.el, 'class') || 'cfx-graph-edge',
@@ -139,11 +136,11 @@
       if (style) path.setAttribute('style', style);
       ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
       edges.appendChild(path);
-      if (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-neighborhood-related'))
+      if (!visibleOnly || !root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-neighborhood-related'))
         appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
     });
     const palette = graphThemePalette(root);
-    state.nodes.filter(node => visible(node.el)).forEach(node => {
+    state.nodes.filter(node => !visibleOnly || visible(node.el)).forEach(node => {
       const transform = `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`;
       const group = svgNode(document, 'g', {
         class: attr(node.el, 'class') || 'cfx-graph-node',
@@ -172,40 +169,17 @@
     });
     runtime.append(edges, edgeLabels, marks, details);
     viewport.appendChild(runtime);
+  };
+  const drawAcceleratedSvgRuntime = (root, state) => {
+    if (attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || root.dataset.cfxGraphRendererActive !== 'svg') return false;
+    const viewport = root.querySelector('[data-cfx-role="graph-viewport"]');
+    if (!viewport) return false;
+    appendAcceleratedSvgScene(root, viewport, state, true);
     return true;
   };
   const materializeAcceleratedSvg = (root, clone, state) => {
     if (attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') return;
-    const document = clone.ownerDocument;
     const viewport = clone.querySelector('[data-cfx-role="graph-viewport"]');
     if (!viewport) return;
-    const edgeLabels = new Map(Array.from(viewport.querySelectorAll('[data-cfx-role="graph-edge-label"]')).map(label => [attr(label, 'data-edge-label-for'), label]));
-    state.edges.forEach(edge => {
-      const rendered = visualEdge(edge, state.byId);
-      const path = svgNode(document, 'path', { class: attr(edge.el, 'class') || 'cfx-graph-edge', 'data-cfx-role': 'graph-edge', 'data-edge-id': edge.id, d: attr(edge.el, 'd') });
-      const style = [`stroke:${edge.strokeColor || '#64748b'}`, `stroke-width:${edge.strokeWidth || 1.25}`, edge.dashed ? `stroke-dasharray:${edge.dashPattern.join(' ')}` : ''].filter(Boolean).join(';');
-      if (style) path.setAttribute('style', style);
-      ['marker-start', 'marker-end'].forEach(name => { const value = attr(edge.el, name); if (value) path.setAttribute(name, value); });
-      viewport.appendChild(path);
-      if (!edgeLabels.has(edge.id) && visible(edge.el)) appendExportedEdgeLabel(document, viewport, edge, rendered);
-    });
-    const groups = new Map(Array.from(viewport.querySelectorAll('[data-cfx-role="graph-node"]')).map(group => [attr(group, 'data-node-id'), group]));
-    let detailsLayer = viewport.querySelector('[data-cfx-role="graph-node-details-layer"]');
-    if (!detailsLayer) {
-      detailsLayer = svgNode(document, 'g', { class: 'cfx-graph-node-details-layer', 'data-cfx-role': 'graph-node-details-layer', 'pointer-events': 'none' });
-      viewport.appendChild(detailsLayer);
-    }
-    const palette = graphThemePalette(root);
-    state.nodes.forEach(node => {
-      let group = groups.get(node.id);
-      if (!group) {
-        group = svgNode(document, 'g', { class: attr(node.el, 'class') || 'cfx-graph-node', 'data-cfx-role': 'graph-node', 'data-node-id': node.id, transform: attr(node.el, 'transform') });
-        viewport.insertBefore(group, detailsLayer);
-      }
-      if (!group.childElementCount) appendExportedNodeMark(document, group, node);
-      const details = svgNode(document, 'g', { class: `${attr(node.el, 'class') || 'cfx-graph-node'} cfx-graph-node-details`, 'data-cfx-role': 'graph-node-details', 'data-node-details-for': node.id, 'data-cfx-status': attr(node.el, 'data-cfx-status'), transform: attr(node.el, 'transform') });
-      appendExportedNodeDetails(document, details, node, root, palette);
-      detailsLayer.appendChild(details);
-    });
-    viewport.appendChild(detailsLayer);
+    appendAcceleratedSvgScene(root, viewport, state, false);
   };

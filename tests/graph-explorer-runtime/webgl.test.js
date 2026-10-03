@@ -9,7 +9,7 @@ const source = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\
   .map(match => fs.readFileSync(path.join(assets, match[1]), 'utf8')).join('\n');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
-  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails };', host);
+  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };', host);
   const api = host.api, root = api.graphVirtualElement('root', { 'data-cfx-graph-theme-active': 'light' }, []);
   const node = (id, x, y) => ({ id, x, y, size: 12, shape: 'circle', el: api.graphVirtualElement('graph-node', { 'data-node-label': id }, []) });
   const a = node('a', 100, 100), b = node('b', 300, 100);
@@ -132,6 +132,38 @@ test('materialized virtual SVG card details use the same readable colours as phy
   assert.ok(api.graphColorContrast(fill, '#ffffff') >= 4.5);
   assert.equal(group.properties['--cfx-node-label-halo'], '#ffffff');
 });
+test('accelerated SVG export replaces the live scene once with routes before marks and details', () => {
+  const { api, root, state } = runtime();
+  const document = { createElementNS: () => element() };
+  function element() {
+    const node = api.graphVirtualElement('g', {}, []);
+    node.ownerDocument = document; node.children = []; node.style = { setProperty() {} };
+    node.appendChild = child => { child.remove(); child.parent = node; node.children.push(child); };
+    node.append = (...children) => children.forEach(node.appendChild);
+    node.remove = () => { if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1); node.parent = null; };
+    node.querySelectorAll = selector => {
+      const role = selector.match(/data-cfx-role="([^"]+)"/)?.[1], found = [];
+      const visit = child => { if (child.getAttribute('data-cfx-role') === role) found.push(child); child.children.forEach(visit); };
+      node.children.forEach(visit); return found;
+    };
+    node.querySelector = selector => node.querySelectorAll(selector)[0] || null;
+    return node;
+  }
+  const viewport = element(), clone = { querySelector: () => viewport };
+  root.setAttribute('data-cfx-graph-accelerated-markup', 'true'); root.dataset = { cfxGraphRendererActive: 'svg' };
+  root.ownerDocument = document; root.querySelector = () => viewport;
+  assert.ok(api.drawAcceleratedSvgRuntime(root, state));
+  for (let repeat = 0; repeat < 2; repeat++) {
+    api.materializeAcceleratedSvg(root, clone, state);
+    assert.equal(viewport.querySelectorAll('[data-cfx-role="graph-edge"]').length, 1);
+    assert.equal(viewport.querySelectorAll('[data-cfx-role="graph-node"]').length, 2);
+    assert.equal(viewport.querySelectorAll('[data-cfx-role="graph-node-details"]').length, 2);
+    const layers = viewport.children[0].children;
+    assert.equal(layers[0].children[0].getAttribute('data-cfx-role'), 'graph-edge');
+    assert.equal(layers[2].children[0].getAttribute('data-cfx-role'), 'graph-node');
+    assert.equal(layers[3].children[0].getAttribute('data-cfx-role'), 'graph-node-details');
+  }
+});
 test('the shared node layer retains labels, badges and selected details through compact and moving states', () => {
   const { api, root, a } = runtime(), text = [], paths = [];
   a.label = 'Service'; a.badge = '2'; a.icon = 'X'; a.secondaryLabel = 'Detail';
@@ -164,8 +196,23 @@ test('homogeneous compact GPU marks retain node fill, border and status dots', (
   close(points.sizes[0], 25.5); close(points.colors[0], 124 / 255); close(points.strokes[0], 196 / 255);
   close(points.positions[4], a.x - a.size * .8); close(points.sizes[4], 11);
   assert.equal(api.webGlNodePoints(state, palette, true, false, 3, 64).nodes.size, 0);
-  a.icon = 'X'; assert.equal(api.webGlNodePoints(state, palette, true, false, 1, 1024).nodes.size, 0);
+  a.icon = 'X'; assert.ok(!api.webGlNodePoints(state, palette, true, false, 1, 1024).nodes.has(a));
   assert.equal(api.webGlNodePoints(state, palette, true, true, 1, 1024).nodes.size, 2);
+});
+test('transitive mixed overlaps share one ordered pass while distant circles retain GPU batching', () => {
+  const { api, root, state, a, b, palette } = runtime();
+  a.shape = 'box'; a.x = 100; b.x = 125;
+  const c = { ...b, id:'c', x:150, el:api.graphVirtualElement('graph-node', {}, []) }, d = { ...c, id:'d', x:300, el:api.graphVirtualElement('graph-node', {}, []) };
+  state.nodes = [a,b,c,d]; state.nodes.forEach((node,index) => node.backgroundColor = ['#ef4444','#2563eb','#22c55e','#7c3aed'][index]);
+  const points = api.webGlNodePoints(state, palette, true, false, 1, 1024), paints = [];
+  assert.equal(points.nodes.size, 1); assert.ok(points.nodes.has(d));
+  close(points.positions[0], d.x); close(points.colors[0], 124/255);
+  const context = new Proxy({}, {
+    get(target, key) { return target[key] || (() => { if (key === 'fill') paints.push(target.fillStyle); }); },
+    set(target, key, value) { target[key] = value; return true; }
+  });
+  api.drawCanvasNodes(context, root, state.nodes, true, false, points.nodes);
+  assert.deepEqual(paints, ['#ef4444','#2563eb','#22c55e']);
 });
 test('mixed and driver-limited marks preserve authored body order before all status details', () => {
   const { api, root, state, a, b, palette } = runtime();

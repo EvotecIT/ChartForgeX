@@ -1,15 +1,31 @@
   const webGlNodePoints = (state, palette, compact, moving, scale, limit) => {
     const points = { positions: [], colors: [], strokes: [], sizes: [], nodes: new Set() }, statusPoints = [];
     if (!compact && !moving) return points;
-    // The GPU surface sits beneath Canvas. Keep mixed mark bodies in one shared
-    // pass so authored node order and the later status/detail pass stay intact.
     const eligible = (node) => {
       if (node.shape !== 'circle' || node.card || node.shadow && !moving || node.icon && !moving) return false;
       const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
       // Include the driver's point limit at maximum semantic zoom and DPR.
       return (node.size * 2 + paint.width) * scale * 4 <= limit && 11 * scale * 4 <= limit;
     };
-    if (state.nodes.some(node => visible(node.el) && !eligible(node))) return points;
+    const visibleNodes = state.nodes.filter(node => visible(node.el));
+    const gpuNodes = new Set(visibleNodes.filter(eligible));
+    if (gpuNodes.size && gpuNodes.size !== visibleNodes.length) {
+      // Overlapping mixed marks share Canvas, including transitive overlaps and
+      // status dots. Spatially separate circles can retain the GPU batch.
+      const margin = .5 / Math.max(.001, scale * .2);
+      const entries = visibleNodes.map(node => graphNodeMarkBounds(node, compact, moving, margin));
+      const pending = entries.filter(entry => !gpuNodes.has(entry.node));
+      const tree = buildGraphBoundsTree(entries.filter(entry => gpuNodes.has(entry.node)));
+      let work = 0;
+      while (pending.length && gpuNodes.size) {
+        const overlaps = graphBoundsCandidates(tree, pending.pop());
+        work += overlaps.length;
+        // Dense overlapping scenes still paint correctly through the shared
+        // pass without unbounded pair comparisons on every physics frame.
+        if (work > 100000) { gpuNodes.clear(); break; }
+        overlaps.forEach(entry => { if (gpuNodes.delete(entry.node)) pending.push(entry); });
+      }
+    }
     const point = (x, y, radius, width, fill, stroke, alpha) => {
       points.positions.push(x, y);
       points.colors.push(...webGlColor(fill, alpha));
@@ -17,7 +33,7 @@
       points.sizes.push(2 * radius + width, Math.max(0, (radius - width / 2) / (radius + width / 2)));
     };
     state.nodes.forEach(node => {
-      if (!visible(node.el)) return;
+      if (!gpuNodes.has(node)) return;
       const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
       const alpha = node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1;
       points.nodes.add(node);
