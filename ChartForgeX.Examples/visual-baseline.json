@@ -3115,7 +3115,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 813,
+      "height": 835,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
@@ -3251,7 +3251,7 @@
     {
       "name": "visual-mini-correlation-map",
       "width": 920,
-      "height": 474,
+      "height": 490,
       "svg": {
         "minVisualNodes": 66,
         "maxClippedTextNodes": 0,
@@ -3455,7 +3455,7 @@
     {
       "name": "visual-reusable-regional-topology",
       "width": 1316,
-      "height": 764,
+      "height": 748,
       "svg": {
         "minVisualNodes": 105,
         "maxClippedTextNodes": 0,
@@ -3568,6 +3568,40 @@
         "minVisiblePixels": 555520,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-topology-mixed-routing",
+      "width": 1000,
+      "height": 530,
+      "svg": {
+        "minVisualNodes": 22,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 265000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 714,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-topology-shared-trunks",
+      "width": 1000,
+      "height": 500,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 250000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 549,
         "maxEdgeInkPixels": 0
       }
     },

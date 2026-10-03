@@ -117,6 +117,8 @@ internal static partial class TopologyVisualExamples {
         SaveMap(target, artifacts, "visual-site-distribution-map", BuildSiteDistributionMap(), "Site Distribution Map", "Dotted-map chart for site distribution, site health, and regional route overlays.");
         SaveMap(target, artifacts, "visual-wan-latency-map", BuildWanLatencyMap(), "WAN Latency Map", "Map-backed route chart for WAN latency paths that can sit behind an HtmlForgeX region panel.");
 
+        WriteRoutingExamples(target, artifacts);
+
         WriteManifest(target, artifacts);
         WriteCoverageIndex(target, artifacts);
     }

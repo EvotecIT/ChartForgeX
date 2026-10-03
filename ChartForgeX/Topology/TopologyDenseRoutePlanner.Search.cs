@@ -12,7 +12,7 @@ internal static partial class TopologyDenseRoutePlanner {
     /// <summary>Extra cost per pixel, per route already there, of running along a corridor another route uses.</summary>
     private const double SharedRunCost = 0.5;
     /// <summary>Cost of crossing another route.</summary>
-    private const double CrossingCost = 14;
+    private const double CrossingCost = 72;
     /// <summary>Cost of the short stub that leaves little room for a direction marker.</summary>
     private const double ShortStubPenalty = 6;
     /// <summary>Extra cost, per route already attached there, of using a card side, so ends spread over the sides.</summary>
@@ -34,7 +34,7 @@ internal static partial class TopologyDenseRoutePlanner {
     /// <summary>
     /// Joins two cards that face each other with one straight line when nothing stands between them. The grid search
     /// cannot find this route when the cards are so close that their stubs would pass each other. A direct route is
-    /// not recorded on the grid; routes that end up beside it are moved apart by the lane pass.
+    /// recorded on the grid by the caller; routes that end up beside it are moved apart by the lane pass.
     /// </summary>
     private static PlannedRoute? Direct(Scene scene, Request request, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse) {
         PlannedRoute? best = null;
@@ -66,7 +66,7 @@ internal static partial class TopologyDenseRoutePlanner {
     /// length, bends, corridors shared with earlier routes, and crossings of earlier routes. Returns null when the
     /// ends cannot be joined without passing an obstacle.
     /// </summary>
-    private static PlannedRoute? Search(Grid grid, Request request, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse) {
+    private static PlannedRoute? Search(Grid grid, Request request, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, double sharedRunCost = SharedRunCost) {
         double Penalty(Terminal terminal) => terminal.Penalty + (sideUse.TryGetValue((terminal.Node, terminal.Side), out var used) ? used * SideUseCost : 0);
         var starts = new Dictionary<int, Terminal>();
         foreach (var terminal in request.Starts) {
@@ -121,9 +121,9 @@ internal static partial class TopologyDenseRoutePlanner {
                 var nextCell = nextRow * grid.Width + nextColumn;
                 if (grid.Blocked[nextCell] || !grid.CanMove(cell, nextCell, next)) continue;
                 var length = Math.Abs(grid.Xs[nextColumn] - grid.Xs[column]) + Math.Abs(grid.Ys[nextRow] - grid.Ys[row]);
-                var step = length * (1 + SharedRunCost * Math.Min(MaximumSharedRoutes, grid.SharedRoutes(cell, nextCell, next)) + (grid.AlongBorder(cell, nextCell, next) ? BorderRunCost : 0))
+                var step = length * (1 + sharedRunCost * Math.Min(MaximumSharedRoutes, grid.SharedRoutes(cell, nextCell, next)) + (grid.AlongBorder(cell, nextCell, next) ? BorderRunCost : 0))
                     + (next == direction ? 0 : BendPenalty)
-                    + grid.CrossingsAt(nextCell, next) * CrossingCost;
+                    + (grid.CrossingsAt(nextCell, next) + grid.FixedCrossings(cell, nextCell, next)) * CrossingCost;
                 var nextState = nextCell * 4 + next;
                 if (current + step >= grid.CostOf(nextState)) continue;
                 grid.SetCost(nextState, current + step, state);
@@ -135,7 +135,6 @@ internal static partial class TopologyDenseRoutePlanner {
         var cells = new List<int>();
         for (var state = goal; state >= 0; state = grid.PreviousOf(state)) cells.Add(state / 4);
         cells.Reverse();
-        grid.MarkUsed(cells);
         var startTerminal = starts[cells[0]];
         var points = new List<ChartPoint>(cells.Count + 2) { startTerminal.Port };
         foreach (var cell in cells) points.Add(new ChartPoint(grid.Xs[cell % grid.Width], grid.Ys[cell / grid.Width]));
@@ -184,11 +183,13 @@ internal static partial class TopologyDenseRoutePlanner {
     /// A sparse grid whose lines run just outside every obstacle and through every terminal stub. It records which
     /// moves an obstacle blocks and how many routes already use each grid segment.
     /// </summary>
-    private sealed class Grid {
+    private sealed partial class Grid {
         private readonly bool[] _noRight;
         private readonly bool[] _noDown;
         private readonly int[] _usedRight;
         private readonly int[] _usedDown;
+        private readonly int[] _crossRight;
+        private readonly int[] _crossDown;
         private readonly bool[] _borderRight;
         private readonly bool[] _borderDown;
         private readonly double[] _cost;
@@ -207,6 +208,8 @@ internal static partial class TopologyDenseRoutePlanner {
             _noDown = new bool[points];
             _usedRight = new int[points];
             _usedDown = new int[points];
+            _crossRight = new int[points];
+            _crossDown = new int[points];
             _borderRight = new bool[points];
             _borderDown = new bool[points];
             _cost = new double[points * 4];
@@ -220,10 +223,26 @@ internal static partial class TopologyDenseRoutePlanner {
         public int Height { get; }
         public bool[] Blocked { get; }
 
-        public static Grid? Create(Scene scene, List<Request> requests) {
+        public static Grid? Create(Scene scene, List<Request> requests, List<List<ChartPoint>> fixedRoutes) {
             var region = scene.Region;
             var xs = new SortedSet<double> { region.Left, region.Right };
             var ys = new SortedSet<double> { region.Top, region.Bottom };
+            foreach (var route in fixedRoutes) {
+                for (var i = 0; i + 1 < route.Count; i++) {
+                    var a = route[i];
+                    var b = route[i + 1];
+                    if (Math.Abs(a.X - b.X) < 0.01) {
+                        AddLine(xs, a.X, region.Left, region.Right);
+                        AddLine(xs, a.X - 8, region.Left, region.Right);
+                        AddLine(xs, a.X + 8, region.Left, region.Right);
+                    }
+                    if (Math.Abs(a.Y - b.Y) < 0.01) {
+                        AddLine(ys, a.Y, region.Top, region.Bottom);
+                        AddLine(ys, a.Y - 8, region.Top, region.Bottom);
+                        AddLine(ys, a.Y + 8, region.Top, region.Bottom);
+                    }
+                }
+            }
             foreach (var obstacle in scene.Obstacles) {
                 var box = obstacle.Box.Expand(Clearance);
                 AddLine(xs, box.Left - 1, region.Left, region.Right);
@@ -365,14 +384,6 @@ internal static partial class TopologyDenseRoutePlanner {
 
             var before = cell % Width > 0 ? _usedRight[cell - 1] : 0;
             return Math.Min(MaximumSharedRoutes, Math.Max(before, _usedRight[cell]));
-        }
-
-        public void MarkUsed(List<int> cells) {
-            for (var i = 0; i + 1 < cells.Count; i++) {
-                var from = Math.Min(cells[i], cells[i + 1]);
-                if (Width > 1 && Math.Abs(cells[i] - cells[i + 1]) == 1) _usedRight[from]++;
-                else _usedDown[from]++;
-            }
         }
 
         public void BeginSearch() => _search++;

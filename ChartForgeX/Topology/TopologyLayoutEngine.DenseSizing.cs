@@ -19,8 +19,6 @@ internal static partial class TopologyLayoutEngine {
     /// <summary>Returns true when the chart was prepared with <see cref="TopologyRenderOptions.ReadableDenseLayout"/>.</summary>
     internal static bool UsesReadableDenseLayout(TopologyChart chart) => chart.RenderOptions?.ReadableDenseLayout == true;
 
-    private static double DenseColumnGutter(TopologyChart chart) => UsesReadableDenseLayout(chart) ? DenseCardColumnGutter : DenseClassicColumnGutter;
-
     private static bool UsesWrappedDenseRows(TopologyChart chart) =>
         UsesReadableDenseLayout(chart) && chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft && chart.Groups.Count > DenseSingleRowGroupLimit;
 
@@ -83,15 +81,34 @@ internal static partial class TopologyLayoutEngine {
     /// <summary>
     /// Returns the gap between card rows of a group. Readable dense layouts widen it when many routed edges end in the
     /// group, so the routes that run between the rows fit side by side instead of on top of each other. Only the height
-    /// grows: panel widths, and with them the wrapped rows, stay as they are.
+    /// grows within a bounded lane budget; column gaps reserve their own width budget below.
     /// </summary>
     private static double DenseRowGap(TopologyChart chart, IList<TopologyNode> nodes, int rows) {
         if (!UsesReadableDenseLayout(chart) || nodes.Count == 0 || chart.Edges.Count == 0) return DenseRowGutter;
-        var ids = new HashSet<string>(nodes.Select(node => node.Id), StringComparer.Ordinal);
-        var routed = chart.Edges.Count(edge => edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
-            (ids.Contains(edge.SourceNodeId) || ids.Contains(edge.TargetNodeId)));
+        var routed = DenseRoutedEdges(chart, nodes);
         var lanes = (int)Math.Ceiling(routed / (double)Math.Max(1, rows));
         return DenseRowGutter + Math.Min(DenseMaximumExtraRowGutter, DenseLaneHeight * Math.Max(0, lanes - DenseBaseLanes));
+    }
+
+    // Reserve more horizontal corridor space without enlarging a panel beyond its share of the viewport.
+    // When even the baseline cards exceed that share, wrapping/viewport expansion retains their readable size.
+    private static double DenseColumnGap(TopologyChart chart, IList<TopologyNode> nodes, int columns) {
+        if (!UsesReadableDenseLayout(chart)) return DenseClassicColumnGutter;
+        if (columns < 2 || nodes.Count == 0) return DenseCardColumnGutter;
+        var lanes = (int)Math.Ceiling(DenseRoutedEdges(chart, nodes) / (double)columns);
+        var extra = Math.Min(DenseMaximumExtraRowGutter, DenseLaneHeight * Math.Max(0, lanes - DenseBaseLanes));
+        var pad = Math.Max(24, chart.Viewport.Padding) + TopologyRenderPrimitives.CanvasSurfaceInset(chart, chart.RenderOptions!);
+        var panels = UsesWrappedDenseRows(chart) ? 1 : DenseGroupColumns(chart);
+        var budget = Math.Max(0, (chart.Viewport.Width - pad * 2 - (panels - 1) * 24) / panels);
+        var nodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
+        var baseWidth = 36 + columns * Math.Max(70, nodeWidth + DenseCardColumnGutter);
+        return DenseCardColumnGutter + Math.Min(extra, Math.Max(0, budget - baseWidth) / columns);
+    }
+
+    private static int DenseRoutedEdges(TopologyChart chart, IList<TopologyNode> nodes) {
+        var ids = new HashSet<string>(nodes.Select(node => node.Id), StringComparer.Ordinal);
+        return chart.Edges.Count(edge => edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0 &&
+            (ids.Contains(edge.SourceNodeId) || ids.Contains(edge.TargetNodeId)));
     }
 
     private static double DenseCaptionHeight(TopologyChart chart, IList<TopologyNode> nodes) =>
@@ -115,12 +132,13 @@ internal static partial class TopologyLayoutEngine {
 
         if (policy == TopologyGroupLayoutPolicy.PairRows) {
             var pairMaxNodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
-            return Math.Max(190, 36 + 2 * Math.Max(70, pairMaxNodeWidth + DenseColumnGutter(chart)));
+            return Math.Max(190, 36 + 2 * Math.Max(70, pairMaxNodeWidth + DenseColumnGap(chart, nodes, 2)));
         }
 
         if (policy == TopologyGroupLayoutPolicy.Grid && UsesReadableDenseLayout(chart)) {
             var gridMaxNodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
-            return Math.Max(190, 36 + DenseGridColumns(nodes.Count) * Math.Max(70, gridMaxNodeWidth + DenseCardColumnGutter));
+            var columns = DenseGridColumns(nodes.Count);
+            return Math.Max(190, 36 + columns * Math.Max(70, gridMaxNodeWidth + DenseColumnGap(chart, nodes, columns)));
         }
 
         if (policy == TopologyGroupLayoutPolicy.MiniMesh) {

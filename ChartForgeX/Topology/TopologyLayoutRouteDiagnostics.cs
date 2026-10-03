@@ -32,13 +32,17 @@ public sealed class TopologyLayoutRouteCrossingDiagnostic {
 
 /// <summary>Describes two edge routes whose horizontal or vertical runs are drawn on top of each other.</summary>
 public sealed class TopologyLayoutRouteOverlapDiagnostic {
-    internal TopologyLayoutRouteOverlapDiagnostic(string firstEdgeId, string secondEdgeId, double length) { FirstEdgeId = firstEdgeId; SecondEdgeId = secondEdgeId; Length = length; }
+    internal TopologyLayoutRouteOverlapDiagnostic(string firstEdgeId, string secondEdgeId, double length, bool isIntentional = false) {
+        FirstEdgeId = firstEdgeId; SecondEdgeId = secondEdgeId; Length = length; IsIntentional = isIntentional;
+    }
     /// <summary>Gets the first edge id.</summary>
     public string FirstEdgeId { get; }
     /// <summary>Gets the second edge id.</summary>
     public string SecondEdgeId { get; }
     /// <summary>Gets the total length, in pixels, along which the two routes run less than 2 px apart; pairs sharing less than 6 px are not reported.</summary>
     public double Length { get; }
+    /// <summary>Gets whether the whole reported overlap is an explicitly requested shared incoming trunk.</summary>
+    public bool IsIntentional { get; }
 }
 
 /// <summary>Describes one placed edge label and how far it sits from the route it names.</summary>

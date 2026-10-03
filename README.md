@@ -565,6 +565,8 @@ Advanced edges may use named node ports, independent source/target markers, endp
 
 Supported topology layout modes are `Manual`, `GroupGrid`, `HubAndSpoke`, `Layered`, `Matrix`, `DenseGrouped`, and `Geographic`. Geographic topology uses `ChartMapViewport` with typed coordinates, route arcs, region hulls, and optional callouts while keeping the model reusable across infrastructure, cloud, tenant, inventory, and domain-specific hosts.
 
+`ReadableDenseLayout` routes relationships together, accounts for fixed and waypoint corridors, and reconsiders crowded routes to reduce crossings. `ShareIncomingTrunks` lets matching solid relationships into one target share a painted tail while retaining each relationship's identity. See the [topology guide](docs/topology.md) for limits and generated examples.
+
 When the host already owns node and edge records, use `TopologyChart.FromData<TNode, TEdge>(...)` to map stable ids, labels, endpoints, and product-neutral visual properties. The mapper preserves input order and rejects duplicates or dangling endpoints before rendering.
 
 Dotted maps can render both point-to-point route arcs and ordered waypoint routes. Use `AddMapRoute("label", new[] { new ChartMapPoint("Origin", lon, lat), ... })` for paths such as shipping alternatives through the Suez Canal or around the Cape of Good Hope without adding shipping-specific concepts to the renderer. Light report themes render map geography as filled outlines instead of land-dot texture so routes stay readable on white backgrounds.

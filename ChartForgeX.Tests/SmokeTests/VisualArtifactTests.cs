@@ -247,6 +247,7 @@ internal static partial class SmokeTests {
         fittedArtifactOptions.Watermarks.Add(fittedWatermark);
         var widePlain = RasterImageDecoder.Decode(wideTopology.ToPng(fittedTopologyOptions));
         var wideArtifact = wideTopology.ToVisualArtifact();
+        wideArtifact.NaturalSize = new VisualArtifactSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
         wideArtifact.PreserveNaturalSize = true;
         var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));
         var fittedScale = Math.Min(wideDecorated.Width / preparedWideTopology.Viewport.Width, wideDecorated.Height / preparedWideTopology.Viewport.Height);

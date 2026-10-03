@@ -60,6 +60,13 @@ public sealed class TopologyRenderOptions {
     /// </summary>
     public bool ReadableDenseLayout { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether readable obstacle-avoiding routes of one kind into the same target may join a shared
+    /// final trunk. Only matching solid styles, target ports and highlight/selection states join; authored routes
+    /// retain their geometry. Each relationship retains its own full route and metadata. Off by default.
+    /// </summary>
+    public bool ShareIncomingTrunks { get; set; }
+
     /// <summary>Gets or sets whether explicit line breaks in node labels and subtitles should be rendered as multiple SVG/PNG text rows.</summary>
     public bool AllowMultilineNodeLabels { get; set; } = true;
 

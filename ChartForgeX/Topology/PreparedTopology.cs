@@ -35,6 +35,9 @@ public sealed class PreparedTopology {
     /// <summary>Gets the source language for accessible labels and surrounding document content.</summary>
     public string? Language => _chart.Accessibility.Language;
 
+    /// <summary>Fits an existing validated layout to an artifact's output size without using that size as layout input.</summary>
+    internal PreparedTopology WithOutputSize(double width, double height) => new(_chart, _options, width, height);
+
     /// <summary>Renders the prepared geometry without running layout again.</summary>
     public string ToSvg() => new TopologySvgRenderer().RenderPrepared(_chart, _options, _requestedWidth, _requestedHeight);
 

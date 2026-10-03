@@ -275,13 +275,14 @@ public sealed partial class TopologyPngRenderer {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var (edge, _) in OrderedEdgesForRendering(chart, options)) {
             var points = EdgePoints(chart, edge, nodes);
+            var paintedPoints = TopologyDenseRoutePlanner.PaintPoints(chart, edge, points);
             var isSelected = IsSelected(options.SelectedEdgeIds, edge.Id);
             var baseColor = Color(EdgeColor(edge, theme, options));
             var routeOpacity = EdgeOpacity(edge, options);
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
             var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
             var dashArray = EffectiveEdgePngDashArray(edge);
-            var routePoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
+            var routePoints = RenderedEdgeSamplePoints(chart, edge, nodes, paintedPoints);
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {
@@ -291,7 +292,8 @@ public sealed partial class TopologyPngRenderer {
             DrawPremiumEdgeRoute(canvas, routePoints, color, width, dashArray, edge, options, isSelected);
 
             DrawEndpointMarker(canvas, routePoints[1], routePoints[0], color, RenderedSourceMarker(edge, options.IncludeDirectionMarkers), options);
-            DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, RenderedTargetMarker(edge, options.IncludeDirectionMarkers), options);
+            if (!TopologyDenseRoutePlanner.IsTrunkBranch(chart, edge))
+                DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, RenderedTargetMarker(edge, options.IncludeDirectionMarkers), options);
         }
     }
 

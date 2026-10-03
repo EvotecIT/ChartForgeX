@@ -46,7 +46,8 @@ public static partial class TopologyLayoutDiagnostics {
         for (var i = 0; i < report.Edges.Count; i++) {
             for (var j = i + 1; j < report.Edges.Count; j++) {
                 var length = SharedLength(report.Edges[i].Points, report.Edges[j].Points);
-                if (length >= MinimumOverlapLength) report.RouteOverlaps.Add(new TopologyLayoutRouteOverlapDiagnostic(report.Edges[i].Id, report.Edges[j].Id, length));
+                if (length >= MinimumOverlapLength) report.RouteOverlaps.Add(new TopologyLayoutRouteOverlapDiagnostic(report.Edges[i].Id, report.Edges[j].Id, length,
+                    length <= TopologyDenseRoutePlanner.SharedTrunkLength(chart, chart.Edges[i], chart.Edges[j]) + 0.01));
             }
         }
 

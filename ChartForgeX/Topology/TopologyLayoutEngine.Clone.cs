@@ -96,7 +96,7 @@ internal static partial class TopologyLayoutEngine {
         return copy;
     }
 
-    private static TopologyEdge Clone(TopologyEdge edge) {
+    internal static TopologyEdge Clone(TopologyEdge edge) {
         var copy = new TopologyEdge {
             Id = edge.Id,
             SourceNodeId = edge.SourceNodeId,
