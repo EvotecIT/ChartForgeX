@@ -128,6 +128,7 @@ public static class MermaidFlowchartRendering {
         var artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
         artifact.Kind = VisualArtifactKind.Mermaid;
         artifact.PreserveNaturalSize = options.HasExplicitViewportSize;
+        if (options.HasExplicitViewportSize) artifact.NaturalSize = new VisualArtifactSize(options.Width, options.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;

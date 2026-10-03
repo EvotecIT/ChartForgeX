@@ -23,13 +23,15 @@ internal static partial class TopologyDenseRoutePlanner {
     /// Moves runs that share a corridor onto parallel lanes. Vertical runs are spread first, then horizontal runs on the
     /// updated geometry. A route whose new position would touch an obstacle keeps the position the search gave it.
     /// </summary>
-    private static void SeparateLanes(Scene scene, List<PlannedRoute> routes) {
+    private static void SeparateLanes(Scene scene, List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) {
         if (routes.Count < 2) return;
         var searched = routes.Select(route => new List<ChartPoint>(route.Points)).ToList();
         SeparateAxis(scene, routes, vertical: true);
         SeparateAxis(scene, routes, vertical: false);
         for (var i = 0; i < routes.Count; i++) {
-            if (TouchesObstacle(scene, routes[i])) routes[i].Points = searched[i];
+            var before = Interaction(searched[i], new List<PlannedRoute>(), fixedRoutes, null);
+            var after = Interaction(routes[i].Points, new List<PlannedRoute>(), fixedRoutes, null);
+            if (TouchesObstacle(scene, routes[i]) || after.Crossings > before.Crossings || after.Shared > before.Shared + 0.01) routes[i].Points = searched[i];
         }
     }
 

@@ -38,6 +38,9 @@ internal static partial class TopologyEdgeRouter {
         var targetCaption = CaptionBox(chart, target);
         var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true);
         var existingSegments = RouteSegments(chart, edge);
+        var portedEdge = TopologyLayoutEngine.Clone(edge);
+        if (portedEdge.SourcePort == TopologyEdgePort.Auto) portedEdge.SourcePort = BoundarySide(source, sourcePoint);
+        if (portedEdge.TargetPort == TopologyEdgePort.Auto) portedEdge.TargetPort = BoundarySide(target, targetPoint);
         var candidates = new List<RouteCandidate> {
             new("orthogonal-default", EdgePoints(source, target, TopologyEdgeRouting.Orthogonal, edge.SourcePort, edge.TargetPort, routeLane))
         };
@@ -51,7 +54,7 @@ internal static partial class TopologyEdgeRouter {
                 new(corridor.Value, targetPoint.Y),
                 targetPoint
             }));
-            var ported = VerticalPortAwareRoute(sourcePoint, targetPoint, corridor.Value, edge);
+            var ported = VerticalPortAwareRoute(sourcePoint, targetPoint, corridor.Value, portedEdge);
             if (ported != null) candidates.Add(new RouteCandidate(corridor.Name + "-ported", ported));
         }
 
@@ -62,7 +65,7 @@ internal static partial class TopologyEdgeRouter {
                 new(targetPoint.X, corridor.Value),
                 targetPoint
             }));
-            var ported = HorizontalPortAwareRoute(sourcePoint, targetPoint, corridor.Value, edge);
+            var ported = HorizontalPortAwareRoute(sourcePoint, targetPoint, corridor.Value, portedEdge);
             if (ported != null) candidates.Add(new RouteCandidate(corridor.Name + "-ported", ported));
         }
 
@@ -70,10 +73,17 @@ internal static partial class TopologyEdgeRouter {
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
             .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement, includeLabels))
-            .OrderBy(plan => RouteScore(plan, edge, readable, sourceCaption, targetCaption))
+            .OrderBy(plan => RouteScore(plan, portedEdge, readable, sourceCaption, targetCaption))
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
             .First();
+    }
+
+    private static TopologyEdgePort BoundarySide(TopologyNode node, ChartPoint point) {
+        var horizontal = Math.Abs(point.X - CenterX(node)) / (node.Width / 2 + 7);
+        var vertical = Math.Abs(point.Y - CenterY(node)) / (node.Height / 2 + 7);
+        return horizontal >= vertical ? point.X < CenterX(node) ? TopologyEdgePort.Left : TopologyEdgePort.Right
+            : point.Y < CenterY(node) ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
     }
 
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
@@ -418,23 +428,13 @@ internal static partial class TopologyEdgeRouter {
     private static string RouteKey(IReadOnlyList<ChartPoint> points) => string.Join(";", points.Select(point => F(point.X) + "," + F(point.Y)));
 
     /// <summary>
-    /// Readable dense layouts use the header block the renderers draw. Other layouts keep the earlier estimate, a
-    /// left-aligned block sized from the untrimmed label, so curated charts keep the routes they were authored with.
+    /// All obstacle-aware routes use the same header block as SVG, PNG, normalization, and diagnostics.
     /// </summary>
     private static RouteBox GroupHeaderBox(TopologyChart chart, TopologyGroup group) {
-        if (TopologyLayoutEngine.UsesReadableDenseLayout(chart)) {
-            if (!TopologyGroupHeader.IsDrawn(chart.RenderOptions!)) return new RouteBox(0, 0, 0, 0);
-            var bounds = TopologyGroupHeader.Bounds(group, chart.RenderOptions!, chart.TextMeasurement);
-            return new RouteBox(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
-        }
-
-        const double groupPadding = 24;
-        const double topPadding = 14;
-        var labelWidth = EstimateTextWidth(group.Label, 16, true, chart.TextMeasurement);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, chart.TextMeasurement);
-        var width = Math.Min(Math.Max(96, Math.Max(labelWidth, subtitleWidth) + 12), Math.Max(96, group.Width - groupPadding * 2));
-        var height = string.IsNullOrWhiteSpace(group.Subtitle) ? 40 : 60;
-        return new RouteBox(group.X + groupPadding, group.Y + topPadding, group.X + groupPadding + width, group.Y + topPadding + height);
+        var options = chart.RenderOptions ?? new TopologyRenderOptions();
+        if (!TopologyGroupHeader.IsDrawn(options)) return new RouteBox(0, 0, 0, 0);
+        var bounds = TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement);
+        return new RouteBox(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
     }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {

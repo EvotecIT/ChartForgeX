@@ -228,6 +228,8 @@ public static partial class GalleryWriter {
             "visual-replication-health-hub",
             "visual-replication-mesh-route-motion",
             "visual-readable-dense-replication",
+            "visual-topology-shared-trunks",
+            "visual-topology-mixed-routing",
             "visual-reusable-regional-topology",
             "visual-service-dependency-map",
             "visual-site-distribution-map",

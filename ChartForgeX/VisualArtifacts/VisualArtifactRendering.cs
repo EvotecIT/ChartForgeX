@@ -161,6 +161,10 @@ public static class VisualArtifactRendering {
         var model = TopologyModel(artifact, topology);
         var options = TopologyOptions(artifact, renderOptions);
         TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        if (UsesPreparedNaturalSize(artifact)) {
+            var size = artifact.NaturalSize!.Value;
+            return model.Prepare(options).WithOutputSize(size.Width, size.Height).ToSvg();
+        }
         return model.ToSvg(options);
     }
 
@@ -168,6 +172,11 @@ public static class VisualArtifactRendering {
         var model = TopologyModel(artifact, topology);
         var options = TopologyOptions(artifact, renderOptions);
         TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        if (UsesPreparedNaturalSize(artifact)) {
+            var size = artifact.NaturalSize!.Value;
+            var svg = model.Prepare(options).WithOutputSize(size.Width, size.Height).ToSvg();
+            return new TopologyHtmlRenderer().RenderPreparedPage(model, options, svg, size.Width);
+        }
         return model.ToHtmlPage(options);
     }
 
@@ -175,6 +184,10 @@ public static class VisualArtifactRendering {
         var model = TopologyModel(artifact, topology);
         var options = TopologyOptions(artifact, renderOptions);
         TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        if (UsesPreparedNaturalSize(artifact)) {
+            var size = artifact.NaturalSize!.Value;
+            return model.Prepare(options).WithOutputSize(size.Width, size.Height).ToPng();
+        }
         return model.ToPng(options);
     }
 
@@ -185,11 +198,17 @@ public static class VisualArtifactRendering {
         }
 
         var naturalSize = artifact.NaturalSize.Value;
+        // A discovered prepared size describes the output; feeding it into Matrix/DenseGrouped layout would reflow
+        // the very geometry it describes. An explicit caller replacement retains the existing viewport contract.
+        if (UsesPreparedNaturalSize(artifact)) return topology;
         if (topology.Viewport.Width == naturalSize.Width && topology.Viewport.Height == naturalSize.Height) return topology;
         var copy = TopologyLayoutEngine.Clone(topology);
         copy.WithViewport(naturalSize.Width, naturalSize.Height, topology.Viewport.Padding);
         return copy;
     }
+
+    private static bool UsesPreparedNaturalSize(VisualArtifact artifact) => artifact.PreserveNaturalSize && artifact.NaturalSize.HasValue &&
+        artifact.TopologyNaturalSizeSnapshot.HasValue && artifact.NaturalSize.Value.Equals(artifact.TopologyNaturalSizeSnapshot.Value);
 
     private static string EscapeHtml(string value) {
         return value

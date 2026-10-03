@@ -107,8 +107,9 @@ public static partial class VisualArtifactInterchangeMapping {
             LayoutDirection = prepared.LayoutDirection
         };
         envelope.Family = VisualArtifactInterchangeFamily.Topology;
-        envelope.Width = prepared.Viewport.Width;
-        envelope.Height = prepared.Viewport.Height;
+        // A preserved canvas describes the exported surface, even when a view prepares less content.
+        envelope.Width = artifact.PreserveNaturalSize ? artifact.NaturalSize!.Value.Width : prepared.Viewport.Width;
+        envelope.Height = artifact.PreserveNaturalSize ? artifact.NaturalSize!.Value.Height : prepared.Viewport.Height;
         envelope.Presentation = new VisualArtifactInterchangePresentation {
             Theme = MapTheme(prepared.Theme ?? TopologyTheme.Light()),
             Legend = MapLegend(prepared)

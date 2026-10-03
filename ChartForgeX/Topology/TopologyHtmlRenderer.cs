@@ -43,7 +43,7 @@ public sealed partial class TopologyHtmlRenderer {
         return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"));
     }
 
-    private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource) {
+    private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource, string? preparedSvg = null, double? preparedWidth = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = chart.ResolveRenderOptions(options).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
@@ -97,7 +97,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("style", "width:100%;max-width:" + chart.Viewport.Width.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible")
+            .Attribute("style", "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible")
             .EndStartElement();
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState);
@@ -126,7 +126,7 @@ public sealed partial class TopologyHtmlRenderer {
 
         if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel");
 
-        writer.RawTrusted(RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
+        writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
         writer.EndElement().EndElement();
         return writer.Build();
     }
@@ -158,6 +158,11 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options.</param>
     /// <returns>A complete HTML page.</returns>
     public string RenderPage(TopologyChart chart, TopologyRenderOptions? options = null) {
+        return RenderPreparedPage(chart, options, null);
+    }
+
+    /// <summary>Wraps a validated prepared SVG using the same static page owner, without re-running layout.</summary>
+    internal string RenderPreparedPage(TopologyChart chart, TopologyRenderOptions? options, string? preparedSvg, double? preparedWidth = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
@@ -172,7 +177,7 @@ public sealed partial class TopologyHtmlRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "document")).Line();
+            .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "document", preparedSvg, preparedWidth)).Line();
         writer.EndElement().Line()
             .EndElement().Line();
         return writer.Build();

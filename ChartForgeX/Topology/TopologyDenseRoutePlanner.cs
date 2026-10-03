@@ -57,7 +57,9 @@ internal static partial class TopologyDenseRoutePlanner {
         lock (holder) {
             var signature = Signature(chart);
             if (holder.Routes == null || holder.Signature != signature) {
-                holder.Routes = Compute(chart);
+                holder.Routes = Compute(chart, out var paintRoutes, out var trunkOwners);
+                holder.PaintRoutes = paintRoutes;
+                holder.TrunkOwners = trunkOwners;
                 holder.Signature = signature;
             }
 
@@ -72,6 +74,7 @@ internal static partial class TopologyDenseRoutePlanner {
             long hash = chart.Nodes.Count * 397L + chart.Groups.Count;
             hash = Mix(Mix(hash, chart.Viewport.Width), chart.Viewport.Height);
             hash = hash * 1_000_003L ^ (chart.RenderOptions == null ? 0 : RuntimeHelpers.GetHashCode(chart.RenderOptions));
+            hash = hash * 31 + (chart.RenderOptions?.ShareIncomingTrunks == true ? 1 : 0);
             foreach (var node in chart.Nodes) hash = Mix(Mix(Mix(Mix(hash, node.X), node.Y), node.Width), node.Height);
             foreach (var group in chart.Groups) hash = Mix(Mix(Mix(Mix(hash, group.X), group.Y), group.Width), group.Height);
             foreach (var edge in chart.Edges) {
@@ -82,6 +85,7 @@ internal static partial class TopologyDenseRoutePlanner {
                 hash = hash * 31 + RuntimeHelpers.GetHashCode(edge.TargetNodeId);
                 hash = hash * 31 + (edge.SourcePortId == null ? 0 : RuntimeHelpers.GetHashCode(edge.SourcePortId));
                 hash = hash * 31 + (edge.TargetPortId == null ? 0 : RuntimeHelpers.GetHashCode(edge.TargetPortId));
+                foreach (var point in edge.Waypoints) hash = Mix(Mix(hash, point.X), point.Y);
             }
 
             return hash;
@@ -90,7 +94,10 @@ internal static partial class TopologyDenseRoutePlanner {
 
     private static long Mix(long hash, double value) => unchecked(hash * 1_000_003L ^ BitConverter.DoubleToInt64Bits(value));
 
-    private static Dictionary<TopologyEdge, List<ChartPoint>?> Compute(TopologyChart chart) {
+    private static Dictionary<TopologyEdge, List<ChartPoint>?> Compute(TopologyChart chart,
+        out Dictionary<TopologyEdge, List<ChartPoint>> paintRoutes, out Dictionary<TopologyEdge, TopologyEdge> trunkOwners) {
+        paintRoutes = new Dictionary<TopologyEdge, List<ChartPoint>>();
+        trunkOwners = new Dictionary<TopologyEdge, TopologyEdge>();
         var routes = new Dictionary<TopologyEdge, List<ChartPoint>?>();
         var nodes = new Dictionary<string, TopologyNode>(StringComparer.Ordinal);
         foreach (var node in chart.Nodes) {
@@ -117,20 +124,26 @@ internal static partial class TopologyDenseRoutePlanner {
 
         // Without a grid (more lines than the search can hold) only facing neighbours are joined; every other edge falls
         // back to the corridor candidates.
-        var grid = Grid.Create(scene, requests);
+        var fixedRoutes = FixedRoutes(chart, nodes);
+        var grid = Grid.Create(scene, requests, fixedRoutes);
+        if (grid != null) foreach (var points in fixedRoutes) grid.Record(points, 1);
 
         // Short routes are searched first: they have the fewest alternatives, and long routes can go around them.
         var planned = new List<PlannedRoute>(requests.Count);
         var sideUse = new Dictionary<(TopologyNode Node, TopologyEdgePort Side), int>();
         foreach (var request in requests.OrderBy(item => item.Distance).ThenBy(item => item.Order)) {
-            var route = Direct(scene, request, sideUse) ?? (grid == null ? null : Search(grid, request, sideUse));
+            var route = FindRoute(scene, grid, request, sideUse, planned, fixedRoutes);
             if (route == null) continue;
             planned.Add(route);
+            grid?.Record(route.Points, 1);
             Count(sideUse, route.Start);
             Count(sideUse, route.End);
         }
 
-        SeparateLanes(scene, planned);
+        ImproveCrossings(scene, grid, planned, fixedRoutes, sideUse);
+        SeparateLanes(scene, planned, fixedRoutes);
+        RepairLaneOverlaps(scene, requests, planned, fixedRoutes, sideUse);
+        if (chart.RenderOptions!.ShareIncomingTrunks) JoinIncomingTrunks(chart, scene, planned, fixedRoutes, paintRoutes, trunkOwners);
         foreach (var route in planned) routes[route.Request.Edge] = route.Points;
         return routes;
     }
@@ -205,6 +218,8 @@ internal static partial class TopologyDenseRoutePlanner {
     private sealed class PlanHolder {
         public long Signature;
         public Dictionary<TopologyEdge, List<ChartPoint>?>? Routes;
+        public Dictionary<TopologyEdge, List<ChartPoint>> PaintRoutes = new();
+        public Dictionary<TopologyEdge, TopologyEdge> TrunkOwners = new();
     }
 
     private sealed class Request {

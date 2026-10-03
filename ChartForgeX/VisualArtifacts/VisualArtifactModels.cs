@@ -111,7 +111,14 @@ public sealed class VisualArtifact {
     }
 
     /// <summary>Gets or sets the artifact's natural size in pixels when known.</summary>
-    public VisualArtifactSize? NaturalSize { get; set; }
+    public VisualArtifactSize? NaturalSize {
+        get => _naturalSize;
+        set {
+            _naturalSize = value;
+            TopologyNaturalSizeSnapshot = null;
+        }
+    }
+    private VisualArtifactSize? _naturalSize;
 
     /// <summary>
     /// Gets or sets a value indicating whether exporters must preserve <see cref="NaturalSize"/>
@@ -127,6 +134,7 @@ public sealed class VisualArtifact {
 
     internal VisualAccessibility ModelAccessibilitySnapshot { get; } = new();
     internal bool HasModelAccessibilitySnapshot { get; set; }
+    internal VisualArtifactSize? TopologyNaturalSizeSnapshot { get; set; }
 
     /// <summary>Gets host-inspectable visual regions.</summary>
     public List<VisualArtifactRegion> Regions { get; } = new();

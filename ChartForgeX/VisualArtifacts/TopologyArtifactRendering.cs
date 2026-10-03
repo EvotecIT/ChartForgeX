@@ -16,7 +16,6 @@ public static class TopologyArtifactRendering {
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = topology.Title ?? string.Empty;
         artifact.Subtitle = topology.Subtitle ?? string.Empty;
-        artifact.NaturalSize = new VisualArtifactSize(topology.Viewport.Width, topology.Viewport.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json | VisualArtifactExportFormat.Office;
         artifact.Metadata["render.model"] = nameof(TopologyChart);
         artifact.Metadata["topology.layout"] = topology.LayoutMode.ToString();
@@ -32,11 +31,13 @@ public static class TopologyArtifactRendering {
         artifact.ModelAccessibilitySnapshot.IsDecorative = topology.Accessibility.IsDecorative;
         artifact.HasModelAccessibilitySnapshot = true;
 
-        RefreshRegions(artifact, topology, null);
+        var prepared = RefreshRegions(artifact, topology, null);
+        artifact.NaturalSize = new VisualArtifactSize(prepared.Viewport.Width, prepared.Viewport.Height);
+        artifact.TopologyNaturalSizeSnapshot = artifact.NaturalSize;
         return artifact;
     }
 
-    internal static void RefreshRegions(VisualArtifact artifact, TopologyChart topology, TopologyRenderOptions? renderOptions) {
+    internal static TopologyChart RefreshRegions(VisualArtifact artifact, TopologyChart topology, TopologyRenderOptions? renderOptions) {
         // Preparing writes the text measurement onto the options, so the chart's stored options are copied first.
         renderOptions ??= topology.DefaultRenderOptions?.CloneForRendering() ?? new TopologyRenderOptions();
         var prepared = TopologyLayoutEngine.Prepare(topology, renderOptions.View, renderOptions);
@@ -55,6 +56,7 @@ public static class TopologyArtifactRendering {
             region.Metadata["target"] = edge.TargetNodeId;
             artifact.Regions.Add(region);
         }
+        return prepared;
     }
 
     private static string EdgeLabel(TopologyEdge edge) {
