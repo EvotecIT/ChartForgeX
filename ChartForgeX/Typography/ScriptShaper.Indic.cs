@@ -133,7 +133,7 @@ internal static partial class ScriptShaper {
             for (var i = 0; i < target; i++) if (glyphs[i].Glyph == halant.Glyph && glyphs[i].ComponentClusters == null) target = AfterJoiners(glyphs, i + 1);
             glyphs.Insert(target, glyph);
         }
-        foreach (var glyph in glyphs) { glyph.SkipForSubstitution = glyph.Ignorable && glyph.CodePoint != 0x200c; glyph.Features &= ~4u; }
+        foreach (var glyph in glyphs) { glyph.SkipForSubstitution = glyph.Ignorable && !IsJoiner(glyph.CodePoint); glyph.Features &= ~4u; }
         if (wordInitial) foreach (var glyph in glyphs) if (glyph.ScriptPosition == PreMatra) glyph.Features |= 4u;
         Feature(layout, glyphs, tag, "init", budget);
         layout.Apply(glyphs, tag, Presentation, budget: budget);

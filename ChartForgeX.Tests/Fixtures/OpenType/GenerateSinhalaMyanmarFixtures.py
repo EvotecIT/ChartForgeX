@@ -80,5 +80,5 @@ build('myanmar-primary', primary, ['mym2'], rules)
 joiner_vowels = {0xc95:'ka',0xcc6:'e',0xcc2:'aa',0xcd5:'i',0xcca:'o',0xccb:'au',
                  0xc15:'ga',0xc46:'u',0xc56:'anusvara',0xc48:'postYa'}
 build('indic-joiner-vowels', joiner_vowels, ['knd2','tel2'], '''
-feature ccmp { sub ka e aa i by au; sub ga u anusvara by postYa; } ccmp;
+feature akhn { sub ka e aa i by au; sub ga u anusvara by postYa; } akhn;
 ''')
