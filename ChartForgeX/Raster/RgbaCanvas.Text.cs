@@ -73,7 +73,7 @@ internal sealed partial class RgbaCanvas {
             : font.LineHeight(Math.Max(1, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
         var bounds = TextBufferBounds(text, fontSize, font, false, emphasized, bufferWidth, naturalHeight);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting };
+        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
         if (emphasized) buffer.DrawTextEmphasized(-bounds.X, -bounds.Y, text, color, fontSize, font);
         else buffer.DrawText(-bounds.X, -bounds.Y, text, color, fontSize, font);
         var pixels = buffer.ToOutputPixels();

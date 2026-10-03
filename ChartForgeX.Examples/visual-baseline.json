@@ -3774,6 +3774,23 @@
         "minDistinctColors": 1516,
         "maxEdgeInkPixels": 0
       }
+    },
+    {
+      "name": "colour-emoji-showcase",
+      "width": 960,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 816131,
+        "minTransparentPixels": 67069,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
     }
   ]
 }

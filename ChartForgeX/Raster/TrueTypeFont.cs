@@ -26,6 +26,7 @@ internal sealed partial class TrueTypeFont {
     private readonly int _head;
     private readonly int _hmtx;
     private readonly OpenTypeLayout _layout;
+    private readonly ColorFontData? _colors;
     private readonly IReadOnlyDictionary<string, int> _tableLengths;
     private readonly int _kern;
     private readonly int _loca;
@@ -73,6 +74,7 @@ internal sealed partial class TrueTypeFont {
         _numHMetrics = ReadUInt16(_data, hhea + 34);
         _numGlyphs = ReadUInt16(_data, tables["maxp"] + 4);
         _layout = root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs);
+        _colors = root?._colors ?? ColorFontData.Create(data, tables, lengths, _numGlyphs, _unitsPerEm);
     }
 
     public static TrueTypeFont? TryLoadDefault() {
@@ -127,7 +129,7 @@ internal sealed partial class TrueTypeFont {
                 for (var i = 0; i < fontCount; i++) {
                     var directoryOffset = CheckedOffset(data, ReadUInt32(data, 12 + i * 4));
                     var font = TryLoad(data, directoryOffset, (int)i);
-                    if (font != null && font.HasGlyphs(CoverageProbe) && font.MatchesName(faceName)) return font;
+                    if (font != null && font.IsTextFace && font.MatchesName(faceName)) return font;
                 }
 
                 return null;
@@ -165,7 +167,8 @@ internal sealed partial class TrueTypeFont {
         var unitsPerEm = ReadUInt16(data, tables["head"] + 18);
         if (tables.TryGetValue("CFF ", out var cff)) compact = CompactFontOutlines.TryRead(data, cff, lengths["CFF "], cff2: false, unitsPerEm);
         else if (tables.TryGetValue("CFF2", out var cff2)) compact = CompactFontOutlines.TryRead(data, cff2, lengths["CFF2"], cff2: true, unitsPerEm);
-        return compact == null ? null : new TrueTypeFont(data, tables, lengths, collectionIndex, compact, null, Array.Empty<string>());
+        var bitmapOnly = tables.ContainsKey("sbix") || tables.ContainsKey("CBDT") && tables.ContainsKey("CBLC");
+        return compact == null && !bitmapOnly ? null : new TrueTypeFont(data, tables, lengths, collectionIndex, compact, null, Array.Empty<string>());
     }
 
     /// <summary>
@@ -274,6 +277,16 @@ internal sealed partial class TrueTypeFont {
     }
 
     private bool DrawGlyph(RgbaCanvas canvas, ushort glyph, double x, double baseline, double scale, bool italic, ChartColor color, GlyphGridFit? fit, double boldOffset = 0) {
+        if (glyph == 0) return false;
+        if (canvas.GlyphPaintMode != FontGlyphPaintMode.All) {
+            var colored = IsColorGlyph(glyph);
+            if (colored != (canvas.GlyphPaintMode == FontGlyphPaintMode.ColourOnly)) return true;
+        }
+        if (DrawColorGlyph(canvas, glyph, x, baseline, scale, italic, color)) return true;
+        return DrawOutlineGlyph(canvas, glyph, x, baseline, scale, italic, color, fit, boldOffset);
+    }
+
+    private bool DrawOutlineGlyph(RgbaCanvas canvas, ushort glyph, double x, double baseline, double scale, bool italic, ChartColor color, GlyphGridFit? fit, double boldOffset = 0) {
         var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, x, baseline), 0);
         if (contours.Count == 0) return false;
         fit?.Apply(contours, XHeight * scale, CapHeight * scale);
@@ -303,7 +316,10 @@ internal sealed partial class TrueTypeFont {
     internal int? CollectionIndex => _collectionIndex;
 
     /// <summary>True when the face covers basic Latin text, which symbol and icon fonts do not.</summary>
-    internal bool IsTextFace => HasGlyphs(CoverageProbe);
+    internal bool IsTextFace => HasGlyphs(CoverageProbe) || IsColorFace;
+
+    /// <summary>An authored colour face retains emoji clusters before system emoji fallback.</summary>
+    internal bool IsColorFace => _colors != null;
 
     private bool HasGlyphs(string value) {
         for (var index = 0; index < value.Length;) {

@@ -31,6 +31,11 @@ internal sealed partial class TrueTypeFont {
         return double.IsPositiveInfinity(left) ? null : new ChartRect(left, top, right - left, bottom - top);
     }
     private ChartRect? GlyphInk(ushort glyph) {
+        if (glyph == 0) return null;
+        if (TryColorInk(glyph, out var colored)) return colored;
+        return OutlineInk(glyph);
+    }
+    private ChartRect? OutlineInk(ushort glyph) {
         lock (_root._viewLock) {
             _root._glyphInkBounds ??= new Dictionary<ushort, ChartRect?>();
             if (_root._glyphInkBounds.TryGetValue(glyph, out var cached)) return cached;

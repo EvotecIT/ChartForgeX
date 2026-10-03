@@ -264,7 +264,20 @@ internal static partial class SvgRasterRenderer {
                         inverseTextMatrix.Multiply(paintBounds.RootMatrix));
                 }
                 Fill(paintCanvas, new[] { localPaintBounds }, style, inverseTextMatrix.Multiply(matrix), definitions, viewport, objectPaint);
-                buffer.DrawImageMasked(0, 0, localWidth, localHeight, paintCanvas.Pixels, glyphMask.Pixels, useAlphaMask: true);
+                var paintMask = glyphMask;
+                if (HasColourGlyphs(glyphs)) {
+                    paintMask = new RgbaCanvas(localWidth, localHeight, 1, font) { TextHinting = canvas.TextHinting, GlyphPaintMode = FontGlyphPaintMode.MonochromeOnly };
+                    DrawTextGlyphs(paintMask, padding, padding, text, ChartColor.White, fontSize, emphasized, italic, font, glyphs);
+                    if (underline) RasterTextDecoration.Draw(paintMask, padding, padding + width, underlineY, underlineStyle, ChartColor.White, underlineThickness);
+                    if (strikethrough) RasterTextDecoration.Draw(paintMask, padding, padding + width, strikeY, strikethroughStyle, ChartColor.White, underlineThickness);
+                }
+                buffer.DrawImageMasked(0, 0, localWidth, localHeight, paintCanvas.Pixels, paintMask.Pixels, useAlphaMask: true);
+                if (!ReferenceEquals(paintMask, glyphMask)) {
+                    buffer.GlyphPaintMode = FontGlyphPaintMode.ColourOnly;
+                    var foreground = new ChartColor(style.Color.R, style.Color.G, style.Color.B, (byte)Math.Round(style.Color.A * style.Opacity * style.FillOpacity));
+                    DrawTextGlyphs(buffer, padding, padding, text, foreground, fontSize, emphasized, italic, font, glyphs);
+                    buffer.GlyphPaintMode = FontGlyphPaintMode.All;
+                }
             }
         } else if (fillColor.A > 0) {
             DrawTextGlyphs(buffer, padding, padding, text, fillColor, fontSize, emphasized, italic, font, glyphs);
@@ -375,6 +388,11 @@ internal static partial class SvgRasterRenderer {
             if (emphasized) font.DrawGlyphs(canvas, x + TextEmphasisOffset(fontSize), y, glyphs, color, fontSize, italic, syntheticBoldCopyOnly: true);
         } else if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize, italic);
         else canvas.DrawText(x, y, text, color, fontSize, italic);
+    }
+
+    private static bool HasColourGlyphs(IReadOnlyList<ShapedGlyph>? glyphs) {
+        if (glyphs != null) foreach (var glyph in glyphs) if (glyph.Face.IsColorGlyph(glyph.Glyph)) return true;
+        return false;
     }
 
     private static void PaintDilatedTextStroke(byte[] destination, byte[] glyphPixels, int width, int height, int radius, ChartColor color) {

@@ -18,12 +18,12 @@ internal sealed partial class TrueTypeFont {
     private List<List<ChartPoint>> ReadGlyphContours(ushort glyph, FontTransform transform, int depth) {
         if (_compact != null) {
             var builder = new ContourBuilder(transform);
-            if (glyph != 0 && glyph < _numGlyphs) _compact.DrawGlyph(glyph, builder);
+            if (glyph < _numGlyphs) _compact.DrawGlyph(glyph, builder);
             return builder.Finish();
         }
 
         var contours = new List<List<ChartPoint>>();
-        if (glyph == 0 || glyph >= _numGlyphs || depth > 8) return contours;
+        if (_glyf < 0 || _loca < 0 || glyph >= _numGlyphs || depth > 8) return contours;
         var glyphStart = GlyphOffset(glyph);
         var glyphEnd = GlyphOffset((ushort)(glyph + 1));
         if (glyphStart == glyphEnd) return contours;

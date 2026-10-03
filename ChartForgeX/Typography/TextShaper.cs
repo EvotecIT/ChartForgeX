@@ -150,6 +150,9 @@ internal static partial class TextShaper {
         if (visible.Count == 0) return;
         cluster.Base = visible[0];
         var emoji = WantsEmoji(codePoints, cluster);
+        if (emoji && primary.IsColorFace && Covers(primary, visible)) {
+            cluster.Output.AddRange(visible); return;
+        }
         if (visible.Count == 1) {
             cluster.Output.Add(visible[0]);
             if (emoji || !primary.HasGlyph(visible[0])) {

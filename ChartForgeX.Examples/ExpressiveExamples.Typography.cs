@@ -4,6 +4,17 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateColourEmojiShowcase() => Chart.Create()
+        .WithTitle("Colour emoji in report labels")
+        .WithSubtitle("Font palettes, joined sequences and bitmap strikes use the same glyph layout")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Faces · symbols · joined sequences")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif").WithFontSize(32))
+        .WithXLabels("😀", "❤️", "👩‍💻", "👨‍👩‍👧‍👦", "🏳️‍🌈")
+        .AddBar("Observed", Points(32, 48, 43, 66, 51), ChartColor.FromHex("#2563eb"));
+
     private static Chart CreateFontLayoutShowcase() => Chart.Create()
         .WithTitle("Font substitutions and attached marks")
         .WithSubtitle("One glyph layout for measurement and PNG painting")

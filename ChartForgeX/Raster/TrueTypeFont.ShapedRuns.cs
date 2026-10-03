@@ -6,10 +6,10 @@ namespace ChartForgeX.Raster;
 
 internal sealed partial class TrueTypeFont {
     /// <summary>Whether any painted glyph still needs the primary face's synthetic bold offset.</summary>
-    internal bool NeedsSyntheticBold(string text) => IsSimpleRun(text) || NeedsSyntheticBold(TextShaper.Shape(this, text));
+    internal bool NeedsSyntheticBold(string text) => _colors == null && IsSimpleRun(text) || NeedsSyntheticBold(TextShaper.Shape(this, text));
 
     internal bool NeedsSyntheticBold(IReadOnlyList<ShapedGlyph> glyphs) {
-        foreach (var glyph in glyphs) if (ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) return true;
+        foreach (var glyph in glyphs) if ((ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) && !glyph.Face.TryColorInk(glyph.Glyph, out _)) return true;
         return false;
     }
     /// <summary>Measures already shaped visual glyphs without resolving bidi or joining a second time.</summary>
@@ -38,7 +38,7 @@ internal sealed partial class TrueTypeFont {
             var scale = glyph.Face.ScaleFor(fontSize);
             var advance = GlyphAdvance(glyph, previous, fontSize);
             x += advance - GlyphAdvance(glyph, null, fontSize);
-            if (!syntheticBoldCopyOnly || ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600)
+            if (!syntheticBoldCopyOnly || (ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) && !glyph.Face.TryColorInk(glyph.Glyph, out _))
                 rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit,
                     ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600 ? boldOffset : 0);
             x += GlyphAdvance(glyph, null, fontSize);

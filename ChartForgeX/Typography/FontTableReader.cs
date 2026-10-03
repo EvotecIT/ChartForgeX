@@ -11,6 +11,18 @@ internal readonly struct FontTableReader {
         _data = data; _start = start; Length = length;
     }
     internal int Length { get; }
+    internal FontTableReader Slice(int at, int length) {
+        Require(at, length); return new FontTableReader(_data, _start + at, length);
+    }
+    internal int U8(int at) { Require(at, 1); return _data[_start + at]; }
+    internal int I8(int at) => (sbyte)U8(at);
+    internal int U24(int at) { Require(at, 3); return (U8(at) << 16) | U16(at + 1); }
+    internal double Fixed(int at) => unchecked((int)U32(at)) / 65536.0;
+    internal double F2Dot14(int at) => I16(at) / 16384.0;
+    internal byte[] Copy(int at, int length) {
+        Require(at, length); var result = new byte[length];
+        Buffer.BlockCopy(_data, _start + at, result, 0, length); return result;
+    }
     internal void Require(int at, int length) {
         if (at < 0 || length < 0 || at > Length - length) throw new FontLayoutException();
     }
