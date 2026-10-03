@@ -82,3 +82,11 @@ feature pstf { sub o by post; } pstf;
 fallback=dict(mapping);del fallback[0x924]
 build('indic-primary',fallback,['dev2'],FORMS+'feature blwf { sub halant ra by belowRa; } blwf;')
 build('indic-growth',mapping,['dev2'],''.join('feature '+f+' { sub ka by ka ka ka ka; } '+f+';\n' for f in ['nukt','akhn','rkrf','cjct']))
+
+# Explicit Telugu reph and logical Malayalam repha exercise distinct script rules.
+rephmap=dict(mapping);rephmap[0xd4e]='reph'
+for generation in ('modern','legacy'):
+ tags={script:(modern if generation=='modern' else script) for script,(modern,cps) in INDIC.items()}
+ rules='feature rphf { script '+tags['deva']+'; sub ra halant by reph; script '+tags['telu']+'; sub ra halant zwj by reph; script '+tags['mlym']+'; sub ra halant by reph; } rphf;'
+ rules+='markClass reph <anchor 0 0> @above; feature abvm { pos base ka <anchor 200 700> mark @above; } abvm;'
+ build('indic-reph-'+generation,rephmap,list(tags.values()),rules)

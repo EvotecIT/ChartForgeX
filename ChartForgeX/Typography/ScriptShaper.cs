@@ -70,6 +70,8 @@ internal static partial class ScriptShaper {
     private static void Decompose(TrueTypeFont face, List<LayoutGlyph> glyphs) {
         var decomposed = new List<LayoutGlyph>(glyphs.Count);
         foreach (var original in glyphs) {
+            // Truncated UTF-16 retains the same missing-glyph path as other unsupported characters.
+            if (original.CodePoint >= 0xd800 && original.CodePoint <= 0xdfff) { decomposed.Add(original); continue; }
             var normalized = char.ConvertFromUtf32(original.CodePoint).Normalize(NormalizationForm.FormD);
             if (normalized.Length <= 1) { decomposed.Add(original); continue; }
             var points = new List<int>(normalized.Length);

@@ -198,7 +198,10 @@ internal static partial class TextShaper {
 
     private static List<int>? Compose(List<int> visible) {
         var builder = new StringBuilder();
-        foreach (var cp in visible) builder.Append(char.ConvertFromUtf32(cp));
+        foreach (var cp in visible) {
+            if (cp >= 0xd800 && cp <= 0xdfff) return null;
+            builder.Append(char.ConvertFromUtf32(cp));
+        }
         string composed;
         try {
             composed = builder.ToString().Normalize(NormalizationForm.FormC);

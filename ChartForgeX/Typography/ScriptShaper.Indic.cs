@@ -16,14 +16,21 @@ internal static partial class ScriptShaper {
         var consonants = new List<int>();
         for (var i = 0; i < glyphs.Count; i++) if (IsBase(glyphs[i])) consonants.Add(i);
         if (consonants.Count == 0) { layout.Apply(glyphs, tag, Presentation, budget: budget); return; }
-        var reph = glyphs.Count > 2 && glyphs[0].CodePoint == profile.Ra && glyphs[1].CodePoint == profile.Halant &&
-            !IsJoiner(glyphs[2].CodePoint) && layout.SubstitutesPair(tag, "rphf", glyphs[0], halant);
+        var reph = false;
+        if (glyphs.Count > 2 && glyphs[0].CodePoint == profile.Ra && glyphs[1].CodePoint == profile.Halant) {
+            // An implicit reph cannot replace the syllable's only base. Telugu requires an explicit ZWJ;
+            // Malayalam's logical repha is a character of its own rather than an initial Ra-halant form.
+            if (profile.RephMode == IndicRephMode.Implicit && consonants.Count > 1 && !IsJoiner(glyphs[2].CodePoint))
+                reph = layout.SubstitutesForm(tag, "rphf", glyphs[0], halant);
+            if (profile.RephMode == IndicRephMode.Explicit && glyphs[2].CodePoint == 0x200d)
+                reph = layout.SubstitutesForm(tag, "rphf", glyphs[0], halant) || layout.SubstitutesForm(tag, "rphf", glyphs[0], halant, glyphs[2]);
+        }
         var below = new bool[glyphs.Count]; var post = new bool[glyphs.Count]; var pref = new bool[glyphs.Count];
         foreach (var i in consonants) {
             var first = modern ? halant : glyphs[i]; var second = modern ? glyphs[i] : halant;
-            below[i] = layout.SubstitutesPair(tag, "blwf", first, second);
-            post[i] = layout.SubstitutesPair(tag, "pstf", first, second);
-            pref[i] = layout.SubstitutesPair(tag, "pref", first, second);
+            below[i] = layout.SubstitutesForm(tag, "blwf", first, second);
+            post[i] = layout.SubstitutesForm(tag, "pstf", first, second);
+            pref[i] = layout.SubstitutesForm(tag, "pref", first, second);
         }
         var firstBase = reph && consonants.Count > 1 ? 1 : 0;
         var baseIndex = consonants[firstBase]; var seenBelow = false;
@@ -49,10 +56,14 @@ internal static partial class ScriptShaper {
             if (IsBase(glyph)) {
                 if (i > baseIndex) glyph.ScriptPosition = below[i] ? Below : Post;
                 if (i < baseIndex) glyph.Features |= 32u;
-                if (i != baseIndex) glyph.Features |= 64u | 128u | 256u | 512u;
+                if (i > baseIndex) glyph.Features |= 64u | 128u | 256u;
+                if (!modern && profile.ModernTag == "dev2" && i < baseIndex) glyph.Features |= 64u;
             }
         }
-        if (reph) { glyphs[0].ScriptPosition = glyphs[1].ScriptPosition = Reph; glyphs[0].Features |= 16u; }
+        if (reph) {
+            glyphs[0].ScriptPosition = glyphs[1].ScriptPosition = Reph; glyphs[0].Features |= 16u;
+            if (profile.RephMode == IndicRephMode.Explicit) glyphs[2].ScriptPosition = Reph;
+        }
         // A post-base form starts with its preceding halant; a half form ends with its following halant.
         for (var i = 1; i < glyphs.Count; i++) {
             var glyph = glyphs[i]; var category = IndicCharacterData.Category(glyph.CodePoint);
@@ -65,7 +76,8 @@ internal static partial class ScriptShaper {
                 var next = i + 1;
                 while (next < glyphs.Count && IsJoiner(glyphs[next].CodePoint)) next++;
                 glyph.ScriptPosition = next > baseIndex && next < glyphs.Count && IsBase(glyphs[next]) ? glyphs[next].ScriptPosition : glyphs[i - 1].ScriptPosition;
-                glyph.Features |= 64u | 128u | 256u | 512u;
+                if (glyph.ScriptPosition > Base) glyph.Features |= 64u | 128u | 256u;
+                if (!modern && profile.ModernTag == "dev2" && glyph.ScriptPosition < Base) glyph.Features |= 64u;
             }
         }
         // ZWNJ requests the explicit virama; ZWJ requests a half form instead of a full conjunct.

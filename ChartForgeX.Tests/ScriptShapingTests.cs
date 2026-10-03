@@ -53,6 +53,42 @@ public sealed class ScriptShapingTests {
     public void AnExplicitHalantKeepsThePreBaseVowelNextToItsMainConsonant() =>
         Assert.Equal(new ushort[] { 2, 4, 5, 1 }, Glyphs(Font("indic-modern"), "त्कि"));
     [Theory]
+    [InlineData("indic-modern")]
+    [InlineData("indic-legacy")]
+    public void RephNeedsAnotherBaseRatherThanOnlyAnAccent(string name) =>
+        Assert.Equal(new ushort[] { 3, 4, 20 }, Glyphs(Font(name), "र्॑"));
+    [Theory]
+    [InlineData("indic-modern")]
+    [InlineData("indic-legacy")]
+    public void TeluguDoesNotConvertAnUnrequestedInitialRaIntoABelowBaseForm(string name) =>
+        Assert.Equal(new ushort[] { 3, 4, 1 }, Glyphs(Font(name), "ర్క"));
+    [Theory]
+    [InlineData("indic-reph-modern")]
+    [InlineData("indic-reph-legacy")]
+    public void RephUsesTheScriptsImplicitExplicitOrLogicalForm(string name) {
+        var face = Font(name);
+        Assert.Equal(new ushort[] { 1, 10 }, Glyphs(face, "र्क"));
+        Assert.Equal(new ushort[] { 1, 10 }, Glyphs(face, "ర్\u200dక"));
+        Assert.Equal(new ushort[] { 3, 4, 1 }, Glyphs(face, "ర్క"));
+        Assert.Equal(new ushort[] { 3, 4, 1 }, Glyphs(face, "ర్\u200cక"));
+        Assert.Equal(new ushort[] { 3, 4, 1 }, Glyphs(face, "ര്ക"));
+        Assert.Equal(new ushort[] { 1, 10 }, Glyphs(face, "ൎക"));
+        var attached = TextShaper.Shape(face, "ర్\u200dక")[1];
+        Assert.Equal(-300, attached.OffsetX); Assert.Equal(700, attached.OffsetY);
+    }
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void UnmatchedSurrogatesRetainMissingGlyphsThroughMeasurementAndDrawing(int input) {
+        var text = input == 0 ? "कि" + (char)0xd800 : input == 1 ? (char)0xdc00 + "कि" : (char)0xd800 + "ि";
+        var face = Font("indic-modern"); var glyphs = TextShaper.Shape(face, text);
+        Assert.Contains(glyphs, glyph => glyph.Glyph == 0);
+        Assert.Equal(glyphs.Sum(glyph => glyph.Advance ?? glyph.Face.AdvanceWidth(glyph.Glyph)) / 10, face.Measure(text, 100), 6);
+        Assert.Contains(Paint(face, text), value => value != 0);
+        Assert.Same(glyphs, TextShaper.Shape(face, text));
+    }
+    [Theory]
     [InlineData(".ि", new ushort[] { 6, 5, 19 })]
     [InlineData(" ि", new ushort[] { 6, 5, 19 })]
     [InlineData("\u00a0ि", new ushort[] { 5, 6 })]
