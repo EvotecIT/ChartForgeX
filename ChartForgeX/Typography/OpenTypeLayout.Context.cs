@@ -30,7 +30,7 @@ internal sealed partial class OpenTypeLayout {
             var rule = table.Offset(set, set + 2 + r * 2); var cursor = rule;
             if (chained) {
                 var beforeCount = table.U16(cursor); cursor += 2;
-                if (!Match(table, cursor, beforeCount, glyphs, index, -1, flags, filter, format, beforeClass, null)) continue;
+                if (!Match(table, cursor, beforeCount, glyphs, index, -1, flags, filter, format, beforeClass, null, execution)) continue;
                 cursor += beforeCount * 2;
             }
             var inputCount = table.U16(cursor); cursor += 2;
@@ -38,23 +38,23 @@ internal sealed partial class OpenTypeLayout {
             if (!chained) cursor += 2;
             if (inputCount < 1 || inputCount > 256) throw new FontLayoutException();
             var inputs = new List<LayoutGlyph> { glyphs[index] };
-            if (!Match(table, cursor, inputCount - 1, glyphs, index, 1, flags, filter, format, inputClass, inputs)) continue;
+            if (!Match(table, cursor, inputCount - 1, glyphs, index, 1, flags, filter, format, inputClass, inputs, execution)) continue;
             cursor += (inputCount - 1) * 2;
             if (chained) {
                 var afterCount = table.U16(cursor); cursor += 2;
                 var last = glyphs.IndexOf(inputs[inputs.Count - 1]);
-                if (!Match(table, cursor, afterCount, glyphs, last, 1, flags, filter, format, afterClass, null)) continue;
+                if (!Match(table, cursor, afterCount, glyphs, last, 1, flags, filter, format, afterClass, null, execution)) continue;
                 cursor += afterCount * 2; recordCount = table.U16(cursor); cursor += 2;
             }
             return ApplyContext(table, list, cursor, recordCount, inputs, glyphs, flags, filter, positioning, execution, depth);
         }
         return -1;
     }
-    private bool Match(FontTableReader table, int at, int count, List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, int format, int classAt, List<LayoutGlyph>? matches) {
+    private bool Match(FontTableReader table, int at, int count, List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, int format, int classAt, List<LayoutGlyph>? matches, LayoutExecution execution) {
         if (count > 256) throw new FontLayoutException();
         table.Require(at, count * 2);
         for (var i = 0; i < count; i++) {
-            index = Next(glyphs, index, direction, flags, filter);
+            index = Next(glyphs, index, direction, flags, filter, execution);
             if (index < 0) return false;
             var actual = format == 1 ? glyphs[index].Glyph : table.Class(classAt, glyphs[index].Glyph);
             if (actual != table.U16(at + i * 2)) return false;
@@ -66,7 +66,7 @@ internal sealed partial class OpenTypeLayout {
         var cursor = at + 2;
         if (chained) {
             var beforeCount = table.U16(cursor); cursor += 2;
-            if (!MatchCoverages(table, at, cursor, beforeCount, glyphs, index, -1, flags, filter, false, null)) return -1;
+            if (!MatchCoverages(table, at, cursor, beforeCount, glyphs, index, -1, flags, filter, false, null, execution)) return -1;
             cursor += beforeCount * 2;
         }
         var inputCount = table.U16(cursor); cursor += 2;
@@ -74,11 +74,11 @@ internal sealed partial class OpenTypeLayout {
         if (!chained) cursor += 2;
         if (inputCount == 0) throw new FontLayoutException();
         var inputs = new List<LayoutGlyph>();
-        if (!MatchCoverages(table, at, cursor, inputCount, glyphs, index, 1, flags, filter, true, inputs)) return -1;
+        if (!MatchCoverages(table, at, cursor, inputCount, glyphs, index, 1, flags, filter, true, inputs, execution)) return -1;
         cursor += inputCount * 2;
         if (chained) {
             var afterCount = table.U16(cursor); cursor += 2;
-            if (!MatchCoverages(table, at, cursor, afterCount, glyphs, glyphs.IndexOf(inputs[inputs.Count - 1]), 1, flags, filter, false, null)) return -1;
+            if (!MatchCoverages(table, at, cursor, afterCount, glyphs, glyphs.IndexOf(inputs[inputs.Count - 1]), 1, flags, filter, false, null, execution)) return -1;
             cursor += afterCount * 2; recordCount = table.U16(cursor); cursor += 2;
         }
         return ApplyContext(table, list, cursor, recordCount, inputs, glyphs, flags, filter, positioning, execution, depth);
@@ -90,11 +90,11 @@ internal sealed partial class OpenTypeLayout {
         ApplyRecords(table, list, at, count, start, ref end, flags, filter, glyphs, positioning, execution, depth);
         return Math.Max(start, Math.Min(end, glyphs.Count));
     }
-    private bool MatchCoverages(FontTableReader table, int origin, int at, int count, List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, bool includeFirst, List<LayoutGlyph>? matches) {
+    private bool MatchCoverages(FontTableReader table, int origin, int at, int count, List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, bool includeFirst, List<LayoutGlyph>? matches, LayoutExecution execution) {
         if (count > 256) throw new FontLayoutException();
         table.Require(at, count * 2);
         for (var i = 0; i < count; i++) {
-            if (!includeFirst || i > 0) index = Next(glyphs, index, direction, flags, filter);
+            if (!includeFirst || i > 0) index = Next(glyphs, index, direction, flags, filter, execution);
             if (index < 0 || table.Coverage(table.Offset(origin, at + i * 2), glyphs[index].Glyph) < 0) return false;
             matches?.Add(glyphs[index]);
         }
@@ -107,7 +107,7 @@ internal sealed partial class OpenTypeLayout {
             var sequence = table.U16(at + i * 4);
             if (sequence >= end - start) throw new FontLayoutException();
             var index = start;
-            for (var s = 0; s < sequence && index >= 0; s++) index = Next(glyphs, index, 1, flags, filter);
+            for (var s = 0; s < sequence && index >= 0; s++) index = Next(glyphs, index, 1, flags, filter, execution);
             if (index < 0 || index >= end) throw new FontLayoutException();
             var before = glyphs.Count;
             Execute(table, list, Lookup(table, list, table.U16(at + i * 4 + 2)), glyphs, index, positioning, execution, depth + 1);

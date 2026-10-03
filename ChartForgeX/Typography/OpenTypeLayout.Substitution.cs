@@ -37,7 +37,7 @@ internal sealed partial class OpenTypeLayout {
                 return Ligate(table, table.Offset(at, at + 6 + covered * 2), glyphs, index, flags, filter, execution);
             case 8:
                 if (format != 1) return -1;
-                return ReverseSubstitute(table, at, covered, glyphs, index, flags, filter);
+                return ReverseSubstitute(table, at, covered, glyphs, index, flags, filter, execution);
             default: return -1;
         }
     }
@@ -51,7 +51,7 @@ internal sealed partial class OpenTypeLayout {
             table.Require(ligature + 4, (components - 1) * 2);
             var positions = new List<int> { index }; var current = index; var matched = true;
             for (var c = 1; c < components; c++) {
-                current = Next(glyphs, current, 1, flags, filter);
+                current = Next(glyphs, current, 1, flags, filter, execution);
                 if (current < 0 || glyphs[current].Glyph != table.U16(ligature + 2 + c * 2)) { matched = false; break; }
                 positions.Add(current);
             }
@@ -84,19 +84,19 @@ internal sealed partial class OpenTypeLayout {
         }
         return -1;
     }
-    private int ReverseSubstitute(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter) {
+    private int ReverseSubstitute(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter, LayoutExecution execution) {
         var cursor = at + 4; var beforeCount = table.U16(cursor); cursor += 2;
         if (beforeCount > 256) throw new FontLayoutException();
         var previous = index;
         for (var i = 0; i < beforeCount; i++) {
-            previous = Next(glyphs, previous, -1, flags, filter);
+            previous = Next(glyphs, previous, -1, flags, filter, execution);
             if (previous < 0 || table.Coverage(table.Offset(at, cursor + i * 2), glyphs[previous].Glyph) < 0) return -1;
         }
         cursor += beforeCount * 2; var afterCount = table.U16(cursor); cursor += 2;
         if (afterCount > 256) throw new FontLayoutException();
         var next = index;
         for (var i = 0; i < afterCount; i++) {
-            next = Next(glyphs, next, 1, flags, filter);
+            next = Next(glyphs, next, 1, flags, filter, execution);
             if (next < 0 || table.Coverage(table.Offset(at, cursor + i * 2), glyphs[next].Glyph) < 0) return -1;
         }
         cursor += afterCount * 2;

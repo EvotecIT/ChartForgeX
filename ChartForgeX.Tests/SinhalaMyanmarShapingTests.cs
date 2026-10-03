@@ -123,6 +123,9 @@ public sealed class SinhalaMyanmarShapingTests {
         Assert.Equal(16385, glyphs.Count); Assert.Equal(1, glyphs[0].Glyph);
         Assert.All(glyphs.Skip(1).Take(8192), glyph => Assert.Equal(19, glyph.Glyph));
         Assert.All(glyphs.Skip(8193), glyph => Assert.Equal(18, glyph.Glyph));
+        Assert.All(glyphs.Skip(1), glyph => Assert.Equal(-250, glyph.OffsetX));
+        Assert.All(glyphs.Skip(1).Take(8192), glyph => Assert.Equal(700, glyph.OffsetY));
+        Assert.All(glyphs.Skip(8193), glyph => Assert.Equal(-100, glyph.OffsetY));
     }
 
     [Theory]

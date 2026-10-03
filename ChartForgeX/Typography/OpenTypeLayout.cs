@@ -168,8 +168,11 @@ internal sealed partial class OpenTypeLayout {
         }
         return glyph.IsMark ? 3 : glyph.ComponentClusters != null ? 2 : 1;
     }
-    private int Next(List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter) {
-        do { index += direction; } while (index >= 0 && index < glyphs.Count && Skipped(glyphs[index], flags, filter));
+    private int Next(List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, LayoutExecution execution) {
+        do {
+            if (--execution.Remaining < 0) return -1;
+            index += direction;
+        } while (index >= 0 && index < glyphs.Count && Skipped(glyphs[index], flags, filter));
         return index >= 0 && index < glyphs.Count ? index : -1;
     }
     private ushort ValidGlyph(int glyph) {
@@ -190,7 +193,12 @@ internal sealed partial class OpenTypeLayout {
             Remaining = (int)Math.Min(16000000L, Math.Max(4096L, (long)count * 1024));
             _availableGrowth = (long)count * 7 + 64; Prepare(count); RightToLeft = rightToLeft;
         }
-        internal void Prepare(int count) => MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count + Math.Max(0, _availableGrowth));
+        internal void Prepare(int count) {
+            MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count + Math.Max(0, _availableGrowth));
+            PreviousBases = null;
+        }
+        internal int[]? PreviousBases;
+        internal int BaseFlags, BaseFilter;
         internal void AccountGrowth(int change) => _availableGrowth -= change;
         internal int Remaining;
         internal int MaximumGlyphs;
