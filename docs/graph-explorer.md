@@ -106,7 +106,7 @@ The large-scene path has four layers:
 
 1. C# computes deterministic initial positions and serializes a compact graph document.
 2. The browser creates lightweight runtime items rather than thousands of hidden SVG marks.
-3. WebGL2 draws styled routes and compact circular marks in batched buffers. A shared Canvas layer draws rich shapes, images and readable details; Canvas also renders the full scene when WebGL2 is unavailable.
+3. WebGL2 draws styled routes and compact circular marks in batched buffers. Canvas draws cluster surfaces beneath those marks and rich shapes, images and readable details above them; Canvas also renders the full scene when WebGL2 is unavailable.
 4. SVG export materializes complete node and edge artwork on demand, so fast startup does not remove vector export.
 
 The compact document is activated only after a level-of-detail threshold is crossed. Normal SVG scenes retain their complete markup. Large pages therefore avoid the hidden-SVG DOM cost while keeping search, filters, selection, neighborhood focus, cluster state, hit testing, JSON export, and incremental updates.

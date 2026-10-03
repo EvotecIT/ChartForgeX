@@ -11,7 +11,7 @@
     if (root.__cfxGraphWebGl === false) return null;
     if (root.__cfxGraphWebGl) return root.__cfxGraphWebGl;
     const canvas = root.querySelector('[data-cfx-role="graph-webgl"]');
-    const gl = canvas?.getContext('webgl2', { alpha: false, antialias: true, depth: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+    const gl = canvas?.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: true, depth: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     if (!gl) {
       root.__cfxGraphWebGl = false;
       return null;
@@ -144,8 +144,7 @@
     if (!runtime || runtime.gl.isContextLost?.()) return false;
     const { gl } = runtime, size = sceneSize(root), view = viewport(root), palette = graphThemePalette(root);
     webGlResize(runtime, size);
-    const paper = webGlColor(palette.paper, 1, [255, 255, 255]);
-    gl.clearColor(paper[0], paper[1], paper[2], 1);
+    gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(runtime.program);
     const fit = graphSurfaceFit(size, runtime.canvas.width, runtime.canvas.height);
@@ -153,11 +152,15 @@
     gl.uniform3f(runtime.surface, fit.scale, fit.offsetX, fit.offsetY);
     gl.uniform3f(runtime.view, view.x, view.y, view.scale);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
     const dense = compact || state.edges.length > 250, moving = root.dataset.cfxGraphPhysicsState === 'running';
     const mesh = webGlEdgeMesh(root, state, byId, palette, dense, moving, fit.scale, compact, runtime.pointLimit);
+    if (!drawWebGlUnderlay(root, state, { byId, palette, moving, mesh })) {
+      setGraphRenderer(root, 'canvas');
+      return false;
+    }
     if (mesh.positions.length) {
       if (runtime.uploadedMesh !== mesh) { webGlUpload(runtime, mesh.positions, mesh.colors); runtime.uploadedMesh = mesh; }
       else { webGlBindAttribute(runtime, 'position', 2); webGlBindAttribute(runtime, 'color', 4); }

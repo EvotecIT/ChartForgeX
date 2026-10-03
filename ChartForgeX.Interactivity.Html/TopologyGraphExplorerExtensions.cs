@@ -165,6 +165,8 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
         if (card) graphNode.Metadata["topology.card"] = "true";
+        // Retain the projected surface for script-free output without treating it as an authored fill.
+        if (card && string.IsNullOrWhiteSpace(node.BackgroundColor)) graphNode.Metadata["topology.cardBackgroundColor"] = theme.Card;
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
         AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
         AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);

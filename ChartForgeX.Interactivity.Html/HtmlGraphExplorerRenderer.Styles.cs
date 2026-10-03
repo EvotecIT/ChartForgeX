@@ -97,7 +97,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string NodeMarkStyle(GraphSceneNode node) {
         var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(node.Style.BackgroundColor)) parts.Add("--cfx-node-fill:" + node.Style.BackgroundColor);
+        var fill = node.Style.BackgroundColor;
+        if (string.IsNullOrWhiteSpace(fill) && IsCardNode(node)) {
+            fill = node.Metadata.TryGetValue("topology.cardBackgroundColor", out var surface) && !string.IsNullOrWhiteSpace(surface)
+                ? surface : "var(--cfx-color-surface-solid,#ffffff)";
+        }
+        if (!string.IsNullOrWhiteSpace(fill)) parts.Add("--cfx-node-fill:" + fill);
         if (!string.IsNullOrWhiteSpace(node.Style.BorderColor)) parts.Add("--cfx-node-stroke:" + node.Style.BorderColor);
         return string.Join(";", parts);
     }

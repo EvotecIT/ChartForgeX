@@ -176,8 +176,8 @@
     const current = viewport(root);
     return { x: (sx - current.x) / current.scale, y: (sy - current.y) / current.scale, screenX: sx, screenY: sy };
   };
-  const canvasContext = (root) => {
-    const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
+  const canvasContext = (root, role = 'graph-canvas') => {
+    const canvas = root.querySelector(`[data-cfx-role="${role}"]`);
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
     const ratio = Math.max(1, window.devicePixelRatio || 1);

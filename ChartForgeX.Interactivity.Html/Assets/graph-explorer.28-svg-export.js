@@ -54,7 +54,11 @@
       group.appendChild(icon);
     }
   };
-  const appendExportedNodeDetails = (document, group, node) => {
+  const appendExportedNodeDetails = (document, group, node, root, palette = graphThemePalette(root)) => {
+    const colors = graphReadableNodeColors(root, node.el, palette);
+    group.style.setProperty('--cfx-node-label-adaptive', colors.label);
+    group.style.setProperty('--cfx-node-secondary-adaptive', colors.secondary);
+    group.style.setProperty('--cfx-node-label-halo', colors.halo);
     const textShape = node.shape === 'text';
     const card = node.card === true;
     const cardX = -node.size * 1.45 + 52;
@@ -71,7 +75,6 @@
       }));
     }
     const label = svgNode(document, 'text', { class: card ? 'cfx-graph-node-label cfx-graph-node-card-label' : 'cfx-graph-node-label', x: card ? cardX : 0, y: card ? -5 : textShape ? 4 : node.size + 18, ...(card ? { 'data-cfx-full-label': node.label } : {}) });
-    if (node.labelColor) label.setAttribute('style', `fill:${node.labelColor}`);
     label.textContent = card ? graphCardText(node.label, node.size) : node.label;
     group.appendChild(label);
     if (node.secondaryLabel) {
@@ -139,6 +142,7 @@
       if (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-neighborhood-related'))
         appendExportedEdgeLabel(document, edgeLabels, edge, rendered);
     });
+    const palette = graphThemePalette(root);
     state.nodes.filter(node => visible(node.el)).forEach(node => {
       const transform = `translate(${node.x.toFixed(3)} ${node.y.toFixed(3)})`;
       const group = svgNode(document, 'g', {
@@ -163,7 +167,7 @@
         'data-cfx-status': attr(node.el, 'data-cfx-status'),
         transform
       });
-      appendExportedNodeDetails(document, detail, node);
+      appendExportedNodeDetails(document, detail, node, root, palette);
       details.appendChild(detail);
     });
     runtime.append(edges, edgeLabels, marks, details);
@@ -191,6 +195,7 @@
       detailsLayer = svgNode(document, 'g', { class: 'cfx-graph-node-details-layer', 'data-cfx-role': 'graph-node-details-layer', 'pointer-events': 'none' });
       viewport.appendChild(detailsLayer);
     }
+    const palette = graphThemePalette(root);
     state.nodes.forEach(node => {
       let group = groups.get(node.id);
       if (!group) {
@@ -199,7 +204,7 @@
       }
       if (!group.childElementCount) appendExportedNodeMark(document, group, node);
       const details = svgNode(document, 'g', { class: `${attr(node.el, 'class') || 'cfx-graph-node'} cfx-graph-node-details`, 'data-cfx-role': 'graph-node-details', 'data-node-details-for': node.id, 'data-cfx-status': attr(node.el, 'data-cfx-status'), transform: attr(node.el, 'transform') });
-      appendExportedNodeDetails(document, details, node);
+      appendExportedNodeDetails(document, details, node, root, palette);
       detailsLayer.appendChild(details);
     });
     viewport.appendChild(detailsLayer);

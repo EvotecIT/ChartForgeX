@@ -9,7 +9,7 @@ const source = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\
   .map(match => fs.readFileSync(path.join(assets, match[1]), 'utf8')).join('\n');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
-  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches };', host);
+  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails };', host);
   const api = host.api, root = api.graphVirtualElement('root', { 'data-cfx-graph-theme-active': 'light' }, []);
   const node = (id, x, y) => ({ id, x, y, size: 12, shape: 'circle', el: api.graphVirtualElement('graph-node', { 'data-node-label': id }, []) });
   const a = node('a', 100, 100), b = node('b', 300, 100);
@@ -93,6 +93,25 @@ test('labels choose contrast against their actual background in light and dark t
   a.el.setAttribute('data-node-card', 'true');
   const colors = api.graphReadableNodeColors(root, a.el, api.graphThemePalette(root));
   assert.ok(api.graphColorContrast(colors.label, '#2563eb') >= 4.5);
+});
+
+test('materialized virtual SVG card details use the same readable colours as physical and Canvas cards', () => {
+  const { api, root, a } = runtime();
+  const element = () => {
+    const properties = {};
+    return { children: [], attributes: {}, properties, classList: { add() {} },
+      setAttribute(name, value) { this.attributes[name] = value; }, appendChild(child) { this.children.push(child); },
+      style: { setProperty(name, value) { properties[name] = value; } } };
+  };
+  const group = element(), document = { createElementNS: element };
+  root.setAttribute('data-cfx-graph-theme-active', 'dark');
+  a.card = true; a.label = 'White card'; a.labelColor = '#ffffff';
+  a.el.setAttribute('data-node-card', 'true'); a.el.setAttribute('data-node-background-color', '#ffffff');
+  a.el.setAttribute('data-node-label-color', '#ffffff');
+  api.appendExportedNodeDetails(document, group, a, root);
+  const fill = group.children[0].attributes.style?.match(/(?:^|;)fill:([^;]+)/)?.[1] || group.properties['--cfx-node-label-adaptive'];
+  assert.ok(api.graphColorContrast(fill, '#ffffff') >= 4.5);
+  assert.equal(group.properties['--cfx-node-label-halo'], '#ffffff');
 });
 test('the shared node layer retains labels, badges and selected details through compact and moving states', () => {
   const { api, root, a } = runtime(), text = [], paths = [];
