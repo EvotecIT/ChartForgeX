@@ -49,9 +49,9 @@ internal static partial class TextShaper {
         var forms = ArabicShaping.MayJoin(codePoints) ? ArabicShaping.ResolveForms(codePoints) : null;
         var runs = new List<FontRun>(); FontRun? current = null; var script = "DFLT";
         // Common punctuation follows the surrounding script; leading punctuation adopts the first strong script.
-        foreach (var cluster in clusters) { var candidate = ScriptOf(cluster.Base); if (candidate != "DFLT") { script = candidate; break; } }
+        foreach (var cluster in clusters) { var candidate = ClusterScript(cluster); if (candidate != "DFLT") { script = candidate; break; } }
         foreach (var cluster in clusters) {
-            var candidate = ScriptOf(cluster.Base);
+            var candidate = ClusterScript(cluster);
             if (candidate != "DFLT") script = candidate;
             var level = levels == null ? (byte)0 : levels[cluster.Start];
             if (current == null || !ReferenceEquals(current.Face, cluster.Face) || current.Owner != cluster.Owner || current.Script != script || current.Level != level) {
@@ -74,20 +74,24 @@ internal static partial class TextShaper {
     }
     private static void FinishRun(FontRun run, List<ShapedGlyph> output) {
         var face = run.Face; var glyphs = run.Glyphs; var layout = face.Layout;
+        var budget = new OpenTypeLayout.LayoutExecution(glyphs.Count, (run.Level & 1) != 0);
+        var tag = ScriptShaper.SelectTag(layout, run.Script);
+        var positioningTag = ScriptShaper.SelectTag(layout, run.Script, positioning: true);
         if (run.Script == "arab") foreach (var glyph in glyphs) glyph.SkipForSubstitution = glyph.CodePoint == 0x200d;
-        var positioned = layout.HasLayout(run.Script);
-        if (positioned) {
-            layout.Apply(glyphs, run.Script, CommonSubstitution, required: true);
-            if (run.Script == "arab") layout.Apply(glyphs, run.Script, ArabicForms);
-            layout.Apply(glyphs, run.Script, StandardSubstitution);
+        var complex = ScriptShaper.Shape(face, glyphs, run.Script, tag, budget);
+        var positioned = layout.HasLayout(tag) || layout.HasLayout(positioningTag);
+        if (positioned && !complex) {
+            layout.Apply(glyphs, run.Script, CommonSubstitution, required: true, budget: budget);
+            if (run.Script == "arab") layout.Apply(glyphs, run.Script, ArabicForms, budget: budget);
+            layout.Apply(glyphs, run.Script, StandardSubstitution, budget: budget);
         }
         glyphs.RemoveAll(glyph => glyph.Ignorable);
         foreach (var glyph in glyphs) glyph.XAdvance = face.AdvanceWidth(glyph.Glyph);
         if (positioned) {
-            if (!layout.HasFeature(run.Script, "kern", positioning: true)) {
+            if (!layout.HasFeature(positioningTag, "kern", positioning: true)) {
                 for (var i = 1; i < glyphs.Count; i++) glyphs[i - 1].XAdvance += face.Kerning(glyphs[i - 1].Glyph, glyphs[i].Glyph);
             }
-            layout.Apply(glyphs, run.Script, StandardPositioning, positioning: true, required: true, rightToLeft: (run.Level & 1) != 0);
+            layout.Apply(glyphs, positioningTag, StandardPositioning, positioning: true, required: true, rightToLeft: (run.Level & 1) != 0, budget: budget);
         }
         if ((run.Level & 1) != 0) ReverseClusters(glyphs);
         if (positioned) OpenTypeLayout.ResolveAttachments(glyphs);
@@ -109,6 +113,12 @@ internal static partial class TextShaper {
         glyphs.Clear(); glyphs.AddRange(reversed);
     }
     private static string ScriptOf(int cp) => OpenTypeScriptData.Script(cp);
+    private static string ClusterScript(Cluster cluster) {
+        var script = ScriptOf(cluster.Base);
+        if (script != "DFLT") return script;
+        foreach (var cp in cluster.Output) { script = ScriptOf(cp); if (script != "DFLT") return script; }
+        return "DFLT";
+    }
     private sealed class FontRun {
         internal FontRun(TrueTypeFont face, string script, int owner, byte level) { Face = face; Script = script; Owner = owner; Level = level; }
         internal readonly TrueTypeFont Face;

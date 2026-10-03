@@ -120,7 +120,7 @@ internal static partial class TextShaper {
                 ((current != null && ArabicShaping.IsJoiningLetter(current.First)) ||
                  (i + 1 < codePoints.Count && ArabicShaping.IsJoiningLetter(codePoints[i + 1])));
             var joinsPrevious = current != null && !arabicJoiner && (owners == null || owners[i] == owners[i - 1]) &&
-                (Extends(cp) || (codePoints[i - 1] == 0x200D && current.First != 0x200D && !ArabicShaping.IsJoiningLetter(cp)));
+                (Extends(cp) || ConnectsIndic(codePoints, i) || (codePoints[i - 1] == 0x200D && current.First != 0x200D && !ArabicShaping.IsJoiningLetter(cp)));
             if (!joinsPrevious) {
                 current = new Cluster(i, cp, owners == null ? 0 : owners[i]);
                 clusters.Add(current);
@@ -130,6 +130,17 @@ internal static partial class TextShaper {
         }
 
         return clusters;
+    }
+
+    // A font fallback must cover the whole orthographic syllable, including the consonant after a virama.
+    private static bool ConnectsIndic(List<int> codePoints, int index) {
+        var kind = IndicCharacterData.Category(codePoints[index]);
+        if (kind != IndicCategory.Consonant && kind != IndicCategory.Vowel) return false;
+        var previous = index - 1;
+        while (previous >= 0 && (codePoints[previous] == 0x200c || codePoints[previous] == 0x200d)) previous--;
+        if (previous < 0) return false;
+        var before = IndicCharacterData.Category(codePoints[previous]);
+        return before == IndicCategory.Halant || before == IndicCategory.Repha;
     }
 
     private static void AssignFace(TrueTypeFont primary, ref FontFallbackChain? chain, List<int> codePoints, Cluster cluster) {

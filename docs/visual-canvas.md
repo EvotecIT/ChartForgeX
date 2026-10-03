@@ -250,7 +250,9 @@ The shared glyph layout reads the font's default language system for each script
 
 Emoji are drawn from the emoji font's monochrome outlines (Segoe UI Emoji on Windows) in the text color; a cluster with U+FE0F, or a pictograph that defaults to emoji presentation, tries the emoji font first. Colour layers and bitmap emoji are not drawn.
 
-GSUB can combine emoji ZWJ sequences when the selected face provides the ligature. Script-specific syllable analysis and reordering for Indic, Thai, and Khmer remain separate work; the generic substitution and attachment tables alone do not provide those rules. Explicit language selection, device-size GPOS corrections, and variable positioning instances are not applied.
+Script-specific shaping groups virama-connected consonants into one fallback syllable. Devanagari, Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada and Malayalam use font-selected consonant forms, ordered Indic feature stages and vowel/reph reordering. Modern Indic tags are preferred when the font declares them; older tags use their consonant-plus-halant convention. Thai and Lao AM vowels decompose and reorder their ring before tone marks. Khmer coeng forms, split vowels and register shifters use their own feature stages. The selected font supplies the substitutions and attachment anchors; a font without those forms cannot produce the same result.
+
+GSUB can combine emoji ZWJ sequences when the selected face provides the ligature. Explicit language selection, device-size GPOS corrections and variable positioning instances are not applied. Correctly shaped syllables can have different widths from nominal character sequences, so fitted labels and collision reservations use the shaped advances.
 
 #### Small text
 

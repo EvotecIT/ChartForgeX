@@ -23,8 +23,11 @@ internal sealed partial class OpenTypeLayout {
 
     internal bool HasLayout(string script) => Plan(script, false).Features.Count != 0 || Plan(script, false).Required.Count != 0 || Plan(script, true).Features.Count != 0 || Plan(script, true).Required.Count != 0;
 
+    /// <summary>Distinguishes a declared script from the DFLT fallback when selecting modern Indic tags.</summary>
+    internal bool HasScript(string script, bool positioning = false) => Plan(script, positioning).Script == script;
+
     /// <summary>Applies a feature stage in lookup-list order, once per lookup even when shared by several features.</summary>
-    internal void Apply(List<LayoutGlyph> glyphs, string script, IReadOnlyList<string> features, bool positioning = false, bool required = false, bool rightToLeft = false) {
+    internal void Apply(List<LayoutGlyph> glyphs, string script, IReadOnlyList<string> features, bool positioning = false, bool required = false, bool rightToLeft = false, LayoutExecution? budget = null) {
         var table = positioning ? _gpos : _gsub;
         if (!table.HasValue || glyphs.Count == 0) return;
         var plan = Plan(script, positioning);
@@ -37,7 +40,8 @@ internal sealed partial class OpenTypeLayout {
                 if (!tags.Contains(feature)) tags.Add(feature);
             }
         }
-        var execution = new LayoutExecution(glyphs.Count, rightToLeft);
+        var execution = budget ?? new LayoutExecution(glyphs.Count, rightToLeft);
+        execution.Prepare(glyphs.Count); var originalCount = glyphs.Count;
         foreach (var lookup in selected) {
             try {
                 var at = Lookup(table.Value, plan.LookupList, lookup.Key);
@@ -53,6 +57,7 @@ internal sealed partial class OpenTypeLayout {
             } catch (FontLayoutException) { /* Keep the usable glyph sequence when an optional lookup is malformed. */ }
             if (execution.Remaining <= 0) break;
         }
+        execution.AccountGrowth(glyphs.Count - originalCount);
     }
     private static bool Enabled(LayoutGlyph glyph, List<string> features) {
         foreach (var feature in features) if (glyph.Allows(feature)) return true;
@@ -80,6 +85,7 @@ internal sealed partial class OpenTypeLayout {
             if (scriptTag == tag) selected = table.Offset(scripts, record + 4);
             if (scriptTag == "DFLT") fallback = table.Offset(scripts, record + 4);
         }
+        plan.Script = selected >= 0 ? tag : "DFLT";
         if (selected < 0) selected = fallback;
         if (selected < 0) return;
         var language = table.Offset(selected, selected, optional: true);
@@ -166,15 +172,23 @@ internal sealed partial class OpenTypeLayout {
         return (ushort)glyph;
     }
     private sealed class LayoutPlan {
+        internal string? Script;
         internal int LookupList;
         internal readonly List<int> Required = new();
         internal string? RequiredTag;
         internal readonly Dictionary<string, int[]> Features = new(StringComparer.Ordinal);
     }
-    private sealed class LayoutExecution {
-        internal LayoutExecution(int count, bool rightToLeft) { Remaining = (int)Math.Min(16000000L, Math.Max(1024L, (long)count * 256)); MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count * 8 + 64); RightToLeft = rightToLeft; }
+    /// <summary>Shares finite lookup work and glyph growth across every feature stage in one font run.</summary>
+    internal sealed class LayoutExecution {
+        private long _availableGrowth;
+        internal LayoutExecution(int count, bool rightToLeft) {
+            Remaining = (int)Math.Min(16000000L, Math.Max(4096L, (long)count * 1024));
+            _availableGrowth = (long)count * 7 + 64; Prepare(count); RightToLeft = rightToLeft;
+        }
+        internal void Prepare(int count) => MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count + Math.Max(0, _availableGrowth));
+        internal void AccountGrowth(int change) => _availableGrowth -= change;
         internal int Remaining;
-        internal readonly int MaximumGlyphs;
+        internal int MaximumGlyphs;
         internal readonly bool RightToLeft;
     }
 }

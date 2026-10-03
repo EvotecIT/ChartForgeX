@@ -17,6 +17,7 @@ internal sealed class LayoutGlyph {
     internal readonly bool IsMark;
     internal bool Ignorable;
     internal bool SkipForSubstitution;
+    internal byte ScriptPosition;
     internal uint Features = uint.MaxValue;
     internal double XAdvance, YAdvance, XOffset, YOffset;
     internal LayoutGlyph? Ligature;
@@ -26,12 +27,12 @@ internal sealed class LayoutGlyph {
     internal double AnchorX, AnchorY, AttachmentAdjustmentX, AttachmentAdjustmentY;
     internal bool CursiveAttachment;
     internal LayoutGlyph Copy(ushort glyph) => new(glyph, CodePoint, Cluster) {
-        Ignorable = Ignorable, SkipForSubstitution = SkipForSubstitution, Features = Features, Ligature = Ligature, Component = Component
+        Ignorable = Ignorable, SkipForSubstitution = SkipForSubstitution, ScriptPosition = ScriptPosition, Features = Features, Ligature = Ligature, Component = Component
     };
     internal static uint FeatureMask(string feature) => feature switch {
         "isol" => 1u, "fina" => 2u, "init" => 4u, "medi" => 8u,
         "rphf" => 16u, "half" => 32u, "blwf" => 64u, "pstf" => 128u,
-        "pref" => 256u, "vatu" => 512u, _ => 0u
+        "pref" => 256u, "vatu" => 512u, "abvf" => 1024u, "cjct" => 2048u, "akhn" => 4096u, _ => 0u
     };
     internal bool Allows(string feature) { var mask = FeatureMask(feature); return mask == 0 || (Features & mask) != 0; }
 }

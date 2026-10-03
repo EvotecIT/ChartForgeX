@@ -15,6 +15,17 @@ internal static partial class ExpressiveExamples {
         .WithXLabels("office", "affine", "بِبّ", "สวัสดี")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
 
+    private static Chart CreateScriptShapingShowcase() => Chart.Create()
+        .WithTitle("Syllables in the selected font")
+        .WithSubtitle("Conjuncts, pre-base vowels and attached marks share one text layout")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Devanagari · Bengali · Tamil · Thai · Khmer")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Leelawadee UI', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Thai', 'Noto Sans Khmer', sans-serif").WithFontSize(28))
+        .WithXLabels("क्षेत्र", "ক্ষেত্র", "தமிழ்", "น้ำ", "ខ្មែរ")
+        .AddBar("Observed", Points(32, 48, 43, 66, 51), ChartColor.FromHex("#2563eb"));
+
     private static ChartGrid CreateThemeShowcaseGrid() {
         var auroraThemePreview = Chart.Create()
             .WithTitle("Aurora")
