@@ -254,6 +254,8 @@ A cluster with U+FE0F, or a pictograph that defaults to emoji presentation, trie
 
 Script-specific shaping groups virama-connected consonants into one fallback syllable. Devanagari, Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada and Malayalam use font-selected consonant forms, ordered Indic feature stages and vowel/reph reordering. Modern Indic tags are preferred when the font declares them; older tags use their consonant-plus-halant convention. Thai and Lao AM vowels decompose and reorder their ring before tone marks. Khmer coeng forms, split vowels and register shifters use their own feature stages. The selected font supplies the substitutions and attachment anchors; a font without those forms cannot produce the same result.
 
+Sinhala decomposes split vowels, retains explicit joiners during normalisation and places repaya after the font's consonant forms. Myanmar fonts declaring the modern `mym2` script model reorder kinzi, medial ra, pre-base vowels and anusvara, with font-driven stacked consonants and positioned marks. These scripts zero font-classified mark advances before required distance adjustments, so measurement and drawing retain the same width. Legacy Myanmar `mymr` fonts retain the generic layout path; legacy encodings such as Zawgyi are not converted. The gallery's `sinhala-myanmar-showcase` uses a font stack covering both scripts.
+
 GSUB can combine emoji ZWJ sequences when the selected face provides the ligature. Explicit language selection, device-size GPOS corrections and variable positioning instances are not applied. Correctly shaped syllables can have different widths from nominal character sequences, so fitted labels and collision reservations use the shaped advances.
 
 #### Small text

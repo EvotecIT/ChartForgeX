@@ -4,6 +4,17 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateSinhalaMyanmarShowcase() => Chart.Create()
+        .WithTitle("Sinhala and Myanmar report labels")
+        .WithSubtitle("Split vowels, explicit joining and kinzi use the selected font's forms")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Sinhala · Myanmar")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Myanmar Text', 'Noto Sans Sinhala', 'Noto Sans Myanmar', sans-serif").WithFontSize(28))
+        .WithXLabels("සිංහල", "ශ්‍රී ලංකාව", "မြန်မာ", "မင်္ဂလာပါ")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+
     private static Chart CreateColourEmojiShowcase() => Chart.Create()
         .WithTitle("Colour emoji in report labels")
         .WithSubtitle("Font palettes, joined sequences and bitmap strikes use the same glyph layout")

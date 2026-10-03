@@ -26,6 +26,11 @@ internal sealed partial class OpenTypeLayout {
     /// <summary>Distinguishes a declared script from the DFLT fallback when selecting modern Indic tags.</summary>
     internal bool HasScript(string script, bool positioning = false) => Plan(script, positioning).Script == script;
 
+    /// <summary>Font-classified spacing marks are zeroed before script-specific distance adjustments.</summary>
+    internal bool IsMarkGlyph(LayoutGlyph glyph) {
+        try { return GlyphClass(glyph) == 3; } catch (FontLayoutException) { return glyph.IsMark; }
+    }
+
     /// <summary>Applies a feature stage in lookup-list order, once per lookup even when shared by several features.</summary>
     internal void Apply(List<LayoutGlyph> glyphs, string script, IReadOnlyList<string> features, bool positioning = false, bool required = false, bool rightToLeft = false, LayoutExecution? budget = null) {
         var table = positioning ? _gpos : _gsub;
