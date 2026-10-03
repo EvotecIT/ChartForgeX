@@ -36,7 +36,15 @@
     context.strokeStyle = paint.color;
     context.globalAlpha = paint.alpha;
     context.lineWidth = paint.width;
-    context.setLineDash(edge.dashed ? edge.dashPattern : []);
+    const pattern = edge.dashed ? edge.dashPattern : [];
+    const matrix = pattern.length && context.getTransform();
+    const pixelScale = matrix ? Math.max(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d)) : 1;
+    // Round caps overlap subpixel gaps. Avoid asking the native stroker to
+    // construct millions of indistinguishable dash fragments at this zoom.
+    const covered = context.lineCap === 'round' && pattern.length > 0 &&
+      pattern.reduce((sum, part) => sum + part, 0) * (pattern.length % 2 ? 2 : 1) * pixelScale < .5 &&
+      pattern.every(part => part <= paint.width);
+    context.setLineDash(covered ? [] : pattern);
     context.stroke();
     context.setLineDash([]);
     context.globalAlpha = 1;

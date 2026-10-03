@@ -181,25 +181,44 @@ test('Canvas marks render serialized fills, borders and selected emphasis', () =
   assert.deepEqual(paints, ['#7c3aed', ['#f59e0b', 5]]);
 });
 
-test('theme changes synchronize retained card paint without replacing live positions or explicit colours', () => {
+test('theme defaults stay derived while generic authored card colours survive theme changes', () => {
   const { api, root, a, b, state } = runtime(), nodes = state.nodes;
   for (const node of nodes) { node.card = true; node.shape = 'box'; node.el.setAttribute('data-node-card', 'true'); }
-  b.el.setAttribute('data-cfx-metadata', JSON.stringify({ 'topology.backgroundColor': '#7c3aed' }));
   b.el.setAttribute('data-node-background-color', '#7c3aed');
   a.vx = 3; a.x = 140;
-  for (const theme of ['dark', 'light']) {
+  for (const [theme, authored] of [['dark', '#7c3aed'], ['light', '#ffffff'], ['dark', '#ffffff']]) {
+    b.el.setAttribute('data-node-background-color', authored);
     root.setAttribute('data-cfx-graph-theme-active', theme);
     root.__cfxGraphEdgeMesh = {};
     api.syncGraphThemeState(root, state);
     assert.equal(state.nodes, nodes); assert.equal(state.nodes[0], a); assert.equal(a.x, 140); assert.equal(a.vx, 3);
     assert.equal(a.backgroundColor, api.graphThemePalette(root).card);
-    assert.equal(b.backgroundColor, '#7c3aed'); assert.equal(root.__cfxGraphEdgeMesh, null);
+    assert.equal(a.el.getAttribute('data-node-background-color'), null);
+    assert.equal(b.el.getAttribute('data-node-background-color'), authored);
+    assert.equal(b.backgroundColor, authored); assert.equal(root.__cfxGraphEdgeMesh, null);
     for (const node of nodes) {
       const colours = api.graphReadableNodeColors(root, node.el, api.graphThemePalette(root));
       assert.equal(colours.halo, node.backgroundColor);
       assert.ok(api.graphColorContrast(colours.label, node.backgroundColor) >= 4.5);
     }
   }
+});
+
+test('Canvas retains visible dash patterns and bounds fully covered subpixel round dashes at physical zoom', () => {
+  const { api, root, edge, state, palette } = runtime(), strokes = [];
+  let scale = 1, current = [];
+  const context = new Proxy({ lineCap: 'round', getTransform: () => ({ a: scale, b: 0, c: 0, d: scale }),
+    setLineDash: value => current = Array.from(value), stroke: () => strokes.push(current) }, {
+    get: (target, key) => target[key] || (() => {}), set: (target, key, value) => (target[key] = value, true)
+  });
+  edge.dashed = true; edge.label = '';
+  const draw = () => api.drawCanvasEdge(context, root, edge, api.graphEdgePaint(root, edge, state.byId, palette, false, false), palette);
+  edge.dashPattern = [.0001, .0001]; draw();
+  edge.dashPattern = [9, 5]; draw();
+  edge.dashPattern = [.1, .1]; scale = 4; draw();
+  edge.dashPattern = [.1]; scale = 3; draw();
+  edge.dashPattern = [.0001, .0001]; context.lineCap = 'butt'; draw();
+  assert.deepEqual(strokes, [[], [9, 5], [.1, .1], [.1], [.0001, .0001]]);
 });
 test('renderer switches transfer surface focus and preserve focus on host controls', () => {
   const { api, root } = runtime(), doc = { activeElement: null };

@@ -15,7 +15,7 @@
       if (!edge.label || !edge.showLabel || fallback.has(edge) || !visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
       drawCanvasEdgeLabel(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving), palette);
     });
-    drawCanvasNodes(context, root, state.nodes, compact, moving, mesh.nodePoints.nodes);
+    drawCanvasNodes(context, root, state.nodes, compact, moving, fallbackEdges.length ? undefined : mesh.nodePoints.nodes);
     context.restore();
     return true;
   };

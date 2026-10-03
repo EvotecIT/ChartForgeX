@@ -170,7 +170,8 @@
       }
       if (mesh.triangleVertices) gl.drawArrays(gl.TRIANGLES, 0, mesh.triangleVertices);
     }
-    webGlDrawNodes(runtime, mesh.nodePoints);
+    // Native fallback strokes and node bodies must share their paint order.
+    if (!mesh.fallbackEdges.length) webGlDrawNodes(runtime, mesh.nodePoints);
     gl.disable(gl.BLEND);
     return drawWebGlDetails(root, state, { byId, palette, compact, dense, moving, mesh });
   };

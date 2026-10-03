@@ -1051,6 +1051,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 
 .cfx-graph-tooltip {
   position: absolute;
+  z-index: 4;
   left: 16px;
   bottom: 16px;
   max-width: min(380px, calc(100% - 32px));

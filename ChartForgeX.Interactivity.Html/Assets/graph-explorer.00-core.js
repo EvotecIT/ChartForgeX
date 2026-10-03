@@ -52,6 +52,7 @@
   const graphState = (root) => {
     ensureGraphDocument(root);
     const detailGroups = new Map(items(root, '[data-cfx-role="graph-node-details"]').map(el => [attr(el, 'data-node-details-for'), el]));
+    let cardFill;
     const nodes = items(root, '[data-cfx-role="graph-node"]').map((el, index) => ({
       el,
       detailsEl: detailGroups.get(attr(el, 'data-node-id')) || null,
@@ -66,7 +67,7 @@
       shape: attr(el, 'data-node-shape') || 'circle',
       imageUrl: attr(el, 'data-node-image-url'),
       icon: attr(el, 'data-node-icon'),
-      backgroundColor: attr(el, 'data-node-background-color'),
+      backgroundColor: attr(el, 'data-node-background-color') || (attr(el, 'data-node-card') === 'true' ? (cardFill ||= graphThemePalette(root).card) : ''),
       borderColor: attr(el, 'data-node-border-color'),
       labelColor: attr(el, 'data-node-label-color'),
       labelBackgroundColor: attr(el, 'data-node-label-background-color'),

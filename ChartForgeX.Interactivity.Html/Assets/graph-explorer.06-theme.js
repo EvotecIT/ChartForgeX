@@ -91,7 +91,7 @@
   const graphReadableNodeColors = (root, node, palette) => {
     const card = attr(node, 'data-node-card') === 'true';
     const requestedBackground = attr(node, card ? 'data-node-background-color' : 'data-node-label-background-color');
-    const background = graphColorRgb(requestedBackground) ? requestedBackground : card ? '#2563eb' : palette.paper;
+    const background = graphColorRgb(requestedBackground) ? requestedBackground : card ? palette.card : palette.paper;
     const preferred = attr(node, 'data-node-label-color');
     const choose = (requested, fallback) => {
       const candidates = [requested, fallback, '#f8fafc', '#0f172a']
@@ -112,11 +112,13 @@
     const physical = (selector) => Array.from(root.querySelectorAll(selector));
     const nodeDetails = new Map(physical('[data-cfx-role="graph-node-details"]').map(details => [attr(details, 'data-node-details-for'), details]));
     physical('[data-cfx-role="graph-node"]').forEach(node => {
-      const metadata = metadataDetail(node);
-      if (attr(node, 'data-node-card') === 'true' && !Object.prototype.hasOwnProperty.call(metadata, 'topology.backgroundColor')) {
-        node.setAttribute('data-node-background-color', palette.card);
-        node.style.setProperty('--cfx-node-fill', palette.card);
-        node.firstElementChild?.style.setProperty('--cfx-node-fill', palette.card);
+      const fill = attr(node, 'data-node-background-color') || (attr(node, 'data-node-card') === 'true' ? palette.card : '');
+      if (fill) {
+        node.style.setProperty('--cfx-node-fill', fill);
+        node.firstElementChild?.style.setProperty('--cfx-node-fill', fill);
+      } else {
+        node.style.removeProperty('--cfx-node-fill');
+        node.firstElementChild?.style.removeProperty('--cfx-node-fill');
       }
       const colors = graphReadableNodeColors(root, node, palette);
       node.style.setProperty('--cfx-node-label-adaptive', colors.label);
@@ -146,11 +148,9 @@
     if (!state) return;
     const palette = graphThemePalette(root);
     state.nodes.forEach(node => {
-      const metadata = metadataDetail(node.el);
-      if (node.card && !Object.prototype.hasOwnProperty.call(metadata, 'topology.backgroundColor')) {
-        node.el.setAttribute('data-node-background-color', palette.card);
-      }
-      node.backgroundColor = attr(node.el, 'data-node-background-color');
+      // Authored attributes remain canonical for patches, history and exports.
+      // Theme-derived paint lives only in the render state and SVG custom property.
+      node.backgroundColor = attr(node.el, 'data-node-background-color') || (node.card ? palette.card : '');
     });
     // Retain live positions and physics ownership; only the theme-derived paint changes.
     root.__cfxGraphEdgeMesh = null;

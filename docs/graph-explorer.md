@@ -84,7 +84,7 @@ const appearance = ChartForgeXGraphExplorer.theme("service-estate");
 // { mode: "dark", active: "dark" }
 ```
 
-Every change raises `cfxgraphthemechange` with `mode` and resolved `active` colors. Scoped CSS custom properties such as `--cfx-color-accent`, `--cfx-color-surface-raised`, `--cfx-color-paper`, and `--cfx-color-focus` are the supported host override seam. Canvas, WebGL, the minimap, SVG, and exported SVG all resolve through the same palette. Explicit model label colors remain when they provide at least 4.5:1 contrast against the graph paper; otherwise the adapter uses the active theme text color.
+Every change raises `cfxgraphthemechange` with `mode` and resolved `active` colors. Scoped CSS custom properties such as `--cfx-color-accent`, `--cfx-color-surface-raised`, `--cfx-color-paper`, and `--cfx-color-focus` are the supported host override seam. Canvas, WebGL, the minimap, SVG, and exported SVG all resolve through the same palette. Authored node fills remain unchanged across themes; cards without an authored fill use the active card surface. Label colors adapt for contrast against their actual card, label plate or graph background.
 
 Accessibility behavior is part of the adapter contract:
 
@@ -123,7 +123,7 @@ graph.Options.Performance.MaxInteractiveWebGlNodes = 30000;
 graph.Options.Performance.MaxInteractiveWebGlEdges = 80000;
 ```
 
-WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer.
+WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer. Round-capped dash cycles smaller than half a physical pixel render as a continuous stroke when their caps cover the gaps; zooming in restores the visible pattern.
 
 During dense motion, strokes below one physical pixel use opacity proportional to their width. Zooming into the scene or settling physics restores full stroke geometry.
 
