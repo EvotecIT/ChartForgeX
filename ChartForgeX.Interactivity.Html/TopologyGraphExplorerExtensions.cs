@@ -149,7 +149,10 @@ public static class TopologyGraphExplorerExtensions {
 
         var theme = chart.Theme ?? TopologyTheme.Light();
         var accentColor = FirstText(node.Color, icon?.Color, theme.StatusColor(node.Status))!;
-        graphNode.Style.BackgroundColor = TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
+        var card = shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill;
+        graphNode.Style.BackgroundColor = card && string.IsNullOrWhiteSpace(node.BackgroundColor)
+            ? null
+            : TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
         graphNode.Style.BorderColor = accentColor;
         graphNode.Style.LabelColor = display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard
             ? null
@@ -161,7 +164,9 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.subtitle", node.Subtitle);
         AddMetadata(graphNode.Metadata, "topology.kind", node.Kind.ToString());
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
-        if (shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill) graphNode.Metadata["topology.card"] = "true";
+        if (card) graphNode.Metadata["topology.card"] = "true";
+        // Retain the projected surface for script-free output without treating it as an authored fill.
+        if (card && string.IsNullOrWhiteSpace(node.BackgroundColor)) graphNode.Metadata["topology.cardBackgroundColor"] = theme.Card;
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
         AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
         AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);

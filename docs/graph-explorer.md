@@ -84,7 +84,7 @@ const appearance = ChartForgeXGraphExplorer.theme("service-estate");
 // { mode: "dark", active: "dark" }
 ```
 
-Every change raises `cfxgraphthemechange` with `mode` and resolved `active` colors. Scoped CSS custom properties such as `--cfx-color-accent`, `--cfx-color-surface-raised`, `--cfx-color-paper`, and `--cfx-color-focus` are the supported host override seam. Canvas, WebGL, the minimap, SVG, and exported SVG all resolve through the same palette. Explicit model label colors remain when they provide at least 4.5:1 contrast against the graph paper; otherwise the adapter uses the active theme text color.
+Every change raises `cfxgraphthemechange` with `mode` and resolved `active` colors. Scoped CSS custom properties such as `--cfx-color-accent`, `--cfx-color-surface-raised`, `--cfx-color-paper`, and `--cfx-color-focus` are the supported host override seam. Canvas, WebGL, the minimap, SVG, and exported SVG all resolve through the same palette. Authored node fills remain unchanged across themes; cards without an authored fill use the active card surface. Label colors adapt for contrast against their actual card, label plate or graph background.
 
 Accessibility behavior is part of the adapter contract:
 
@@ -106,7 +106,7 @@ The large-scene path has four layers:
 
 1. C# computes deterministic initial positions and serializes a compact graph document.
 2. The browser creates lightweight runtime items rather than thousands of hidden SVG marks.
-3. WebGL2 draws edges and nodes in batched buffers; Canvas remains the acceleration fallback when WebGL2 is unavailable.
+3. WebGL2 draws styled routes and compact circular marks in batched buffers. Canvas draws cluster surfaces beneath those marks and rich shapes, images and readable details above them; Canvas also renders the full scene when WebGL2 is unavailable.
 4. SVG export materializes complete node and edge artwork on demand, so fast startup does not remove vector export.
 
 The compact document is activated only after a level-of-detail threshold is crossed. Normal SVG scenes retain their complete markup. Large pages therefore avoid the hidden-SVG DOM cost while keeping search, filters, selection, neighborhood focus, cluster state, hit testing, JSON export, and incremental updates.
@@ -123,7 +123,13 @@ graph.Options.Performance.MaxInteractiveWebGlNodes = 30000;
 graph.Options.Performance.MaxInteractiveWebGlEdges = 80000;
 ```
 
-WebGL currently renders topology as status-aware lines and points. Node and edge labels, detailed shapes, and per-edge widths require SVG or Canvas. Use SVG for small image-rich views and WebGL for dense overview exploration; hierarchy navigation lets one application move naturally between those levels.
+WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Curved and turning routes, overlapping round dash caps, extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer. Overlapping mixed marks share that layer to preserve body and status order. Routes that overlap a native fallback route also share an ordered paint pass; separate compact circles and forward straight routes retain GPU batching. Round-capped dash cycles smaller than half a physical pixel render as a continuous stroke when their caps cover the gaps; zooming in restores the visible pattern.
+
+During dense motion, strokes below one physical pixel use opacity proportional to their width. Zooming into the scene or settling physics restores full stroke geometry.
+
+Panning and zooming reuse retained GPU geometry. Position changes, selection, filters, patches, theme changes and surface resizing invalidate the affected rendering state. If a WebGL context is lost, the explorer switches to Canvas and retains its viewport, selection and graph document; restoration rebuilds the GPU resources. PNG export uses the complete shared Canvas renderer, then restores the current interactive graph, including updates received while images load.
+
+The generated `graph-rich-rendering-svg.html`, `graph-rich-rendering-canvas.html` and `graph-rich-rendering-webgl.html` examples show the same scene in all three backends, including route updates and WebGL context loss/restoration.
 
 ## Runtime physics and dragging
 

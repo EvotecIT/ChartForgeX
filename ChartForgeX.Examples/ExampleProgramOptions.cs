@@ -69,6 +69,12 @@ internal static class ExampleProgramOptions {
             return true;
         }
 
+        if (HasArg(args, "--graph-rich-rendering-only")) {
+            GraphRichRenderingExample.Write(output);
+            Console.WriteLine("Generated rich graph renderer examples in: " + output);
+            return true;
+        }
+
         if (HasArg(args, "--graph-scale-only")) {
             GraphExplorerScaleExamples.Write(output);
             Console.WriteLine("Generated graph explorer scale baselines in: " + output);

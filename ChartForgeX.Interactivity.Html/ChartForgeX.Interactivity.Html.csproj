@@ -60,6 +60,12 @@
     <EmbeddedResource Include="Assets\graph-explorer.02-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js" />
     <EmbeddedResource Include="Assets\graph-explorer.03-canvas-nodes.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-nodes.js" />
     <EmbeddedResource Include="Assets\graph-explorer.03-canvas-details.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-details.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.03-canvas-clusters.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-clusters.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.03-canvas-edges.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-edges.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.04-webgl-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.04-webgl-geometry.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.04-webgl-details.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.04-webgl-details.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.04-webgl-nodes.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.04-webgl-nodes.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.04-webgl-cache.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.04-webgl-cache.js" />
     <EmbeddedResource Include="Assets\graph-explorer.04-webgl.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.04-webgl.js" />
     <EmbeddedResource Include="Assets\graph-explorer.05-viewport.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.05-viewport.js" />
     <EmbeddedResource Include="Assets\graph-explorer.06-theme.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.06-theme.js" />

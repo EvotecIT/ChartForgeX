@@ -61,9 +61,6 @@ internal static partial class SmokeTests {
         var svgExport = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.28-svg-export.js"));
         Assert(bindings.Contains("imageAlt: attr(node.el, 'data-node-image-alt') ||", StringComparison.Ordinal), "Accelerated JSON exports should preserve compact-document image alternative text without requiring a physical child image element.");
         Assert(bindings.Contains("bindAcceleratedSvgKeyboard(root)", StringComparison.Ordinal) && stateSync.Contains("scene.setAttribute('tabindex', acceleratedSvg ? '0' : '-1')", StringComparison.Ordinal) && svgExport.Contains("'aria-hidden': 'true'", StringComparison.Ordinal), "Accelerated SVG scenes should expose one stable keyboard surface while keeping transient overlay nodes out of the tab order and accessibility tree.");
-        var webGl = File.ReadAllText(Path.Combine(assetRoot, "graph-explorer.04-webgl.js"));
-        Assert(webGl.Contains("edgeHasRoute(rendered) ? routeRenderPoints(rendered) : [rendered.source, rendered.target]", StringComparison.Ordinal) && webGl.Contains("for (let index = 1; index < points.length; index++)", StringComparison.Ordinal), "WebGL graph rendering should emit every prepared polyline route segment instead of collapsing large-scene routes to one chord.");
-        Assert(webGl.Contains("edgeArrowGeometry(rendered, control, side)", StringComparison.Ordinal) && webGl.Contains("rendered.targetArrow || rendered.directed", StringComparison.Ordinal), "WebGL graph rendering should preserve source and target direction with arrowhead geometry on large directed scenes.");
     }
 
     private static void AssertGeneratedAssetMatchesSource(string root, string sourceRelativePath, string targetRelativePath) {

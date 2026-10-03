@@ -662,6 +662,7 @@
   cursor: grabbing;
 }
 
+.cfx-graph-underlay,
 .cfx-graph-canvas,
 .cfx-graph-webgl {
   position: absolute;
@@ -681,6 +682,7 @@
 }
 
 .cfx-graph-render-canvas .cfx-graph-canvas,
+.cfx-graph-render-webgl .cfx-graph-underlay,
 .cfx-graph-render-webgl .cfx-graph-webgl {
   display: block;
 }
@@ -693,8 +695,7 @@
 
 .cfx-graph-render-canvas .cfx-graph-webgl,
 .cfx-graph-render-svg .cfx-graph-canvas,
-.cfx-graph-render-svg .cfx-graph-webgl,
-.cfx-graph-render-webgl .cfx-graph-canvas {
+.cfx-graph-render-svg .cfx-graph-webgl {
   display: none;
 }
 
@@ -1052,6 +1053,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 
 .cfx-graph-tooltip {
   position: absolute;
+  z-index: 4;
   left: 16px;
   bottom: 16px;
   max-width: min(380px, calc(100% - 32px));
@@ -1262,3 +1264,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-neighborhood-active .cfx-graph-node.cfx-graph-neighborhood-primary .cfx-graph-node-label,
 .cfx-graph-neighborhood-active .cfx-graph-node-details.cfx-graph-neighborhood-related .cfx-graph-node-label,
 .cfx-graph-neighborhood-active .cfx-graph-node-details.cfx-graph-neighborhood-primary .cfx-graph-node-label { display: block; }
+
+/* Rich marks share the Canvas renderer and leave WebGL picking on its own surface. */
+.cfx-graph-render-webgl .cfx-graph-canvas {
+  display: block;
+  z-index: 1;
+  background: transparent;
+  pointer-events: none;
+}
+
+.cfx-graph-underlay { pointer-events: none; z-index: 0; }
+.cfx-graph-render-webgl .cfx-graph-webgl { background: transparent; z-index: 0; }

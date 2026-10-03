@@ -1,4 +1,10 @@
   const applyGraphExportStyles = (root, svg, clone) => {
+    // The standalone SVG no longer inherits typography from its HTML host.
+    const inherited = root.ownerDocument.defaultView?.getComputedStyle(svg);
+    ['font-family', 'font-size', 'font-weight', 'font-style', 'color'].forEach(property => {
+      const value = inherited?.getPropertyValue(property);
+      if (value) clone.style.setProperty(property, value);
+    });
     const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]')
       || Array.from(root.ownerDocument.querySelectorAll('style')).find(style => (style.textContent || '').includes('.cfx-graph-explorer'));
     const externalStyle = root.ownerDocument.querySelector('link[data-cfx-graph-assets="true"]');
