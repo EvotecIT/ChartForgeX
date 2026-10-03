@@ -26,6 +26,11 @@ internal sealed partial class OpenTypeLayout {
     /// <summary>Distinguishes a declared script from the DFLT fallback when selecting modern Indic tags.</summary>
     internal bool HasScript(string script, bool positioning = false) => Plan(script, positioning).Script == script;
 
+    /// <summary>Font-classified spacing marks are zeroed before script-specific distance adjustments.</summary>
+    internal bool IsMarkGlyph(LayoutGlyph glyph) {
+        try { return GlyphClass(glyph) == 3; } catch (FontLayoutException) { return glyph.IsMark; }
+    }
+
     /// <summary>Applies a feature stage in lookup-list order, once per lookup even when shared by several features.</summary>
     internal void Apply(List<LayoutGlyph> glyphs, string script, IReadOnlyList<string> features, bool positioning = false, bool required = false, bool rightToLeft = false, LayoutExecution? budget = null) {
         var table = positioning ? _gpos : _gsub;
@@ -163,8 +168,11 @@ internal sealed partial class OpenTypeLayout {
         }
         return glyph.IsMark ? 3 : glyph.ComponentClusters != null ? 2 : 1;
     }
-    private int Next(List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter) {
-        do { index += direction; } while (index >= 0 && index < glyphs.Count && Skipped(glyphs[index], flags, filter));
+    private int Next(List<LayoutGlyph> glyphs, int index, int direction, int flags, int filter, LayoutExecution execution) {
+        do {
+            if (--execution.Remaining < 0) return -1;
+            index += direction;
+        } while (index >= 0 && index < glyphs.Count && Skipped(glyphs[index], flags, filter));
         return index >= 0 && index < glyphs.Count ? index : -1;
     }
     private ushort ValidGlyph(int glyph) {
@@ -185,7 +193,12 @@ internal sealed partial class OpenTypeLayout {
             Remaining = (int)Math.Min(16000000L, Math.Max(4096L, (long)count * 1024));
             _availableGrowth = (long)count * 7 + 64; Prepare(count); RightToLeft = rightToLeft;
         }
-        internal void Prepare(int count) => MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count + Math.Max(0, _availableGrowth));
+        internal void Prepare(int count) {
+            MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count + Math.Max(0, _availableGrowth));
+            PreviousBases = null;
+        }
+        internal int[]? PreviousBases;
+        internal int BaseFlags, BaseFilter;
         internal void AccountGrowth(int change) => _availableGrowth -= change;
         internal int Remaining;
         internal int MaximumGlyphs;

@@ -15,13 +15,13 @@ internal sealed partial class OpenTypeLayout {
             else return -1;
             return index + 1;
         }
-        if (type == 2) return Pair(table, at, covered, glyphs, index, flags, filter);
-        if (type == 3 && format == 1) return Cursive(table, at, covered, glyphs, index, flags, filter, execution.RightToLeft);
-        if (type >= 4 && type <= 6 && format == 1) return Mark(table, at, covered, glyphs, index, type, flags, filter);
+        if (type == 2) return Pair(table, at, covered, glyphs, index, flags, filter, execution);
+        if (type == 3 && format == 1) return Cursive(table, at, covered, glyphs, index, flags, filter, execution);
+        if (type >= 4 && type <= 6 && format == 1) return Mark(table, at, covered, glyphs, index, type, flags, filter, execution);
         return -1;
     }
-    private int Pair(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter) {
-        var second = Next(glyphs, index, 1, flags, filter);
+    private int Pair(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter, LayoutExecution execution) {
+        var second = Next(glyphs, index, 1, flags, filter, execution);
         if (second < 0) return -1;
         var format = table.U16(at); var firstFormat = table.U16(at + 4); var secondFormat = table.U16(at + 6);
         var firstSize = ValueSize(firstFormat); var size = firstSize + ValueSize(secondFormat); var record = -1;
@@ -69,15 +69,15 @@ internal sealed partial class OpenTypeLayout {
         table.Require(at, format == 1 ? 6 : format == 2 ? 8 : format == 3 ? 10 : throw new FontLayoutException());
         return (table.I16(at + 2), table.I16(at + 4));
     }
-    private int Cursive(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter, bool rightToLeft) {
-        var second = Next(glyphs, index, 1, flags, filter);
+    private int Cursive(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter, LayoutExecution execution) {
+        var second = Next(glyphs, index, 1, flags, filter, execution);
         if (second < 0 || covered >= table.U16(at + 4)) return -1;
         var nextCovered = table.Coverage(table.Offset(at, at + 2), glyphs[second].Glyph);
         if (nextCovered < 0 || nextCovered >= table.U16(at + 4)) return -1;
         var exit = Anchor(table, at, at + 8 + covered * 4); var entry = Anchor(table, at, at + 6 + nextCovered * 4);
         if (!exit.HasValue || !entry.HasValue) return -1;
         var first = glyphs[index]; var next = glyphs[second];
-        if (rightToLeft) {
+        if (execution.RightToLeft) {
             first.XAdvance -= exit.Value.X + first.XOffset;
             first.XOffset = -exit.Value.X;
             next.XAdvance = entry.Value.X + next.XOffset;
@@ -90,16 +90,15 @@ internal sealed partial class OpenTypeLayout {
         else Attach(next, first, 0, exit.Value.Y - entry.Value.Y, cursive: true);
         return index + 1;
     }
-    private int Mark(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int type, int flags, int filter) {
+    private int Mark(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int type, int flags, int filter, LayoutExecution execution) {
         var classes = table.U16(at + 6); var markArray = table.Offset(at, at + 8); var baseArray = table.Offset(at, at + 10);
         if (covered >= table.U16(markArray)) return -1;
         var markRecord = markArray + 2 + covered * 4; var markClass = table.U16(markRecord);
         if (markClass >= classes) throw new FontLayoutException();
         var markAnchor = Anchor(table, markArray, markRecord + 2);
         if (!markAnchor.HasValue) return -1;
-        var previous = Next(glyphs, index, -1, flags, filter);
         // Base/ligature attachment skips marks; mark-to-mark stops at the preceding non-mark.
-        while (previous >= 0 && type != 6 && (GlyphClass(glyphs[previous]) == 3 || glyphs[previous].Ignorable)) previous = Next(glyphs, previous, -1, flags, filter);
+        var previous = type == 6 ? Next(glyphs, index, -1, flags, filter, execution) : PreviousBase(glyphs, index, flags, filter, execution);
         if (previous < 0 || type == 6 && GlyphClass(glyphs[previous]) != 3) return -1;
         if (type == 6 && (!ReferenceEquals(glyphs[index].Ligature, glyphs[previous].Ligature) || glyphs[index].Component != glyphs[previous].Component)) return -1;
         var baseIndex = table.Coverage(table.Offset(at, at + 4), glyphs[previous].Glyph);

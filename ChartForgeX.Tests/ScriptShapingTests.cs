@@ -166,6 +166,8 @@ public sealed class ScriptShapingTests {
     [InlineData("indic-modern", "र्कि")]
     [InlineData("khmer-script", "កើ")]
     [InlineData("thai-script", "ก่ำ")]
+    [InlineData("sinhala-script", "ර්\u200dකේ")]
+    [InlineData("myanmar-script", "င်္ကြေ")]
     public void SvgRasterExportUsesTheSameSyllableAndAttachmentPositionsAsDirectDrawing(string name, string text) {
         var path = Path.Combine(Path.GetTempPath(), "CFX-script-svg-" + Guid.NewGuid().ToString("N") + ".ttf");
         try {

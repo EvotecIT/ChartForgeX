@@ -33,11 +33,16 @@ for data, mapping, slot in ((syllabic, classes, 0), (positional, positions, 1)):
             continue
         bounds = code.split('..')
         for cp in range(int(bounds[0], 16), int(bounds[-1], 16) + 1):
-            if not (0x900 <= cp <= 0xD7F or 0xE00 <= cp <= 0xEFF or
+            if not (0x900 <= cp <= 0xDFF or 0xE00 <= cp <= 0xEFF or
+                    0x1000 <= cp <= 0x109F or 0xA9E0 <= cp <= 0xA9FF or
+                    0xAA60 <= cp <= 0xAA7F or 0x116D0 <= cp <= 0x116FF or
                     0x1780 <= cp <= 0x17FF or 0x1CD0 <= cp <= 0x1CFF or
                     0xA8E0 <= cp <= 0xA8FF):
                 continue
             values.setdefault(cp, ['Other', 'None'])[slot] = mapping[kind]
+# Asat kills a vowel but does not join the following Myanmar consonant into a stack.
+if 0x103A in values:
+    values[0x103A][0] = 'Sign'
 ranges = []
 for cp, value in sorted(values.items()):
     if ranges and ranges[-1][1] + 1 == cp and ranges[-1][2:] == tuple(value):

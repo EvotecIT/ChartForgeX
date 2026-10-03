@@ -86,7 +86,7 @@ internal static partial class TextShaper {
             layout.Apply(glyphs, run.Script, StandardSubstitution, budget: budget);
         }
         glyphs.RemoveAll(glyph => glyph.Ignorable);
-        foreach (var glyph in glyphs) glyph.XAdvance = face.AdvanceWidth(glyph.Glyph);
+        foreach (var glyph in glyphs) glyph.XAdvance = complex && (run.Script == "mymr" || run.Script == "sinh") && layout.IsMarkGlyph(glyph) ? 0 : face.AdvanceWidth(glyph.Glyph);
         if (positioned) {
             if (!layout.HasFeature(positioningTag, "kern", positioning: true)) {
                 for (var i = 1; i < glyphs.Count; i++) glyphs[i - 1].XAdvance += face.Kerning(glyphs[i - 1].Glyph, glyphs[i].Glyph);

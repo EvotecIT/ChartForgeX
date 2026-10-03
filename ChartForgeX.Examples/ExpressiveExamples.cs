@@ -21,6 +21,7 @@ internal static partial class ExpressiveExamples {
         SaveChart(CreateTextStyleShowcase(), output, "text-style-showcase-editorial", pngOutputScale);
         SaveChart(CreateFontLayoutShowcase(), output, "font-layout-showcase", pngOutputScale);
         SaveChart(CreateScriptShapingShowcase(), output, "script-shaping-showcase", pngOutputScale);
+        SaveChart(CreateSinhalaMyanmarShowcase(), output, "sinhala-myanmar-showcase", pngOutputScale);
         SaveChart(CreateColourEmojiShowcase(), output, "colour-emoji-showcase", pngOutputScale);
         SaveChart(CreateControlPartition(), output, "control-partition-sunburst-aurora", pngOutputScale);
         SaveChart(CreateAudiencePictorial(), output, "audience-pictorial-candy", pngOutputScale);

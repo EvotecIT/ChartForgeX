@@ -164,7 +164,15 @@ internal static partial class TextShaper {
         }
 
         // A base with marks: the composed character when a face has it, otherwise the sequence, in one face.
-        var composed = Compose(visible);
+        // Explicit script joiners must retain their location while the script owner decomposes vowels.
+        // Composing only visible scalars would move the retained joiner to the end of the cluster.
+        var script = OpenTypeScriptData.Script(visible[0]);
+        var scriptJoiner = script == "sinh" || IndicScriptProfile.TryGet(script, out _);
+        if (scriptJoiner) {
+            scriptJoiner = false;
+            for (var i = cluster.Start; i < cluster.Start + cluster.Count; i++) if (IsJoinerCodePoint(codePoints[i])) { scriptJoiner = true; break; }
+        }
+        var composed = scriptJoiner ? null : Compose(visible);
         if (!emoji && composed != null && Covers(primary, composed)) { cluster.Output.AddRange(composed); return; }
         if (!emoji && Covers(primary, visible)) { cluster.Output.AddRange(visible); return; }
         chain ??= FontFallbackChain.For(primary);
@@ -179,6 +187,8 @@ internal static partial class TextShaper {
         cluster.Face = primary.HasGlyph(visible[0]) ? primary : chain.FaceFor(visible[0]) ?? primary;
         cluster.Output.AddRange(visible);
     }
+
+    private static bool IsJoinerCodePoint(int cp) => cp == 0x200c || cp == 0x200d;
 
     // Emoji presentation: asked for with U+FE0F, or the default for pictographs, unless U+FE0E asks for text.
     private static bool WantsEmoji(List<int> codePoints, Cluster cluster) {

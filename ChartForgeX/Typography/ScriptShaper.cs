@@ -13,6 +13,7 @@ internal static partial class ScriptShaper {
     private const byte Reph = 0, PreMatra = 1, PreConsonant = 2, Base = 4, AfterMain = 5, Below = 6, AfterBelow = 7, Post = 8, AfterPost = 9, Sign = 12;
 
     internal static string SelectTag(OpenTypeLayout layout, string script, bool positioning = false) {
+        if (script == "mymr") return layout.HasScript("mym2", positioning) ? "mym2" : script;
         if (!IndicScriptProfile.TryGet(script, out var profile)) return script;
         return layout.HasScript(profile.ModernTag, positioning) ? profile.ModernTag : script;
     }
@@ -22,6 +23,8 @@ internal static partial class ScriptShaper {
             ShapeThai(face, glyphs, tag, script == "lao ", budget); return true;
         }
         if (script == "khmr") { ShapeKhmer(face, glyphs, tag, budget); return true; }
+        if (script == "sinh") { ShapeSinhala(face, glyphs, tag, budget); return true; }
+        if (script == "mymr" && tag == "mym2") { ShapeMyanmar(face, glyphs, tag, budget); return true; }
         if (!IndicScriptProfile.TryGet(script, out var profile)) return false;
         var originalCount = glyphs.Count; Decompose(face, glyphs); budget.AccountGrowth(glyphs.Count - originalCount);
         var output = new List<LayoutGlyph>(glyphs.Count);
@@ -41,7 +44,7 @@ internal static partial class ScriptShaper {
     private static bool IsBase(LayoutGlyph glyph) => IsConsonant(glyph) || IndicCharacterData.Category(glyph.CodePoint) == IndicCategory.Vowel || glyph.CodePoint == 0x25cc || glyph.CodePoint == 0xa0;
 
     /// <summary>Consonants connected by a halant remain one syllable; ordinary adjacent letters begin another.</summary>
-    private static int SyllableEnd(List<LayoutGlyph> glyphs, int from, bool numberBase = false) {
+    private static int SyllableEnd(List<LayoutGlyph> glyphs, int from, bool numberBase = false, bool sinhalaJoiners = false) {
         var first = IndicCharacterData.Category(glyphs[from].CodePoint);
         if (!IsBase(glyphs[from]) && (first == IndicCategory.Other || first == IndicCategory.Number && !numberBase)) return from + 1;
         var connected = first == IndicCategory.Halant || first == IndicCategory.Repha;
@@ -52,7 +55,7 @@ internal static partial class ScriptShaper {
             if (kind == IndicCategory.Halant) { connected = true; continue; }
             if (IsJoiner(cp)) continue;
             if (kind == IndicCategory.Consonant || kind == IndicCategory.Vowel) {
-                if (!connected) break;
+                if (!connected || sinhalaJoiners && !HasSinhalaJoiner(glyphs, from, i)) break;
                 hasBase = true; connected = false; continue;
             }
             if (kind == IndicCategory.Matra || kind == IndicCategory.Nukta || kind == IndicCategory.Sign || kind == IndicCategory.Accent || kind == IndicCategory.Shifter || kind == IndicCategory.Medial) continue;

@@ -12,7 +12,7 @@ source = Path(sys.argv[1]).read_bytes()
 tags = dict(Latin='latn', Greek='grek', Cyrillic='cyrl', Hebrew='hebr', Arabic='arab',
             Devanagari='deva', Bengali='beng', Gurmukhi='guru', Gujarati='gujr',
             Oriya='orya', Tamil='taml', Telugu='telu', Kannada='knda', Malayalam='mlym',
-            Thai='thai', Lao='lao ', Khmer='khmr')
+            Thai='thai', Lao='lao ', Khmer='khmr', Sinhala='sinh', Myanmar='mymr')
 ranges = []
 for line in source.decode('utf8').splitlines():
     value = line.split('#')[0].strip()
