@@ -411,37 +411,39 @@ internal static partial class TopologyDenseRoutePlanner {
 
     /// <summary>A small binary min-heap; framework priority queues are unavailable on net472 and netstandard2.0.</summary>
     private sealed class MinHeap {
-        private readonly List<(int State, double Priority, double Cost)> _items = new();
+        private (int State, double Priority, double Cost)[] _items = new (int, double, double)[16];
 
-        public int Count => _items.Count;
+        public int Count { get; private set; }
 
         public void Push(int state, double priority, double cost) {
-            _items.Add((state, priority, cost));
-            var index = _items.Count - 1;
+            if (Count == _items.Length) Array.Resize(ref _items, checked(_items.Length * 2));
+            var item = (State: state, Priority: priority, Cost: cost);
+            var index = Count++;
             while (index > 0) {
                 var parent = (index - 1) / 2;
-                if (Compare(_items[parent], _items[index]) <= 0) break;
-                (_items[parent], _items[index]) = (_items[index], _items[parent]);
+                if (Compare(_items[parent], item) <= 0) break;
+                _items[index] = _items[parent];
                 index = parent;
             }
+            _items[index] = item;
         }
 
         public (int State, double Priority, double Cost) Pop() {
             var top = _items[0];
-            var last = _items[_items.Count - 1];
-            _items.RemoveAt(_items.Count - 1);
-            if (_items.Count == 0) return top;
-            _items[0] = last;
+            var last = _items[--Count];
+            if (Count == 0) return top;
             var index = 0;
             while (true) {
                 var left = index * 2 + 1;
-                if (left >= _items.Count) break;
+                if (left >= Count) break;
                 var right = left + 1;
-                var smallest = right < _items.Count && Compare(_items[right], _items[left]) < 0 ? right : left;
-                if (Compare(_items[smallest], _items[index]) >= 0) break;
-                (_items[smallest], _items[index]) = (_items[index], _items[smallest]);
+                var smallest = right < Count && Compare(_items[right], _items[left]) < 0 ? right : left;
+                if (Compare(_items[smallest], last) >= 0) break;
+                // Move the hole down instead of swapping two complete entries at every level.
+                _items[index] = _items[smallest];
                 index = smallest;
             }
+            _items[index] = last;
 
             return top;
         }

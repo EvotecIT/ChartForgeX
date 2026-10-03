@@ -7,6 +7,37 @@ namespace ChartForgeX.Tests;
 public sealed class DenseTopologyLayoutTests {
     private static readonly TopologyRenderOptions TileOptions = new() { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
 
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(2, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    [InlineData(2, true)]
+    public void SparseLabelsRetainEveryTextAndMetricSlot(int slot, bool metric) {
+        var chart = DenseRouteFixture.Small();
+        var options = DenseRouteFixture.Options(legend: false);
+        var edge = chart.Edges[chart.Edges.Count - 1];
+        edge.RoutingPriority = -10; // Empty relationships are visited before the only labeled relationship.
+        const string text = "Replication latency";
+        if (metric) {
+            edge.Metrics["latency"] = text;
+            if (slot == 0) options.EdgeLabelMetricKey = "latency";
+            else if (slot == 1) options.EdgeSecondaryLabelMetricKey = "latency";
+            else options.EdgeTertiaryLabelMetricKey = "latency";
+        } else {
+            if (slot == 0) edge.Label = text;
+            else if (slot == 1) edge.SecondaryLabel = text;
+            else edge.TertiaryLabel = text;
+        }
+
+        var prepared = chart.Prepare(options);
+        var report = prepared.Analyze();
+        Assert.Equal(edge.Id, Assert.Single(report.EdgeLabels).EdgeId);
+        Assert.Contains(text, prepared.ToSvg(), StringComparison.Ordinal);
+        Assert.All(report.Edges, route => Assert.True(route.SourceAttached && route.TargetAttached));
+    }
+
     [Fact]
     public void LeftToRight_ManySites_WrapIntoRowsWithinViewportWidth() {
         var chart = Sites(12, 3);

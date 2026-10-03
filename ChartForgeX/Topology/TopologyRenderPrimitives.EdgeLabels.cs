@@ -20,7 +20,7 @@ internal static partial class TopologyRenderPrimitives {
             .ToList();
         var groupHeaderBoxes = chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 8)).ToList();
         var groupBoxes = chart.Groups.Select(group => LabelBox.FromGroup(group, 8)).ToList();
-        var edgeSegments = EdgeSegments(chart, nodes);
+        List<EdgeSegment>? edgeSegments = null;
         var edgeRenderOrders = EdgeRenderOrderMap(chart, options);
         var placed = new List<LabelBox>();
         var layouts = new List<TopologyEdgeLabelLayout>();
@@ -32,6 +32,9 @@ internal static partial class TopologyRenderPrimitives {
             var tertiary = EdgeLabel(edge, options.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel);
             if (string.IsNullOrWhiteSpace(label) && string.IsNullOrWhiteSpace(secondary) && string.IsNullOrWhiteSpace(tertiary)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
+
+            // Empty labels must not route the whole chart before viewport normalization has finished.
+            edgeSegments ??= EdgeSegments(chart, nodes);
 
             var points = EdgePoints(chart, edge, nodes);
             var labelPoint = IsGeographicCurve(chart, edge, nodes)
