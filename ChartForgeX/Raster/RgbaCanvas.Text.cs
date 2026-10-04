@@ -176,7 +176,7 @@ internal sealed partial class RgbaCanvas {
 
     private static double OutlineFontSize(int scale) => TinyFont.Height * Math.Max(1, scale) * 1.45;
     private static int FallbackScaleForFontSize(double fontSize) => Math.Max(1, (int)Math.Round(Math.Max(1, fontSize) / OutlineFontSize(1)));
-    private static double EmphasisOffset(double fontSize) => Math.Max(0.24, Math.Min(0.58, fontSize * 0.025));
+    internal static double EmphasisOffset(double fontSize) => Math.Max(0.24, Math.Min(0.58, fontSize * 0.025));
 
     private static double MeasureTinyFallbackWidth(string text, int scale) {
         var width = 0;

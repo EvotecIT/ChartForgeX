@@ -264,6 +264,7 @@ public static partial class GalleryWriter {
             "Themes, brand kits, palettes, fonts, and pictorial symbol picker outputs.",
             "composition-shapes",
             "styled-multilingual-text",
+            "fallback-font-showcase",
             "script-shaping-showcase",
             "sinhala-myanmar-showcase",
             "language-forms-showcase",

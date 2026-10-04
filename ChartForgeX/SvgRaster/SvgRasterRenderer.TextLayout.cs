@@ -161,5 +161,5 @@ internal static partial class SvgRasterRenderer {
     private static double PreparedPaintWidth(string text, double size, ResolvedTypeface face, bool italic, IReadOnlyList<ShapedGlyph>? glyphs) =>
         glyphs == null ? TextPaintWidth(text, size, face, italic) : PreparedAdvance(text, size, face, glyphs) + (italic ? TrueTypeFont.ItalicOverhang(size) : 0);
 
-    private static double TextEmphasisOffset(double size) => Math.Max(0.24, Math.Min(0.58, size * 0.025));
+    private static double TextEmphasisOffset(double size) => RgbaCanvas.EmphasisOffset(size);
 }
