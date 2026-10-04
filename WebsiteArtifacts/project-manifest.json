@@ -6,7 +6,7 @@
   "contentMode": "hybrid",
   "status": "active",
   "listed": true,
-  "version": "1.4.0",
+  "version": "1.8.2",
   "sourceRef": "main",
   "links": {
     "source": "https://github.com/EvotecIT/ChartForgeX",
@@ -25,7 +25,7 @@
   "artifacts": {
     "docs": "Website/content/project-docs",
     "examples": "Website/content/examples",
-    "api": "WebsiteArtifacts/apidocs",
+    "api": "https://github.com/EvotecIT/ChartForgeX/releases/download/ChartForgeX-v{version}/ChartForgeX.ApiDocs.{version}.zip",
     "demos": "Website/static/examples/promoted-cases.json"
   }
 }
