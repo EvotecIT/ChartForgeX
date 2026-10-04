@@ -106,7 +106,7 @@ public sealed class FontRegistryTests : IDisposable {
         var chart = BarChart(Family + ", sans-serif");
         Assert.Equal(Path.GetFullPath(regular), chart.GetPngFontInfo().ResolvedPath);
         Assert.NotEqual(before, chart.ToPng());
-        Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveThemeBoldFont(Family));
+        Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveThemeBoldFont(Family)!.Root);
         Assert.Equal(BarChart("Georgia, serif").ToPng(), chart.ToPng());
     }
 
@@ -126,7 +126,7 @@ public sealed class FontRegistryTests : IDisposable {
         var style = TextStyle.Create(24, ChartColors.White);
         style.Font = FontSpec.FromFamily(Family);
         style.Font.Weight = 700;
-        Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveFace(style.Font).Font);
+        Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveFace(style.Font).Font!.Root);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public sealed class FontRegistryTests : IDisposable {
             }
         });
         Assert.Equal(0, errors);
-        Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveFace(Family, 700, false).Font);
+        Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveFace(Family, 700, false).Font!.Root);
     }
 
     private static bool TryGetGeorgia(out string regular, out string bold) {
