@@ -117,5 +117,20 @@ def compact():
     builder.font.recalcBBoxes = False  # Deliberately malformed input must not be evaluated by the generator.
     builder.save(DEST / 'variable-malformed.otf')
 
+def empty_metrics():
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._g_l_y_f import GlyphComponent
+    font = TTFont(DEST / 'variable-origin-metrics.ttf')
+    # Decode tuples before changing the composite's point count.
+    font['gvar'].variations = dict(font['gvar'].variations)
+    for variation in font['gvar'].variations['multiMetrics']:
+        variation.coordinates.insert(len(variation.coordinates) - 4, (0, 0))
+    component = GlyphComponent()
+    component.glyphName = 'space'; component.x = component.y = 0
+    component.flags = 0x200  # Last USE_MY_METRICS component has no contour points.
+    font['glyf']['multiMetrics'].components.append(component)
+    font['gvar'].variations['space'] = [TupleVariation({'wght': (0, 1, 1)}, [(50, 0), (150, 0), (0, 0), (0, 0)])]
+    font.save(DEST / 'variable-empty-metrics.ttf')
+
 if __name__ == '__main__':
-    true_type(); compact()
+    true_type(); compact(); empty_metrics()

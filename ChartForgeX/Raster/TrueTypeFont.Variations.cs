@@ -80,7 +80,9 @@ internal sealed partial class TrueTypeFont {
             var glyf = VariationTable("glyf"); var hmtx = VariationTable("hmtx");
             if (!glyf.HasValue || !hmtx.HasValue) return 0;
             var at = GlyphOffset(glyph);
-            if (at == GlyphOffset((ushort)(glyph + 1))) return 0;
+            // Empty glyphs still have four variation phantom points. A visible
+            // composite may select their origin through USE_MY_METRICS.
+            if (at == GlyphOffset((ushort)(glyph + 1))) return _glyphVariations.Get(glyph)?.LeftPhantomDelta ?? 0;
             var lsbAt = glyph < _numHMetrics ? glyph * 4 + 2 : _numHMetrics * 4 + (glyph - _numHMetrics) * 2;
             var baseOrigin = glyf.Value.I16(at + 2) - hmtx.Value.I16(lsbAt);
             return baseOrigin + (_glyphVariations.Get(glyph)?.LeftPhantomDelta ?? 0);

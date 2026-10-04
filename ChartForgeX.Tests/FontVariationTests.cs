@@ -184,6 +184,17 @@ public sealed class FontVariationTests {
         Assert.Equal(root.Measure("H DMN", 40), unknown.Measure("H DMN", 40));
         Assert.Equal(Ink(root, 'M'), Ink(explicitDefault, 'M'));
     }
+    [Theory]
+    [InlineData(400, 0, 600)]
+    [InlineData(650, -37.5, 675)]
+    [InlineData(900, -50, 700)]
+    public void EmptyMetricsComponentsRetainTheirVariedPhantomOrigins(double weight, double left, double advance) {
+        var face = Face(weight, "variable-empty-metrics.ttf");
+        Assert.Equal(left, Ink(face, 'D').X);
+        Assert.Equal(left + 200, Ink(face, 'N').X);
+        Assert.Equal(advance, face.AdvanceWidth(face.MapGlyph('D')));
+        Assert.Equal(advance, face.AdvanceWidth(face.MapGlyph('N')));
+    }
     [Fact]
     public void DefaultCoordinateFeaturesApplyWithoutExplicitAxisSelection() {
         var root = TrueTypeFont.TryLoad(Bytes("variable-default-feature.ttf"))!;
