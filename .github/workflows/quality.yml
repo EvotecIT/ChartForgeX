@@ -140,6 +140,11 @@ jobs:
         shell: pwsh
         run: ./Build.ps1 -Configuration Release
 
+      - name: Export Website API documentation bundle
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./Build/Export-WebsiteApiDocs.ps1 -SkipBuild
+
       - name: Exercise bundled graph runtime
         run: node --test tests/graph-explorer-bundles/runtime.test.js tests/graph-explorer-runtime/physics.test.js tests/graph-explorer-runtime/picking.test.js tests/graph-explorer-runtime/surface.test.js tests/graph-explorer-runtime/state.test.js tests/graph-explorer-runtime/webgl.test.js tests/graph-explorer-runtime/images.test.js tests/graph-neighborhood/planner.test.js tests/graph-neighborhood/navigation.test.js tests/graph-quality/overlaps.test.js tests/topology-report/navigation.test.js tests/topology-filters/composition.test.js tests/topology-filters/shared-trunks.test.js
 
