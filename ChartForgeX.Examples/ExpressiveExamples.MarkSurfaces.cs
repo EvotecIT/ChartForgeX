@@ -4,7 +4,7 @@ using ChartForgeX.Themes;
 
 internal static partial class ExpressiveExamples {
     private static ChartGrid CreateFunnelSurfaceShowcase() {
-        var values = new[] { new ChartPoint(0, 80), new ChartPoint(1, 55), new ChartPoint(2, 30) };
+        var values = new[] { new ChartPoint(1, 80), new ChartPoint(2, 55), new ChartPoint(3, 30) };
         var ink = ChartColor.FromRgba(37, 99, 235, 144);
         var palette = MarkSurfaceChart("Palette · diagonal shading").WithXLabels("Visit", "Try", "Buy").AddFunnel("Stages", values);
         var series = MarkSurfaceChart("Series colour · solid fill").WithXLabels("Visit", "Try", "Buy").AddFunnel("Stages", values, ink);
