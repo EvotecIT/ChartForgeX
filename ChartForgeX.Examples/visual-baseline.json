@@ -1379,6 +1379,23 @@
       }
     },
     {
+      "name": "font-bitmap-showcase",
+      "width": 960,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 204039,
+        "minTransparentPixels": 16761,
+        "minDistinctColors": 706,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "font-layout-showcase",
       "width": 860,
       "height": 440,

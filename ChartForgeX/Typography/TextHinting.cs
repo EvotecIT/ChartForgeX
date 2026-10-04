@@ -21,7 +21,8 @@ public enum TextHinting {
     /// Adds horizontal fitting and limited darkening of narrow, straight stems to <see cref="Auto"/>
     /// at 12 output pixels and below. Glyph ink can move by less than one output pixel; advances,
     /// measurement, wrapping, and fitting retain the font's layout. Slanted and colour glyphs keep
-    /// their existing outline policy. Font instruction programs are not executed.
+    /// their existing outline policy. Exact-size horizontal embedded monochrome strikes use their
+    /// authored coverage and the text colour, retaining shaped advances. Font instruction programs are not executed.
     /// </summary>
     Full = 2
 }
