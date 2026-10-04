@@ -137,10 +137,10 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("d", EdgePath(chart, edge, nodes, paintedPoints, options))
                 .Attribute("fill", "none")
                 .Attribute("stroke", theme.Background)
-                .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + (geographicHalo ? 4.2 : 3.4))
+                .Attribute("stroke-width", EdgeStrokeWidth(edge, selected, options) + RouteHaloStrokeExtra(geographicHalo))
                 .Attribute("stroke-linecap", "round")
                 .Attribute("stroke-linejoin", "round")
-                .Attribute("opacity", (geographicHalo ? 0.86 : 0.88) * EdgeOpacity(edge, options)));
+                .Attribute("opacity", RouteHaloOpacity(geographicHalo) * EdgeOpacity(edge, options)));
         }
     }
 

@@ -1,6 +1,8 @@
 using System;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -25,26 +27,17 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawArrow(RgbaCanvas canvas, ChartPoint from, ChartPoint to, ChartColor color, TopologyRenderOptions options) {
-        var angle = Math.Atan2(to.Y - from.Y, to.X - from.X);
-        const double length = 10;
-        const double spread = 0.52;
-        var p1 = new ChartPoint(to.X, to.Y);
-        var p2 = new ChartPoint(to.X - Math.Cos(angle - spread) * length, to.Y - Math.Sin(angle - spread) * length);
-        var p3 = new ChartPoint(to.X - Math.Cos(angle + spread) * length, to.Y - Math.Sin(angle + spread) * length);
-        switch (options.ArrowMarkerStyle) {
-            case TopologyArrowMarkerStyle.Chevron:
-                canvas.DrawPolyline(new[] { p2, p1, p3 }, color, 2);
-                break;
-            case TopologyArrowMarkerStyle.Diamond:
-                var p4 = new ChartPoint(to.X - Math.Cos(angle) * length * 1.4, to.Y - Math.Sin(angle) * length * 1.4);
-                canvas.FillPolygon(new[] { p1, p2, p4, p3 }, color);
-                break;
-            case TopologyArrowMarkerStyle.Circle:
-                canvas.DrawCircle(to.X, to.Y, 4, color);
-                break;
-            default:
-                canvas.FillPolygon(new[] { p1, p2, p3 }, color);
-                break;
+        if (options.ArrowMarkerStyle == TopologyArrowMarkerStyle.Circle) {
+            var center = TopologyArrowGeometry.Project(new ChartPoint(5, 5), from, to, options);
+            canvas.DrawCircle(center.X, center.Y, 3.4 * TopologyArrowGeometry.Extent(options) / 10, color);
+            return;
+        }
+        foreach (var subpath in ChartMapPathParser.ParseSubpaths(TopologyArrowGeometry.Path(options.ArrowMarkerStyle), canvas.DeviceScale)) {
+            var points = new ChartPoint[subpath.Points.Count];
+            for (var i = 0; i < points.Length; i++) points[i] = TopologyArrowGeometry.Project(subpath.Points[i], from, to, options);
+            if (options.ArrowMarkerStyle == TopologyArrowMarkerStyle.Chevron)
+                canvas.DrawPolyline(points, color, 1.85 * TopologyArrowGeometry.Extent(options) / 10, RasterLineCap.Round, RasterLineJoin.Round, null);
+            else canvas.FillPolygon(points, color);
         }
     }
 

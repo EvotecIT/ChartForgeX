@@ -8,10 +8,6 @@ namespace ChartForgeX.Topology;
 public sealed partial class TopologyPngRenderer {
     private static bool DrawInfrastructureGlyph(RgbaCanvas canvas, TopologyNode node, double cx, double cy, ChartColor color, TopologyRenderOptions options) {
         var shape = EffectiveIconShape(node, options);
-        // PNG icons still label database nodes with their text glyph; the SVG draws a drum for them.
-        if (shape == TopologyIconShape.Database) return false;
-        // PNG draws the queue bars for badge-shaped queue nodes, where the SVG shows the "Q" text glyph.
-        if (shape == TopologyIconShape.Badge && node.Kind == TopologyNodeKind.Queue) shape = TopologyIconShape.Auto;
         var marks = TopologyInfrastructureGlyphs.Build(shape, node.Kind, cx, cy);
         if (marks == null) return false;
         DrawGlyphMarks(canvas, marks, color);

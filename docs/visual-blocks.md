@@ -22,6 +22,7 @@ The first API is intentionally generic and bounded:
 - no dependency on `System.Drawing` or external table/list libraries
 - static SVG/HTML/PNG output by default
 - shared `ChartTheme`, `ChartColor`, `ChartPalettes`, transparent background, and PNG density concepts
+- Wardley component outlines, evolution arrows, accelerator markers and icon curves share their geometry between SVG and PNG. Theme colours and authored transparency apply to both outputs; font coverage and curved-edge antialiasing can still differ.
 
 Example:
 

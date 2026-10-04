@@ -69,6 +69,10 @@ internal static partial class TopologyRenderPrimitives {
     public static bool ShouldReserveGeographicCalloutRouteObstacle(TopologyEdge edge) =>
         edge.Kind is TopologyEdgeKind.Connectivity or TopologyEdgeKind.Link || !string.IsNullOrWhiteSpace(edge.Label);
 
+    public static double RouteHaloStrokeExtra(bool geographic) => geographic ? 4.2 : 3.4;
+
+    public static double RouteHaloOpacity(bool geographic) => geographic ? 0.86 : 0.88;
+
     public static byte HighlightAlpha(byte alpha, bool isHighlighted, TopologyHighlightState highlight) {
         if (!highlight.IsActive || isHighlighted) return alpha;
         return (byte)Math.Round(alpha * Clamp(highlight.DimmedOpacity, 0, 1));

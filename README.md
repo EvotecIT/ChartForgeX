@@ -658,6 +658,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 
 ## Renderer Contracts
 
+- Funnel palette fills use diagonal shading, series colours use solid fills, and point colours retain shaded transparency in both SVG and PNG. Topology arrow footprints, database drums, queue badges and Wardley markers use shared geometry; font and curved-edge antialiasing may differ.
 - ChartForgeX validates chart data before rendering so invalid payloads fail near the caller instead of producing partial markup or malformed PNGs.
 - Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
 - Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely. Topology charts take the same scope through `topology.ToSvg("panel-a", options)` or `TopologyRenderOptions.IdScope` (also used by the HTML renderers), which covers markers, filters, element ids, and the ids of icon artwork imported from SVG packs (ids in hand-written inline artwork are not rewritten).

@@ -3,6 +3,18 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static partial class ExpressiveExamples {
+    private static ChartGrid CreateFunnelSurfaceShowcase() {
+        var values = new[] { new ChartPoint(0, 80), new ChartPoint(1, 55), new ChartPoint(2, 30) };
+        var ink = ChartColor.FromRgba(37, 99, 235, 144);
+        var palette = MarkSurfaceChart("Palette · diagonal shading").AddFunnel("Stages", values);
+        var series = MarkSurfaceChart("Series colour · solid fill").AddFunnel("Stages", values, ink);
+        var points = MarkSurfaceChart("Point colours · shaded transparency").AddFunnel("Stages", values);
+        points.Series[0].WithPointColor(0, ink).WithPointColor(1, ChartColor.FromRgba(234, 88, 12, 144)).WithPointColor(2, ChartColor.FromRgba(22, 163, 74, 144));
+        return ChartGrid.Create().WithTitle("Funnel colour surfaces").WithSubtitle("Palette, series and point colours retain the same paint policy in SVG and PNG")
+            .WithTheme(ChartTheme.ReportLight()).WithColumns(3).WithPanelSize(360, 280).WithPadding(24)
+            .Add(palette).Add(series).Add(points);
+    }
+
     private static ChartGrid CreateMarkSurfaceShowcase() {
         var color = ChartColor.FromRgba(37, 99, 235, 144);
         var box = MarkSurfaceChart("Distribution · translucent body").AddBoxPlot("Latency", new[] {

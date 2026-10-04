@@ -431,7 +431,7 @@ public sealed partial class TopologySvgRenderer {
                 .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
                 .Paint("stroke", NodeAccentPaint(node, color, options)));
             icon.Element("path", path => path
-                .Attribute("d", "M " + F(cx - 10) + " " + F(cy - 7) + " V " + F(cy + 7) + " A 10 4 0 0 0 " + F(cx + 10) + " " + F(cy + 7) + " V " + F(cy - 7))
+                .Attribute("d", TopologyInfrastructureGlyphs.DatabaseBodyPath(cx, cy))
                 .Paint("fill", StatusPaint(color, theme.Background, 0.10, NodeAccentRole(node, options)))
                 .Paint("stroke", NodeAccentPaint(node, color, options)));
         } else {

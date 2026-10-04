@@ -280,14 +280,14 @@ public sealed partial class TopologyPngRenderer {
             var baseColor = Color(EdgeColor(edge, theme, options));
             var routeOpacity = EdgeOpacity(edge, options);
             if (!highlight.IsEdgeHighlighted(edge)) routeOpacity *= highlight.DimmedOpacity;
-            var color = WithAlpha(baseColor, (byte)Math.Round(255 * Clamp(routeOpacity, 0, 1)));
+            var color = WithOpacity(baseColor, Clamp(routeOpacity, 0, 1));
             var dashArray = EffectiveEdgePngDashArray(edge);
             var routePoints = RenderedEdgeSamplePoints(chart, edge, nodes, paintedPoints);
             if (ShouldRoundEdgeCorners(edge, routePoints, options)) routePoints = RoundedOrthogonalRoutePoints(routePoints, options.EdgeCornerRadius);
             var width = EdgeStrokeWidth(edge, isSelected, options);
             if (ShouldRenderMonitoringRouteHalo(chart, edge, nodes, options)) {
-                var haloAlpha = (byte)Math.Round(224 * Clamp(routeOpacity, 0, 1), MidpointRounding.AwayFromZero);
-                canvas.DrawPolyline(routePoints, WithAlpha(Color(theme.Background), haloAlpha), width + (IsGeographicCurve(chart, edge, nodes) ? 4.2 : 3.4));
+                var geographicHalo = ShouldRenderGeographicRouteHalo(chart, edge, nodes, options);
+                canvas.DrawPolyline(routePoints, WithOpacity(Color(theme.Background), RouteHaloOpacity(geographicHalo) * Clamp(routeOpacity, 0, 1)), width + RouteHaloStrokeExtra(geographicHalo));
             }
             DrawPremiumEdgeRoute(canvas, routePoints, color, width, dashArray, edge, options, isSelected);
 
@@ -495,15 +495,27 @@ public sealed partial class TopologyPngRenderer {
             ? node.Y + node.Height / 2 - 1
             : displayMode == TopologyNodeDisplayMode.Card && options.IncludeNodeLabels && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
         var size = displayMode == TopologyNodeDisplayMode.Pill ? 18 : displayMode == TopologyNodeDisplayMode.Icon ? 26 : displayMode == TopologyNodeDisplayMode.Tile ? 24 : 22;
-        if (IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon && node.Kind == TopologyNodeKind.Cloud) {
-            canvas.DrawCircleOutline(cx - 5, cy, 7, ChartColor.White, 2.4);
-            canvas.DrawCircleOutline(cx + 4, cy - 2, 8, ChartColor.White, 2.4);
+        var iconFill = Color(StatusFill(status.ToCss(), theme.Background, 0.10));
+        if (EffectiveIconShape(node, options) == TopologyIconShape.Cloud) {
+            var monitoringIcon = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon;
+            if (!monitoringIcon) canvas.DrawCircle(cx - 5, cy, 7, iconFill);
+            canvas.DrawCircleOutline(cx - 5, cy, 7, monitoringIcon ? ChartColor.White : status, monitoringIcon ? 2.4 : 1);
+            if (!monitoringIcon) canvas.DrawCircle(cx + 4, cy - 2, 8, iconFill);
+            canvas.DrawCircleOutline(cx + 4, cy - 2, 8, monitoringIcon ? ChartColor.White : status, monitoringIcon ? 2.4 : 1);
+            return;
+        }
+        if (node.Kind == TopologyNodeKind.Database) {
+            canvas.FillEllipse(cx, cy - 7, 10, 4, iconFill);
+            canvas.StrokeEllipse(cx, cy - 7, 10, 4, status, 1);
+            var path = TopologyInfrastructureGlyphs.DatabaseBodyPath(cx, cy);
+            canvas.FillPathData(path, iconFill);
+            canvas.StrokePathData(path, status, 1, RasterLineCap.Butt, RasterLineJoin.Miter);
             return;
         }
 
-        canvas.FillRoundedRect(cx - size / 2, cy - size / 2, size, size, 6, Color(StatusFill(theme.StatusColor(node.Status), theme.Background)));
-        canvas.StrokeRoundedRect(cx - size / 2, cy - size / 2, size, size, 6, status, 1);
-        if (!DrawInfrastructureGlyph(canvas, node, cx, cy, status, options)) DrawCenteredMiddle(canvas, cx, cy, NodeGlyph(node, options), status, displayMode == TopologyNodeDisplayMode.Pill ? 7.5 : 8.5, true);
+        canvas.FillRoundedRect(cx - size / 2, cy - size / 2, size, size, 6, iconFill);
+        canvas.StrokeRoundedRectCentered(cx - size / 2, cy - size / 2, size, size, 6, status, 1);
+        if (!DrawInfrastructureGlyph(canvas, node, cx, cy, status, options)) DrawCenteredMiddle(canvas, cx, cy, NodeGlyph(node, options), status, 9, true);
     }
 
     private static void DrawStatusBadges(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {

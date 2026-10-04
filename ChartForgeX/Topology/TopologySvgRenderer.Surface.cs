@@ -61,25 +61,25 @@ public sealed partial class TopologySvgRenderer {
             marker
                 .Attribute("id", id)
                 .Attribute("viewBox", "0 0 10 10")
-                .Attribute("refX", options.ArrowMarkerStyle == TopologyArrowMarkerStyle.Circle ? 6 : 7.4)
+                .Attribute("refX", TopologyArrowGeometry.ReferenceX(options.ArrowMarkerStyle))
                 .Attribute("refY", 5)
-                .Attribute("markerWidth", IsMonitoringDashboardStyle(options) ? 7.5 : 8)
-                .Attribute("markerHeight", IsMonitoringDashboardStyle(options) ? 7.5 : 8)
+                .Attribute("markerWidth", TopologyArrowGeometry.Extent(options))
+                .Attribute("markerHeight", TopologyArrowGeometry.Extent(options))
                 .Attribute("markerUnits", "userSpaceOnUse")
                 .Attribute("orient", "auto-start-reverse")
                 .Attribute("overflow", "visible");
             switch (options.ArrowMarkerStyle) {
                 case TopologyArrowMarkerStyle.Chevron:
-                    marker.Element("path", path => path.Attribute("d", "M 2.2 1.6 L 7.4 5 L 2.2 8.4").Attribute("fill", "none").Paint("stroke", color).Attribute("stroke-width", 1.85).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round"));
+                    marker.Element("path", path => path.Attribute("d", TopologyArrowGeometry.Path(options.ArrowMarkerStyle)).Attribute("fill", "none").Paint("stroke", color).Attribute("stroke-width", 1.85).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round"));
                     break;
                 case TopologyArrowMarkerStyle.Diamond:
-                    marker.Element("path", path => path.Attribute("d", "M 1 5 L 5 1 L 9 5 L 5 9 z").Paint("fill", color));
+                    marker.Element("path", path => path.Attribute("d", TopologyArrowGeometry.Path(options.ArrowMarkerStyle)).Paint("fill", color));
                     break;
                 case TopologyArrowMarkerStyle.Circle:
                     marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 5).Attribute("r", 3.4).Paint("fill", color));
                     break;
                 default:
-                    marker.Element("path", path => path.Attribute("d", "M 0 0 L 10 5 L 0 10 z").Paint("fill", color));
+                    marker.Element("path", path => path.Attribute("d", TopologyArrowGeometry.Path(options.ArrowMarkerStyle)).Paint("fill", color));
                     break;
             }
         });
