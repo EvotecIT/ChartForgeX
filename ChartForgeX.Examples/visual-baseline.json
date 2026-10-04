@@ -1328,6 +1328,23 @@
       }
     },
     {
+      "name": "fallback-font-showcase",
+      "width": 960,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 816131,
+        "minTransparentPixels": 67069,
+        "minDistinctColors": 967,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "finding-flow-sankey-light",
       "width": 1040,
       "height": 600,
