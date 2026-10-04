@@ -44,6 +44,7 @@ internal sealed partial class BitmapFontData {
         start += dataOffset; end += dataOffset;
         if (start < 4 || end < start || end > data.Length) throw new FontLayoutException();
         if (start == end) return null; var record = (int)start; var recordLength = (int)(end - start);
+        if (_monochrome) return ReadEmbedded(table, data, strike, imageFormat, metrics, record, recordLength);
         var metricTable = data; var pngAt = record;
         if (imageFormat == 17 || imageFormat == 18) {
             metrics = record; var metricBytes = imageFormat == 17 ? 5 : 8;

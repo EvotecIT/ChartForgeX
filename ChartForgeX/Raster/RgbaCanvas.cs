@@ -246,8 +246,10 @@ internal sealed partial class RgbaCanvas {
             var destX = anchorX + localX * cos - localY * sin;
             var destY = anchorY + localX * sin + localY * cos;
             BlendPixel(
-                (int)Math.Round(destX * _scale),
-                (int)Math.Round(destY * _scale),
+                // Full text transports authored output cells; rounding centres merges adjacent
+                // half-pixel coordinates at right-angle rotations through midpoint-to-even.
+                TextHinting == TextHinting.Full ? (int)Math.Floor(destX * _scale) : (int)Math.Round(destX * _scale),
+                TextHinting == TextHinting.Full ? (int)Math.Floor(destY * _scale) : (int)Math.Round(destY * _scale),
                 ChartColor.FromRgba(buffer.Pixels[source], buffer.Pixels[source + 1], buffer.Pixels[source + 2], alpha));
         }
     }
