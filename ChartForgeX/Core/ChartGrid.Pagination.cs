@@ -60,5 +60,6 @@ public sealed partial class ChartGrid {
         target.TextCase = source.TextCase;
         target.OpenTypeLanguageTag = source.OpenTypeLanguageTag;
         target.Variations = source.Variations;
+        target.ColorPaletteIndex = source.ColorPaletteIndex;
     }
 }

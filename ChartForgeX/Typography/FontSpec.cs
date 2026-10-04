@@ -11,6 +11,19 @@ public sealed class FontSpec {
     private string? _faceName;
     private int? _collectionIndex;
     private int _weight = 400;
+    private int _colorPaletteIndex;
+
+    /// <summary>Gets or sets the zero-based CPAL palette index. Zero is the default.
+    /// Missing or unusable palettes fall back to the font's default palette; bitmap glyphs are unaffected.</summary>
+    public int ColorPaletteIndex {
+        get => _colorPaletteIndex;
+        set { ValidateColorPaletteIndex(value); _colorPaletteIndex = value; }
+    }
+    /// <summary>Selects a colour-font palette without changing glyph advances.</summary>
+    public FontSpec WithColorPalette(int index) { ColorPaletteIndex = index; return this; }
+    internal static void ValidateColorPaletteIndex(int value) {
+        if (value < 0 || value > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(value), value, "Palette index must be between 0 and 65535.");
+    }
     private FontVariationSettings _variations = FontVariationSettings.Default;
 
     /// <summary>Gets or sets immutable OpenType axis coordinates. The default uses the face's
@@ -70,7 +83,8 @@ public sealed class FontSpec {
         FaceName = FaceName,
         Weight = Weight,
         Italic = Italic,
-        Variations = Variations
+        Variations = Variations,
+        ColorPaletteIndex = ColorPaletteIndex
     };
 
     /// <summary>Creates a system sans-serif font specification.</summary>

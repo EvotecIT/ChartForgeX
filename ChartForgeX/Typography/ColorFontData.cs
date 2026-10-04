@@ -7,7 +7,7 @@ namespace ChartForgeX.Typography;
 /// <summary>Optional colour-font tables, shared by all rendering identities and fallback views of a face.</summary>
 internal sealed partial class ColorFontData {
     private readonly FontTableReader? _colr;
-    private readonly ChartColor[] _palette;
+    private readonly FontColorPalettes? _palettes;
     private readonly int _glyphCount;
     private readonly Dictionary<ushort, ColorGlyphPaint?> _paints = new();
     private int _paintBytes;
@@ -17,8 +17,8 @@ internal sealed partial class ColorFontData {
 
     private ColorFontData(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int glyphCount, int unitsPerEm) {
         _glyphCount = glyphCount;
-        _palette = ReadPalette(Table(data, tables, lengths, "CPAL"));
-        _colr = _palette.Length == 0 ? null : Table(data, tables, lengths, "COLR");
+        _palettes = FontColorPalettes.Read(Table(data, tables, lengths, "CPAL"));
+        _colr = _palettes == null ? null : Table(data, tables, lengths, "COLR");
         Bitmaps = new BitmapFontData(data, tables, lengths, glyphCount, unitsPerEm);
     }
     internal static ColorFontData? Create(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int glyphCount, int unitsPerEm) =>
@@ -29,24 +29,8 @@ internal sealed partial class ColorFontData {
         if (!tables.TryGetValue(tag, out var start) || !lengths.TryGetValue(tag, out var length)) return null;
         try { return new FontTableReader(data, start, length); } catch (FontLayoutException) { return null; }
     }
-    private static ChartColor[] ReadPalette(FontTableReader? optional) {
-        if (!optional.HasValue) return Array.Empty<ChartColor>();
-        try {
-            var table = optional.Value;
-            if (table.U16(0) > 1 || table.U16(4) == 0) return Array.Empty<ChartColor>();
-            var count = table.U16(2); var first = table.U16(12); var records = table.Offset(0, 8, wide: true);
-            table.Require(12, table.U16(4) * 2); table.Require(records, table.U16(6) * 4);
-            if (first > table.U16(6) - count) throw new FontLayoutException();
-            var colors = new ChartColor[count];
-            for (var i = 0; i < count; i++) {
-                var at = table.Record(records, first + i, 4);
-                colors[i] = new ChartColor((byte)table.U8(at + 2), (byte)table.U8(at + 1), (byte)table.U8(at), (byte)table.U8(at + 3));
-            }
-            return colors;
-        } catch (FontLayoutException) { return Array.Empty<ChartColor>(); }
-    }
-    internal ChartColor Color(int index, ChartColor foreground) => index == 0xFFFF ? new ChartColor(foreground.R, foreground.G, foreground.B) : _palette[index];
-    private void CheckPalette(int index) { if (index != 0xFFFF && index >= _palette.Length) throw new FontLayoutException(); }
+    internal ChartColor Color(int index, ChartColor foreground, int palette = 0) => index == 0xFFFF ? new ChartColor(foreground.R, foreground.G, foreground.B) : _palettes!.Color(index, palette);
+    private void CheckPalette(int index) { if (index != 0xFFFF && index >= (_palettes?.EntryCount ?? 0)) throw new FontLayoutException(); }
 
     internal ColorGlyphPaint? Paint(ushort glyph) {
         if (!_colr.HasValue || glyph >= _glyphCount) return null;

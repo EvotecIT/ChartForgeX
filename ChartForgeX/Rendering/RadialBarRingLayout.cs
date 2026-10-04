@@ -34,6 +34,7 @@ internal readonly struct RadialBarRingLayout {
             if (style.OpenTypeLanguageTag == null && style.Variations == null) return measurement.Measure(text, size, bold: true);
             var resolved = new TextStyle { Font = FontSpec.FromFamily(style.FontFamily ?? chart.Options.Theme.FontFamily), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
             resolved.Font.Variations = style.Variations ?? FontVariationSettings.Default;
+        resolved.Font.ColorPaletteIndex = style.ColorPaletteIndex ?? 0;
             resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(style.ResolveFontWeight(700));
             resolved.Font.Italic = style.Italic;
             return TextLayoutEngine.Measure(text, resolved).Width;

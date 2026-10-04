@@ -33,6 +33,10 @@ internal static class TypographyFontResolver {
         var font = face.Font.WithVariations(settings);
         return new ResolvedTypeface(font, face.SynthesizeBold && !font.HasSelectedAxis("wght"), face.SynthesizeItalic && !font.HasSelectedAxis("ital") && !font.HasSelectedAxis("slnt"), face.Path);
     }
+    internal static ResolvedTypeface WithColorPalette(ResolvedTypeface face, int? index) =>
+        !index.HasValue ? face : new ResolvedTypeface(face.Font?.WithColorPalette(index.Value), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
+    internal static ResolvedTypeface WithPaletteContext(ResolvedTypeface face, FontPaletteContext? context) =>
+        new ResolvedTypeface(face.Font?.WithPaletteContext(context), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;
@@ -46,10 +50,10 @@ internal static class TypographyFontResolver {
     internal static ResolvedTypeface ResolveFace(FontSpec font) {
         if (font.FilePath != null) {
             var requested = TrueTypeFont.TryLoadFromPath(font.FilePath, font.CollectionIndex, font.FaceName);
-            if (requested != null) return WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic), font.Variations);
+            if (requested != null) return WithColorPalette(WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic), font.Variations), font.ColorPaletteIndex);
         }
 
-        return WithVariations(ResolveFace(font.Family, font.Weight, font.Italic), font.Variations);
+        return WithColorPalette(WithVariations(ResolveFace(font.Family, font.Weight, font.Italic), font.Variations), font.ColorPaletteIndex);
     }
 
     /// <summary>

@@ -95,11 +95,11 @@ internal sealed partial class TrueTypeFont {
                 default:
                     var fill = Surface();
                     if (paint.Kind == ColorPaintKind.Solid) {
-                        var color = LinearRgba.From(_font.Color(paint.PaletteIndex, _foreground), paint.Alpha);
+                        var color = LinearRgba.From(_font.Color(paint.PaletteIndex, _foreground, _face.ColorPaletteIndex), paint.Alpha);
                         for (var i = 0; i < _length; i++) fill[i] = color;
                     } else if (matrix.TryInvert(out var inverse)) {
                         _lines.TryGetValue(paint.Stops, out var colors);
-                        var brush = new ColorPaintBrush(paint, _font, _foreground, colors); _lines[paint.Stops] = brush.Colors;
+                        var brush = new ColorPaintBrush(paint, _font, _foreground, colors, _face.ColorPaletteIndex); _lines[paint.Stops] = brush.Colors;
                         for (var y = 0; y < _height; y++) for (var x = 0; x < _width; x++) {
                             var point = inverse.Transform(new ChartPoint(x + 0.5, y + 0.5)); fill[y * _width + x] = brush.Sample(point.X, point.Y);
                         }

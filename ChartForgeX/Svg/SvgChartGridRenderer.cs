@@ -67,6 +67,8 @@ public sealed class SvgChartGridRenderer {
             .StartElement("defs")
             .EndStartElement()
             .Line();
+        var palettes = Typography.TypographyPaletteCss.Rules(theme.FontFamily, grid.TitleStyle, grid.SubtitleStyle);
+        if (palettes.Length > 0) writer.StartElement("style").Text(palettes).EndElement().Line();
         SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
         SvgSurfacePolish.WriteSurfaceGradient(writer, id, "gridSurface", background);
         writer.EndElement()
@@ -195,6 +197,7 @@ public sealed class SvgChartGridRenderer {
         var resolved = new TextStyle { Font = FontSpec.FromFamily(StyleFontFamily(style, family)), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
         resolved.Font.Italic = style.Italic;
         resolved.Font.Variations = style.Variations ?? FontVariationSettings.Default;
+        resolved.Font.ColorPaletteIndex = style.ColorPaletteIndex ?? 0;
         resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(TypographyFontResolver.ParseCssWeight(StyleWeight(style, weight), 400));
         return TextLayoutEngine.Measure(text, resolved).Width;
     }

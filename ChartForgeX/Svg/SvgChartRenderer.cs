@@ -151,7 +151,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvgStart(sb, writer => writer.StartElement("defs").EndStartElement().Line());
         AppendSvg(sb, writer => writer
             .StartElement("style")
-            .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}" + ForcedColorsRule(chart, id))
+            .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}" + ForcedColorsRule(chart, id) + FontPaletteRules(chart))
             .EndElement()
             .Line());
         WriteSvgCardShadowFilter(sb, id, t);

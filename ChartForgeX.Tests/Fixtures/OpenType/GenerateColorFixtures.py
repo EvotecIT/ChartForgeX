@@ -68,6 +68,7 @@ for i in range(12,32,2):
  paints['t'+str(i)]=p
 f=font('COLR1');f['CPAL']=buildCPAL([PALETTE]);f['COLR']=buildCOLR(paints,version=1,glyphMap=f.getReverseGlyphMap(),clipBoxes={'clip':(-300,-150,900,900)})
 save(f,'color-colr1')
+f['CPAL']=buildCPAL([PALETTE,[(1,1,0,1),(1,0,1,1),(0,1,1,1)],[(0,0,0,0),(0,1,0,.25),(0,0,0,0)]],paletteTypes=[1,2,0]);save(f,'color-palettes')
 f=font('Cycle');f['CPAL']=buildCPAL([PALETTE]);f['COLR']=buildCOLR({'cycle':dict(Format=11,Glyph='cycle')},version=1,glyphMap=f.getReverseGlyphMap());save(f,'color-cycle')
 
 def png(size,color):

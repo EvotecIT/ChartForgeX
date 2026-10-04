@@ -37,6 +37,8 @@ public sealed class HtmlChartGridRenderer {
             .Attribute("class", grid.PanelFit == VisualPanelFit.Stretch ? "chartforgex-grid fit-stretch" : "chartforgex-grid")
             .Attribute("style", GridStyle(grid))
             .EndStartElement();
+        var palettes = Typography.TypographyPaletteCss.Rules(theme.FontFamily, grid.TitleStyle, grid.SubtitleStyle);
+        if (palettes.Length > 0) writer.StartElement("style").RawTrusted(palettes).EndElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
             writer.StartElement("header").Attribute("class", "chartforgex-grid-header").EndStartElement();
             if (grid.Title.Length > 0) WriteGridHeaderText(writer, "h1", grid.Title, grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, "800");

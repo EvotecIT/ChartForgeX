@@ -98,6 +98,7 @@ internal static partial class TextShaper {
             if (faces != null) { primary = faces[cluster.Start]; chain = null; }
             AssignFace(primary, ref chain, codePoints, cluster);
             cluster.Face = cluster.Face!.WithLanguage(primary.LanguageTag).WithVariations(primary.Variations);
+            cluster.Face = primary.PaletteContext == null ? cluster.Face.WithColorPalette(primary.ColorPaletteIndex) : cluster.Face.WithPaletteContext(primary.PaletteContext);
             ComposeHebrew(cluster);
             RetainJoiners(codePoints, cluster);
         }

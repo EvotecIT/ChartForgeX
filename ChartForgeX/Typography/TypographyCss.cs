@@ -10,6 +10,7 @@ internal static class TypographyCss {
     internal static string Role(TextStyleOverride style) {
         var result = style.OpenTypeLanguageTag == null ? "" : "font-language-override:" + (style.OpenTypeLanguageTag == "normal" ? "normal" : "'" + style.OpenTypeLanguageTag + "'");
         if (style.Variations != null) result += (result.Length == 0 ? "" : ";") + "font-variation-settings:" + style.Variations.Css;
+        if (style.ColorPaletteIndex.HasValue) result += (result.Length == 0 ? "" : ";") + "font-palette:" + TypographyPaletteCss.Name(style.ColorPaletteIndex.Value);
         return result;
     }
     internal static bool TryVariations(string value, out FontVariationSettings? settings) {

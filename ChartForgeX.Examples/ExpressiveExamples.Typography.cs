@@ -4,6 +4,16 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateFontPaletteShowcase() => Chart.Create()
+        .WithTitle("Colour-font palettes in report labels")
+        .WithSubtitle("Palette 3 uses the font's alternate colours; fonts without that palette keep their default")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Nabla when installed · ordinary fallback otherwise")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("Nabla, system-ui, sans-serif").WithColorPalette(3).WithFontSize(28))
+        .WithXLabels("Report", "Chart", "Value", "Label")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateVariableFontShowcase() => Chart.Create()
         .WithTitle("Variable font report labels")
         .WithSubtitle("Explicit weight and optical size share the font's outlines, advances and attached marks")
