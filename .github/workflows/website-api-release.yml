@@ -1,0 +1,86 @@
+name: Publish Website API documentation
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing ChartForgeX release tag to publish or backfill
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chartforgex-website-api-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Validate release tag
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^ChartForgeX-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Expected a ChartForgeX public release tag." >&2
+            exit 1
+          fi
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exporter
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          path: tooling
+
+      - name: Download released packages
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          API_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          for attempt in {1..10}; do
+            gh release download "$RELEASE_TAG" --pattern "ChartForgeX*.${API_VERSION}.zip" --dir release-archives --skip-existing --repo "$GITHUB_REPOSITORY" || true
+            missing=0
+            for project in ChartForgeX ChartForgeX.Interactivity ChartForgeX.Interactivity.Html ChartForgeX.Markup ChartForgeX.Markup.Mermaid ChartForgeX.Mermaid; do
+              if [[ ! -s "release-archives/${project}.${API_VERSION}.zip" ]]; then
+                missing=1
+              fi
+            done
+            if [[ "$missing" == 0 ]]; then
+              exit 0
+            fi
+            echo "Waiting for the six published ChartForgeX package archives ($attempt/10)."
+            sleep 30
+          done
+          echo "The release is missing one or more package archives." >&2
+          exit 1
+
+      - name: Export release API documentation
+        shell: pwsh
+        env:
+          API_VERSION: ${{ steps.release.outputs.version }}
+        run: ./tooling/Build/Export-WebsiteApiDocs.ps1 -ReleaseArchivesRoot ./release-archives -OutputRoot ./website-api-output -Version $env:API_VERSION
+
+      - name: Publish immutable release asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          API_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          asset="ChartForgeX.ApiDocs.${API_VERSION}.zip"
+          if gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fxq "$asset"; then
+            echo "The API documentation asset already exists for $RELEASE_TAG."
+            exit 0
+          fi
+          gh release upload "$RELEASE_TAG" "website-api-output/$asset"
