@@ -145,7 +145,7 @@ internal sealed class FontFallbackChain {
         var registered = FontRegistry.Ranked(family, _weight, _italic);
         var faces = registered.Count > 0 ? registered : InstalledFontCatalog.Ranked(family, _weight, _italic);
         candidates = new FaceCandidate[faces.Count];
-        for (var i = 0; i < faces.Count; i++) candidates[i] = new FaceCandidate(faces[i]);
+        for (var i = 0; i < faces.Count; i++) candidates[i] = new FaceCandidate(faces[i], family);
         _candidates[index] = candidates;
         return candidates;
     }
@@ -206,11 +206,12 @@ internal sealed class FontFallbackChain {
     // load the first time the face draws something.
     private sealed class FaceCandidate {
         private readonly InstalledFontFace _face;
+        private readonly string _family;
         private FontCmap? _cmap;
         private TrueTypeFont? _font;
         private bool _loaded;
 
-        public FaceCandidate(InstalledFontFace face) => _face = face;
+        public FaceCandidate(InstalledFontFace face, string family) { _face = face; _family = family; }
 
         public bool CoversAll(IReadOnlyList<int> codePoints) {
             _cmap ??= ReadCmap(_face.Path, _face.CollectionIndex) ?? FontCmap.Empty;
@@ -222,7 +223,7 @@ internal sealed class FontFallbackChain {
             get {
                 if (_loaded) return _font;
                 _loaded = true;
-                _font = TrueTypeFont.TryLoadFromPath(_face.Path, _face.CollectionIndex);
+                _font = TrueTypeFont.TryLoadFromPath(_face.Path, _face.CollectionIndex)?.WithSelectedFamily(_family);
                 return _font;
             }
         }

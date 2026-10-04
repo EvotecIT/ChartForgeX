@@ -4,6 +4,16 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
+    private static string FontPaletteRules(Core.Chart chart) {
+        var options = chart.Options;
+        var styles = new System.Collections.Generic.List<TextStyleOverride> { options.TitleStyle, options.SubtitleStyle, options.AxisTitleStyle, options.TickLabelStyle, options.LegendStyle, options.DataLabelStyle };
+        foreach (var series in chart.Series) {
+            styles.Add(series.DataLabelStyle);
+            foreach (var pointStyle in series.PointDataLabelStyles) if (pointStyle != null) styles.Add(pointStyle);
+        }
+        return TypographyPaletteCss.Rules(options.Theme.FontFamily, styles.ToArray());
+    }
+
     private static void WriteSvgTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride? style) {
         if (style == null) return;
         var css = TypographyCss.Role(style);

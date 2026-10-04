@@ -33,6 +33,10 @@ internal static class TypographyFontResolver {
         var font = face.Font.WithVariations(settings);
         return new ResolvedTypeface(font, face.SynthesizeBold && !font.HasSelectedAxis("wght"), face.SynthesizeItalic && !font.HasSelectedAxis("ital") && !font.HasSelectedAxis("slnt"), face.Path);
     }
+    internal static ResolvedTypeface WithColorPalette(ResolvedTypeface face, int? index) =>
+        !index.HasValue ? face : new ResolvedTypeface(face.Font?.WithColorPalette(index.Value), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
+    internal static ResolvedTypeface WithPaletteContext(ResolvedTypeface face, FontPaletteContext? context) =>
+        new ResolvedTypeface(face.Font?.WithPaletteContext(context), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;
@@ -46,10 +50,10 @@ internal static class TypographyFontResolver {
     internal static ResolvedTypeface ResolveFace(FontSpec font) {
         if (font.FilePath != null) {
             var requested = TrueTypeFont.TryLoadFromPath(font.FilePath, font.CollectionIndex, font.FaceName);
-            if (requested != null) return WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic), font.Variations);
+            if (requested != null) return WithColorPalette(WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic), font.Variations), font.ColorPaletteIndex);
         }
 
-        return WithVariations(ResolveFace(font.Family, font.Weight, font.Italic), font.Variations);
+        return WithColorPalette(WithVariations(ResolveFace(font.Family, font.Weight, font.Italic), font.Variations), font.ColorPaletteIndex);
     }
 
     /// <summary>
@@ -116,7 +120,7 @@ internal static class TypographyFontResolver {
             }
 
             // Registered faces take precedence over installed faces of the same family.
-            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved)) {
+            if (TryLoad(FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic), weight, italic, out var resolved, name)) {
                 return WithStackFallback(resolved, parts, index + 1, weight, italic);
             }
         }
@@ -127,7 +131,13 @@ internal static class TypographyFontResolver {
         if (fallback != null && path != null && (weight != 400 || italic)) {
             var sibling = InstalledFontCatalog.FindSibling(path, weight, italic);
             var loaded = sibling == null ? null : TrueTypeFont.TryLoadFromPath(sibling.Path, sibling.CollectionIndex);
-            if (loaded != null && loaded.IsTextFace) return new ResolvedTypeface(loaded, weight >= 600 && sibling!.Weight < 600, italic && !sibling!.Italic, sibling!.Path);
+            if (loaded != null && loaded.IsTextFace) return new ResolvedTypeface(loaded.WithSelectedFamily(sibling!.Family), weight >= 600 && sibling.Weight < 600, italic && !sibling.Italic, sibling.Path);
+        }
+
+        if (fallback != null && path != null) {
+            var faces = new System.Collections.Generic.List<InstalledFontFace>();
+            InstalledFontCatalog.ReadFaces(path, faces);
+            if (faces.Count > 0) fallback = fallback.WithSelectedFamily(faces[0].Family);
         }
 
         return new ResolvedTypeface(fallback, weight >= 600, italic, path);
@@ -153,8 +163,9 @@ internal static class TypographyFontResolver {
 
     private static string FamilyName(string part) => part.Trim().Trim('"', '\'').Trim();
 
-    private static bool TryLoad(InstalledFontFace? face, int weight, bool italic, out ResolvedTypeface resolved) {
+    private static bool TryLoad(InstalledFontFace? face, int weight, bool italic, out ResolvedTypeface resolved, string? selectedFamily = null) {
         var loaded = face == null ? null : TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
+        if (loaded != null) loaded = loaded.WithSelectedFamily(selectedFamily ?? face!.Family);
         resolved = loaded != null && loaded.IsTextFace ? new ResolvedTypeface(loaded, weight >= 600 && face!.Weight < 600, italic && !face!.Italic, face!.Path) : default;
         return loaded != null && loaded.IsTextFace;
     }

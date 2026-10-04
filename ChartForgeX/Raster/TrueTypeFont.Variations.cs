@@ -11,7 +11,7 @@ internal sealed partial class TrueTypeFont {
     private readonly ItemVariationStore? _horizontalVariations, _metricVariations;
     internal FontVariationSettings Variations => _variationSettings;
     internal bool HasSelectedAxis(string tag) => _variation != null && _variationSettings.ContainsKey(tag) && Array.IndexOf(_variation.Tags, tag) >= 0;
-    internal TrueTypeFont WithVariations(FontVariationSettings settings) => settings.Key == _variationSettings.Key ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, _languageTag, settings);
+    internal TrueTypeFont WithVariations(FontVariationSettings settings) => settings.Key == _variationSettings.Key ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, _languageTag, settings, _colorPaletteIndex, PaletteContext);
     private FontTableReader? VariationTable(string tag) {
         if (!_tables.TryGetValue(tag, out var at) || !_tableLengths.TryGetValue(tag, out var length)) return null;
         try { return new FontTableReader(_data, at, length); } catch (FontLayoutException) { return null; }

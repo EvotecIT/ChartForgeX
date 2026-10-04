@@ -59,7 +59,7 @@ public sealed class PngChartGridRenderer {
     private static ChartColor StyleColor(TextStyleOverride style, ChartColor fallback) => style.Color ?? fallback;
 
     private static ResolvedTypeface StyleFace(TextStyleOverride style, bool fallback) =>
-        TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.FontFamily ?? "sans-serif",style.ResolveFontWeight(fallback ? 700 : 400),style.Italic), style.OpenTypeLanguageTag), style.Variations);
+        TypographyFontResolver.WithColorPalette(TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.FontFamily ?? "sans-serif",style.ResolveFontWeight(fallback ? 700 : 400),style.Italic), style.OpenTypeLanguageTag), style.Variations), style.ColorPaletteIndex);
     private static double MeasureStyledTextWidth(RgbaCanvas canvas, string text, double fontSize, TextStyleOverride style, bool emphasized) {
         text = style.TransformText(text, CultureInfo.InvariantCulture);
         return MeasureStyledTextWidthCore(canvas, text, fontSize, style, emphasized);

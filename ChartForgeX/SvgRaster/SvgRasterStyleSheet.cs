@@ -4,7 +4,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.SvgRaster;
 
-internal sealed class SvgRasterStyleSheet {
+internal sealed partial class SvgRasterStyleSheet {
     public static SvgRasterStyleSheet Empty { get; } = new(Array.Empty<SvgRasterStyleRule>());
 
     private readonly IReadOnlyList<SvgRasterStyleRule> _rules;
@@ -17,9 +17,10 @@ internal sealed class SvgRasterStyleSheet {
 
     public static SvgRasterStyleSheet Parse(IEnumerable<string> blocks) {
         var rules = new List<SvgRasterStyleRule>();
+        var sheet = new SvgRasterStyleSheet(rules);
         var order = 0;
-        foreach (var block in blocks) ParseBlock(block, rules, ref order);
-        return rules.Count == 0 ? Empty : new SvgRasterStyleSheet(rules);
+        foreach (var block in blocks) sheet.ParseBlock(block, rules, ref order);
+        return rules.Count == 0 && sheet._palettes.Count == 0 ? Empty : sheet;
     }
 
     public IEnumerable<SvgStyleDeclaration> DeclarationsFor(SvgRasterElement element, IReadOnlyList<SvgRasterElement>? ancestors = null) {
@@ -30,7 +31,7 @@ internal sealed class SvgRasterStyleSheet {
         }
     }
 
-    private static void ParseBlock(string? css, List<SvgRasterStyleRule> rules, ref int order) {
+    private void ParseBlock(string? css, List<SvgRasterStyleRule> rules, ref int order) {
         if (string.IsNullOrWhiteSpace(css)) return;
         var clean = StripComments(css!);
         var start = 0;
@@ -42,7 +43,8 @@ internal sealed class SvgRasterStyleSheet {
             var selectorText = clean.Substring(start, open - start).Trim();
             var declarationsText = clean.Substring(open + 1, close - open - 1).Trim();
             start = close + 1;
-            if (selectorText.Length == 0 || selectorText[0] == '@' || declarationsText.Length == 0) continue;
+            if (selectorText.Length == 0 || declarationsText.Length == 0) continue;
+            if (selectorText[0] == '@') { ReadPaletteRule(selectorText, declarationsText); continue; }
 
             SvgStyleDeclarationList declarations;
             try {

@@ -15,6 +15,14 @@ public sealed class TextStyleOverride {
     private TextBaseline? _baseline;
     private TextCaseTransform? _textCase;
     private string? _openTypeLanguageTag;
+    private int? _colorPaletteIndex;
+    /// <summary>Gets or sets an optional zero-based CPAL palette. Null inherits; zero resets to the default.</summary>
+    public int? ColorPaletteIndex {
+        get => _colorPaletteIndex;
+        set { if (value.HasValue) FontSpec.ValidateColorPaletteIndex(value.Value); _colorPaletteIndex = value; }
+    }
+    /// <summary>Selects a colour-font palette for this text role.</summary>
+    public TextStyleOverride WithColorPalette(int index) { ColorPaletteIndex = index; return this; }
     /// <summary>Gets or sets explicit OpenType axes. Null inherits; Default restores the font's default instance.</summary>
     public FontVariationSettings? Variations { get; set; }
     /// <summary>Sets one OpenType variation axis in design units.</summary>
@@ -79,7 +87,7 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets a value indicating whether this instance contains explicit overrides.</summary>
-    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null;
+    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null || ColorPaletteIndex.HasValue;
 
     /// <summary>Resolves these overrides over a complete text style without mutating the fallback.</summary>
     public TextStyle Resolve(TextStyle fallback) {
@@ -98,6 +106,7 @@ public sealed class TextStyleOverride {
         if (TextCase.HasValue) resolved.TextCase = TextCase.Value;
         if (OpenTypeLanguageTag != null) resolved.OpenTypeLanguageTag = OpenTypeLanguageTag == "normal" ? null : OpenTypeLanguageTag;
         if (Variations != null) resolved.Font.Variations = Variations;
+        if (ColorPaletteIndex.HasValue) resolved.Font.ColorPaletteIndex = ColorPaletteIndex.Value;
         return resolved;
     }
 

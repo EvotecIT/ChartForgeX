@@ -1396,6 +1396,23 @@
       }
     },
     {
+      "name": "font-palette-showcase",
+      "width": 960,
+      "height": 460,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 816131,
+        "minTransparentPixels": 67069,
+        "minDistinctColors": 906,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "forecast-envelope-rangeband-dark",
       "width": 760,
       "height": 460,
