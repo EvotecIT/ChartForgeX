@@ -756,7 +756,18 @@ internal static partial class SmokeTests {
 
             Assert(ContainsAny(text, "ubuntu-latest") && ContainsAny(text, "windows-latest") && ContainsAny(text, "macos-latest"), "GitHub Actions workflows should cover public Linux, Windows, and macOS runners: " + workflowName);
             Assert(text.Contains("actions/setup-dotnet", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should install the expected .NET SDK: " + workflowName);
-            Assert(text.Contains("actions/upload-artifact", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should preserve packages and gallery output: " + workflowName);
+            Assert(text.Contains("actions/upload-artifact", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should preserve their validation artifacts: " + workflowName);
+            if (string.Equals(workflowName, "rendering-history.yml", StringComparison.OrdinalIgnoreCase)) {
+                Assert(text.Contains("GIT_CONFIG_KEY_0: core.autocrlf", StringComparison.Ordinal) &&
+                       text.Contains("GIT_CONFIG_VALUE_0: 'false'", StringComparison.Ordinal),
+                    "Benchmark owner checkout should preserve source bytes for its controlled source guard.");
+                Assert(text.Contains("global-json-file: Ignore/PowerForgeSource/global.json", StringComparison.Ordinal),
+                    "Benchmark builds should use the canonical owner's selected SDK.");
+                Assert(text.Contains("rendering-history-proof-${{ matrix.name }}", StringComparison.Ordinal) &&
+                       text.Contains("rendering-history-reference-${{ matrix.name }}", StringComparison.Ordinal),
+                    "Benchmark workflows should retain platform-specific raw proof and accepted references.");
+                continue;
+            }
             Assert(text.Contains("artifacts/packages/Release", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should upload packages from Build.ps1 artifact output: " + workflowName);
             Assert(text.Contains("if: runner.os == 'Linux'", StringComparison.Ordinal), "GitHub Actions workflows should keep Linux package provisioning off Windows and macOS runners: " + workflowName);
             Assert(text.Contains("chartforgex-packages-${{ matrix.runner }}", StringComparison.Ordinal) && text.Contains("chartforgex-example-gallery-${{ matrix.runner }}", StringComparison.Ordinal), "GitHub Actions matrix jobs should upload OS-specific artifact names: " + workflowName);
