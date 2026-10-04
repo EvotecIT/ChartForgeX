@@ -42,7 +42,7 @@ public sealed partial class PngChartRenderer {
             var segmentRadius = radius * Math.Sqrt(point.Y / max);
             var color = PieSliceColor(chart, series, pointIndex);
             var pathData = ChartSlicePathGeometry.BuildPath(cx, cy, segmentRadius, 0, start, end);
-            c.FillPathDataVerticalGradient(pathData, color, ChartMarkSurface.SliceHasPointColor(series, pointIndex) ? color : ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity));
+            c.FillPathDataSliceGradient(pathData, color, ChartMarkSurface.SliceHasPointColor(series, pointIndex) ? color : ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity));
             c.StrokePathData(pathData, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter);
 
             if (ShouldDrawDataLabels(chart, series) && segmentRadius > ChartVisualPrimitives.PolarAreaLabelMinRadius) {

@@ -89,6 +89,47 @@ public sealed class ChartMarkStyleParityTests {
         Assert.InRange(Alpha(image, (int)cx, (int)cy + 15), 127, 129);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void PaletteSliceGradientChangesAcrossBothObjectAxes(int density) {
+        var chart = ChartMarkParityFixture.Create("pie-full", 255, density);
+        var svg = XDocument.Parse(chart.ToSvg());
+        var slice = svg.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "pie-slice");
+        var coordinates = ((string)slice.Attribute("d")!).Split(' ');
+        var cx = double.Parse(coordinates[1], CultureInfo.InvariantCulture);
+        var cy = double.Parse(coordinates[2], CultureInfo.InvariantCulture);
+        var image = chart.ToRgbaImage();
+        var reference = SvgRasterizer.Rasterize(chart.ToSvg(), image.Width, image.Height).Image;
+        foreach (var offset in new[] { (-30, 0), (30, 0), (0, -30), (0, 30) }) {
+            var x = (int)(cx * density) + offset.Item1 * density;
+            var y = (int)(cy * density) + offset.Item2 * density;
+            Assert.InRange(Math.Abs(Alpha(image, x, y) - Alpha(reference, x, y)), 0, 2);
+        }
+        Assert.True(Alpha(image, (int)(cx * density) - 30 * density, (int)(cy * density)) >
+            Alpha(image, (int)(cx * density) + 30 * density, (int)(cy * density)) + 15);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void DiagonalGradientPreservesNormalizedObjectCoordinates(int transform) {
+        var attributes = transform switch {
+            1 => "gradientUnits='userSpaceOnUse' x2='1' y2='1' gradientTransform='matrix(80 0 0 20 10 10)'",
+            2 => "gradientUnits='userSpaceOnUse' x2='1' y2='1' gradientTransform='matrix(80 0 20 20 10 10)'",
+            3 => "gradientUnits='userSpaceOnUse' x2='1' y2='1' gradientTransform='matrix(-80 0 0 20 90 10)'",
+            _ => "x2='1' y2='1'"
+        };
+        var svg = $"<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><defs><linearGradient id='g' {attributes}><stop stop-color='#1e50aa'/><stop offset='1' stop-color='#1e50aa' stop-opacity='0'/></linearGradient></defs><rect x='10' y='10' width='80' height='20' fill='url(#g)'/></svg>";
+        var result = SvgRasterizer.Rasterize(svg, 100, 40);
+        Assert.Empty(result.Diagnostics);
+        // At (.25,.25) in gradient space the alpha is .75, even when its physical axes differ.
+        Assert.InRange(Alpha(result.Image, transform == 3 ? 69 : transform == 2 ? 34 : 29, 14), 193, 199);
+        Assert.InRange(Alpha(result.Image, transform == 3 ? 29 : transform == 2 ? 74 : 69, 14), 129, 135);
+    }
+
     [Fact]
     public void SunburstFillKeepsItsSvgOpacity() {
         var chart = ChartMarkParityFixture.Create("sunburst");

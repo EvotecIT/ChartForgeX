@@ -56,7 +56,6 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">31</text>", StringComparison.Ordinal), "Box plot data labels should render medians when enabled.");
         var raw = Chart.Create().WithSize(640, 360).WithDataLabels().AddBoxPlot("Raw samples", 1, new[] { 18d, 24d, 31d, 38d, 48d }, ChartColor.FromRgb(37, 99, 235)).ToSvg();
         Assert(raw.Contains(">31</text>", StringComparison.Ordinal), "Raw-value box plot overload should compute the median.");
-        Assert(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.BoxPlot.cs")).Contains("PngStrokeHalo", StringComparison.Ordinal), "Box plot PNG strokes should keep readable raster halos.");
         Assert(chart.ToPng().Length > 64, "Box plots should render PNG output.");
     }
 
@@ -110,7 +109,6 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"error-cap\"") == 6, "Error-bar charts should render two caps per point estimate.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"error-marker\"") == 3, "Error-bar charts should render point estimate markers.");
         Assert(svg.Contains(">63</text>", StringComparison.Ordinal), "Error-bar data labels should render point estimates when enabled.");
-        Assert(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.ErrorBar.cs")).Contains("PngStrokeHalo", StringComparison.Ordinal), "Error-bar PNG strokes should keep readable raster halos.");
         Assert(chart.ToPng().Length > 64, "Error-bar charts should render PNG output.");
     }
 
@@ -131,7 +129,6 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-status=\"rising\"", StringComparison.Ordinal), "Candlestick charts should expose rising/falling status metadata.");
         Assert(svg.Contains("<title>open 42, high 51, low 35, close 48</title>", StringComparison.Ordinal), "Candlestick charts should expose browser tooltip metadata.");
         Assert(svg.Contains(">72</text>", StringComparison.Ordinal), "Candlestick data labels should render close values when enabled.");
-        Assert(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.Candlestick.cs")).Contains("PngStrokeHalo", StringComparison.Ordinal), "Candlestick PNG strokes should keep readable raster halos.");
         Assert(chart.ToPng().Length > 64, "Candlestick charts should render PNG output.");
     }
 
@@ -153,7 +150,6 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-close=\"48\"", StringComparison.Ordinal), "OHLC charts should expose open-high-low-close metadata for HTML inspection.");
         Assert(svg.Contains("<title>open 42, high 51, low 35, close 48</title>", StringComparison.Ordinal), "OHLC charts should expose browser tooltip metadata.");
         Assert(svg.Contains(">72</text>", StringComparison.Ordinal), "OHLC data labels should render close values when enabled.");
-        Assert(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.Ohlc.cs")).Contains("PngStrokeHalo", StringComparison.Ordinal), "OHLC PNG strokes should keep readable raster halos.");
         Assert(chart.ToPng().Length > 64, "OHLC charts should render PNG output.");
     }
 

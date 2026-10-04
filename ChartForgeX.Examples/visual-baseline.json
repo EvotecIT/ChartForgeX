@@ -138,6 +138,23 @@
       }
     },
     {
+      "name": "chart-mark-surfaces-showcase-grid",
+      "width": 946,
+      "height": 1000,
+      "svg": {
+        "minVisualNodes": 97,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1892000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "colour-emoji-showcase",
       "width": 960,
       "height": 460,
@@ -3908,23 +3925,6 @@
         "minVisiblePixels": 695869,
         "minTransparentPixels": 58531,
         "minDistinctColors": 1516,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "chart-mark-surfaces-showcase-grid",
-      "width": 946,
-      "height": 1000,
-      "svg": {
-        "minVisualNodes": 97,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 1892000,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     }

@@ -44,7 +44,7 @@ public sealed partial class PngChartRenderer {
             var sliceCx = cx + Math.Cos(mid) * offset;
             var sliceCy = cy + Math.Sin(mid) * offset;
             var pathData = ChartSlicePathGeometry.BuildPath(sliceCx, sliceCy, radius, inner, start, end);
-            c.FillPathDataVerticalGradient(pathData, color, ChartMarkSurface.SliceHasPointColor(series, pointIndex) ? color : ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity));
+            c.FillPathDataSliceGradient(pathData, color, ChartMarkSurface.SliceHasPointColor(series, pointIndex) ? color : ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity));
             c.StrokePathData(pathData, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter);
 
             if (ShouldDrawDataLabels(chart, series) && sweep > 0.22) {

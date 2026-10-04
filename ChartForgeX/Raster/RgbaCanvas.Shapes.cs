@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Raster;
 
@@ -87,17 +88,24 @@ internal sealed partial class RgbaCanvas {
         StrokePolylines(new[] { ring }, color, thickness, RasterLineCap.Butt, RasterLineJoin.Miter);
     }
 
-    /// <summary>Fills a path with a vertical gradient relative to its bounds, matching SVG object-bounding-box gradients.</summary>
-    internal void FillPathDataVerticalGradient(string pathData, ChartColor topColor, ChartColor bottomColor) {
+    /// <summary>Fills a path with the shared slice gradient in normalized object-bounding-box coordinates.</summary>
+    internal void FillPathDataSliceGradient(string pathData, ChartColor topColor, ChartColor bottomColor) {
         var contours = new List<List<ChartPoint>>();
+        var left = double.PositiveInfinity;
+        var right = double.NegativeInfinity;
         var top = double.PositiveInfinity;
         var bottom = double.NegativeInfinity;
         foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) {
             contours.Add(subpath.Points);
-            foreach (var point in subpath.Points) { top = Math.Min(top, point.Y); bottom = Math.Max(bottom, point.Y); }
+            foreach (var point in subpath.Points) {
+                left = Math.Min(left, point.X); right = Math.Max(right, point.X);
+                top = Math.Min(top, point.Y); bottom = Math.Max(bottom, point.Y);
+            }
         }
-        if (!(bottom > top)) return;
-        FillContoursLinearGradient(contours, new ChartPoint(0, top), new ChartPoint(0, bottom), new[] {
+        if (!(bottom > top) || !(right > left)) return;
+        ChartLinearGradientGeometry.Transform(ChartMarkSurface.SliceGradientStart, ChartMarkSurface.SliceGradientEnd,
+            new ChartPoint(left, top), new ChartPoint(right, top), new ChartPoint(left, bottom), out var start, out var end);
+        FillContoursLinearGradient(contours, start, end, new[] {
             new RasterGradientStop(0, topColor), new RasterGradientStop(1, bottomColor)
         }, RasterGradientSpreadMethod.Pad, RasterFillRule.EvenOdd);
     }

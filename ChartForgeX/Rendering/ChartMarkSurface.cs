@@ -5,6 +5,10 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartMarkSurface {
+    public static ChartPoint SliceGradientStart => new(0, 0);
+
+    public static ChartPoint SliceGradientEnd => new(1, 1);
+
     public static bool HasBarHighlight(double width, double height) =>
         width > ChartVisualPrimitives.BarHighlightInset * 2 + 3 && height > ChartVisualPrimitives.BarHighlightInset * 2 + 1;
 

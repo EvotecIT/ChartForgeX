@@ -181,7 +181,9 @@ public sealed partial class SvgChartRenderer {
         AppendFillPatternDefinitions(sb, chart, id);
         for (var i = 0; i < t.Palette.Length; i++) {
             var c = t.Palette[i];
-            AppendLinearGradient(sb, $"{id}-sliceFill{i}", "0", "1", "0", "1", c.ToCss(), 1, c.ToCss(), ChartVisualPrimitives.SliceGradientBottomOpacity);
+            var start = ChartMarkSurface.SliceGradientStart;
+            var end = ChartMarkSurface.SliceGradientEnd;
+            AppendLinearGradient(sb, $"{id}-sliceFill{i}", start.X.ToString(CultureInfo.InvariantCulture), end.X.ToString(CultureInfo.InvariantCulture), start.Y.ToString(CultureInfo.InvariantCulture), end.Y.ToString(CultureInfo.InvariantCulture), c.ToCss(), 1, c.ToCss(), ChartVisualPrimitives.SliceGradientBottomOpacity);
         }
         AppendSvgEnd(sb, "defs");
         AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("id", id).EndStartElement().Line());
