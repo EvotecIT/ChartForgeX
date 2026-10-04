@@ -407,12 +407,12 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string PieSliceFill(Chart chart, ChartSeries series, int pointIndex, string id) =>
-        pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
+        ChartMarkSurface.SliceHasPointColor(series, pointIndex)
             ? series.PointColors[pointIndex]!.Value.ToCss()
             : $"url(#{id}-sliceFill{pointIndex % chart.Options.Theme.Palette.Length})";
 
     private static ChartColor PieSliceColor(Chart chart, ChartSeries series, int pointIndex) =>
-        pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
+        ChartMarkSurface.SliceHasPointColor(series, pointIndex)
             ? series.PointColors[pointIndex]!.Value
             : chart.Options.Theme.Palette[pointIndex % chart.Options.Theme.Palette.Length];
 

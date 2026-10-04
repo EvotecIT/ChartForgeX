@@ -26,11 +26,6 @@ public sealed partial class PngChartRenderer {
             var yHigh = map.Y(high.Y);
             var yLow = map.Y(low.Y);
             var yClose = map.Y(close.Y);
-            var halo = PngStrokeHalo(color);
-
-            c.DrawLine(x, yHigh, x, yLow, halo, ChartVisualPrimitives.OhlcPngHaloStrokeWidth);
-            c.DrawLine(x - tickWidth, yOpen, x, yOpen, halo, ChartVisualPrimitives.OhlcPngHaloStrokeWidth);
-            c.DrawLine(x, yClose, x + tickWidth, yClose, halo, ChartVisualPrimitives.OhlcPngHaloStrokeWidth);
             c.DrawLine(x, yHigh, x, yLow, color, ChartVisualPrimitives.OhlcStrokeWidth);
             c.DrawLine(x - tickWidth, yOpen, x, yOpen, color, ChartVisualPrimitives.OhlcStrokeWidth);
             c.DrawLine(x, yClose, x + tickWidth, yClose, color, ChartVisualPrimitives.OhlcStrokeWidth);

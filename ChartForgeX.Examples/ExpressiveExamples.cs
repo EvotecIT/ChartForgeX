@@ -14,6 +14,7 @@ internal static partial class ExpressiveExamples {
         SaveGrid(CreatePeopleInfographicShowcaseGrid(), output, "people-infographic-showcase-grid", pngOutputScale);
         SaveGrid(CreateWordCloudControlShowcaseGrid(), output, "word-cloud-control-showcase-grid", pngOutputScale);
         SaveGrid(CreateDataLabelPlacementShowcaseGrid(), output, "data-label-placement-showcase-grid", pngOutputScale);
+        SaveGrid(CreateMarkSurfaceShowcase(), output, "chart-mark-surfaces-showcase-grid", pngOutputScale);
         SaveGrid(CreatePointColorCustomizationGrid(), output, "point-color-customization-showcase-grid", pngOutputScale);
         SaveChart(CreateDashboardSegmentedColumnPreview(), output, "dashboard-segmented-column-style", pngOutputScale);
         SaveChart(CreateDashboardSegmentedHorizontalPreview(), output, "dashboard-segmented-horizontal-style", pngOutputScale);

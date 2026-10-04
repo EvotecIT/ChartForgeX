@@ -23,12 +23,10 @@ public sealed partial class PngChartRenderer {
         var polygon = new List<ChartPoint>(lower.Count + upper.Count);
         foreach (var point in upper) polygon.Add(point);
         for (var i = lower.Count - 1; i >= 0; i--) polygon.Add(lower[i]);
-        c.FillPolygonVerticalGradient(polygon, ApplyOpacity(color, ChartVisualPrimitives.RangeBandFillOpacity + 0.06), ApplyOpacity(color, ChartVisualPrimitives.RangeBandFillOpacity * 0.45));
-        DrawPngLinePath(c, upper, PngStrokeHalo(color), ChartVisualPrimitives.RangeBandPngHaloStrokeWidth);
-        DrawPngLinePath(c, lower, PngStrokeHalo(color), ChartVisualPrimitives.RangeBandPngHaloStrokeWidth);
+        c.FillPolygon(polygon, ApplyOpacity(color, ChartVisualPrimitives.RangeBandFillOpacity));
         var boundary = ApplyOpacity(color, ChartVisualPrimitives.RangeBandBoundaryOpacity);
-        c.DrawPolyline(upper, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
-        c.DrawPolyline(lower, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
+        DrawPngLinePath(c, upper, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
+        DrawPngLinePath(c, lower, boundary, ChartVisualPrimitives.RangeBandBoundaryStrokeWidth);
 
         if (ShouldDrawDataLabels(chart, series)) {
             var reserved = new List<ChartLabelBounds>();

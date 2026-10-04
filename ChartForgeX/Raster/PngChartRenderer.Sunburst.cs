@@ -21,7 +21,7 @@ public sealed partial class PngChartRenderer {
         var color = PngSunburstNodeColor(chart, node);
         var sweep = node.EndAngle - node.StartAngle;
         if (sweep <= 0 || node.OuterRadius <= node.InnerRadius) return;
-        c.FillRingSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, node.EndAngle, color);
+        c.FillRingSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, node.EndAngle, ApplyOpacity(color, ChartVisualPrimitives.SunburstFillOpacity));
         DrawSunburstSeparator(c, chart, model, node);
         if (!showLabels) return;
         var ringWidth = node.OuterRadius - node.InnerRadius;
@@ -53,12 +53,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawSunburstSeparator(RgbaCanvas c, Chart chart, ChartSunburstModel model, ChartSunburstNode node) {
         var separator = chart.Options.Theme.CardBackground;
-        c.DrawArc(model.CenterX, model.CenterY, node.OuterRadius, node.StartAngle, node.EndAngle, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
-        if (node.InnerRadius > 0) c.DrawArc(model.CenterX, model.CenterY, node.InnerRadius, node.StartAngle, node.EndAngle, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
-        if (node.EndAngle - node.StartAngle < Math.PI * 2 - 0.000001) {
-            DrawSliceSeparator(c, model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, separator);
-            DrawSliceSeparator(c, model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.EndAngle, separator);
-        }
+        c.StrokePathData(ChartSlicePathGeometry.BuildPath(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, node.EndAngle), separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter);
     }
 
     private static ChartColor PngSunburstNodeColor(Chart chart, ChartSunburstNode node) {

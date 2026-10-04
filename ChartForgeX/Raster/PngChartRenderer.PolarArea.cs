@@ -41,9 +41,9 @@ public sealed partial class PngChartRenderer {
             var end = start + sweep;
             var segmentRadius = radius * Math.Sqrt(point.Y / max);
             var color = PieSliceColor(chart, series, pointIndex);
-            c.FillRingSlice(cx, cy, segmentRadius, 0, start, end, color);
-            DrawSliceSeparator(c, cx, cy, segmentRadius, 0, start, separator);
-            c.DrawArc(cx, cy, segmentRadius, start, end, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
+            var pathData = ChartSlicePathGeometry.BuildPath(cx, cy, segmentRadius, 0, start, end);
+            c.FillPathDataVerticalGradient(pathData, color, ChartMarkSurface.SliceHasPointColor(series, pointIndex) ? color : ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity));
+            c.StrokePathData(pathData, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter);
 
             if (ShouldDrawDataLabels(chart, series) && segmentRadius > ChartVisualPrimitives.PolarAreaLabelMinRadius) {
                 var mid = start + sweep / 2;
@@ -71,10 +71,7 @@ public sealed partial class PngChartRenderer {
             var stroke = ApplyOpacity(color, ChartVisualPrimitives.PolarAreaZeroSlotStrokeOpacity);
             var inner = radius * ChartVisualPrimitives.PolarAreaZeroSlotInnerRadiusFactor;
             c.FillRingSlice(cx, cy, radius, inner, start, end, fill);
-            DrawSliceSeparator(c, cx, cy, radius, inner, start, stroke);
-            DrawSliceSeparator(c, cx, cy, radius, inner, end, stroke);
-            c.DrawArc(cx, cy, radius, start, end, stroke, ChartVisualPrimitives.GridStrokeWidth);
-            c.DrawArc(cx, cy, inner, start, end, stroke, ChartVisualPrimitives.GridStrokeWidth);
+            c.StrokePathData(ChartSlicePathGeometry.BuildPath(cx, cy, radius, inner, start, end), stroke, ChartVisualPrimitives.GridStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { 3d, 4d });
         }
     }
 

@@ -21,7 +21,7 @@ public sealed partial class PngChartRenderer {
             var item = pointIndex / 2;
             var color = PointColor(chart, series, index, item);
 
-            c.DrawLine(x, yStart, x, yEnd, ChartColor.FromRgba(color.R, color.G, color.B, 124), ChartVisualPrimitives.DumbbellConnectorStrokeWidth);
+            c.DrawLine(x, yStart, x, yEnd, ApplyOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity), ChartVisualPrimitives.DumbbellConnectorStrokeWidth);
             DrawMarker(c, chart, x, yStart, radius, startColor);
             DrawMarker(c, chart, x, yEnd, radius, color);
             if (ShouldDrawDataLabels(chart, series)) {

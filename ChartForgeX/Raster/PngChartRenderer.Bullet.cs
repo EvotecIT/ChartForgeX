@@ -47,8 +47,8 @@ public sealed partial class PngChartRenderer {
             var showLabels = row.Series.ShowDataLabels != false;
             if (showLabels && rowLabel.Length > 0) DrawPngTextStyled(c, content.Left, y - EstimatePngStyledTextHeight(rowLabelFontSize, dataStyle) / 2.0, rowLabel, dataStyle, chart.Options.Theme.Text, rowLabelFontSize, emphasized: true);
             DrawBulletRanges(c, row.Series, plot, y, barHeight, min, max, accent);
-            DrawGradientBar(c, plot.Left, y - barHeight * 0.24, Math.Max(2, valueX - plot.Left), barHeight * 0.48, barHeight * 0.24, accent);
-            c.DrawLine(targetX, y - barHeight * 0.65, targetX, y + barHeight * 0.65, chart.Options.Theme.Text, ChartVisualPrimitives.BulletTargetStrokeWidth);
+            DrawGradientBar(c, plot.Left, y - barHeight * 0.24, Math.Max(2, valueX - plot.Left), barHeight * 0.48, barHeight * 0.24, accent, highlight: false, opacity: 1);
+            c.DrawLine(targetX, y - barHeight * ChartVisualPrimitives.BulletTargetLengthRatio, targetX, y + barHeight * ChartVisualPrimitives.BulletTargetLengthRatio, chart.Options.Theme.Text, ChartVisualPrimitives.BulletTargetStrokeWidth);
             if (showLabels) {
                 DrawBulletTargetLabel(c, chart, row.Series, FormatValue(chart, targetValue), targetX, y - barHeight * 0.92, plot, tickFontSize);
                 c.DrawCircle(plot.Right + 8, y, ChartVisualPrimitives.PngStatusMarkerOutlineRadius, chart.Options.Theme.CardBackground);
@@ -89,8 +89,7 @@ public sealed partial class PngChartRenderer {
             if (end <= previous) continue;
             var x = BulletX(plot, min, max, previous);
             var width = BulletX(plot, min, max, end) - x;
-            var alpha = (byte)Math.Max(24, 72 - i * 14);
-            c.FillRoundedRect(x, y - barHeight / 2, width, barHeight, barHeight / 2, ChartColor.FromRgba(accent.R, accent.G, accent.B, alpha));
+            c.FillRoundedRect(x, y - barHeight / 2, width, barHeight, barHeight / 2, ApplyOpacity(accent, ChartMarkSurface.BulletRangeOpacity(i)));
             previous = end;
         }
     }

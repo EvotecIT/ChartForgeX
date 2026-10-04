@@ -30,18 +30,10 @@ public sealed partial class PngChartRenderer {
             var height = Math.Max(2, Math.Abs(yQ3 - yQ1));
             var item = pointIndex / 5;
             var color = PointColor(chart, series, index, item);
-            var halo = PngStrokeHalo(color);
-
-            c.DrawLine(x, yMax, x, yMin, halo, ChartVisualPrimitives.BoxPlotPngHaloStrokeWidth);
-            c.DrawLine(x - capWidth / 2, yMin, x + capWidth / 2, yMin, halo, ChartVisualPrimitives.BoxPlotPngHaloStrokeWidth);
-            c.DrawLine(x - capWidth / 2, yMax, x + capWidth / 2, yMax, halo, ChartVisualPrimitives.BoxPlotPngHaloStrokeWidth);
-            c.DrawLine(x, yMax, x, yMin, color, ChartVisualPrimitives.BoxPlotStrokeWidth);
+            c.DrawLine(x, yMax, x, yMin, ApplyOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity), ChartVisualPrimitives.BoxPlotStrokeWidth);
             c.DrawLine(x - capWidth / 2, yMin, x + capWidth / 2, yMin, color, ChartVisualPrimitives.BoxPlotStrokeWidth);
             c.DrawLine(x - capWidth / 2, yMax, x + capWidth / 2, yMax, color, ChartVisualPrimitives.BoxPlotStrokeWidth);
-            c.StrokeRoundedRect(x - boxWidth / 2, top, boxWidth, height, ChartVisualPrimitives.BoxPlotBodyRadius, halo, ChartVisualPrimitives.BoxPlotPngBodyHaloStrokeWidth);
-            c.FillRoundedRect(x - boxWidth / 2, top, boxWidth, height, ChartVisualPrimitives.BoxPlotBodyRadius, ApplyOpacity(color, ChartVisualPrimitives.BoxPlotBodyFillOpacity));
-            c.StrokeRoundedRect(x - boxWidth / 2, top, boxWidth, height, ChartVisualPrimitives.BoxPlotBodyRadius, color, ChartVisualPrimitives.BoxPlotStrokeWidth);
-            c.DrawLine(x - boxWidth / 2, yMedian, x + boxWidth / 2, yMedian, halo, ChartVisualPrimitives.BoxPlotPngHaloStrokeWidth);
+            c.FillAndStrokeRoundedRect(x - boxWidth / 2, top, boxWidth, height, ChartVisualPrimitives.BoxPlotBodyRadius, color, color, ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotBodyFillOpacity);
             c.DrawLine(x - boxWidth / 2, yMedian, x + boxWidth / 2, yMedian, color, ChartVisualPrimitives.BoxPlotMedianStrokeWidth);
             if (ShouldDrawDataLabels(chart, series)) {
                 var label = FormatValue(chart, median.Y);

@@ -11,7 +11,7 @@ public sealed partial class SvgChartRenderer {
         AppendLinearGradient(sb, id, x1, x2, y1, y2, SvgPaint.Plain(startColor), startOpacity, SvgPaint.Plain(endColor), endOpacity);
 
     private static void AppendBarSurfaceGradient(StringBuilder sb, string id, ChartColor color) =>
-        AppendLinearGradient(sb, id, "0", "0", "0", "1", ChartMarkSurface.BarGradientTopBlend(color).OpaquePaint, 1, ChartMarkSurface.BarGradientBottomBlend(color).OpaquePaint, 0.94);
+        AppendLinearGradient(sb, id, "0", "0", "0", "1", ChartMarkSurface.BarGradientTopBlend(color).Paint, 1, ChartMarkSurface.BarGradientBottomBlend(color).Paint, ChartVisualPrimitives.BarGradientBottomOpacity);
 
     private static void AppendLinearGradient(StringBuilder sb, string id, string x1, string x2, string y1, string y2, SvgPaint startColor, double startOpacity, SvgPaint endColor, double endOpacity) {
         AppendSvg(sb, writer => writer

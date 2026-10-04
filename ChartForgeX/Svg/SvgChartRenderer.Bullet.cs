@@ -101,9 +101,9 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-series", row.index)
                 .Attribute("data-cfx-target", F(targetValue))
                 .Attribute("x1", F(targetX))
-                .Attribute("y1", F(y - barHeight * 0.68))
+                .Attribute("y1", F(y - barHeight * ChartVisualPrimitives.BulletTargetLengthRatio))
                 .Attribute("x2", F(targetX))
-                .Attribute("y2", F(y + barHeight * 0.68))
+                .Attribute("y2", F(y + barHeight * ChartVisualPrimitives.BulletTargetLengthRatio))
                 .Attribute("stroke", t.Text.ToCss())
                 .Attribute("stroke-width", F(ChartVisualPrimitives.BulletTargetStrokeWidth))
                 .Attribute("stroke-linecap", "round")
@@ -195,7 +195,7 @@ public sealed partial class SvgChartRenderer {
             if (end <= previous) continue;
             var x = BulletX(plot, min, max, previous);
             var width = BulletX(plot, min, max, end) - x;
-            var opacity = Math.Max(0.10, 0.30 - i * 0.055);
+            var opacity = ChartMarkSurface.BulletRangeOpacity(i);
             writer
                 .StartElement("rect")
                 .Attribute("data-cfx-role", "bullet-range")

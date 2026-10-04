@@ -1,0 +1,43 @@
+using System;
+using System.Globalization;
+
+namespace ChartForgeX.Rendering;
+
+/// <summary>The closed slice outlines shared by SVG paths and raster separator strokes.</summary>
+internal static class ChartSlicePathGeometry {
+    public static string BuildPath(double cx, double cy, double radius, double innerRadius, double start, double end) {
+        if (end - start >= Math.PI * 2 - 0.000001) {
+            return BuildFullSlicePath(cx, cy, radius, innerRadius);
+        }
+
+        var largeArc = end - start > Math.PI ? 1 : 0;
+        var x1 = cx + Math.Cos(start) * radius;
+        var y1 = cy + Math.Sin(start) * radius;
+        var x2 = cx + Math.Cos(end) * radius;
+        var y2 = cy + Math.Sin(end) * radius;
+
+        if (innerRadius <= 0) {
+            return $"M {F(cx)} {F(cy)} L {F(x1)} {F(y1)} A {F(radius)} {F(radius)} 0 {largeArc} 1 {F(x2)} {F(y2)} Z";
+        }
+
+        var ix1 = cx + Math.Cos(start) * innerRadius;
+        var iy1 = cy + Math.Sin(start) * innerRadius;
+        var ix2 = cx + Math.Cos(end) * innerRadius;
+        var iy2 = cy + Math.Sin(end) * innerRadius;
+        return $"M {F(x1)} {F(y1)} A {F(radius)} {F(radius)} 0 {largeArc} 1 {F(x2)} {F(y2)} L {F(ix2)} {F(iy2)} A {F(innerRadius)} {F(innerRadius)} 0 {largeArc} 0 {F(ix1)} {F(iy1)} Z";
+    }
+
+    private static string BuildFullSlicePath(double cx, double cy, double radius, double innerRadius) {
+        var left = cx - radius;
+        var right = cx + radius;
+        if (innerRadius <= 0) {
+            return $"M {F(cx)} {F(cy)} m {F(-radius)} 0 A {F(radius)} {F(radius)} 0 1 1 {F(right)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(left)} {F(cy)} Z";
+        }
+
+        var innerLeft = cx - innerRadius;
+        var innerRight = cx + innerRadius;
+        return $"M {F(left)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(right)} {F(cy)} A {F(radius)} {F(radius)} 0 1 1 {F(left)} {F(cy)} M {F(innerLeft)} {F(cy)} A {F(innerRadius)} {F(innerRadius)} 0 1 0 {F(innerRight)} {F(cy)} A {F(innerRadius)} {F(innerRadius)} 0 1 0 {F(innerLeft)} {F(cy)} Z";
+    }
+
+    private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+}

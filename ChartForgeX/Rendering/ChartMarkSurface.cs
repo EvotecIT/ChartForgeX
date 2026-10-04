@@ -1,9 +1,22 @@
 using ChartForgeX.Primitives;
+using ChartForgeX.Core;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
 internal static class ChartMarkSurface {
+    public static bool HasBarHighlight(double width, double height) =>
+        width > ChartVisualPrimitives.BarHighlightInset * 2 + 3 && height > ChartVisualPrimitives.BarHighlightInset * 2 + 1;
+
+    public static double HatchOpacity(ChartFillPattern pattern) => pattern == ChartFillPattern.Crosshatch ? 0.20 : 0.28;
+
+    public static double BulletRangeOpacity(int index) => System.Math.Max(0.10, 0.30 - index * 0.055);
+
+    public static double WaterfallBarWidth(double slot) => System.Math.Max(12, System.Math.Min(58, slot * 0.58));
+
+    public static bool SliceHasPointColor(ChartSeries series, int pointIndex) =>
+        pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue;
+
     public static ChartColor BarGradientTop(ChartColor color) => BarGradientTopBlend(color).Color;
 
     public static ChartColor BarGradientBottom(ChartColor color) => BarGradientBottomBlend(color).Color;
