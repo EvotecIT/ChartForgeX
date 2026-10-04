@@ -4,6 +4,19 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateSmallTextLayoutShowcase() => Chart.Create()
+        .WithTitle("Small report labels and attached marks")
+        .WithSubtitle("Font-defined positioning follows the logical text size when export resolution changes")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Labels at 12 logical pixels")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Noto Sans', sans-serif").WithFontSize(12))
+        .WithDataLabelStyle(style => style.WithFontSize(10))
+        .WithXLabels("a\u0301", "i\u0307", "a\u0301\u0300", "بِبّ")
+        .WithDataLabels()
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+
     private static Chart CreateLanguageFormsShowcase() => Chart.Create()
         .WithTitle("Localized font forms in report labels")
         .WithSubtitle("An explicit Serbian language system selects the font's localized Cyrillic forms")

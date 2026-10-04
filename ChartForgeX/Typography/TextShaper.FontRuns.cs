@@ -10,13 +10,13 @@ internal static partial class TextShaper {
     private static readonly string[] StandardSubstitution = { "rlig", "rclt", "calt", "liga", "clig" };
     private static readonly string[] StandardPositioning = { "kern", "dist", "abvm", "blwm", "curs", "mark", "mkmk" };
 
-    private static bool TryShapeAscii(TrueTypeFont face, string text, out ShapedGlyph[] shaped) {
+    private static bool TryShapeAscii(TrueTypeFont face, string text, double pixelSize, out ShapedGlyph[] shaped) {
         var script = "DFLT";
         foreach (var cp in text) {
             if (cp < 32 || cp > 126 || !face.HasGlyph(cp)) { shaped = Array.Empty<ShapedGlyph>(); return false; }
             if (cp >= 'A' && cp <= 'Z' || cp >= 'a' && cp <= 'z') script = "latn";
         }
-        var run = new FontRun(face, script, 0, 0);
+        var run = new FontRun(face, script, 0, 0, pixelSize);
         for (var i = 0; i < text.Length; i++) run.Glyphs.Add(new LayoutGlyph(face.MapGlyph(text[i]), text[i], i));
         var result = new List<ShapedGlyph>(text.Length); FinishRun(run, result); shaped = result.ToArray();
         return true;
@@ -44,7 +44,7 @@ internal static partial class TextShaper {
             if (!IsIgnorable(cp) || cp == 0x200d || cp == 0x200c) cluster.Output.Add(cp);
         }
     }
-    private static ShapedGlyph[] ShapeFontRuns(List<int> codePoints, List<Cluster> clusters, byte[]? levels) {
+    private static ShapedGlyph[] ShapeFontRuns(List<int> codePoints, List<Cluster> clusters, byte[]? levels, double pixelSize, IReadOnlyList<double>? pixelSizes) {
         if (clusters.Count == 0) return Array.Empty<ShapedGlyph>();
         var forms = ArabicShaping.MayJoin(codePoints) ? ArabicShaping.ResolveForms(codePoints) : null;
         var runs = new List<FontRun>(); FontRun? current = null; var script = "DFLT";
@@ -55,7 +55,7 @@ internal static partial class TextShaper {
             if (candidate != "DFLT") script = candidate;
             var level = levels == null ? (byte)0 : levels[cluster.Start];
             if (current == null || !ReferenceEquals(current.Face, cluster.Face) || current.Owner != cluster.Owner || current.Script != script || current.Level != level) {
-                current = new FontRun(cluster.Face!, script, cluster.Owner, level); runs.Add(current);
+                current = new FontRun(cluster.Face!, script, cluster.Owner, level, pixelSizes == null ? pixelSize : NormalizePixelSize(pixelSizes[cluster.Start])); runs.Add(current);
             }
             foreach (var cp in cluster.Output) {
                 var glyph = new LayoutGlyph(cluster.Face!.MapGlyph(cp), cp, cluster.Start);
@@ -74,7 +74,7 @@ internal static partial class TextShaper {
     }
     private static void FinishRun(FontRun run, List<ShapedGlyph> output) {
         var face = run.Face; var glyphs = run.Glyphs; var layout = face.Layout;
-        var budget = new OpenTypeLayout.LayoutExecution(glyphs.Count, (run.Level & 1) != 0);
+        var budget = new OpenTypeLayout.LayoutExecution(glyphs.Count, (run.Level & 1) != 0, run.PixelSize, face.UnitsPerEm);
         var tag = ScriptShaper.SelectTag(layout, run.Script);
         var positioningTag = ScriptShaper.SelectTag(layout, run.Script, positioning: true);
         if (run.Script == "arab") foreach (var glyph in glyphs) glyph.SkipForSubstitution = glyph.CodePoint == 0x200d;
@@ -120,11 +120,12 @@ internal static partial class TextShaper {
         return "DFLT";
     }
     private sealed class FontRun {
-        internal FontRun(TrueTypeFont face, string script, int owner, byte level) { Face = face; Script = script; Owner = owner; Level = level; }
+        internal FontRun(TrueTypeFont face, string script, int owner, byte level, double pixelSize) { Face = face; Script = script; Owner = owner; Level = level; PixelSize = pixelSize; }
         internal readonly TrueTypeFont Face;
         internal readonly string Script;
         internal readonly int Owner;
         internal readonly byte Level;
+        internal readonly double PixelSize;
         internal readonly List<LayoutGlyph> Glyphs = new();
     }
 }

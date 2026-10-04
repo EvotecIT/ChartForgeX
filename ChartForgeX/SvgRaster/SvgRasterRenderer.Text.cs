@@ -195,7 +195,7 @@ internal static partial class SvgRasterRenderer {
 
     private static double DrawTextRun(RgbaCanvas? canvas, string text, double x, double y, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, SvgRasterViewport viewport, SvgRasterTextPaintBounds paintBounds, bool measureOnly, IReadOnlyList<ShapedGlyph>? glyphs = null) {
         if (text.Length == 0) return 0;
-        glyphs ??= SvgTextFace(style).Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text) : null;
+        glyphs ??= SvgTextFace(style).Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text, style.FontSize) : null;
         if (measureOnly) {
             var measuredAdvance = PreparedAdvance(text, style.FontSize, SvgTextFace(style), glyphs);
             if (style.VisibilityVisible) paintBounds.Include(x, TextTop(y, style.FontSize, style.DominantBaseline, SvgTextFace(style).Font) + BaselineShiftOffset(style), PreparedPaintWidth(text, style.FontSize, SvgTextFace(style), IsItalic(style.FontStyle), glyphs), SvgTextPaintHeight(style, SvgTextFace(style).Font), matrix);
@@ -308,7 +308,7 @@ internal static partial class SvgRasterRenderer {
         const double minimumScale = 0.000000000001;
         var scale = Math.Max(minimumScale, requestedScale);
         var face = SvgTextFace(style);
-        glyphs ??= face.Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text) : null;
+        glyphs ??= face.Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text, style.FontSize) : null;
         var italic = IsItalic(style.FontStyle);
         for (var attempt = 0; attempt < 8; attempt++) {
             var fontSize = Math.Max(1, style.FontSize * scale);

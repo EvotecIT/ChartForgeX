@@ -10,8 +10,8 @@ internal sealed partial class OpenTypeLayout {
         if (covered < 0) return -1;
         if (type == 1) {
             var valueFormat = table.U16(at + 4); var size = ValueSize(valueFormat);
-            if (format == 1) ApplyValue(table, at + 6, valueFormat, glyphs[index]);
-            else if (format == 2 && covered < table.U16(at + 6)) ApplyValue(table, at + 8 + covered * size, valueFormat, glyphs[index]);
+            if (format == 1) ApplyValue(table, at, at + 6, valueFormat, glyphs[index], execution);
+            else if (format == 2 && covered < table.U16(at + 6)) ApplyValue(table, at, at + 8 + covered * size, valueFormat, glyphs[index], execution);
             else return -1;
             return index + 1;
         }
@@ -24,10 +24,11 @@ internal sealed partial class OpenTypeLayout {
         var second = Next(glyphs, index, 1, flags, filter, execution);
         if (second < 0) return -1;
         var format = table.U16(at); var firstFormat = table.U16(at + 4); var secondFormat = table.U16(at + 6);
-        var firstSize = ValueSize(firstFormat); var size = firstSize + ValueSize(secondFormat); var record = -1;
+        var firstSize = ValueSize(firstFormat); var size = firstSize + ValueSize(secondFormat); var record = -1; var origin = at;
         if (format == 1) {
             if (covered >= table.U16(at + 8)) return -1;
-            var set = table.Offset(at, at + 10 + covered * 2); var count = table.U16(set); table.Require(set + 2, count * (size + 2));
+            var set = table.Offset(at, at + 10 + covered * 2); origin = set;
+            var count = table.U16(set); table.Require(set + 2, count * (size + 2));
             var low = 0; var high = count - 1;
             while (low <= high) {
                 var middle = low + (high - low) / 2; var candidate = set + 2 + middle * (size + 2); var glyph = table.U16(candidate);
@@ -45,7 +46,8 @@ internal sealed partial class OpenTypeLayout {
         }
         if (record < 0) return -1;
         table.Require(record, size);
-        ApplyValue(table, record, firstFormat, glyphs[index]); ApplyValue(table, record + firstSize, secondFormat, glyphs[second]);
+        ApplyValue(table, origin, record, firstFormat, glyphs[index], execution);
+        ApplyValue(table, origin, record + firstSize, secondFormat, glyphs[second], execution);
         return secondFormat == 0 ? index + 1 : second + 1;
     }
     private static int ValueSize(int format) {
@@ -54,27 +56,35 @@ internal sealed partial class OpenTypeLayout {
         for (var bit = 1; bit <= 128; bit <<= 1) if ((format & bit) != 0) size += 2;
         return size;
     }
-    private static void ApplyValue(FontTableReader table, int at, int format, LayoutGlyph glyph) {
+    private static void ApplyValue(FontTableReader table, int origin, int at, int format, LayoutGlyph glyph, LayoutExecution execution) {
         table.Require(at, ValueSize(format));
-        if ((format & 1) != 0) { var value = table.I16(at); glyph.XOffset += value; if (glyph.Attachment != null) glyph.AttachmentAdjustmentX += value; at += 2; }
-        if ((format & 2) != 0) { var value = table.I16(at); glyph.YOffset += value; if (glyph.Attachment != null) glyph.AttachmentAdjustmentY += value; at += 2; }
-        if ((format & 4) != 0) { glyph.XAdvance += table.I16(at); at += 2; }
-        if ((format & 8) != 0) glyph.YAdvance += table.I16(at);
-        // Device/variation offsets occupy their records but the engine renders the default design instance.
+        var x = 0.0; var y = 0.0; var advanceX = 0.0; var advanceY = 0.0;
+        if ((format & 1) != 0) { x = table.I16(at); at += 2; }
+        if ((format & 2) != 0) { y = table.I16(at); at += 2; }
+        if ((format & 4) != 0) { advanceX = table.I16(at); at += 2; }
+        if ((format & 8) != 0) { advanceY = table.I16(at); at += 2; }
+        if ((format & 16) != 0) { x += DeviceAdjustment(table, origin, at, execution); at += 2; }
+        if ((format & 32) != 0) { y += DeviceAdjustment(table, origin, at, execution); at += 2; }
+        if ((format & 64) != 0) { advanceX += DeviceAdjustment(table, origin, at, execution); at += 2; }
+        if ((format & 128) != 0) advanceY += DeviceAdjustment(table, origin, at, execution);
+        glyph.XOffset += x; glyph.YOffset += y;
+        glyph.XAdvance += advanceX; glyph.YAdvance += advanceY;
+        if (glyph.Attachment != null) { glyph.AttachmentAdjustmentX += x; glyph.AttachmentAdjustmentY += y; }
     }
-    private static (double X, double Y)? Anchor(FontTableReader table, int origin, int field) {
+    private static (double X, double Y)? Anchor(FontTableReader table, int origin, int field, LayoutExecution execution) {
         var at = table.Offset(origin, field, optional: true);
         if (at < 0) return null;
         var format = table.U16(at);
         table.Require(at, format == 1 ? 6 : format == 2 ? 8 : format == 3 ? 10 : throw new FontLayoutException());
-        return (table.I16(at + 2), table.I16(at + 4));
+        return (table.I16(at + 2) + (format == 3 ? DeviceAdjustment(table, at, at + 6, execution) : 0),
+            table.I16(at + 4) + (format == 3 ? DeviceAdjustment(table, at, at + 8, execution) : 0));
     }
     private int Cursive(FontTableReader table, int at, int covered, List<LayoutGlyph> glyphs, int index, int flags, int filter, LayoutExecution execution) {
         var second = Next(glyphs, index, 1, flags, filter, execution);
         if (second < 0 || covered >= table.U16(at + 4)) return -1;
         var nextCovered = table.Coverage(table.Offset(at, at + 2), glyphs[second].Glyph);
         if (nextCovered < 0 || nextCovered >= table.U16(at + 4)) return -1;
-        var exit = Anchor(table, at, at + 8 + covered * 4); var entry = Anchor(table, at, at + 6 + nextCovered * 4);
+        var exit = Anchor(table, at, at + 8 + covered * 4, execution); var entry = Anchor(table, at, at + 6 + nextCovered * 4, execution);
         if (!exit.HasValue || !entry.HasValue) return -1;
         var first = glyphs[index]; var next = glyphs[second];
         if (execution.RightToLeft) {
@@ -95,7 +105,7 @@ internal sealed partial class OpenTypeLayout {
         if (covered >= table.U16(markArray)) return -1;
         var markRecord = markArray + 2 + covered * 4; var markClass = table.U16(markRecord);
         if (markClass >= classes) throw new FontLayoutException();
-        var markAnchor = Anchor(table, markArray, markRecord + 2);
+        var markAnchor = Anchor(table, markArray, markRecord + 2, execution);
         if (!markAnchor.HasValue) return -1;
         // Base/ligature attachment skips marks; mark-to-mark stops at the preceding non-mark.
         var previous = type == 6 ? Next(glyphs, index, -1, flags, filter, execution) : PreviousBase(glyphs, index, flags, filter, execution);
@@ -114,8 +124,8 @@ internal sealed partial class OpenTypeLayout {
                     if (parent.ComponentClusters[c] <= mark.Cluster) component = c;
                 }
             }
-            baseAnchor = Anchor(table, ligature, table.Record(ligature + 2, (long)component * classes + markClass, 2));
-        } else baseAnchor = Anchor(table, baseArray, table.Record(baseArray + 2, (long)baseIndex * classes + markClass, 2));
+            baseAnchor = Anchor(table, ligature, table.Record(ligature + 2, (long)component * classes + markClass, 2), execution);
+        } else baseAnchor = Anchor(table, baseArray, table.Record(baseArray + 2, (long)baseIndex * classes + markClass, 2), execution);
         if (!baseAnchor.HasValue) return -1;
         Attach(glyphs[index], glyphs[previous], baseAnchor.Value.X - markAnchor.Value.X, baseAnchor.Value.Y - markAnchor.Value.Y, cursive: false);
         return index + 1;

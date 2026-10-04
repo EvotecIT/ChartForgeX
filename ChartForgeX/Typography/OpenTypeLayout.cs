@@ -205,9 +205,10 @@ internal sealed partial class OpenTypeLayout {
     /// <summary>Shares finite lookup work and glyph growth across every feature stage in one font run.</summary>
     internal sealed class LayoutExecution {
         private long _availableGrowth;
-        internal LayoutExecution(int count, bool rightToLeft) {
+        internal LayoutExecution(int count, bool rightToLeft, double pixelSize = 0, int unitsPerEm = 0) {
             Remaining = (int)Math.Min(16000000L, Math.Max(4096L, (long)count * 1024));
             _availableGrowth = (long)count * 7 + 64; Prepare(count); RightToLeft = rightToLeft;
+            PixelSize = pixelSize; UnitsPerEm = unitsPerEm;
         }
         internal void Prepare(int count) {
             MaximumGlyphs = (int)Math.Min(int.MaxValue, (long)count + Math.Max(0, _availableGrowth));
@@ -219,5 +220,7 @@ internal sealed partial class OpenTypeLayout {
         internal int Remaining;
         internal int MaximumGlyphs;
         internal readonly bool RightToLeft;
+        internal readonly double PixelSize;
+        internal readonly int UnitsPerEm;
     }
 }

@@ -63,6 +63,7 @@ internal static partial class SvgRasterRenderer {
                 var faces = new List<TrueTypeFont>();
                 var owners = new List<TextRun>();
                 var ownerIds = new List<int>();
+                var pixelSizes = new List<double>();
                 var canShape = true;
                 var ownerId = 0;
                 foreach (var run in chunk.Runs) {
@@ -74,12 +75,13 @@ internal static partial class SvgRasterRenderer {
                         faces.Add(face);
                         owners.Add(run);
                         ownerIds.Add(ownerId);
+                        pixelSizes.Add(run.Style.FontSize);
                     }
                     ownerId++;
                 }
                 if (!canShape) continue;
 
-                var glyphs = TextShaper.ShapeStyled(text.ToString(), faces, ownerIds);
+                var glyphs = TextShaper.ShapeStyled(text.ToString(), faces, ownerIds, pixelSizes);
                 var first = chunk.Runs[0];
                 var oldWidth = 0.0;
                 var shifted = new HashSet<TextRun>();
