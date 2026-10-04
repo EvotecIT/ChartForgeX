@@ -83,6 +83,46 @@ public sealed class FullTextHintingTests {
         } finally { File.Delete(path); }
     }
 
+    [Theory]
+    [InlineData("ital", 1)]
+    [InlineData("slnt", -12)]
+    public void SelectedSlantInstancesRetainVerticalFitting(string axis, double value) {
+        var font = Face("stem-variable.ttf").WithVariations(FontVariationSettings.Default.WithAxis(axis, value));
+        Assert.Equal(Draw(font, "I I", 10, TextHinting.Auto), Draw(font, "I I", 10, TextHinting.Full));
+    }
+
+    [Theory]
+    [InlineData("L")]
+    [InlineData("R")]
+    public void FittedOverhangRetainsTheOuterFlourish(string glyph) {
+        var font = Face("stem-true-type.ttf");
+        var canvas = new RgbaCanvas(80, 80, 4, font, 1, false) { TextHinting = TextHinting.Full };
+        canvas.DrawTextFitted(30, 20, glyph, ChartColor.Black, 10, 5);
+        // Both the left bearing and right overhang extend past the advance rectangle.
+        // The outer subpixel flourish remains visible after the stem moves toward it.
+        var pixels = canvas.ToOutputPixels();
+        Assert.True(pixels[(25 * 80 + (glyph == "L" ? 27 : 37)) * 4 + 3] > 0);
+    }
+
+    [Fact]
+    public void RotatedFarBearingRetainsTheOuterFlourish() {
+        var font = Face("stem-true-type.ttf");
+        var canvas = new RgbaCanvas(80, 80, 4, font, 1, false) { TextHinting = TextHinting.Full };
+        canvas.DrawTextRotated(45, 30, "C", ChartColor.Black, 10, 90, 0, 0);
+        Assert.True(canvas.ToOutputPixels()[(21 * 80 + 39) * 4 + 3] > 0);
+    }
+
+    [Fact]
+    public void FullBuffersUseTheFinalOutputPixelGrid() {
+        var font = Face("stem-true-type.ttf");
+        var fitted = new RgbaCanvas(80, 80, 4, font, 2, false) { TextHinting = TextHinting.Full };
+        fitted.DrawTextFitted(30, 20, "I I", ChartColor.Black, 5, 7);
+        Assert.True(Strongest(fitted.ToOutputPixels()) >= 150);
+        var rotated = new RgbaCanvas(80, 80, 4, font, 2, false) { TextHinting = TextHinting.Full };
+        rotated.DrawTextRotated(45, 30, "I I", ChartColor.Black, 5, 90, 0, 0);
+        Assert.True(Alpha(rotated.ToOutputPixels()) >= 1300);
+    }
+
     private static List<ChartPoint> Ring(double left, double right, double top, double bottom) => new() { new(left, top), new(right, top), new(right, bottom), new(left, bottom) };
     private static byte[] Draw(TrueTypeFont font, string text, double size, TextHinting hinting, bool italic = false, int density = 1) {
         var canvas = new RgbaCanvas(80, 24, 2, font, density, useDefaultOutlineFont: false) { TextHinting = hinting };

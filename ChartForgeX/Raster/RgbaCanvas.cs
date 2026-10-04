@@ -225,7 +225,7 @@ internal sealed partial class RgbaCanvas {
         var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
         contentHeight += Math.Abs(baselineOffset);
         var bounds = TextBufferBounds(text, fontSize, font, italic, emphasized, textWidth, contentHeight, padding, baselineOffset);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _scale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
+        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _scale / BufferOutputScale, font, BufferOutputScale, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
         var textY = -bounds.Y + baselineOffset; var bufferedTextX = -bounds.X;
         if (emphasized) buffer.DrawTextEmphasized(bufferedTextX, textY, text, color, fontSize, buffer._outlineFont, italic);
         else buffer.DrawText(bufferedTextX, textY, text, color, fontSize, buffer._outlineFont, italic);

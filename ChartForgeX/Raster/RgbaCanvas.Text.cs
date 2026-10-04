@@ -11,8 +11,10 @@ internal sealed partial class RgbaCanvas {
     /// <summary>Output pixels per canvas unit, the grid text is fitted to.</summary>
     internal int OutputScale => _outputScale;
 
-    // A text buffer has one pixel per canvas unit; its grid is this canvas's only at an output scale of one.
-    private TextHinting BufferHinting => _outputScale == 1 ? TextHinting : TextHinting.None;
+    // Full keeps the final output grid through temporary fitting and rotation surfaces.
+    // Auto/None retain their existing buffer sampling policy.
+    private int BufferOutputScale => TextHinting == TextHinting.Full ? _outputScale : 1;
+    private TextHinting BufferHinting => _outputScale == 1 || TextHinting == TextHinting.Full ? TextHinting : TextHinting.None;
 
     public void DrawTextTiny(double x, double y, string text, ChartColor color, int scale = 2) {
         DrawTextTiny(x, y, text, color, scale, italic: false);
@@ -73,7 +75,7 @@ internal sealed partial class RgbaCanvas {
             : font.LineHeight(Math.Max(1, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
         var bounds = TextBufferBounds(text, fontSize, font, false, emphasized, bufferWidth, naturalHeight);
-        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, 1, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
+        var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, BufferOutputScale, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
         if (emphasized) buffer.DrawTextEmphasized(-bounds.X, -bounds.Y, text, color, fontSize, font);
         else buffer.DrawText(-bounds.X, -bounds.Y, text, color, fontSize, font);
         var pixels = buffer.ToOutputPixels();
@@ -81,8 +83,8 @@ internal sealed partial class RgbaCanvas {
         DrawImageScaled(
             (int)Math.Round(x + bounds.X * horizontalScale),
             (int)Math.Round(y + bounds.Y),
-            Math.Max(1, (int)Math.Round(buffer.OutputWidth * horizontalScale)),
-            buffer.OutputHeight,
+            Math.Max(1, (int)Math.Round(buffer.Width * horizontalScale)),
+            buffer.Height,
             buffer.OutputWidth,
             buffer.OutputHeight,
             pixels);
