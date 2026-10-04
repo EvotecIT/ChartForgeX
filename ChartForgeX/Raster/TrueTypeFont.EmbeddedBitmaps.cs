@@ -14,12 +14,12 @@ internal sealed partial class TrueTypeFont {
         if (bitmap == null) return false;
         var image = bitmap.Image; var bounds = bitmap.Bounds;
         var density = canvas.FontStrikeScale;
-        var left = Math.Floor((x + bounds.X * scale) * density + 0.5) / density;
-        var top = Math.Floor((baseline - (bounds.Y + bounds.Height) * scale) * density + 0.5) / density;
+        var left = Math.Floor((x + bounds.X * scale) * density + 0.5);
+        var top = Math.Floor((baseline - (bounds.Y + bounds.Height) * scale) * density + 0.5);
         // Coverage cells already describe output pixels. Image filtering would blur authored stems.
         for (var y = 0; y < image.Height; y++) for (var column = 0; column < image.Width; column++) {
             var alpha = (byte)((image.Pixels[(y * image.Width + column) * 4 + 3] * foreground.A + 127) / 255);
-            if (alpha != 0) canvas.FillRect(left + column / density, top + y / density, 1 / density, 1 / density,
+            if (alpha != 0) canvas.FillOutputPixel(left + column, top + y,
                 new ChartColor(foreground.R, foreground.G, foreground.B, alpha));
         }
         return true;

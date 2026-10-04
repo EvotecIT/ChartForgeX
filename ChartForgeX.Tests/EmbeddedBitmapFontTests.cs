@@ -49,6 +49,16 @@ public sealed class EmbeddedBitmapFontTests {
         Assert.Equal(Draw(face, TextHinting.Full).ToOutputPixels(), Draw(face, TextHinting.Full, antialias: 4).ToOutputPixels());
     }
 
+    [Theory]
+    [InlineData(1, 1)] [InlineData(1, 4)]
+    [InlineData(4, 1)] [InlineData(4, 4)]
+    public void PresentationDensityPreservesTransparentCellsAndComposesCoverageOnce(int depth, int antialias) {
+        var face = depth == 1 ? Font() : Font(3, 7, depth);
+        var actual = Crop(Draw(face, TextHinting.Full, size: 4, density: 3, antialias: antialias, color: new ChartColor(10,20,30,128)), 22, 4, 5, 3);
+        var expected = Crop(Draw(face, TextHinting.Full, color: new ChartColor(10,20,30,128)), 6, 3, 5, 3);
+        Assert.Equal(expected, actual);
+    }
+
     [Fact]
     public void AutoNoneFractionalSizesAndSyntheticSlantsKeepOutlineRendering() {
         var face = Font();
