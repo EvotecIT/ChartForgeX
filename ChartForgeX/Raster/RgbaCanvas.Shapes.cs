@@ -23,11 +23,9 @@ internal sealed partial class RgbaCanvas {
             return;
         }
         double half = thickness / 2;
-        var ring = ChartCurveFlattening.RoundedRectangle(x + half, y + half, width - thickness, height - thickness,
+        var ring = ChartCurveFlattening.RoundedRectangleFromTopEdge(x + half, y + half, width - thickness, height - thickness,
             Math.Max(0, radius - half), Math.Max(0, radius - half), _scale);
-        // SVG rectangle dash phase starts at the top edge after the top-left corner.
-        var first = ring[ring.Count - 1];
-        ring.RemoveAt(ring.Count - 1); ring.Insert(0, first); ring.Add(first);
+        ring.Add(ring[0]);
         StrokePolylines(new[] { ring }, color, thickness, RasterLineCap.Butt, RasterLineJoin.Miter, dashArray);
     }
 
@@ -88,26 +86,35 @@ internal sealed partial class RgbaCanvas {
         StrokePolylines(new[] { ring }, color, thickness, RasterLineCap.Butt, RasterLineJoin.Miter);
     }
 
+    /// <summary>Fills a closed vector mark through the shared curve flattening and nonzero winding rasterizer.</summary>
+    internal void FillPathData(string pathData, ChartColor color) {
+        var contours = new List<List<ChartPoint>>();
+        foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) contours.Add(subpath.Points);
+        FillContours(contours, color, RasterFillRule.NonZero);
+    }
+
     /// <summary>Fills a path with the shared slice gradient in normalized object-bounding-box coordinates.</summary>
     internal void FillPathDataSliceGradient(string pathData, ChartColor topColor, ChartColor bottomColor) {
         var contours = new List<List<ChartPoint>>();
-        var left = double.PositiveInfinity;
-        var right = double.NegativeInfinity;
-        var top = double.PositiveInfinity;
-        var bottom = double.NegativeInfinity;
-        foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) {
-            contours.Add(subpath.Points);
-            foreach (var point in subpath.Points) {
-                left = Math.Min(left, point.X); right = Math.Max(right, point.X);
-                top = Math.Min(top, point.Y); bottom = Math.Max(bottom, point.Y);
-            }
+        foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) contours.Add(subpath.Points);
+        FillContoursObjectGradient(contours, new[] { new RasterGradientStop(0, topColor), new RasterGradientStop(1, bottomColor) });
+    }
+
+    /// <summary>Fills a polygon with the same normalized diagonal colour plane as an SVG object-bounds gradient.</summary>
+    internal void FillPolygonObjectGradient(IReadOnlyList<ChartPoint> points, IReadOnlyList<RasterGradientStop> stops) =>
+        FillContoursObjectGradient(new[] { new List<ChartPoint>(points) }, stops);
+
+    private void FillContoursObjectGradient(IReadOnlyList<List<ChartPoint>> contours, IReadOnlyList<RasterGradientStop> stops) {
+        var left = double.PositiveInfinity; var right = double.NegativeInfinity;
+        var top = double.PositiveInfinity; var bottom = double.NegativeInfinity;
+        foreach (var contour in contours) foreach (var point in contour) {
+            left = Math.Min(left, point.X); right = Math.Max(right, point.X);
+            top = Math.Min(top, point.Y); bottom = Math.Max(bottom, point.Y);
         }
         if (!(bottom > top) || !(right > left)) return;
         ChartLinearGradientGeometry.Transform(ChartMarkSurface.SliceGradientStart, ChartMarkSurface.SliceGradientEnd,
             new ChartPoint(left, top), new ChartPoint(right, top), new ChartPoint(left, bottom), out var start, out var end);
-        FillContoursLinearGradient(contours, start, end, new[] {
-            new RasterGradientStop(0, topColor), new RasterGradientStop(1, bottomColor)
-        }, RasterGradientSpreadMethod.Pad, RasterFillRule.EvenOdd);
+        FillContoursLinearGradient(contours, start, end, stops, RasterGradientSpreadMethod.Pad, RasterFillRule.EvenOdd);
     }
 
     /// <summary>Device pixels per canvas unit, the resolution callers flatten curves at before stroking them.</summary>

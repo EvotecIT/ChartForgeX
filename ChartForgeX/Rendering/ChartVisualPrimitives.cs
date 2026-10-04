@@ -240,8 +240,6 @@ internal static class ChartVisualPrimitives {
     public const double FunnelLabelFontSizeMinimum = 13;
     public const double FunnelValueFontSizeMinimum = 12;
     public const double FunnelLabelHaloStrokeWidth = 2.2;
-    public const double FunnelHighlightOpacityLight = 0.22;
-    public const double FunnelHighlightOpacityDark = 0.14;
 
     public const int TreeLinkCurveSegments = 48;
     public const double TreeLinkStrokeOpacity = 0.44;

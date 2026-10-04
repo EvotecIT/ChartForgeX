@@ -70,6 +70,17 @@ internal static class ChartCurveFlattening {
         return points;
     }
 
+    /// <summary>An open rectangle ring beginning on the top edge after its top-left corner, as SVG rectangle strokes do.</summary>
+    internal static List<ChartPoint> RoundedRectangleFromTopEdge(double x, double y, double width, double height, double rx, double ry, double pixelsPerUnit) {
+        var points = RoundedRectangle(x, y, width, height, rx, ry, pixelsPerUnit);
+        if (rx > 0 && ry > 0) {
+            var first = points[points.Count - 1];
+            points.RemoveAt(points.Count - 1);
+            points.Insert(0, first);
+        }
+        return points;
+    }
+
     private static void AppendArc(List<ChartPoint> points, double cx, double cy, double rx, double ry, double start, double end, double pixelsPerUnit) {
         var segments = ArcSegments(Math.Max(rx, ry) * pixelsPerUnit, end - start);
         for (var i = 0; i <= segments; i++) {

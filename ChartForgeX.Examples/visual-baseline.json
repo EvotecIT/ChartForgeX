@@ -1481,6 +1481,23 @@
       }
     },
     {
+      "name": "funnel-surfaces-showcase-grid",
+      "width": 1164,
+      "height": 404,
+      "svg": {
+        "minVisualNodes": 53,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 3
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 940512,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "geographic-topology",
       "width": 1200,
       "height": 680,

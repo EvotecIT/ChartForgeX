@@ -55,7 +55,17 @@ public sealed partial class PngChartRenderer {
                 new ChartPoint(bottomRight, segmentY + segmentDrawHeight),
                 new ChartPoint(bottomLeft, segmentY + segmentDrawHeight)
             };
-            c.FillPolygonVerticalGradient(segment, ChartMarkSurface.FunnelSegmentGradientTop(color), ChartMarkSurface.FunnelSegmentGradientBottom(color));
+            if (ChartMarkSurface.SliceHasPointColor(series, i)) {
+                c.FillPolygonObjectGradient(segment, new[] {
+                    new RasterGradientStop(0, ChartMarkSurface.FunnelSegmentGradientTop(color)),
+                    new RasterGradientStop(0.5, ApplyOpacity(color, ChartMarkSurface.FunnelMiddleOpacity)),
+                    new RasterGradientStop(1, ApplyOpacity(ChartMarkSurface.FunnelSegmentGradientBottom(color), ChartMarkSurface.FunnelBottomOpacity))
+                });
+            } else if (series.Color.HasValue) c.FillPolygon(segment, color);
+            else c.FillPolygonObjectGradient(segment, new[] {
+                new RasterGradientStop(0, color),
+                new RasterGradientStop(1, ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity))
+            });
             DrawFunnelSegmentStroke(c, chart, segment);
 
             var label = FormatX(chart, values[i].X);
@@ -169,10 +179,8 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawFunnelSegmentStroke(RgbaCanvas c, Chart chart, IReadOnlyList<ChartPoint> segment) {
         var border = ApplyOpacity(chart.Options.Theme.CardBackground, ChartVisualPrimitives.FunnelSegmentStrokeOpacity);
-        var highlight = ApplyOpacity(ChartColor.White, chart.Options.Theme.Background.R < 80 ? ChartVisualPrimitives.FunnelHighlightOpacityDark : ChartVisualPrimitives.FunnelHighlightOpacityLight);
         c.StrokeClosedPolyline(segment, border, ChartVisualPrimitives.FunnelSegmentStrokeWidth, RasterLineJoin.Round);
 
-        c.DrawLine(segment[0].X + 2, segment[0].Y + 1, segment[1].X - 2, segment[1].Y + 1, highlight, ChartVisualPrimitives.GridStrokeWidth);
     }
 
     private static ChartColor FunnelTextHalo(ChartColor text, ChartColor cardBackground) =>

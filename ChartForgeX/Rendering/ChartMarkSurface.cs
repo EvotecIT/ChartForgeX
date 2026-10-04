@@ -5,6 +5,8 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartMarkSurface {
+    public const double FunnelMiddleOpacity = 0.92;
+    public const double FunnelBottomOpacity = 0.88;
     public static ChartPoint SliceGradientStart => new(0, 0);
 
     public static ChartPoint SliceGradientEnd => new(1, 1);

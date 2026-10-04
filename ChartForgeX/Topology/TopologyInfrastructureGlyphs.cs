@@ -52,6 +52,10 @@ internal readonly struct TopologyGlyphMark {
 
 /// <summary>Geometry of the built-in infrastructure glyphs drawn inside topology node icons.</summary>
 internal static class TopologyInfrastructureGlyphs {
+    /// <summary>The filled drum surface used for database node icons.</summary>
+    internal static string DatabaseBodyPath(double cx, double cy) =>
+        "M " + F(cx - 10) + " " + F(cy - 7) + " V " + F(cy + 7) + " A 10 4 0 0 0 " + F(cx + 10) + " " + F(cy + 7) + " V " + F(cy - 7);
+
     /// <summary>The server symbol drawn in white on monitoring-style dot nodes.</summary>
     public static TopologyGlyphMark[] DotServer(double cx, double cy) => new[] {
         TopologyGlyphMark.Path("M " + F(cx - 4.2) + " " + F(cy - 3.6) + " H " + F(cx + 4.2) + " V " + F(cy - 0.8) + " H " + F(cx - 4.2) + " Z M " + F(cx - 4.2) + " " + F(cy + 1.5) + " H " + F(cx + 4.2) + " V " + F(cy + 4.2) + " H " + F(cx - 4.2) + " Z", 1.15, roundCap: false),

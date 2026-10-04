@@ -9,6 +9,9 @@ internal static partial class VisualBlockRendering {
     public const int MaximumWardleyNodes = 256;
     public const int MaximumWardleyLinks = 512;
 
+    internal const double WardleyAccentOpacity = 155d / 255;
+    internal const double WardleyPipelineOpacity = 145d / 255;
+
     public static void ValidateWardleyMap(WardleyMapBlock map) {
         if (map.Nodes.Count == 0) throw new InvalidOperationException("Wardley maps must contain at least one node.");
         if (map.Nodes.Count > MaximumWardleyNodes) throw new InvalidOperationException("Wardley maps must contain no more than " + MaximumWardleyNodes.ToString(CultureInfo.InvariantCulture) + " nodes.");
@@ -77,6 +80,17 @@ internal static partial class VisualBlockRendering {
     public static double ProjectWardleyX(ChartRect plot, double evolution) => plot.X + Math.Max(0, Math.Min(1, evolution)) * plot.Width;
 
     public static double ProjectWardleyY(ChartRect plot, double visibility) => plot.Y + (1 - Math.Max(0, Math.Min(1, visibility))) * plot.Height;
+
+    /// <summary>Complete triangular head of an evolution overlay.</summary>
+    internal static string WardleyEvolutionArrowPath(double x, double y) => "M " + WardleyF(x) + " " + WardleyF(y) + " l -7 -4 v 8 z";
+
+    /// <summary>Outlined accelerator/deaccelerator with its common 49-unit footprint.</summary>
+    internal static string WardleyMarkerPath(double x, double y, WardleyMapMarkerKind kind) =>
+        kind == WardleyMapMarkerKind.Accelerator
+            ? "M " + WardleyF(x) + " " + WardleyF(y - 10) + " h 32 v -7 l 17 17 l -17 17 v -7 h -32 z"
+            : "M " + WardleyF(x + 49) + " " + WardleyF(y - 10) + " h -32 v -7 l -17 17 l 17 17 v -7 h 32 z";
+
+    private static string WardleyF(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
     private static void ValidateWardleyCoordinate(double value, string label) {
         if (!IsFinite(value) || value < 0 || value > 1) throw new InvalidOperationException("Wardley map " + label + " values must be finite numbers from 0 to 1.");
