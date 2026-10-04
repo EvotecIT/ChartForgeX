@@ -69,16 +69,31 @@ internal static class RendererGeometryFixture {
             topology.Edges[0].Routing = TopologyEdgeRouting.Curved;
             topology.Edges[0].Kind = family == "geo-link" ? TopologyEdgeKind.Link : TopologyEdgeKind.Replication;
         }
+        if (family.StartsWith("accent-", StringComparison.Ordinal)) {
+            topology.AddNode("c", "Cloud", 40, 190, TopologyNodeKind.Cloud, width: 80, height: 64);
+            if (family.Contains("theme")) topologyTheme.Unknown = "#0000FF80";
+            else foreach (var id in new[] { "a", "b", "c" }) {
+                if (family.Contains("catalog")) topology.WithNodeIcon(id, "sample:" + id, TopologyOptions(family, density).IconCatalog);
+                else topology.WithNodeColor(id, "#0000FF80");
+            }
+        }
         return topology;
     }
 
     internal static TopologyRenderOptions TopologyOptions(string family, int density) {
-        var monitoring = family.StartsWith("monitoring", StringComparison.Ordinal) || family == "halo" || family.StartsWith("geo-", StringComparison.Ordinal);
+        var monitoring = family.StartsWith("monitoring", StringComparison.Ordinal) || family.EndsWith("-monitoring", StringComparison.Ordinal) || family == "halo" || family.StartsWith("geo-", StringComparison.Ordinal);
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeNodeLabels = false, IncludeStatusBadges = false, IncludeEdgeLabels = false,
             ArrowMarkerStyle = TopologyArrowMarkerStyle.Chevron, PngOutputScale = density,
             VisualStyle = monitoring ? TopologyVisualStyle.MonitoringDashboard : TopologyVisualStyle.Default };
         if (family.StartsWith("topology-", StringComparison.Ordinal) || family.StartsWith("monitoring-", StringComparison.Ordinal))
             options.ArrowMarkerStyle = Enum.Parse<TopologyArrowMarkerStyle>(family.Substring(family.IndexOf('-') + 1));
+        if (family.Contains("catalog")) {
+            var pack = new TopologyIconPack("sample", "Sample")
+                .AddIcon("a", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", "#0000FF80")
+                .AddIcon("b", "Queue", TopologyNodeKind.Queue, TopologyIconShape.Badge, "Q", "#0000FF80")
+                .AddIcon("c", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CL", "#0000FF80");
+            options.IconCatalog = TopologyIconCatalog.Default().AddPack(pack);
+        }
         return options;
     }
 }

@@ -495,7 +495,7 @@ public sealed partial class TopologyPngRenderer {
             ? node.Y + node.Height / 2 - 1
             : displayMode == TopologyNodeDisplayMode.Card && options.IncludeNodeLabels && node.Details.Count > 0 ? node.Y + 28 : node.Y + node.Height / 2;
         var size = displayMode == TopologyNodeDisplayMode.Pill ? 18 : displayMode == TopologyNodeDisplayMode.Icon ? 26 : displayMode == TopologyNodeDisplayMode.Tile ? 24 : 22;
-        var iconFill = Color(StatusFill(status.ToCss(), theme.Background, 0.10));
+        var iconFill = Color(StatusFill(NodeAccentColor(node, theme, options), theme.Background, 0.10));
         if (EffectiveIconShape(node, options) == TopologyIconShape.Cloud) {
             var monitoringIcon = IsMonitoringDashboardStyle(options) && displayMode == TopologyNodeDisplayMode.Icon;
             if (!monitoringIcon) canvas.DrawCircle(cx - 5, cy, 7, iconFill);

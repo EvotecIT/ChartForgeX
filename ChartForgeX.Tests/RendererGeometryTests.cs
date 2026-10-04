@@ -78,6 +78,26 @@ public sealed class RendererGeometryTests {
         }
     }
 
+    [Theory]
+    [InlineData("accent-explicit")]
+    [InlineData("accent-theme")]
+    [InlineData("accent-catalog")]
+    [InlineData("accent-explicit-monitoring")]
+    [InlineData("accent-theme-monitoring")]
+    [InlineData("accent-catalog-monitoring")]
+    public void TranslucentNodeAccentsRetainIconSurfaceTints(string family) {
+        foreach (var density in new[] { 1, 2 }) {
+            var (svg, actual) = RendererGeometryFixture.Render(family, 128, density);
+            var expected = SvgRasterizer.Rasterize(svg, actual.Width, actual.Height);
+            foreach (var point in new[] { (62, 132), (296, 132), (65, 222) }) {
+                var offset = (point.Item2 * density * actual.Width + point.Item1 * density) * 4;
+                // Interior pixels test the tint, independently of font or curved-edge coverage.
+                Assert.Equal(new byte[] { 230, 230, 255, 255 }, expected.Image.Pixels.Skip(offset).Take(4).ToArray());
+                Assert.Equal(expected.Image.Pixels.Skip(offset).Take(4).ToArray(), actual.Pixels.Skip(offset).Take(4).ToArray());
+            }
+        }
+    }
+
     private static double ContrastError(RgbaImage actual, RgbaImage expected, int x, int y, int width, int height) {
         double error = 0, contrast = 0;
         for (var row = y; row < y + height; row++) for (var col = x; col < x + width; col++) {
