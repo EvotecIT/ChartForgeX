@@ -66,6 +66,32 @@ public sealed class FallbackWeightTests {
         using var data = new MemoryStream(); source.CopyTo(data); return TrueTypeFont.TryLoad(data.ToArray())!;
     }
     [Theory]
+    [InlineData("start")]
+    [InlineData("middle")]
+    [InlineData("end")]
+    public void ExplicitVariableFallbackWeightDoesNotReceiveGlobalSyntheticBold(string anchor) {
+        var root = Path.Combine(Path.GetTempPath(), "cfx-variable-fallback-weight-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try {
+            foreach (var name in new[] { "language.ttf", "variable-true-type.ttf" }) {
+                using var source = typeof(FallbackWeightTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType." + name)!;
+                using var file = File.Create(Path.Combine(root, name)); source.CopyTo(file);
+            }
+            FontRegistry.Register("CFX Static", Path.Combine(root, "language.ttf"), 400);
+            FontRegistry.Register("CFX Variable", Path.Combine(root, "variable-true-type.ttf"), 400);
+            var spec = FontSpec.FromFamily("CFX Static, CFX Variable"); spec.Weight = 900;
+            spec = spec.WithVariation("wght", 900);
+            var face = TypographyFontResolver.ResolveFace(spec);
+            Assert.True(face.SynthesizeBold); // The static primary cannot apply the axis and lacks B.
+            var glyphs = TextShaper.Shape(face.Font!, "B", 40);
+            Assert.Single(glyphs);
+            Assert.True(glyphs[0].Face.HasSelectedAxis("wght"));
+            Assert.False(face.Font!.NeedsSyntheticBold(glyphs));
+            RgbaImage Render(string family) => SvgRasterizer.ToImage($"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='60'><text x='70' y='40' text-anchor='{anchor}' font-family='{family}' font-weight='900' font-variation-settings=\"'wght' 900\" font-size='40' fill='rgba(17,17,17,.5)'>B</text></svg>");
+            Assert.Equal(Render("CFX Variable").Pixels, Render("CFX Static, CFX Variable").Pixels);
+        } finally { FontRegistry.Clear(); Directory.Delete(root, true); }
+    }
+    [Theory]
     [InlineData(400)] [InlineData(900)]
     public void SvgSynthesizesFallbackCoverageOnceForRegularAndRealBoldPrimaries(int primaryWeight) {
         var root = Path.Combine(Path.GetTempPath(), "cfx-svg-fallback-weight-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);

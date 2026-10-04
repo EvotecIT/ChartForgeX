@@ -6,12 +6,18 @@ namespace ChartForgeX.Raster;
 
 internal sealed partial class TrueTypeFont {
     /// <summary>Whether any painted glyph still needs the primary face's synthetic bold offset.</summary>
-    internal bool NeedsSyntheticBold(string text) => _colors == null && IsSimpleRun(text) || NeedsSyntheticBold(TextShaper.Shape(this, text));
+    internal bool NeedsSyntheticBold(string text) =>
+        !HasSelectedAxis("wght") && _colors == null && IsSimpleRun(text) || NeedsSyntheticBold(TextShaper.Shape(this, text));
 
     internal bool NeedsSyntheticBold(IReadOnlyList<ShapedGlyph> glyphs) {
-        foreach (var glyph in glyphs) if ((ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) && !glyph.Face.TryColorInk(glyph.Glyph, out _)) return true;
+        foreach (var glyph in glyphs) if (CanSynthesizeBold(glyph)) return true;
         return false;
     }
+
+    /// <summary>Authored variable weight and colour paint exclude every synthetic-bold entry point.</summary>
+    private bool CanSynthesizeBold(ShapedGlyph glyph) =>
+        (ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) &&
+        !glyph.Face.HasSelectedAxis("wght") && !glyph.Face.TryColorInk(glyph.Glyph, out _);
     /// <summary>Measures already shaped visual glyphs without resolving bidi or joining a second time.</summary>
     internal static double MeasureGlyphs(IReadOnlyList<ShapedGlyph> glyphs, double fontSize) {
         var width = 0.0;
@@ -30,8 +36,7 @@ internal sealed partial class TrueTypeFont {
 
     /// <summary>A regular fallback retains its advance but receives the requested run's bold ink.</summary>
     private double FallbackBoldOffset(ShapedGlyph glyph, double size) =>
-        FallbackWeight >= 600 && !ReferenceEquals(glyph.Face.Root, Root) && glyph.Face.Weight < 600 &&
-        !glyph.Face.HasSelectedAxis("wght") && !glyph.Face.TryColorInk(glyph.Glyph, out _)
+        FallbackWeight >= 600 && !ReferenceEquals(glyph.Face.Root, Root) && CanSynthesizeBold(glyph)
             ? RgbaCanvas.EmphasisOffset(size) : 0;
 
     /// <summary>Paints a pre-shaped visual run at the primary face's baseline, preserving fallback face metrics.</summary>
@@ -44,7 +49,7 @@ internal sealed partial class TrueTypeFont {
             var scale = glyph.Face.ScaleFor(fontSize);
             var advance = GlyphAdvance(glyph, previous, fontSize);
             x += advance - GlyphAdvance(glyph, null, fontSize);
-            var offset = ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600 ? boldOffset : 0;
+            var offset = CanSynthesizeBold(glyph) ? boldOffset : 0;
             if (offset == 0) offset = FallbackBoldOffset(glyph, fontSize);
             rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit, offset);
             x += GlyphAdvance(glyph, null, fontSize);
