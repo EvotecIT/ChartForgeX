@@ -375,6 +375,8 @@ var chart = Chart.Create()
 
 Select a font's localized forms with `TextStyle.OpenTypeLanguageTag = "SRB"`, or a chart role override such as `.WithTickLabelStyle(style => style.WithOpenTypeLanguage("SRB"))`. The tag selects that font's GSUB/GPOS language system for measurement and drawing, including fallback faces. Tags such as `SRB` (Serbian) and `TRK` (Turkish) are case-sensitive OpenType tags, not culture names. A missing tag uses the font's default system. Null keeps the default on a complete style and inherits on an override; `WithOpenTypeLanguage("normal")` resets an override to the default. SVG carries this choice through CSS `font-language-override`, so native SVG display also depends on the browser's support and available fonts. The `language-forms-showcase` gallery example uses localized Serbian italic labels.
 
+Font-authored GPOS device corrections adjust kerning and mark placement at the nearest whole logical font size. Measurement, fitting, and raster drawing share those positions; raising PNG export resolution preserves the layout. Native SVG text uses the browser's font engine. See [text rendering](docs/visual-canvas.md) for the size policy and remaining variation and hinting limits.
+
 Use `ChartForgeX.VisualBlocks` when a report needs exact facts beside charts instead of pretending tables, lists, metric cards, status panels, or infographic snippets are chart series.
 
 ```csharp

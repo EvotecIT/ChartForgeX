@@ -271,7 +271,7 @@ internal sealed partial class TrueTypeFont {
         var baseline = fit?.Baseline ?? y + _ascender * scale;
         var rendered = false;
         if (!IsSimpleRun(text)) {
-            return DrawGlyphs(canvas, x, y, TextShaper.Shape(this, text), color, fontSize, italic, boldOffset: boldOffset);
+            return DrawGlyphs(canvas, x, y, TextShaper.Shape(this, text, fontSize), color, fontSize, italic, boldOffset: boldOffset);
         }
 
         ushort? previous = null;
@@ -306,7 +306,7 @@ internal sealed partial class TrueTypeFont {
         return true;
     }
 
-    private double MeasureShaped(string text, double fontSize) => MeasureGlyphs(TextShaper.Shape(this, text), fontSize);
+    private double MeasureShaped(string text, double fontSize) => MeasureGlyphs(TextShaper.Shape(this, text, fontSize), fontSize);
 
     // True when every character is drawn by this face exactly as written: no fallback, reordering,
     // joining, composition, or OpenType layout.

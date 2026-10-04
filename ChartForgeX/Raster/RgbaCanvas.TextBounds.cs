@@ -9,7 +9,7 @@ internal sealed partial class RgbaCanvas {
     private static ChartRect TextBufferBounds(string text, double size, TrueTypeFont? font, bool italic, bool emphasized, double width, double height, double padding = 0, double baselineOffset = 0) {
         var left = -padding; var top = -padding; var right = width + padding; var bottom = height + padding;
         var inkFace = emphasized ? EmphasisFace(font) ?? font : font;
-        var ink = inkFace?.MeasureGlyphInk(TextShaper.Shape(inkFace, text), size, italic && !inkFace.IsItalic);
+        var ink = inkFace?.MeasureGlyphInk(TextShaper.Shape(inkFace, text, size), size, italic && !inkFace.IsItalic);
         if (ink.HasValue) {
             var bounds = ink.Value;
             left = Math.Min(left, Math.Floor(bounds.X)); top = Math.Min(top, Math.Floor(bounds.Y + baselineOffset));

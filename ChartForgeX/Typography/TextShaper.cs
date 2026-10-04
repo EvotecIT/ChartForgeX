@@ -52,8 +52,10 @@ internal static partial class TextShaper {
         (cp >= 0x20A0 && cp < 0x20D0) || (cp >= 0x2100 && cp < 0x2400) || (cp >= 0x2500 && cp < 0x2600);
 
     /// <summary>The glyphs of <paramref name="text"/> in visual order, cached per face.</summary>
-    internal static IReadOnlyList<ShapedGlyph> Shape(TrueTypeFont primary, string text) {
-        if (text.Length > MaximumCachedTextLength) return ShapeCore(primary, text);
+    internal static IReadOnlyList<ShapedGlyph> Shape(TrueTypeFont primary, string text, double pixelSize = 0) {
+        pixelSize = NormalizePixelSize(pixelSize);
+        if (text.Length > MaximumCachedTextLength) return ShapeCore(primary, text, pixelSize);
+        var key = (text, pixelSize);
         var cache = Caches.GetValue(primary, _ => new RunCache());
         var version = FontFallbackChain.Version;
         lock (cache) {
@@ -63,16 +65,16 @@ internal static partial class TextShaper {
                 cache.Version = version;
             }
 
-            if (cache.Runs.TryGetValue(text, out var cached)) return cached;
+            if (cache.Runs.TryGetValue(key, out var cached)) return cached;
         }
 
-        var shaped = ShapeCore(primary, text);
+        var shaped = ShapeCore(primary, text, pixelSize);
         if (shaped.Length > MaximumCachedGlyphs) return shaped;
         lock (cache) {
             if (cache.Version == version) {
-                if (cache.Runs.TryGetValue(text, out var concurrent)) return concurrent;
+                if (cache.Runs.TryGetValue(key, out var concurrent)) return concurrent;
                 if (cache.Runs.Count >= MaximumCachedRuns || cache.GlyphCount + shaped.Length > MaximumCachedGlyphs) { cache.Runs.Clear(); cache.GlyphCount = 0; }
-                cache.Runs[text] = shaped;
+                cache.Runs[key] = shaped;
                 cache.GlyphCount += shaped.Length;
             }
         }
@@ -81,11 +83,13 @@ internal static partial class TextShaper {
     }
 
     /// <summary>Shapes one complete text chunk while retaining the primary face of each logical code point.</summary>
-    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners) =>
-        ShapeCore(faces[0], text, faces, owners);
+    internal static IReadOnlyList<ShapedGlyph> ShapeStyled(string text, IReadOnlyList<TrueTypeFont> faces, IReadOnlyList<int> owners, IReadOnlyList<double>? pixelSizes = null) =>
+        ShapeCore(faces[0], text, 0, faces, owners, pixelSizes);
 
-    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null) {
-        if (faces == null && TryShapeAscii(primary, text, out var simple)) return simple;
+    private static double NormalizePixelSize(double size) => size > 0 && size < 65535.5 ? Math.Floor(size + 0.5) : 0;
+
+    private static ShapedGlyph[] ShapeCore(TrueTypeFont primary, string text, double pixelSize, IReadOnlyList<TrueTypeFont>? faces = null, IReadOnlyList<int>? owners = null, IReadOnlyList<double>? pixelSizes = null) {
+        if (faces == null && TryShapeAscii(primary, text, pixelSize, out var simple)) return simple;
         var codePoints = new List<int>(text.Length);
         for (var index = 0; index < text.Length;) codePoints.Add(TrueTypeFont.ReadCodePoint(text, ref index));
         var clusters = Segment(codePoints, owners);
@@ -108,7 +112,7 @@ internal static partial class TextShaper {
             }
         }
 
-        return ShapeFontRuns(codePoints, clusters, levels);
+        return ShapeFontRuns(codePoints, clusters, levels, pixelSize, pixelSizes);
     }
 
     // A base character and what attaches to it: marks, joiners and what they join, variation selectors, emoji modifiers, tags.
@@ -293,6 +297,6 @@ internal static partial class TextShaper {
     private sealed class RunCache {
         public int Version { get; set; }
         public int GlyphCount { get; set; }
-        public Dictionary<string, ShapedGlyph[]> Runs { get; } = new(StringComparer.Ordinal);
+        public Dictionary<(string Text, double PixelSize), ShapedGlyph[]> Runs { get; } = new();
     }
 }
