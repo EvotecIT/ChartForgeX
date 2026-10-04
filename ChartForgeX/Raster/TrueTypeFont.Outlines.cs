@@ -24,6 +24,9 @@ internal sealed partial class TrueTypeFont {
 
         var contours = new List<List<ChartPoint>>();
         if (_glyf < 0 || _loca < 0 || glyph >= _numGlyphs || depth > 8) return contours;
+        // The left phantom sets the instance's horizontal origin. Apply it only
+        // to the whole glyph; nested components retain their own placement.
+        if (depth == 0 && _glyphVariations != null) transform = transform.Compose(1, 0, 0, 1, -GlyphOrigin(glyph), 0);
         var glyphStart = GlyphOffset(glyph);
         var glyphEnd = GlyphOffset((ushort)(glyph + 1));
         if (glyphStart == glyphEnd) return contours;

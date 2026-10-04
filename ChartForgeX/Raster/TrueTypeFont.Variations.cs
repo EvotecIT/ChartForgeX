@@ -17,7 +17,7 @@ internal sealed partial class TrueTypeFont {
         try { return new FontTableReader(_data, at, length); } catch (FontLayoutException) { return null; }
     }
     private ItemVariationStore? VariationStore(FontTableReader? table, int field, bool wide) {
-        if (_variation == null || !table.HasValue) return null;
+        if (_variation?.HasNonzeroCoordinates != true || !table.HasValue) return null;
         try { return ItemVariationStore.Read(table.Value, table.Value.Offset(0, field, optional: true, wide: wide), _variation.Coordinates); }
         catch (FontLayoutException) { return null; }
     }
@@ -51,6 +51,7 @@ internal sealed partial class TrueTypeFont {
     // changes the outline; it does not scale the selected advance.
     private bool TryMetricComponent(ushort glyph, out ushort component) {
         component = 0;
+        var found = false;
         if (glyph >= _numGlyphs) return false;
         try {
             var glyf = VariationTable("glyf"); var loca = VariationTable("loca");
@@ -64,12 +65,26 @@ internal sealed partial class TrueTypeFont {
             for (var count = 0; count < 4096; count++) {
                 table.Require(at, 4);
                 var flags = table.U16(at); var candidate = table.U16(at + 2);
-                if ((flags & 0x200) != 0 && candidate < _numGlyphs) { component = (ushort)candidate; return true; }
+                if ((flags & 0x200) != 0 && candidate < _numGlyphs) { component = (ushort)candidate; found = true; }
                 at += 4 + ((flags & 1) != 0 ? 4 : 2) + ((flags & 8) != 0 ? 2 : (flags & 64) != 0 ? 4 : (flags & 128) != 0 ? 8 : 0);
-                if (at > end || (flags & 32) == 0) return false;
+                if (at > end) return false;
+                if ((flags & 32) == 0) return found;
             }
         } catch (FontLayoutException) { }
         return false;
+    }
+    private double GlyphOrigin(ushort glyph, int depth = 0) {
+        if (_glyphVariations == null || glyph >= _numGlyphs || depth >= 8) return 0;
+        if (TryMetricComponent(glyph, out var component)) return GlyphOrigin(component, depth + 1);
+        try {
+            var glyf = VariationTable("glyf"); var hmtx = VariationTable("hmtx");
+            if (!glyf.HasValue || !hmtx.HasValue) return 0;
+            var at = GlyphOffset(glyph);
+            if (at == GlyphOffset((ushort)(glyph + 1))) return 0;
+            var lsbAt = glyph < _numHMetrics ? glyph * 4 + 2 : _numHMetrics * 4 + (glyph - _numHMetrics) * 2;
+            var baseOrigin = glyf.Value.I16(at + 2) - hmtx.Value.I16(lsbAt);
+            return baseOrigin + (_glyphVariations.Get(glyph)?.LeftPhantomDelta ?? 0);
+        } catch (FontLayoutException) { return 0; }
     }
     // MVAR's hasc/hdsc target OS/2 typo metrics, not arbitrary hhea values. Follow a hhea
     // value only when the face declares the same corresponding typo metric.

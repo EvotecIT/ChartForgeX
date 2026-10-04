@@ -195,9 +195,11 @@ internal sealed partial class CompactFontOutlines {
                     break;
                 case 16 when _cff2: { // blend: defaults followed by each value's region deltas.
                     var values = (int)s.Pop();
-                    var regions = s.VariationIndex >= 0 && s.VariationIndex < _regionCounts.Length ? _regionCounts[s.VariationIndex] : 0;
-                    var deltas = values * regions;
-                    if (values < 0 || deltas > s.Count - values) throw new InvalidDataException("CFF2 blend is malformed.");
+                    if (s.VariationIndex < 0 || s.VariationIndex >= _regionCounts.Length) throw new InvalidDataException("CFF2 variation index is malformed.");
+                    var regions = _regionCounts[s.VariationIndex];
+                    var required = (long)values * (regions + 1L);
+                    if (values < 0 || values > s.Count || required > s.Count) throw new InvalidDataException("CFF2 blend is malformed.");
+                    var deltas = (int)(required - values);
                     var scalars = BlendScalars(s.VariationIndex, regions);
                     var first = s.Count - values - deltas;
                     for (var value = 0; value < values; value++)

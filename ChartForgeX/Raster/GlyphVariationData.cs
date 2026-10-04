@@ -197,5 +197,6 @@ internal sealed class GlyphDeltas {
     internal GlyphDeltas(double[] x, double[] y) { X = x; Y = y; }
     internal double[] X { get; }
     internal double[] Y { get; }
+    internal double LeftPhantomDelta => X.Length < 4 ? 0 : X[X.Length - 4];
     internal double AdvanceDelta => X.Length < 4 ? 0 : X[X.Length - 3] - X[X.Length - 4];
 }

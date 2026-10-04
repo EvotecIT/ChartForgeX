@@ -12,11 +12,12 @@ from fontTools.varLib import build
 from fontTools.varLib.featureVars import addFeatureVariations
 from fontTools.feaLib.builder import addOpenTypeFeaturesFromString
 from fontTools.ttLib import newTable
+from fontTools.ttLib.tables.TupleVariation import TupleVariation
 
 DEST = Path(__file__).parent
-ORDER = ['.notdef', 'space', 'A', 'B', 'H', 'x', 'curve', 'acute', 'composite', 'scaled', 'componentMetrics']
+ORDER = ['.notdef', 'space', 'A', 'B', 'H', 'x', 'curve', 'acute', 'composite', 'scaled', 'componentMetrics', 'multiMetrics', 'nestedMetrics']
 CMAP = {c: 'A' for c in range(33, 127)}
-CMAP.update({32: 'space', 65: 'A', 66: 'B', 72: 'H', 120: 'x', 88: 'curve', 233: 'composite', 0x301: 'acute', 67: 'scaled', 77: 'componentMetrics'})
+CMAP.update({32: 'space', 65: 'A', 66: 'B', 72: 'H', 120: 'x', 88: 'curve', 233: 'composite', 0x301: 'acute', 67: 'scaled', 77: 'componentMetrics', 68: 'multiMetrics', 78: 'nestedMetrics'})
 
 def names(builder, family):
     builder.setupNameTable(dict(familyName=family, styleName='Regular', uniqueFontIdentifier=family,
@@ -32,7 +33,7 @@ def master(weight, width):
     glyphs = {}
     for name in ORDER:
         pen = TTGlyphPen(None)
-        if name not in ['.notdef', 'space', 'composite', 'scaled', 'componentMetrics']:
+        if name not in ['.notdef', 'space', 'composite', 'scaled', 'componentMetrics', 'multiMetrics', 'nestedMetrics']:
             left = 100 + w / 4
             right = (500 + w) * stretch
             top = (500 if name == 'x' else 700) + w / 2
@@ -49,9 +50,17 @@ def master(weight, width):
         if name in ['scaled', 'componentMetrics']:
             pen = TTGlyphPen({n: glyphs[n] for n in glyphs})
             pen.addComponent('A', (.5, 0, 0, .75, 100 + w, 200 + w / 2))
+        if name == 'multiMetrics':
+            pen = TTGlyphPen({n: glyphs[n] for n in glyphs})
+            pen.addComponent('acute', (1, 0, 0, 1, 0, 0)); pen.addComponent('H', (1, 0, 0, 1, 150, 0))
+        if name == 'nestedMetrics':
+            pen = TTGlyphPen({n: glyphs[n] for n in glyphs})
+            pen.addComponent('multiMetrics', (.5, 0, 0, 1, 200, 0))
         glyphs[name] = pen.glyph()
         if name == 'scaled': glyphs[name].components[0].flags |= 0x800  # scaled component offset
         if name == 'componentMetrics': glyphs[name].components[0].flags |= 0x200  # component metrics
+        if name in ['multiMetrics', 'nestedMetrics']:
+            for component in glyphs[name].components: component.flags |= 0x200
     builder = FontBuilder(1000, isTTF=True)
     builder.setupGlyphOrder(ORDER); builder.setupCharacterMap(CMAP); builder.setupGlyf(glyphs)
     builder.setupHorizontalMetrics({name: (0 if name == 'acute' else round((600 + w) * stretch), round(glyphs[name].xMin if hasattr(glyphs[name], 'xMin') else 0)) for name in ORDER})
@@ -87,6 +96,11 @@ def true_type():
         addFeatureVariations(font, [([{'wght': (.9, 1)}], {'A': 'B'})])
         font.save(DEST / 'variable-true-type.ttf')
         del font['HVAR']; font.save(DEST / 'variable-phantom-metrics.ttf')
+        font['gvar'].variations['H'] = [TupleVariation({'wght': (0, 1, 1)}, [(0, 0)] * 4 + [(50, 0), (150, 0), (0, 0), (0, 0)])]
+        font.save(DEST / 'variable-origin-metrics.ttf')
+        font['GSUB'].table.FeatureVariations = None
+        addFeatureVariations(font, [([{'wght': (-1, 0)}], {'H': 'x'})])
+        font.save(DEST / 'variable-default-feature.ttf')
 
 def compact():
     builder = FontBuilder(1000, isTTF=False)
@@ -97,6 +111,11 @@ def compact():
     program = [100, 200, 1, 'blend', 0, 'rmoveto', 400, 50, 1, 'blend', 'hlineto', 700, 'vlineto', -400, -50, 1, 'blend', 'hlineto']
     builder.setupCFF2({name: T2CharString(program=program if name not in ['.notdef', 'space'] else []) for name in ORDER}, regions=[{'wght': (0, 1, 1)}])
     builder.save(DEST / 'variable-compact.otf')
+    malformed = [16384, 16384, 'add', 'dup', 'mul', 'blend']
+    static_program = [100, 0, 'rmoveto', 400, 'hlineto', 700, 'vlineto', -400, 'hlineto']
+    builder.setupCFF2({name: T2CharString(program=malformed if name == 'H' else static_program if name not in ['.notdef', 'space'] else []) for name in ORDER}, regions=[{'wght': (0, 1, 1)}, {'wght': (-1, -1, 0)}])
+    builder.font.recalcBBoxes = False  # Deliberately malformed input must not be evaluated by the generator.
+    builder.save(DEST / 'variable-malformed.otf')
 
 if __name__ == '__main__':
     true_type(); compact()

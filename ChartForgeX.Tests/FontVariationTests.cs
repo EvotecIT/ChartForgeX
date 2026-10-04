@@ -163,6 +163,53 @@ public sealed class FontVariationTests {
         Assert.Equal(shaped.ToOutputPixels(), direct.ToOutputPixels());
     }
 
+    [Theory]
+    [InlineData(650, 62.5, 675)]
+    [InlineData(900, 50, 700)]
+    public void LeftPhantomOriginsAndLastComponentMetricsAreAppliedOnlyAtTheTop(double weight, double left, double advance) {
+        var face = Face(weight, "variable-origin-metrics.ttf");
+        Assert.Equal(left, Ink(face, 'H').X);
+        Assert.Equal(left - 100, Ink(face, 'D').X);
+        Assert.Equal(left + 100, Ink(face, 'N').X);
+        Assert.Equal(advance, face.AdvanceWidth(face.MapGlyph('D')));
+        Assert.Equal(advance, face.AdvanceWidth(face.MapGlyph('N')));
+    }
+    [Fact]
+    public void ExplicitDefaultAndUnknownOnlyAxesPreserveDefaultPhantomMetrics() {
+        var root = TrueTypeFont.TryLoad(Bytes("variable-phantom-metrics.ttf"))!;
+        var explicitDefault = root.WithVariations(FontVariationSettings.Default.WithAxis("wght", 400));
+        var unknown = root.WithVariations(FontVariationSettings.Default.WithAxis("WGHT", 900));
+        Assert.Equal(1600, root.AdvanceWidth(root.MapGlyph('M')));
+        Assert.Equal(root.Measure("H DMN", 40), explicitDefault.Measure("H DMN", 40));
+        Assert.Equal(root.Measure("H DMN", 40), unknown.Measure("H DMN", 40));
+        Assert.Equal(Ink(root, 'M'), Ink(explicitDefault, 'M'));
+    }
+    [Fact]
+    public void DefaultCoordinateFeaturesApplyWithoutExplicitAxisSelection() {
+        var root = TrueTypeFont.TryLoad(Bytes("variable-default-feature.ttf"))!;
+        var selected = root.WithVariations(FontVariationSettings.Default.WithAxis("wght", 400));
+        Assert.Equal(5, Assert.Single(TextShaper.Shape(root, "H")).Glyph);
+        Assert.Equal(5, Assert.Single(TextShaper.Shape(selected, "H")).Glyph);
+        Assert.Equal(root.Measure("H", 40), selected.Measure("H", 40));
+    }
+    [Fact]
+    public void CompactResetViewsDoNotRetainThePriorBlendStore() {
+        var root = TrueTypeFont.TryLoad(Bytes("variable-compact.otf"))!;
+        var varied = root.WithVariations(FontVariationSettings.Default.WithAxis("wght", 900)).WithLanguage("TRK ");
+        Assert.Equal(300, Ink(varied, 'H').X);
+        var reset = varied.WithVariations(FontVariationSettings.Default);
+        Assert.Equal(100, Ink(reset, 'H').X);
+        Assert.Equal(100, Ink(root.WithLanguage("TRK "), 'H').X);
+    }
+    [Fact]
+    public void MalformedCompactBlendCountsRejectTheGlyphAndRetainTheUsableFace() {
+        var root = TrueTypeFont.TryLoad(Bytes("variable-malformed.otf"))!;
+        var canvas = new RgbaCanvas(180, 100, 4, root);
+        Assert.False(root.Draw(canvas, 10, 10, "H", ChartColor.Black, 40));
+        Assert.True(root.Draw(canvas, 10, 10, "A", ChartColor.Black, 40));
+        Assert.Contains(canvas.ToOutputPixels().Where((_, i) => i % 4 == 3), alpha => alpha > 0);
+    }
+
     [Fact]
     public void CompositionAndInheritedSvgAxesUseTheSameGlyphsAndReset() {
         WithRegisteredFont(path => {

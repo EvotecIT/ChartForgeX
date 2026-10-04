@@ -38,7 +38,7 @@ internal sealed partial class CompactFontOutlines {
         return result;
     }
     private double[] BlendScalars(int index, int count) {
-        if (_variationStore == null) return Array.Empty<double>();
+        if (_variationStore == null || count == 0) return Array.Empty<double>();
         lock (_blendLock) {
             if (_blendScalars.TryGetValue(index, out var scalars)) return scalars;
             try { scalars = _variationStore.RegionScalars(index); }

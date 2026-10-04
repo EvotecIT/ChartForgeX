@@ -77,8 +77,8 @@ internal sealed partial class TrueTypeFont {
         _numGlyphs = ReadUInt16(_data, tables["maxp"] + 4);
         _variationSettings = variations ?? FontVariationSettings.Default;
         _variation = FontVariationContext.Create(data, tables, lengths, _variationSettings);
-        if (_variation != null && compact != null) _compact = compact.WithVariation(_variation);
-        _glyphVariations = _variation == null ? null : GlyphVariationData.Create(data, tables, lengths, _numGlyphs, _indexToLocFormat != 0, _variation.Coordinates);
+        if (_variation?.HasNonzeroCoordinates == true && compact != null) _compact = compact.WithVariation(_variation);
+        _glyphVariations = _variation?.HasNonzeroCoordinates != true ? null : GlyphVariationData.Create(data, tables, lengths, _numGlyphs, _indexToLocFormat != 0, _variation.Coordinates);
         _hvarTable = _variation == null ? null : VariationTable("HVAR"); _mvarTable = _variation == null ? null : VariationTable("MVAR");
         _horizontalVariations = VariationStore(_hvarTable, 4, true); _metricVariations = VariationStore(_mvarTable, 10, false);
         var layout = root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs);
@@ -202,7 +202,7 @@ internal sealed partial class TrueTypeFont {
             if (_root._views.TryGetValue(key, out var view)) return view;
             var names = new string[families.Count];
             for (var i = 0; i < names.Length; i++) names[i] = families[i];
-            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic, languageTag, variations);
+            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _root._compact, _root, names, requestedWeight, requestedItalic, languageTag, variations);
             if (_root._views.Count >= 32) _root._views.Clear();
             _root._views[key] = view;
             return view;

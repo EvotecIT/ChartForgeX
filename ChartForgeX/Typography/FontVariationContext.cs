@@ -8,9 +8,10 @@ internal sealed class FontVariationContext {
     internal FontVariationSettings Settings { get; }
     internal double[] Coordinates { get; }
     internal string[] Tags { get; }
+    internal bool HasNonzeroCoordinates { get { foreach (var value in Coordinates) if (value != 0) return true; return false; } }
     private FontVariationContext(FontVariationSettings settings, double[] coordinates, string[] tags) { Settings = settings; Coordinates = coordinates; Tags = tags; }
     internal static FontVariationContext? Create(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, FontVariationSettings settings) {
-        if (settings.Count == 0 || !tables.TryGetValue("fvar", out var offset) || !lengths.TryGetValue("fvar", out var length)) return null;
+        if (!tables.TryGetValue("fvar", out var offset) || !lengths.TryGetValue("fvar", out var length)) return null;
         try {
             var table = new FontTableReader(data, offset, length);
             if (table.U16(0) != 1) return null;
