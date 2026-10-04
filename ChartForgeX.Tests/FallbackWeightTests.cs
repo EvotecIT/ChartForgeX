@@ -1,6 +1,7 @@
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
 using Xunit;
 
@@ -63,6 +64,33 @@ public sealed class FallbackWeightTests {
     private static TrueTypeFont Load(string name) {
         using var source = typeof(FallbackWeightTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType." + name)!;
         using var data = new MemoryStream(); source.CopyTo(data); return TrueTypeFont.TryLoad(data.ToArray())!;
+    }
+    [Theory]
+    [InlineData(400)] [InlineData(900)]
+    public void SvgSynthesizesFallbackCoverageOnceForRegularAndRealBoldPrimaries(int primaryWeight) {
+        var root = Path.Combine(Path.GetTempPath(), "cfx-svg-fallback-weight-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
+        try {
+            foreach (var role in new[] { "primary", "regular" }) {
+                using var source = typeof(FallbackWeightTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType.fallback-weight-" + role + ".ttf")!;
+                using var bytes = new MemoryStream(); source.CopyTo(bytes); var data = bytes.ToArray();
+                if (role == "primary") {
+                    var count = System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(data.AsSpan(4, 2));
+                    for (var i = 0; i < count; i++) {
+                        var at = 12 + i * 16;
+                        if (System.Text.Encoding.ASCII.GetString(data, at, 4) != "OS/2") continue;
+                        var table = checked((int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(data.AsSpan(at + 8, 4)));
+                        System.Buffers.Binary.BinaryPrimitives.WriteUInt16BigEndian(data.AsSpan(table + 4, 2), (ushort)primaryWeight); break;
+                    }
+                }
+                File.WriteAllBytes(Path.Combine(root, role + ".ttf"), data);
+            }
+            FontRegistry.Register("CFX Primary", Path.Combine(root, "primary.ttf"), primaryWeight);
+            FontRegistry.Register("CFX Fallback", Path.Combine(root, "regular.ttf"), 400);
+            RgbaImage Render(string family) => SvgRasterizer.ToImage($"<svg xmlns='http://www.w3.org/2000/svg' width='100' height='60'><text x='20' y='40' font-family='{family}' font-weight='900' font-size='40' fill='rgba(17,17,17,.5)'>B</text></svg>");
+            var stack = Render("CFX Primary, CFX Fallback"); var direct = Render("CFX Fallback");
+            Assert.Equal(direct.Pixels, stack.Pixels);
+            Assert.InRange(Enumerable.Range(0, stack.Pixels.Length / 4).Max(i => stack.Pixels[i * 4 + 3]), 1, 128);
+        } finally { FontRegistry.Clear(); Directory.Delete(root, true); }
     }
     private static RgbaImage Draw(FontSpec font, string text) {
         var style = TextStyle.Create(40, ChartColor.Black); style.Font = font;

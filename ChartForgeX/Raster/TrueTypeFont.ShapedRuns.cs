@@ -35,7 +35,7 @@ internal sealed partial class TrueTypeFont {
             ? RgbaCanvas.EmphasisOffset(size) : 0;
 
     /// <summary>Paints a pre-shaped visual run at the primary face's baseline, preserving fallback face metrics.</summary>
-    internal bool DrawGlyphs(RgbaCanvas canvas, double x, double y, IReadOnlyList<ShapedGlyph> glyphs, ChartColor color, double fontSize, bool italic, bool syntheticBoldCopyOnly = false, double boldOffset = 0) {
+    internal bool DrawGlyphs(RgbaCanvas canvas, double x, double y, IReadOnlyList<ShapedGlyph> glyphs, ChartColor color, double fontSize, bool italic, double boldOffset = 0) {
         var fit = GlyphGridFit.Create(canvas, fontSize, y + Ascent(fontSize));
         var baseline = fit?.Baseline ?? y + Ascent(fontSize);
         ShapedGlyph? previous = null;
@@ -46,9 +46,7 @@ internal sealed partial class TrueTypeFont {
             x += advance - GlyphAdvance(glyph, null, fontSize);
             var offset = ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600 ? boldOffset : 0;
             if (offset == 0) offset = FallbackBoldOffset(glyph, fontSize);
-            if (!syntheticBoldCopyOnly || (ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) && !glyph.Face.TryColorInk(glyph.Glyph, out _))
-                rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit,
-                    offset);
+            rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit, offset);
             x += GlyphAdvance(glyph, null, fontSize);
             previous = glyph;
         }
