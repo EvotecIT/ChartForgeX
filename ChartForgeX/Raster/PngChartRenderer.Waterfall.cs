@@ -26,7 +26,7 @@ public sealed partial class PngChartRenderer {
         if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += PngLegendBottomReserve(chart);
         plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(1, plot.Height - bottomReserve));
         var slot = plot.Width / steps.Count;
-        var barWidth = Math.Max(8, Math.Min(46, slot * 0.58));
+        var barWidth = ChartMarkSurface.WaterfallBarWidth(slot);
         var positive = chart.Options.Theme.Positive;
         var negative = chart.Options.Theme.Negative;
         var total = chart.Options.Theme.Warning;
@@ -43,10 +43,10 @@ public sealed partial class PngChartRenderer {
             var color = step.IsTotal ? total : step.Delta >= 0 ? positive : negative;
             if (i > 0) {
                 var connectorY = WaterfallY(plot, bounds, chart.Options.YAxis, step.Start);
-                c.DrawDashedLine(centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorStrokeWidth, ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap);
+                c.DrawDashedLine(centerX - slot + barWidth / 2, connectorY, centerX - barWidth / 2, connectorY, ApplyOpacity(chart.Options.Theme.Axis, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorStrokeWidth, ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap, RasterLineCap.Butt);
             }
 
-                DrawBarBody(c, chart, centerX - barWidth / 2, top, barWidth, height, Math.Min(6, barWidth / 4), color);
+                c.FillRoundedRect(centerX - barWidth / 2, top, barWidth, height, 6, color);
                 if (ShouldDrawDataLabels(chart, series)) {
                     var label = step.IsTotal ? FormatValue(chart, step.End) : FormatSignedValue(chart, step.Delta);
                     var pointIndex = step.IsTotal ? -1 : i;

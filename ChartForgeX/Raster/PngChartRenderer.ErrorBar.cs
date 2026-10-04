@@ -24,12 +24,7 @@ public sealed partial class PngChartRenderer {
             var yUpper = map.Y(upper.Y);
             var item = pointIndex / 3;
             var color = PointColor(chart, series, index, item);
-            var halo = PngStrokeHalo(color);
-
-            c.DrawLine(x, yUpper, x, yLower, halo, ChartVisualPrimitives.ErrorBarPngHaloStrokeWidth);
-            c.DrawLine(x - capWidth / 2, yUpper, x + capWidth / 2, yUpper, halo, ChartVisualPrimitives.ErrorBarPngHaloStrokeWidth);
-            c.DrawLine(x - capWidth / 2, yLower, x + capWidth / 2, yLower, halo, ChartVisualPrimitives.ErrorBarPngHaloStrokeWidth);
-            c.DrawLine(x, yUpper, x, yLower, color, ChartVisualPrimitives.ErrorBarStrokeWidth);
+            c.DrawLine(x, yUpper, x, yLower, ApplyOpacity(color, ChartVisualPrimitives.ErrorBarRangeOpacity), ChartVisualPrimitives.ErrorBarStrokeWidth);
             c.DrawLine(x - capWidth / 2, yUpper, x + capWidth / 2, yUpper, color, ChartVisualPrimitives.ErrorBarStrokeWidth);
             c.DrawLine(x - capWidth / 2, yLower, x + capWidth / 2, yLower, color, ChartVisualPrimitives.ErrorBarStrokeWidth);
             DrawMarker(c, chart, x, y, radius, color);

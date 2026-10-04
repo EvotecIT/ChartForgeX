@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -314,21 +315,23 @@ internal sealed class SvgRasterLinearGradient {
 
     public void Endpoints(IReadOnlyList<List<ChartPoint>> contours, SvgRasterMatrix matrix, out ChartPoint start, out ChartPoint end) {
         if (UserSpaceOnUse) {
-            var transformed = matrix.Multiply(Transform);
-            start = transformed.Transform(new ChartPoint(X1, Y1));
-            end = transformed.Transform(new ChartPoint(X2, Y2));
+            TransformedEndpoints(matrix.Multiply(Transform), out start, out end);
             return;
         }
 
         var bounds = SvgRasterGradientValues.Bounds(contours);
-        start = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X1, Y1)), bounds);
-        end = SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X2, Y2)), bounds);
+        ObjectEndpoints(bounds, SvgRasterMatrix.Identity, out start, out end);
     }
 
     public void ObjectEndpoints(SvgRasterGradientValues.GradientBounds bounds, SvgRasterMatrix objectMatrix, out ChartPoint start, out ChartPoint end) {
-        start = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X1, Y1)), bounds));
-        end = objectMatrix.Transform(SvgRasterGradientValues.MapObjectPoint(Transform.Transform(new ChartPoint(X2, Y2)), bounds));
+        var transformed = objectMatrix.Multiply(SvgRasterMatrix.Translate(bounds.Left, bounds.Top))
+            .Multiply(SvgRasterMatrix.Scale(bounds.Width, bounds.Height)).Multiply(Transform);
+        TransformedEndpoints(transformed, out start, out end);
     }
+
+    private void TransformedEndpoints(SvgRasterMatrix matrix, out ChartPoint start, out ChartPoint end) =>
+        ChartLinearGradientGeometry.Transform(new ChartPoint(X1, Y1), new ChartPoint(X2, Y2),
+            matrix.Transform(new ChartPoint(0, 0)), matrix.Transform(new ChartPoint(1, 0)), matrix.Transform(new ChartPoint(0, 1)), out start, out end);
 }
 
 internal sealed class SvgRasterRadialGradient {

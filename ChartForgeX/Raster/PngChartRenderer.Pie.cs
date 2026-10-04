@@ -32,7 +32,6 @@ public sealed partial class PngChartRenderer {
         var start = -Math.PI / 2;
         var separator = chart.Options.Theme.CardBackground;
         var outsideLabels = new List<PieLabelCandidate>();
-        var hasOffsetSlice = false;
 
         for (var i = 0; i < values.Count; i++) {
             var point = values[i].Point;
@@ -42,16 +41,11 @@ public sealed partial class PngChartRenderer {
             var color = PieSliceColor(chart, series, pointIndex);
             var mid = start + sweep / 2;
             var offset = PieSliceOffset(series, pointIndex) * radius;
-            hasOffsetSlice |= offset > 0;
             var sliceCx = cx + Math.Cos(mid) * offset;
             var sliceCy = cy + Math.Sin(mid) * offset;
-            c.FillRingSlice(sliceCx, sliceCy, radius, inner, start, end, color);
-            DrawSliceSeparator(c, sliceCx, sliceCy, radius, inner, start, separator);
-            if (offset > 0) {
-                DrawSliceSeparator(c, sliceCx, sliceCy, radius, inner, end, separator);
-                c.DrawArc(sliceCx, sliceCy, radius, start, end, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
-                if (inner > 0) c.DrawArc(sliceCx, sliceCy, inner, start, end, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
-            }
+            var pathData = ChartSlicePathGeometry.BuildPath(sliceCx, sliceCy, radius, inner, start, end);
+            c.FillPathDataSliceGradient(pathData, color, ChartMarkSurface.SliceHasPointColor(series, pointIndex) ? color : ApplyOpacity(color, ChartVisualPrimitives.SliceGradientBottomOpacity));
+            c.StrokePathData(pathData, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth, RasterLineCap.Butt, RasterLineJoin.Miter);
 
             if (ShouldDrawDataLabels(chart, series) && sweep > 0.22) {
                 var placement = DataLabelPlacement(chart, series);
@@ -101,11 +95,6 @@ public sealed partial class PngChartRenderer {
             start = end;
         }
 
-        if (!hasOffsetSlice) {
-            c.DrawCircleOutline(cx, cy, radius, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
-            if (inner > 0) c.DrawCircleOutline(cx, cy, inner, separator, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
-        }
-
         DrawPieOutsideLabels(c, chart, series, outsideLabels, cx, cy, radius, plot);
 
         if (series.Kind == ChartSeriesKind.Donut && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false) {
@@ -124,11 +113,6 @@ public sealed partial class PngChartRenderer {
         }
 
         if (chart.Options.ShowLegend) DrawSliceLegend(c, chart, series, legendValues, plot, total);
-    }
-
-    private static void DrawSliceSeparator(RgbaCanvas c, double cx, double cy, double outerRadius, double innerRadius, double angle, ChartColor color) {
-        var startRadius = Math.Max(0, innerRadius - 0.5);
-        c.DrawLine(cx + Math.Cos(angle) * startRadius, cy + Math.Sin(angle) * startRadius, cx + Math.Cos(angle) * outerRadius, cy + Math.Sin(angle) * outerRadius, color, ChartVisualPrimitives.SliceSeparatorStrokeWidth);
     }
 
     private static double PieLabelRadius(double inner, double radius, ChartDataLabelPlacement placement) {

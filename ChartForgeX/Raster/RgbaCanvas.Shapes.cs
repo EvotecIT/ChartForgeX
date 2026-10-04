@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Raster;
 
@@ -68,7 +69,7 @@ internal sealed partial class RgbaCanvas {
     /// Strokes SVG path data as one shape, so a renderer can draw the same path its SVG counterpart
     /// writes. Curves are flattened at the canvas resolution; a closed subpath gets a join where it closes.
     /// </summary>
-    internal void StrokePathData(string pathData, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin) {
+    internal void StrokePathData(string pathData, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray = null) {
         var polylines = new List<IReadOnlyList<ChartPoint>>();
         foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) {
             var points = subpath.Points;
@@ -76,7 +77,37 @@ internal sealed partial class RgbaCanvas {
             polylines.Add(points);
         }
 
-        StrokePolylines(polylines, color, thickness, lineCap, lineJoin);
+        StrokePolylines(polylines, color, thickness, lineCap, lineJoin, dashArray);
+    }
+
+    /// <summary>Centers a stroke on the rectangle boundary, matching SVG rectangle strokes.</summary>
+    internal void StrokeRoundedRectCentered(double x, double y, double width, double height, double radius, ChartColor color, double thickness) {
+        if (!(width > 0) || !(height > 0)) return;
+        var ring = ChartCurveFlattening.RoundedRectangle(x, y, width, height, radius, radius, _scale);
+        ring.Add(ring[0]);
+        StrokePolylines(new[] { ring }, color, thickness, RasterLineCap.Butt, RasterLineJoin.Miter);
+    }
+
+    /// <summary>Fills a path with the shared slice gradient in normalized object-bounding-box coordinates.</summary>
+    internal void FillPathDataSliceGradient(string pathData, ChartColor topColor, ChartColor bottomColor) {
+        var contours = new List<List<ChartPoint>>();
+        var left = double.PositiveInfinity;
+        var right = double.NegativeInfinity;
+        var top = double.PositiveInfinity;
+        var bottom = double.NegativeInfinity;
+        foreach (var subpath in ChartMapPathParser.ParseSubpaths(pathData, _scale)) {
+            contours.Add(subpath.Points);
+            foreach (var point in subpath.Points) {
+                left = Math.Min(left, point.X); right = Math.Max(right, point.X);
+                top = Math.Min(top, point.Y); bottom = Math.Max(bottom, point.Y);
+            }
+        }
+        if (!(bottom > top) || !(right > left)) return;
+        ChartLinearGradientGeometry.Transform(ChartMarkSurface.SliceGradientStart, ChartMarkSurface.SliceGradientEnd,
+            new ChartPoint(left, top), new ChartPoint(right, top), new ChartPoint(left, bottom), out var start, out var end);
+        FillContoursLinearGradient(contours, start, end, new[] {
+            new RasterGradientStop(0, topColor), new RasterGradientStop(1, bottomColor)
+        }, RasterGradientSpreadMethod.Pad, RasterFillRule.EvenOdd);
     }
 
     /// <summary>Device pixels per canvas unit, the resolution callers flatten curves at before stroking them.</summary>

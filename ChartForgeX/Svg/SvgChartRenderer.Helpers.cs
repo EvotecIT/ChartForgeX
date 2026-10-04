@@ -248,7 +248,7 @@ public sealed partial class SvgChartRenderer {
     private static void AppendSvgFillPatternDefinition(StringBuilder sb, string patternId, ChartFillPattern pattern) {
         var forward = pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch;
         var backward = pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch;
-        var opacity = pattern == ChartFillPattern.Crosshatch ? 0.2 : 0.28;
+        var opacity = ChartMarkSurface.HatchOpacity(pattern);
         AppendSvg(sb, writer => {
             writer.StartElement("pattern").Attribute("id", patternId).Attribute("width", "8").Attribute("height", "8").Attribute("patternUnits", "userSpaceOnUse").EndStartElement().Line();
             if (forward) writer.StartElement("path").Attribute("d", "M -2 8 L 8 -2 M 0 10 L 10 0").Attribute("stroke", "#fff").Attribute("stroke-opacity", opacity).Attribute("stroke-width", "1.25").Attribute("stroke-linecap", "round").EndEmptyElement().Line();

@@ -13,6 +13,26 @@ internal static class ChartPatternLineGeometry {
         return lines;
     }
 
+    /// <summary>Builds diagonal lines whose phase is fixed in chart coordinates, as SVG user-space patterns are.</summary>
+    public static IReadOnlyList<ChartPatternLine> BuildUserSpace(ChartFillPattern pattern, double x, double y, double width, double height, double radius, double spacing, double phase) {
+        var lines = new List<ChartPatternLine>();
+        if (pattern == ChartFillPattern.None || width <= 1 || height <= 1) return lines;
+        spacing = Math.Max(4, spacing);
+        if (pattern == ChartFillPattern.DiagonalForward || pattern == ChartFillPattern.Crosshatch) {
+            for (var intercept = Math.Floor((x + y - phase) / spacing) * spacing + phase; intercept < x + y + width + height; intercept += spacing)
+                AddClippedLine(lines, intercept - y - height, y + height, intercept - y, y, x, y, width, height, radius);
+        }
+        if (pattern == ChartFillPattern.DiagonalBackward || pattern == ChartFillPattern.Crosshatch) {
+            for (var intercept = Math.Floor((x - y - height - phase) / spacing) * spacing + phase; intercept < x + width - y; intercept += spacing)
+                AddClippedLine(lines, intercept + y, y, intercept + y + height, y + height, x, y, width, height, radius);
+        }
+        return lines;
+    }
+
+    private static void AddClippedLine(List<ChartPatternLine> lines, double x0, double y0, double x1, double y1, double x, double y, double width, double height, double radius) {
+        if (ClipLineToRect(ref x0, ref y0, ref x1, ref y1, x, y, x + width, y + height)) AddRoundedClippedLine(lines, x0, y0, x1, y1, x, y, width, height, radius);
+    }
+
     private static void AddDirection(List<ChartPatternLine> lines, double x, double y, double width, double height, double radius, double spacing, bool forward) {
         spacing = Math.Max(4, spacing);
         for (var offset = -height; offset < width + height; offset += spacing) {
@@ -20,7 +40,7 @@ internal static class ChartPatternLineGeometry {
             var y0 = forward ? y + height : y;
             var x1 = x + offset + height;
             var y1 = forward ? y : y + height;
-            if (ClipLineToRect(ref x0, ref y0, ref x1, ref y1, x, y, x + width, y + height)) AddRoundedClippedLine(lines, x0, y0, x1, y1, x, y, width, height, radius);
+            AddClippedLine(lines, x0, y0, x1, y1, x, y, width, height, radius);
         }
     }
 

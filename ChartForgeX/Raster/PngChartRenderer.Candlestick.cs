@@ -29,13 +29,9 @@ public sealed partial class PngChartRenderer {
             var bodyTop = Math.Min(yOpen, yClose);
             var bodyHeight = Math.Max(2, Math.Abs(yClose - yOpen));
             var fill = ApplyOpacity(color, rising ? ChartVisualPrimitives.CandlestickRisingFillOpacity : ChartVisualPrimitives.CandlestickFallingFillOpacity);
-            var halo = PngStrokeHalo(color);
-
-            c.DrawLine(x, yHigh, x, yLow, halo, ChartVisualPrimitives.CandlestickPngHaloStrokeWidth);
-            c.DrawLine(x, yHigh, x, yLow, color, ChartVisualPrimitives.CandlestickStrokeWidth);
-            c.StrokeRoundedRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight, ChartVisualPrimitives.CandlestickBodyRadius, halo, ChartVisualPrimitives.CandlestickPngBodyHaloStrokeWidth);
+            c.DrawLine(x, yHigh, x, yLow, ApplyOpacity(color, ChartVisualPrimitives.CandlestickWickOpacity), ChartVisualPrimitives.CandlestickStrokeWidth);
             c.FillRoundedRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight, ChartVisualPrimitives.CandlestickBodyRadius, fill);
-            c.StrokeRoundedRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight, ChartVisualPrimitives.CandlestickBodyRadius, color, ChartVisualPrimitives.CandlestickStrokeWidth);
+            c.StrokeRoundedRectCentered(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight, ChartVisualPrimitives.CandlestickBodyRadius, color, ChartVisualPrimitives.CandlestickStrokeWidth);
             if (ShouldDrawDataLabels(chart, series)) {
                 var label = FormatValue(chart, close.Y);
                 var fontSize = PngDataLabelFontSize(chart, series, item);

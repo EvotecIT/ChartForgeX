@@ -46,7 +46,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", color.ToCss())
             .Attribute("stroke", t.CardBackground.ToCss())
             .Attribute("stroke-width", ChartVisualPrimitives.SliceSeparatorStrokeWidth)
-            .Attribute("fill-opacity", 0.96)
+            .Attribute("fill-opacity", ChartVisualPrimitives.SunburstFillOpacity)
             .EndEmptyElement()
             .Line();
         if (!showLabels) return;

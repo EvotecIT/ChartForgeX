@@ -19,7 +19,7 @@ public sealed partial class SvgChartRenderer {
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var t = chart.Options.Theme;
         var slot = plot.Width / steps.Count;
-        var barWidth = Math.Max(12, Math.Min(58, slot * 0.58));
+        var barWidth = ChartMarkSurface.WaterfallBarWidth(slot);
         var positive = t.Positive;
         var negative = t.Negative;
         var totalColor = t.Warning;

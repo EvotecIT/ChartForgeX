@@ -266,7 +266,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgBarHighlight(StringBuilder sb, double x, double y, double width, double height) {
-        if (width <= ChartVisualPrimitives.BarHighlightInset * 2 + 3 || height <= ChartVisualPrimitives.BarHighlightInset * 2 + 1) return;
+        if (!ChartMarkSurface.HasBarHighlight(width, height)) return;
         var inset = ChartVisualPrimitives.BarHighlightInset;
         AppendSvg(sb, writer => writer
             .StartElement("line")

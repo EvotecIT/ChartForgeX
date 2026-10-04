@@ -169,7 +169,9 @@ public sealed partial class PngChartRenderer {
                 if (chart.Options.BarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule) {
                     DrawSegmentedRangeBar(c, chart.Options.BarVisualStyle, x, top, barWidth, height, y1, y2, pointColor, FillPattern(s, intervalIndex));
                 } else {
-                    DrawBarBody(c, chart, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), pointColor, FillPattern(s, intervalIndex));
+                    var opacity = chart.Options.BarVisualStyle.Kind == ChartBarStyle.Flat ? 1 : ChartVisualPrimitives.RangeBarFillOpacity;
+                    c.FillRoundedRect(x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), ApplyOpacity(pointColor, opacity));
+                    DrawHatchOverlay(c, x - barWidth / 2.0, top, barWidth, height, Math.Min(7, barWidth / 2), FillPattern(s, intervalIndex));
                     c.DrawLine(x - barWidth * 0.75, y1, x + barWidth * 0.75, y1, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                     c.DrawLine(x - barWidth * 0.75, y2, x + barWidth * 0.75, y2, pointColor, ChartVisualPrimitives.RangeBarCapStrokeWidth);
                 }
@@ -409,14 +411,15 @@ public sealed partial class PngChartRenderer {
         DrawHatchOverlay(c, x, y, width, height, radius, pattern);
     }
 
-    private static void DrawGradientBar(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor color, ChartFillPattern pattern = ChartFillPattern.None) {
+    private static void DrawGradientBar(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartColor color, ChartFillPattern pattern = ChartFillPattern.None, bool highlight = true, double opacity = ChartVisualPrimitives.BarFillOpacity) {
         if (width <= 0.5 || height <= 0.5) return;
         var top = ChartMarkSurface.BarGradientTop(color);
         var bottom = ChartMarkSurface.BarGradientBottom(color);
-        c.FillRoundedRectVerticalGradient(x, y, width, height, radius, top, bottom);
+        c.FillRoundedRectVerticalGradient(x, y, width, height, radius, ApplyOpacity(top, opacity), ApplyOpacity(bottom, opacity * ChartVisualPrimitives.BarGradientBottomOpacity));
         DrawHatchOverlay(c, x, y, width, height, radius, pattern);
-        var highlightAlpha = (byte)Math.Round(255 * ChartVisualPrimitives.BarHighlightOpacity);
-        c.DrawLine(x + ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, x + width - ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, ChartColor.FromRgba(255, 255, 255, highlightAlpha), ChartVisualPrimitives.BarHighlightStrokeWidth);
+        if (highlight && ChartMarkSurface.HasBarHighlight(width, height)) {
+            c.DrawLine(x + ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, x + width - ChartVisualPrimitives.BarHighlightInset, y + ChartVisualPrimitives.BarHighlightInset, ApplyOpacity(ChartColor.White, ChartVisualPrimitives.BarHighlightOpacity), ChartVisualPrimitives.BarHighlightStrokeWidth);
+        }
     }
 
     private static void DrawSegmentedBar(RgbaCanvas c, ChartBarVisualStyle style, double x, double y, double width, double height, double value, ChartColor color, ChartFillPattern pattern) {
@@ -457,8 +460,8 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawHatchOverlay(RgbaCanvas c, double x, double y, double width, double height, double radius, ChartFillPattern pattern) {
         if (pattern == ChartFillPattern.None || width <= 1 || height <= 1) return;
-        var color = ApplyOpacity(ChartColor.White, pattern == ChartFillPattern.Crosshatch ? 0.22 : 0.30);
-        foreach (var line in ChartPatternLineGeometry.Build(pattern, x, y, width, height, radius, 8)) c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.25);
+        var color = ApplyOpacity(ChartColor.White, ChartMarkSurface.HatchOpacity(pattern));
+        foreach (var line in ChartPatternLineGeometry.BuildUserSpace(pattern, x, y, width, height, radius, 4, 2)) c.DrawLine(line.X1, line.Y1, line.X2, line.Y2, color, 1.25);
     }
 
     private static string FormatRangeBarLabel(Chart chart, ChartSeries series, int intervalIndex, double startValue, double endValue) {

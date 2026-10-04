@@ -45,7 +45,6 @@ internal static class ChartVisualPrimitives {
     public const double DumbbellConnectorOpacity = 0.42;
     public const double ErrorBarStrokeWidth = 2.2;
     public const double ErrorBarRangeOpacity = 0.72;
-    public const double ErrorBarPngHaloStrokeWidth = 5.8;
     public const double ErrorBarMarkerRadiusExtra = 0.25;
     public const double ErrorBarMarkerMinRadius = 3.5;
     public const double BubbleFillOpacity = 0.30;
@@ -62,6 +61,7 @@ internal static class ChartVisualPrimitives {
     public const double MetricStatusBarWidth = 7;
     public const double BulletContentInset = 18;
     public const double BulletTargetStrokeWidth = 3;
+    public const double BulletTargetLengthRatio = 0.68;
     public const double BulletAxisStrokeWidth = 1.1;
     public const double PngTextHaloInnerOffset = 1.0;
     public const double PngTextHaloOuterOffset = 1.75;
@@ -73,23 +73,17 @@ internal static class ChartVisualPrimitives {
     public const double BoxPlotWhiskerOpacity = 1.0;
     public const double BoxPlotBodyFillOpacity = 0.22;
     public const double BoxPlotBodyRadius = 5;
-    public const double BoxPlotPngHaloStrokeWidth = 5.2;
-    public const double BoxPlotPngBodyHaloStrokeWidth = 4.6;
     public const double CandlestickStrokeWidth = 2;
     public const double CandlestickWickOpacity = 1.0;
     public const double CandlestickBodyRadius = 2.5;
     public const double CandlestickRisingFillOpacity = 0.23;
     public const double CandlestickFallingFillOpacity = 0.84;
-    public const double CandlestickPngHaloStrokeWidth = 5.2;
-    public const double CandlestickPngBodyHaloStrokeWidth = 4.6;
     public const double OhlcStrokeWidth = 2.2;
-    public const double OhlcPngHaloStrokeWidth = 5.4;
     public const double OhlcLabelOffset = 6;
 
     public const double RangeBandFillOpacity = 0.20;
     public const double RangeBandBoundaryStrokeWidth = 1.8;
     public const double RangeBandBoundaryOpacity = 0.74;
-    public const double RangeBandPngHaloStrokeWidth = 5.8;
     public const double RangeAreaFillOpacity = 0.96;
     public const double RangeAreaMidlineStrokeWidth = 1.3;
     public const double RangeAreaMidlineOpacity = 0.48;
@@ -175,6 +169,9 @@ internal static class ChartVisualPrimitives {
     public const double CircleCenterFillOpacity = 0.88;
 
     public const double SliceSeparatorStrokeWidth = 2;
+    public const double SliceGradientBottomOpacity = 0.78;
+    public const double BarGradientBottomOpacity = 0.94;
+    public const double SunburstFillOpacity = 0.96;
     public const double SliceLegendSwatchSize = 10;
     public const double SliceLegendSwatchRadius = 2;
     public const double PolarAreaMinRadius = 24;
