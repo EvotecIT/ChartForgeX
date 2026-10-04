@@ -9,14 +9,17 @@ namespace ChartForgeX.Typography;
 internal sealed partial class BitmapFontData {
     private readonly FontTableReader? _sbix, _cblc, _cbdt;
     private readonly int _glyphCount, _unitsPerEm;
+    private readonly bool _monochrome;
     private readonly Dictionary<long, BitmapGlyph?> _cache = new();
     private readonly List<BitmapStrike> _strikes = new();
     private long _cachedBytes;
     private static readonly RasterDecodeOptions DecodeLimits = new() { MaximumEncodedBytes = 4 * 1024 * 1024, MaximumPixels = 1024 * 1024 };
-    internal BitmapFontData(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int glyphCount, int unitsPerEm) {
+    internal BitmapFontData(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int glyphCount, int unitsPerEm, bool monochrome = false) {
         _glyphCount = glyphCount; _unitsPerEm = Math.Max(1, unitsPerEm);
-        _sbix = ColorFontData.Table(data, tables, lengths, "sbix");
-        _cblc = ColorFontData.Table(data, tables, lengths, "CBLC"); _cbdt = ColorFontData.Table(data, tables, lengths, "CBDT");
+        _monochrome = monochrome;
+        _sbix = monochrome ? null : ColorFontData.Table(data, tables, lengths, "sbix");
+        _cblc = ColorFontData.Table(data, tables, lengths, monochrome ? "EBLC" : "CBLC");
+        _cbdt = ColorFontData.Table(data, tables, lengths, monochrome ? "EBDT" : "CBDT");
         ReadStrikes();
     }
     private void ReadStrikes() {
@@ -32,11 +35,14 @@ internal sealed partial class BitmapFontData {
         } catch (FontLayoutException) { /* Optional strikes do not invalidate outlines. */ }
         if (_cblc.HasValue && _cbdt.HasValue) try {
             var table = _cblc.Value;
-            if (table.U16(0) == 3 && _cbdt.Value.U16(0) == 3) {
+            var version = _monochrome ? 2 : 3;
+            if (table.U16(0) == version && _cbdt.Value.U16(0) == version) {
                 var count = table.U32(4); if (count > 32) throw new FontLayoutException(); table.Require(8, (int)count * 48);
                 for (var i = 0; i < count; i++) {
                     var at = 8 + i * 48; var x = table.U8(at + 44); var y = table.U8(at + 45);
-                    if (x > 0 && y > 0) _strikes.Add(new BitmapStrike(_strikes.Count, at, x, y, false));
+                    var depth = table.U8(at + 46);
+                    if (_monochrome && (depth != 1 && depth != 2 && depth != 4 && depth != 8 || (table.U8(at + 47) & 1) == 0)) continue;
+                    if (x > 0 && y > 0) _strikes.Add(new BitmapStrike(_strikes.Count, at, x, y, false, depth));
                 }
             }
         } catch (FontLayoutException) { }
@@ -50,6 +56,15 @@ internal sealed partial class BitmapFontData {
             best = image; bestSize = strike.PpemY; distance = delta;
         }
         return best;
+    }
+    /// <summary>Authored monochrome strikes are used only at their exact horizontal and vertical output size.</summary>
+    internal BitmapGlyph? Exact(ushort glyph, double pixelSize) {
+        if (!_monochrome) return null;
+        foreach (var strike in _strikes)
+            if (strike.PpemX == strike.PpemY && Math.Abs(strike.PpemY - pixelSize) <= 0.000001) {
+                var image = Get(strike, glyph); if (image != null) return image;
+            }
+        return null;
     }
     internal IReadOnlyList<BitmapGlyph> All(ushort glyph) {
         var images = new List<BitmapGlyph>();
@@ -76,8 +91,8 @@ internal sealed partial class BitmapFontData {
         return (!pngOnly || PngReader.IsPng(encoded)) && RasterImageDecoder.TryDecode(encoded, DecodeLimits, out image);
     }
     private readonly struct BitmapStrike {
-        internal BitmapStrike(int key, int at, int x, int y, bool sbix) { Key = key; At = at; PpemX = x; PpemY = y; Sbix = sbix; }
-        internal readonly int Key, At, PpemX, PpemY;
+        internal BitmapStrike(int key, int at, int x, int y, bool sbix, int depth = 0) { Key = key; At = at; PpemX = x; PpemY = y; Sbix = sbix; Depth = depth; }
+        internal readonly int Key, At, PpemX, PpemY, Depth;
         internal readonly bool Sbix;
     }
 }
