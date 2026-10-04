@@ -339,7 +339,9 @@ Role styles use one shared contract in charts, chart grids, SVG, static HTML, an
 Chart PNG text resolves numeric font weights for both measurement and painting. Titles, axis titles,
 and legends use their SVG role weights when a style does not override them. Registered faces keep
 font selection reproducible across hosts; simulated bold combines its coverage before painting,
-so translucent text retains its opacity.
+so translucent text retains its opacity. A regular fallback face in a bold run receives synthetic
+weight without changing its advance. Existing bold faces, explicit variable weight axes and colour
+glyphs retain their authored ink.
 
 Raster curves and rounded borders share the outline stroker, and thin contour details contribute
 their area between sample rows. Image reduction filters premultiplied colors over the source

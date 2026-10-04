@@ -22,7 +22,7 @@ internal sealed partial class TrueTypeFont {
                 var x1 = bounds.X + Math.Min(shear * bounds.Y, shear * (bounds.Y + bounds.Height));
                 var x2 = bounds.X + bounds.Width + Math.Max(shear * bounds.Y, shear * (bounds.Y + bounds.Height));
                 left = Math.Min(left, cursor + (glyph.OffsetX + x1) * scale);
-                right = Math.Max(right, cursor + (glyph.OffsetX + x2) * scale);
+                right = Math.Max(right, cursor + (glyph.OffsetX + x2) * scale + FallbackBoldOffset(glyph, size));
                 top = Math.Min(top, baseline - (glyph.OffsetY + bounds.Y + bounds.Height) * scale);
                 bottom = Math.Max(bottom, baseline - (glyph.OffsetY + bounds.Y) * scale);
             }

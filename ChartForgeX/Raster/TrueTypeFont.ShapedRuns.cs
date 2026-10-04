@@ -28,6 +28,12 @@ internal sealed partial class TrueTypeFont {
         (glyph.Advance ?? (glyph.Face.AdvanceWidth(glyph.Glyph) + (previous.HasValue && !previous.Value.Advance.HasValue && ReferenceEquals(previous.Value.Face, glyph.Face)
             ? glyph.Face.Kerning(previous.Value.Glyph, glyph.Glyph) : 0))) * glyph.Face.ScaleFor(fontSize);
 
+    /// <summary>A regular fallback retains its advance but receives the requested run's bold ink.</summary>
+    private double FallbackBoldOffset(ShapedGlyph glyph, double size) =>
+        FallbackWeight >= 600 && !ReferenceEquals(glyph.Face.Root, Root) && glyph.Face.Weight < 600 &&
+        !glyph.Face.HasSelectedAxis("wght") && !glyph.Face.TryColorInk(glyph.Glyph, out _)
+            ? RgbaCanvas.EmphasisOffset(size) : 0;
+
     /// <summary>Paints a pre-shaped visual run at the primary face's baseline, preserving fallback face metrics.</summary>
     internal bool DrawGlyphs(RgbaCanvas canvas, double x, double y, IReadOnlyList<ShapedGlyph> glyphs, ChartColor color, double fontSize, bool italic, bool syntheticBoldCopyOnly = false, double boldOffset = 0) {
         var fit = GlyphGridFit.Create(canvas, fontSize, y + Ascent(fontSize));
@@ -38,9 +44,11 @@ internal sealed partial class TrueTypeFont {
             var scale = glyph.Face.ScaleFor(fontSize);
             var advance = GlyphAdvance(glyph, previous, fontSize);
             x += advance - GlyphAdvance(glyph, null, fontSize);
+            var offset = ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600 ? boldOffset : 0;
+            if (offset == 0) offset = FallbackBoldOffset(glyph, fontSize);
             if (!syntheticBoldCopyOnly || (ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600) && !glyph.Face.TryColorInk(glyph.Glyph, out _))
                 rendered |= glyph.Face.DrawGlyph(canvas, glyph.Glyph, x + glyph.OffsetX * scale, baseline - glyph.OffsetY * scale, scale, italic && !glyph.Face.IsItalic, color, fit,
-                    ReferenceEquals(glyph.Face, this) || glyph.Face.Weight < 600 ? boldOffset : 0);
+                    offset);
             x += GlyphAdvance(glyph, null, fontSize);
             previous = glyph;
         }
