@@ -359,7 +359,7 @@ internal static partial class SvgRasterRenderer {
         var height = VerticalLength(element, "height", viewport);
         if (width <= 0 || height <= 0) return;
         ResolveRoundedRectRadii(element, viewport, width, height, out var rx, out var ry);
-        var ring = ChartCurveFlattening.RoundedRectangle(x, y, width, height, rx, ry, matrix.ScaleFactor);
+        var ring = ChartCurveFlattening.RoundedRectangleFromTopEdge(x, y, width, height, rx, ry, matrix.ScaleFactor);
         FillAndStroke(canvas, new[] { TransformRing(ring, matrix) }, style, true, matrix, definitions, viewport);
     }
 

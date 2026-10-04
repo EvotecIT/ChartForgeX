@@ -9,6 +9,9 @@ internal static partial class VisualBlockRendering {
     public const int MaximumWardleyNodes = 256;
     public const int MaximumWardleyLinks = 512;
 
+    internal const double WardleyAccentOpacity = 155d / 255;
+    internal const double WardleyPipelineOpacity = 145d / 255;
+
     public static void ValidateWardleyMap(WardleyMapBlock map) {
         if (map.Nodes.Count == 0) throw new InvalidOperationException("Wardley maps must contain at least one node.");
         if (map.Nodes.Count > MaximumWardleyNodes) throw new InvalidOperationException("Wardley maps must contain no more than " + MaximumWardleyNodes.ToString(CultureInfo.InvariantCulture) + " nodes.");

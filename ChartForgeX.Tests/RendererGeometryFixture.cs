@@ -32,6 +32,16 @@ internal static class RendererGeometryFixture {
             if (family == "funnel-point") chart.Series[0].WithPointColor(0, ink).WithPointColor(1, ink);
             return chart;
         }
+        if (family.StartsWith("wardley-contract", StringComparison.Ordinal)) {
+            theme.Axis = ink;
+            var map = WardleyMapBlock.Create().WithSize(400, 280).WithTheme(theme).WithCard(false).WithTransparentBackground().WithPngOutputScale(density);
+            map.AddNode("origin", "Origin", 0.5, 0.1).Strategy = "buy";
+            map.AddNode("user", "User", 0.8, 0.6, WardleyMapNodeKind.Anchor);
+            map.AddLink("user", "origin", flow: VisualLinkDirection.Bidirectional);
+            var evolution = family.EndsWith("narrow", StringComparison.Ordinal) ? 0.1 : family.EndsWith("wide", StringComparison.Ordinal) ? 0.9 : 0.35;
+            map.AddPipeline("origin").AddComponent("Service", evolution);
+            return map;
+        }
         if (family.StartsWith("wardley", StringComparison.Ordinal)) {
             if (family != "wardley") theme = family == "wardley-dark" ? ChartTheme.Dark() : ChartTheme.Light();
             var map = WardleyMapBlock.Create().WithSize(400, 280).WithTheme(theme).WithCard(false).WithTransparentBackground().WithPngOutputScale(density);

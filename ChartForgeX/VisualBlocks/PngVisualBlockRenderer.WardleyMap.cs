@@ -48,7 +48,7 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawWardleyLink(RgbaCanvas canvas, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
         if (!layout.NodeLookup.TryGetValue(link.FromId, out var from) || !layout.NodeLookup.TryGetValue(link.ToId, out var to)) return;
-        var color = theme.Axis.WithAlpha(155);
+        var color = ChartColorMath.WithOpacity(theme.Axis, VisualBlockRendering.WardleyAccentOpacity);
         if (link.Dashed) canvas.DrawDashedLine(from.X, from.Y, to.X, to.Y, color, 1.2, 5, 5);
         else canvas.DrawLine(from.X, from.Y, to.X, to.Y, color, 1.2, RasterLineCap.Butt);
         DrawWardleyFlowHint(canvas, link, from.X, from.Y, to.X, to.Y, color);
@@ -100,9 +100,9 @@ public sealed partial class PngVisualBlockRenderer {
             DrawAlignedText(canvas, child.Label, x + 6, parent.Y + 7, 82, TextAlignment.Left, theme.MutedText, Math.Max(8, theme.SubtitleFontSize - 3), false);
         }
 
-        var border = ChartCurveFlattening.RoundedRectangle(minX - 14, parent.Y - 22, maxX - minX + 28, 44, 7, 7, canvas.DeviceScale);
+        var border = ChartCurveFlattening.RoundedRectangleFromTopEdge(minX - 14, parent.Y - 22, maxX - minX + 28, 44, 7, 7, canvas.DeviceScale);
         border.Add(border[0]);
-        canvas.StrokePolylines(new[] { border }, theme.Axis.WithAlpha(145), 1, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { 4d, 4d });
+        canvas.StrokePolylines(new[] { border }, ChartColorMath.WithOpacity(theme.Axis, VisualBlockRendering.WardleyPipelineOpacity), 1, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { 4d, 4d });
     }
 
     private static void DrawWardleyNode(RgbaCanvas canvas, VisualBlockRendering.WardleyNodePlacement placement, WardleyMapBlock map) {
@@ -112,7 +112,7 @@ public sealed partial class PngVisualBlockRenderer {
         var radius = node.Kind == WardleyMapNodeKind.Anchor ? 7.5 : 6;
         if (!string.IsNullOrWhiteSpace(node.Strategy)) {
             canvas.DrawCircle(placement.X, placement.Y, radius + 7, theme.PlotBackground);
-            canvas.DrawCircleOutline(placement.X, placement.Y, radius + 7, color.WithAlpha(155), 1);
+            canvas.DrawCircleOutline(placement.X, placement.Y, radius + 7, ChartColorMath.WithOpacity(color, VisualBlockRendering.WardleyAccentOpacity), 1);
         }
         canvas.DrawCircle(placement.X, placement.Y, radius, theme.PlotBackground);
         canvas.DrawCircleOutline(placement.X, placement.Y, radius, color, 2);

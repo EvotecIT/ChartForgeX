@@ -23,11 +23,9 @@ internal sealed partial class RgbaCanvas {
             return;
         }
         double half = thickness / 2;
-        var ring = ChartCurveFlattening.RoundedRectangle(x + half, y + half, width - thickness, height - thickness,
+        var ring = ChartCurveFlattening.RoundedRectangleFromTopEdge(x + half, y + half, width - thickness, height - thickness,
             Math.Max(0, radius - half), Math.Max(0, radius - half), _scale);
-        // SVG rectangle dash phase starts at the top edge after the top-left corner.
-        var first = ring[ring.Count - 1];
-        ring.RemoveAt(ring.Count - 1); ring.Insert(0, first); ring.Add(first);
+        ring.Add(ring[0]);
         StrokePolylines(new[] { ring }, color, thickness, RasterLineCap.Butt, RasterLineJoin.Miter, dashArray);
     }
 
