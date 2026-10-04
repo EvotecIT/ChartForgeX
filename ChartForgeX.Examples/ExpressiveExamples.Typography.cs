@@ -4,6 +4,16 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateFallbackFontShowcase() => Chart.Create()
+        .WithTitle("Mixed-script report labels")
+        .WithSubtitle("Fallback glyphs retain their shaped advances and the requested bold text policy")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Font stack · Segoe UI Black · Segoe UI · Noto Sans Arabic")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Black', 'Segoe UI', 'Noto Sans Arabic', sans-serif").WithWeight("900").WithFontSize(28))
+        .WithXLabels("Report", "مرحبا", "بِبّ", "Value 123")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateEmbeddedBitmapShowcase() {
         var chart = Chart.Create()
             .WithTitle("Authored small-text strikes")

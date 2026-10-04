@@ -384,8 +384,7 @@ internal static partial class SvgRasterRenderer {
 
     private static void DrawTextGlyphs(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize, bool emphasized, bool italic, TrueTypeFont? font, IReadOnlyList<ShapedGlyph>? glyphs) {
         if (glyphs != null && font != null) {
-            font.DrawGlyphs(canvas, x, y, glyphs, color, fontSize, italic);
-            if (emphasized) font.DrawGlyphs(canvas, x + TextEmphasisOffset(fontSize), y, glyphs, color, fontSize, italic, syntheticBoldCopyOnly: true);
+            font.DrawGlyphs(canvas, x, y, glyphs, color, fontSize, italic, boldOffset: emphasized ? TextEmphasisOffset(fontSize) : 0);
         } else if (emphasized) canvas.DrawTextEmphasized(x, y, text, color, fontSize, italic);
         else canvas.DrawText(x, y, text, color, fontSize, italic);
     }
