@@ -17,7 +17,7 @@ public sealed partial class SvgChartRenderer {
         };
         resolved.Font.Italic = style.Italic;
         var weight = style.ResolveFontWeight(emphasized ? 700 : 400);
-        resolved.Font.Weight = Math.Max(100, Math.Min(900, (int)Math.Round(weight / 100.0) * 100));
+        resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(weight);
         return TextLayoutEngine.Measure(text, resolved).Width;
     }
 

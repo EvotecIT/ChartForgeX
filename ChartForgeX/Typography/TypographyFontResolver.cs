@@ -23,6 +23,8 @@ internal readonly struct ResolvedTypeface {
 }
 
 internal static class TypographyFontResolver {
+    /// <summary>Maps CSS role weights to the discrete weight values accepted by a complete font specification.</summary>
+    internal static int FontSpecWeight(int weight) => Math.Max(100, Math.Min(900, (int)Math.Round(weight / 100.0) * 100));
     /// <summary>Applies text language after face selection, preserving weight, slant and fallback families.</summary>
     internal static ResolvedTypeface WithLanguage(ResolvedTypeface face, string? tag) =>
         tag == null ? face : new ResolvedTypeface(face.Font?.WithLanguage(tag == "normal" ? null : tag), face.SynthesizeBold, face.SynthesizeItalic, face.Path);

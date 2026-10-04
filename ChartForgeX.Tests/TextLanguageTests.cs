@@ -170,6 +170,23 @@ public sealed class TextLanguageTests {
         } finally { FontRegistry.Clear(); File.Delete(path); }
     }
 
+    [Theory]
+    [InlineData("650", "SRB")]
+    [InlineData("850", "SRB")]
+    [InlineData("1000", "SRB")]
+    [InlineData("650", "normal")]
+    public void NumericRoleWeightsRemainSupportedWhenLanguageIsExplicit(string weight, string language) {
+        var grid = new ChartGrid { Title = "Language", Subtitle = "Forms" }; grid.Add(Chart.Create());
+        grid.TitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
+        grid.SubtitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
+        Assert.Contains("font-weight=\"" + weight + "\"", new SvgChartGridRenderer().Render(grid));
+        var chart = Chart.Create().WithSize(360, 260).WithDataLabels()
+            .WithDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
+            .AddRadialBar("Language", new[] { new ChartPoint(0, 40) });
+        Assert.Contains("font-weight=\"" + weight + "\"", new SvgChartRenderer().Render(chart));
+        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+    }
+
     [Fact]
     public void StyleClonesAndOverridesPreserveOrResetLanguageWithoutMutation() {
         var style = new TextStyle { OpenTypeLanguageTag = "SRB" };

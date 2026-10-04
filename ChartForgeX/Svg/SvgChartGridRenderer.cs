@@ -193,7 +193,7 @@ public sealed class SvgChartGridRenderer {
         if (style.OpenTypeLanguageTag == null) return EstimateTextWidth(text, size);
         var resolved = new TextStyle { Font = FontSpec.FromFamily(StyleFontFamily(style, family)), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
         resolved.Font.Italic = style.Italic;
-        resolved.Font.Weight = TypographyFontResolver.ParseCssWeight(StyleWeight(style, weight), 400);
+        resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(TypographyFontResolver.ParseCssWeight(StyleWeight(style, weight), 400));
         return TextLayoutEngine.Measure(text, resolved).Width;
     }
 
