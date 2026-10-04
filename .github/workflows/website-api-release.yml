@@ -79,8 +79,8 @@ jobs:
           API_VERSION: ${{ steps.release.outputs.version }}
         run: |
           asset="ChartForgeX.ApiDocs.${API_VERSION}.zip"
-          if gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fxq "$asset"; then
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | grep -Fxq "$asset"; then
             echo "The API documentation asset already exists for $RELEASE_TAG."
             exit 0
           fi
-          gh release upload "$RELEASE_TAG" "website-api-output/$asset"
+          gh release upload "$RELEASE_TAG" "website-api-output/$asset" --repo "$GITHUB_REPOSITORY"
