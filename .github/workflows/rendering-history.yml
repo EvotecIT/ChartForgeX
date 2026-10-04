@@ -1,0 +1,115 @@
+name: Rendering history
+run-name: Rendering history · ${{ inputs.mode || 'CalibrationProof' }}
+
+on:
+  pull_request:
+    paths:
+      - 'Benchmarks/Rendering/**'
+      - 'Benchmarks/Invoke-RenderingHistory.ps1'
+      - 'Benchmarks/rendering-history.benchmark.ps1'
+      - '.github/workflows/rendering-history.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify accepted history, explicitly accept one reference, or prove calibration in a disposable cohort.
+        type: choice
+        options: [Verify, AcceptReference, CalibrationProof]
+        default: Verify
+      reference_run_id:
+        description: Successful AcceptReference run on main; blank selects the latest such run.
+        type: string
+        required: false
+  schedule:
+    - cron: '17 4 * * 1'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: rendering-history-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rendering-history:
+    # Benchmark path changes opt into functional calibration proof; ordinary product PRs do not time rendering.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    name: Rendering history (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            runner: ubuntu-latest
+          - name: Windows
+            runner: windows-latest
+          - name: macOS
+            runner: macos-latest
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HISTORY_MODE: ${{ github.event_name == 'pull_request' && 'CalibrationProof' || inputs.mode || 'Verify' }}
+      REFERENCE_RUN: ${{ inputs.reference_run_id }}
+      HISTORY_PLATFORM: ${{ matrix.name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Checkout canonical benchmark owner
+        uses: actions/checkout@v7
+        with:
+          repository: EvotecIT/PSPublishModule
+          ref: fde6c030e90d01871833a33dcfd0565b9bddb525
+          path: Ignore/PowerForgeSource
+      - name: Build shared benchmark module without publication
+        run: |
+          & ./Ignore/PowerForgeSource/Build/Build-Project.ps1 -ModuleOnly -RunMode Build -ModuleFramework net8.0 -ModuleNoSign -ModuleSkipInstall -SourceRepositoryRoot (Resolve-Path ./Ignore/PowerForgeSource).Path -ExpectedSourceRevision fde6c030e90d01871833a33dcfd0565b9bddb525
+          if (!$?) { throw 'Shared module build failed.' }
+      - name: Restore only accepted main history
+        if: env.HISTORY_MODE != 'CalibrationProof'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runId = $env:REFERENCE_RUN
+          if (!$runId) {
+            $runs = gh api "repos/$env:GITHUB_REPOSITORY/actions/workflows/rendering-history.yml/runs?branch=main&status=success&event=workflow_dispatch&per_page=100" | ConvertFrom-Json
+            if ($LASTEXITCODE) { throw 'Reference lookup failed.' }
+            $runId = ($runs.workflow_runs | Where-Object display_title -EQ 'Rendering history · AcceptReference' | Select-Object -First 1).id
+          }
+          if (!$runId) {
+            if ($env:HISTORY_MODE -eq 'AcceptReference') { return }
+            throw 'No accepted reference run exists. Accept five independent references on main first.'
+          }
+          if ("$runId" -notmatch '^\d+$') { throw 'Reference run ID must be numeric.' }
+          $reference = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$runId" | ConvertFrom-Json
+          if ($LASTEXITCODE -or $reference.head_branch -ne 'main' -or $reference.conclusion -ne 'success' -or $reference.event -ne 'workflow_dispatch' -or $reference.path -ne '.github/workflows/rendering-history.yml' -or $reference.display_title -ne 'Rendering history · AcceptReference') { throw 'Reference is not a successful explicit acceptance on main.' }
+          gh run download $runId --repo $env:GITHUB_REPOSITORY --name "rendering-history-reference-$env:HISTORY_PLATFORM" --dir Ignore/Benchmarks/History
+          if ($LASTEXITCODE) { throw 'Accepted history download failed.' }
+          if (!(Test-Path Ignore/Benchmarks/History/history.json)) { throw 'Accepted history is missing.' }
+      - name: Measure and evaluate rendering history
+        run: |
+          $module = (Get-ChildItem Ignore/PowerForgeSource/Module/Artefacts/Unpacked -Recurse -Filter PSPublishModule.psd1 | Select-Object -First 1).FullName
+          if (!$module) { throw 'Built shared module is missing.' }
+          & ./Benchmarks/Invoke-RenderingHistory.ps1 -ModulePath $module -RunnerIdentity "github-$env:HISTORY_PLATFORM" -Mode $env:HISTORY_MODE -OutputRoot Ignore/Benchmarks/History
+      - name: Retain raw samples, environment, gate proof and accepted history
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rendering-history-proof-${{ matrix.name }}
+          path: Ignore/Benchmarks/History
+          retention-days: 90
+          if-no-files-found: error
+      - name: Save explicitly accepted history separately from raw samples
+        if: success() && env.HISTORY_MODE == 'AcceptReference'
+        uses: actions/upload-artifact@v7
+        with:
+          name: rendering-history-reference-${{ matrix.name }}
+          path: Ignore/Benchmarks/History/history.json
+          retention-days: 90
+          if-no-files-found: error
