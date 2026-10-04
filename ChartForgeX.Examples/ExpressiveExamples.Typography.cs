@@ -4,6 +4,17 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateLanguageFormsShowcase() => Chart.Create()
+        .WithTitle("Localized font forms in report labels")
+        .WithSubtitle("An explicit Serbian language system selects the font's localized Cyrillic forms")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Serbian labels · selected font language")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("Calibri, 'Segoe UI', 'Noto Sans', sans-serif").WithItalic().WithOpenTypeLanguage("SRB").WithFontSize(28))
+        .WithXLabels("бгдпт", "Београд", "Нови Сад", "Крагујевац")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+
     private static Chart CreateSinhalaMyanmarShowcase() => Chart.Create()
         .WithTitle("Sinhala and Myanmar report labels")
         .WithSubtitle("Split vowels, explicit joining and kinzi use the selected font's forms")

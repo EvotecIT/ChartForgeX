@@ -42,13 +42,14 @@ internal sealed partial class TrueTypeFont {
     private readonly string[] _fallbackFamilies;
     private readonly int? _fallbackWeight;
     private readonly bool? _fallbackItalic;
+    private readonly string? _languageTag;
     private readonly TrueTypeFont _root;
     private readonly object _viewLock = new();
     private Dictionary<string, TrueTypeFont>? _views;
     private double? _xHeight;
     private double? _capHeight;
 
-    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null) {
+    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null, string? languageTag = null) {
         _data = data;
         _tables = tables;
         _tableLengths = lengths;
@@ -58,6 +59,7 @@ internal sealed partial class TrueTypeFont {
         _fallbackFamilies = fallbackFamilies;
         _fallbackWeight = fallbackWeight;
         _fallbackItalic = fallbackItalic;
+        _languageTag = languageTag;
         _cmap = FontCmap.Read(data, tables["cmap"]);
         _glyf = tables.TryGetValue("glyf", out var glyf) ? glyf : -1;
         _loca = tables.TryGetValue("loca", out var loca) ? loca : -1;
@@ -73,7 +75,7 @@ internal sealed partial class TrueTypeFont {
         _descender = ReadInt16(_data, hhea + 6);
         _numHMetrics = ReadUInt16(_data, hhea + 34);
         _numGlyphs = ReadUInt16(_data, tables["maxp"] + 4);
-        _layout = root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs);
+        _layout = languageTag == null ? root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs) : root!._layout.WithLanguage(languageTag);
         _colors = root?._colors ?? ColorFontData.Create(data, tables, lengths, _numGlyphs, _unitsPerEm);
     }
 
@@ -176,17 +178,25 @@ internal sealed partial class TrueTypeFont {
     /// are looked up in those families before the registered and platform fallback faces. The same
     /// family list always returns the same instance.
     /// </summary>
-    internal TrueTypeFont WithFallbackFamilies(IReadOnlyList<string> families, int? weight = null, bool? italic = null) {
+    internal TrueTypeFont WithFallbackFamilies(IReadOnlyList<string> families, int? weight = null, bool? italic = null) =>
+        View(families, weight, italic, _languageTag);
+
+    /// <summary>Binds immutable language selection to a face identity, including its shaped-run cache.</summary>
+    internal TrueTypeFont WithLanguage(string? tag) => tag == _languageTag ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, tag);
+    internal string? LanguageTag => _languageTag;
+
+    private TrueTypeFont View(IReadOnlyList<string> families, int? weight, bool? italic, string? languageTag) {
         var requestedWeight = weight ?? _root.Weight;
         var requestedItalic = italic ?? _root.IsItalic;
-        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic) return _root;
-        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n");
+        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic && languageTag == null) return _root;
+        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n") + "|" + languageTag;
         lock (_root._viewLock) {
-            _root._views ??= new Dictionary<string, TrueTypeFont>(StringComparer.OrdinalIgnoreCase);
+            _root._views ??= new Dictionary<string, TrueTypeFont>(StringComparer.Ordinal);
             if (_root._views.TryGetValue(key, out var view)) return view;
             var names = new string[families.Count];
             for (var i = 0; i < names.Length; i++) names[i] = families[i];
-            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic);
+            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic, languageTag);
+            if (_root._views.Count >= 128) _root._views.Clear();
             _root._views[key] = view;
             return view;
         }

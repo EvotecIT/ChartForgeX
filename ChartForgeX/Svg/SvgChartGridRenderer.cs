@@ -81,8 +81,8 @@ public sealed class SvgChartGridRenderer {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.TitleStyle.TransformText(grid.Title, CultureInfo.InvariantCulture), titleFontSize, headerWidth, EstimateTextWidth));
-            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, ChartTextFitting.TrimEnd(grid.SubtitleStyle.TransformText(grid.Subtitle, CultureInfo.InvariantCulture), subtitleFontSize, headerWidth, EstimateTextWidth));
+            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.TitleStyle.TransformText(grid.Title, CultureInfo.InvariantCulture), titleFontSize, headerWidth, (text, size) => MeasureHeaderText(text, size, grid.TitleStyle, theme.FontFamily, "800")));
+            if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, ChartTextFitting.TrimEnd(grid.SubtitleStyle.TransformText(grid.Subtitle, CultureInfo.InvariantCulture), subtitleFontSize, headerWidth, (text, size) => MeasureHeaderText(text, size, grid.SubtitleStyle, theme.FontFamily, "400")));
         }
 
         for (var i = 0; i < layout.Cells.Count; i++) {
@@ -123,6 +123,7 @@ public sealed class SvgChartGridRenderer {
     private static string StyleWeight(TextStyleOverride style, string fallback) => style.FontWeight ?? fallback;
 
     private static void WriteTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride style) {
+        if (style.OpenTypeLanguageTag != null) writer.Attribute("style", style.OpenTypeLanguageTag == "normal" ? "font-language-override:normal" : "font-language-override:'" + style.OpenTypeLanguageTag + "'");
         if (style.Italic) writer.Attribute("font-style", "italic");
         var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
         var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
@@ -185,6 +186,15 @@ public sealed class SvgChartGridRenderer {
         var width = 0.0;
         foreach (var ch in text) width += char.IsWhiteSpace(ch) ? 0.32 : char.IsUpper(ch) || char.IsDigit(ch) ? 0.62 : 0.54;
         return width * fontSize;
+    }
+
+    // An explicit language requests font-dependent glyph geometry; otherwise retain portable header estimates.
+    private static double MeasureHeaderText(string text, double size, TextStyleOverride style, string family, string weight) {
+        if (style.OpenTypeLanguageTag == null) return EstimateTextWidth(text, size);
+        var resolved = new TextStyle { Font = FontSpec.FromFamily(StyleFontFamily(style, family)), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
+        resolved.Font.Italic = style.Italic;
+        resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(TypographyFontResolver.ParseCssWeight(StyleWeight(style, weight), 400));
+        return TextLayoutEngine.Measure(text, resolved).Width;
     }
 
 }

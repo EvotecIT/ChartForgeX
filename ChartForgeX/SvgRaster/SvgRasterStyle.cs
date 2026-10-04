@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -63,6 +64,7 @@ internal sealed class SvgRasterStyle {
     public string? Filter { get; set; }
     public double FontSize { get; set; }
     public string? FontFamily { get; set; }
+    public string? OpenTypeLanguageTag { get; set; }
     /// <summary>The computed CSS weight from 1 through 1000; <c>bolder</c> and <c>lighter</c> are resolved against the parent.</summary>
     public int FontWeight { get; set; } = 400;
     public string FontStyle { get; set; } = "normal";
@@ -105,6 +107,7 @@ internal sealed class SvgRasterStyle {
             ClipRule = ClipRule,
             FontSize = FontSize,
             FontFamily = FontFamily,
+            OpenTypeLanguageTag = OpenTypeLanguageTag,
             FontWeight = FontWeight,
             FontStyle = FontStyle,
             TextDecoration = TextDecoration,
@@ -210,6 +213,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "stroke-opacity");
         AddAttribute(declarations, element, "font-size");
         AddAttribute(declarations, element, "font-family");
+        AddAttribute(declarations, element, "font-language-override");
         AddAttribute(declarations, element, "font-weight");
         AddAttribute(declarations, element, "font-style");
         AddAttribute(declarations, element, "text-decoration");
@@ -325,6 +329,9 @@ internal sealed class SvgRasterStyle {
                 break;
             case "font-style":
                 style.FontStyle = value.Trim();
+                break;
+            case "font-language-override":
+                if (OpenTypeLanguage.TryCss(value, out var languageTag)) style.OpenTypeLanguageTag = languageTag;
                 break;
             case "text-decoration":
                 style.TextDecoration = value.Trim();

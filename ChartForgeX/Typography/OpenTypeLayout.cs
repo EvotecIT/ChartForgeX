@@ -7,6 +7,7 @@ namespace ChartForgeX.Typography;
 internal sealed partial class OpenTypeLayout {
     private readonly FontTableReader? _gsub, _gpos, _gdef;
     private readonly int _glyphCount;
+    private readonly string? _languageTag;
     private readonly Dictionary<string, LayoutPlan> _plans = new(StringComparer.Ordinal);
 
     internal OpenTypeLayout(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int glyphCount) {
@@ -16,6 +17,14 @@ internal sealed partial class OpenTypeLayout {
             try { return new FontTableReader(data, start, length); } catch (FontLayoutException) { return null; }
         }
     }
+
+    private OpenTypeLayout(OpenTypeLayout source, string? languageTag) {
+        _gsub = source._gsub; _gpos = source._gpos; _gdef = source._gdef;
+        _glyphCount = source._glyphCount; _languageTag = languageTag;
+    }
+
+    /// <summary>Shares table bytes while isolating immutable language selection and its cached plans.</summary>
+    internal OpenTypeLayout WithLanguage(string? tag) => new(this, tag);
     internal bool HasFeature(string script, string feature, bool positioning = false) {
         var plan = Plan(script, positioning);
         return plan.Features.ContainsKey(feature) || plan.RequiredTag == feature;
@@ -75,12 +84,12 @@ internal sealed partial class OpenTypeLayout {
             var table = positioning ? _gpos : _gsub;
             var plan = new LayoutPlan();
             if (table.HasValue) {
-                try { ReadPlan(table.Value, script, plan); } catch (FontLayoutException) { plan = new LayoutPlan(); }
+                try { ReadPlan(table.Value, script, _languageTag, plan); } catch (FontLayoutException) { plan = new LayoutPlan(); }
             }
             return _plans[key] = plan;
         }
     }
-    private static void ReadPlan(FontTableReader table, string tag, LayoutPlan plan) {
+    private static void ReadPlan(FontTableReader table, string tag, string? languageTag, LayoutPlan plan) {
         if (table.U16(0) != 1) return;
         var scripts = table.Offset(0, 4); var features = table.Offset(0, 6); plan.LookupList = table.Offset(0, 8);
         var scriptCount = table.U16(scripts); table.Require(scripts + 2, scriptCount * 6);
@@ -94,7 +103,14 @@ internal sealed partial class OpenTypeLayout {
         if (selected < 0) selected = fallback;
         if (selected < 0) return;
         var language = table.Offset(selected, selected, optional: true);
-        if (language < 0) return; // No requested language: only the default language system applies.
+        if (languageTag != null) {
+            var languageCount = table.U16(selected + 2); table.Require(selected + 4, languageCount * 6);
+            for (var i = 0; i < languageCount; i++) {
+                var record = selected + 4 + i * 6;
+                if (table.Tag(record) == languageTag) { language = table.Offset(selected, record + 4); break; }
+            }
+        }
+        if (language < 0) return;
         var featureCount = table.U16(features); table.Require(features + 2, featureCount * 6);
         var required = table.U16(language + 2); var count = table.U16(language + 4); table.Require(language + 6, count * 2);
         if (required != 0xffff) Add(required, true);

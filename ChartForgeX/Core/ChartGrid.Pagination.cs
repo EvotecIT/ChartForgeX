@@ -58,5 +58,6 @@ public sealed partial class ChartGrid {
         target.StrikethroughStyle = source.StrikethroughStyle;
         target.Baseline = source.Baseline;
         target.TextCase = source.TextCase;
+        target.OpenTypeLanguageTag = source.OpenTypeLanguageTag;
     }
 }

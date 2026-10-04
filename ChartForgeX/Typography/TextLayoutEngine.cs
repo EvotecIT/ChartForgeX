@@ -14,7 +14,7 @@ public static class TextLayoutEngine {
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (style == null) throw new ArgumentNullException(nameof(style));
         text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
-        var font = TypographyFontResolver.ResolveFace(style.Font);
+        var font = TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.Font), style.OpenTypeLanguageTag);
         var lineHeight = ResolveLineHeight(style, font.Font);
         var width = 0d;
         var lineCount = 0;
@@ -35,7 +35,7 @@ public static class TextLayoutEngine {
         if (!Enum.IsDefined(typeof(TextTrimming), trimming)) throw new ArgumentOutOfRangeException(nameof(trimming), trimming, "Unknown text trimming mode.");
 
         text = TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture);
-        var font = TypographyFontResolver.ResolveFace(style.Font);
+        var font = TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.Font), style.OpenTypeLanguageTag);
         var resolved = new List<TextLayoutLine>();
         var trimmed = false;
         var omittedLines = false;
@@ -89,6 +89,7 @@ public static class TextLayoutEngine {
         MeasureWidth(text, style, new ResolvedTypeface(font, style.Font.Weight >= 600, style.Font.Italic));
 
     internal static double MeasureWidth(string text, TextStyle style, ResolvedTypeface face) {
+        face = TypographyFontResolver.WithLanguage(face, style.OpenTypeLanguageTag);
         var width = RgbaCanvas.MeasureTextWidth(text, style.EffectiveFontSize, face.Font, face.SynthesizeItalic);
         // A real italic face leans past its last advance just as a sheared one does; reserving the same
         // overhang keeps layout independent of which faces the host has installed.

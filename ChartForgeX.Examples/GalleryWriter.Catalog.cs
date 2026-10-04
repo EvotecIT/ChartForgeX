@@ -266,6 +266,7 @@ public static partial class GalleryWriter {
             "styled-multilingual-text",
             "script-shaping-showcase",
             "sinhala-myanmar-showcase",
+            "language-forms-showcase",
             "colour-emoji-showcase",
             "theme-font-showcase-grid",
             "brand-kit-showcase-grid",
