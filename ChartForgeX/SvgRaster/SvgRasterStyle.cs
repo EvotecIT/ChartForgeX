@@ -65,6 +65,7 @@ internal sealed class SvgRasterStyle {
     public double FontSize { get; set; }
     public string? FontFamily { get; set; }
     public string? OpenTypeLanguageTag { get; set; }
+    public FontVariationSettings? Variations { get; set; }
     /// <summary>The computed CSS weight from 1 through 1000; <c>bolder</c> and <c>lighter</c> are resolved against the parent.</summary>
     public int FontWeight { get; set; } = 400;
     public string FontStyle { get; set; } = "normal";
@@ -108,6 +109,7 @@ internal sealed class SvgRasterStyle {
             FontSize = FontSize,
             FontFamily = FontFamily,
             OpenTypeLanguageTag = OpenTypeLanguageTag,
+            Variations = Variations,
             FontWeight = FontWeight,
             FontStyle = FontStyle,
             TextDecoration = TextDecoration,
@@ -214,6 +216,7 @@ internal sealed class SvgRasterStyle {
         AddAttribute(declarations, element, "font-size");
         AddAttribute(declarations, element, "font-family");
         AddAttribute(declarations, element, "font-language-override");
+        AddAttribute(declarations, element, "font-variation-settings");
         AddAttribute(declarations, element, "font-weight");
         AddAttribute(declarations, element, "font-style");
         AddAttribute(declarations, element, "text-decoration");
@@ -332,6 +335,9 @@ internal sealed class SvgRasterStyle {
                 break;
             case "font-language-override":
                 if (OpenTypeLanguage.TryCss(value, out var languageTag)) style.OpenTypeLanguageTag = languageTag;
+                break;
+            case "font-variation-settings":
+                if (TypographyCss.TryVariations(value, out var variations)) style.Variations = variations;
                 break;
             case "text-decoration":
                 style.TextDecoration = value.Trim();

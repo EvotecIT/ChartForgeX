@@ -5,14 +5,13 @@ namespace ChartForgeX.Typography;
 internal sealed partial class OpenTypeLayout {
     /// <summary>Reads a font's signed pixel correction into design units at the logical layout size.
     /// Export scaling magnifies this same layout; it does not select another device-size correction.</summary>
-    private static double DeviceAdjustment(FontTableReader table, int origin, int field, LayoutExecution execution) {
-        if (execution.PixelSize <= 0) return 0;
+    private double DeviceAdjustment(FontTableReader table, int origin, int field, LayoutExecution execution) {
         try {
             var at = table.Offset(origin, field, optional: true);
             if (at < 0) return 0;
             var first = table.U16(at); var last = table.U16(at + 2); var format = table.U16(at + 4);
-            // VariationIndex records belong to the future non-default variation context, not pixel sizes.
-            if (format == 0x8000) return 0;
+            if (format == 0x8000) return _variationStore?.Delta(first, last) ?? 0;
+            if (execution.PixelSize <= 0) return 0;
             if (format < 1 || format > 3 || last < first) return 0;
             var bits = 1 << format; var perWord = 16 / bits;
             table.Require(at + 6, ((last - first + 1 + perWord - 1) / perWord) * 2);

@@ -49,7 +49,7 @@ internal sealed partial class TrueTypeFont {
     private double? _xHeight;
     private double? _capHeight;
 
-    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null, string? languageTag = null) {
+    private TrueTypeFont(byte[] data, Dictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int? collectionIndex, CompactFontOutlines? compact, TrueTypeFont? root, string[] fallbackFamilies, int? fallbackWeight = null, bool? fallbackItalic = null, string? languageTag = null, FontVariationSettings? variations = null) {
         _data = data;
         _tables = tables;
         _tableLengths = lengths;
@@ -75,7 +75,14 @@ internal sealed partial class TrueTypeFont {
         _descender = ReadInt16(_data, hhea + 6);
         _numHMetrics = ReadUInt16(_data, hhea + 34);
         _numGlyphs = ReadUInt16(_data, tables["maxp"] + 4);
-        _layout = languageTag == null ? root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs) : root!._layout.WithLanguage(languageTag);
+        _variationSettings = variations ?? FontVariationSettings.Default;
+        _variation = FontVariationContext.Create(data, tables, lengths, _variationSettings);
+        if (_variation != null && compact != null) _compact = compact.WithVariation(_variation);
+        _glyphVariations = _variation == null ? null : GlyphVariationData.Create(data, tables, lengths, _numGlyphs, _indexToLocFormat != 0, _variation.Coordinates);
+        _hvarTable = _variation == null ? null : VariationTable("HVAR"); _mvarTable = _variation == null ? null : VariationTable("MVAR");
+        _horizontalVariations = VariationStore(_hvarTable, 4, true); _metricVariations = VariationStore(_mvarTable, 10, false);
+        var layout = root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs);
+        _layout = languageTag == null && _variation == null ? layout : layout.WithContext(languageTag, _variation);
         _colors = root?._colors ?? ColorFontData.Create(data, tables, lengths, _numGlyphs, _unitsPerEm);
     }
 
@@ -179,24 +186,24 @@ internal sealed partial class TrueTypeFont {
     /// family list always returns the same instance.
     /// </summary>
     internal TrueTypeFont WithFallbackFamilies(IReadOnlyList<string> families, int? weight = null, bool? italic = null) =>
-        View(families, weight, italic, _languageTag);
+        View(families, weight, italic, _languageTag, _variationSettings);
 
     /// <summary>Binds immutable language selection to a face identity, including its shaped-run cache.</summary>
-    internal TrueTypeFont WithLanguage(string? tag) => tag == _languageTag ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, tag);
+    internal TrueTypeFont WithLanguage(string? tag) => tag == _languageTag ? this : View(_fallbackFamilies, _fallbackWeight, _fallbackItalic, tag, _variationSettings);
     internal string? LanguageTag => _languageTag;
 
-    private TrueTypeFont View(IReadOnlyList<string> families, int? weight, bool? italic, string? languageTag) {
+    private TrueTypeFont View(IReadOnlyList<string> families, int? weight, bool? italic, string? languageTag, FontVariationSettings variations) {
         var requestedWeight = weight ?? _root.Weight;
         var requestedItalic = italic ?? _root.IsItalic;
-        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic && languageTag == null) return _root;
-        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n") + "|" + languageTag;
+        if (families.Count == 0 && requestedWeight == _root.Weight && requestedItalic == _root.IsItalic && languageTag == null && variations.Count == 0) return _root;
+        var key = string.Join("\n", families) + "|" + requestedWeight.ToString(System.Globalization.CultureInfo.InvariantCulture) + (requestedItalic ? "|i" : "|n") + "|" + languageTag + "|" + variations.Key;
         lock (_root._viewLock) {
             _root._views ??= new Dictionary<string, TrueTypeFont>(StringComparer.Ordinal);
             if (_root._views.TryGetValue(key, out var view)) return view;
             var names = new string[families.Count];
             for (var i = 0; i < names.Length; i++) names[i] = families[i];
-            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic, languageTag);
-            if (_root._views.Count >= 128) _root._views.Clear();
+            view = new TrueTypeFont(_data, _tables, _tableLengths, _collectionIndex, _compact, _root, names, requestedWeight, requestedItalic, languageTag, variations);
+            if (_root._views.Count >= 32) _root._views.Clear();
             _root._views[key] = view;
             return view;
         }
@@ -225,10 +232,10 @@ internal sealed partial class TrueTypeFont {
     internal OpenTypeLayout Layout => _layout;
 
     /// <summary>The x-height in font units: the OS/2 value, or the top of <c>x</c>.</summary>
-    internal double XHeight => _xHeight ??= Os2Height(86) ?? GlyphTop('x') ?? _unitsPerEm * 0.5;
+    internal double XHeight => _xHeight ??= Os2Height(86) is double height ? height + MetricVariation("xhgt") : GlyphTop('x') ?? _unitsPerEm * 0.5;
 
     /// <summary>The cap height in font units: the OS/2 value, or the top of <c>H</c>.</summary>
-    internal double CapHeight => _capHeight ??= Os2Height(88) ?? GlyphTop('H') ?? _unitsPerEm * 0.7;
+    internal double CapHeight => _capHeight ??= Os2Height(88) is double height ? height + MetricVariation("cpht") : GlyphTop('H') ?? _unitsPerEm * 0.7;
 
     private double? Os2Height(int offset) {
         if (_os2 < 0 || ReadUInt16(_data, _os2) < 2 || !InBounds(_os2 + offset, 2)) return null;
@@ -255,10 +262,10 @@ internal sealed partial class TrueTypeFont {
     }
 
     public double LineHeight(double fontSize) {
-        return Math.Max(1, _ascender - _descender) * ScaleFor(fontSize);
+        return Math.Max(1, _ascender + AscentVariation - _descender - DescentVariation) * ScaleFor(fontSize);
     }
 
-    internal double Ascent(double fontSize) => _ascender * ScaleFor(fontSize);
+    internal double Ascent(double fontSize) => (_ascender + AscentVariation) * ScaleFor(fontSize);
 
     public bool Draw(RgbaCanvas canvas, double x, double y, string text, ChartColor color, double fontSize) =>
         Draw(canvas, x, y, text, color, fontSize, italic: false);
@@ -267,8 +274,8 @@ internal sealed partial class TrueTypeFont {
         var scale = ScaleFor(fontSize);
         var cursor = x;
         // Small text sits on a whole pixel and has its x-height and cap height fitted to the grid.
-        var fit = GlyphGridFit.Create(canvas, fontSize, y + _ascender * scale);
-        var baseline = fit?.Baseline ?? y + _ascender * scale;
+        var fit = GlyphGridFit.Create(canvas, fontSize, y + Ascent(fontSize));
+        var baseline = fit?.Baseline ?? y + Ascent(fontSize);
         var rendered = false;
         if (!IsSimpleRun(text)) {
             return DrawGlyphs(canvas, x, y, TextShaper.Shape(this, text, fontSize), color, fontSize, italic, boldOffset: boldOffset);
@@ -360,10 +367,13 @@ internal sealed partial class TrueTypeFont {
         return char.ConvertToUtf32(first, value[index++]);
     }
 
-    internal int AdvanceWidth(ushort glyph) {
+    internal double AdvanceWidth(ushort glyph) => AdvanceWidth(glyph, 0);
+    private double AdvanceWidth(ushort glyph, int depth) {
         if (_numHMetrics == 0) return 0;
+        if (depth < 8 && _horizontalVariations == null && _glyphVariations != null && TryMetricComponent(glyph, out var component))
+            return AdvanceWidth(component, depth + 1);
         var record = _hmtx + Math.Min(glyph, _numHMetrics - 1) * 4;
-        return InBounds(record, 2) ? ReadUInt16(_data, record) : 0;
+        return InBounds(record, 2) ? Math.Floor(ReadUInt16(_data, record) + AdvanceVariation(glyph) + 0.5) : 0;
     }
 
     internal int Kerning(ushort left, ushort right) {

@@ -4,6 +4,16 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateVariableFontShowcase() => Chart.Create()
+        .WithTitle("Variable font report labels")
+        .WithSubtitle("Explicit weight and optical size share the font's outlines, advances and attached marks")
+        .WithTheme(ChartTheme.ReportLight())
+        .WithSize(960, 460)
+        .WithXAxis("Selected axes · wght 650 · opsz 20")
+        .WithYAxis("Samples")
+        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Variable', 'Source Serif 4', sans-serif").WithVariation("wght", 650).WithVariation("opsz", 20).WithFontSize(26))
+        .WithXLabels("Variable AV", "office", "Hé xÁ", "Report 123")
+        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateSmallTextLayoutShowcase() => Chart.Create()
         .WithTitle("Small report labels and attached marks")
         .WithSubtitle("Font-defined positioning follows the logical text size when export resolution changes")

@@ -8,6 +8,8 @@ internal sealed partial class OpenTypeLayout {
     private readonly FontTableReader? _gsub, _gpos, _gdef;
     private readonly int _glyphCount;
     private readonly string? _languageTag;
+    private readonly FontVariationContext? _variation;
+    private readonly ItemVariationStore? _variationStore;
     private readonly Dictionary<string, LayoutPlan> _plans = new(StringComparer.Ordinal);
 
     internal OpenTypeLayout(byte[] data, IReadOnlyDictionary<string, int> tables, IReadOnlyDictionary<string, int> lengths, int glyphCount) {
@@ -18,13 +20,20 @@ internal sealed partial class OpenTypeLayout {
         }
     }
 
-    private OpenTypeLayout(OpenTypeLayout source, string? languageTag) {
+    private OpenTypeLayout(OpenTypeLayout source, string? languageTag, FontVariationContext? variation) {
         _gsub = source._gsub; _gpos = source._gpos; _gdef = source._gdef;
         _glyphCount = source._glyphCount; _languageTag = languageTag;
+        _variation = variation;
+        if (variation != null && _gdef.HasValue) {
+            try {
+                var table = _gdef.Value;
+                if (table.U16(0) == 1 && table.U16(2) >= 3) _variationStore = ItemVariationStore.Read(table, table.Offset(0, 14, optional: true, wide: true), variation.Coordinates);
+            } catch (FontLayoutException) { }
+        }
     }
 
     /// <summary>Shares table bytes while isolating immutable language selection and its cached plans.</summary>
-    internal OpenTypeLayout WithLanguage(string? tag) => new(this, tag);
+    internal OpenTypeLayout WithContext(string? tag, FontVariationContext? variation) => new(this, tag, variation);
     internal bool HasFeature(string script, string feature, bool positioning = false) {
         var plan = Plan(script, positioning);
         return plan.Features.ContainsKey(feature) || plan.RequiredTag == feature;
@@ -89,7 +98,7 @@ internal sealed partial class OpenTypeLayout {
             return _plans[key] = plan;
         }
     }
-    private static void ReadPlan(FontTableReader table, string tag, string? languageTag, LayoutPlan plan) {
+    private void ReadPlan(FontTableReader table, string tag, string? languageTag, LayoutPlan plan) {
         if (table.U16(0) != 1) return;
         var scripts = table.Offset(0, 4); var features = table.Offset(0, 6); plan.LookupList = table.Offset(0, 8);
         var scriptCount = table.U16(scripts); table.Require(scripts + 2, scriptCount * 6);
@@ -112,12 +121,14 @@ internal sealed partial class OpenTypeLayout {
         }
         if (language < 0) return;
         var featureCount = table.U16(features); table.Require(features + 2, featureCount * 6);
+        var substitutions = FeatureVariations(table);
         var required = table.U16(language + 2); var count = table.U16(language + 4); table.Require(language + 6, count * 2);
         if (required != 0xffff) Add(required, true);
         for (var i = 0; i < count; i++) Add(table.U16(language + 6 + i * 2), false);
         void Add(int index, bool isRequired) {
             if (index >= featureCount) throw new FontLayoutException();
             var record = features + 2 + index * 6; var feature = table.Offset(features, record + 4);
+            if (substitutions.TryGetValue(index, out var replacement)) feature = replacement;
             var lookupCount = table.U16(feature + 2); table.Require(feature + 4, lookupCount * 2);
             var indexes = new int[lookupCount];
             for (var i = 0; i < lookupCount; i++) indexes[i] = table.U16(feature + 4 + i * 2);

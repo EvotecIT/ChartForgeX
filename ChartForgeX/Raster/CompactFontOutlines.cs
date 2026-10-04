@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
@@ -8,12 +9,13 @@ namespace ChartForgeX.Raster;
 /// Reads glyph outlines from an OpenType <c>CFF </c> or <c>CFF2</c> table: the INDEX and DICT
 /// structures, name-keyed and CID-keyed fonts (FDArray and FDSelect with per-font local
 /// subroutines), and the Type 2 charstrings themselves (see the charstring partial). Hints are
-/// parsed and ignored; CFF2 blends keep their default values, so variable fonts draw their default
-/// instance. Advance widths come from <c>hmtx</c>, as OpenType requires.
+/// parsed and ignored; CFF2 blends use the face's normalized variation instance.
+/// Advance widths come from <c>hmtx</c> and HVAR, as OpenType requires.
 /// </summary>
 internal sealed partial class CompactFontOutlines {
     private const int MaximumDictOperands = 513;
     private readonly byte[] _data;
+    private readonly int _start;
     private readonly int _end;
     private readonly bool _cff2;
     private readonly CffIndex _charStrings;
@@ -23,9 +25,33 @@ internal sealed partial class CompactFontOutlines {
     private readonly int _fdSelect;
     private readonly int _charset;
     private readonly int[] _regionCounts;
+    private int _variationOffset = -1;
+    private ItemVariationStore? _variationStore;
+    private Dictionary<int, double[]> _blendScalars = new();
+    private object _blendLock = new();
+    private int _blendScalarCount;
 
-    private CompactFontOutlines(byte[] data, int end, bool cff2, CffIndex charStrings, CffIndex globalSubrs, CffIndex[] localSubrs, double[] scales, int fdSelect, int charset, int[] regionCounts) {
+    internal CompactFontOutlines WithVariation(FontVariationContext variation) {
+        var result = (CompactFontOutlines)MemberwiseClone();
+        result._variationStore = ItemVariationStore.Read(new FontTableReader(_data, _start, _end - _start), _variationOffset, variation.Coordinates);
+        result._blendScalars = new Dictionary<int, double[]>(); result._blendLock = new object(); result._blendScalarCount = 0;
+        return result;
+    }
+    private double[] BlendScalars(int index, int count) {
+        if (_variationStore == null) return Array.Empty<double>();
+        lock (_blendLock) {
+            if (_blendScalars.TryGetValue(index, out var scalars)) return scalars;
+            try { scalars = _variationStore.RegionScalars(index); }
+            catch (FontLayoutException) { scalars = Array.Empty<double>(); }
+            if (scalars.Length != count) scalars = Array.Empty<double>();
+            if (_blendScalarCount + count > 32768) { _blendScalars.Clear(); _blendScalarCount = 0; }
+            _blendScalars[index] = scalars; _blendScalarCount += count; return scalars;
+        }
+    }
+
+    private CompactFontOutlines(byte[] data, int start, int end, bool cff2, CffIndex charStrings, CffIndex globalSubrs, CffIndex[] localSubrs, double[] scales, int fdSelect, int charset, int[] regionCounts) {
         _data = data;
+        _start = start;
         _end = end;
         _cff2 = cff2;
         _charStrings = charStrings;
@@ -94,7 +120,9 @@ internal sealed partial class CompactFontOutlines {
             var charset = !cff2 && top.TryGetValue(15, out var charsetOffset) && charsetOffset.Length > 0 ? (int)charsetOffset[0] : 0;
             if (charset > 2) charset += offset;
             var regionCounts = cff2 && top.TryGetValue(24, out var vstore) && vstore.Length > 0 ? ReadRegionCounts(data, offset + (int)vstore[0], end) : Array.Empty<int>();
-            return new CompactFontOutlines(data, end, cff2, charStrings, globalSubrs, localSubrs.ToArray(), scales.ToArray(), fdSelect, charset, regionCounts);
+            return new CompactFontOutlines(data, offset, end, cff2, charStrings, globalSubrs, localSubrs.ToArray(), scales.ToArray(), fdSelect, charset, regionCounts) {
+                _variationOffset = cff2 && top.TryGetValue(24, out var variationStore) && variationStore.Length > 0 ? (int)variationStore[0] + 2 : -1
+            };
         } catch (InvalidDataException) {
         } catch (IndexOutOfRangeException) {
         } catch (ArgumentOutOfRangeException) {

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Raster;
 
@@ -22,6 +23,8 @@ internal sealed partial class CompactFontOutlines {
         } catch (InvalidDataException) {
             sink.Close();
         } catch (IndexOutOfRangeException) {
+            sink.Close();
+        } catch (FontLayoutException) {
             sink.Close();
         }
     }
@@ -190,11 +193,16 @@ internal sealed partial class CompactFontOutlines {
                 case 15 when _cff2: // vsindex
                     s.VariationIndex = (int)s.Pop();
                     break;
-                case 16 when _cff2: { // blend: keep each value's default and drop its region deltas.
+                case 16 when _cff2: { // blend: defaults followed by each value's region deltas.
                     var values = (int)s.Pop();
                     var regions = s.VariationIndex >= 0 && s.VariationIndex < _regionCounts.Length ? _regionCounts[s.VariationIndex] : 0;
                     var deltas = values * regions;
                     if (values < 0 || deltas > s.Count - values) throw new InvalidDataException("CFF2 blend is malformed.");
+                    var scalars = BlendScalars(s.VariationIndex, regions);
+                    var first = s.Count - values - deltas;
+                    for (var value = 0; value < values; value++)
+                        for (var region = 0; region < scalars.Length; region++)
+                            s.Adjust(first + value, s.Arg(first + values + value * regions + region) * scalars[region]);
                     s.Count -= deltas;
                     break;
                 }
@@ -301,6 +309,7 @@ internal sealed partial class CompactFontOutlines {
         private readonly IGlyphOutlineSink _sink;
         private readonly double _scale;
         private readonly double[] _stack = new double[MaximumStack];
+        public void Adjust(int index, double delta) { if (index < 0 || index >= Count) throw new InvalidDataException(); _stack[index] += delta; }
         private bool _open;
 
         public CharstringState(IGlyphOutlineSink sink, double scale) {

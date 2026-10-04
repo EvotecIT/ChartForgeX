@@ -28,6 +28,11 @@ internal static class TypographyFontResolver {
     /// <summary>Applies text language after face selection, preserving weight, slant and fallback families.</summary>
     internal static ResolvedTypeface WithLanguage(ResolvedTypeface face, string? tag) =>
         tag == null ? face : new ResolvedTypeface(face.Font?.WithLanguage(tag == "normal" ? null : tag), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
+    internal static ResolvedTypeface WithVariations(ResolvedTypeface face, FontVariationSettings? settings) {
+        if (settings == null || face.Font == null) return face;
+        var font = face.Font.WithVariations(settings);
+        return new ResolvedTypeface(font, face.SynthesizeBold && !font.HasSelectedAxis("wght"), face.SynthesizeItalic && !font.HasSelectedAxis("ital") && !font.HasSelectedAxis("slnt"), face.Path);
+    }
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;
@@ -41,10 +46,10 @@ internal static class TypographyFontResolver {
     internal static ResolvedTypeface ResolveFace(FontSpec font) {
         if (font.FilePath != null) {
             var requested = TrueTypeFont.TryLoadFromPath(font.FilePath, font.CollectionIndex, font.FaceName);
-            if (requested != null) return WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic);
+            if (requested != null) return WithVariations(WithRequestedFallbackStyle(new ResolvedTypeface(requested, font.Weight >= 600, font.Italic, font.FilePath), font.Weight, font.Italic), font.Variations);
         }
 
-        return ResolveFace(font.Family, font.Weight, font.Italic);
+        return WithVariations(ResolveFace(font.Family, font.Weight, font.Italic), font.Variations);
     }
 
     /// <summary>

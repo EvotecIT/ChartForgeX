@@ -56,7 +56,7 @@ internal sealed partial class OpenTypeLayout {
         for (var bit = 1; bit <= 128; bit <<= 1) if ((format & bit) != 0) size += 2;
         return size;
     }
-    private static void ApplyValue(FontTableReader table, int origin, int at, int format, LayoutGlyph glyph, LayoutExecution execution) {
+    private void ApplyValue(FontTableReader table, int origin, int at, int format, LayoutGlyph glyph, LayoutExecution execution) {
         table.Require(at, ValueSize(format));
         var x = 0.0; var y = 0.0; var advanceX = 0.0; var advanceY = 0.0;
         if ((format & 1) != 0) { x = table.I16(at); at += 2; }
@@ -71,7 +71,7 @@ internal sealed partial class OpenTypeLayout {
         glyph.XAdvance += advanceX; glyph.YAdvance += advanceY;
         if (glyph.Attachment != null) { glyph.AttachmentAdjustmentX += x; glyph.AttachmentAdjustmentY += y; }
     }
-    private static (double X, double Y)? Anchor(FontTableReader table, int origin, int field, LayoutExecution execution) {
+    private (double X, double Y)? Anchor(FontTableReader table, int origin, int field, LayoutExecution execution) {
         var at = table.Offset(origin, field, optional: true);
         if (at < 0) return null;
         var format = table.U16(at);

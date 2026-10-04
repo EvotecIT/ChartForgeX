@@ -15,6 +15,10 @@ public sealed class TextStyleOverride {
     private TextBaseline? _baseline;
     private TextCaseTransform? _textCase;
     private string? _openTypeLanguageTag;
+    /// <summary>Gets or sets explicit OpenType axes. Null inherits; Default restores the font's default instance.</summary>
+    public FontVariationSettings? Variations { get; set; }
+    /// <summary>Sets one OpenType variation axis in design units.</summary>
+    public TextStyleOverride WithVariation(string tag, double value) { Variations = (Variations ?? FontVariationSettings.Default).WithAxis(tag, value); return this; }
 
     /// <summary>Gets or sets the optional text color override.</summary>
     public ChartColor? Color { get; set; }
@@ -75,7 +79,7 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets a value indicating whether this instance contains explicit overrides.</summary>
-    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null;
+    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null;
 
     /// <summary>Resolves these overrides over a complete text style without mutating the fallback.</summary>
     public TextStyle Resolve(TextStyle fallback) {
@@ -93,6 +97,7 @@ public sealed class TextStyleOverride {
         if (Baseline.HasValue) resolved.Baseline = Baseline.Value;
         if (TextCase.HasValue) resolved.TextCase = TextCase.Value;
         if (OpenTypeLanguageTag != null) resolved.OpenTypeLanguageTag = OpenTypeLanguageTag == "normal" ? null : OpenTypeLanguageTag;
+        if (Variations != null) resolved.Font.Variations = Variations;
         return resolved;
     }
 

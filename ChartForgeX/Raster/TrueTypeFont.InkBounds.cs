@@ -37,15 +37,16 @@ internal sealed partial class TrueTypeFont {
     }
     private ChartRect? OutlineInk(ushort glyph) {
         lock (_root._viewLock) {
-            _root._glyphInkBounds ??= new Dictionary<ushort, ChartRect?>();
-            if (_root._glyphInkBounds.TryGetValue(glyph, out var cached)) return cached;
+            var owner = _variation == null ? _root : this;
+            owner._glyphInkBounds ??= new Dictionary<ushort, ChartRect?>();
+            if (owner._glyphInkBounds.TryGetValue(glyph, out var cached)) return cached;
             var left = double.PositiveInfinity; var bottom = double.PositiveInfinity;
             var right = double.NegativeInfinity; var top = double.NegativeInfinity;
             foreach (var contour in ReadGlyphContours(glyph, new FontTransform(1, 0, 0, 1, 0, 0), 0)) foreach (var point in contour) {
                 left = Math.Min(left, point.X); right = Math.Max(right, point.X); bottom = Math.Min(bottom, point.Y); top = Math.Max(top, point.Y);
             }
             ChartRect? bounds = double.IsPositiveInfinity(left) ? null : new ChartRect(left, bottom, right - left, top - bottom);
-            return _root._glyphInkBounds[glyph] = bounds;
+            return owner._glyphInkBounds[glyph] = bounds;
         }
     }
 }
