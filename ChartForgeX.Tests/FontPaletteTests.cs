@@ -125,11 +125,11 @@ public sealed class FontPaletteTests {
         Assert.DoesNotContain("<", rules);
         WithRegisteredFont(path => {
             FontRegistry.Register(family, path);
-            var registered = TrueTypeFont.TryLoadFromPath(path)!;
+            var registered = TrueTypeFont.TryLoadFromPath(path)!.WithSelectedFamily(family);
             var sheet = SvgRasterStyleSheet.Parse(new[] { rules });
             Assert.Equal(2, sheet.PaletteContext(TypographyPaletteCss.Name(2))!.Resolve(registered));
             var shared = SvgRasterStyleSheet.Parse(new[] { "@font-palette-values --shared{font-family:'Missing','CFX Palette';base-palette:1}@font-palette-values --shared{font-family:'Different';base-palette:2}" });
-            Assert.Equal(1, shared.PaletteContext("--shared")!.Resolve(registered));
+            Assert.Equal(1, shared.PaletteContext("--shared")!.Resolve(registered.WithSelectedFamily("CFX Palette")));
             Assert.Equal(0, shared.PaletteContext("--shared")!.Resolve(Font("language")));
         });
     }
@@ -170,6 +170,47 @@ public sealed class FontPaletteTests {
         Assert.Contains("base-palette:3", svg); Assert.Contains("base-palette:4", svg);
         Assert.Contains("font-palette:--cfx-font-palette-4", svg);
     }
+    [Fact]
+    public void ImportedPaletteKeepsTheChosenFamilyAfterFileCacheEviction() {
+        WithRegisteredFont(path => {
+            var svg = PaletteSvg("CFX Palette");
+            var expected = SvgRasterizer.ToImage(svg).Pixels;
+            var directory = Path.Combine(Path.GetTempPath(), "cfx-palette-eviction-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            try {
+                for (var i = 0; i < 130; i++) {
+                    var copy = Path.Combine(directory, i + ".ttf"); File.Copy(path, copy);
+                    TextLayoutEngine.Measure("😀", new TextStyle { Font = FontSpec.FromFile(copy), FontSize = 100 });
+                }
+                Assert.Equal(expected, SvgRasterizer.ToImage(svg).Pixels);
+            } finally { Directory.Delete(directory, recursive: true); }
+        });
+    }
+    [Fact]
+    public void NamedPalettesDistinguishRegisteredAliasesOfOnePhysicalFont() {
+        WithRegisteredFont(path => {
+            FontRegistry.Register("CFX Alias", path);
+            var svg = PaletteSvg("CFX Palette").Replace("</style>", "@font-palette-values --selected{font-family:'CFX Alias';base-palette:2}</style>");
+            Assert.Equal(Draw(Font().WithColorPalette(1)).ToOutputPixels(), SvgRasterizer.ToImage(svg).Pixels);
+            var alias = svg.Replace("font-family='CFX Palette'", "font-family='CFX Alias'");
+            Assert.Equal(Draw(Font().WithColorPalette(2)).ToOutputPixels(), SvgRasterizer.ToImage(alias).Pixels);
+            Assert.Equal(Draw(Font()).ToOutputPixels(), SvgRasterizer.ToImage(PaletteSvg("CFX Alias")).Pixels);
+        });
+    }
+    [Fact]
+    public void FallbackPaletteUsesItsSelectedAliasThroughLanguageAndVariationViews() {
+        WithRegisteredFont(path => {
+            FontRegistry.Register("CFX Alias", path);
+            var primary = Path.Combine(Path.GetTempPath(), "cfx-palette-primary-" + Guid.NewGuid().ToString("N") + ".ttf");
+            File.WriteAllBytes(primary, Bytes("language"));
+            try {
+                FontRegistry.Register("CFX Primary", primary);
+                var svg = PaletteSvg("CFX Primary, CFX Alias").Replace("</style>", "@font-palette-values --selected{font-family:'CFX Alias';base-palette:2}</style>").Replace("😀</text>", "A</text>").Replace("font-size='100'", "font-size='100' style='font-language-override:\"TRK\";font-variation-settings:\"wght\" 700'");
+                Assert.Equal(Draw(Font().WithColorPalette(2), "A").ToOutputPixels(), SvgRasterizer.ToImage(svg).Pixels);
+            } finally { File.Delete(primary); }
+        });
+    }
+    private static string PaletteSvg(string family) => "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='160'><style>@font-palette-values --selected{font-family:'CFX Palette';base-palette:1}</style><text x='40' y='80' font-family='" + family + "' font-size='100' fill='#00ff00' font-palette='--selected'>😀</text></svg>";
     [Fact]
     public void ChartGridPaginationAndHtmlExportNativePaletteRules() {
         WithRegisteredFont(_ => {
