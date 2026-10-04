@@ -125,7 +125,7 @@ public sealed partial class ChartOptions {
     /// Gets or sets how the PNG renderer fits text to the pixel grid.
     /// </summary>
     /// <remarks>
-    /// <see cref="Typography.TextHinting.Auto"/> (the default) snaps the baseline, x-height, and cap height of labels at 12 output pixels and below to whole pixels without changing their widths. Use <see cref="Typography.TextHinting.None"/> where exact outline geometry matters, such as animation frames.
+    /// <see cref="Typography.TextHinting.Auto"/> (the default) snaps the baseline, x-height, and cap height of labels at 12 output pixels and below to whole pixels without changing their widths. <see cref="Typography.TextHinting.Full"/> also fits narrow straight stems while retaining layout widths. Use <see cref="Typography.TextHinting.None"/> where exact outline geometry matters, such as animation frames.
     /// </remarks>
     public Typography.TextHinting PngTextHinting {
         get => _pngTextHinting;

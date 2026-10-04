@@ -306,7 +306,7 @@ internal sealed partial class TrueTypeFont {
     private bool DrawOutlineGlyph(RgbaCanvas canvas, ushort glyph, double x, double baseline, double scale, bool italic, ChartColor color, GlyphGridFit? fit, double boldOffset = 0) {
         var contours = ReadGlyphContours(glyph, new FontTransform(scale, italic ? ObliqueShear * scale : 0, 0, -scale, x, baseline), 0);
         if (contours.Count == 0) return false;
-        fit?.Apply(contours, XHeight * scale, CapHeight * scale);
+        fit?.Apply(contours, XHeight * scale, CapHeight * scale, !italic && !IsItalic);
         // Outlines are non-zero wound: variable fonts and composites overlap their contours, and an
         // even-odd fill would punch the overlaps out as holes.
         canvas.FillTextContours(contours, color, boldOffset);

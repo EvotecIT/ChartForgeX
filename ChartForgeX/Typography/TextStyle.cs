@@ -84,7 +84,8 @@ public sealed class TextStyle {
     /// Gets or sets how raster output fits this text to the pixel grid. <see cref="TextHinting.Auto"/>
     /// (the default) snaps the baseline, x-height, and cap height of text at 12 output pixels and
     /// below to whole pixels without changing its width; <see cref="TextHinting.None"/> draws the
-    /// outlines exactly. SVG and HTML output leave hinting to the browser.
+    /// outlines exactly. <see cref="TextHinting.Full"/> also fits and darkens narrow straight stems,
+    /// retaining the same layout. SVG and HTML output leave hinting to the browser.
     /// </summary>
     public TextHinting Hinting {
         get => _hinting;

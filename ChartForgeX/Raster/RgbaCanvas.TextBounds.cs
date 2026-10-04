@@ -6,7 +6,9 @@ namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
     /// <summary>Extends a temporary text surface to the actual positioned ink, retaining its logical origin.</summary>
-    private static ChartRect TextBufferBounds(string text, double size, TrueTypeFont? font, bool italic, bool emphasized, double width, double height, double padding = 0, double baselineOffset = 0) {
+    private ChartRect TextBufferBounds(string text, double size, TrueTypeFont? font, bool italic, bool emphasized, double width, double height, double padding = 0, double baselineOffset = 0) {
+        // Full fitting can move outer ink by less than one output pixel, including negative bearings.
+        if (TextHinting == TextHinting.Full && size * OutputScale <= GlyphGridFit.MaximumPixelSize) padding += 1.0 / OutputScale;
         var left = -padding; var top = -padding; var right = width + padding; var bottom = height + padding;
         var inkFace = emphasized ? EmphasisFace(font) ?? font : font;
         var ink = inkFace?.MeasureGlyphInk(TextShaper.Shape(inkFace, text, size), size, italic && !inkFace.IsItalic);

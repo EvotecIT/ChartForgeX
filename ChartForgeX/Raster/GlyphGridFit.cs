@@ -10,18 +10,21 @@ namespace ChartForgeX.Raster;
 /// the baseline of a run is moved to a whole output pixel, and each glyph is stretched vertically,
 /// piecewise, so its face's x-height and cap height also land on whole pixels. Nothing moves
 /// horizontally, so advances, measured widths, and wrapping are exactly those of unhinted text.
+/// Full mode additionally fits narrow straight stems without changing layout coordinates.
 /// It applies only at <see cref="MaximumPixelSize"/> output pixels and below, where half-covered
 /// rows blur stems and the x-height most.
 /// </summary>
-internal sealed class GlyphGridFit {
+internal sealed partial class GlyphGridFit {
     /// <summary>The largest font size, in output pixels, that is grid-fitted.</summary>
     internal const double MaximumPixelSize = 12;
 
     private readonly double _outputScale;
+    private readonly bool _fitStems;
 
-    private GlyphGridFit(double outputScale, double baseline) {
+    private GlyphGridFit(double outputScale, double baseline, bool fitStems) {
         _outputScale = outputScale;
         Baseline = baseline;
+        _fitStems = fitStems;
     }
 
     /// <summary>The run's baseline in canvas units, on a whole output pixel.</summary>
@@ -33,14 +36,15 @@ internal sealed class GlyphGridFit {
         double outputScale = canvas.OutputScale;
         var pixelSize = fontSize * outputScale;
         if (!(pixelSize > 0) || pixelSize > MaximumPixelSize + 1e-9 || double.IsNaN(baseline) || double.IsInfinity(baseline)) return null;
-        return new GlyphGridFit(outputScale, Math.Round(baseline * outputScale, MidpointRounding.AwayFromZero) / outputScale);
+        return new GlyphGridFit(outputScale, Math.Round(baseline * outputScale, MidpointRounding.AwayFromZero) / outputScale, canvas.TextHinting == TextHinting.Full);
     }
 
     /// <summary>
     /// Fits the contours of one glyph drawn on <see cref="Baseline"/>; <paramref name="xHeight"/> and
     /// <paramref name="capHeight"/> are its face's heights in canvas units at the drawn size.
     /// </summary>
-    internal void Apply(List<List<ChartPoint>> contours, double xHeight, double capHeight) {
+    internal void Apply(List<List<ChartPoint>> contours, double xHeight, double capHeight, bool allowStemFit = true) {
+        if (_fitStems && allowStemFit) FitStems(contours);
         var xh = xHeight * _outputScale;
         var cap = capHeight * _outputScale;
         if (!(xh > 0)) return;
