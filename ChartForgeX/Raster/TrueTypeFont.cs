@@ -27,6 +27,7 @@ internal sealed partial class TrueTypeFont {
     private readonly int _hmtx;
     private readonly OpenTypeLayout _layout;
     private readonly ColorFontData? _colors;
+    private readonly BitmapFontData? _monochromeBitmaps;
     private readonly IReadOnlyDictionary<string, int> _tableLengths;
     private readonly int _kern;
     private readonly int _loca;
@@ -95,6 +96,8 @@ internal sealed partial class TrueTypeFont {
         var layout = root?._layout ?? new OpenTypeLayout(data, tables, lengths, _numGlyphs);
         _layout = languageTag == null && _variation == null ? layout : layout.WithContext(languageTag, _variation);
         _colors = root?._colors ?? ColorFontData.Create(data, tables, lengths, _numGlyphs, _unitsPerEm);
+        _monochromeBitmaps = root != null ? root._monochromeBitmaps : tables.ContainsKey("EBLC") && tables.ContainsKey("EBDT")
+            ? new BitmapFontData(data, tables, lengths, _numGlyphs, _unitsPerEm, monochrome: true) : null;
     }
 
     public static TrueTypeFont? TryLoadDefault() {
@@ -312,6 +315,8 @@ internal sealed partial class TrueTypeFont {
             if (colored != (canvas.GlyphPaintMode == FontGlyphPaintMode.ColourOnly)) return true;
         }
         if (DrawColorGlyph(canvas, glyph, x, baseline, scale, italic, color)) return true;
+        if (canvas.TextHinting == TextHinting.Full && !italic && boldOffset == 0
+            && DrawEmbeddedGlyph(canvas, glyph, x, baseline, scale, color)) return true;
         return DrawOutlineGlyph(canvas, glyph, x, baseline, scale, italic, color, fit, boldOffset);
     }
 

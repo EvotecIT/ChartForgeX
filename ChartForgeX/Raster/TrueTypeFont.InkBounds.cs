@@ -9,7 +9,7 @@ internal sealed partial class TrueTypeFont {
     private Dictionary<ushort, ChartRect?>? _glyphInkBounds;
 
     /// <summary>The painted run's bounds relative to its text origin, including positioned marks and fallback metrics.</summary>
-    internal ChartRect? MeasureGlyphInk(IReadOnlyList<ShapedGlyph> glyphs, double size, bool italic) {
+    internal ChartRect? MeasureGlyphInk(IReadOnlyList<ShapedGlyph> glyphs, double size, bool italic, double bitmapDensity = 0) {
         var left = double.PositiveInfinity; var top = double.PositiveInfinity;
         var right = double.NegativeInfinity; var bottom = double.NegativeInfinity;
         var cursor = 0.0; var baseline = Ascent(size); ShapedGlyph? previous = null;
@@ -17,6 +17,18 @@ internal sealed partial class TrueTypeFont {
             var scale = glyph.Face.ScaleFor(size); var advance = GlyphAdvance(glyph, previous, size);
             cursor += advance - GlyphAdvance(glyph, null, size);
             var box = glyph.Face.GlyphInk(glyph.Glyph);
+            if (bitmapDensity > 0 && !italic) {
+                var bitmap = glyph.Face.EmbeddedGlyph(glyph.Glyph, size * bitmapDensity);
+                if (bitmap != null) {
+                    var b = bitmap.Bounds;
+                    if (!box.HasValue) box = b;
+                    else {
+                        var a = box.Value; var l = Math.Min(a.X, b.X); var t = Math.Min(a.Y, b.Y);
+                        box = new ChartRect(l, t, Math.Max(a.X + a.Width, b.X + b.Width) - l,
+                            Math.Max(a.Y + a.Height, b.Y + b.Height) - t);
+                    }
+                }
+            }
             if (box.HasValue) {
                 var bounds = box.Value; var shear = italic && !glyph.Face.IsItalic ? ObliqueShear : 0;
                 var x1 = bounds.X + Math.Min(shear * bounds.Y, shear * (bounds.Y + bounds.Height));

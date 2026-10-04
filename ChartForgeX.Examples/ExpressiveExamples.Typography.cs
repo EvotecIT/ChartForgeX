@@ -4,6 +4,20 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
+    private static Chart CreateEmbeddedBitmapShowcase() {
+        var chart = Chart.Create()
+            .WithTitle("Authored small-text strikes")
+            .WithSubtitle("Full fitting uses exact-size embedded pixels when supplied by the selected font")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(960, 460)
+            .WithXAxis("Calibri when installed · ordinary outlines otherwise")
+            .WithYAxis("Samples")
+            .WithTickLabelStyle(style => style.WithFontFamily("Calibri, 'Noto Sans', sans-serif").WithFontSize(12))
+            .WithXLabels("Report 12", "Chart AV", "office", "Value 123")
+            .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+        chart.Options.PngTextHinting = TextHinting.Full;
+        return chart;
+    }
     private static Chart CreateFontPaletteShowcase() => Chart.Create()
         .WithTitle("Colour-font palettes in report labels")
         .WithSubtitle("Palette 3 uses the font's alternate colours; fonts without that palette keep their default")

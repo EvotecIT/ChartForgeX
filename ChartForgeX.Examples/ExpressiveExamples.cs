@@ -29,6 +29,8 @@ internal static partial class ExpressiveExamples {
         SaveChart(CreateVariableFontShowcase(), output, "variable-font-showcase", pngOutputScale);
         SaveChart(CreateColourEmojiShowcase(), output, "colour-emoji-showcase", pngOutputScale);
         SaveChart(CreateFontPaletteShowcase(), output, "font-palette-showcase", pngOutputScale);
+        // Keep 12px labels at the authored 12px strike size in this small-text example.
+        SaveChart(CreateEmbeddedBitmapShowcase(), output, "font-bitmap-showcase", ChartPngOutputScale.Standard);
         SaveChart(CreateControlPartition(), output, "control-partition-sunburst-aurora", pngOutputScale);
         SaveChart(CreateAudiencePictorial(), output, "audience-pictorial-candy", pngOutputScale);
         SaveChart(CreateSupportThemesWordCloud(), output, "support-themes-word-cloud-editorial", pngOutputScale);
