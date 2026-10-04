@@ -130,6 +130,18 @@ public sealed class ChartMarkStyleParityTests {
         Assert.InRange(Alpha(result.Image, transform == 3 ? 29 : transform == 2 ? 74 : 69, 14), 129, 135);
     }
 
+    [Theory]
+    [InlineData("0.00001", "matrix(10000000 0 0 1 0 0)")]
+    [InlineData("10000000", "matrix(0.00001 0 0 0.00001 0 0)")]
+    public void CompensatedGradientCoordinatesRetainThePaintedSpan(string end, string transform) {
+        const string template = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='20'><defs><linearGradient id='g' gradientUnits='userSpaceOnUse' x2='{0}' gradientTransform='{1}'><stop stop-color='#1e50aa'/><stop offset='1' stop-color='#1e50aa' stop-opacity='0'/></linearGradient></defs><rect width='100' height='20' fill='url(#g)'/></svg>";
+        var expected = SvgRasterizer.Rasterize(string.Format(CultureInfo.InvariantCulture, template, "100", "matrix(1 0 0 1 0 0)"), 100, 20);
+        var actual = SvgRasterizer.Rasterize(string.Format(CultureInfo.InvariantCulture, template, end, transform), 100, 20);
+        Assert.Empty(actual.Diagnostics);
+        Assert.InRange(Math.Abs(Alpha(actual.Image, 25, 10) - Alpha(expected.Image, 25, 10)), 0, 1);
+        Assert.InRange(Math.Abs(Alpha(actual.Image, 75, 10) - Alpha(expected.Image, 75, 10)), 0, 1);
+    }
+
     [Fact]
     public void SunburstFillKeepsItsSvgOpacity() {
         var chart = ChartMarkParityFixture.Create("sunburst");
