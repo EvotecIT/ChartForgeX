@@ -123,7 +123,8 @@ public sealed class SvgChartGridRenderer {
     private static string StyleWeight(TextStyleOverride style, string fallback) => style.FontWeight ?? fallback;
 
     private static void WriteTextStyleAttributes(SvgMarkupWriter writer, TextStyleOverride style) {
-        if (style.OpenTypeLanguageTag != null) writer.Attribute("style", style.OpenTypeLanguageTag == "normal" ? "font-language-override:normal" : "font-language-override:'" + style.OpenTypeLanguageTag + "'");
+        var css = TypographyCss.Role(style);
+        if (css.Length != 0) writer.Attribute("style", css);
         if (style.Italic) writer.Attribute("font-style", "italic");
         var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
         var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
@@ -190,9 +191,10 @@ public sealed class SvgChartGridRenderer {
 
     // An explicit language requests font-dependent glyph geometry; otherwise retain portable header estimates.
     private static double MeasureHeaderText(string text, double size, TextStyleOverride style, string family, string weight) {
-        if (style.OpenTypeLanguageTag == null) return EstimateTextWidth(text, size);
+        if (style.OpenTypeLanguageTag == null && style.Variations == null) return EstimateTextWidth(text, size);
         var resolved = new TextStyle { Font = FontSpec.FromFamily(StyleFontFamily(style, family)), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
         resolved.Font.Italic = style.Italic;
+        resolved.Font.Variations = style.Variations ?? FontVariationSettings.Default;
         resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(TypographyFontResolver.ParseCssWeight(StyleWeight(style, weight), 400));
         return TextLayoutEngine.Measure(text, resolved).Width;
     }

@@ -9,6 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Fixtures\OpenType\*.ttf" />
+    <EmbeddedResource Include="Fixtures\OpenType\variable-compact.otf" />
+    <EmbeddedResource Include="Fixtures\OpenType\variable-malformed.otf" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
     <ProjectReference Include="..\ChartForgeX.Examples\ChartForgeX.Examples.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />

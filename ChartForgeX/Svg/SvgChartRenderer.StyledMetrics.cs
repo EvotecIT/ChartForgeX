@@ -16,6 +16,7 @@ public sealed partial class SvgChartRenderer {
             OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag
         };
         resolved.Font.Italic = style.Italic;
+        resolved.Font.Variations = style.Variations ?? FontVariationSettings.Default;
         var weight = style.ResolveFontWeight(emphasized ? 700 : 400);
         resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(weight);
         return TextLayoutEngine.Measure(text, resolved).Width;

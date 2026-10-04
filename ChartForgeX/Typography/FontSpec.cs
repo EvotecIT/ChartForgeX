@@ -11,6 +11,14 @@ public sealed class FontSpec {
     private string? _faceName;
     private int? _collectionIndex;
     private int _weight = 400;
+    private FontVariationSettings _variations = FontVariationSettings.Default;
+
+    /// <summary>Gets or sets immutable OpenType axis coordinates. The default uses the face's
+    /// default instance; Weight and Italic retain their existing face-selection policy.</summary>
+    public FontVariationSettings Variations { get => _variations; set => _variations = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Selects an explicit variation axis in design units.</summary>
+    public FontSpec WithVariation(string tag, double value) { Variations = Variations.WithAxis(tag, value); return this; }
 
     /// <summary>Gets or sets the CSS-compatible family or fallback stack.</summary>
     public string Family {
@@ -61,7 +69,8 @@ public sealed class FontSpec {
         CollectionIndex = CollectionIndex,
         FaceName = FaceName,
         Weight = Weight,
-        Italic = Italic
+        Italic = Italic,
+        Variations = Variations
     };
 
     /// <summary>Creates a system sans-serif font specification.</summary>

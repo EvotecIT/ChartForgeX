@@ -350,7 +350,7 @@ internal static partial class SvgRasterRenderer {
     // drawn through ImageComposition or VisualCanvas pick the same installed or registered face.
     // Without a font-family the stack is plain sans-serif, the face unstyled SVG text always used.
     private static ResolvedTypeface SvgTextFace(SvgRasterStyle style) =>
-        TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, IsItalic(style.FontStyle)), style.OpenTypeLanguageTag);
+        TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, IsItalic(style.FontStyle)), style.OpenTypeLanguageTag), style.Variations);
 
     private static bool IsItalic(string value) =>
         value.IndexOf("italic", StringComparison.OrdinalIgnoreCase) >= 0 || value.IndexOf("oblique", StringComparison.OrdinalIgnoreCase) >= 0;

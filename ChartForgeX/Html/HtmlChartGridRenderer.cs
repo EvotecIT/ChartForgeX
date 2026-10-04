@@ -142,7 +142,8 @@ public sealed class HtmlChartGridRenderer {
         css.Append(";font-size:").Append(fontSize.ToString(CultureInfo.InvariantCulture)).Append("px");
         css.Append(";font-weight:").Append(CssToken(style.FontWeight ?? fallbackWeight));
         if (style.Italic) css.Append(";font-style:italic");
-        if (style.OpenTypeLanguageTag != null) css.Append(";font-language-override:").Append(style.OpenTypeLanguageTag == "normal" ? "normal" : "'" + style.OpenTypeLanguageTag + "'");
+        var fontCss = TypographyCss.Role(style);
+        if (fontCss.Length != 0) css.Append(';').Append(fontCss);
         var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
         var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
         if (!includeUnderline) underline = TextDecorationStyle.None;

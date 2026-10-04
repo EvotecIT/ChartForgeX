@@ -24,6 +24,9 @@ internal sealed partial class TrueTypeFont {
 
         var contours = new List<List<ChartPoint>>();
         if (_glyf < 0 || _loca < 0 || glyph >= _numGlyphs || depth > 8) return contours;
+        // The left phantom sets the instance's horizontal origin. Apply it only
+        // to the whole glyph; nested components retain their own placement.
+        if (depth == 0 && _glyphVariations != null) transform = transform.Compose(1, 0, 0, 1, -GlyphOrigin(glyph), 0);
         var glyphStart = GlyphOffset(glyph);
         var glyphEnd = GlyphOffset((ushort)(glyph + 1));
         if (glyphStart == glyphEnd) return contours;
@@ -31,7 +34,7 @@ internal sealed partial class TrueTypeFont {
         if (offset + 10 > _data.Length) return contours;
         var contourCount = ReadInt16(_data, offset);
         if (contourCount < 0) {
-            ReadCompositeGlyphContours(offset, transform, depth, contours);
+            ReadCompositeGlyphContours(offset, transform, depth, contours, _glyphVariations?.Get(glyph));
             return contours;
         }
 
@@ -56,13 +59,14 @@ internal sealed partial class TrueTypeFont {
         DecodeCoordinates(_data, flags, xs, ref p, true);
         var ys = new short[pointCount];
         DecodeCoordinates(_data, flags, ys, ref p, false);
+        var variation = _glyphVariations?.Get(glyph);
 
         var start = 0;
         for (var c = 0; c < contourCount; c++) {
             var end = endPts[c];
             var points = new List<GlyphPoint>();
             for (var i = start; i <= end; i++) {
-                var point = transform.Apply(xs[i], ys[i]);
+                var point = transform.Apply(xs[i] + (variation?.X[i] ?? 0), ys[i] + (variation?.Y[i] ?? 0));
                 points.Add(new GlyphPoint(point.X, point.Y, (flags[i] & 1) != 0));
             }
 
@@ -85,7 +89,7 @@ internal sealed partial class TrueTypeFont {
         return top;
     }
 
-    private void ReadCompositeGlyphContours(int glyphOffset, FontTransform transform, int depth, List<List<ChartPoint>> contours) {
+    private void ReadCompositeGlyphContours(int glyphOffset, FontTransform transform, int depth, List<List<ChartPoint>> contours, GlyphDeltas? variation) {
         const ushort argWords = 1;
         const ushort argsAreXy = 2;
         const ushort haveScale = 8;
@@ -94,6 +98,7 @@ internal sealed partial class TrueTypeFont {
         const ushort haveTwoByTwo = 128;
 
         var p = glyphOffset + 10;
+        var component = 0;
         ushort flags;
         do {
             if (p + 4 > _data.Length) return;
@@ -116,6 +121,8 @@ internal sealed partial class TrueTypeFont {
 
             var dx = (flags & argsAreXy) != 0 ? arg1 : 0;
             var dy = (flags & argsAreXy) != 0 ? arg2 : 0;
+            if ((flags & argsAreXy) != 0 && variation != null && component < variation.X.Length - 4) { dx += variation.X[component]; dy += variation.Y[component]; }
+            component++;
             var a = 1.0;
             var b = 0.0;
             var c = 0.0;
@@ -136,6 +143,14 @@ internal sealed partial class TrueTypeFont {
                 c = ReadF2Dot14(_data, p + 4);
                 d = ReadF2Dot14(_data, p + 6);
                 p += 8;
+            }
+
+            // SCALED_COMPONENT_OFFSET scales both the authored displacement and its
+            // gvar component-point delta before composing the parent transform.
+            if ((flags & argsAreXy) != 0 && (flags & 0x800) != 0 && (flags & 0x1000) == 0) {
+                var originalX = dx;
+                dx = a * dx + b * dy;
+                dy = c * originalX + d * dy;
             }
 
             contours.AddRange(ReadGlyphContours(componentGlyph, transform.Compose(a, b, c, d, dx, dy), depth + 1));
