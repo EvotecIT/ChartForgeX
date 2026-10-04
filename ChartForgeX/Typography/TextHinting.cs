@@ -15,5 +15,13 @@ public enum TextHinting {
     /// Every glyph is drawn exactly as designed, at any size: use it where outline geometry matters
     /// more than crisp rows, such as animation frames that move text by fractions of a pixel.
     /// </summary>
-    None = 1
+    None = 1,
+
+    /// <summary>
+    /// Adds horizontal fitting and limited darkening of narrow, straight stems to <see cref="Auto"/>
+    /// at 12 output pixels and below. Glyph ink can move by less than one output pixel; advances,
+    /// measurement, wrapping, and fitting retain the font's layout. Slanted and colour glyphs keep
+    /// their existing outline policy. Font instruction programs are not executed.
+    /// </summary>
+    Full = 2
 }

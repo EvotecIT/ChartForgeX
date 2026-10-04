@@ -14,18 +14,23 @@ internal static partial class ExpressiveExamples {
         .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Variable', 'Source Serif 4', sans-serif").WithVariation("wght", 650).WithVariation("opsz", 20).WithFontSize(26))
         .WithXLabels("Variable AV", "office", "Hé xÁ", "Report 123")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
-    private static Chart CreateSmallTextLayoutShowcase() => Chart.Create()
-        .WithTitle("Small report labels and attached marks")
-        .WithSubtitle("Font-defined positioning follows the logical text size when export resolution changes")
-        .WithTheme(ChartTheme.ReportLight())
-        .WithSize(960, 460)
-        .WithXAxis("Labels at 12 logical pixels")
-        .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Noto Sans', sans-serif").WithFontSize(12))
-        .WithDataLabelStyle(style => style.WithFontSize(10))
-        .WithXLabels("a\u0301", "i\u0307", "a\u0301\u0300", "بِبّ")
-        .WithDataLabels()
-        .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+    private static Chart CreateSmallTextLayoutShowcase() {
+        var chart = Chart.Create()
+            .WithTitle("Small report labels and attached marks")
+            .WithSubtitle("Font-defined positioning follows the logical text size when export resolution changes")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(960, 460)
+            .WithXAxis("Labels at 12 logical pixels")
+            .WithYAxis("Samples")
+            .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Noto Sans', sans-serif").WithFontSize(12))
+            .WithDataLabelStyle(style => style.WithFontSize(10))
+            .WithXLabels("a\u0301", "i\u0307", "a\u0301\u0300", "بِبّ")
+            .WithDataLabels()
+            .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
+        // Full fitting is visible at 1x export; 2x labels exceed the small-text pixel-size threshold.
+        chart.Options.PngTextHinting = TextHinting.Full;
+        return chart;
+    }
 
     private static Chart CreateLanguageFormsShowcase() => Chart.Create()
         .WithTitle("Localized font forms in report labels")
