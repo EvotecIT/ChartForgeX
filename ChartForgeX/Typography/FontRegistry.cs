@@ -6,7 +6,7 @@ using ChartForgeX.Raster;
 namespace ChartForgeX.Typography;
 
 /// <summary>
-/// Font files an application registers once and then names by family everywhere raster text is
+/// Font faces an application registers once from files, bytes, or streams and then names by family everywhere raster text is
 /// drawn: chart, grid, topology, and visual block themes, <see cref="FontSpec.FromFamily"/> text,
 /// VisualCanvas themes, and SVG <c>font-family</c> in <c>SvgRasterizer</c>.
 /// </summary>
@@ -48,13 +48,60 @@ public static class FontRegistry {
         Add(new[] { new InstalledFontFace(fullPath, font.CollectionIndex, family.Trim(), null, weight, 5, italic) });
     }
 
+    /// <summary>Registers one OpenType face from bytes under a family name, without filesystem access.</summary>
+    /// <param name="family">The family name used by font stacks, including generic names such as <c>sans-serif</c>.</param>
+    /// <param name="data">The complete TrueType, CFF, or OpenType collection data. Registration retains its own copy.</param>
+    /// <param name="weight">The CSS weight of this face, 1 through 1000.</param>
+    /// <param name="italic">True when this face is the italic of the family.</param>
+    /// <param name="collectionIndex">The collection face index; the first usable text or colour face when omitted.</param>
+    /// <remarks>The caller may modify the input after registration. Registering the same weight and slant replaces the earlier face and invalidates font resolution caches.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
+    /// <exception cref="ArgumentException">The family is empty or the data is not a readable OpenType text or colour font.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The weight is outside 1 through 1000.</exception>
+    public static void Register(string family, byte[] data, int weight = 400, bool italic = false, int? collectionIndex = null) {
+        ValidateMemoryRegistration(family, weight);
+        if (data == null) throw new ArgumentNullException(nameof(data));
+        RegisterOwnedBytes(family, (byte[])data.Clone(), weight, italic, collectionIndex, nameof(data));
+    }
+
+    /// <summary>Registers one OpenType face from a readable stream, without filesystem access.</summary>
+    /// <param name="family">The family name used by font stacks, including generic names such as <c>sans-serif</c>.</param>
+    /// <param name="stream">A readable stream containing a complete font from its current position to its end. It need not support seeking.</param>
+    /// <param name="weight">The CSS weight of this face, 1 through 1000.</param>
+    /// <param name="italic">True when this face is the italic of the family.</param>
+    /// <param name="collectionIndex">The collection face index; the first usable text or colour face when omitted.</param>
+    /// <remarks>Registration consumes the remaining bytes synchronously, retains its own data, and leaves the stream open. The face has the same matching and replacement behavior as file registration.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+    /// <exception cref="ArgumentException">The family is empty, the stream is unreadable, or its remaining data is not a readable OpenType text or colour font.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The weight is outside 1 through 1000.</exception>
+    /// <exception cref="IOException">Reading the stream fails.</exception>
+    public static void Register(string family, Stream stream, int weight = 400, bool italic = false, int? collectionIndex = null) {
+        ValidateMemoryRegistration(family, weight);
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        if (!stream.CanRead) throw new ArgumentException("Font stream must be readable.", nameof(stream));
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        RegisterOwnedBytes(family, buffer.ToArray(), weight, italic, collectionIndex, nameof(stream));
+    }
+
+    private static void ValidateMemoryRegistration(string family, int weight) {
+        if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("Font family must not be empty.", nameof(family));
+        if (weight < 1 || weight > 1000) throw new ArgumentOutOfRangeException(nameof(weight), weight, "Font weight must be from 1 through 1000.");
+    }
+
+    private static void RegisterOwnedBytes(string family, byte[] data, int weight, bool italic, int? collectionIndex, string parameter) {
+        var font = TrueTypeFont.TryLoad(data, collectionIndex);
+        if (font == null || !font.IsTextFace) throw new ArgumentException("The data is not a readable OpenType text or colour font.", parameter);
+        Add(new[] { new InstalledFontFace(null, font.CollectionIndex, family.Trim(), null, weight, 5, italic, font) });
+    }
+
     /// <summary>Registers every face of a font file under the family, weight, and slant the file itself declares.</summary>
     /// <returns>The number of faces registered.</returns>
     /// <exception cref="ArgumentException">The file declares no readable OpenType face.</exception>
     public static int RegisterFile(string path) {
         var faces = new List<InstalledFontFace>();
         InstalledFontCatalog.ReadFaces(FullPath(path), faces);
-        faces.RemoveAll(face => TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex)?.IsTextFace != true);
+        faces.RemoveAll(face => face.LoadFont()?.IsTextFace != true);
         if (faces.Count == 0) throw new ArgumentException("The file declares no readable OpenType text face: " + path, nameof(path));
         Add(faces);
         return faces.Count;
@@ -68,7 +115,7 @@ public static class FontRegistry {
         var faces = new List<InstalledFontFace>();
         foreach (var face in InstalledFontCatalog.Index(new[] { Path.GetFullPath(directory) }).Values) {
             foreach (var candidate in face) {
-                if (!faces.Contains(candidate) && TrueTypeFont.TryLoadFromPath(candidate.Path, candidate.CollectionIndex)?.IsTextFace == true) faces.Add(candidate);
+                if (!faces.Contains(candidate) && candidate.LoadFont()?.IsTextFace == true) faces.Add(candidate);
             }
         }
 

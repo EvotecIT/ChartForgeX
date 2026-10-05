@@ -153,8 +153,10 @@ internal static class TypographyFontResolver {
             var name = FamilyName(parts[index]);
             if (name.Length == 0 || IsPlatformAlias(name) || IsGenericFamily(name)) continue;
             var face = FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic);
-            if (face != null && (!string.Equals(face.Path, resolved.Path, StringComparison.OrdinalIgnoreCase) ||
-                face.CollectionIndex != resolved.Font?.CollectionIndex) && !families.Contains(name)) families.Add(name);
+            if (face != null && (face.MemoryFont != null
+                ? !ReferenceEquals(face.MemoryFont.Root, resolved.Font?.Root)
+                : !string.Equals(face.Path, resolved.Path, StringComparison.OrdinalIgnoreCase) || face.CollectionIndex != resolved.Font?.CollectionIndex)
+                && !families.Contains(name)) families.Add(name);
         }
 
         return families.Count == 0 || resolved.Font == null
@@ -165,7 +167,7 @@ internal static class TypographyFontResolver {
     private static string FamilyName(string part) => part.Trim().Trim('"', '\'').Trim();
 
     private static bool TryLoad(InstalledFontFace? face, int weight, bool italic, out ResolvedTypeface resolved, string? selectedFamily = null) {
-        var loaded = face == null ? null : TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
+        var loaded = face?.LoadFont();
         if (loaded != null) loaded = loaded.WithSelectedFamily(selectedFamily ?? face!.Family);
         resolved = loaded != null && loaded.IsTextFace ? new ResolvedTypeface(loaded, weight >= 600 && face!.Weight < 600, italic && !face!.Italic, face!.Path) : default;
         return loaded != null && loaded.IsTextFace;

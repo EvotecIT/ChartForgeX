@@ -7,7 +7,7 @@ namespace ChartForgeX.Raster;
 
 /// <summary>One installed OpenType face (TrueType or CFF outlines), as described by its own name and OS/2 tables.</summary>
 internal sealed class InstalledFontFace {
-    public InstalledFontFace(string path, int? collectionIndex, string family, string? legacyFamily, int weight, int width, bool italic) {
+    public InstalledFontFace(string? path, int? collectionIndex, string family, string? legacyFamily, int weight, int width, bool italic, TrueTypeFont? memoryFont = null) {
         Path = path;
         CollectionIndex = collectionIndex;
         Family = family;
@@ -15,9 +15,14 @@ internal sealed class InstalledFontFace {
         Weight = weight;
         Width = width;
         Italic = italic;
+        MemoryFont = memoryFont;
     }
 
-    public string Path { get; }
+    public string? Path { get; }
+    /// <summary>The owned in-memory face, when registration did not use a file.</summary>
+    public TrueTypeFont? MemoryFont { get; }
+    /// <summary>Loads a file face through the shared cache, or returns the already parsed memory face.</summary>
+    public TrueTypeFont? LoadFont() => MemoryFont ?? (Path == null ? null : TrueTypeFont.TryLoadFromPath(Path, CollectionIndex));
     public int? CollectionIndex { get; }
     /// <summary>The typographic family, which groups every weight ("Segoe UI").</summary>
     public string Family { get; }
