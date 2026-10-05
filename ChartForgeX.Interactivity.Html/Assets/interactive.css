@@ -649,10 +649,11 @@ body {
   box-shadow: var(--cfx-tooltip-shadow); padding: 8px 12px;
   font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
 }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--cfx-tooltip-line); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta { grid-template-columns: 1fr auto; gap: 6px 24px; color: var(--cfx-tooltip-text); }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dt { color: inherit; font-weight: 400; }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dd { text-align: right; font-variant-numeric: tabular-nums; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dt { display: flex; align-items: center; gap: 6px; color: inherit; font-weight: 400; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dd { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__swatch { width: 10px; height: 10px; flex: 0 0 10px; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line { background: none; box-shadow: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
