@@ -67,7 +67,7 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y", labelY + labelFontSize / 3.0)
                     .Attribute("text-anchor", "end")
                     .Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss())
-                    .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle)))
+                    .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
                     .Attribute("font-size", labelFontSize)
                     .Attribute("font-weight", StyleWeight(tickStyle, "700"));
                 WriteSvgTextStyleAttributes(writer, tickStyle);
@@ -104,7 +104,7 @@ public sealed partial class SvgChartRenderer {
                         .Attribute("x", startX + symbolArea + 12)
                         .Attribute("y", labelY + valueFontSize / 3.0)
                         .Attribute("fill", StyleColor(dataStyle, t.Text).ToCss())
-                        .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, dataStyle)))
+                        .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                         .Attribute("font-size", valueFontSize)
                         .Attribute("font-weight", StyleWeight(dataStyle, "800"));
                     WriteSvgTextStyleAttributes(writer, dataStyle);

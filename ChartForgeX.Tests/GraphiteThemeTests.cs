@@ -54,7 +54,8 @@ public sealed class GraphiteThemeTests {
         Assert.All(theme.Palette, colour => Assert.DoesNotContain(colour, state));
         Assert.All(theme.Palette.Concat(theme.SequentialRamp).Concat(state), colour =>
             Assert.True(ChartColorMath.ContrastRatio(ChartColorMath.AccessibleTextOnBackground(colour), colour) >= 4.5));
-        var lightness = theme.SequentialRamp.Select(ChartColorMath.RelativeLuminance).ToArray();
+        // Contrast against black is monotonic in linear luminance, and therefore in CIELAB L*.
+        var lightness = theme.SequentialRamp.Select(colour => ChartColorMath.ContrastRatio(ChartColor.Black, colour)).ToArray();
         for (var i = 1; i < lightness.Length; i++) Assert.True(dark ? lightness[i] > lightness[i - 1] : lightness[i] < lightness[i - 1]);
     }
 }

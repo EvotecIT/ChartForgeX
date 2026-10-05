@@ -20,6 +20,7 @@ public sealed partial class SvgChartRenderer {
             var position=count==1?0:4.0*i/(count-1); var step=Math.Min(3,(int)position);
             var opacity=stageOpacity[step]+(stageOpacity[step+1]-stageOpacity[step])*(position-step); var retention=s.Points[0].Y<=0?0:p.Y/s.Points[0].Y;
             var colour=i<s.PointColors.Count&&s.PointColors[i].HasValue?s.PointColors[i]!.Value:s.Color??t.Palette[0];
+            w.StartElement("g").Attribute("data-cfx-role","funnel-stage").Attribute("data-cfx-series",0).Attribute("data-cfx-point",i).Attribute("data-cfx-label-lane","outside").EndStartElement();
             w.StartElement("rect").Attribute("data-cfx-role","funnel-segment").Attribute("data-cfx-series",0).Attribute("data-cfx-point",i).Attribute("data-cfx-label",FormatX(chart,p.X)).Attribute("data-cfx-value",p.Y).Attribute("data-cfx-retention",retention).Attribute("data-cfx-dropoff",dropOff).Attribute("role","img").Attribute("aria-label",FormatX(chart,p.X)+": "+p.Y.ToString("G17",System.Globalization.CultureInfo.InvariantCulture)).Attribute("x",cx-width/2).Attribute("y",y).Attribute("width",width).Attribute("height",h).Attribute("rx",2).Attribute("fill",colour.ToCss()).Attribute("fill-opacity",opacity).EndEmptyElement();
             if(s.ShowDataLabels!=false) {
                 style=style.Clone();
@@ -30,6 +31,7 @@ public sealed partial class SvgChartRenderer {
                 DrawSvgTextLeft(w,chart,"funnel-label",FormatX(chart,p.X),plot.Left+bandWidth+20,labelY,t.Text,labelSize,labelWidth,"400",style);
                 DrawSvgTextLeft(w,chart,"funnel-value",FormatValue(chart,p.Y)+" · "+FormatPercent(retention),plot.Left+bandWidth+20,valueY,t.MutedText,valueSize,labelWidth,"400",style);
             }
+            w.EndElement();
         }
         w.EndElement(); sb.Append(w.Build());
     }

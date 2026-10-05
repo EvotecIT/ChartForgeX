@@ -71,6 +71,9 @@ internal sealed partial class ChartLabelScene {
         var series = (string?)entry.Element.Attribute("data-cfx-series");
         var point = (string?)entry.Element.Attribute("data-cfx-point");
         var labelRole = LabelRole(entry.Element);
+        if (labelRole.StartsWith("funnel-", StringComparison.Ordinal)) {
+            point ??= entry.Element.Ancestors().Select(e => (string?)e.Attribute("data-cfx-point")).FirstOrDefault(value => value != null);
+        }
         if (labelRole == "dotted-map-label" && point != null) {
             return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "dotted-map-point" && (string?)mark.Element.Attribute("data-cfx-point") == point);
         }

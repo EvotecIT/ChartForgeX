@@ -475,7 +475,7 @@ public sealed partial class SvgChartRenderer {
             if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
                     var label = StyleText(tickStyle, FormatYAxisValue(chart, yv, yTicks));
-                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - (t.UseGraphiteLayout ? 8 : 12)).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
+                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - (t.UseGraphiteLayout ? 8 : 12)).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
                     WriteSvgTextStyleAttributes(writer, tickStyle);
                     WriteSvgStyledTextContent(writer, tickStyle, label).EndElement().Line();
                 });
@@ -520,7 +520,7 @@ public sealed partial class SvgChartRenderer {
             AppendSvg(sb, writer => {
                 writer.StartElement("text");
                 writer.Attribute("data-cfx-role", string.IsNullOrWhiteSpace(role) ? "x-axis-label" : role);
-                writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
+                writer.Attribute("x", safeX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
                 WriteSvgTextStyleAttributes(writer, style);
                 WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
             });
@@ -532,7 +532,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, writer => {
             writer.StartElement("text");
             writer.Attribute("data-cfx-role", string.IsNullOrWhiteSpace(role) ? "x-axis-label" : role);
-            writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
+            writer.Attribute("x", rotatedX).Attribute("y", y).Attribute("text-anchor", rotatedAnchor).Attribute("dominant-baseline", "middle").Attribute("transform", $"rotate({F(angle)} {F(rotatedX)} {F(y)})").Attribute("fill", labelColor.ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "400"));
             WriteSvgTextStyleAttributes(writer, style);
             WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
         });

@@ -154,7 +154,7 @@ internal sealed partial class ChartLabelScene {
             var candidates = Candidates(label, role);
             var request = new LabelPlacementRequest(label.Text, new ChartPoint(label.Box.X, label.Box.Y), label.Style, candidates, Priority(role)) {
                 AssociatedMarkId = associated?.Id,
-                Bounds = role is "funnel-label" or "funnel-value" ? associated?.Shape.Bounds : null,
+                Bounds = role is "funnel-label" or "funnel-value" ? FunnelLabelBounds(label, associated) : null,
                 HasLeaderLine = CanMove(role) && !label.IsLegendItem,
                 Fallback = label.IsLegendItem || label.Element.HasElements || !CanMove(role) ? LabelFallbackRule.Drop : LabelFallbackRule.EllipsisThenDrop,
                 MeasuredSize = new TextMetrics(label.Box.Width, label.Box.Height, label.Box.Height),
@@ -167,6 +167,15 @@ internal sealed partial class ChartLabelScene {
         _document.Root!.SetAttributeValue("data-cfx-label-layout", "measured");
         _document.Root.SetAttributeValue("data-cfx-label-count", results.Count);
         _document.Root.SetAttributeValue("data-cfx-label-dropped", results.Count(label => label.IsDropped));
+    }
+
+    private ChartRect? FunnelLabelBounds(Entry label, Mark? associated) {
+        if (associated == null) return null;
+        var stage = associated.Shape.Bounds;
+        var outside = label.Element.AncestorsAndSelf().Any(e => (string?)e.Attribute("data-cfx-label-lane") == "outside");
+        return outside
+            ? new ChartRect(stage.Right, stage.Top, Math.Max(1, _bounds.Right - stage.Right), stage.Height)
+            : stage;
     }
 
     internal static string Role(XElement element) => (string?)element.Attribute("data-cfx-role") ?? "";

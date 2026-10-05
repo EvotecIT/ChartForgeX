@@ -325,8 +325,6 @@ public sealed partial class SvgChartRenderer {
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
 
-    private static string SvgFontFamily(string value) => Escape(string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value);
-
     // The markup writer's escaping also replaces characters that are not allowed in markup (and the noncharacters of paint tokens).
     private static string Escape(string value) => SvgMarkupWriter.EscapeAttribute(value);
 

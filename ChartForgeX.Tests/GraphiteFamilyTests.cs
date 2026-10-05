@@ -7,6 +7,30 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GraphiteFamilyTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OutsideFunnelLabelsRemainInTheirOwnStage(bool dark) {
+        var chart = Chart.Create().WithSize(556, 324).WithTitle("Remediation").WithSubtitle("Share of first stage")
+            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithXLabels("Detected", "Triaged", "Assigned", "Fixed", "Verified")
+            .AddFunnel("Findings", new[] { 1284d, 1012, 744, 521, 466 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        var stages = Roles(chart, "funnel-stage");
+        Assert.Equal(5, stages.Length);
+        foreach (var stage in stages) {
+            var mark = Assert.Single(stage.Elements(), e => (string?)e.Attribute("data-cfx-role") == "funnel-segment");
+            var labels = stage.Elements().Where(e => e.Name.LocalName == "text").ToArray();
+            Assert.Equal(2, labels.Length);
+            Assert.All(labels, label => {
+                Assert.Equal("placed", (string?)label.Attribute("data-cfx-label-status"));
+                Assert.Equal((string?)mark.Attribute("data-cfx-mark-key"), (string?)label.Attribute("data-cfx-label-mark"));
+                Assert.InRange((double)label.Attribute("data-cfx-label-y")!, (double)mark.Attribute("y")!,
+                    (double)mark.Attribute("y")! + (double)mark.Attribute("height")! - (double)label.Attribute("data-cfx-label-height")! + .001);
+            });
+        }
+        Assert.NotEmpty(chart.ToPng());
+    }
+
     [Fact]
     public void LinearGaugeUsesBulletAnatomyAndValueTriangle() {
         var chart=Chart.Create().AddLinearGauge("Readiness",87).WithGauge(o=>o.Target=90);

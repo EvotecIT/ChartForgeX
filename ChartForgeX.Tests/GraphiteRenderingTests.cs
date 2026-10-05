@@ -9,6 +9,23 @@ namespace ChartForgeX.Tests;
 
 public sealed class GraphiteRenderingTests {
     [Theory]
+    [InlineData(0)]
+    [InlineData(45)]
+    public void AxisFontStacksSurviveXmlEncodingOnce(double rotation) {
+        const string family = "Calibri, \"Segoe UI\", \"Sample & Family\", sans-serif";
+        var chart = Chart.Create().WithSize(600, 360).WithXLabels("One", "Two").WithDataLabels()
+            .AddBar("Counts", new[] { new ChartPoint(1, 12), new ChartPoint(2, 24) });
+        chart.Options.Theme.FontFamily = family;
+        chart.Options.XAxis.LabelAngle = rotation;
+        var text = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => e.Name.LocalName == "text").ToArray();
+        Assert.Contains(text, e => (string?)e.Attribute("data-cfx-role") == "x-axis-label");
+        Assert.Contains(text, e => (string?)e.Attribute("data-cfx-role") == "y-axis-label");
+        Assert.All(text.Where(e => e.Attribute("font-family") != null),
+            e => Assert.Equal(family, (string?)e.Attribute("font-family")));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Theory]
     [InlineData(220)]
     [InlineData(260)]
     [InlineData(300)]

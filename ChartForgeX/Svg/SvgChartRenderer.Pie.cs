@@ -92,7 +92,7 @@ public sealed partial class SvgChartRenderer {
                             .Attribute("y", y)
                             .Attribute("text-anchor", "middle")
                             .Attribute("fill", StyleColor(style, t.CardBackground).ToCss())
-                            .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style)))
+                            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
                             .Attribute("font-size", fontSize)
                             .Attribute("font-weight", StyleWeight(style, "750"));
                         WriteSvgTextStyleAttributes(writer, style);

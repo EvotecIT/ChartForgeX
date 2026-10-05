@@ -19,8 +19,8 @@ public sealed partial class VisualDesignTokens {
     /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
     /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>Ramp</c>; accents <c>Any</c>), so a renderer
     /// that writes a colour for a role names the same token in every theme. Text matched by value never takes a surface
-    /// token, so contrast text that happens to have a surface colour stays literal; text on filled heatmap cells and
-    /// state marks is written for the surface or text role and takes those tokens.
+    /// token. Graphite adds paired <c>series.*.ink</c>, ramp ink and state ink variables so filled-mark labels retain
+    /// readable contrast when a host switches themes. Named effect themes retain their existing surface/text mapping.
     /// </summary>
     /// <param name="variableName">
     /// Returns the custom property name for a token path, or null to leave that token literal. Null names every token
