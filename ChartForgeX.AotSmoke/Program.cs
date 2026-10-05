@@ -29,7 +29,7 @@ foreach (var theme in new[] { ChartTheme.GraphiteLight(), ChartTheme.GraphiteDar
     AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
     var graphiteHeatmap = Chart.Create().WithTheme(theme).WithXLabels("A", "B", "C")
         .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
-    AssertContains(graphiteHeatmap.WithSvgColorVariables((theme.Text == ChartTheme.GraphiteLight().Text
+    AssertContains(graphiteHeatmap.WithSvgColorVariables((theme.Text.Equals(ChartTheme.GraphiteLight().Text)
         ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark()).ToSvgColorVariables()).ToSvg(), "ramps-sequential", "Graphite token mapping failed.");
     AssertPng(graphiteHeatmap.ToPng(), "Graphite heatmap PNG failed.");
 }

@@ -10,6 +10,10 @@ param(
 
     [switch] $UpdateVisualBaseline,
 
+    [string] $ExamplesOutput,
+
+    [string] $PackageOutput,
+
     [ValidateRange(1, 86400)]
     [int] $DotNetCommandTimeoutSeconds = 900,
 
@@ -515,7 +519,7 @@ function Invoke-MermaidConformance {
     }
 
     Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
-    Invoke-NodeCommand -FileName 'npm' -Arguments @('run', 'validate') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
+    Invoke-NodeCommand -FileName 'node' -Arguments @('validate-mermaid.mjs') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
 }
 
 function Get-NativeAotRuntimeIdentifier {
@@ -656,8 +660,9 @@ try {
     }
 
     if (-not $SkipExamples) {
-        Invoke-DotNetCommand -Arguments @('run', '--project', $examples, '-c', $Configuration, '--no-build') -Description 'Example generation' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-        $comparisonManifest = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/svg-png-comparison.json"
+        $exampleOutput = if ($ExamplesOutput) { [System.IO.Path]::GetFullPath($ExamplesOutput) } else { Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output" }
+        Invoke-DotNetCommand -Arguments @('run', '--project', $examples, '-c', $Configuration, '--no-build', '--', '--output', $exampleOutput) -Description 'Example generation' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+        $comparisonManifest = Join-Path $exampleOutput 'svg-png-comparison.json'
         if (-not (Test-Path $comparisonManifest)) {
             throw "SVG/PNG comparison manifest was not generated: $comparisonManifest"
         }
@@ -670,20 +675,14 @@ try {
         }
 
         Assert-VisualBaseline -Comparison $comparison -VisualBaselinePath $visualBaselinePath -ComparisonManifest $comparisonManifest
-        $topologyOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/topology-demo"
+        $topologyOutput = Join-Path $exampleOutput 'topology-demo'
         Assert-TopologyVisualCoverage -TopologyOutput $topologyOutput -Comparison $comparison
-        $exampleOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output"
         Assert-PremiumSurfaceCoverage -Output $exampleOutput -Comparison $comparison
     }
 
     if (-not $SkipPack) {
-        $packageRoot = Join-Path $root "artifacts/packages/$Configuration"
-        if (Test-Path $packageRoot) {
-            Get-ChildItem $packageRoot -Filter 'ChartForgeX*.nupkg' -ErrorAction SilentlyContinue | Remove-Item -Force
-            Get-ChildItem $packageRoot -Filter 'ChartForgeX*.snupkg' -ErrorAction SilentlyContinue | Remove-Item -Force
-        } else {
-            New-Item -ItemType Directory -Path $packageRoot | Out-Null
-        }
+        $packageRoot = if ($PackageOutput) { [System.IO.Path]::GetFullPath($PackageOutput) } else { Join-Path $root "artifacts/packages/$Configuration" }
+        New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
 
         $packageProjects = @(
             [ordered]@{ Id = 'ChartForgeX'; Project = $library; Assembly = 'ChartForgeX'; Nuspec = 'ChartForgeX.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
