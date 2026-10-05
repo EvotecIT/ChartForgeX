@@ -80,6 +80,8 @@ internal static class GraphiteExamples {
         results["multi-area"]=Frame("Multiple area series","Lines without overlapping fills").AddArea("One",Points(20,30,40)).AddArea("Two",Points(15,25,35));
         results["waterfall"]=Frame("Changes","Flat increments and total").WithXLabels("Start","Added","Removed","Final").WithDataLabels().AddWaterfall("Changes",Points(60,20,-10,70));
         results["host-frame"]=Frame("Host-framed counts","No chart surface or outer padding").WithHostFrame().WithXLabels("One","Two","Three").WithDataLabels().AddBar("Counts",Points(50,30,20));
+        results["inside-bar"]=Frame("Inside bar labels","Contrasting ink for categorical and state fills").WithXLabels("One","Two","Three")
+            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).AddBar("Observed",Points(50,30,20)).AddBar("Alert",Points(40,24,16)).WithSeriesState("Alert",ChartSeriesState.Danger);
         return results;
     }
 

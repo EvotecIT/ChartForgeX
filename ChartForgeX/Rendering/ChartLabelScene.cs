@@ -69,7 +69,14 @@ internal sealed partial class ChartLabelScene {
 
     private static XElement? PaintLayer(XElement element) {
         if ((string?)element.Attribute("display") == "none" || Role(element) == "topology-icon-artwork") return null;
-        if (element.Name.LocalName is "defs" or "style" or "text" || (string?)element.Attribute("data-cfx-label-decoration") == "true") return new XElement(element);
+        if (element.Name.LocalName is "defs" or "style" or "text" || (string?)element.Attribute("data-cfx-label-decoration") == "true") {
+            var copy = new XElement(element);
+            // Inside-mark ink is resolved after placement. Native label painting needs its current-theme literal;
+            // SVG serialization keeps the paired paint so host colour properties can switch themes.
+            foreach (var paint in copy.DescendantsAndSelf().Attributes().Where(a => a.Name.LocalName is "fill" or "stroke"))
+                paint.Value = Themes.SvgPaint.Resolve(paint.Value, null);
+            return copy;
+        }
         var children = new List<XElement>();
         foreach (var child in element.Elements()) { var copy = PaintLayer(child); if (copy != null) children.Add(copy); }
         return children.Count == 0 ? null : new XElement(element.Name, element.Attributes(), children);
@@ -126,7 +133,7 @@ internal sealed partial class ChartLabelScene {
                     if (decorationBox.HasValue) box = Union(box, decorationBox.Value);
                 }
                 var resolved = TextStyle(style);
-                _labels.Add(new Entry(element, value, resolved, box, contentBox, matrix, parentMatrix, decorations, isLegendItem));
+                _labels.Add(new Entry(element, value, resolved, box, contentBox, matrix, parentMatrix, decorations, isLegendItem, clip, style.Fill.Color));
             }
             return;
         }
@@ -155,7 +162,7 @@ internal sealed partial class ChartLabelScene {
             var candidates = Candidates(label, role);
             var request = new LabelPlacementRequest(label.Text, new ChartPoint(label.Box.X, label.Box.Y), label.Style, candidates, Priority(role)) {
                 AssociatedMarkId = associated?.Id,
-                Bounds = role is "funnel-label" or "funnel-value" ? FunnelLabelBounds(label, associated) : null,
+                Bounds = LabelBounds(label, associated, role),
                 HasLeaderLine = CanMove(role) && !label.IsLegendItem,
                 Fallback = label.IsLegendItem || label.Element.HasElements || !CanMove(role) ? LabelFallbackRule.Drop : LabelFallbackRule.EllipsisThenDrop,
                 MeasuredSize = new TextMetrics(label.Box.Width, label.Box.Height, label.Box.Height),
@@ -168,6 +175,16 @@ internal sealed partial class ChartLabelScene {
         _document.Root!.SetAttributeValue("data-cfx-label-layout", "measured");
         _document.Root.SetAttributeValue("data-cfx-label-count", results.Count);
         _document.Root.SetAttributeValue("data-cfx-label-dropped", results.Count(label => label.IsDropped));
+    }
+
+    private ChartRect? LabelBounds(Entry label, Mark? associated, string role) {
+        var bounds = role is "funnel-label" or "funnel-value" ? FunnelLabelBounds(label, associated) : null;
+        if (!label.Clip.HasValue) return bounds;
+        if (!bounds.HasValue) return label.Clip;
+        var clip = label.Clip.Value;
+        return new ChartRect(Math.Max(bounds.Value.Left, clip.Left), Math.Max(bounds.Value.Top, clip.Top),
+            Math.Max(0, Math.Min(bounds.Value.Right, clip.Right) - Math.Max(bounds.Value.Left, clip.Left)),
+            Math.Max(0, Math.Min(bounds.Value.Bottom, clip.Bottom) - Math.Max(bounds.Value.Top, clip.Top)));
     }
 
     private ChartRect? FunnelLabelBounds(Entry label, Mark? associated) {
@@ -185,8 +202,8 @@ internal sealed partial class ChartLabelScene {
     private static ChartRect Union(ChartRect a, ChartRect b) => new(Math.Min(a.Left, b.Left), Math.Min(a.Top, b.Top), Math.Max(a.Right, b.Right) - Math.Min(a.Left, b.Left), Math.Max(a.Bottom, b.Bottom) - Math.Min(a.Top, b.Top));
 
     private sealed class Entry {
-        internal Entry(XElement element, string text, TextStyle style, ChartRect box, ChartRect contentBox, SvgRasterMatrix matrix, SvgRasterMatrix parentMatrix, List<XElement> decorations, bool legend) {
-            Element = element; Text = text; Style = style; Box = box; ContentBox = contentBox; Matrix = matrix; ParentMatrix = parentMatrix; Decorations = decorations; IsLegendItem = legend;
+        internal Entry(XElement element, string text, TextStyle style, ChartRect box, ChartRect contentBox, SvgRasterMatrix matrix, SvgRasterMatrix parentMatrix, List<XElement> decorations, bool legend, ChartRect? clip, ChartColor? ink) {
+            Element = element; Text = text; Style = style; Box = box; ContentBox = contentBox; Matrix = matrix; ParentMatrix = parentMatrix; Decorations = decorations; IsLegendItem = legend; Clip = clip; Ink = ink;
         }
         internal XElement Element { get; }
         internal string Text { get; }
@@ -197,6 +214,8 @@ internal sealed partial class ChartLabelScene {
         internal SvgRasterMatrix ParentMatrix { get; }
         internal List<XElement> Decorations { get; }
         internal bool IsLegendItem { get; }
+        internal ChartRect? Clip { get; }
+        internal ChartColor? Ink { get; }
         internal Mark? Associated { get; set; }
     }
     private sealed class FontScope : IDisposable {

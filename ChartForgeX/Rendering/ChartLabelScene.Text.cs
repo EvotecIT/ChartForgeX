@@ -103,6 +103,14 @@ internal sealed partial class ChartLabelScene {
             foreach (var decoration in entry.Decorations) decoration.SetAttributeValue("display", "none");
             return;
         }
+        if (Role(element) == "data-label" && entry.Associated is { Kind: "bar" or "horizontal-bar" } mark &&
+            (string?)mark.SvgRoot?.Attribute("data-cfx-look") == "graphite" && mark.Shape.Contains(result.Bounds) &&
+            entry.Ink?.ToHex() is "#4D525B" or "#B0B4BC" &&
+            ChartColor.TryParse(Themes.SvgPaint.Resolve((string?)mark.Element.Attribute("data-cfx-color") ?? "", null), out var fill)) {
+            var state = (string?)mark.SvgRoot.Attribute("data-cfx-series-state-" + (string?)mark.Element.Attribute("data-cfx-series"));
+            var role = state != null && state != "none" ? Themes.SvgColorRole.Status : Themes.SvgColorRole.Series;
+            element.SetAttributeValue("fill", Themes.SvgPaint.Contrast(fill, role).Value);
+        }
         element.SetAttributeValue("data-cfx-label-x", F(result.Bounds.X)); element.SetAttributeValue("data-cfx-label-y", F(result.Bounds.Y));
         element.SetAttributeValue("data-cfx-label-width", F(result.Bounds.Width)); element.SetAttributeValue("data-cfx-label-height", F(result.Bounds.Height));
         var dx = result.Bounds.X - entry.Box.X; var dy = result.Bounds.Y - entry.Box.Y;

@@ -1289,7 +1289,7 @@
         "outputScale": 2,
         "minVisiblePixels": 640931,
         "minTransparentPixels": 58269,
-        "minDistinctColors": 1777,
+        "minDistinctColors": 1805,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1893,7 +1893,7 @@
       "width": 664,
       "height": 580,
       "svg": {
-        "minVisualNodes": 51,
+        "minVisualNodes": 50,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1901,7 +1901,7 @@
         "outputScale": 2,
         "minVisiblePixels": 770240,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1138,
+        "minDistinctColors": 1135,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2003,7 +2003,7 @@
         "outputScale": 2,
         "minVisiblePixels": 402792,
         "minTransparentPixels": 104,
-        "minDistinctColors": 572,
+        "minDistinctColors": 582,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2021,6 +2021,23 @@
         "minVisiblePixels": 117828,
         "minTransparentPixels": 285067,
         "minDistinctColors": 645,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-inside-bar",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 843,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2301,7 +2318,7 @@
       "width": 664,
       "height": 580,
       "svg": {
-        "minVisualNodes": 51,
+        "minVisualNodes": 50,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -2309,7 +2326,7 @@
         "outputScale": 2,
         "minVisiblePixels": 770240,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1150,
+        "minDistinctColors": 1140,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2411,7 +2428,7 @@
         "outputScale": 2,
         "minVisiblePixels": 402792,
         "minTransparentPixels": 104,
-        "minDistinctColors": 601,
+        "minDistinctColors": 612,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2429,6 +2446,23 @@
         "minVisiblePixels": 117828,
         "minTransparentPixels": 285067,
         "minDistinctColors": 942,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-inside-bar",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 844,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3006,7 +3040,7 @@
         "outputScale": 2,
         "minVisiblePixels": 640931,
         "minTransparentPixels": 58269,
-        "minDistinctColors": 1881,
+        "minDistinctColors": 1738,
         "maxEdgeInkPixels": 0
       }
     },

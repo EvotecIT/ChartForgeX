@@ -1,6 +1,7 @@
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 using ChartForgeX.Themes;
 using Xunit;
@@ -8,6 +9,83 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GraphiteRenderingTests {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void InsideBarLabelsHaveReadablePairedInkAndRespectExplicitColours(bool dark, bool semantic) {
+        var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
+        var chart = Chart.Create().WithDesignTokens(tokens).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
+            .AddBar("Counts", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60) });
+        if (semantic) chart.WithSeriesState("Counts", ChartSeriesState.Danger);
+        var document = XDocument.Parse(chart.ToSvg());
+        var labels = document.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "data-label" && (string?)e.Attribute("display") != "none").ToArray();
+        Assert.Equal(2, labels.Length);
+        foreach (var label in labels) {
+            var mark = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-mark-key") == (string?)label.Attribute("data-cfx-label-mark"));
+            Assert.True(ChartColor.TryParse((string)label.Attribute("fill")!, out var ink));
+            Assert.True(ChartColor.TryParse((string)mark.Attribute("fill")!, out var fill));
+            Assert.True(ChartColorMath.ContrastRatio(ink, fill) >= 4.5, label + " on " + mark);
+        }
+        var literalPng = chart.ToPng();
+        chart.WithSvgColorVariables(tokens.ToSvgColorVariables());
+        Assert.Contains(semantic ? "mark-danger-ink" : "series-1-ink", chart.ToSvg());
+        Assert.Equal(literalPng, chart.ToPng());
+        var image = chart.ToRgbaImage();
+        var expected = ChartColorMath.AccessibleTextOnBackground(semantic ? chart.Options.Theme.Negative : chart.Options.Theme.Palette[0]);
+        foreach (var label in labels) {
+            double Read(string key) => double.Parse(label.Attribute("data-cfx-label-" + key)!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            var pixels = Enumerable.Range((int)Math.Floor(Read("y")), (int)Math.Ceiling(Read("height")) + 1)
+                .SelectMany(y => Enumerable.Range((int)Math.Floor(Read("x")), (int)Math.Ceiling(Read("width")) + 1).Select(x => y * image.Width + x));
+            var closest = pixels.Min(p => Math.Abs(image.Pixels[p*4]-expected.R) + Math.Abs(image.Pixels[p*4+1]-expected.G) + Math.Abs(image.Pixels[p*4+2]-expected.B));
+            var background = semantic ? chart.Options.Theme.Negative : chart.Options.Theme.Palette[0];
+            var distance = Math.Abs(background.R-expected.R) + Math.Abs(background.G-expected.G) + Math.Abs(background.B-expected.B);
+            // Thin glyphs can be antialiased at 1x; require a pixel at least 75% towards the intended ink.
+            Assert.True(closest <= distance * .25, image.Width + "x" + image.Height + ", closest " + closest + ", " + label);
+        }
+        chart.WithSvgColorVariables(null);
+        chart.Series[0].DataLabelStyle.Color = ChartColor.FromHex("#C2418A");
+        Assert.All(XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "data-label"),
+            e => Assert.Equal("#C2418A", (string?)e.Attribute("fill")));
+    }
+
+    [Theory]
+    [InlineData(false, "bar")]
+    [InlineData(true, "bar")]
+    [InlineData(false, "horizontal")]
+    [InlineData(true, "horizontal")]
+    [InlineData(false, "line")]
+    [InlineData(true, "area")]
+    public void DenseValueLabelsFitTheirActivePlotClipInBothRendererScenes(bool dark, string kind) {
+        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithSize(300, 220)
+            .WithTitle("Findings by severity").WithSubtitle("Current and previous run").WithXLabels("Critical", "High", "Medium", "Low", "Info").WithDataLabels();
+        var first = new[] { 6d, 30, 82, 124, 208 }.Select((v,i) => new ChartPoint(i+1,v)).ToArray();
+        var second = new[] { 9d, 39, 95, 116, 186 }.Select((v,i) => new ChartPoint(i+1,v)).ToArray();
+        if (kind == "horizontal") chart.AddHorizontalBar("Current", first).AddHorizontalBar("Previous", second);
+        else if (kind == "line") chart.AddLine("Current", first).AddLine("Previous", second);
+        else if (kind == "area") chart.AddArea("Current", first).AddArea("Previous", second);
+        else chart.AddBar("Current", first).AddBar("Previous", second);
+        chart.Options.YAxis.Maximum = 250;
+        chart.Options.YAxis.TickCount = 6;
+        foreach (var svg in new[] { chart.ToSvg(), new SvgChartRenderer().RenderLabelScene(chart).ToSvg() }) {
+            var document = XDocument.Parse(svg);
+            var rect = document.Descendants().First(e => e.Name.LocalName == "clipPath").Elements().Single();
+            double Read(XElement e, string key) => double.Parse(e.Attribute(key)!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            var left = Read(rect, "x"); var top = Read(rect, "y"); var right = left + Read(rect, "width"); var bottom = top + Read(rect, "height");
+            var labels = document.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "data-label" && (string?)e.Attribute("display") != "none").ToArray();
+            Assert.NotEmpty(labels);
+            foreach (var label in labels) {
+                if (!label.Ancestors().Any(e => e.Attribute("clip-path") != null)) continue;
+                Assert.True(Read(label, "data-cfx-label-x") >= left - .002);
+                Assert.True(Read(label, "data-cfx-label-y") >= top - .002);
+                Assert.True(Read(label, "data-cfx-label-x") + Read(label, "data-cfx-label-width") <= right + .002);
+                Assert.True(Read(label, "data-cfx-label-y") + Read(label, "data-cfx-label-height") <= bottom + .002);
+            }
+        }
+        Assert.NotEmpty(chart.ToPng());
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(45)]

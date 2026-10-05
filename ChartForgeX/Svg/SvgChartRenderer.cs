@@ -55,8 +55,8 @@ public sealed partial class SvgChartRenderer {
         var font = ChartFont(chart);
         using var measurement = ChartLabelScene.OpenFontScope(font);
         var markup = RenderCore(chart, BuildProvisionalId(chart, string.Empty), false);
-        var variables = chart.Options.SvgColorVariables;
-        return ChartLabelScene.Create(SvgPaint.Resolve(variables?.Apply(markup) ?? markup, variables), font);
+        // PNG uses the chart's literal theme colours. Host SVG properties must not enter the native scene.
+        return ChartLabelScene.Create(SvgPaint.Resolve(markup, null), font);
     }
 
     private static Typography.FontSpec ChartFont(Chart chart) => new() { Family = chart.Options.Theme.FontFamily, FilePath = chart.Options.PngFontPath, CollectionIndex = chart.Options.PngFontCollectionIndex, FaceName = chart.Options.PngFontFaceName };
