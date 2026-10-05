@@ -20,7 +20,8 @@ internal static class GraphiteExamples {
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
                 if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"));
-                gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' src='").Append(name).Append(".svg'><img alt='PNG' src='").Append(name).Append(".png'></div>");
+                var nativeWidth = item.Value.Options.Size.Width;
+                gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".svg'><img alt='PNG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".png'></div>");
             }
             var theme=dark?ChartTheme.GraphiteDark():ChartTheme.GraphiteLight();
             var metric=MetricCard.Create().WithSize(300,200).WithTheme(theme).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
