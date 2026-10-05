@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Svg;
 
@@ -12,7 +13,12 @@ public sealed partial class SvgChartRenderer {
         if(rows.Length==0)return;
         var t=chart.Options.Theme; var measured=ChartForgeX.Rendering.ChartBulletLayout.Create(chart,plot);
         var labeled=rows.Any(v=>v.s.ShowDataLabels!=false);
-        var labelWidth=labeled?Math.Min(measured.LabelReserve,plot.Width*.45):0; var rightReserve=labeled?70.0:0;
+        var labelWidth=labeled?Math.Min(measured.LabelReserve,plot.Width*.45):0;
+        var rightReserve=labeled?Math.Max(70,rows.Where(v=>v.s.ShowDataLabels!=false).Max(v=> {
+            var valueStyle=DataLabelStyle(chart,v.s,0); var targetStyle=DataLabelStyle(chart,v.s,1);
+            return EstimateSvgStyledTextWidth(chart,FormatValue(chart,BulletValue(v.s)),StyleFontSize(valueStyle,12.5),valueStyle,emphasized:true)
+                +EstimateSvgStyledTextWidth(chart,"of "+FormatValue(chart,BulletTarget(v.s)),StyleFontSize(targetStyle,12),targetStyle)+24;
+        })):0;
         var x=plot.Left+labelWidth; var width=Math.Max(1,plot.Width-labelWidth-rightReserve);
         var rowHeight=Math.Min(42,(plot.Height-30)/rows.Length); var h=Math.Min(22,rowHeight*.65);
         var min=rows.Min(v=>BulletMin(v.s)); var max=rows.Max(v=>BulletMax(v.s)); if(max<=min)max=min+1;
@@ -27,16 +33,20 @@ public sealed partial class SvgChartRenderer {
             var tx=x+width*Clamp((target-min)/(max-min),0,1);
             w.StartElement("line").Attribute("data-cfx-role","bullet-target").Attribute("data-cfx-target",target).Attribute("x1",tx).Attribute("x2",tx).Attribute("y1",y-2).Attribute("y2",y+h+2).Attribute("stroke",t.Text.ToCss()).Attribute("stroke-width",2).EndEmptyElement();
             if(row.s.ShowDataLabels!=false) {
+                var targetStyle=DataLabelStyle(chart,row.s,1);
+                var valueText=FormatValue(chart,value); var targetText="of "+FormatValue(chart,target);
+                var valueWidth=EstimateSvgStyledTextWidth(chart,valueText,StyleFontSize(style,12.5),style,emphasized:true)+2;
+                var targetWidth=EstimateSvgStyledTextWidth(chart,targetText,StyleFontSize(targetStyle,12),targetStyle)+2;
                 DrawSvgTextLeft(w,chart,"bullet-row-label",row.s.Name,plot.Left,y+h/2+4,t.Text,13,labelWidth-12,"400",style);
-                DrawSvgTextLeft(w,chart,"bullet-value-label",FormatValue(chart,value),x+width+12,y+h/2+4,below?t.Negative:t.Text,12.5,30,"700",style);
-                GraphiteEndText(w,chart,"bullet-target-label",FormatValue(chart,target),plot.Right,y+h/2+4,t.MutedText,12,28,"400",DataLabelStyle(chart,row.s,1));
+                DrawSvgTextLeft(w,chart,"bullet-value-label",valueText,x+width+12,y+h/2+4,below?t.Negative:t.Text,12.5,valueWidth,"700",style);
+                GraphiteEndText(w,chart,"bullet-target-label",targetText,plot.Right,y+h/2+4,t.MutedText,12,targetWidth,"400",targetStyle);
             }
             w.EndElement();
         }
         if(chart.Options.ShowAxes) {
             var bottom=plot.Top+rowHeight*rows.Length+4;
             w.StartElement("line").Attribute("data-cfx-role","bullet-axis").Attribute("x1",x).Attribute("x2",x+width).Attribute("y1",bottom).Attribute("y2",bottom).Attribute("stroke",t.Axis.ToCss()).Attribute("stroke-width",1).EndEmptyElement();
-            for(var i=0;i<=4;i++)DrawSvgTextCenteredX(w,chart,"bullet-axis-label",FormatValue(chart,min+(max-min)*i/4),x+width*i/4,bottom+18,t.MutedText,12,50,"400");
+            for(var i=0;i<=4;i++)DrawSvgTextCenteredX(w,chart,"bullet-axis-label",ChartAxisValueFormatter.Format(chart.Options.XAxis,min+(max-min)*i/4,chart.Options.ValueFormatter),x+width*i/4,bottom+18,t.MutedText,12,Math.Max(50,width/4-8),"400");
         }
         w.EndElement(); sb.Append(w.Build());
     }

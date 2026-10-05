@@ -57,7 +57,7 @@ internal static class GraphiteExamples {
         });
         var needle=Frame("Readiness needle","Explicit target and bands",396,294).AddGauge("Readiness",74).WithGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
         var linear=Frame("Linear readiness","Explicit target and bands",596,230).AddLinearGauge("Readiness",87).WithGauge(o=> { o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var bullet=Frame("Control coverage","Actual values and targets",556,294).AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
+        var bullet=Frame("Control coverage","Actual values and targets",556,294).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+" %").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
         var funnel=Frame("Remediation stages","Percentage of the first stage",556,324).WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
         var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow",new[] {
             new ChartSankeyLink("Assessment","Remediated",360),new("Assessment","In progress",110),new("Assessment","Overdue",50),new("Monitoring","Remediated",170),new("Monitoring","In progress",90),new("Monitoring","Overdue",50),new("GPO","Remediated",80),new("GPO","In progress",50),new("GPO","Overdue",40)
