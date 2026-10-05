@@ -12,7 +12,7 @@ internal static class ChartLayout {
     public const double HeaderSubtitleBaseline = 79;
 
     public static ChartRect PlotArea(ChartOptions options) {
-        var header = options.ShowHeader ? 34 : 0;
+        var header = options.ShowHeader ? options.Theme.UseGraphiteLayout ? 44 : 34 : 0;
         var x = options.Padding.Left;
         var y = options.Padding.Top + header;
         var width = Math.Max(1, options.Size.Width - options.Padding.Left - options.Padding.Right);
@@ -25,7 +25,16 @@ internal static class ChartLayout {
     /// no text. Callers check <see cref="ChartOptions.ShowHeader"/>.
     /// </summary>
     public static double HeaderBottom(Chart chart) {
+        if (chart.Options.Theme.UseGraphiteLayout) {
+            if (!string.IsNullOrWhiteSpace(chart.Subtitle)) return SubtitleBaseline(chart) + 4;
+            return string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Padding.Top : TitleBaseline(chart) + 4;
+        }
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) return HeaderSubtitleBaseline + 12;
         return string.IsNullOrWhiteSpace(chart.Title) ? 0 : HeaderTitleBaseline + 14;
     }
+
+    internal static double TitleBaseline(Chart chart) => chart.Options.Theme.UseGraphiteLayout
+        ? chart.Options.Padding.Top + (chart.Options.IsPanel ? 15 : chart.Options.TitleStyle.FontSize ?? chart.Options.Theme.TitleFontSize) : HeaderTitleBaseline;
+    internal static double SubtitleBaseline(Chart chart) => chart.Options.Theme.UseGraphiteLayout
+        ? TitleBaseline(chart) + (chart.Options.SubtitleStyle.FontSize ?? chart.Options.Theme.SubtitleFontSize) + 4 : HeaderSubtitleBaseline;
 }

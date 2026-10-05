@@ -9,6 +9,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public sealed class ChartSeries {
     private double _strokeWidth = 3;
+    internal bool HasExplicitStrokeWidth { get; private set; }
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
@@ -76,6 +77,9 @@ public sealed class ChartSeries {
     /// Gets or sets the series color. When null, the chart theme palette is used.
     /// </summary>
     public ChartColor? Color { get; set; }
+
+    /// <summary>Gets or sets the semantic colour role; explicit colours still take precedence.</summary>
+    public ChartSeriesState StateRole { get; set; }
 
     /// <summary>
     /// Gets optional point-level colors. Null entries fall back to the series color or theme palette.
@@ -216,6 +220,7 @@ public sealed class ChartSeries {
             ChartGuards.Finite(value, nameof(value));
             if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Stroke width must be greater than zero.");
             _strokeWidth = value;
+            HasExplicitStrokeWidth = true;
         }
     }
 

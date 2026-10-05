@@ -190,7 +190,7 @@ public sealed partial class SvgChartRenderer {
 
     private static string StyleFontFamily(Chart chart, TextStyleOverride? style) => style?.FontFamily ?? chart.Options.Theme.FontFamily;
 
-    private static ChartColor Color(Chart chart, int index) => chart.Series[index].Color ?? chart.Options.Theme.Palette[index % chart.Options.Theme.Palette.Length];
+    private static ChartColor Color(Chart chart, int index) => ChartSeriesColours.Resolve(chart, index);
 
     private static ChartColor PointColor(Chart chart, ChartSeries series, int seriesIndex, int pointIndex) =>
         pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
@@ -272,7 +272,7 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowXAxisLine(Chart chart) => ShowXAxis(chart) && chart.Options.XAxis.ShowLine;
 
-    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine;
+    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine && !chart.Options.Theme.UseGraphiteLayout;
 
     private static bool ShowSecondaryYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.SecondaryYAxis.Visible;
 

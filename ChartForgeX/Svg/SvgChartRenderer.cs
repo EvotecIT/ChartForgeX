@@ -169,9 +169,11 @@ public sealed partial class SvgChartRenderer {
             .Text($"#{id} text{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}} #{id} .cfx-crisp-stroke,#{id} .{ChartVisualPrimitives.SvgGuideStrokeClass},#{id} .{ChartVisualPrimitives.SvgPremiumStrokeClass}{{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}} #{id} .{ChartVisualPrimitives.SvgGuideStrokeClass}{{shape-rendering:crispEdges}} #{id} .cfx-interactive-region[data-cfx-role=\"dotted-map-connector\"]{{pointer-events:stroke}} #{id} .cfx-interactive-region:hover,#{id} .cfx-interactive-region:focus{{opacity:1;outline:none;stroke-width:var(--cfx-interactive-focus-stroke-width,2.2)}}" + ForcedColorsRule(chart, id) + FontPaletteRules(chart))
             .EndElement()
             .Line());
-        WriteSvgCardShadowFilter(sb, id, t);
-        WriteSvgSurfaceGradient(sb, id, "cardSurface", t.CardBackground);
-        WriteSvgSurfaceGradient(sb, id, "plotSurface", t.PlotBackground);
+        if (!t.FlatMarks) {
+            WriteSvgCardShadowFilter(sb, id, t);
+            WriteSvgSurfaceGradient(sb, id, "cardSurface", t.CardBackground);
+            WriteSvgSurfaceGradient(sb, id, "plotSurface", t.PlotBackground);
+        }
         AppendSvg(sb, writer => writer
             .StartElement("clipPath")
             .Attribute("id", $"{id}-plotClip")
@@ -185,6 +187,7 @@ public sealed partial class SvgChartRenderer {
             .EndElement()
             .Line());
         for (var i = 0; i < chart.Series.Count; i++) {
+            if (t.FlatMarks && o.BarVisualStyle.Kind == ChartBarStyle.Flat) continue;
             var c = Color(chart, i);
             AppendLinearGradient(sb, $"{id}-area{i}", "0", "0", "0", "1", c.ToHex(), 0.32, c.ToHex(), 0.02);
             AppendBarSurfaceGradient(sb, $"{id}-seriesFill{i}", c);
@@ -194,6 +197,7 @@ public sealed partial class SvgChartRenderer {
         }
         AppendFillPatternDefinitions(sb, chart, id);
         for (var i = 0; i < t.Palette.Length; i++) {
+            if (t.FlatMarks) continue;
             var c = t.Palette[i];
             var start = ChartMarkSurface.SliceGradientStart;
             var end = ChartMarkSurface.SliceGradientEnd;
@@ -201,18 +205,18 @@ public sealed partial class SvgChartRenderer {
         }
         AppendSvgEnd(sb, "defs");
         AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("id", id).EndStartElement().Line());
-        if (!o.TransparentBackground && t.Background.A > 0) {
+        if (!o.HostOwnsFrame && !o.TransparentBackground && t.Background.A > 0) {
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", t.Background.ToCss()).EndEmptyElement().Line());
         }
-        if (o.ShowCard && t.UseCard) {
+        if (o.ShowCard && t.UseCard && !o.HostOwnsFrame) {
             DrawSvgCardSurface(sb, id, t, w, h);
         }
-        if (o.ShowPlotBackground) {
+        if (o.ShowPlotBackground && !o.HostOwnsFrame && !t.FlatMarks) {
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("x", plot.X).Attribute("y", plot.Y).Attribute("width", plot.Width).Attribute("height", plot.Height).Attribute("rx", t.PlotCornerRadius).Attribute("fill", $"url(#{id}-plotSurface)").EndEmptyElement().Line());
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("class", "cfx-crisp-stroke").Attribute("x", plot.X + 0.5).Attribute("y", plot.Y + 0.5).Attribute("width", Math.Max(0, plot.Width - 1)).Attribute("height", Math.Max(0, plot.Height - 1)).Attribute("rx", Math.Max(0, t.PlotCornerRadius - 0.5)).Attribute("fill", "none").Attribute("stroke", t.PlotBorder.ToCss()).EndEmptyElement().Line());
             if (t.PlotBackground.A > 0) DrawSvgSurfaceHighlight(sb, plot.X, plot.Y, plot.Width, plot.Height, t.PlotCornerRadius, ChartVisualPrimitives.PlotInnerHighlightInset, ChartVisualPrimitives.PlotInnerHighlightOpacity, "plot-inner-highlight");
         }
-        if (o.ShowHeader) DrawHeader(sb, chart);
+        if (o.ShowHeader) DrawHeader(sb, chart, plot);
         if (IsPieLike(chart)) {
             DrawPieLike(sb, chart, plot, id);
             AppendSvgEnd(sb, "g");
@@ -221,14 +225,14 @@ public sealed partial class SvgChartRenderer {
         }
         if (IsGaugeChart(chart)) {
             DrawGauge(sb, chart, plot);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsCircleChart(chart)) {
             DrawCircleChart(sb, chart, plot);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
@@ -239,10 +243,10 @@ public sealed partial class SvgChartRenderer {
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
-        if (IsLayeredRadialChart(chart)) { DrawLayeredRadial(sb, chart, plot); DrawLegend(sb, chart, w, h); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
+        if (IsLayeredRadialChart(chart)) { DrawLayeredRadial(sb, chart, plot); DrawLegend(sb, chart, w, h, plot); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsBulletChart(chart)) {
             DrawBullet(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
@@ -273,49 +277,49 @@ public sealed partial class SvgChartRenderer {
         }
         if (IsFunnelChart(chart)) {
             DrawFunnel(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsTreemapChart(chart)) {
             DrawTreemap(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsPictorialChart(chart)) {
             DrawPictorial(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsProgressBarChart(chart)) {
             DrawProgressBar(sb, chart, plot);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsWordCloudChart(chart)) {
             DrawWordCloud(sb, chart, plot);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsHeatmapChart(chart)) {
             DrawHeatmap(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsHexbinHeatmapChart(chart)) {
             DrawHexbinHeatmap(sb, chart, plot);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
@@ -328,35 +332,35 @@ public sealed partial class SvgChartRenderer {
         if (IsGanttLaneChart(chart)) { DrawGanttLanes(sb, chart, plot, id); AppendSvgEnd(sb, "g"); AppendSvgEnd(sb, "svg"); return sb.ToString(); }
         if (IsTimelineChart(chart)) {
             DrawTimeline(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsGanttChart(chart)) {
             DrawGantt(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsSankeyChart(chart)) {
             DrawSankey(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsTreeChart(chart)) {
             DrawTree(sb, chart, plot, id);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
         }
         if (IsSunburstChart(chart)) {
             DrawSunburst(sb, chart, plot);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
@@ -365,10 +369,10 @@ public sealed partial class SvgChartRenderer {
         if (IsHorizontalBarChart(chart)) {
             DrawHorizontalBarGrid(sb, chart, plot, xTicks, yTicks, map);
             AppendSvgStart(sb, writer => writer.StartElement("g").EndStartElement().Line());
-            for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, map, id, includeInteractionTargets);
+            foreach (var i in ChartSeriesColours.DrawingOrder(chart)) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, map, id, includeInteractionTargets);
             AppendSvgEnd(sb, "g");
             if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawHorizontalStackTotals(sb, chart, plot, map);
-            DrawLegend(sb, chart, w, h);
+            DrawLegend(sb, chart, w, h, plot);
             AppendSvgEnd(sb, "g");
             AppendSvgEnd(sb, "svg");
             return sb.ToString();
@@ -378,11 +382,11 @@ public sealed partial class SvgChartRenderer {
         DrawGrid(sb, chart, plot, xTicks, yTicks, map);
         if (secondaryMap != null && secondaryTicks != null) DrawSecondaryYAxis(sb, chart, plot, secondaryTicks, secondaryMap);
         AppendSvgStart(sb, writer => writer.StartElement("g").EndStartElement().Line());
-        for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id, includeInteractionTargets);
+        foreach (var i in ChartSeriesColours.DrawingOrder(chart)) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id, includeInteractionTargets);
         if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(sb, chart, barCoordinateMap, plot, map);
         AppendSvgEnd(sb, "g");
         DrawAnnotationLines(sb, chart, plot, map);
-        DrawLegend(sb, chart, w, h);
+        DrawLegend(sb, chart, w, h, plot);
         AppendSvgEnd(sb, "g");
         AppendSvgEnd(sb, "svg");
         return sb.ToString();
@@ -417,6 +421,13 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgCardSurface(StringBuilder sb, string id, ChartTheme theme, double width, double height) {
+        if (theme.FlatMarks) {
+            AppendSvg(sb, writer => writer.StartElement("rect").Attribute("data-cfx-role", "card-surface")
+                .Attribute("x", .5).Attribute("y", .5).Attribute("width", width - 1).Attribute("height", height - 1)
+                .Attribute("rx", theme.CornerRadius).Attribute("fill", theme.CardBackground.ToCss())
+                .Attribute("stroke", theme.CardBorder.ToCss()).Attribute("stroke-width", 1).EndEmptyElement().Line());
+            return;
+        }
         var cardInset = ChartVisualPrimitives.CardSurfaceInset;
         var borderInset = ChartVisualPrimitives.CardBorderInset;
         var borderPosition = cardInset + borderInset;
@@ -459,11 +470,11 @@ public sealed partial class SvgChartRenderer {
         for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
             var yv = yTicks[yIndex];
             var y = map.Y(yv);
-            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
+            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, SvgPaint.Of(t.UseGraphiteLayout && Math.Abs(yv) < .000001 ? t.Axis : t.Grid, t.UseGraphiteLayout && Math.Abs(yv) < .000001 ? SvgColorRole.Axis : SvgColorRole.Grid).Value!, gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
                     var label = StyleText(tickStyle, FormatYAxisValue(chart, yv, yTicks));
-                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - 12).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
+                    writer.StartElement("text").Attribute("data-cfx-role", "y-axis-label").Attribute("data-cfx-value", yv).Attribute("x", plot.Left - (t.UseGraphiteLayout ? 8 : 12)).Attribute("y", y + 4).Attribute("text-anchor", "end").Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, tickStyle))).Attribute("font-size", tickFontSize).Attribute("font-weight", StyleWeight(tickStyle, "400"));
                     WriteSvgTextStyleAttributes(writer, tickStyle);
                     WriteSvgStyledTextContent(writer, tickStyle, label).EndElement().Line();
                 });
@@ -502,7 +513,7 @@ public sealed partial class SvgChartRenderer {
         label = TrimSvgLabelToWidth(chart, label, fontSize, widthLimit, style);
         if (label.Length == 0) return;
         if (Math.Abs(angle) < 0.001) {
-            var centered = chart.Options.XAxis.Scale == ChartScaleKind.Linear && chart.Options.XAxisLabels.Count == 0 && ChartSeriesKindTraits.UsesCartesianXAxis(chart);
+            var centered = t.UseGraphiteLayout || chart.Options.XAxis.Scale == ChartScaleKind.Linear && chart.Options.XAxisLabels.Count == 0 && ChartSeriesKindTraits.UsesCartesianXAxis(chart);
             var anchor = centered ? "middle" : EdgeAwareStyledAnchor(chart, label, x, plot, fontSize, style);
             var safeX = centered ? x : EdgeAwareStyledTextX(chart, label, x, plot, fontSize, style);
             AppendSvg(sb, writer => {
@@ -587,6 +598,10 @@ public sealed partial class SvgChartRenderer {
 
     private static ChartRect PlotArea(Chart chart) {
         var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(chart.Options);
+        if (chart.Options.Theme.UseGraphiteLayout && !chart.Options.HasExplicitPadding && !chart.Options.IsSparkline) {
+            var top = chart.Options.ShowHeader ? ChartLayout.HeaderBottom(chart) + 8 : chart.Options.Padding.Top;
+            plot = new ChartRect(plot.X, top, plot.Width, Math.Max(1, chart.Options.Size.Height - chart.Options.Padding.Bottom - top));
+        }
         if (chart.Options.IsSparkline || IsPieLike(chart) || IsRadialBarChart(chart) || IsLayeredRadialChart(chart) || IsStateTimelineChart(chart) || IsGanttLaneChart(chart)) return plot;
 
         if (ShouldDrawLegend(chart) && IsTopLegend(chart.Options.LegendPosition)) {
@@ -622,7 +637,7 @@ public sealed partial class SvgChartRenderer {
         var tickFontSize = StyleFontSize(tickStyle, t.TickLabelFontSize);
         var widest = yTicks.Max(tick => EstimateSvgStyledTextWidth(chart, FormatYAxisValue(chart, tick, yTicks), tickFontSize, tickStyle));
         var titleHeight = string.IsNullOrWhiteSpace(chart.YAxisTitle) ? 0 : SvgYAxisTitleHeight(chart, plot.Height);
-        var desiredLeft = Math.Max(plot.Left, widest + 54 + Math.Max(0, titleHeight - t.AxisTitleFontSize));
+        var desiredLeft = Math.Max(plot.Left, t.UseGraphiteLayout ? chart.Options.Padding.Left + widest + 8 : widest + 54 + Math.Max(0, titleHeight - t.AxisTitleFontSize));
         var maxLeft = Math.Max(plot.Left, chart.Options.Size.Width - chart.Options.Padding.Right - 160);
         var adjustedLeft = Math.Min(desiredLeft, maxLeft);
         if (adjustedLeft <= plot.Left) return plot;

@@ -60,6 +60,11 @@ public sealed partial class SvgChartRenderer {
     private static void DrawSvgYAxisTitle(StringBuilder sb, Chart chart, ChartRect plot, double axisX, string role = "") {
         if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
         var t = chart.Options.Theme;
+        if (t.UseGraphiteLayout) {
+            DrawSvgTextLeft(sb, chart, string.IsNullOrEmpty(role) ? "y-axis-title" : role, chart.YAxisTitle,
+                chart.Options.Padding.Left, plot.Top - 8, t.MutedText, t.AxisTitleFontSize, Math.Max(32, plot.Left - chart.Options.Padding.Left - 8), "400", chart.Options.AxisTitleStyle);
+            return;
+        }
         var maxWidth = Math.Max(40, plot.Height * 0.72);
         var style = chart.Options.AxisTitleStyle;
         var fontSize = TextFontSizeForSvgWidth(chart, chart.YAxisTitle, maxWidth, StyleFontSize(style, t.AxisTitleFontSize), style, emphasized: true);
@@ -94,7 +99,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void WriteSvgDataLabelText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, string label, double x, double y, string anchor, ChartColor fill, ChartColor stroke, double fontSize, ChartSeries? series = null, int pointIndex = -1) {
-        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "700"));
+        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, chart.Options.Theme.UseGraphiteLayout ? chart.Options.Theme.Text2 : fill).ToCss()).Attribute("stroke", chart.Options.Theme.UseGraphiteLayout ? null : stroke.ToCss()).Attribute("stroke-width", chart.Options.Theme.UseGraphiteLayout ? null : "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, chart.Options.Theme.UseGraphiteLayout ? "400" : "700"));
         if (series != null) {
             for (var i = 0; i < chart.Series.Count; i++) if (ReferenceEquals(chart.Series[i], series)) { writer.Attribute("data-cfx-series", i); break; }
             if (pointIndex >= 0) writer.Attribute("data-cfx-point", pointIndex);

@@ -28,7 +28,8 @@ public sealed partial class SvgChartRenderer {
             } else {
                 var flat = chart.Options.BarVisualStyle.Kind == ChartBarStyle.Flat;
                 var color = PointColor(chart, s, index, pointIndex);
-                WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, flat ? SvgPaint.Of(color, SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)), color, flat ? null : ChartVisualPrimitives.BarFillOpacity);
+                if (flat && chart.Options.Theme.UseGraphiteLayout) AppendSvg(sb, writer => writer.StartElement("path").Attribute("data-cfx-role", "horizontal-bar").Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-category", p.X).Attribute("data-cfx-value", p.Y).Attribute("data-cfx-base", baseValue).Paint("data-cfx-color", DataColor(color)).Attribute("d", GraphiteBarPath(left, y, width, layout.BarHeight, 2, p.Y >= 0, true)).Paint("fill", SvgPaint.Of(color, s.StateRole == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status)).Attribute("stroke", chart.Options.BarMode == ChartBarMode.Stacked ? chart.Options.Theme.CardBackground.ToCss() : null).OptionalAttribute("stroke-width", chart.Options.BarMode == ChartBarMode.Stacked ? 1 : null).EndEmptyElement().Line());
+                else WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, flat ? SvgPaint.Of(color, SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)), color, flat ? null : ChartVisualPrimitives.BarFillOpacity);
                 DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, left, y, width, layout.BarHeight, radius, "horizontal-bar-pattern");
                 if (!flat) DrawSvgBarHighlight(sb, left, y, width, layout.BarHeight);
             }
@@ -123,8 +124,8 @@ public sealed partial class SvgChartRenderer {
 
         var categoryCount = Math.Max(1, categoryValues.Count);
         var slotHeight = plot.Height / categoryCount;
-        var groupHeight = slotHeight * (groupCount == 1 ? 0.56 : 0.76);
-        var gap = groupCount == 1 ? 0 : Math.Min(4, groupHeight * 0.08);
+        var groupHeight = slotHeight * (chart.Options.Theme.UseGraphiteLayout ? .68 : groupCount == 1 ? 0.56 : 0.76);
+        var gap = groupCount == 1 ? 0 : chart.Options.Theme.UseGraphiteLayout ? 2 : Math.Min(4, groupHeight * 0.08);
         var barHeight = Math.Max(3, Math.Min(30, (groupHeight - gap * (groupCount - 1)) / groupCount));
         var offset = (groupPosition - (groupCount - 1) / 2.0) * (barHeight + gap);
         return new HorizontalBarLayoutInfo(barHeight, offset);

@@ -43,6 +43,16 @@ public sealed partial class PngChartRenderer {
 
     internal RgbaCanvas RenderCanvas(Chart chart, int? outputScale = null) {
         var labels = new Svg.SvgChartRenderer().RenderLabelScene(chart);
+        if (chart.Options.Theme.UseGraphiteLayout) {
+            var o = chart.Options;
+            var font = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
+            var sceneCanvas = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale,
+                font ?? TypographyFontResolver.ResolveThemeFont(o.Theme.FontFamily), outputScale ?? o.PngOutputScale) { TextHinting = o.PngTextHinting };
+            sceneCanvas.Clear(o.TransparentBackground ? ChartColor.Transparent : o.Theme.Background);
+            labels.PaintMarks(sceneCanvas);
+            labels.Paint(sceneCanvas, font);
+            return sceneCanvas;
+        }
         var canvas = RenderMarksCanvas(chart, outputScale, labels);
         canvas.SuppressText = false;
         var explicitFont = TrueTypeFont.TryLoadFromPath(chart.Options.PngFontPath, chart.Options.PngFontCollectionIndex, chart.Options.PngFontFaceName);
@@ -379,7 +389,7 @@ public sealed partial class PngChartRenderer {
 
     private static bool ShouldDrawDataLabels(Chart chart, ChartSeries series) => series.ShowDataLabels ?? chart.Options.ShowDataLabels;
 
-    private static ChartColor SeriesColor(Chart chart, int index) => chart.Series[index].Color ?? chart.Options.Theme.Palette[index % chart.Options.Theme.Palette.Length];
+    private static ChartColor SeriesColor(Chart chart, int index) => ChartSeriesColours.Resolve(chart, index);
 
     private static ChartColor PointColor(Chart chart, ChartSeries series, int seriesIndex, int pointIndex) =>
         pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
