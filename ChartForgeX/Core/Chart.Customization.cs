@@ -5,6 +5,11 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
+    /// <summary>Clips Cartesian series geometry to the plot, allowing the radius of markers whose centers are on its edge.</summary>
+    /// <param name="enabled">Whether plot clipping is enabled.</param>
+    /// <returns>The chart for fluent configuration.</returns>
+    public Chart WithPlotClipping(bool enabled = true) { Options.ClipMarksToPlot = enabled; return this; }
+
     /// <summary>
     /// Configures style overrides for a chart text role.
     /// </summary>

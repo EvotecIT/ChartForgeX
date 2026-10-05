@@ -7,13 +7,14 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static void DrawOptionalLineMarkers(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, IReadOnlyList<ChartPoint> mapped, double markerRadius, bool includeInteractionTargets) {
+    private static void DrawOptionalLineMarkers(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, IReadOnlyList<ChartPoint> mapped, double markerRadius, bool includeInteractionTargets, ChartRect plot) {
         if (!ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind)) return;
         if (chart.Options.IsSparkline && !series.PreserveInteractionTargetsWhenMarkersHidden) return;
         if (markerRadius <= 0 && (!series.PreserveInteractionTargetsWhenMarkersHidden || !includeInteractionTargets)) return;
 
         for (var pointIndex = 0; pointIndex < mapped.Count; pointIndex++) {
             var point = mapped[pointIndex];
+            if (chart.Options.ClipMarksToPlot && !ChartPlotClip.Contains(plot, point.X, point.Y)) continue;
             var raw = series.Points[pointIndex];
             var markerColor = PointColor(chart, series, seriesIndex, pointIndex);
             var hiddenInteractionTarget = markerRadius <= 0;

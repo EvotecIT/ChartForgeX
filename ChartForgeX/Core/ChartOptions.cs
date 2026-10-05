@@ -168,6 +168,10 @@ public sealed partial class ChartOptions {
     /// </summary>
     public bool ShowLegend { get; set; } = true;
 
+    /// <summary>Gets or sets whether Cartesian series geometry is clipped to the plot rectangle.</summary>
+    /// <remarks>Markers with centers inside the rectangle may extend beyond it by their radius. Disable this for intentional overflow.</remarks>
+    public bool ClipMarksToPlot { get; set; } = true;
+
     /// <summary>
     /// Gets or sets a value indicating whether capable legends should list individual points instead of series.
     /// </summary>

@@ -23,6 +23,8 @@ ChartForgeX renders polished charts, animated visual stories, visual blocks, top
 
 ## What It Does
 
+Cartesian series are clipped to the plot rectangle in SVG and PNG. Markers whose centers are inside the plot retain their radius at its edge. Use `chart.WithPlotClipping(false)` when a report intentionally needs series overflow.
+
 ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, visual canvases, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, social preview images, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
 
 The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.

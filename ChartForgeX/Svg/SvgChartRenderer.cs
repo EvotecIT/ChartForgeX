@@ -166,7 +166,6 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", plot.Y)
             .Attribute("width", plot.Width)
             .Attribute("height", plot.Height)
-            .Attribute("rx", t.PlotCornerRadius)
             .EndEmptyElement()
             .EndElement()
             .Line());
@@ -350,7 +349,7 @@ public sealed partial class SvgChartRenderer {
         if (map == null) throw new InvalidOperationException("The chart does not provide a cartesian rendering path.");
         if (IsHorizontalBarChart(chart)) {
             DrawHorizontalBarGrid(sb, chart, plot, xTicks, yTicks, map);
-            AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
+            AppendSvgStart(sb, writer => writer.StartElement("g").EndStartElement().Line());
             for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, map, id, includeInteractionTargets);
             AppendSvgEnd(sb, "g");
             if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawHorizontalStackTotals(sb, chart, plot, map);
@@ -363,7 +362,7 @@ public sealed partial class SvgChartRenderer {
         DrawAnnotationBands(sb, chart, plot, map);
         DrawGrid(sb, chart, plot, xTicks, yTicks, map);
         if (secondaryMap != null && secondaryTicks != null) DrawSecondaryYAxis(sb, chart, plot, secondaryTicks, secondaryMap);
-        AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
+        AppendSvgStart(sb, writer => writer.StartElement("g").EndStartElement().Line());
         for (var i = 0; i < chart.Series.Count; i++) DrawSeries(sb, chart, barCoordinateMap, i, plot, range, SeriesMap(chart.Series[i], map, secondaryMap), id, includeInteractionTargets);
         if (o.BarMode == ChartBarMode.Stacked && o.ShowStackTotals) DrawStackTotals(sb, chart, barCoordinateMap, plot, map);
         AppendSvgEnd(sb, "g");

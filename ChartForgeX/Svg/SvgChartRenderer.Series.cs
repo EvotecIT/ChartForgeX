@@ -9,6 +9,18 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawSeries(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id, bool includeInteractionTargets) {
+        var series = chart.Series[index];
+        var clip = chart.Options.ClipMarksToPlot && series.Kind != ChartSeriesKind.Scatter;
+        if (clip) AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
+        DrawSeriesGeometry(sb, chart, barCoordinateMap, index, plot, range, map, id, includeInteractionTargets);
+        if (clip) AppendSvgEnd(sb, "g");
+        if (ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind)) {
+            var mapped = series.Points.Select(p => new ChartPoint(map.X(p.X), map.Y(p.Y), p.BreakBefore)).ToArray();
+            DrawOptionalLineMarkers(sb, chart, series, index, mapped, series.MarkerRadius ?? chart.Options.Theme.MarkerRadius, includeInteractionTargets, plot);
+        }
+    }
+
+    private static void DrawSeriesGeometry(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id, bool includeInteractionTargets) {
         var s = chart.Series[index]; var c = Color(chart, index); if (s.Points.Count == 0) return;
         if (s.Kind == ChartSeriesKind.HorizontalBar) { DrawHorizontalBars(sb, chart, index, plot, map, id); return; }
         if (s.Kind == ChartSeriesKind.Bar) { DrawBars(sb, chart, barCoordinateMap, index, plot, range, map, id); return; }
@@ -39,17 +51,16 @@ public sealed partial class SvgChartRenderer {
         if (s.Kind == ChartSeriesKind.Scatter) {
             for (var pointIndex = 0; pointIndex < mapped.Length; pointIndex++) {
                 var p = mapped[pointIndex];
+                if (chart.Options.ClipMarksToPlot && !ChartPlotClip.Contains(plot, p.X, p.Y)) continue;
                 var raw = s.Points[pointIndex];
                 var markerColor = PointColor(chart, s, index, pointIndex);
                 AppendSvg(sb, writer => writer.StartElement("circle").Attribute("data-cfx-role", SeriesSemanticRole(s, "scatter-point")).Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-x", raw.X).Attribute("data-cfx-y", raw.Y).Attribute("cx", p.X).Attribute("cy", p.Y).Attribute("r", Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)).Attribute("fill", markerColor.ToCss()).Attribute("opacity", "0.92").Attribute("stroke", chart.Options.Theme.CardBackground.ToCss()).Attribute("stroke-width", ChartVisualPrimitives.MarkerStrokeWidth).EndEmptyElement().Line());
             }
         } else {
-            var markerRadius = s.MarkerRadius ?? chart.Options.Theme.MarkerRadius;
             var line = s.Kind == ChartSeriesKind.StepLine ? BuildStepLinePath(mapped) : BuildLinePath(mapped, s.Smooth);
             if (s.Kind == ChartSeriesKind.StepArea) line = BuildStepLinePath(mapped);
             var lineRole = s.Kind == ChartSeriesKind.StepLine ? "step-line" : s.Kind == ChartSeriesKind.StepArea ? "step-area-line" : s.Kind == ChartSeriesKind.Area ? "area-line" : "line";
             DrawPremiumSvgLinePath(sb, lineRole, index, mapped.Length, line, c, s.StrokeWidth, chart.Options.LineVisualStyle);
-            DrawOptionalLineMarkers(sb, chart, s, index, mapped, markerRadius, includeInteractionTargets);
         }
         if (ShouldDrawDataLabels(chart, s)) DrawPointLabels(sb, chart, s, mapped, plot);
     }

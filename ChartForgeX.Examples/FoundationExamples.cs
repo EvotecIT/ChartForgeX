@@ -5,6 +5,15 @@ using ChartForgeX.Themes;
 
 internal static class FoundationExamples {
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+        foreach (var dark in new[] { false, true }) {
+            var clipped = Chart.Create().WithTitle("Series at the plot boundary")
+                .WithSubtitle("Out-of-domain geometry is clipped; edge markers remain visible")
+                .WithSize(640, 400).WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight())
+                .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false)
+                .AddArea("Range", new[] { new ChartForgeX.Primitives.ChartPoint(-4, -4), new ChartForgeX.Primitives.ChartPoint(5, 16), new ChartForgeX.Primitives.ChartPoint(14, -4) })
+                .AddScatter("Edge", new[] { new ChartForgeX.Primitives.ChartPoint(0, 5), new ChartForgeX.Primitives.ChartPoint(10, 5) });
+            SaveChart(clipped, output, "foundation-plot-clipping-" + (dark ? "dark" : "light"), pngOutputScale);
+        }
         var samples = ChartDataset<FoundationSample>.From(new[] {
             new FoundationSample("Warsaw", 1, 18),
             new FoundationSample("Warsaw", 2, 42),
