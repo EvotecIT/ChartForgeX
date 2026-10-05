@@ -1,10 +1,17 @@
 using ChartForgeX.Core;
 
 internal static class ExampleProgramOptions {
+    public static string OutputDirectory(string[] args) {
+        var index = Array.FindIndex(args, arg => string.Equals(arg, "--output", StringComparison.OrdinalIgnoreCase));
+        if (index < 0) return Path.Combine(AppContext.BaseDirectory, "output");
+        if (index + 1 >= args.Length || string.IsNullOrWhiteSpace(args[index + 1])) throw new ArgumentException("--output requires a directory.");
+        return Path.GetFullPath(args[index + 1]);
+    }
     public static bool HasArg(string[] args, string name) =>
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--graphite-only")) { GraphiteExamples.Write(output, pngOutputScale); GalleryWriter.Write(output); return true; }
         if (HasArg(args, "--dense-legends-only")) {
             DenseLegendExamples.Write(output, pngOutputScale);
             return true;

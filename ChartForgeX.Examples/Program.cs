@@ -4,8 +4,7 @@ using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
-var output = Path.Combine(AppContext.BaseDirectory, "output");
-if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
+var output = ExampleProgramOptions.OutputDirectory(args);
 Directory.CreateDirectory(output);
 const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
 if (ExampleProgramOptions.TryHandle(args, output, DemoPngOutputScale)) return;
@@ -792,6 +791,7 @@ var findingsPareto = Chart.Create()
 
 SaveChart(findingsPareto, "findings-pareto-dark");
 CompositionShapeExamples.Write(output);
+GraphiteExamples.Write(output, DemoPngOutputScale);
 GalleryWriter.Write(output);
 Console.WriteLine("Generated files in: " + output);
 

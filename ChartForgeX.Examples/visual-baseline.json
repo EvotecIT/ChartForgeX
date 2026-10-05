@@ -105,16 +105,16 @@
     },
     {
       "name": "brand-kit-showcase-grid",
-      "width": 914,
-      "height": 670,
+      "width": 912,
+      "height": 668,
       "svg": {
-        "minVisualNodes": 109,
+        "minVisualNodes": 55,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1224760,
+        "minVisiblePixels": 1218432,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -139,8 +139,8 @@
     },
     {
       "name": "chart-mark-surfaces-showcase-grid",
-      "width": 946,
-      "height": 1000,
+      "width": 944,
+      "height": 996,
       "svg": {
         "minVisualNodes": 98,
         "maxClippedTextNodes": 0,
@@ -148,7 +148,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1892000,
+        "minVisiblePixels": 1880448,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -292,8 +292,8 @@
     },
     {
       "name": "control-scorecards-grid",
-      "width": 1906,
-      "height": 1262,
+      "width": 1904,
+      "height": 1260,
       "svg": {
         "minVisualNodes": 118,
         "maxClippedTextNodes": 0,
@@ -301,7 +301,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 4810744,
+        "minVisiblePixels": 4798080,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -956,7 +956,7 @@
     {
       "name": "data-label-placement-showcase-grid",
       "width": 668,
-      "height": 782,
+      "height": 780,
       "svg": {
         "minVisualNodes": 37,
         "maxClippedTextNodes": 0,
@@ -964,7 +964,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1044752,
+        "minVisiblePixels": 1042080,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -1482,7 +1482,7 @@
     },
     {
       "name": "foundation-dashboard-typography-dark",
-      "width": 1346,
+      "width": 1344,
       "height": 524,
       "svg": {
         "minVisualNodes": 336,
@@ -1491,7 +1491,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1410608,
+        "minVisiblePixels": 1408512,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -1499,7 +1499,7 @@
     },
     {
       "name": "foundation-dashboard-typography-light",
-      "width": 1346,
+      "width": 1344,
       "height": 524,
       "svg": {
         "minVisualNodes": 102,
@@ -1508,7 +1508,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1410608,
+        "minVisiblePixels": 1408512,
         "minTransparentPixels": 0,
         "minDistinctColors": 1634,
         "maxEdgeInkPixels": 0
@@ -1635,7 +1635,7 @@
     },
     {
       "name": "foundation-typed-facets",
-      "width": 926,
+      "width": 924,
       "height": 444,
       "svg": {
         "minVisualNodes": 59,
@@ -1644,7 +1644,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 822288,
+        "minVisiblePixels": 820512,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -1669,7 +1669,7 @@
     },
     {
       "name": "funnel-surfaces-showcase-grid",
-      "width": 1164,
+      "width": 1160,
       "height": 404,
       "svg": {
         "minVisualNodes": 53,
@@ -1678,7 +1678,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 940512,
+        "minVisiblePixels": 937280,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -1817,6 +1817,822 @@
         "minVisiblePixels": 720000,
         "minTransparentPixels": 0,
         "minDistinctColors": 834,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-area",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 566,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-bar",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 703,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-bubble",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 522,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-bullet",
+      "width": 556,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 326824,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 602,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-dashboard",
+      "width": 664,
+      "height": 580,
+      "svg": {
+        "minVisualNodes": 51,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 770240,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1138,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-donut",
+      "width": 596,
+      "height": 314,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 374184,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1156,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-funnel",
+      "width": 556,
+      "height": 324,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 360184,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 503,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-gantt",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 786,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-gauge",
+      "width": 396,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 232744,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1029,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-heat",
+      "width": 616,
+      "height": 304,
+      "svg": {
+        "minVisualNodes": 96,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 374424,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 813,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-horizontal",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 572,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-host-frame",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 117828,
+        "minTransparentPixels": 285067,
+        "minDistinctColors": 645,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-line",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 797,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-linear",
+      "width": 596,
+      "height": 230,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 274056,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 452,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-multi-area",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 752,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-narrow-donut",
+      "width": 360,
+      "height": 510,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 367096,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1199,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-needle",
+      "width": 396,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 232744,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 773,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-sankey",
+      "width": 556,
+      "height": 324,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 360184,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 942,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-scatter",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 394,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-stacked",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 592,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-timeline",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 723,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-tree",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 879,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-treemap",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 817,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-waterfall",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 614,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-area",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 635,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-bar",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 720,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-bubble",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 580,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-bullet",
+      "width": 556,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 326824,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 660,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-dashboard",
+      "width": 664,
+      "height": 580,
+      "svg": {
+        "minVisualNodes": 51,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 770240,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1150,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-donut",
+      "width": 596,
+      "height": 314,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 374184,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1216,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-funnel",
+      "width": 556,
+      "height": 324,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 360184,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 561,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-gantt",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 816,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-gauge",
+      "width": 396,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 232744,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1124,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-heat",
+      "width": 616,
+      "height": 304,
+      "svg": {
+        "minVisualNodes": 96,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 374424,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 866,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-horizontal",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 601,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-host-frame",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 117828,
+        "minTransparentPixels": 285067,
+        "minDistinctColors": 942,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-line",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 815,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-linear",
+      "width": 596,
+      "height": 230,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 274056,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 494,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-multi-area",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 781,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-narrow-donut",
+      "width": 360,
+      "height": 510,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 367096,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1241,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-needle",
+      "width": 396,
+      "height": 294,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 232744,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 853,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-sankey",
+      "width": 556,
+      "height": 324,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 360184,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 1046,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-scatter",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 432,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-stacked",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 615,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-timeline",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 749,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-tree",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 919,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-treemap",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 843,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-waterfall",
+      "width": 596,
+      "height": 338,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402792,
+        "minTransparentPixels": 104,
+        "minDistinctColors": 632,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2060,8 +2876,8 @@
     },
     {
       "name": "label-placement-scorecards-dark",
-      "width": 1586,
-      "height": 1062,
+      "width": 1584,
+      "height": 1060,
       "svg": {
         "minVisualNodes": 402,
         "maxClippedTextNodes": 0,
@@ -2069,7 +2885,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 3368664,
+        "minVisiblePixels": 3358080,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -2077,8 +2893,8 @@
     },
     {
       "name": "label-placement-scorecards-light",
-      "width": 1586,
-      "height": 1062,
+      "width": 1584,
+      "height": 1060,
       "svg": {
         "minVisualNodes": 168,
         "maxClippedTextNodes": 0,
@@ -2086,7 +2902,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 3368664,
+        "minVisiblePixels": 3358080,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -2318,15 +3134,15 @@
       "width": 920,
       "height": 520,
       "svg": {
-        "minVisualNodes": 37,
+        "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 222039,
-        "minTransparentPixels": 17161,
-        "minDistinctColors": 1420,
+        "minVisiblePixels": 239180,
+        "minTransparentPixels": 20,
+        "minDistinctColors": 871,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2369,15 +3185,15 @@
       "width": 760,
       "height": 360,
       "svg": {
-        "minVisualNodes": 13,
+        "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 26386,
-        "minTransparentPixels": 110414,
-        "minDistinctColors": 1021,
+        "minVisiblePixels": 26091,
+        "minTransparentPixels": 110708,
+        "minDistinctColors": 1208,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2386,15 +3202,15 @@
       "width": 980,
       "height": 560,
       "svg": {
-        "minVisualNodes": 40,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 256019,
-        "minTransparentPixels": 18381,
-        "minDistinctColors": 1025,
+        "minVisiblePixels": 274380,
+        "minTransparentPixels": 20,
+        "minDistinctColors": 696,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2451,8 +3267,8 @@
     },
     {
       "name": "paged-facets-1",
-      "width": 946,
-      "height": 1000,
+      "width": 944,
+      "height": 996,
       "svg": {
         "minVisualNodes": 194,
         "maxClippedTextNodes": 0,
@@ -2460,7 +3276,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1892000,
+        "minVisiblePixels": 1880448,
         "minTransparentPixels": 0,
         "minDistinctColors": 1173,
         "maxEdgeInkPixels": 0
@@ -2468,8 +3284,8 @@
     },
     {
       "name": "paged-facets-2",
-      "width": 946,
-      "height": 1000,
+      "width": 944,
+      "height": 996,
       "svg": {
         "minVisualNodes": 194,
         "maxClippedTextNodes": 0,
@@ -2477,7 +3293,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1892000,
+        "minVisiblePixels": 1880448,
         "minTransparentPixels": 0,
         "minDistinctColors": 1145,
         "maxEdgeInkPixels": 0
@@ -2485,7 +3301,7 @@
     },
     {
       "name": "paged-facets-3",
-      "width": 946,
+      "width": 944,
       "height": 404,
       "svg": {
         "minVisualNodes": 34,
@@ -2494,7 +3310,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 764368,
+        "minVisiblePixels": 762752,
         "minTransparentPixels": 0,
         "minDistinctColors": 902,
         "maxEdgeInkPixels": 0
@@ -2502,8 +3318,8 @@
     },
     {
       "name": "palette-swatch-showcase-grid",
-      "width": 914,
-      "height": 948,
+      "width": 912,
+      "height": 944,
       "svg": {
         "minVisualNodes": 101,
         "maxClippedTextNodes": 0,
@@ -2511,7 +3327,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1732944,
+        "minVisiblePixels": 1721856,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -2536,7 +3352,7 @@
     },
     {
       "name": "pictorial-isotype-showcase-grid",
-      "width": 934,
+      "width": 932,
       "height": 412,
       "svg": {
         "minVisualNodes": 243,
@@ -2545,7 +3361,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 769616,
+        "minVisiblePixels": 767968,
         "minTransparentPixels": 0,
         "minDistinctColors": 2032,
         "maxEdgeInkPixels": 0
@@ -2553,8 +3369,8 @@
     },
     {
       "name": "pictorial-symbol-showcase-grid",
-      "width": 1164,
-      "height": 938,
+      "width": 1160,
+      "height": 932,
       "svg": {
         "minVisualNodes": 151,
         "maxClippedTextNodes": 0,
@@ -2562,7 +3378,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 2183664,
+        "minVisiblePixels": 2162240,
         "minTransparentPixels": 0,
         "minDistinctColors": 1734,
         "maxEdgeInkPixels": 0
@@ -2570,8 +3386,8 @@
     },
     {
       "name": "point-color-customization-showcase-grid",
-      "width": 934,
-      "height": 1008,
+      "width": 932,
+      "height": 1004,
       "svg": {
         "minVisualNodes": 184,
         "maxClippedTextNodes": 0,
@@ -2579,7 +3395,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1882944,
+        "minVisiblePixels": 1871456,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -2904,7 +3720,7 @@
         "outputScale": 2,
         "minVisiblePixels": 406691,
         "minTransparentPixels": 49309,
-        "minDistinctColors": 1735,
+        "minDistinctColors": 1747,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2921,7 +3737,7 @@
         "outputScale": 2,
         "minVisiblePixels": 494531,
         "minTransparentPixels": 52669,
-        "minDistinctColors": 1963,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3318,7 +4134,7 @@
     },
     {
       "name": "shared-axis-coverage-grid",
-      "width": 1082,
+      "width": 1080,
       "height": 440,
       "svg": {
         "minVisualNodes": 53,
@@ -3327,7 +4143,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 952160,
+        "minVisiblePixels": 950400,
         "minTransparentPixels": 0,
         "minDistinctColors": 1992,
         "maxEdgeInkPixels": 0
@@ -3522,8 +4338,8 @@
     },
     {
       "name": "theme-font-showcase-grid",
-      "width": 914,
-      "height": 670,
+      "width": 912,
+      "height": 668,
       "svg": {
         "minVisualNodes": 108,
         "maxClippedTextNodes": 0,
@@ -3531,7 +4347,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1224760,
+        "minVisiblePixels": 1218432,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4304,7 +5120,7 @@
     },
     {
       "name": "word-cloud-control-showcase-grid",
-      "width": 934,
+      "width": 932,
       "height": 412,
       "svg": {
         "minVisualNodes": 31,
@@ -4313,7 +5129,7 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 769616,
+        "minVisiblePixels": 767968,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4332,7 +5148,7 @@
         "outputScale": 2,
         "minVisiblePixels": 693491,
         "minTransparentPixels": 60909,
-        "minDistinctColors": 1204,
+        "minDistinctColors": 1216,
         "maxEdgeInkPixels": 0
       }
     },
