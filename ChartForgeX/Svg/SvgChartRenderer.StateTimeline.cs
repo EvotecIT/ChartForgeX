@@ -45,7 +45,7 @@ public sealed partial class SvgChartRenderer {
         foreach (var tick in model.Ticks) {
             var x = model.X(tick, plot);
             var gridStyle = chart.Options.GridLineStyle;
-            if (chart.Options.ShowGrid && gridStyle.ShowVerticalLines) {
+            if (chart.Options.ShowGrid && gridStyle.ShowVerticalLines && !t.UseGraphiteLayout) {
                 var gridLine = new StringBuilder();
                 WriteSvgGuideLine(gridLine, "state-timeline-grid", x, plot.Top, x, plot.Bottom, t.Grid.ToCss(), gridStyle.StrokeWidth, gridStyle.VerticalOpacity, gridStyle);
                 writer.Raw(gridLine.ToString());

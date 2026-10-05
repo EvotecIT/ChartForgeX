@@ -44,7 +44,7 @@ public sealed partial class SvgChartRenderer {
         if (!t.FlatMarks) DrawGanttItemGradients(writer, id, items);
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
-            if (chart.Options.ShowGrid) {
+            if (chart.Options.ShowGrid && !t.UseGraphiteLayout) {
                 writer
                     .StartElement("line")
                     .Attribute("x1", F(x))
@@ -96,25 +96,25 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y2", F(centerY))
                     .Attribute("stroke", t.Grid.ToCss())
                     .Attribute("stroke-width", F(ChartVisualPrimitives.GridStrokeWidth))
-                    .Attribute("opacity", F(ChartVisualPrimitives.TimelineRowGridOpacity))
+                    .Attribute("opacity", F(t.UseGraphiteLayout ? 1 : ChartVisualPrimitives.TimelineRowGridOpacity))
                     .EndEmptyElement()
                     .Line();
             }
 
             if (chart.Options.ShowAxes) {
-                var rowLabelFontSize = TextFontSizeForSvgWidth(chart, item.Name, rowLabelWidth, tickFontSize, tickStyle, emphasized: true);
-                var rowLabel = TrimSvgLabelToWidth(chart, item.Name, rowLabelFontSize, rowLabelWidth, tickStyle, emphasized: true);
+                var rowLabelFontSize = TextFontSizeForSvgWidth(chart, item.Name, rowLabelWidth, tickFontSize, tickStyle, emphasized: !t.UseGraphiteLayout);
+                var rowLabel = TrimSvgLabelToWidth(chart, item.Name, rowLabelFontSize, rowLabelWidth, tickStyle, emphasized: !t.UseGraphiteLayout);
                 writer
                     .StartElement("text")
                     .Attribute("data-cfx-role", "gantt-row-label")
-                    .Attribute("x", F(plot.Left - 14))
+                    .Attribute("x", F(plot.Left - (t.UseGraphiteLayout ? 8 : 14)))
                     .Attribute("y", F(centerY))
                     .Attribute("text-anchor", "end")
                     .Attribute("dominant-baseline", "middle")
                     .Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss())
                     .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
                     .Attribute("font-size", F(rowLabelFontSize))
-                    .Attribute("font-weight", StyleWeight(tickStyle, "650"));
+                    .Attribute("font-weight", StyleWeight(tickStyle, t.UseGraphiteLayout ? "400" : "650"));
                 WriteSvgTextStyleAttributes(writer, tickStyle);
                 WriteSvgStyledTextContent(writer, tickStyle, rowLabel)
                     .EndElement()
@@ -153,7 +153,7 @@ public sealed partial class SvgChartRenderer {
                 .Line();
             DrawGanttSvgXAxisTitle(writer, chart, plot, plot.Bottom + 49, "gantt-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-                var widestLabel = items.Max(item => EstimateSvgStyledTextWidth(chart, item.Name, tickFontSize, tickStyle, emphasized: true));
+                var widestLabel = items.Max(item => EstimateSvgStyledTextWidth(chart, item.Name, tickFontSize, tickStyle, emphasized: !t.UseGraphiteLayout));
                 DrawGanttSvgYAxisTitle(writer, chart, plot, Math.Max(24, plot.Left - widestLabel - 46), "gantt-y-axis-title");
             }
         }

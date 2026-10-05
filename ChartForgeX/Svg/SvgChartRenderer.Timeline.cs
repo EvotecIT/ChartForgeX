@@ -36,7 +36,7 @@ public sealed partial class SvgChartRenderer {
         if (!t.FlatMarks) DrawTimelineItemGradients(writer, id, items);
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
-            if (chart.Options.ShowGrid) {
+            if (chart.Options.ShowGrid && !t.UseGraphiteLayout) {
                 writer
                     .StartElement("line")
                     .Attribute("x1", x)
@@ -91,25 +91,25 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("y2", y + rowHeight / 2)
                     .Attribute("stroke", t.Grid.ToCss())
                     .Attribute("stroke-width", ChartVisualPrimitives.GridStrokeWidth)
-                    .Attribute("opacity", ChartVisualPrimitives.TimelineRowGridOpacity)
+                    .Attribute("opacity", t.UseGraphiteLayout ? 1 : ChartVisualPrimitives.TimelineRowGridOpacity)
                     .EndEmptyElement()
                     .Line();
             }
 
             if (chart.Options.ShowAxes) {
-                var rowLabelFontSize = TextFontSizeForSvgWidth(chart, item.Name, rowLabelWidth, tickFontSize, tickStyle, emphasized: true);
-                var rowLabel = TrimSvgLabelToWidth(chart, item.Name, rowLabelFontSize, rowLabelWidth, tickStyle, emphasized: true);
+                var rowLabelFontSize = TextFontSizeForSvgWidth(chart, item.Name, rowLabelWidth, tickFontSize, tickStyle, emphasized: !t.UseGraphiteLayout);
+                var rowLabel = TrimSvgLabelToWidth(chart, item.Name, rowLabelFontSize, rowLabelWidth, tickStyle, emphasized: !t.UseGraphiteLayout);
                 writer
                     .StartElement("text")
                     .Attribute("data-cfx-role", "timeline-row-label")
-                    .Attribute("x", plot.Left - 14)
+                    .Attribute("x", plot.Left - (t.UseGraphiteLayout ? 8 : 14))
                     .Attribute("y", y + rowHeight / 2)
                     .Attribute("text-anchor", "end")
                     .Attribute("dominant-baseline", "middle")
                     .Attribute("fill", StyleColor(tickStyle, t.MutedText).ToCss())
                     .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, tickStyle)))
                     .Attribute("font-size", rowLabelFontSize)
-                    .Attribute("font-weight", StyleWeight(tickStyle, "650"));
+                    .Attribute("font-weight", StyleWeight(tickStyle, t.UseGraphiteLayout ? "400" : "650"));
                 WriteSvgTextStyleAttributes(writer, tickStyle);
                 WriteSvgStyledTextContent(writer, tickStyle, rowLabel)
                     .EndElement()
@@ -135,7 +135,7 @@ public sealed partial class SvgChartRenderer {
                 .Line();
             DrawTimelineSvgXAxisTitle(writer, chart, plot, plot.Bottom + 49, "timeline-x-axis-title");
             if (!string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
-                var widestLabel = items.Max(item => EstimateSvgStyledTextWidth(chart, item.Name, tickFontSize, tickStyle, emphasized: true));
+                var widestLabel = items.Max(item => EstimateSvgStyledTextWidth(chart, item.Name, tickFontSize, tickStyle, emphasized: !t.UseGraphiteLayout));
                 var axisX = Math.Max(24, plot.Left - widestLabel - 46);
                 DrawTimelineSvgYAxisTitle(writer, chart, plot, axisX, "timeline-y-axis-title");
             }

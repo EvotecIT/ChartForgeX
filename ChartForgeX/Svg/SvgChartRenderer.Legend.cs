@@ -42,7 +42,7 @@ public sealed partial class SvgChartRenderer {
                 var style = chart.Options.LegendStyle;
                 var labelOffset = t.UseGraphiteLayout ? (IsLineLikeLegend(series.Kind) ? 20 : 16) : 26;
                 var labelMaxWidth = Math.Max(8, item.Width - labelOffset - (t.UseGraphiteLayout ? 16 : 4));
-                var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
+                var labelFontSize = t.UseGraphiteLayout ? TextFontSizeForSvgWidth(chart, item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize), style) : TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
                 var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
                 if (label.Length > 0) {
                     writer.StartElement("text")
@@ -82,7 +82,9 @@ public sealed partial class SvgChartRenderer {
             var label = TrimSvgLabelToWidth(transformedLabel, preferredFontSize, labelWidthLimit);
             var itemWidth = vertical
                 ? Math.Min(maxX, 34 + EstimateTextWidth(label, preferredFontSize) + 18)
-                : LegendRowBudget.HorizontalItemWidth(transformedLabel, preferredFontSize, maxX, chart.Options.Theme.UseGraphiteLayout ? (IsLineLikeLegend(chart.Series[entry.SeriesIndex].Kind) ? 36 : 32) : 52);
+                : chart.Options.Theme.UseGraphiteLayout
+                    ? Math.Min(maxX, (IsLineLikeLegend(chart.Series[entry.SeriesIndex].Kind) ? 36 : 32) + EstimateSvgStyledTextWidth(chart, transformedLabel, preferredFontSize, style))
+                    : LegendRowBudget.HorizontalItemWidth(transformedLabel, preferredFontSize, maxX, 52);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new LegendRow();
                 rows.Add(row);

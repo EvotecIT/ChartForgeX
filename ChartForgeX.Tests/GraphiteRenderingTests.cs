@@ -8,6 +8,37 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GraphiteRenderingTests {
+    [Theory]
+    [InlineData(220)]
+    [InlineData(260)]
+    [InlineData(300)]
+    public void CompactInlineLegendsRetainShortSeriesNames(int width) {
+        var chart=Chart.Create().WithSize(width,320).WithTitle("Panel").WithSubtitle("Current status")
+            .AddLine("Passed",new[]{new ChartPoint(1,100),new ChartPoint(2,110)})
+            .AddLine("Warnings",new[]{new ChartPoint(1,10),new ChartPoint(2,12)})
+            .AddLine("Failed",new[]{new ChartPoint(1,1),new ChartPoint(2,2)});
+        var nodes=XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
+        Assert.Equal(3,nodes.Count(e=>(string?)e.Attribute("data-cfx-role")=="legend-item"));
+        Assert.DoesNotContain(nodes,e=>(string?)e.Attribute("data-cfx-role")=="legend-overflow");
+        Assert.Equal(chart.Series.Select(s=>s.Name),nodes.Where(e=>(string?)e.Attribute("data-cfx-role")=="legend-label").Select(e=>e.Value));
+        Assert.All(nodes.Where(e=>(string?)e.Attribute("data-cfx-role")=="legend-label"),e=>Assert.Equal(chart.Options.Theme.LegendFontSize,(double)e.Attribute("font-size")!,2));
+    }
+
+    [Theory]
+    [InlineData("timeline")]
+    [InlineData("gantt")]
+    public void TemporalChartsUseOnlyHorizontalGuidesAndMutedRowLabels(string kind) {
+        var chart=Chart.Create().WithSize(600,360);
+        if(kind=="gantt") chart.AddGanttTask("Plan",1,3).AddGanttTask("Build",3,7);
+        else chart.AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7);
+        var nodes=XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
+        Assert.All(nodes.Where(e=>e.Name.LocalName=="line"),e=>Assert.Equal((string?)e.Attribute("y1"),(string?)e.Attribute("y2")));
+        Assert.All(nodes.Where(e=>(string?)e.Attribute("data-cfx-role")==kind+"-row-label"),e=> {
+            Assert.Equal("400",(string?)e.Attribute("font-weight"));
+            Assert.Equal(chart.Options.Theme.MutedText.ToCss(),(string?)e.Attribute("fill"));
+        });
+        Assert.NotEmpty(chart.ToPng());
+    }
     [Fact]
     public void StaticHtmlSurfacesAndPanelTitlesFollowGraphite() {
         var chart = Chart.Create().WithTitle("Panel").AddBar("Counts", new[] { new ChartPoint(1, 2) });
