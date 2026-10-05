@@ -38,13 +38,14 @@ public sealed partial class TopologyPngRenderer {
     }
 
     internal RgbaImage RenderPreparedImage(TopologyChart prepared, TopologyRenderOptions options, int requestedWidth, int requestedHeight, TopologyMotionPlan? motionPlan = null) {
+        using var routes = new TopologyRenderRouteCache(prepared);
         var width = (int)Math.Ceiling(prepared.Viewport.Width);
         var height = (int)Math.Ceiling(prepared.Viewport.Height);
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var highlight = TopologyHighlightState.From(prepared, options);
         // Emphasized labels draw the theme family's real bold face, matching the bold measurement layout used.
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
-        var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), TypographyFontResolver.ResolveThemeFont(theme.FontFamily), Math.Max(1, options.PngOutputScale));
+        var canvas = new RgbaCanvas(width, height, Math.Max(1, options.PngSupersamplingScale), TypographyFontResolver.ResolveThemeFont(theme.FontFamily), Math.Max(1, options.PngOutputScale)) { SuppressText = true };
         canvas.Clear(Color(theme.Background));
         if (prepared.LayoutMode != TopologyLayoutMode.Geographic) DrawCanvasSurface(canvas, prepared, theme, options);
         if (options.IncludeTitle) DrawHeader(canvas, prepared, theme, options);
@@ -60,6 +61,9 @@ public sealed partial class TopologyPngRenderer {
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
         if (options.IncludeLegend && prepared.Legend != null) DrawLegend(canvas, prepared, theme, options);
         if (options.IncludeLayoutDiagnosticOverlay) DrawLayoutDiagnosticOverlay(canvas, prepared, options);
+        canvas.SuppressText = false;
+        var labels = new TopologySvgRenderer().RenderPreparedScene(prepared, options, requestedWidth, requestedHeight, includeRouteDiagnostics: false);
+        labels.Paint(canvas);
         var pixels = canvas.ToOutputPixels();
         if (!options.FitContentToViewport) return new RgbaImage(canvas.OutputWidth, canvas.OutputHeight, pixels);
         var targetWidth = Math.Max(1, requestedWidth * Math.Max(1, options.PngOutputScale));
@@ -298,6 +302,7 @@ public sealed partial class TopologyPngRenderer {
     }
 
     private static void DrawEdgeLabels(RgbaCanvas canvas, TopologyChart chart, TopologyTheme theme, TopologyRenderOptions options, TopologyHighlightState highlight) {
+        if (canvas.SuppressText) return;
         foreach (var (layout, _) in OrderedEdgeLabelsForRendering(chart, options)) {
             var edge = layout.Edge;
             var cx = layout.CenterX;

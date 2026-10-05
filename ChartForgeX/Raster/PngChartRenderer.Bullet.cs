@@ -16,13 +16,10 @@ public sealed partial class PngChartRenderer {
 
         if (rows.Count == 0) return;
         var tickFontSize = PngTickFontSize(chart);
-        var labelReserve = BulletLabelReserve(chart, rows);
-        var valueReserve = BulletValueReserve(chart, rows);
-        var content = BulletContentBounds(basePlot);
-        FitBulletReserves(content.Width, ref labelReserve, ref valueReserve);
-        var plot = new ChartRect(content.X + labelReserve, content.Y + 18, Math.Max(1, content.Width - labelReserve - valueReserve), Math.Max(1, content.Height - 54));
-        var rowHeight = Math.Min(64, plot.Height / Math.Max(1, rows.Count));
-        var barHeight = Math.Max(16, Math.Min(26, rowHeight * 0.38));
+        var layout = ChartBulletLayout.Create(chart, basePlot);
+        var labelReserve = layout.LabelReserve; var valueReserve = layout.ValueReserve;
+        var content = layout.Content; var plot = layout.Plot;
+        var rowHeight = layout.RowHeight; var barHeight = layout.BarHeight;
 
         for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++) {
             var row = rows[rowIndex];
@@ -62,23 +59,6 @@ public sealed partial class PngChartRenderer {
         }
 
         DrawBulletAxis(c, chart, plot, rows[0].Series, content.Bottom - 12);
-    }
-
-    private static ChartRect BulletContentBounds(ChartRect basePlot) =>
-        new(
-            basePlot.X + ChartVisualPrimitives.BulletContentInset,
-            basePlot.Y + ChartVisualPrimitives.BulletContentInset,
-            Math.Max(1, basePlot.Width - ChartVisualPrimitives.BulletContentInset * 2),
-            Math.Max(1, basePlot.Height - ChartVisualPrimitives.BulletContentInset * 2));
-
-    private static void FitBulletReserves(double contentWidth, ref double labelReserve, ref double valueReserve) {
-        var minimumPlotWidth = Math.Min(80, Math.Max(1, contentWidth * 0.25));
-        var reserveBudget = Math.Max(0, contentWidth - minimumPlotWidth);
-        var totalReserve = labelReserve + valueReserve;
-        if (totalReserve <= reserveBudget || totalReserve <= 0) return;
-        var ratio = reserveBudget / totalReserve;
-        labelReserve *= ratio;
-        valueReserve *= ratio;
     }
 
     private static void DrawBulletRanges(RgbaCanvas c, ChartSeries series, ChartRect plot, double y, double barHeight, double min, double max, ChartColor accent) {
@@ -165,28 +145,6 @@ public sealed partial class PngChartRenderer {
 
     private static ChartColor BulletStatusColor(Chart chart, string status) {
         return status == "below-target" ? chart.Options.Theme.Negative : chart.Options.Theme.Positive;
-    }
-
-    private static double BulletLabelReserve(Chart chart, IReadOnlyList<BulletRow> rows) {
-        var widest = 0.0;
-        foreach (var row in rows) {
-            if (row.Series.ShowDataLabels == false) continue;
-            var style = DataLabelStyle(chart, row.Series, 0);
-            var fontSize = PngStyleFontSize(style, chart.Options.Theme.LegendFontSize);
-            widest = Math.Max(widest, EstimatePngStyledTextWidth(row.Series.Name, fontSize, style, emphasized: true));
-        }
-        return widest <= 0 ? 10 : Math.Min(240, Math.Max(128, widest + 34));
-    }
-
-    private static double BulletValueReserve(Chart chart, IReadOnlyList<BulletRow> rows) {
-        var widest = 0.0;
-        foreach (var row in rows) {
-            if (row.Series.ShowDataLabels == false) continue;
-            var style = DataLabelStyle(chart, row.Series, 0);
-            var fontSize = PngDataLabelFontSize(chart, row.Series, 0);
-            widest = Math.Max(widest, EstimatePngStyledTextWidth(FormatValue(chart, BulletValue(row.Series)), fontSize, style, emphasized: true));
-        }
-        return widest <= 0 ? 12 : Math.Min(142, Math.Max(84, widest + 38));
     }
 
     private readonly struct BulletRow {

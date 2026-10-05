@@ -12,7 +12,6 @@ public sealed partial class SvgChartRenderer {
         var series = chart.Series[index];
         var startColor = chart.Options.Theme.MutedText;
         var radius = Math.Max(ChartVisualPrimitives.DumbbellMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.DumbbellMarkerRadiusExtra);
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex + 1 < series.Points.Count; pointIndex += 2) {
             var start = series.Points[pointIndex];
             var end = series.Points[pointIndex + 1];
@@ -31,14 +30,14 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
                     var labelX = placement == ChartDataLabelPlacement.Left ? x - radius - 8 : x + radius + 8;
-                    if (ReserveSvgHorizontalLabel(label, labelX, (top + bottom) / 2, anchor, chart, plot, reservedLabels, series, item)) DrawHorizontalValueLabel(sb, chart, label, labelX, (top + bottom) / 2, anchor, plot, series, item);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, (top + bottom) / 2, anchor, plot, series, item);
                 } else {
                     var labelY = placement == ChartDataLabelPlacement.Below
                         ? bottom + radius + 8
                         : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                             ? (top + bottom) / 2
                             : top - radius - 8;
-                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, item)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
                 }
             }
         }

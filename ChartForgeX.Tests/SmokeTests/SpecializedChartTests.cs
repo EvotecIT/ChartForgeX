@@ -571,7 +571,7 @@ internal static partial class SmokeTests {
             .WithXLabels(longLabel)
             .AddDonut(longLabel, Points(100))
             .ToSvg();
-        Assert(donut.Contains("...</text>", StringComparison.Ordinal), "Donut center and legend labels should shorten when their available width is constrained.");
+        Assert(donut.Contains("...</text>", StringComparison.Ordinal) || donut.Contains("data-cfx-label-status=\"dropped\"", StringComparison.Ordinal), "Donut labels should shorten or drop when the hole cannot fit readable text.");
 
         var bullet = Chart.Create()
             .WithSize(320, 220)
@@ -690,7 +690,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-dropoff-line\"") == 3, "Funnel charts should render drop-off guide lines after the first stage.");
         Assert(svg.Contains("data-cfx-retention=\"0.757\"", StringComparison.Ordinal), "Funnel segments should expose retention metadata.");
         Assert(svg.Contains("data-cfx-dropoff=\"0.243\"", StringComparison.Ordinal), "Funnel segments should expose drop-off metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Verified: 318, retained 75.7%, drop-off 24.3%\"", StringComparison.Ordinal), "Funnel segments should expose accessible summaries.");
+        Assert(svg.Contains("role=\"img\" aria-label=\"Verified: 318, retained 75.7%, drop-off 24.3%", StringComparison.Ordinal), "Funnel segments should preserve accessible summaries when their measured captions add detail.");
         Assert(svg.Contains(">Discovered</text>", StringComparison.Ordinal), "Funnel charts should render stage labels.");
         Assert(svg.Contains(">420</text>", StringComparison.Ordinal), "Funnel charts should render stage values.");
         Assert(GetAttribute(svg, "data-cfx-role=\"funnel-retention\"", "x") < 760, "Funnel retention labels should stay inside the SVG viewport.");

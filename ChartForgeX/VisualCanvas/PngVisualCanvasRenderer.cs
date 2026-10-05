@@ -251,7 +251,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
+    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts) {
         if (kind == VisualCanvasInfoTileIconKind.Text) {
             var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(text, size, fontFamily, mode);
             // Baselines match the SVG output: DrawText takes the top of the em box, one font size above the baseline.

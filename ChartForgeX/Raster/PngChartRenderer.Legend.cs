@@ -6,6 +6,7 @@ namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
     private static void DrawLegend(RgbaCanvas c, Chart chart) {
+        if (c.SuppressText) return; // The positioned legend scene owns its symbols and text together.
         if (!ShouldDrawLegend(chart)) return;
         var theme = chart.Options.Theme;
         var fontSize = PngLegendFontSize(chart);

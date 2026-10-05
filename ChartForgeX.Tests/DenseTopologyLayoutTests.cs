@@ -531,7 +531,7 @@ public sealed class DenseTopologyLayoutTests {
         var chart = Sites(7, 5);
         var firstGroupNodes = chart.Nodes.Where(node => node.GroupId == chart.Groups[0].Id).ToArray();
         firstGroupNodes[0].Height = 96;
-        firstGroupNodes[1].Label = "A long controller name spanning three caption lines";
+        firstGroupNodes[1].Label = "WWW WWW WWW WWW WWW WWW WWW WWW WWW WWW WWW WWW";
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, WrapNodeLabels = true, MaxNodeLabelLines = 3 };
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);

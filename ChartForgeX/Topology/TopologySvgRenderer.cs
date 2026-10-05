@@ -7,6 +7,8 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
 using ChartForgeX.Themes;
+using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -45,7 +47,13 @@ public sealed partial class TopologySvgRenderer {
         return RenderPrepared(prepared, options, requestedWidth, requestedHeight);
     }
 
-    internal string RenderPrepared(TopologyChart prepared, TopologyRenderOptions options, double requestedWidth, double requestedHeight) {
+    internal string RenderPrepared(TopologyChart prepared, TopologyRenderOptions options, double requestedWidth, double requestedHeight) => RenderPreparedScene(prepared, options, requestedWidth, requestedHeight).ToSvg();
+
+    internal ChartLabelScene RenderPreparedScene(TopologyChart prepared, TopologyRenderOptions options, double requestedWidth, double requestedHeight, bool includeRouteDiagnostics = true) =>
+        ChartLabelScene.Create(RenderPreparedMarkup(prepared, options, requestedWidth, requestedHeight, includeRouteDiagnostics), new FontSpec { Family = (prepared.Theme ?? TopologyTheme.Light()).FontFamily });
+
+    internal string RenderPreparedMarkup(TopologyChart prepared, TopologyRenderOptions options, double requestedWidth, double requestedHeight, bool includeRouteDiagnostics = true) {
+        using var routes = new TopologyRenderRouteCache(prepared);
         var theme = prepared.Theme ?? TopologyTheme.Light();
         var prefix = NormalizeCssClassPrefix(options.CssClassPrefix, "cfx-topology");
         var id = TopologySvgIds.Root(prepared, options);
@@ -97,14 +105,15 @@ public sealed partial class TopologySvgRenderer {
                 .Attribute("data-cfx-viewport-max-longitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MaximumLongitude) : null)
                 .Attribute("data-cfx-viewport-min-latitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MinimumLatitude) : null)
                 .Attribute("data-cfx-viewport-max-latitude", prepared.LayoutMode == TopologyLayoutMode.Geographic ? F(prepared.MapViewport.MaximumLatitude) : null);
-            AddBodyElements(root, prepared, prefix, theme, options, id, highlight);
+            AddBodyElements(root, prepared, prefix, theme, options, id, highlight, includeRouteDiagnostics);
         });
 
         var markup = document.ToMarkup();
-        return Themes.SvgPaint.Resolve(options.SvgColorVariables?.Apply(markup) ?? markup, options.SvgColorVariables);
+        markup = Themes.SvgPaint.Resolve(options.SvgColorVariables?.Apply(markup) ?? markup, options.SvgColorVariables);
+        return markup;
     }
 
-    private static void AddBodyElements(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string id, TopologyHighlightState highlight) {
+    private static void AddBodyElements(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string id, TopologyHighlightState highlight, bool includeRouteDiagnostics) {
         root.AddElement(new SvgElement("rect")
             .Class(prefix + "__background")
             .Attribute("width", "100%")
@@ -115,7 +124,7 @@ public sealed partial class TopologySvgRenderer {
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicFrame(root, chart, prefix, theme, options);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic && options.IncludeGeographicRegionHulls) AddGeographicRegionHulls(root, chart, prefix, theme, options);
         if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
-        AddEdges(root, chart, prefix, theme, options, id, highlight);
+        AddEdges(root, chart, prefix, theme, options, id, highlight, includeRouteDiagnostics);
         AddEdgeLabels(root, chart, prefix, theme, options, highlight);
         AddEndpointLabels(root, chart, prefix, theme, options, highlight);
         var motionPlan = TopologyMotionPlanner.Build(chart, options);

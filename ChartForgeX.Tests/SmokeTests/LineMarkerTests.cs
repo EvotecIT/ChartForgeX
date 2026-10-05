@@ -55,9 +55,13 @@ internal static partial class SmokeTests {
         Assert(!SvgDocument.Parse(markerlessArea.ToSvg()).Root.FindByTag("circle").Any(), "A markerless area should not advertise a point marker in its SVG legend.");
         var markedAreaPixels = ReadPngRgba(markedArea.ToPng(), out var areaWidth, out var areaHeight);
         var markerlessAreaPixels = ReadPngRgba(markerlessArea.ToPng(), out _, out _);
-        var legendTop = areaHeight * 3 / 4;
-        var markedLegendInk = CountNearColorInRect(markedAreaPixels, areaWidth, 0, legendTop, areaWidth, areaHeight - legendTop, color.R, color.G, color.B, 24);
-        var markerlessLegendInk = CountNearColorInRect(markerlessAreaPixels, areaWidth, 0, legendTop, areaWidth, areaHeight - legendTop, color.R, color.G, color.B, 24);
+        var legendCircle = System.Xml.Linq.XDocument.Parse(markedArea.ToSvg()).Descendants().Last(e => e.Name.LocalName == "circle");
+        var matrix = SvgRaster.SvgRasterMatrix.Identity;
+        foreach (var ancestor in legendCircle.Ancestors().Reverse()) matrix = matrix.Multiply(SvgRaster.SvgRasterMatrix.ParseTransform((string?)ancestor.Attribute("transform")));
+        var center = matrix.Transform(new ChartPoint(double.Parse(legendCircle.Attribute("cx")!.Value, CultureInfo.InvariantCulture), double.Parse(legendCircle.Attribute("cy")!.Value, CultureInfo.InvariantCulture)));
+        // Sample the circle above the line, where its white outline cannot reduce line ink.
+        var markedLegendInk = CountNearColorInRect(markedAreaPixels, areaWidth, (int)center.X - 3, (int)center.Y - 4, 7, 3, color.R, color.G, color.B, 48);
+        var markerlessLegendInk = CountNearColorInRect(markerlessAreaPixels, areaWidth, (int)center.X - 3, (int)center.Y - 4, 7, 3, color.R, color.G, color.B, 48);
         Assert(markerlessLegendInk < markedLegendInk, "A markerless area should omit the PNG legend marker while retaining its line symbol.");
     }
 }

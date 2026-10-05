@@ -92,6 +92,7 @@ public sealed partial class SvgChartRenderer {
                 writer
                     .StartElement("text")
                     .Attribute("data-cfx-role", "sankey-node-label")
+                    .Attribute("data-cfx-node", node.Index)
                     .Attribute("x", labelX)
                     .Attribute("y", labelY)
                     .Attribute("text-anchor", anchor)

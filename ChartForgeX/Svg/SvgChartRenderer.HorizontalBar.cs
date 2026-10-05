@@ -14,7 +14,6 @@ public sealed partial class SvgChartRenderer {
         var s = chart.Series[index];
         var layout = HorizontalBarLayout(chart, plot, index);
         var zeroX = map.XBaseline();
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
             var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackHorizontalBaseValue(chart, index, p) : 0;
@@ -40,16 +39,16 @@ public sealed partial class SvgChartRenderer {
                 if (inside) {
                     var dataStyle = DataLabelStyle(chart, s, pointIndex);
                     if (width < EstimateTextWidth(StyleText(dataStyle, label), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize)) + 8) continue;
-                    if (!ReserveSvgLabel(label, left + width / 2, y + layout.BarHeight / 2, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawDataLabel(sb, chart, label, left + width / 2, y + layout.BarHeight / 2, plot, series: s, pointIndex: pointIndex);
                 } else if (placement == ChartDataLabelPlacement.Above || placement == ChartDataLabelPlacement.Below) {
                     var labelY = placement == ChartDataLabelPlacement.Above ? y - 8 : y + layout.BarHeight + 12;
-                    if (!ReserveSvgLabel(label, left + width / 2, labelY, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawDataLabel(sb, chart, label, left + width / 2, labelY, plot, series: s, pointIndex: pointIndex);
                 } else {
                     var labelX = placement == ChartDataLabelPlacement.Right ? left + width + 8 : placement == ChartDataLabelPlacement.Left ? left - 8 : p.Y >= 0 ? left + width + 8 : left - 8;
                     var anchor = labelX >= left + width / 2 ? "start" : "end";
-                    if (!ReserveSvgHorizontalLabel(label, labelX, y + layout.BarHeight / 2, anchor, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, y + layout.BarHeight / 2, anchor, plot, s, pointIndex);
                 }
             }
@@ -153,19 +152,17 @@ public sealed partial class SvgChartRenderer {
             if (series.Kind != ChartSeriesKind.HorizontalBar) continue;
             foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
         }
-
-        var reservedLabels = new List<ChartLabelBounds>();
-        DrawHorizontalStackTotalSet(sb, chart, positiveTotals, plot, map, 8, "start", reservedLabels);
-        DrawHorizontalStackTotalSet(sb, chart, negativeTotals, plot, map, -8, "end", reservedLabels);
+        DrawHorizontalStackTotalSet(sb, chart, positiveTotals, plot, map, 8, "start");
+        DrawHorizontalStackTotalSet(sb, chart, negativeTotals, plot, map, -8, "end");
     }
 
-    private static void DrawHorizontalStackTotalSet(StringBuilder sb, Chart chart, Dictionary<double, double> totals, ChartRect plot, ChartMapper map, double offset, string anchor, List<ChartLabelBounds> reservedLabels) {
+    private static void DrawHorizontalStackTotalSet(StringBuilder sb, Chart chart, Dictionary<double, double> totals, ChartRect plot, ChartMapper map, double offset, string anchor) {
         foreach (var item in totals.OrderBy(item => item.Key)) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
             var x = map.X(item.Value) + offset;
             var y = map.Y(item.Key);
-            if (!ReserveSvgHorizontalLabel(label, x, y, anchor, chart, plot, reservedLabels)) continue;
+            if (string.IsNullOrWhiteSpace(label)) continue;
             DrawHorizontalValueLabel(sb, chart, label, x, y, anchor, plot);
         }
     }

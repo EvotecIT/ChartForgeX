@@ -62,7 +62,7 @@ public sealed class ChartThemeFontTests {
         if (bold != null) Assert.Equal(bold.Measure("Domain controller", 14), installed.Measure("Domain controller", 14, bold: true), 6);
 
         // The portable estimate never looks at host fonts.
-        var portable = new TextMeasurementContext(family);
+        var portable = new TextMeasurementContext(family, TextMeasurementMode.PortableEstimate);
         Assert.Equal("Domain controller".Length * 14 * 0.62, portable.Measure("Domain controller", 14, bold: true), 6);
     }
 

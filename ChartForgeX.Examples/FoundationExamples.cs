@@ -5,6 +5,7 @@ using ChartForgeX.Themes;
 
 internal static class FoundationExamples {
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+        LabelPlacementExamples.Write(output);
         foreach (var dark in new[] { false, true }) {
             var clipped = Chart.Create().WithTitle("Series at the plot boundary")
                 .WithSubtitle("Out-of-domain geometry is clipped; edge markers remain visible")

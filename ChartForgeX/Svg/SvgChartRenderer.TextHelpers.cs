@@ -93,8 +93,12 @@ public sealed partial class SvgChartRenderer {
         return string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void WriteSvgDataLabelText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, string label, double x, double y, string anchor, ChartColor fill, ChartColor stroke, double fontSize) {
+    private static void WriteSvgDataLabelText(SvgMarkupWriter writer, Chart chart, TextStyleOverride style, string role, string label, double x, double y, string anchor, ChartColor fill, ChartColor stroke, double fontSize, ChartSeries? series = null, int pointIndex = -1) {
         writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", x).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("dominant-baseline", "middle").Attribute("fill", StyleColor(style, fill).ToCss()).Attribute("stroke", stroke.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke fill").Attribute("stroke-linejoin", "round").Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", fontSize).Attribute("font-weight", StyleWeight(style, "700"));
+        if (series != null) {
+            for (var i = 0; i < chart.Series.Count; i++) if (ReferenceEquals(chart.Series[i], series)) { writer.Attribute("data-cfx-series", i); break; }
+            if (pointIndex >= 0) writer.Attribute("data-cfx-point", pointIndex);
+        }
         WriteSvgTextStyleAttributes(writer, style);
         WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
     }

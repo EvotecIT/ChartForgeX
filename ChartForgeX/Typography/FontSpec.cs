@@ -67,7 +67,7 @@ public sealed class FontSpec {
     public int Weight {
         get => _weight;
         set {
-            if (value < 100 || value > 900 || value % 100 != 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Font weight must be a multiple of 100 from 100 through 900.");
+            if (value < 100 || value > 900) throw new ArgumentOutOfRangeException(nameof(value), value, "Font weight must be from 100 through 900.");
             _weight = value;
         }
     }

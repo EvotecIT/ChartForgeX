@@ -20,7 +20,6 @@ public sealed partial class SvgChartRenderer {
         var dot = DottedMapDotSize(map, viewport);
         var landColor = ChartDottedMapSurface.LandDotColor(t.PlotBackground, t.MutedText);
         var landOpacity = ChartDottedMapSurface.LandDotOpacity(t.PlotBackground);
-        var reservedLabels = new List<ChartLabelBounds>();
         var visiblePoints = series.Points.Count(point => IsVisibleMapCoordinate(viewport, point.X, point.Y));
         var visibleConnectors = chart.Options.MapConnectors.Count(item => IsVisibleMapConnector(viewport, item));
         var valuedPointCount = DottedMapValuedPointCount(series);
@@ -93,7 +92,7 @@ public sealed partial class SvgChartRenderer {
                 writer.EndStartElement(); writer.StartElement("title").Text(summary).EndElement();
                 writer.EndElement().Line();
             });
-            if (ShouldDrawDataLabels(chart, series)) DrawDottedMapDataLabel(sb, chart, series, DottedMapDisplayLabel(chart, series, i), i, x, y, Math.Max(dot, pointRadius), map, reservedLabels);
+            if (ShouldDrawDataLabels(chart, series)) DrawDottedMapDataLabel(sb, chart, series, DottedMapDisplayLabel(chart, series, i), i, x, y, Math.Max(dot, pointRadius), map);
         }
 
         sb.AppendLine("</g>");
@@ -406,61 +405,21 @@ public sealed partial class SvgChartRenderer {
         return Math.Abs(value).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + " " + suffix;
     }
 
-    private static void DrawDottedMapDataLabel(StringBuilder sb, Chart chart, ChartSeries series, string label, int pointIndex, double x, double y, double dot, ChartRect map, List<ChartLabelBounds> reservedLabels) {
-        var t = chart.Options.Theme;
+    private static void DrawDottedMapDataLabel(StringBuilder sb, Chart chart, ChartSeries series, string label, int pointIndex, double x, double y, double dot, ChartRect map) {
         var style = DataLabelStyle(chart, series, pointIndex);
-        var fontSize = StyleFontSize(style, t.DataLabelFontSize);
+        var fontSize = StyleFontSize(style, chart.Options.Theme.DataLabelFontSize);
         label = StyleText(style, label);
-        label = TrimSvgLabelToWidth(label, fontSize, Math.Min(132, PlotLabelMaxWidth(map)));
-        if (label.Length == 0) return;
-
+        if (string.IsNullOrWhiteSpace(label)) return;
         var offset = Math.Max(16, dot * 5.6);
-        var candidates = new[] {
-            new DottedMapLabelCandidate("top", x, y - offset, "middle"),
-            new DottedMapLabelCandidate("right", x + offset, y, "start"),
-            new DottedMapLabelCandidate("bottom", x, y + offset, "middle"),
-            new DottedMapLabelCandidate("left", x - offset, y, "end"),
-            new DottedMapLabelCandidate("top-right", x + offset * 0.82, y - offset * 0.82, "start"),
-            new DottedMapLabelCandidate("bottom-right", x + offset * 0.82, y + offset * 0.82, "start"),
-            new DottedMapLabelCandidate("bottom-left", x - offset * 0.82, y + offset * 0.82, "end"),
-            new DottedMapLabelCandidate("top-left", x - offset * 0.82, y - offset * 0.82, "end"),
-            new DottedMapLabelCandidate("far-top-right", x + offset * 1.32, y - offset * 2.0, "start"),
-            new DottedMapLabelCandidate("far-bottom-right", x + offset * 1.32, y + offset * 2.0, "start"),
-            new DottedMapLabelCandidate("far-bottom-left", x - offset * 1.32, y + offset * 2.0, "end"),
-            new DottedMapLabelCandidate("far-top-left", x - offset * 1.32, y - offset * 2.0, "end")
-        };
-
-        var width = EstimateTextWidth(label, fontSize) + 8;
+        var width = EstimateSvgStyledTextWidth(chart, label, fontSize, style, emphasized: true) + 8;
         var height = fontSize + 6;
-        DottedMapLabelPlacement? fallback = null;
-        foreach (var candidate in candidates) {
-            var placement = PlaceDottedMapLabel(label, candidate, map, fontSize, width, height);
-            fallback ??= placement;
-            if (DottedMapLabelTouchesPoint(placement.Bounds, x, y, dot)) continue;
-            var collides = false;
-            foreach (var item in reservedLabels) {
-                if (placement.Bounds.Intersects(item)) {
-                    collides = true;
-                    break;
-                }
-            }
-
-            if (collides) continue;
-            reservedLabels.Add(placement.Bounds);
-            DrawDottedMapDataLabel(sb, chart, style, label, placement, x, y, dot);
-            return;
-        }
-
-        if (fallback.HasValue) {
-            DrawDottedMapDataLabel(sb, chart, style, label, fallback.Value, x, y, dot);
-        }
+        // Viewport geometry supplies the preferred anchor. The shared scene owns
+        // collisions, alternative lanes, shortening and dropping for all labels.
+        var below = y - offset - height / 2 < map.Top + 4;
+        var candidate = new DottedMapLabelCandidate(below ? "bottom" : "top", x, y + (below ? offset : -offset), "middle");
+        var placement = PlaceDottedMapLabel(label, candidate, map, fontSize, width, height);
+        DrawDottedMapDataLabel(sb, chart, style, label, placement, x, y, dot, pointIndex);
     }
-
-    private static bool DottedMapLabelTouchesPoint(ChartLabelBounds bounds, double x, double y, double dot) {
-        var guard = Math.Max(5, dot * 1.75);
-        return bounds.Intersects(new ChartLabelBounds(x - guard, y - guard, guard * 2, guard * 2));
-    }
-
     private static DottedMapLabelPlacement PlaceDottedMapLabel(string label, DottedMapLabelCandidate candidate, ChartRect map, double fontSize, double width, double height) {
         var inset = ChartVisualPrimitives.DataLabelPlotInset;
         var anchor = candidate.Anchor;
@@ -489,7 +448,7 @@ public sealed partial class SvgChartRenderer {
         return new DottedMapLabelPlacement(candidate.Placement, safeX, safeY, anchor, new ChartLabelBounds(left, safeY - height / 2, width, height));
     }
 
-    private static void DrawDottedMapDataLabel(StringBuilder sb, Chart chart, TextStyleOverride style, string label, DottedMapLabelPlacement placement, double pointX, double pointY, double dot) {
+    private static void DrawDottedMapDataLabel(StringBuilder sb, Chart chart, TextStyleOverride style, string label, DottedMapLabelPlacement placement, double pointX, double pointY, double dot, int pointIndex) {
         var t = chart.Options.Theme;
         var radius = Math.Min(6, placement.Bounds.Height / 2);
         DrawDottedMapLabelLeader(sb, chart, label, placement, pointX, pointY, dot);
@@ -497,6 +456,7 @@ public sealed partial class SvgChartRenderer {
         AppendSvg(sb, 512, writer => {
             writer.StartElement("text")
                 .Attribute("data-cfx-role", "dotted-map-label")
+                .Attribute("data-cfx-point", pointIndex)
                 .Attribute("data-cfx-label", label)
                 .Attribute("data-cfx-placement", placement.Placement)
                 .Attribute("x", placement.X).Attribute("y", placement.Y)

@@ -137,10 +137,10 @@ internal static partial class SmokeTests {
         chart.Series[1].WithDataLabels(false);
 
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"data-label\"") == 1, "Series data-label overrides should hide labels for one series while preserving chart-level labels for others.");
+        Assert(CountVisibleDataLabels(svg) == 1, "Series data-label overrides should hide labels for one series while preserving chart-level labels for others.");
 
         chart.Series[1].UseChartDataLabels();
-        Assert(CountOccurrences(chart.ToSvg(), "data-cfx-role=\"data-label\"") == 2, "Clearing a series data-label override should restore chart-level label behavior.");
+        Assert(CountVisibleDataLabels(chart.ToSvg()) == 2, "Clearing a series data-label override should restore chart-level label behavior.");
     }
 
     private static void DensePointLabelsAvoidCollisions() {
@@ -152,8 +152,8 @@ internal static partial class SmokeTests {
             new ChartPoint(1, 50.4)
         };
         var svg = Chart.Create().WithSize(320, 220).WithDataLabels().AddScatter("Dense", points).ToSvg();
-        var labelCount = CountOccurrences(svg, "data-cfx-role=\"data-label\"");
-        Assert(labelCount > 0 && labelCount < points.Length, "Dense point labels should render a useful subset instead of overlapping every label.");
+        var labelCount = CountVisibleDataLabels(svg);
+        AssertUsefulSubset(svg, points.Length, "Dense point labels should remain readable in their available lanes.");
     }
 
     private static void DataLabelsUseReadableEdgeAwareStyling() {

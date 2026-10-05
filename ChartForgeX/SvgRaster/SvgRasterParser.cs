@@ -69,6 +69,14 @@ internal static class SvgRasterParser {
         }
     }
 
+    internal static SvgRasterElement ReadStyleElement(XElement element) {
+        var attributes = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var attribute in element.Attributes()) {
+            if (!attribute.IsNamespaceDeclaration) attributes[attribute.Name.LocalName] = attribute.Value;
+        }
+        return new SvgRasterElement(element.Name.LocalName, attributes, Array.Empty<SvgRasterElement>(), string.Empty);
+    }
+
     private static SvgRasterElement ReadElement(XElement element) {
         var attributes = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var attribute in element.Attributes()) {
@@ -89,7 +97,10 @@ internal static class SvgRasterParser {
             }
         }
 
-        return new SvgRasterElement(element.Name.LocalName, attributes, children, element.Value, content);
+        // Only text-bearing elements need aggregate descendant text. Computing it for
+        // every group duplicates all captions at each ancestor in dense scenes.
+        var text = element.Name.LocalName is "text" or "tspan" or "style" ? element.Value : string.Empty;
+        return new SvgRasterElement(element.Name.LocalName, attributes, children, text, content);
     }
 
     private static string EscapeAttribute(string value) =>

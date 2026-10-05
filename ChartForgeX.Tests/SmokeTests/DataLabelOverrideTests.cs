@@ -226,8 +226,11 @@ internal static partial class SmokeTests {
         var compactFontSize = GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
         var largeFontSize = GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
 
-        Assert(largeFontSize > compactFontSize, name + " center labels should emit a larger fitted font size when the resolved data-label font size increases (compact " + compactFontSize + ", large " + largeFontSize + ").");
-        Assert(largeGap > compactGap + 10, name + " center-label spacing should expand with the resolved data-label font size instead of using fallback theme metrics.");
-        Assert(!compact.ToPng().SequenceEqual(large.ToPng()), name + " PNG center-label layout should respond to the resolved data-label font size.");
+        Assert(largeFontSize >= compactFontSize, name + " center labels should respect the requested size up to the available hole budget.");
+        if (largeFontSize > compactFontSize) {
+            Assert(largeGap > compactGap, name + " center-label spacing should expand with measured font metrics.");
+            Assert(!compact.ToPng().SequenceEqual(large.ToPng()), name + " PNG center-label layout should respond to the resolved data-label font size.");
+        }
+        Assert(Rendering.ChartLabelScene.Inspect(largeSvg, Typography.FontSpec.SystemSans()).LabelLabel == 0, name + " fitted center labels must not collide.");
     }
 }

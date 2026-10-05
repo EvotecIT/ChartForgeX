@@ -204,6 +204,7 @@ internal sealed partial class RgbaCanvas {
         DrawTextRotatedCore(anchorX, anchorY, text, color, fontSize, degrees, originX, originY, true, font, italic, false, underlineStyle, strikethroughStyle, baselineOffset);
 
     private void DrawTextRotatedCore(double anchorX, double anchorY, string text, ChartColor color, double fontSize, double degrees, double originX, double originY, bool emphasized, TrueTypeFont? font, bool italic, bool underline = false, TextDecorationStyle underlineStyle = TextDecorationStyle.None, TextDecorationStyle strikethroughStyle = TextDecorationStyle.None, double baselineOffset = 0) {
+        if (SuppressText) return;
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
         if (underlineStyle == TextDecorationStyle.None && underline) underlineStyle = TextDecorationStyle.Single;
         if (Math.Abs(degrees) < 0.001) {

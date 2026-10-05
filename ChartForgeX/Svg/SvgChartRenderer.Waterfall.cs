@@ -26,7 +26,6 @@ public sealed partial class SvgChartRenderer {
 
         var body = new StringBuilder();
         DrawWaterfallGrid(body, chart, plot, bounds, ticks);
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var i = 0; i < steps.Count; i++) {
             var step = steps[i];
             var centerX = plot.Left + slot * i + slot / 2;
@@ -50,7 +49,7 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                     var labelX = placement == ChartDataLabelPlacement.Left ? centerX - barWidth / 2 - 8 : centerX + barWidth / 2 + 8;
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
-                    if (ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(body, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(body, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
                 } else {
                     var dataStyle = DataLabelStyle(chart, series, pointIndex);
                     var labelFits = (placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) || height >= EstimateSvgStyledTextHeight(StyleFontSize(dataStyle, t.DataLabelFontSize), dataStyle) + 8;
@@ -62,7 +61,7 @@ public sealed partial class SvgChartRenderer {
                                 : placement == ChartDataLabelPlacement.Below
                                     ? top + height + 13
                                     : step.Delta >= 0 || step.IsTotal ? top - 11 : top + height + 13;
-                        if (ReserveSvgLabel(label, centerX, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(body, chart, label, centerX, labelY, plot, series: series, pointIndex: pointIndex);
+                        if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(body, chart, label, centerX, labelY, plot, series: series, pointIndex: pointIndex);
                     }
                 }
             }

@@ -137,6 +137,9 @@ internal static partial class SmokeTests {
         return count;
     }
 
+    private static int CountVisibleDataLabels(string svg) => System.Xml.Linq.XDocument.Parse(svg).Descendants()
+        .Count(e => (string?)e.Attribute("data-cfx-role") == "data-label" && !e.AncestorsAndSelf().Any(a => (string?)a.Attribute("display") == "none"));
+
     private static string[] ExtractAttributeValues(string value, string prefix) {
         var values = new List<string>();
         var index = 0;

@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.SvgRaster;
 
 internal static partial class SvgRasterRenderer {
-    private static SvgRasterMatrix ApplyNestedSvgViewport(SvgRasterElement element, SvgRasterMatrix matrix, SvgRasterNestedViewport viewport) {
+    internal static SvgRasterMatrix ApplyNestedSvgViewport(SvgRasterElement element, SvgRasterMatrix matrix, SvgRasterNestedViewport viewport) {
         var viewBox = element.Get("viewBox");
         var translated = matrix.Multiply(SvgRasterMatrix.Translate(viewport.X, viewport.Y));
         if (string.IsNullOrWhiteSpace(viewBox)) return translated;
@@ -13,7 +13,7 @@ internal static partial class SvgRasterRenderer {
         return translated.Multiply(SvgRasterMatrix.FromFit(parsed, viewport.Width, viewport.Height, element.Get("preserveAspectRatio")));
     }
 
-    private static SvgRasterNestedViewport ResolveNestedSvgViewport(SvgRasterElement element, SvgRasterViewport parent) {
+    internal static SvgRasterNestedViewport ResolveNestedSvgViewport(SvgRasterElement element, SvgRasterViewport parent) {
         var viewBox = element.Get("viewBox");
         SvgRasterViewBox? parsed = string.IsNullOrWhiteSpace(viewBox) ? null : SvgRasterViewBox.Parse(viewBox!);
         var x = ResolveViewportLength(element.Get("x"), 0, parent.Width);
@@ -99,7 +99,7 @@ internal static partial class SvgRasterRenderer {
         public double Height { get; }
     }
 
-    private readonly struct SvgRasterViewport {
+    internal readonly struct SvgRasterViewport {
         public SvgRasterViewport(double width, double height) {
             Width = width;
             Height = height;
@@ -109,7 +109,7 @@ internal static partial class SvgRasterRenderer {
         public double Height { get; }
     }
 
-    private readonly struct SvgRasterNestedViewport {
+    internal readonly struct SvgRasterNestedViewport {
         public SvgRasterNestedViewport(double x, double y, double width, double height, SvgRasterViewport userViewport) {
             X = x;
             Y = y;

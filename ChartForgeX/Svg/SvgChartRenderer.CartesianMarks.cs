@@ -172,7 +172,6 @@ public sealed partial class SvgChartRenderer {
         var s = chart.Series[index];
         var layout = BarLayout(chart, plot, index);
         var zeroY = map.YBaseline();
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
             var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? ChartBarStacking.BaseValue(chart, barCoordinateMap, index, pointIndex) : 0;
@@ -218,7 +217,7 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                     var labelX = placement == ChartDataLabelPlacement.Right ? x + barWidth + 8 : x - 8;
                     var anchor = placement == ChartDataLabelPlacement.Right ? "start" : "end";
-                    if (!ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, top + height / 2, anchor, plot, s, pointIndex);
                     continue;
                 }
@@ -232,7 +231,7 @@ public sealed partial class SvgChartRenderer {
                         : inside
                             ? top + height / 2
                             : p.Y >= 0 ? top - 10 : top + height + 10;
-                if (!ReserveSvgLabel(label, x + barWidth / 2, labelY, chart, plot, reservedLabels, s, pointIndex)) continue;
+                if (string.IsNullOrWhiteSpace(label)) continue;
                 DrawDataLabel(sb, chart, label, x + barWidth / 2, labelY, plot, series: s, pointIndex: pointIndex);
             }
         }
@@ -333,19 +332,17 @@ public sealed partial class SvgChartRenderer {
                 AddBarStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, coordinate, point.Y);
             }
         }
-
-        var reservedLabels = new List<ChartLabelBounds>();
-        DrawStackTotalSet(sb, chart, positiveTotals, plot, map, -14, reservedLabels);
-        DrawStackTotalSet(sb, chart, negativeTotals, plot, map, 14, reservedLabels);
+        DrawStackTotalSet(sb, chart, positiveTotals, plot, map, -14);
+        DrawStackTotalSet(sb, chart, negativeTotals, plot, map, 14);
     }
 
-    private static void DrawStackTotalSet(StringBuilder sb, Chart chart, Dictionary<ChartBarCoordinateKey, double> totals, ChartRect plot, ChartMapper map, double offset, List<ChartLabelBounds> reservedLabels) {
+    private static void DrawStackTotalSet(StringBuilder sb, Chart chart, Dictionary<ChartBarCoordinateKey, double> totals, ChartRect plot, ChartMapper map, double offset) {
         foreach (var item in totals.OrderBy(item => item.Key.Value)) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
             var x = map.X(item.Key.Value);
             var y = map.Y(item.Value) + offset;
-            if (!ReserveSvgLabel(label, x, y, chart, plot, reservedLabels)) continue;
+            if (string.IsNullOrWhiteSpace(label)) continue;
             DrawDataLabel(sb, chart, label, x, y, plot, "stack-total-label");
         }
     }

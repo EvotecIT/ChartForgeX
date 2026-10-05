@@ -7,7 +7,7 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
-    private static void DrawPieLike(RgbaCanvas c, Chart chart, ChartRect plot) {
+    private static void DrawPieLike(RgbaCanvas c, Chart chart, ChartRect plot, ChartRect? measuredBounds = null) {
         var series = chart.Series[0];
         var values = new List<PngIndexedPieValue>();
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
@@ -28,6 +28,10 @@ public sealed partial class PngChartRenderer {
         var radius = Math.Max(1, Math.Min(chartPlot.Width, chartPlot.Height) * radiusFactor);
         var cx = chartPlot.Left + chartPlot.Width / 2;
         var cy = chartPlot.Top + chartPlot.Height / 2;
+        if (measuredBounds.HasValue) {
+            radius = measuredBounds.Value.Width / 2;
+            cx = measuredBounds.Value.Left + radius; cy = measuredBounds.Value.Top + radius;
+        }
         var inner = series.Kind == ChartSeriesKind.Donut ? radius * chart.Options.DonutInnerRadiusRatio : 0;
         var start = -Math.PI / 2;
         var separator = chart.Options.Theme.CardBackground;
@@ -148,6 +152,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawPieOutsideLabels(RgbaCanvas c, Chart chart, ChartSeries series, List<PieLabelCandidate> labels, double cx, double cy, double radius, ChartRect plot) {
+        if (c.SuppressText) return;
         if (labels.Count == 0) return;
         ArrangePieLabelLane(labels.FindAll(static label => label.IsLeftSide), chart, plot);
         ArrangePieLabelLane(labels.FindAll(static label => !label.IsLeftSide), chart, plot);

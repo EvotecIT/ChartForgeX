@@ -46,6 +46,7 @@ public sealed partial class PngChartRenderer {
     private static bool IsPointCalloutSeries(ChartSeries series) => series.SemanticRole == "point-callout";
 
     private static void DrawPngPointCalloutLabel(RgbaCanvas c, Chart chart, ChartRect plot, double x, double y, string label, ChartDataLabelPlacement placement, double preferredFontSize, TextStyleOverride style) {
+        if (c.SuppressText) return;
         var fontSize = Math.Max(preferredFontSize, 15);
         label = TrimReadablePngLabelToWidth(label, fontSize, Math.Max(72, plot.Width * 0.42), style);
         if (label.Length == 0) return;

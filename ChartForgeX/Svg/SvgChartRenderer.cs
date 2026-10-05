@@ -50,6 +50,17 @@ public sealed partial class SvgChartRenderer {
 
     internal string RenderForInteraction(Chart chart, string idScope) => Render(chart, idScope, includeInteractionTargets: true);
 
+    internal ChartLabelScene RenderLabelScene(Chart chart) {
+        ChartGuards.RenderCompatibility(chart);
+        var font = ChartFont(chart);
+        using var measurement = ChartLabelScene.OpenFontScope(font);
+        var markup = RenderCore(chart, BuildProvisionalId(chart, string.Empty), false);
+        var variables = chart.Options.SvgColorVariables;
+        return ChartLabelScene.Create(SvgPaint.Resolve(variables?.Apply(markup) ?? markup, variables), font);
+    }
+
+    private static Typography.FontSpec ChartFont(Chart chart) => new() { Family = chart.Options.Theme.FontFamily, FilePath = chart.Options.PngFontPath, CollectionIndex = chart.Options.PngFontCollectionIndex, FaceName = chart.Options.PngFontFaceName };
+
     private string Render(Chart chart, string idScope, bool includeInteractionTargets) {
         var variables = chart.Options.SvgColorVariables;
         var bound = RenderBound(chart, idScope, includeInteractionTargets);
@@ -69,8 +80,11 @@ public sealed partial class SvgChartRenderer {
 
     private string RenderBound(Chart chart, string idScope, bool includeInteractionTargets) {
         ChartGuards.RenderCompatibility(chart);
+        var font = ChartFont(chart);
+        using var measurement = ChartLabelScene.OpenFontScope(font);
         var provisionalId = BuildProvisionalId(chart, idScope);
         var svg = RenderCore(chart, provisionalId, includeInteractionTargets);
+        svg = ChartLabelScene.Create(svg, font).ToSvg();
         return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx", idScope, string.Empty);
     }
 
@@ -570,20 +584,6 @@ public sealed partial class SvgChartRenderer {
 
     private static string BuildSlicePath(double cx, double cy, double radius, double innerRadius, double start, double end) =>
         ChartSlicePathGeometry.BuildPath(cx, cy, radius, innerRadius, start, end);
-
-    private static bool ReserveSvgLabel(string label, double x, double y, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved, ChartSeries? series = null, int pointIndex = -1) {
-        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return false;
-        var width = EstimateTextWidth(label, fontSize) + 8;
-        var height = EstimateSvgStyledTextHeight(fontSize, style) + 6;
-        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
-        var safeX = EdgeAwareTextX(label, x, plot, fontSize);
-        var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
-        var left = anchor == "end" ? safeX - width : anchor == "start" ? safeX : safeX - width / 2;
-        var bounds = new ChartLabelBounds(left, safeY - height / 2, width, height);
-        foreach (var item in reserved) if (bounds.Intersects(item)) return false;
-        reserved.Add(bounds);
-        return true;
-    }
 
     private static ChartRect PlotArea(Chart chart) {
         var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(chart.Options);

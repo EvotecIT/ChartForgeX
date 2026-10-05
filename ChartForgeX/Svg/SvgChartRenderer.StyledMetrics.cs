@@ -10,8 +10,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double MeasureSvgStyledTextWidth(Chart chart, string text, double fontSize, TextStyleOverride style, bool emphasized = false) {
-        var face = ChartTextFace.Resolve(chart.Options.Theme.FontFamily, style, emphasized ? 700 : 400);
-        return ChartTextFace.Measure(text, fontSize, style, face);
+        return Rendering.ChartLabelScene.MeasureText(text, fontSize, style.WithDefaultFontFamily(chart.Options.Theme.FontFamily), emphasized ? 700 : 400);
     }
 
     private static string TrimSvgLabelToWidth(Chart chart, string value, double fontSize, double maxWidth, TextStyleOverride style, bool emphasized = false) {

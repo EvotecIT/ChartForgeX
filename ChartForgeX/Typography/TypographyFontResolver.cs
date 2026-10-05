@@ -40,6 +40,7 @@ internal static class TypographyFontResolver {
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;
+    internal static int CacheVersion { get { lock (CacheLock) return _cacheVersion; } }
     private static readonly System.Collections.Generic.Dictionary<string, ResolvedTypeface> FamilyCache = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
@@ -58,7 +59,7 @@ internal static class TypographyFontResolver {
 
     /// <summary>
     /// Resolves a CSS family stack at any CSS weight from 1 through 1000 (SVG and HTML output use
-    /// values such as 650 or 850 that <see cref="FontSpec.Weight"/> does not accept).
+    /// including values such as 650 or 850).
     /// </summary>
     internal static ResolvedTypeface ResolveFace(string? family, int weight, bool italic) {
         family = string.IsNullOrWhiteSpace(family) ? "sans-serif" : family!.Trim();

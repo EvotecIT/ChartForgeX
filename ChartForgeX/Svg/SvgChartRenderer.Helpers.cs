@@ -36,7 +36,7 @@ public sealed partial class SvgChartRenderer {
         var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
         var safeX = EdgeAwareTextX(label, x, plot, fontSize);
         var writer = new SvgMarkupWriter(512);
-        WriteSvgDataLabelText(writer, chart, style, role, label, safeX, safeY, anchor, t.Text, t.CardBackground, fontSize);
+        WriteSvgDataLabelText(writer, chart, style, role, label, safeX, safeY, anchor, t.Text, t.CardBackground, fontSize, series, pointIndex);
         sb.Append(writer.Build());
     }
 
@@ -79,33 +79,8 @@ public sealed partial class SvgChartRenderer {
 
         var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
         var writer = new SvgMarkupWriter(512);
-        WriteSvgDataLabelText(writer, chart, style, "data-label", label, safeX, safeY, effectiveAnchor, t.Text, t.CardBackground, fontSize);
+        WriteSvgDataLabelText(writer, chart, style, "data-label", label, safeX, safeY, effectiveAnchor, t.Text, t.CardBackground, fontSize, series, pointIndex);
         sb.Append(writer.Build());
-    }
-
-    private static bool ReserveSvgHorizontalLabel(string label, double x, double y, string anchor, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved, ChartSeries? series = null, int pointIndex = -1) {
-        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return false;
-
-        var width = EstimateTextWidth(label, fontSize) + 8;
-        var height = EstimateSvgStyledTextHeight(fontSize, style) + 6;
-        var effectiveAnchor = anchor == "end" ? "end" : "start";
-        var safeX = effectiveAnchor == "end"
-            ? Clamp(x, plot.Left + width + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - ChartVisualPrimitives.DataLabelPlotInset)
-            : Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
-        if (safeX < plot.Left + ChartVisualPrimitives.DataLabelPlotInset) {
-            effectiveAnchor = "start";
-            safeX = plot.Left + ChartVisualPrimitives.DataLabelPlotInset;
-        } else if (safeX > plot.Right - ChartVisualPrimitives.DataLabelPlotInset) {
-            effectiveAnchor = "end";
-            safeX = plot.Right - ChartVisualPrimitives.DataLabelPlotInset;
-        }
-
-        var left = effectiveAnchor == "end" ? safeX - width : safeX;
-        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
-        var bounds = new ChartLabelBounds(left, safeY - height / 2, width, height);
-        foreach (var item in reserved) if (bounds.Intersects(item)) return false;
-        reserved.Add(bounds);
-        return true;
     }
 
     private static LabelPillPlacement PlaceLabelPill(double x, double width, string anchor, ChartRect plot) {
@@ -177,9 +152,7 @@ public sealed partial class SvgChartRenderer {
         Math.Max(8, plot.Width - ChartVisualPrimitives.DataLabelPlotInset * 2);
 
     private static double EstimateTextWidth(string text, double fontSize) {
-        var width = 0.0;
-        foreach (var ch in text) width += char.IsWhiteSpace(ch) ? fontSize * 0.34 : char.IsUpper(ch) ? fontSize * 0.62 : fontSize * 0.54;
-        return width;
+        return ChartLabelScene.MeasureText(text, fontSize);
     }
 
     private static string TrimSvgLabelToWidth(string value, double fontSize, double maxWidth) {

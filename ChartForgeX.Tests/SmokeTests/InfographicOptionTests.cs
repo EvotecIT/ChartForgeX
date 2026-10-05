@@ -92,6 +92,7 @@ internal static partial class SmokeTests {
 
         var regularCenter = Chart.Create()
             .WithSize(420, 280)
+            .WithPngOutputScale(2)
             .WithLegend(false)
             .WithDonutCenterText("60", "A")
             .WithDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32))
@@ -99,6 +100,7 @@ internal static partial class SmokeTests {
             .AddDonut("Audience", Points(60.5, 39.5));
         var scriptedCenter = Chart.Create()
             .WithSize(420, 280)
+            .WithPngOutputScale(2)
             .WithLegend(false)
             .WithDonutCenterText("60", "A")
             .WithDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32).WithSuperscript())

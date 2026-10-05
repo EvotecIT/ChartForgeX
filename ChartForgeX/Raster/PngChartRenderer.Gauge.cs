@@ -39,7 +39,7 @@ public sealed partial class PngChartRenderer {
         var tickFontSize = PngTickFontSize(chart);
         var statusLabel = status.Replace("-", " ");
         var labelWidth = Math.Max(48, Math.Min(plot.Width - 24, radius * 1.8));
-        if (gauge.ShowDataLabels != false) {
+        if (gauge.ShowDataLabels != false && !c.SuppressText) {
             var valueFit = FitPngStyledText(label, dataStyle, valueFontSize, labelWidth, emphasized: true);
             var nameFit = FitPngStyledText(gauge.Name, dataStyle, nameFontSize, labelWidth, emphasized: true);
             DrawPngFittedTextStyledCenteredX(c, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor - valueFit.Height / 2.0, valueFit, dataStyle, theme.Text, emphasized: true);

@@ -28,7 +28,6 @@ public sealed partial class SvgChartRenderer {
         WriteRangeBandBoundary(writer, "range-band-lower", index, lower.Count, BuildLinePath(lower, false), color.ToCss());
         sb.Append(writer.Build());
         if (ShouldDrawDataLabels(chart, series)) {
-            var reservedLabels = new List<ChartLabelBounds>();
             for (var pointIndex = 0; pointIndex + 1 < series.Points.Count; pointIndex += 2) {
                 var low = series.Points[pointIndex];
                 var high = series.Points[pointIndex + 1];
@@ -37,7 +36,7 @@ public sealed partial class SvgChartRenderer {
                 var yLow = map.Y(low.Y);
                 var yHigh = map.Y(high.Y);
                 var label = FormatValue(chart, low.Y) + "-" + FormatValue(chart, high.Y);
-                DrawRangeIntervalLabel(sb, chart, series, item, plot, reservedLabels, label, x, yLow, yHigh);
+                DrawRangeIntervalLabel(sb, chart, series, item, plot, label, x, yLow, yHigh);
             }
         }
     }
@@ -72,14 +71,14 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static void DrawRangeIntervalLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double yLow, double yHigh) {
+    private static void DrawRangeIntervalLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, string label, double x, double yLow, double yHigh) {
         var placement = DataLabelPlacement(chart, series);
         var top = Math.Min(yLow, yHigh);
         var bottom = Math.Max(yLow, yHigh);
         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
             var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + 8;
-            if (ReserveSvgHorizontalLabel(label, labelX, (top + bottom) / 2, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(sb, chart, label, labelX, (top + bottom) / 2, anchor, plot, series, pointIndex);
+            if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, (top + bottom) / 2, anchor, plot, series, pointIndex);
             return;
         }
 
@@ -88,7 +87,7 @@ public sealed partial class SvgChartRenderer {
             : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                 ? (top + bottom) / 2
                 : top - 10;
-        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
+        if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
     }
 
     private static string BuildRangeBandPath(IReadOnlyList<ChartPoint> lower, IReadOnlyList<ChartPoint> upper) {

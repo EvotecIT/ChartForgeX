@@ -9,8 +9,8 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public sealed class TopologyRenderOptions {
     internal TextMeasurementContext? TextMeasurement { get; set; }
-    /// <summary>Gets or sets the text-width policy. Portable estimates preserve host-independent geometry; installed-font measurement is opt-in.</summary>
-    public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.PortableEstimate;
+    /// <summary>Gets or sets the text-width policy. Installed fonts measure the same faces used by PNG; portable estimates remain available as an explicit compatibility option.</summary>
+    public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.InstalledFonts;
     private ChartLineVisualStyle? _edgeVisualStyle;
     private TopologyLayoutPreset _layoutPreset;
     private TopologyViewPreset _preset;

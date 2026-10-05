@@ -474,6 +474,9 @@ internal static partial class SmokeTests {
             .WithPadding(20, 20, 20, 24)
             .AddLine("Hidden", new[] { new ChartPoint(1, 0), new ChartPoint(3, 20) }, ChartColor.Transparent)
             .AddHorizontalLine(10, "target", ChartColor.FromRgb(251, 191, 36));
+        // Fix the coordinate domain: automatic nice domains may expand beyond the data.
+        chart.Options.YAxis.Minimum = 0;
+        chart.Options.YAxis.Maximum = 20;
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;

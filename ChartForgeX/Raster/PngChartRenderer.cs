@@ -42,6 +42,15 @@ public sealed partial class PngChartRenderer {
     internal RgbaImage RenderImage(Chart chart) => RenderCanvas(chart).ToImage();
 
     internal RgbaCanvas RenderCanvas(Chart chart, int? outputScale = null) {
+        var labels = new Svg.SvgChartRenderer().RenderLabelScene(chart);
+        var canvas = RenderMarksCanvas(chart, outputScale, labels);
+        canvas.SuppressText = false;
+        var explicitFont = TrueTypeFont.TryLoadFromPath(chart.Options.PngFontPath, chart.Options.PngFontCollectionIndex, chart.Options.PngFontFaceName);
+        labels.Paint(canvas, explicitFont);
+        return canvas;
+    }
+
+    private RgbaCanvas RenderMarksCanvas(Chart chart, int? outputScale, ChartLabelScene labels) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
         // Theme stacks resolve to installed faces, and emphasized text draws their real bold face.
@@ -55,21 +64,20 @@ public sealed partial class PngChartRenderer {
         CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         CurrentFontFamily = t.FontFamily;
         try {
-            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, outputScale ?? o.PngOutputScale) { TextHinting = o.PngTextHinting };
+            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, outputScale ?? o.PngOutputScale) { TextHinting = o.PngTextHinting, SuppressText = true };
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
             if (o.ShowCard && t.UseCard) DrawCardSurface(c, o, t);
-            var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(o);
+            var plot = labels.PlotBounds;
             if (o.ShowHeader) DrawHeader(c, chart);
             void DrawSpecialChart(Action<RgbaCanvas, Chart, ChartRect> draw) {
-                var legendPlot = ApplyPngLegendReserve(chart, plot);
-                DrawPlotSurface(c, o, t, legendPlot);
-                draw(c, chart, legendPlot);
+                DrawPlotSurface(c, o, t, plot);
+                draw(c, chart, plot);
                 DrawLegend(c, chart);
             }
 
             if (IsPieLike(chart)) {
                 DrawPlotSurface(c, o, t, plot);
-                DrawPieLike(c, chart, plot);
+                DrawPieLike(c, chart, plot, labels.PieBounds);
                 return c;
             }
             if (IsGaugeChart(chart)) {
@@ -141,7 +149,7 @@ public sealed partial class PngChartRenderer {
             }
             if (IsCalendarHeatmapChart(chart)) {
                 // A calendar with the default padding takes the chart area (ChartCalendarHeatmapModel.Frame); its plot surface follows.
-                var frame = ChartCalendarHeatmapModel.Frame(chart, ApplyPngLegendReserve(chart, plot));
+                var frame = plot;
                 DrawPlotSurface(c, o, t, frame);
                 DrawCalendarHeatmap(c, chart, frame);
                 DrawLegend(c, chart);
@@ -199,23 +207,18 @@ public sealed partial class PngChartRenderer {
                 xTicks = ChartTicks.Generate(o.XAxis, range.MinX, range.MaxX);
                 ApplyHorizontalValueBounds(chart, range, xTicks);
                 yTicks = GetHorizontalCategoryTicks(chart, range);
-                plot = ApplyHorizontalBarReserve(chart, plot, yTicks);
-                if (ShowXAxis(chart)) plot = ApplyBottomReserve(chart, plot, xTicks, true);
                 DrawPlotSurface(c, o, t, plot);
             } else {
                 yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
                 range.SetYBounds(o.YAxis.Minimum ?? yTicks[0], o.YAxis.Maximum ?? yTicks[yTicks.Count - 1]);
-                if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
                 if (HasSecondaryYAxis(chart)) {
                     secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
                     secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
                     secondaryRange.SetYBounds(o.SecondaryYAxis.Minimum ?? secondaryTicks[0], o.SecondaryYAxis.Maximum ?? secondaryTicks[secondaryTicks.Count - 1]);
-                    plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
                 }
 
                 ChartNumericDomain.RoundX(chart, range);
                 xTicks = GetXTicks(chart, range, plot);
-                if (ShowXAxis(chart)) plot = ApplyBottomReserve(chart, plot, xTicks, false);
                 DrawPlotSurface(c, o, t, plot);
             }
 
@@ -488,6 +491,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawTinyAnnotationPill(RgbaCanvas c, Chart chart, ChartAnnotation annotation, ChartRect plot, double x, double y, string anchor) {
+        if (c.SuppressText) return;
         if (string.IsNullOrWhiteSpace(annotation.Label)) return;
         var theme = chart.Options.Theme;
         var maxTextWidth = Math.Max(24, plot.Width - 26);

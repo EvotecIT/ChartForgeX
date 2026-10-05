@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -107,10 +108,9 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-label\"") == 4, "Dotted maps should label clustered highlighted points when labels are enabled.");
-        Assert(svg.Contains("data-cfx-placement=\"top\"", StringComparison.Ordinal), "Dotted map labels should try the top placement.");
-        Assert(svg.Contains("data-cfx-placement=\"right\"", StringComparison.Ordinal), "Dotted map labels should use alternate right placement for clustered points.");
-        Assert(svg.Contains("data-cfx-placement=\"bottom\"", StringComparison.Ordinal), "Dotted map labels should use alternate bottom placement for clustered points.");
-        Assert(svg.Contains("data-cfx-placement=\"left\"", StringComparison.Ordinal), "Dotted map labels should use alternate left placement for clustered points.");
+        Assert(CountVisibleMapLabels(svg) == 4, "Measured alternate positions should retain all four short clustered labels.");
+        var report = ChartForgeX.Rendering.ChartLabelScene.Inspect(svg, new ChartForgeX.Typography.FontSpec { Family = chart.Options.Theme.FontFamily });
+        Assert(report.LabelLabel == 0 && report.LabelMark == 0, "Clustered map captions should avoid each other and the point marks.");
         Assert(chart.ToPng().Length > 64, "Clustered dotted maps with labels should render PNG output.");
     }
 
@@ -129,9 +129,14 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-label\"") == 6, "Dotted maps should continue labeling dense highlighted clusters when labels are enabled.");
-        Assert(svg.Contains("data-cfx-placement=\"top-right\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"bottom-right\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"bottom-left\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"top-left\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"far-top-right\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"far-bottom-right\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"far-bottom-left\"", StringComparison.Ordinal) || svg.Contains("data-cfx-placement=\"far-top-left\"", StringComparison.Ordinal), "Dense dotted-map label clusters should use diagonal placements after cardinal lanes are occupied.");
+        Assert(CountVisibleMapLabels(svg) >= 4, "Dense map captions should retain useful measured labels across alternative lanes.");
+        var report = ChartForgeX.Rendering.ChartLabelScene.Inspect(svg, new ChartForgeX.Typography.FontSpec { Family = chart.Options.Theme.FontFamily });
+        Assert(report.LabelLabel == 0 && report.LabelMark == 0, "Dense map captions should avoid text and mark overlaps after shortening or dropping.");
         Assert(chart.ToPng().Length > 64, "Dense clustered dotted maps with diagonal labels should render PNG output.");
     }
+
+    private static int CountVisibleMapLabels(string svg) => System.Xml.Linq.XDocument.Parse(svg).Descendants()
+        .Count(e => (string?)e.Attribute("data-cfx-role") == "dotted-map-label" && (string?)e.Attribute("display") != "none");
 
     private static void DottedMapPreservesMapAspectRatioInTallCards() {
         var chart = Chart.Create()
@@ -222,7 +227,8 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-valued-point-count=\"3\" data-cfx-min-value=\"96\" data-cfx-max-value=\"214\"", StringComparison.Ordinal), "Weighted dotted maps should expose value range metadata for country and market maps.");
         Assert(svg.Contains("data-cfx-label=\"Germany\" data-cfx-value=\"214\" data-cfx-formatted-value=\"$214k\"", StringComparison.Ordinal), "Weighted dotted map points should expose raw and formatted values.");
         Assert(svg.Contains("data-cfx-role=\"dotted-map-label-backdrop\" data-cfx-label=\"Germany $214k\"", StringComparison.Ordinal), "Weighted dotted map data labels should render readable label backdrops.");
-        Assert(svg.Contains("data-cfx-role=\"dotted-map-label\" data-cfx-label=\"Germany $214k\"", StringComparison.Ordinal), "Weighted dotted map data labels should include formatted values when labels are enabled.");
+        Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Any(label => (string?)label.Attribute("data-cfx-role") == "dotted-map-label"
+            && (string?)label.Attribute("data-cfx-label") == "Germany $214k" && (string?)label.Attribute("display") != "none"), "Weighted dotted map data labels should include formatted values when labels are enabled.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dotted-map-label-leader\"") == 3, "Weighted dotted map labels should render subtle leader lines back to their markers.");
         Assert(svg.IndexOf("data-cfx-role=\"dotted-map-label-leader\" data-cfx-label=\"Germany $214k\"", StringComparison.Ordinal) < svg.IndexOf("data-cfx-role=\"dotted-map-label-backdrop\" data-cfx-label=\"Germany $214k\"", StringComparison.Ordinal), "Dotted map label leaders should render behind label backdrops.");
         Assert(svg.Contains("<title>Germany: $214k; 51.166 N, 10.452 E</title>", StringComparison.Ordinal), "Weighted dotted map hover titles should include formatted values and coordinates.");

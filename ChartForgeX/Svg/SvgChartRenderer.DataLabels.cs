@@ -13,7 +13,6 @@ public sealed partial class SvgChartRenderer {
             ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra)
             : series.MarkerRadius ?? chart.Options.Theme.MarkerRadius;
         var offset = markerRadius + 12;
-        var reserved = new List<ChartLabelBounds>();
         var placement = DataLabelPlacement(chart, series);
         for (var i = 0; i < mapped.Count; i++) {
             var point = mapped[i];
@@ -26,7 +25,7 @@ public sealed partial class SvgChartRenderer {
             if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                 var labelX = placement == ChartDataLabelPlacement.Right ? point.X + offset : point.X - offset;
                 var anchor = placement == ChartDataLabelPlacement.Right ? "start" : "end";
-                if (!ReserveSvgHorizontalLabel(label, labelX, point.Y, anchor, chart, plot, reserved, series, i)) continue;
+                if (string.IsNullOrWhiteSpace(label)) continue;
                 DrawHorizontalValueLabel(sb, chart, label, labelX, point.Y, anchor, plot, series, i);
                 continue;
             }
@@ -38,7 +37,7 @@ public sealed partial class SvgChartRenderer {
                     : point.Y - offset;
             var dataStyle = DataLabelStyle(chart, series, i);
             if (placement == ChartDataLabelPlacement.Auto && labelY < plot.Top + EstimateSvgStyledTextHeight(StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize), dataStyle)) labelY = point.Y + offset;
-            if (!ReserveSvgLabel(label, point.X, labelY, chart, plot, reserved, series, i)) continue;
+            if (string.IsNullOrWhiteSpace(label)) continue;
             DrawDataLabel(sb, chart, label, point.X, labelY, plot, series: series, pointIndex: i);
         }
     }

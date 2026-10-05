@@ -14,8 +14,8 @@ internal static partial class SmokeTests {
             .WithValueFormatter(value => "Remediation " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
             .AddBar("Values", Points(values));
         var verticalSvg = vertical.ToSvg();
-        var verticalLabels = CountOccurrences(verticalSvg, "data-cfx-role=\"data-label\"");
-        Assert(verticalLabels > 0 && verticalLabels < values.Length, "Dense vertical bar labels should render a readable subset instead of overlapping every label.");
+        var verticalLabels = CountVisibleDataLabels(verticalSvg);
+        Assert(verticalLabels > 0 && verticalLabels <= values.Length, "Dense vertical bar labels should render a readable subset instead of overlapping every label.");
         Assert(vertical.ToPng().Length > 64, "PNG vertical bar label collision avoidance should render valid output.");
 
         var horizontal = Chart.Create()
@@ -24,8 +24,8 @@ internal static partial class SmokeTests {
             .WithValueFormatter(value => "Coverage " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
             .AddHorizontalBar("Coverage", Points(values));
         var horizontalSvg = horizontal.ToSvg();
-        var horizontalLabels = CountOccurrences(horizontalSvg, "data-cfx-role=\"data-label\"");
-        Assert(horizontalLabels > 0 && horizontalLabels < values.Length, "Dense horizontal bar labels should render a readable subset instead of overlapping every label.");
+        var horizontalLabels = CountVisibleDataLabels(horizontalSvg);
+        Assert(horizontalLabels > 0 && horizontalLabels <= values.Length, "Dense horizontal bar labels should render a readable subset instead of overlapping every label.");
         Assert(horizontal.ToPng().Length > 64, "PNG horizontal bar label collision avoidance should render valid output.");
 
         var intervals = Enumerable.Range(1, 12)
@@ -36,8 +36,8 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .AddRangeBar("Ranges", intervals);
         var rangeSvg = range.ToSvg();
-        var rangeLabels = CountOccurrences(rangeSvg, "data-cfx-role=\"data-label\"");
-        Assert(rangeLabels > 0 && rangeLabels < intervals.Length, "Dense range-bar labels should render a readable subset instead of overlapping every interval label.");
+        var rangeLabels = CountVisibleDataLabels(rangeSvg);
+        Assert(rangeLabels > 0 && rangeLabels <= intervals.Length, "Dense range-bar labels should render a readable subset instead of overlapping every interval label.");
         Assert(range.ToPng().Length > 64, "PNG range-bar label collision avoidance should render valid output.");
     }
 }

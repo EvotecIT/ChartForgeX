@@ -54,6 +54,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-label", label)
                 .Attribute("data-cfx-value", point.Y)
                 .Attribute("data-cfx-percent", percent);
+            writer.Attribute("data-cfx-pie-center-x", cx).Attribute("data-cfx-pie-center-y", cy).Attribute("data-cfx-pie-radius", radius);
             if (series.Kind == ChartSeriesKind.Donut) writer.Attribute("data-cfx-inner-radius-ratio", chart.Options.DonutInnerRadiusRatio);
             if (offset > 0) writer.Attribute("data-cfx-slice-offset", PieSliceOffset(series, pointIndex));
             writer
@@ -119,15 +120,26 @@ public sealed partial class SvgChartRenderer {
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerValue = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var centerLabel = chart.Options.DonutCenterLabel ?? series.Name;
-            var valueFontSize = StyleFontSize(dataStyle, Math.Max(14, Math.Min(26, inner * 0.45)));
-            var labelFontSize = StyleFontSize(dataStyle, Math.Max(9, Math.Min(t.TickLabelFontSize, inner * 0.22)));
-            var centerLineGap = Math.Max(4, Math.Min(8, inner * 0.08));
-            var centerGroupHeight = valueFontSize + centerLineGap + labelFontSize;
-            var valueY = cy - centerGroupHeight / 2.0 + valueFontSize / 2.0;
-            var labelY = valueY + valueFontSize / 2.0 + centerLineGap + labelFontSize / 2.0;
+            // Both lines share the hole's vertical budget before script scaling is applied.
+            var valueFontSize = Math.Min(dataStyle.FontSize ?? Math.Max(14, Math.Min(26, inner * 0.45)), inner * 0.48);
+            var labelFontSize = Math.Min(dataStyle.FontSize ?? Math.Max(9, Math.Min(t.TickLabelFontSize, inner * 0.22)), inner * 0.38);
+            var centerLineGap = Math.Max(2, Math.Min(6, inner * 0.08));
+            var scriptScale = dataStyle.Baseline is Typography.TextBaseline.Superscript or Typography.TextBaseline.Subscript ? 0.65 : 1;
+            valueFontSize *= scriptScale; labelFontSize *= scriptScale; centerLineGap = Math.Max(3, centerLineGap * scriptScale);
+            var family = StyleFontFamily(chart, dataStyle);
+            var valueFont = new Typography.FontSpec { Family = family, Weight = dataStyle.ResolveFontWeight(850) };
+            var labelFont = new Typography.FontSpec { Family = family, Weight = dataStyle.ResolveFontWeight(650) };
+            var valueHeight = ChartLabelScene.MeasureText(centerValue, new Typography.TextStyle { Font = valueFont, FontSize = valueFontSize, LineHeight = 1 }).Height;
+            var labelHeight = ChartLabelScene.MeasureText(centerLabel, new Typography.TextStyle { Font = labelFont, FontSize = labelFontSize, LineHeight = 1 }).Height;
+            var centerGroupHeight = valueHeight + centerLineGap + labelHeight;
+            var valueAscent = Typography.TypographyFontResolver.ResolveFace(valueFont).Font?.Ascent(valueFontSize) ?? valueFontSize * 0.82;
+            var labelAscent = Typography.TypographyFontResolver.ResolveFace(labelFont).Font?.Ascent(labelFontSize) ?? labelFontSize * 0.82;
+            var scriptShift = dataStyle.Baseline == Typography.TextBaseline.Superscript ? -0.35 : dataStyle.Baseline == Typography.TextBaseline.Subscript ? 0.22 : 0;
+            var valueY = cy - centerGroupHeight / 2.0 + valueAscent - valueFontSize * scriptShift;
+            var labelY = cy - centerGroupHeight / 2.0 + valueHeight + centerLineGap + labelAscent - labelFontSize * scriptShift;
             var centerWriter = new SvgMarkupWriter(512);
-            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850", style: dataStyle);
-            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650", style: dataStyle);
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850", middleBaseline: false, style: dataStyle);
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650", middleBaseline: false, style: dataStyle);
             sb.Append(centerWriter.Build());
         }
 

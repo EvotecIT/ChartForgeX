@@ -46,7 +46,8 @@ internal static partial class SmokeTests {
         var styledChart = Chart.Create().WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints);
         styledChart.Series[0].WithDataLabelStyle(style => style.WithFontSize(36).WithTextCase(TextCaseTransform.Uppercase));
         var styledLabels = styledChart.ToSvg();
-        Assert(CountOccurrences(regularLabels, "data-cfx-role=\"data-label\"") == 2 && CountOccurrences(styledLabels, "data-cfx-role=\"data-label\"") == 1, "SVG collision reservations should use the transformed text and resolved point or series font size before accepting labels.");
+        Assert(CountVisibleDataLabels(regularLabels) == 2 && CountVisibleDataLabels(styledLabels) >= 1, "Measured placement should retain labels when an alternative lane fits the transformed text.");
+        Assert(Rendering.ChartLabelScene.Inspect(styledLabels, FontSpec.SystemSans()).LabelLabel == 0, "Styled labels must not overlap after relocation or shortening.");
     }
 
     private static void SvgHeatmapAndFunnelFitStyledTextVertically() {
