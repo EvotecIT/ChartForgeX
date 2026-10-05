@@ -212,7 +212,7 @@ public sealed partial class SvgChartRenderer {
             if (ShouldDrawDataLabels(chart, series)) {
                 var labelPoint = connector.RoutePoints.Length > 0 ? DottedMapPolylinePoint(smoothRoutePoints, 0.36) : DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
-                AppendSvg(sb, 512, writer => writer.StartElement("text").Attribute("data-cfx-role", "dotted-map-connector-label").Attribute("data-cfx-connector", i).Attribute("data-cfx-label", connector.Label).Attribute("x", labelPoint.X).Attribute("y", labelPoint.Y + Math.Max(14, dot * 3.2)).Attribute("text-anchor", "middle").Attribute("fill", color.ToCss()).Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke").Attribute("font-size", "12").Attribute("font-weight", "700").Text(label).EndElement().Line());
+                AppendSvg(sb, 512, writer => writer.StartElement("text").Attribute("data-cfx-role", "dotted-map-connector-label").Attribute("data-cfx-connector", i).Attribute("data-cfx-label", connector.Label).Attribute("x", labelPoint.X).Attribute("y", labelPoint.Y + Math.Max(14, dot * 3.2)).Attribute("text-anchor", "middle").Attribute("fill", color.ToCss()).Attribute("stroke", t.PlotBackground.ToCss()).Attribute("stroke-width", "3").Attribute("paint-order", "stroke").Attribute("font-family", SvgFontFamily(t.FontFamily)).Attribute("font-size", "12").Attribute("font-weight", "700").Text(label).EndElement().Line());
             }
         }
     }

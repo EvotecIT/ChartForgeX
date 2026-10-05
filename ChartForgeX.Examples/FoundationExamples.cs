@@ -17,6 +17,18 @@ internal static class FoundationExamples {
                 .WithSize(640, 400).WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight())
                 .WithDataLabels().AddHistogram("Measurements", new[] { 28d, 32d, 45d, 52d, 73d, 80d, 98d }, 3);
             SaveChart(histogram, output, "foundation-histogram-rounding-" + (dark ? "dark" : "light"), pngOutputScale);
+            var map = Chart.Create().WithTitle("Map typography").WithSize(640, 400)
+                .WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight()).WithLegend(false).WithDataLabels()
+                .WithMapViewport(ChartMapViewport.Europe())
+                .AddDottedMap("Places", new[] { new ChartMapPoint("Madrid", -3.7, 40.4), new ChartMapPoint("Warsaw", 21, 52.2) })
+                .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
+            SaveChart(map, output, "foundation-map-typography-" + (dark ? "dark" : "light"), pngOutputScale);
+            var typographyGrid = ChartGrid.Create().WithTitle("Dashboard typography").WithColumns(2)
+                .WithPngOutputScale(pngOutputScale).Add(map).Add(histogram);
+            var gridName = "foundation-dashboard-typography-" + (dark ? "dark" : "light");
+            typographyGrid.SaveSvg(Path.Combine(output, gridName + ".svg"));
+            typographyGrid.SavePng(Path.Combine(output, gridName + ".png"));
+            typographyGrid.SaveHtml(Path.Combine(output, gridName + ".html"));
         }
         var samples = ChartDataset<FoundationSample>.From(new[] {
             new FoundationSample("Warsaw", 1, 18),

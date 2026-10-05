@@ -51,7 +51,7 @@ public sealed partial class PngChartRenderer {
                 var label = region.HasLabel ? ProjectMapPoint(region.Label, sourceBounds, map) : new ChartPoint(regionBounds.Left + regionBounds.Width / 2, regionBounds.Top + regionBounds.Height / 2);
                 var fontSize = Math.Min(PngTickFontSize(chart), Math.Max(7, map.Height * 0.032));
                 if (ShouldDrawRegionMapLabel(region.Code, regionBounds, fontSize)) {
-                    var style = chart.Options.TickLabelStyle;
+                    var style = chart.Options.TickLabelStyle.WithDefaultFontWeight(800);
                     var width = EstimatePngStyledTextWidth(region.Code, fontSize, style, emphasized: true);
                     DrawPngTextStyled(c, label.X - width / 2, label.Y - EstimatePngStyledTextBoundsHeight(fontSize, style) / 2 - PngStyledTextTopExtent(fontSize, style), region.Code, style, ChartColorMath.TextOnBackground(color), fontSize, emphasized: true);
                 }

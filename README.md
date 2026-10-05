@@ -29,6 +29,8 @@ Automatic linear domains use evenly spaced round ticks; explicit axis bounds rem
 
 PNG chart grids and mixed visual grids render their children at the density of the destination panel. A 2x dashboard therefore retains the text and line detail of its charts and scorecards rendered alone at 2x, including panels enlarged by the grid layout.
 
+SVG layout and PNG drawing resolve the same font-family stack and requested role weight, including map route and region labels. Register fonts with `FontRegistry` to use the same faces on different rendering hosts; the renderers use the existing dependency-free font reader and shaper.
+
 ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, visual canvases, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, social preview images, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
 
 The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
