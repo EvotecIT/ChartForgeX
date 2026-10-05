@@ -15,12 +15,12 @@ public sealed partial class PngVisualBlockRenderer {
 
     internal RgbaImage RenderImage(IVisualBlock block) => RenderCanvas(block).ToImage();
 
-    internal RgbaCanvas RenderCanvas(IVisualBlock block) {
+    internal RgbaCanvas RenderCanvas(IVisualBlock block, int? outputScale = null) {
         VisualBlockRendering.Validate(block);
         var options = block.Options;
         var theme = options.Theme;
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
-        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), options.PngOutputScale);
+        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
         canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
             canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));

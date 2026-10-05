@@ -44,7 +44,8 @@ public sealed class PngChartGridRenderer {
         }
 
         foreach (var cell in layout.Cells) {
-            var chartCanvas = _chartRenderer.RenderCanvas(cell.Chart);
+            var density = ChartPanelDensity.OutputScale(cell.Chart.Options.Size, cell.Width, cell.Height, grid.PngOutputScale);
+            var chartCanvas = _chartRenderer.RenderCanvas(cell.Chart, density);
             output.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, chartCanvas.OutputWidth, chartCanvas.OutputHeight, chartCanvas.ToOutputPixels());
         }
 

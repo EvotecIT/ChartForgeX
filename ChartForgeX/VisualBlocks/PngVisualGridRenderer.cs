@@ -42,29 +42,31 @@ public sealed class PngVisualGridRenderer {
         }
 
         foreach (var cell in layout.Cells) {
-            var child = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart) : RenderChildBlock(cell.Item.Block!);
+            var size = VisualGridLayout.ItemSize(cell.Item);
+            var density = ChartPanelDensity.OutputScale(size, cell.Width, cell.Height, grid.PngOutputScale);
+            var child = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, density) : RenderChildBlock(cell.Item.Block!, density);
             canvas.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, child.OutputWidth, child.OutputHeight, child.ToOutputPixels());
         }
 
         return canvas;
     }
 
-    private RgbaCanvas RenderChildChart(Chart chart) {
+    private RgbaCanvas RenderChildChart(Chart chart, int density) {
         var transparentBackground = chart.Options.TransparentBackground;
         try {
             chart.Options.TransparentBackground = true;
-            return _chartRenderer.RenderCanvas(chart);
+            return _chartRenderer.RenderCanvas(chart, density);
         }
         finally {
             chart.Options.TransparentBackground = transparentBackground;
         }
     }
 
-    private RgbaCanvas RenderChildBlock(IVisualBlock block) {
+    private RgbaCanvas RenderChildBlock(IVisualBlock block, int density) {
         var transparentBackground = block.Options.TransparentBackground;
         try {
             block.Options.TransparentBackground = true;
-            return _blockRenderer.RenderCanvas(block);
+            return _blockRenderer.RenderCanvas(block, density);
         }
         finally {
             block.Options.TransparentBackground = transparentBackground;

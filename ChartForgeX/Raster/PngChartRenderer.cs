@@ -41,7 +41,7 @@ public sealed partial class PngChartRenderer {
 
     internal RgbaImage RenderImage(Chart chart) => RenderCanvas(chart).ToImage();
 
-    internal RgbaCanvas RenderCanvas(Chart chart) {
+    internal RgbaCanvas RenderCanvas(Chart chart, int? outputScale = null) {
         ChartGuards.RenderCompatibility(chart);
         var o = chart.Options; var t = o.Theme;
         // Theme stacks resolve to installed faces, and emphasized text draws their real bold face.
@@ -55,7 +55,7 @@ public sealed partial class PngChartRenderer {
         CurrentOutlineFontIsExplicit = explicitOutlineFont != null;
         CurrentFontFamily = t.FontFamily;
         try {
-            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, o.PngOutputScale) { TextHinting = o.PngTextHinting };
+            var c = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale, outlineFont, outputScale ?? o.PngOutputScale) { TextHinting = o.PngTextHinting };
             c.Clear(o.TransparentBackground ? ChartColor.Transparent : t.Background);
             if (o.ShowCard && t.UseCard) DrawCardSurface(c, o, t);
             var plot = IsSpatialMapChart(chart) ? SpatialMapPlotArea(chart) : ChartLayout.PlotArea(o);
