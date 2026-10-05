@@ -204,15 +204,16 @@ public sealed partial class PngChartRenderer {
                 DrawPlotSurface(c, o, t, plot);
             } else {
                 yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
-                range.SetYBounds(yTicks[0], yTicks[yTicks.Count - 1]);
+                range.SetYBounds(o.YAxis.Minimum ?? yTicks[0], o.YAxis.Maximum ?? yTicks[yTicks.Count - 1]);
                 if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
                 if (HasSecondaryYAxis(chart)) {
                     secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
                     secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-                    secondaryRange.SetYBounds(secondaryTicks[0], secondaryTicks[secondaryTicks.Count - 1]);
+                    secondaryRange.SetYBounds(o.SecondaryYAxis.Minimum ?? secondaryTicks[0], o.SecondaryYAxis.Maximum ?? secondaryTicks[secondaryTicks.Count - 1]);
                     plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
                 }
 
+                ChartNumericDomain.RoundX(chart, range);
                 xTicks = GetXTicks(chart, range, plot);
                 if (ShowXAxis(chart)) plot = ApplyBottomReserve(chart, plot, xTicks, false);
                 DrawPlotSurface(c, o, t, plot);

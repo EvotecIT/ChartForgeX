@@ -13,6 +13,10 @@ internal static class FoundationExamples {
                 .AddArea("Range", new[] { new ChartForgeX.Primitives.ChartPoint(-4, -4), new ChartForgeX.Primitives.ChartPoint(5, 16), new ChartForgeX.Primitives.ChartPoint(14, -4) })
                 .AddScatter("Edge", new[] { new ChartForgeX.Primitives.ChartPoint(0, 5), new ChartForgeX.Primitives.ChartPoint(10, 5) });
             SaveChart(clipped, output, "foundation-plot-clipping-" + (dark ? "dark" : "light"), pngOutputScale);
+            var histogram = Chart.Create().WithTitle("Aligned histogram intervals")
+                .WithSize(640, 400).WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight())
+                .WithDataLabels().AddHistogram("Measurements", new[] { 28d, 32d, 45d, 52d, 73d, 80d, 98d }, 3);
+            SaveChart(histogram, output, "foundation-histogram-rounding-" + (dark ? "dark" : "light"), pngOutputScale);
         }
         var samples = ChartDataset<FoundationSample>.From(new[] {
             new FoundationSample("Warsaw", 1, 18),

@@ -25,6 +25,8 @@ ChartForgeX renders polished charts, animated visual stories, visual blocks, top
 
 Cartesian series are clipped to the plot rectangle in SVG and PNG. Markers whose centers are inside the plot retain their radius at its edge. Use `chart.WithPlotClipping(false)` when a report intentionally needs series overflow.
 
+Automatic linear domains use evenly spaced round ticks; explicit axis bounds remain authoritative. Histogram counts use equal-width bins aligned to multiples of a nice decimal step (1, 2, 2.5, 5 or 10 times a power of ten). `ChartHistogramBinLayout.FromWidth` preserves the chosen width and extends both edges to its multiples. Use the overload with `roundBounds: false` for exact data-bounded intervals, including a shorter final remainder bin. A single requested bin spanning negative and positive values needs two aligned bins because zero is a boundary.
+
 ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, visual canvases, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, social preview images, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
 
 The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.

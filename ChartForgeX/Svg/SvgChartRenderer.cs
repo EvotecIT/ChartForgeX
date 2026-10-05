@@ -97,15 +97,16 @@ public sealed partial class SvgChartRenderer {
                 if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, true);
             } else {
                 yTicks = ChartTicks.Generate(o.YAxis, range.MinY, range.MaxY);
-                range.SetYBounds(yTicks[0], yTicks[yTicks.Count - 1]);
+                range.SetYBounds(o.YAxis.Minimum ?? yTicks[0], o.YAxis.Maximum ?? yTicks[yTicks.Count - 1]);
                 if (ShowYAxis(chart)) plot = ApplyYAxisLabelReserve(chart, plot, yTicks);
                 if (HasSecondaryYAxis(chart)) {
                     secondaryRange = ChartRange.FromSecondaryYAxis(chart, range);
                     secondaryTicks = ChartTicks.Generate(o.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-                    secondaryRange.SetYBounds(secondaryTicks[0], secondaryTicks[secondaryTicks.Count - 1]);
+                    secondaryRange.SetYBounds(o.SecondaryYAxis.Minimum ?? secondaryTicks[0], o.SecondaryYAxis.Maximum ?? secondaryTicks[secondaryTicks.Count - 1]);
                     plot = ApplySecondaryYAxisLabelReserve(chart, plot, secondaryTicks);
                 }
 
+                ChartNumericDomain.RoundX(chart, range);
                 xTicks = GetXTicks(chart, range, plot);
                 if (ShowXAxis(chart)) plot = ApplyXAxisBottomReserve(chart, plot, xTicks, false);
             }
@@ -487,8 +488,9 @@ public sealed partial class SvgChartRenderer {
         label = TrimSvgLabelToWidth(chart, label, fontSize, widthLimit, style);
         if (label.Length == 0) return;
         if (Math.Abs(angle) < 0.001) {
-            var anchor = EdgeAwareStyledAnchor(chart, label, x, plot, fontSize, style);
-            var safeX = EdgeAwareStyledTextX(chart, label, x, plot, fontSize, style);
+            var centered = chart.Options.XAxis.Scale == ChartScaleKind.Linear && chart.Options.XAxisLabels.Count == 0 && ChartSeriesKindTraits.UsesCartesianXAxis(chart);
+            var anchor = centered ? "middle" : EdgeAwareStyledAnchor(chart, label, x, plot, fontSize, style);
+            var safeX = centered ? x : EdgeAwareStyledTextX(chart, label, x, plot, fontSize, style);
             AppendSvg(sb, writer => {
                 writer.StartElement("text");
                 writer.Attribute("data-cfx-role", string.IsNullOrWhiteSpace(role) ? "x-axis-label" : role);
@@ -670,17 +672,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void ApplyHorizontalValueBounds(Chart chart, ChartRange range, IReadOnlyList<double> xTicks) {
-        var min = xTicks[0];
-        var max = xTicks[xTicks.Count - 1];
-        if (HasHorizontalBarDataLabels(chart) || (chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals)) {
-            var span = Math.Max(1, max - min);
-            var hasPositive = chart.Series.Any(series => series.Kind == ChartSeriesKind.HorizontalBar && series.Points.Any(point => point.Y > 0));
-            var hasNegative = chart.Series.Any(series => series.Kind == ChartSeriesKind.HorizontalBar && series.Points.Any(point => point.Y < 0));
-            if (hasPositive) max += span * 0.08;
-            if (hasNegative) min -= span * 0.08;
-        }
-
-        range.SetXBounds(min, max);
+        range.SetXBounds(chart.Options.XAxis.Minimum ?? xTicks[0], chart.Options.XAxis.Maximum ?? xTicks[xTicks.Count - 1]);
     }
 
     private static IReadOnlyList<string> XAxisTickLabels(Chart chart, IReadOnlyList<double> xTicks, bool valueAxisOnly) {
