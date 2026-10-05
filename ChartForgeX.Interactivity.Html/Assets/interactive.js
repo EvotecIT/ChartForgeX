@@ -163,6 +163,31 @@
     return rows;
   };
   const renderTip = (tip, node) => {
+    const root = node.closest && node.closest('[data-cfx-look="graphite"]');
+    const svg = node.closest && node.closest('svg');
+    if (root && svg && node.dataset.cfxX !== undefined && node.dataset.cfxY !== undefined) {
+      const points = new Map();
+      svg.querySelectorAll('[data-cfx-point][data-cfx-x][data-cfx-y]').forEach((point) => {
+        if (point.dataset.cfxX !== node.dataset.cfxX || points.has(point.dataset.cfxSeries)) return;
+        const index = point.dataset.cfxSeries;
+        points.set(index, { index, name: svg.getAttribute('data-cfx-series-name-' + index) || seriesLabel(point), state: svg.getAttribute('data-cfx-series-state-' + index) || 'none', value: Number(point.dataset.cfxY) });
+      });
+      const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
+      const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
+      if (rows.length) {
+        tip.replaceChildren();
+        const header = document.createElement('div');
+        header.className = 'cfx-tooltip__title'; header.textContent = node.dataset.cfxXLabel || node.dataset.cfxX; tip.appendChild(header);
+        const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
+        rows.forEach((row) => {
+          const name = document.createElement('dt'); const value = document.createElement('dd');
+          name.textContent = row.name; value.textContent = row.value.toLocaleString(undefined, { maximumFractionDigits: 12 });
+          if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
+          list.appendChild(name); list.appendChild(value);
+        });
+        tip.appendChild(list); return true;
+      }
+    }
     const label = text(node);
     if (!label) return false;
     tip.replaceChildren();
@@ -586,7 +611,7 @@
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
-    root.querySelectorAll('.cfx-hovered,.cfx-hover-related').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related'));
+    root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column'));
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
@@ -598,6 +623,7 @@
       const related = !hovered && targetRelated(node, target);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
+      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
     });
     if (matched) {
       root.dataset.cfxHovering = 'true';

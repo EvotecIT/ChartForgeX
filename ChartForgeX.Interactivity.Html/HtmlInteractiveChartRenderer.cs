@@ -11,7 +11,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// <summary>
 /// Renders a ChartForgeX chart as a self-contained interactive HTML document.
 /// </summary>
-public sealed class HtmlInteractiveChartRenderer {
+public sealed partial class HtmlInteractiveChartRenderer {
     /// <summary>
     /// Renders the specified chart to a complete interactive HTML document.
     /// </summary>
@@ -32,7 +32,7 @@ public sealed class HtmlInteractiveChartRenderer {
 
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets);
-        writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
+        writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", chart.Options.Theme.UseGraphiteLayout ? "background:" + chart.Options.Theme.Background.ToCss() + ";color:" + chart.Options.Theme.Text.ToCss() + ";font-family:" + chart.Options.Theme.FontFamily : null).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
@@ -124,6 +124,7 @@ public sealed class HtmlInteractiveChartRenderer {
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
+            .Attribute("data-cfx-look", chart.Options.Theme.UseGraphiteLayout ? "graphite" : null)
             .Attribute("role", "group")
             .Attribute("aria-label", ChartTitle(chart, titleFallback))
             .Attribute("data-cfx-asset-source", assetSource)
@@ -136,7 +137,7 @@ public sealed class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
             .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
             .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
-            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px")
+            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
             .EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
             .RawTrusted(BuildToolbar(options))
