@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
         }).ToSvg();
         Assert(treemap.Contains("data-cfx-role=\"treemap-tile\" data-cfx-point=\"0\" data-cfx-label=\"Critical\" data-cfx-value=\"50\"", System.StringComparison.Ordinal), "Treemap tiles should expose label and value metadata.");
         var positionedTreemap = Chart.Create()
-            .WithLegendPosition(ChartLegendPosition.Right)
+            .WithLegend(true).WithLegendPosition(ChartLegendPosition.Right)
             .AddTreemap("Findings", new[] {
                 new ChartTreemapItem("Critical", 50),
                 new ChartTreemapItem("High", 28)

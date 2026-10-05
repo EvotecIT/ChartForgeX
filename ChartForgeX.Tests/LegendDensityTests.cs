@@ -189,7 +189,8 @@ public sealed class LegendDensityTests {
         var label = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == labelRole);
         var value = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == valueRole && (string?)element.Attribute("data-cfx-point") == (string?)label.Attribute("data-cfx-point"));
         var fontSize = (double)label.Attribute("font-size")!;
-        var measuredWidth = new TextMeasurementContext((string)label.Attribute("font-family")!).Measure(label.Value, fontSize, true);
+        var face = TypographyFontResolver.ResolveFace((string)label.Attribute("font-family")!, (int)label.Attribute("font-weight")!, false);
+        var measuredWidth = TextLayoutEngine.MeasureWidth(label.Value, new TextStyle { FontSize = fontSize }, face);
 
         Assert.True((double)label.Attribute("x")! + measuredWidth <= (double)value.Attribute("x")! - 4);
         Assert.NotEmpty(new PngChartRenderer().Render(chart));

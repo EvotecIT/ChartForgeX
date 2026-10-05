@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
         var ratio = Clamp((value - min) / (max - min), 0, 1);
         var status = GaugeStatus(ratio);
         var statusColor = GaugeStatusColor(chart, status);
-        var color = gauge.Color ?? statusColor;
+        var color = ChartGaugeColor.Resolve(chart, gauge);
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height * ChartVisualPrimitives.GaugeCenterYFactor;
         var radius = Math.Max(ChartVisualPrimitives.GaugeMinRadius, Math.Min(plot.Width * ChartVisualPrimitives.GaugeRadiusWidthFactor, plot.Height * ChartVisualPrimitives.GaugeRadiusHeightFactor));

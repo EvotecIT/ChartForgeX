@@ -58,7 +58,7 @@ public sealed partial class PngChartRenderer {
         }
 
         if (chart.Options.ShowGrid) c.DrawCircleOutline(cx, cy, radius, ApplyOpacity(chart.Options.Theme.Grid, ChartVisualPrimitives.PolarAreaGridOpacity), ChartVisualPrimitives.GridStrokeWidth);
-        if (chart.Options.ShowLegend) DrawSliceLegend(c, chart, series, legendValues, plot, total);
+        if (ChartLegendVisibility.ForEntries(chart, legendValues.Count)) DrawSliceLegend(c, chart, series, legendValues, plot, total);
     }
 
     private static void DrawPolarAreaZeroSlots(RgbaCanvas c, Chart chart, ChartSeries series, double cx, double cy, double radius, double sweep) {

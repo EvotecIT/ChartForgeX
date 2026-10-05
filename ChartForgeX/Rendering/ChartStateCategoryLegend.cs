@@ -41,6 +41,7 @@ internal sealed class ChartStateCategoryLegend {
 
     /// <summary>Wraps and budgets legend rows through the shared legend policy.</summary>
     public IReadOnlyList<ChartStateCategoryLegendItem> Layout(Func<string, double> measure, double left, double width, double availableHeight) {
+        if (!ChartLegendVisibility.ForEntries(_chart, Categories.Count)) return Array.Empty<ChartStateCategoryLegendItem>();
         var rows = new List<List<(ChartStateCategory Category, double Width)>>();
         var row = new List<(ChartStateCategory Category, double Width)>();
         var rowWidth = 0.0;

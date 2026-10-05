@@ -116,7 +116,7 @@ public sealed partial class SvgChartRenderer {
             return chart.Series
                 .Select((series, index) => new { series, index })
                 .Where(item => item.series.ShowInLegend)
-                .Select(item => new LegendEntry(item.index, -1, SvgLegendLabel(chart, item.index, width), Color(chart, item.index)))
+                .Select(item => new LegendEntry(item.index, -1, SvgLegendLabel(chart, item.index, width), item.series.Kind == ChartSeriesKind.Gauge ? ChartGaugeColor.Resolve(chart, item.series) : Color(chart, item.index)))
                 .ToList();
         }
 
@@ -185,7 +185,7 @@ public sealed partial class SvgChartRenderer {
         return LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
     }
 
-    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Any(series => series.ShowInLegend) && !IsMapChart(chart);
+    private static bool ShouldDrawLegend(Chart chart) => ChartLegendVisibility.ForSeries(chart) && !IsMapChart(chart);
 
     private static double LegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;

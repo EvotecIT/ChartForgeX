@@ -343,7 +343,7 @@ internal static partial class SmokeTests {
 
     private static void TypographyUsesNativeFontStackAndEscapesCustomFamilies() {
         Assert(SampleChart().ToSvg().Contains(ChartFontStacks.SystemSans, StringComparison.Ordinal), "SVG should default to a native system font stack.");
-        var svg = Chart.Create().WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
+        var svg = Chart.Create().WithLegend(true).WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
         var editorial = Chart.Create().WithTheme(ChartTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
@@ -462,7 +462,7 @@ internal static partial class SmokeTests {
         var html = SampleChart().ToHtmlFragment();
         Assert(html.Contains("style=\"width:100%;max-width:640px;box-sizing:border-box;overflow:visible\"", StringComparison.Ordinal), "HTML fragment should carry responsive wrapper styles.");
         Assert(html.Contains("style=\"max-width:100%;height:auto;display:block\"", StringComparison.Ordinal), "SVG should carry responsive sizing styles.");
-        var repeated = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
+        var repeated = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).WithLegend(true).AddLine("Values", Points(10, 20, 30));
         Assert(repeated.ToHtmlFragment() == repeated.ToHtmlFragment(), "Default HTML chart fragments should be deterministic.");
         var combined = repeated.ToHtmlFragment("embed-a") + repeated.ToHtmlFragment("embed-b");
         var titleIds = ExtractAttributeValues(combined, "<title id=\"");

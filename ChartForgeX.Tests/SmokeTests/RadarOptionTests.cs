@@ -35,7 +35,7 @@ internal static partial class SmokeTests {
         Assert(hiddenCategoryAxisSvg.Contains("data-cfx-role=\"radar-ring-label\"", System.StringComparison.Ordinal), "Hiding radar categories should preserve visible value-axis labels.");
         Assert(!baselinePng.SequenceEqual(hiddenCategoryAxis.ToPng()), "PNG radar category labels should follow X-axis visibility.");
 
-        var positionedLegend = RadarSample().WithLegendPosition(ChartLegendPosition.Right);
+        var positionedLegend = RadarSample().WithLegend(true).WithLegendPosition(ChartLegendPosition.Right);
         Assert(positionedLegend.ToSvg().Contains("data-cfx-role=\"legend\" data-cfx-position=\"Right\"", System.StringComparison.Ordinal), "Radar charts should use the shared positioned legend.");
         Assert(positionedLegend.ToPng().Length > 64, "Positioned radar legends should render valid PNG output.");
 

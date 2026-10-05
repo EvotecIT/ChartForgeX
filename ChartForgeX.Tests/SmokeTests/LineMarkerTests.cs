@@ -43,10 +43,12 @@ internal static partial class SmokeTests {
             "A zero marker radius should not punch marker-outline holes through PNG line paths.");
 
         var markedArea = Chart.Create()
+            .WithLegend(true)
             .WithSize(320, 200)
             .WithTheme(theme => theme.WithMarkerRadius(4))
             .AddArea("Area", points, color);
         var markerlessArea = Chart.Create()
+            .WithLegend(true)
             .WithSize(320, 200)
             .WithTheme(theme => theme.WithMarkerRadius(0))
             .AddArea("Area", points, color);

@@ -347,6 +347,7 @@ internal static partial class SmokeTests {
         Assert(pointLegend.ToPng().Length > 64, "Point legends should render PNG output.");
 
         var aggregateLineLegend = Chart.Create()
+            .WithLegend(true)
             .WithSize(520, 320)
             .WithPointLegend()
             .AddLine("Latency", Points(12, 18, 15), ChartColor.FromHex("#2563EB"));

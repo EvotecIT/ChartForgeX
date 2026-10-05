@@ -72,7 +72,7 @@ public sealed class StatePresentationTests {
         Assert.True(chart.ToPng().Length > 64);
 
         // A chart whose first row is empty is still categorical, and one with only empty rows still renders.
-        var emptyFirst = Chart.Create().WithSize(640, 380).WithStateCategories(new ChartStateCategory("pass", "Passed", Pass))
+        var emptyFirst = Chart.Create().WithSize(640, 380).WithLegend(true).WithStateCategories(new ChartStateCategory("pass", "Passed", Pass))
             .WithXLabels("One", "Two")
             .AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null })
             .AddHeatmapCategoryRow("Something", new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"));

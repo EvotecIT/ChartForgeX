@@ -246,6 +246,8 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
+Legends with a single entry are hidden by default. Use `chart.WithLegend(true)` or assign `chart.Options.ShowLegend = true` to display one explicitly. Pie and donut names and percentages share one legend item, with the percentage directly after the name. Gauge swatches use the drawn value color.
+
 Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, radial-bar, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
 For larger reports, apply shared axes to the whole grid, then paginate before rendering:

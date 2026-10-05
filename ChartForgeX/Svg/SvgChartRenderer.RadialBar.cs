@@ -105,7 +105,7 @@ public sealed partial class SvgChartRenderer {
             DrawSvgTextCenteredX(writer, chart, "radial-bar-total", centerLabel, cx, valueY, t.Text, valueFontSize, labelWidth, "850", t.CardBackground, 3.2, style: dataStyle);
             DrawSvgTextCenteredX(writer, chart, "radial-bar-title", series.Name, cx, nameY, t.MutedText, nameFontSize, labelWidth, "700", t.CardBackground, 2.4, style: dataStyle);
         }
-        if (chart.Options.ShowLegend) DrawRadialBarLegend(writer, chart, plot, series);
+        if (ChartLegendVisibility.ForEntries(chart, series.Points.Count)) DrawRadialBarLegend(writer, chart, plot, series);
         writer.EndElement().Line();
         sb.Append(writer.Build());
     }
@@ -186,7 +186,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartRect RadialBarPlot(Chart chart, ChartRect plot, ChartSeries series) {
-        if (!chart.Options.ShowLegend) return plot;
+        if (!ChartLegendVisibility.ForEntries(chart, series.Points.Count)) return plot;
         var reserve = RadialBarLegendReserve(chart, series, plot);
         if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);

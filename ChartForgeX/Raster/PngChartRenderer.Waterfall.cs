@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
         bounds.SetYBounds(ticks[0], ticks[ticks.Count - 1]);
         var tickFontSize = PngTickFontSize(chart);
         var bottomReserve = ShowXAxis(chart) ? (string.IsNullOrWhiteSpace(XAxisTitleText(chart)) ? 32.0 : 60.0) : 0.0;
-        if (chart.Options.ShowLegend && chart.Series.Count > 0) bottomReserve += PngLegendBottomReserve(chart);
+        if (ShouldDrawLegend(chart)) bottomReserve += PngLegendBottomReserve(chart);
         plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(1, plot.Height - bottomReserve));
         var slot = plot.Width / steps.Count;
         var barWidth = ChartMarkSurface.WaterfallBarWidth(slot);

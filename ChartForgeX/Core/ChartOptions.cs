@@ -14,6 +14,7 @@ public sealed partial class ChartOptions {
     private ChartTheme _theme = ChartTheme.Light();
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.Bottom;
+    private bool _showLegend = true;
     private ChartPictorialShape _pictorialShape = ChartPictorialShape.Circle;
     private int _pictorialColumns = 12;
     private double? _pictorialMaximum;
@@ -164,9 +165,15 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the legend is rendered.
+    /// Gets or sets whether the legend is enabled. A default legend with one entry is hidden;
+    /// explicitly assigning true also displays a single entry.
     /// </summary>
-    public bool ShowLegend { get; set; } = true;
+    public bool ShowLegend {
+        get => _showLegend;
+        set { _showLegend = value; HasExplicitLegend = true; }
+    }
+
+    internal bool HasExplicitLegend { get; private set; }
 
     /// <summary>Gets or sets whether Cartesian series geometry is clipped to the plot rectangle.</summary>
     /// <remarks>Markers with centers inside the rectangle may extend beyond it by their radius. Disable this for intentional overflow.</remarks>

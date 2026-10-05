@@ -23,7 +23,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var total = values.Sum(item => item.Point.Y);
         var chartPlot = PieChartPlot(chart, plot, legendValues);
-        var hasHorizontalLegendLane = chart.Options.ShowLegend
+        var hasHorizontalLegendLane = ChartLegendVisibility.ForEntries(chart, legendValues.Length)
             && IsTopOrBottomLegend(chart.Options.LegendPosition)
             && SliceLegendReserve(chart, legendValues, plot) > 0;
         var radiusFactor = hasHorizontalLegendLane ? 0.40 : 0.44;
@@ -131,7 +131,7 @@ public sealed partial class SvgChartRenderer {
             sb.Append(centerWriter.Build());
         }
 
-        if (chart.Options.ShowLegend) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
+        if (ChartLegendVisibility.ForEntries(chart, legendValues.Length)) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
     }
 
     private static void DrawSliceLegend(StringBuilder sb, Chart chart, ChartSeries series, IReadOnlyList<IndexedPieValue> values, ChartRect plot, double total) {
@@ -160,6 +160,8 @@ public sealed partial class SvgChartRenderer {
                 var itemX = x + item.X;
                 var labelFontSize = item.LabelFontSize;
                 var label = item.Label;
+                writer.StartElement("g").Attribute("data-cfx-role", "slice-legend-item")
+                    .Attribute("data-cfx-point", item.PointIndex).EndStartElement().Line();
                 if (item.IsZero) {
                     writer
                         .StartElement("rect")
@@ -213,9 +215,9 @@ public sealed partial class SvgChartRenderer {
                     .StartElement("text")
                     .Attribute("data-cfx-role", "slice-legend-percent")
                     .Attribute("data-cfx-point", item.PointIndex)
-                    .Attribute("x", itemX + item.Width - 10)
+                    .Attribute("x", itemX + ChartVisualPrimitives.SliceLegendSwatchSize + 6 + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style.WithDefaultFontWeight(650), emphasized: true) + 8)
                     .Attribute("y", y)
-                    .Attribute("text-anchor", "end")
+                    .Attribute("text-anchor", "start")
                     .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
                     .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
                     .Attribute("font-size", fontSize)
@@ -224,6 +226,7 @@ public sealed partial class SvgChartRenderer {
                 WriteSvgStyledTextContent(writer, style, item.Percent)
                     .EndElement()
                     .Line();
+                writer.EndElement().Line();
             }
 
             y += SliceLegendRowHeight(chart);
@@ -234,7 +237,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartRect PieChartPlot(Chart chart, ChartRect plot, IReadOnlyList<IndexedPieValue> values) {
-        if (!chart.Options.ShowLegend || values.Count == 0) return plot;
+        if (!ChartLegendVisibility.ForEntries(chart, values.Count)) return plot;
         var reserve = SliceLegendReserve(chart, values, plot);
         if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);

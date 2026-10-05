@@ -69,7 +69,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         sb.Append(writer.ToString());
-        if (chart.Options.ShowLegend) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
+        if (ChartLegendVisibility.ForEntries(chart, legendValues.Length)) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
         sb.AppendLine("</g>");
     }
 
