@@ -146,6 +146,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("style", "max-width:100%;height:auto;display:block")
                 .Attribute("shape-rendering", "geometricPrecision")
                 .Attribute("text-rendering", "geometricPrecision");
+            writer.Attribute("data-cfx-look", t.UseGraphiteLayout ? "graphite" : null);
             WriteSeriesInteractionMap(writer, chart);
             writer.EndStartElement().Line();
         });
@@ -205,7 +206,7 @@ public sealed partial class SvgChartRenderer {
         }
         AppendSvgEnd(sb, "defs");
         AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("id", id).EndStartElement().Line());
-        if (!o.HostOwnsFrame && !o.TransparentBackground && t.Background.A > 0) {
+        if (!o.HostOwnsFrame && !o.TransparentBackground && t.Background.A > 0 && !(t.UseGraphiteLayout && o.ShowCard && t.UseCard)) {
             AppendSvg(sb, writer => writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", t.Background.ToCss()).EndEmptyElement().Line());
         }
         if (o.ShowCard && t.UseCard && !o.HostOwnsFrame) {
@@ -470,7 +471,7 @@ public sealed partial class SvgChartRenderer {
         for (var yIndex = 0; yIndex < yTicks.Count; yIndex++) {
             var yv = yTicks[yIndex];
             var y = map.Y(yv);
-            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGridLine(sb, plot.Left, y, plot.Right, y, SvgPaint.Of(t.UseGraphiteLayout && Math.Abs(yv) < .000001 ? t.Axis : t.Grid, t.UseGraphiteLayout && Math.Abs(yv) < .000001 ? SvgColorRole.Axis : SvgColorRole.Grid).Value!, gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
+            if (o.ShowGrid && gridStyle.ShowHorizontalLines) WriteSvgGuideLine(sb, null, plot.Left, y, plot.Right, y, SvgPaint.Of(t.UseGraphiteLayout && Math.Abs(yv) < .000001 ? t.Axis : t.Grid, t.UseGraphiteLayout && Math.Abs(yv) < .000001 ? SvgColorRole.Axis : SvgColorRole.Grid), gridStyle.StrokeWidth, gridStyle.HorizontalOpacity, gridStyle);
             if (ShowYAxis(chart) && ChartAxisDensity.ShowVerticalLabel(yIndex, yTicks.Count, plot.Height, tickFontSize, o.YAxisLabelDensity)) {
                 AppendSvg(sb, writer => {
                     var label = StyleText(tickStyle, FormatYAxisValue(chart, yv, yTicks));

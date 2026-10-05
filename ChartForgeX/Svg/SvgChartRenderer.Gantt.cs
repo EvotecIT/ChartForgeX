@@ -41,7 +41,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-role", "gantt-chart")
             .EndStartElement()
             .Line();
-        DrawGanttItemGradients(writer, id, items);
+        if (!t.FlatMarks) DrawGanttItemGradients(writer, id, items);
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
             if (chart.Options.ShowGrid) {
@@ -235,7 +235,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("width", F(progressWidth))
                 .Attribute("height", F(height))
                 .Attribute("rx", F(radius))
-                .Attribute("fill", "url(#" + id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
+                .Attribute("fill", t.FlatMarks ? item.Color.ToCss() : "url(#" + id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
                 .EndEmptyElement()
                 .Line();
         }
@@ -255,7 +255,7 @@ public sealed partial class SvgChartRenderer {
             .EndEmptyElement()
             .Line();
         var inset = Math.Min(radius, width / 3);
-        if (width > inset * 2 + 3) {
+        if (!t.FlatMarks && width > inset * 2 + 3) {
             writer
                 .StartElement("line")
                 .Attribute("data-cfx-role", "gantt-task-highlight")
@@ -288,7 +288,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("role", "img")
             .Attribute("aria-label", summary)
             .Attribute("points", points)
-            .Attribute("fill", "url(#" + id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
+            .Attribute("fill", chart.Options.Theme.FlatMarks ? item.Color.ToCss() : "url(#" + id + "-ganttFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
             .Attribute("stroke", chart.Options.Theme.CardBackground.ToCss())
             .Attribute("stroke-opacity", F(ChartVisualPrimitives.GanttTaskBorderOpacity))
             .Attribute("stroke-width", F(ChartVisualPrimitives.GanttTaskBorderStrokeWidth))

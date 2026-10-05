@@ -43,12 +43,12 @@ public sealed partial class PngChartRenderer {
 
     internal RgbaCanvas RenderCanvas(Chart chart, int? outputScale = null) {
         var labels = new Svg.SvgChartRenderer().RenderLabelScene(chart);
-        if (chart.Options.Theme.UseGraphiteLayout) {
+        if (chart.Options.Theme.UseGraphiteLayout || chart.Options.Gauge.Form != ChartGaugeForm.Arc) {
             var o = chart.Options;
             var font = TrueTypeFont.TryLoadFromPath(o.PngFontPath, o.PngFontCollectionIndex, o.PngFontFaceName);
             var sceneCanvas = new RgbaCanvas(o.Size.Width, o.Size.Height, o.PngSupersamplingScale,
                 font ?? TypographyFontResolver.ResolveThemeFont(o.Theme.FontFamily), outputScale ?? o.PngOutputScale) { TextHinting = o.PngTextHinting };
-            sceneCanvas.Clear(o.TransparentBackground ? ChartColor.Transparent : o.Theme.Background);
+            sceneCanvas.Clear(o.TransparentBackground || o.HostOwnsFrame || o.Theme.UseGraphiteLayout && o.ShowCard && o.Theme.UseCard ? ChartColor.Transparent : o.Theme.Background);
             labels.PaintMarks(sceneCanvas);
             labels.Paint(sceneCanvas, font);
             return sceneCanvas;

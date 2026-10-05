@@ -41,7 +41,7 @@ public sealed class HtmlChartGridRenderer {
         if (palettes.Length > 0) writer.StartElement("style").RawTrusted(palettes).EndElement();
         if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
             writer.StartElement("header").Attribute("class", "chartforgex-grid-header").EndStartElement();
-            if (grid.Title.Length > 0) WriteGridHeaderText(writer, "h1", grid.Title, grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, "800");
+            if (grid.Title.Length > 0) WriteGridHeaderText(writer, "h1", grid.Title, grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.UseGraphiteLayout ? "700" : "800");
             if (grid.Subtitle.Length > 0) WriteGridHeaderText(writer, "p", grid.Subtitle, grid.SubtitleStyle, theme.MutedText.ToCss(), CssFontFamily(theme.FontFamily), theme.SubtitleFontSize, "400");
             writer.EndElement();
         }
@@ -57,7 +57,7 @@ public sealed class HtmlChartGridRenderer {
                 .Attribute("aria-label", AttributeTitle(chart))
                 .Attribute("style", PanelSpanStyle(columnSpan, rowSpan, grid.PanelSize.HasValue))
                 .EndStartElement()
-                .RawTrusted(_svg.Render(chart, gridScope + "-cell-" + i.ToString(CultureInfo.InvariantCulture)))
+                .RawTrusted(_svg.Render(theme.UseGraphiteLayout ? chart.PanelView() : chart, gridScope + "-cell-" + i.ToString(CultureInfo.InvariantCulture)))
                 .EndElement();
         }
 
@@ -81,7 +81,7 @@ public sealed class HtmlChartGridRenderer {
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(bg, theme.Text.ToCss(), theme.MutedText.ToCss(), fontFamily, theme.TitleFontSize, theme.SubtitleFontSize));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(bg, theme.Text.ToCss(), theme.MutedText.ToCss(), fontFamily, theme.TitleFontSize, theme.SubtitleFontSize, theme.UseGraphiteLayout));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(grid, "html-page")).Line()
@@ -90,8 +90,8 @@ public sealed class HtmlChartGridRenderer {
         return writer.Build();
     }
 
-    private static string BuildCss(ChartColor background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize) {
-        return HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "var(--cfx-grid-padding,24px)") + ".chartforgex-grid{display:block;width:min(100%,1440px);margin:0 auto}.chartforgex-grid-header{margin:0 0 18px}.chartforgex-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-grid-panel-height,auto);gap:var(--cfx-grid-gap)}.chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-grid.fit-stretch .chartforgex-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){body{padding:16px}.chartforgex-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
+    private static string BuildCss(ChartColor background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize, bool graphite) {
+        return HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "var(--cfx-grid-padding,24px)", graphite) + ".chartforgex-grid{display:block;width:min(100%,1440px);margin:0 auto}.chartforgex-grid-header{margin:0 0 18px}.chartforgex-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:" + (graphite ? "700" : "800") + "}.chartforgex-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-grid-panel-height,auto);gap:var(--cfx-grid-gap)}.chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-grid.fit-stretch .chartforgex-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){body{padding:16px}.chartforgex-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
     }
 
     private static string? PanelSpanStyle(int columnSpan, int rowSpan, bool hasFixedPanelSize) {

@@ -10,6 +10,7 @@ namespace ChartForgeX.Svg;
 public sealed partial class SvgChartRenderer {
     private static void DrawSeries(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id, bool includeInteractionTargets) {
         var series = chart.Series[index];
+        if (chart.Options.Theme.UseGraphiteLayout) AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("data-cfx-role", "series-data").Attribute("role", chart.Accessibility.IsDecorative ? null : "group").Attribute("aria-label", chart.Accessibility.IsDecorative ? null : series.Name + ": " + string.Join("; ", series.Points.Select(p => FormatX(chart, p.X) + " " + p.Y.ToString("R", System.Globalization.CultureInfo.InvariantCulture)))).EndStartElement());
         var clip = chart.Options.ClipMarksToPlot && series.Kind != ChartSeriesKind.Scatter;
         if (clip) AppendSvgStart(sb, writer => writer.StartElement("g").Attribute("clip-path", $"url(#{id}-plotClip)").EndStartElement().Line());
         DrawSeriesGeometry(sb, chart, barCoordinateMap, index, plot, range, map, id, includeInteractionTargets);
@@ -18,6 +19,7 @@ public sealed partial class SvgChartRenderer {
             var mapped = series.Points.Select(p => new ChartPoint(map.X(p.X), map.Y(p.Y), p.BreakBefore)).ToArray();
             DrawOptionalLineMarkers(sb, chart, series, index, mapped, series.MarkerRadius ?? chart.Options.Theme.MarkerRadius, includeInteractionTargets, plot);
         }
+        if (chart.Options.Theme.UseGraphiteLayout) AppendSvgEnd(sb, "g");
     }
 
     private static void DrawSeriesGeometry(StringBuilder sb, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartRange range, ChartMapper map, string id, bool includeInteractionTargets) {

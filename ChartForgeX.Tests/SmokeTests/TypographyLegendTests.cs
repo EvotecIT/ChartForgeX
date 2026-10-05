@@ -5,7 +5,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void LegendCasingDrivesAllocationBeforeSerialization() {
-        var chart = Chart.Create().WithSize(320, 240)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 240)
             .AddLine("iiii", Points(1, 2, 3))
             .AddLine("iiii", Points(2, 3, 4))
             .AddLine("iiii", Points(3, 4, 5));

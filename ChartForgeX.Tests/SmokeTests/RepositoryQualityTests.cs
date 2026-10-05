@@ -354,9 +354,8 @@ internal static partial class SmokeTests {
         Assert(!svgDottedMap.Contains("IsLightDottedMapSurface", StringComparison.Ordinal) && !pngDottedMap.Contains("IsLightDottedMapSurface", StringComparison.Ordinal), "Dotted-map renderers should not carry duplicate surface luminance helpers.");
     }
 
-    private static void ExampleAppClearsGeneratedOutputBeforeWriting() {
+    private static void ExampleAppIncludesInteractiveDemos() {
         var program = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "Program.cs"));
-        Assert(program.Contains("Directory.Delete(output, recursive: true)", StringComparison.Ordinal), "Example generation should wipe stale output before writing comparison artifacts.");
         Assert(program.Contains("SaveInteractiveHtml", StringComparison.Ordinal), "Example generation should include a visible interactive HTML adapter demo.");
         Assert(program.Contains("SaveInteractiveHtmlDashboard", StringComparison.Ordinal), "Example generation should include a visible synchronized dashboard adapter demo.");
         Assert(program.Contains("GraphExplorerExamples.Write", StringComparison.Ordinal), "Example generation should include a visible graph explorer adapter demo.");

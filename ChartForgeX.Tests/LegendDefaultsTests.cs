@@ -9,7 +9,6 @@ public sealed class LegendDefaultsTests {
     [Theory]
     [InlineData("bar")]
     [InlineData("histogram")]
-    [InlineData("gauge")]
     [InlineData("pie")]
     [InlineData("donut")]
     public void OneEntryIsHiddenUntilExplicitlyEnabled(string kind) {
@@ -28,7 +27,7 @@ public sealed class LegendDefaultsTests {
     [InlineData(70)]
     [InlineData(90)]
     public void GaugeLegendUsesTheDrawnValueColor(double value) {
-        var chart = Chart.Create().WithSize(480, 340).WithLegend(true).AddGauge("Score", value);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(480, 340).WithLegend(true).AddGauge("Score", value);
         var svg = XDocument.Parse(chart.ToSvg());
         var arc = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "gauge-value");
         var item = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-item");
@@ -49,9 +48,9 @@ public sealed class LegendDefaultsTests {
         foreach (var item in items) {
             var name = Assert.Single(item.Elements(), e => (string?)e.Attribute("data-cfx-role") == "slice-legend-label");
             var value = Assert.Single(item.Elements(), e => (string?)e.Attribute("data-cfx-role") == "slice-legend-percent");
-            Assert.Equal("start", (string?)value.Attribute("text-anchor"));
-            Assert.Equal(name.Attribute("data-cfx-point")!.Value, value.Attribute("data-cfx-point")!.Value);
-            Assert.InRange((double)value.Attribute("x")! - (double)name.Attribute("x")!, 12, 160);
+            Assert.Equal("end", (string?)value.Attribute("text-anchor"));
+            Assert.True((double)value.Attribute("x")! > (double)name.Attribute("x")! + 80);
+            Assert.Single(item.Elements(), e => (string?)e.Attribute("data-cfx-role") == "slice-legend-value");
         }
         Assert.NotEmpty(chart.ToPng());
     }

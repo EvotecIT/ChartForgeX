@@ -11,6 +11,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawFunnel(StringBuilder sb, Chart chart, ChartRect basePlot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout) { DrawGraphiteFunnel(sb, chart, basePlot); return; }
         ChartSeries? series = null;
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i].Kind != ChartSeriesKind.Funnel) continue;

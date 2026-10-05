@@ -75,7 +75,8 @@ internal sealed class SvgMarkupWriter {
     public SvgMarkupWriter Attribute(string name, double value) {
         EnsureFinite(value, nameof(value));
         AppendAttributeName(name);
-        _builder.Append("=\"").Append(FormatNumber(value)).Append('"');
+        var isDataValue = name == "data-cfx-value" || name == "data-cfx-y" || name == "data-cfx-x" || name == "data-cfx-category" || name == "data-cfx-base";
+        _builder.Append("=\"").Append(isDataValue ? value.ToString("R", CultureInfo.InvariantCulture) : FormatNumber(value)).Append('"');
         return this;
     }
 

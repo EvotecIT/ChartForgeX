@@ -34,10 +34,9 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-role", "legend-item")
                     .Attribute("data-cfx-series", item.SeriesIndex)
                     .Attribute("data-cfx-series-name", series.Name)
-                    .Attribute("data-cfx-state", series.StateRole.ToString().ToLowerInvariant())
                     .Attribute("data-cfx-series-key", SeriesInteractionKey(series));
                 if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
-                writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).EndStartElement().Line();
+                writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).Attribute("data-cfx-state", series.StateRole.ToString().ToLowerInvariant()).EndStartElement().Line();
                 if (t.UseGraphiteLayout) DrawGraphiteLegendSymbol(writer, series.Kind, item.X, -4, item.Color);
                 else DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var style = chart.Options.LegendStyle;
@@ -188,7 +187,7 @@ public sealed partial class SvgChartRenderer {
     private static double LegendBottomReserve(Chart chart) {
         var availableHeight = LegendRowBudget.HorizontalAvailableHeight(chart);
         var rows = BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80), availableHeight).Count;
-        return chart.Options.Theme.UseGraphiteLayout ? rows * LegendRowHeight(chart) + 6 : LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
+        return chart.Options.Theme.UseGraphiteLayout ? Math.Min(availableHeight, rows * LegendRowHeight(chart) + 6) : LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
     }
 
     private static bool ShouldDrawLegend(Chart chart) => ChartLegendVisibility.ForSeries(chart) && !IsMapChart(chart) && (!chart.Options.Theme.UseGraphiteLayout || !(IsGaugeChart(chart) || IsBulletChart(chart) || IsFunnelChart(chart) || IsSankeyChart(chart) || IsHeatmapChart(chart)));

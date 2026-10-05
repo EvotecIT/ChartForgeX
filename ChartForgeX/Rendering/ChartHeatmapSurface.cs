@@ -22,7 +22,7 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor"/>).</summary>
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
-        chart.Options.HeatmapRelativeScale && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
+        (chart.Options.HeatmapRelativeScale || chart.Options.Theme.UseGraphiteLayout) && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
 
     /// <summary>
     /// Returns whether a matrix or hexbin heatmap cell is strong, so the text on it takes the surface colour
@@ -52,7 +52,7 @@ internal static class ChartHeatmapSurface {
     public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
-        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
+        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.Ramp) : RampBlend(ramp, ratio);
         return new ChartColorBlend(chart.Options.Theme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.Theme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
     }
 
@@ -209,7 +209,7 @@ internal static class ChartHeatmapSurface {
     public static ChartColor ZeroColor(Chart chart) => ZeroBlend(chart).Color;
 
     /// <summary>Returns <see cref="ZeroColor"/> as a blend of the backdrop and the muted text colour.</summary>
-    public static ChartColorBlend ZeroBlend(Chart chart) => TowardsMutedText(chart, 0.14);
+    public static ChartColorBlend ZeroBlend(Chart chart) => chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(chart.Options.Theme.Neutral3, SvgColorRole.Surface) : TowardsMutedText(chart, 0.14);
 
     /// <summary>
     /// Returns the colour of a calendar day without data: the surface behind the cells shifted further towards the muted

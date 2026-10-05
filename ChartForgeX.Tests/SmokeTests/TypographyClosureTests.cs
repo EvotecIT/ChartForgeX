@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void RasterScriptBaselinesUseSingleDirectionalShift() {
         static ColorBounds TitleBounds(TextBaseline baseline, double fontSize = 24) {
-            var chart = Chart.Create()
+            var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
                 .WithSize(360, 220)
                 .WithTitle("Directional baseline")
                 .WithTitleStyle(style => style.WithColor("#ff00ff").WithFontSize(fontSize).WithBaseline(baseline))
@@ -30,20 +30,20 @@ internal static partial class SmokeTests {
     }
 
     private static void SvgSpecializedLayoutsReserveTransformedText() {
-        var regularBullet = Chart.Create().WithSize(560, 260).WithDataLabels().AddBullet("mmmmmmmmmmmmmmmm", 82, 90).ToSvg();
-        var uppercaseBullet = Chart.Create().WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddBullet("mmmmmmmmmmmmmmmm", 82, 90).ToSvg();
+        var regularBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("mmmmmmmmmmmmmmmm", 82, 90).ToSvg();
+        var uppercaseBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddBullet("mmmmmmmmmmmmmmmm", 82, 90).ToSvg();
         Assert(GetAttribute(uppercaseBullet, "data-cfx-role=\"bullet-value\"", "x") > GetAttribute(regularBullet, "data-cfx-role=\"bullet-value\"", "x"), "Bullet layout should reserve the transformed series label width before placing the bar.");
 
-        var regularHorizontal = Chart.Create().WithSize(520, 260).WithXLabels("mmmmmmmm", "short").AddHorizontalBar("Values", Points(12, 20)).ToSvg();
-        var uppercaseHorizontal = Chart.Create().WithSize(520, 260).WithXLabels("mmmmmmmm", "short").WithTickLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddHorizontalBar("Values", Points(12, 20)).ToSvg();
+        var regularHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("mmmmmmmm", "short").AddHorizontalBar("Values", Points(12, 20)).ToSvg();
+        var uppercaseHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("mmmmmmmm", "short").WithTickLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddHorizontalBar("Values", Points(12, 20)).ToSvg();
         Assert(GetAttribute(uppercaseHorizontal, "data-cfx-role=\"horizontal-bar\"", "x") > GetAttribute(regularHorizontal, "data-cfx-role=\"horizontal-bar\"", "x"), "Horizontal charts should reserve transformed category labels before placing their plot.");
 
         var closePoints = new[] {
             new ChartForgeX.Primitives.ChartPoint(1, 1),
             new ChartForgeX.Primitives.ChartPoint(1.12, 1.12)
         };
-        var regularLabels = Chart.Create().WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints).ToSvg();
-        var styledChart = Chart.Create().WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints);
+        var regularLabels = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints).ToSvg();
+        var styledChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints);
         styledChart.Series[0].WithDataLabelStyle(style => style.WithFontSize(36).WithTextCase(TextCaseTransform.Uppercase));
         var styledLabels = styledChart.ToSvg();
         Assert(CountVisibleDataLabels(regularLabels) == 2 && CountVisibleDataLabels(styledLabels) >= 1, "Measured placement should retain labels when an alternative lane fits the transformed text.");

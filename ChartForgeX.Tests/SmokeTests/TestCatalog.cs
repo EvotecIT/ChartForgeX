@@ -16,7 +16,7 @@ internal static partial class SmokeTests {
         ("SVG fitted text polish stays shared across specialized charts", SvgFittedTextPolishStaysSharedAcrossSpecializedCharts),
         ("Color readability math stays shared across SVG and PNG", ColorReadabilityMathStaysSharedAcrossSvgAndPng),
         ("Chart color conversions and known names stay deterministic", ChartColorConversionsAndKnownNamesStayDeterministic),
-        ("Example app clears generated output before writing", ExampleAppClearsGeneratedOutputBeforeWriting),
+        ("Example app includes interactive demos", ExampleAppIncludesInteractiveDemos),
         ("Generated examples stay assigned to catalog families", GeneratedExamplesStayAssignedToCatalogFamilies),
         ("Generated website links resolve to seed assets", GeneratedWebsiteLinksResolveToSeedAssets),
         ("Promoted demo manifest stays accessible and source-linked", PromotedDemoManifestStaysAccessibleAndSourceLinked),

@@ -60,7 +60,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BubbleSeriesRenderScaledMarkers() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithDataLabels()
             .AddBubble("Risk clusters", new[] {
@@ -83,7 +83,7 @@ internal static partial class SmokeTests {
             new ChartPoint(4, 33),
             new ChartPoint(5, 41)
         };
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .AddScatter("Observed", points, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", points, ChartColor.FromRgb(245, 158, 11));
@@ -189,7 +189,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedAreaSeriesRenderCumulativeFilledBands() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("Mon", "Tue", "Wed")
@@ -204,7 +204,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SlopeSeriesRenderEndpointComparisons() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithDataLabels()
             .AddSlope("DMARC", 58, 88, "Before", "After", ChartColor.FromRgb(37, 99, 235))
@@ -263,7 +263,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BarLineComboRendersBarsAndLine() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithYAxis("Volume")
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
@@ -294,7 +294,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Pass rate</text>", StringComparison.Ordinal), "Bar-line combos should render the line legend label.");
         Assert(chart.ToPng().Length > 64, "Bar-line combos should render PNG output.");
 
-        var secondaryOnly = Chart.Create().WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
+        var secondaryOnly = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
         secondaryOnly.Series[0].UseSecondaryYAxis();
         Assert(!secondaryOnly.ToSvg().Contains("Infinity", StringComparison.Ordinal), "Secondary-axis-only charts should still render finite SVG geometry.");
     }
@@ -308,7 +308,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HorizontalBarSeriesRenderCategoryBars() {
-        var svg = Chart.Create()
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("SPF alignment", "DMARC policy", "DNSSEC coverage")
@@ -321,7 +321,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedHorizontalBarsRenderSegmentsAndTotals() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(700, 380)
             .WithStackedHorizontalBars()
             .WithStackTotals()
@@ -344,7 +344,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HeatmapRowsRenderMatrixCells() {
-        var svg = Chart.Create()
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(720, 420)
             .WithDataLabels()
             .WithXAxis("Control")
@@ -373,7 +373,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Primary</text>", StringComparison.Ordinal), "Heatmaps should render row labels.");
         Assert(svg.Contains(">DMARC</text>", StringComparison.Ordinal), "Heatmaps should render column labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Heatmaps should render optional data labels.");
-        var edgeSvg = Chart.Create()
+        var edgeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 320)
             .WithXLabels("Very long first control", "Middle", "Very long final control")
             .AddHeatmapRow("Domains", Points(100, 60, 0))
@@ -383,7 +383,7 @@ internal static partial class SmokeTests {
     }
 
     private static void GaugeSeriesRenderValueArcs() {
-        var svg = Chart.Create()
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 420)
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .AddGauge("Security score", 87, 0, 100)
@@ -397,7 +397,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"gauge-status-label\"", StringComparison.Ordinal), "Gauges should render a visible status label.");
         Assert(svg.Contains("stroke=\"#10B981\"", StringComparison.Ordinal), "Positive gauges should use the positive theme color when no explicit color is set.");
         Assert(svg.Contains(">87%</text>", StringComparison.Ordinal), "Gauges should render the formatted value label.");
-        var statuses = Chart.Create().AddGauge("Low", 42).ToSvg() + Chart.Create().AddGauge("Warning", 72).ToSvg();
+        var statuses = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddGauge("Low", 42).ToSvg() + Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddGauge("Warning", 72).ToSvg();
         Assert(statuses.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Low gauges should expose negative status.");
         Assert(statuses.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Mid-range gauges should expose warning status.");
     }
@@ -443,7 +443,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SankeyLinksRenderWeightedFlows() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(900, 520)
             .WithDataLabels()
             .AddSankey("Finding flow", new[] {
@@ -485,7 +485,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BulletSeriesRenderTargetAndRangeBars() {
-        var svg = Chart.Create()
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(720, 420)
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(37, 99, 235))
@@ -509,21 +509,21 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">DMARC enforcement</text>", StringComparison.Ordinal), "Bullet charts should render row labels.");
         Assert(svg.Contains(">88%</text>", StringComparison.Ordinal), "Bullet charts should render value labels.");
         Assert(svg.Contains(">target 95%</text>", StringComparison.Ordinal), "Bullet charts should render target labels.");
-        var edgeSvg = Chart.Create().AddBullet("Edge low", 5, 0).AddBullet("Edge high", 95, 100).ToSvg();
+        var edgeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBullet("Edge low", 5, 0).AddBullet("Edge high", 95, 100).ToSvg();
         Assert(edgeSvg.Contains("data-cfx-role=\"bullet-target-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"start\"", StringComparison.Ordinal), "Left-edge bullet target labels should start-align.");
         Assert(edgeSvg.Contains("data-cfx-role=\"bullet-target-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge bullet target labels should end-align.");
-        var statusSvg = Chart.Create().AddBullet("Below", 80, 90).AddBullet("Meets", 90, 90).AddBullet("Above", 95, 90).ToSvg();
+        var statusSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBullet("Below", 80, 90).AddBullet("Meets", 90, 90).AddBullet("Above", 95, 90).ToSvg();
         Assert(statusSvg.Contains("data-cfx-status=\"below-target\"", StringComparison.Ordinal), "Bullet rows should identify below-target values.");
         Assert(statusSvg.Contains("data-cfx-status=\"meets-target\"", StringComparison.Ordinal), "Bullet rows should identify target-matching values.");
         Assert(statusSvg.Contains("data-cfx-status=\"above-target\"", StringComparison.Ordinal), "Bullet rows should identify above-target values.");
-        var fittedSvg = Chart.Create()
+        var fittedSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(320, 220)
             .WithDataLabelStyle(style => style.WithFontSize(48))
             .AddBullet("A deliberately long bullet row label", 80, 90)
             .ToSvg();
         var fittedRowFontSize = double.Parse(GetStringAttribute(fittedSvg, "data-cfx-role=\"bullet-row-label\"", "font-size"), CultureInfo.InvariantCulture);
         Assert(fittedRowFontSize < 48, "Fitted SVG bullet labels should emit their reduced font size instead of restoring the requested style override.");
-        Assert(Chart.Create().AddBullet("Score", 80, 90).ToPng().Length > 64, "Bullet charts should render PNG output.");
+        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBullet("Score", 80, 90).ToPng().Length > 64, "Bullet charts should render PNG output.");
     }
 
     private static void SpecializedChartsEscapeTextLabels() {
@@ -601,7 +601,7 @@ internal static partial class SmokeTests {
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {
-        var svg = Chart.Create()
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(760, 420)
             .WithDataLabels()
             .WithXAxis("Change")
@@ -624,7 +624,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Opened</text>", StringComparison.Ordinal), "Waterfall charts should render category labels.");
         Assert(svg.Contains(">Total</text>", StringComparison.Ordinal), "Waterfall charts should render a total category.");
         Assert(svg.Contains(">+18</text>", StringComparison.Ordinal), "Waterfall charts should render positive delta labels.");
-        Assert(Chart.Create().AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
+        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
     }
 
     private static void RadarSeriesRenderPolarPolygons() {
@@ -682,7 +682,7 @@ internal static partial class SmokeTests {
     }
 
     private static void FunnelSeriesRenderStagedSegments() {
-        var svg = Chart.Create().WithSize(760, 460).WithXLabels("Discovered", "Verified", "Prioritized", "Remediated").AddFunnel("Domain remediation funnel", Points(420, 318, 174, 96)).ToSvg();
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(760, 460).WithXLabels("Discovered", "Verified", "Prioritized", "Remediated").AddFunnel("Domain remediation funnel", Points(420, 318, 174, 96)).ToSvg();
         Assert(svg.Contains("data-cfx-role=\"funnel-chart\"", StringComparison.Ordinal), "Funnel charts should expose a role marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-segment\"") == 4, "Four funnel values should render four funnel segments.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-retention\"") == 3, "Funnel charts should render retention labels after the first stage.");
@@ -696,11 +696,11 @@ internal static partial class SmokeTests {
         Assert(GetAttribute(svg, "data-cfx-role=\"funnel-retention\"", "x") < 760, "Funnel retention labels should stay inside the SVG viewport.");
         Assert(svg.Contains(">75.7% retained</text>", StringComparison.Ordinal), "Funnel charts should render retained percentage labels.");
         Assert(svg.Contains(">-24.3% from prev</text>", StringComparison.Ordinal), "Funnel charts should render previous-stage drop-off labels.");
-        Assert(Chart.Create().AddFunnel("Funnel", Points(420, 318, 174, 96)).ToPng().Length > 64, "Funnel charts should render PNG output.");
+        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddFunnel("Funnel", Points(420, 318, 174, 96)).ToPng().Length > 64, "Funnel charts should render PNG output.");
     }
 
     private static void TreemapItemsRenderProportionalTiles() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(720, 420)
             .WithDataLabels()
             .AddTreemap("Findings", new[] {

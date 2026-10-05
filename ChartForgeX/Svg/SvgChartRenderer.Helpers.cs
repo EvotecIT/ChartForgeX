@@ -272,7 +272,7 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowXAxisLine(Chart chart) => ShowXAxis(chart) && chart.Options.XAxis.ShowLine;
 
-    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine && !chart.Options.Theme.UseGraphiteLayout;
+    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine && (!chart.Options.Theme.UseGraphiteLayout || chart.Options.YAxis.HasExplicitLine);
 
     private static bool ShowSecondaryYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.SecondaryYAxis.Visible;
 

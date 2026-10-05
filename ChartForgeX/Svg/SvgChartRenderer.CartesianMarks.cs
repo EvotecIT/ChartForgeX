@@ -101,8 +101,8 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-series", index)
             .Attribute("data-cfx-point-count", series.Points.Count)
             .Attribute("d", BuildClosedPolygonPath(upperPath, lowerPath))
-            .Attribute("fill", color.ToCss())
-            .Attribute("opacity", "0.42")
+            .Attribute("fill", chart.Options.Theme.FlatMarks && chart.Series.Count > 1 ? "none" : color.ToCss())
+            .Attribute("opacity", chart.Options.Theme.FlatMarks ? "0.12" : "0.42")
             .EndEmptyElement()
             .Line());
         var line = BuildLinePath(upperPath, false);

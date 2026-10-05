@@ -9,6 +9,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawGauge(StringBuilder sb, Chart chart, ChartRect plot) {
+        if (chart.Options.Theme.UseGraphiteLayout || chart.Options.Gauge.Form != ChartGaugeForm.Arc) { DrawGraphiteGauge(sb, chart, plot); return; }
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Gauge);
         if (series == null || series.Points.Count == 0) return;
 

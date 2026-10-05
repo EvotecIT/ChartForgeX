@@ -4,6 +4,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Svg;
 
@@ -29,7 +30,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-role", "treemap")
             .EndStartElement()
             .Line();
-        DrawTreemapTileGradients(writer, chart, id, series, seriesIndex);
+        if (!chart.Options.Theme.FlatMarks) DrawTreemapTileGradients(writer, chart, id, series, seriesIndex);
         for (var i = 0; i < tiles.Count; i++) {
             var tile = tiles[i];
             var rect = tile.Rect;
@@ -89,7 +90,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawTreemapTile(SvgMarkupWriter writer, Chart chart, string id, ChartSeries series, int seriesIndex, int pointIndex, ChartRect rect, double radius, string summary, string label, double value) {
-        var fill = TreemapTileFill(chart, series, seriesIndex, pointIndex, id);
+        var fill = chart.Options.Theme.FlatMarks ? TreemapTileColor(chart, series, pointIndex).ToCss() : TreemapTileFill(chart, series, seriesIndex, pointIndex, id);
         var highlightInset = Math.Min(radius, rect.Width / 4);
         var highlightEnd = rect.X + rect.Width - highlightInset;
         writer
@@ -122,7 +123,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke-width", ChartVisualPrimitives.TreemapTileBorderStrokeWidth)
             .EndEmptyElement()
             .Line();
-        if (highlightEnd > rect.X + highlightInset && rect.Height > 12) {
+        if (!chart.Options.Theme.FlatMarks && highlightEnd > rect.X + highlightInset && rect.Height > 12) {
             writer
                 .StartElement("line")
                 .Attribute("data-cfx-role", "treemap-tile-highlight")
@@ -150,7 +151,7 @@ public sealed partial class SvgChartRenderer {
         var dataStyle = DataLabelStyle(chart, series, pointIndex);
         label = StyleText(dataStyle, label);
         value = StyleText(dataStyle, value);
-        var textColor = ChartColorMath.TextOnBackground(color);
+        var textColor = chart.Options.Theme.FlatMarks ? ChartColorMath.AccessibleTextOnBackground(color) : ChartColorMath.TextOnBackground(color);
         var insetX = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetX, Math.Max(6, rect.Width * 0.12));
         var insetY = Math.Min(ChartVisualPrimitives.TreemapTileLabelInsetY, Math.Max(7, rect.Height * 0.14));
         var maxWidth = Math.Max(8, rect.Width - insetX * 2);
@@ -162,10 +163,10 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-role", "treemap-label")
                 .Attribute("x", rect.X + insetX)
                 .Attribute("y", rect.Y + insetY + labelFontSize)
-                .Attribute("fill", StyleColor(dataStyle, textColor).ToCss())
+                .Paint("fill", t.UseGraphiteLayout && !dataStyle.Color.HasValue ? SvgPaint.Contrast(color, SvgColorRole.Series) : SvgPaint.Plain(StyleColor(dataStyle, textColor)))
                 .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                 .Attribute("font-size", labelFontSize)
-                .Attribute("font-weight", StyleWeight(dataStyle, "800"));
+                .Attribute("font-weight", StyleWeight(dataStyle, t.UseGraphiteLayout ? "700" : "800"));
             WriteSvgTextStyleAttributes(writer, dataStyle);
             WriteSvgStyledTextContent(writer, dataStyle, fittedLabel)
                 .EndElement()
@@ -183,8 +184,8 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-role", "treemap-value")
                     .Attribute("x", rect.X + insetX)
                     .Attribute("y", valueY)
-                    .Attribute("fill", StyleColor(dataStyle, textColor).ToCss())
-                    .Attribute("fill-opacity", ChartVisualPrimitives.TreemapValueOpacity)
+                    .Paint("fill", t.UseGraphiteLayout && !dataStyle.Color.HasValue ? SvgPaint.Contrast(color, SvgColorRole.Series) : SvgPaint.Plain(StyleColor(dataStyle, textColor)))
+                    .Attribute("fill-opacity", t.UseGraphiteLayout ? 1 : ChartVisualPrimitives.TreemapValueOpacity)
                     .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
                     .Attribute("font-size", valueFontSize)
                     .Attribute("font-weight", StyleWeight(dataStyle, "700"));

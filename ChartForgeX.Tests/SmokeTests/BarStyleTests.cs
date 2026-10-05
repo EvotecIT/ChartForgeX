@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void SegmentedCapsuleBarsRenderAsReusableStyle() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithTheme(ChartTheme.DashboardLight())
             .WithPalette("#FBBF24", "#22C55E", "#3B82F6", "#8B5CF6")
@@ -30,7 +30,7 @@ internal static partial class SmokeTests {
         Assert(chart.Options.BarVisualStyle.CapThickness == 7, "Reusable bar style presets should carry cap sizing tokens.");
         Assert(chart.Options.BarVisualStyle.CornerRadius == 0, "Dashboard capsule bodies should stay square so stacked segment joins do not create rounded connector bulges.");
         Assert(chart.Options.BarVisualStyle.CapShadowSpread == 3 && chart.Options.BarVisualStyle.CapHighlightOpacity > 0, "Dashboard capsule style should carry premium cap lighting tokens.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.BarStyle = (ChartBarStyle)999, "Bar style should reject invalid enum values instead of silently falling back to solid bars.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).Options.BarStyle = (ChartBarStyle)999, "Bar style should reject invalid enum values instead of silently falling back to solid bars.");
         var segmentedGeometry = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Rendering", "ChartSegmentedBarGeometry.cs"));
         Assert(segmentedGeometry.Contains("Vertical(", StringComparison.Ordinal) && segmentedGeometry.Contains("Horizontal(", StringComparison.Ordinal) && segmentedGeometry.Contains("RangeCap(", StringComparison.Ordinal), "Segmented capsule geometry should stay shared across vertical, horizontal, and range bars.");
         var segmentedSvg = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Svg", "SvgChartRenderer.SegmentedBars.cs"));
@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
         var axisHighlightOptions = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Core", "ChartOptions.AxisLabels.cs"));
         Assert(axisHighlightOptions.Contains("AxisValueEquals", StringComparison.Ordinal), "X-axis label highlights should resolve generated tick values with a floating-point tolerance.");
         Assert(ChartOptions.AxisValueEquals(2, 2 + 5e-10) && !ChartOptions.AxisValueEquals(1_000_000_000_000, 1_000_000_000_000 + 0.01), "X-axis label highlight tolerance should cover generated tick drift without bleeding across dense high-magnitude axes.");
-        var highlightedRangeChart = Chart.Create()
+        var highlightedRangeChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithXLabels("8am", "9am", "10am", "11am")
             .WithHighlightedXAxisRange(1.5, 3.5, ChartColor.FromHex("#DE442F"), 0.08, "peak-window")
             .AddBar("Reviews", Points(3, 9, 10, 4));
@@ -57,34 +57,34 @@ internal static partial class SmokeTests {
         Assert(highlightedRangeSvg.Contains("data-cfx-role=\"annotation-band\" data-cfx-kind=\"vertical-band\" data-cfx-value=\"1.5\" data-cfx-end=\"3.5\" data-cfx-label=\"peak-window\"", StringComparison.Ordinal), "Highlighted x-axis ranges should render selected-window metadata as annotation bands.");
         Assert(highlightedRangeChart.Options.XAxisLabelHighlights.Count == 2 && highlightedRangeChart.Options.XAxisLabelHighlights.ContainsKey(2) && highlightedRangeChart.Options.XAxisLabelHighlights.ContainsKey(3), "Highlighted x-axis ranges should color explicit labels inside the selected window.");
         Assert(highlightedRangeChart.ClearHighlightedXAxisLabels().Options.XAxisLabelHighlights.Count == 0 && highlightedRangeChart.Annotations.Count == 0, "Clearing x-axis highlights should remove selected-window bands.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithHighlightedXAxisRange(1, 2, paletteIndex: -1), "Palette-based x-axis range highlights should reject negative palette indexes.");
-        var pointRange = Chart.Create().AddBar("Peak", Points(3, 6, 9, 4)).Series[0].WithPointColorRange(1, 2, ChartColor.FromHex("#DE442F"));
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithHighlightedXAxisRange(1, 2, paletteIndex: -1), "Palette-based x-axis range highlights should reject negative palette indexes.");
+        var pointRange = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBar("Peak", Points(3, 6, 9, 4)).Series[0].WithPointColorRange(1, 2, ChartColor.FromHex("#DE442F"));
         Assert(pointRange.PointColors.Count == 3 && pointRange.PointColors[1]!.Value.ToHex() == "#DE442F" && pointRange.PointColors[2]!.Value.ToHex() == "#DE442F", "Point color ranges should support compact highlighted bar windows.");
         AssertThrows<ArgumentOutOfRangeException>(() => pointRange.WithPointColorRange(2, 0, ChartColor.FromHex("#DE442F")), "Point color ranges should reject empty ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => pointRange.WithPointColorRange(3, 2, ChartColor.FromHex("#DE442F")), "Point color ranges should reject ranges outside the series.");
-        var clearedFocus = Chart.Create().WithFocusedXAxisCategory(2, paletteIndex: 1).ClearHighlightedXAxisLabels();
+        var clearedFocus = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithFocusedXAxisCategory(2, paletteIndex: 1).ClearHighlightedXAxisLabels();
         Assert(clearedFocus.Options.XAxisLabelHighlights.Count == 0 && clearedFocus.Annotations.Count == 0, "Clearing x-axis label highlights should also clear focus guide annotations.");
-        var keptManualGuide = Chart.Create()
+        var keptManualGuide = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .AddVerticalLine(1.5, "", ChartColor.FromHex("#111827"))
             .WithFocusedXAxisCategory(2, halfWidth: 0.5, color: ChartColor.FromHex("#8B5CF6"))
             .ClearHighlightedXAxisLabels();
         Assert(keptManualGuide.Annotations.Count == 1 && Math.Abs(keptManualGuide.Annotations[0].Value - 1.5) < 1e-9, "Clearing x-axis focus should preserve caller-added unlabeled vertical annotations even at the same value.");
 
-        var trendSvg = Chart.Create()
+        var trendSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
             .WithTheme(ChartTheme.DashboardLight())
             .WithDashboardCartesianStyle()
             .AddSmoothArea("Saved", Points(10, 24, 32), ChartColor.FromHex("#22C55E"))
             .ToSvg();
-        Assert(Chart.Create().WithDashboardCartesianStyle().Options.BarStyle == ChartBarStyle.Solid, "Dashboard cartesian style should not force bar mark styling.");
+        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithDashboardCartesianStyle().Options.BarStyle == ChartBarStyle.Solid, "Dashboard cartesian style should not force bar mark styling.");
         Assert(trendSvg.Contains("stroke-dasharray=\"4 6\"", StringComparison.Ordinal), "Dashboard cartesian style should be reusable by non-bar charts.");
         Assert(trendSvg.Contains("data-cfx-role=\"area-line-highlight\"", StringComparison.Ordinal), "Dashboard cartesian line and area charts should pick up shared premium stroke layers.");
-        var panel = Chart.Create().WithDashboardBarPanelStyle();
+        var panel = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithDashboardBarPanelStyle();
         Assert(panel.Options.ShowCard && !panel.Options.ShowPlotBackground && !panel.Options.ShowAxisLines && panel.Options.BarStyle == ChartBarStyle.SegmentedCapsule, "Dashboard panel style should preserve premium card composition without forcing inner plot chrome.");
-        var panelSvg = Chart.Create().WithSize(320, 200).WithTheme(ChartTheme.DashboardLight()).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToSvg();
+        var panelSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 200).WithTheme(ChartTheme.DashboardLight()).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToSvg();
         Assert(CountOccurrences(panelSvg, "<feDropShadow") == 2 && panelSvg.Contains("dy=\"4\"", StringComparison.Ordinal) && panelSvg.Contains("stdDeviation=\"6\"", StringComparison.Ordinal) && panelSvg.Contains("dy=\"14\"", StringComparison.Ordinal) && panelSvg.Contains("stdDeviation=\"18\"", StringComparison.Ordinal) && panelSvg.Contains("flood-color=\"#0F172A\"", StringComparison.Ordinal), "SVG dashboard panels should use layered premium card shadow primitives.");
         Assert(panelSvg.Contains("data-cfx-role=\"card-surface\"", StringComparison.Ordinal) && panelSvg.Contains("data-cfx-role=\"card-border\"", StringComparison.Ordinal), "SVG dashboard panels should expose reusable card shell roles.");
-        var trendPanel = Chart.Create()
+        var trendPanel = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 300)
             .WithTheme(ChartTheme.DashboardLight())
             .WithDashboardTrendPanelStyle(showLegend: true)
@@ -97,9 +97,9 @@ internal static partial class SmokeTests {
         Assert(trendPanelSvg.Contains("data-cfx-role=\"point-callout-label\"", StringComparison.Ordinal), "Dashboard trend focus should render a point callout label.");
         Assert(trendPanelSvg.Contains("data-cfx-role=\"annotation-line\" data-cfx-kind=\"vertical-line\" data-cfx-value=\"4\" data-cfx-label=\"Apr\"", StringComparison.Ordinal), "Dashboard trend focus should render crosshair marker metadata.");
         Assert(trendPanelSvg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal), "Dashboard trend panels should reuse premium line highlight layers.");
-        AssertThrows<ArgumentNullException>(() => Chart.Create().WithDashboardTrendFocus(1, 2, null!), "Dashboard trend focus should reject null labels.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithDashboardTrendFocus(1, 2, null!), "Dashboard trend focus should reject null labels.");
 
-        var horizontalSvg = Chart.Create()
+        var horizontalSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithStackedHorizontalBars()
             .WithBarStyle(ChartBarStyle.SegmentedCapsule)
@@ -111,7 +111,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap\"") == 4, "Segmented capsule style should also apply to horizontal bars.");
         Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap-highlight\"") == 4, "Segmented capsule style should apply premium cap highlights to horizontal bars.");
         Assert(horizontalSvg.Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "SVG horizontal-bar x-axis labels should honor highlighted x-axis label colors.");
-        var horizontalPanelSvg = Chart.Create()
+        var horizontalPanelSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 240)
             .WithPadding(160, 34, 26, 34)
             .WithDashboardBarPanelStyle()
@@ -123,7 +123,7 @@ internal static partial class SmokeTests {
             .ToSvg();
         var horizontalPanelYPositions = ExtractHorizontalBarYPositions(horizontalPanelSvg);
         Assert(horizontalPanelYPositions.Length == 8 && horizontalPanelYPositions.Max() - horizontalPanelYPositions.Min() > 80, "Dashboard horizontal bars should use left padding for category labels and preserve usable vertical row spacing.");
-        var stackedRowSvg = Chart.Create()
+        var stackedRowSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 300)
             .WithTheme(ChartTheme.DashboardLight())
             .WithDashboardStackedRowStyle(showTotals: true)
@@ -132,13 +132,13 @@ internal static partial class SmokeTests {
             .AddHorizontalBar("Terminated", Points(25, 28, 24), ChartColor.FromHex("#5FD3D9"))
             .AddHorizontalBar("New hires", Points(14, 12, 15), ChartColor.FromHex("#FFB05C"))
             .ToSvg();
-        Assert(Chart.Create().WithDashboardStackedRowStyle(showTotals: true).Options.ShowStackTotals, "Dashboard stacked row style should enable trailing totals when requested.");
-        Assert(Chart.Create().WithDashboardStackedRowStyle(showLegend: false).Options.ShowLegend == false, "Dashboard stacked row style should make inline legends optional.");
+        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithDashboardStackedRowStyle(showTotals: true).Options.ShowStackTotals, "Dashboard stacked row style should enable trailing totals when requested.");
+        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithDashboardStackedRowStyle(showLegend: false).Options.ShowLegend == false, "Dashboard stacked row style should make inline legends optional.");
         Assert(stackedRowSvg.Contains("data-cfx-role=\"horizontal-bar-cap\"", StringComparison.Ordinal), "Dashboard stacked rows should reuse segmented horizontal bar caps.");
         Assert(stackedRowSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Dashboard stacked rows should render trailing totals through existing data-label primitives.");
         Assert(!stackedRowSvg.Contains("data-cfx-role=\"x-axis\"", StringComparison.Ordinal), "Dashboard stacked rows should hide the numeric x-axis by default.");
 
-        var rangeSvg = Chart.Create()
+        var rangeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithBarVisualStyle(ChartBarVisualStyle.DashboardCapsule())
             .AddRangeBar("Window", new[] {
@@ -150,16 +150,16 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(rangeSvg, "data-cfx-role=\"range-bar-cap-shadow\"") == 4, "Range bars should reuse segmented capsule cap shadow tokens.");
         Assert(CountOccurrences(rangeSvg, "data-cfx-role=\"range-bar-cap-highlight\"") == 4, "Range bars should reuse segmented capsule cap highlight tokens.");
 
-        var rangeAreaSvg = Chart.Create()
+        var rangeAreaSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
             .WithLineVisualStyle(ChartLineVisualStyle.Premium().WithHalo(0.22, 11))
             .AddRangeArea("Band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, ChartColor.FromHex("#3B82F6"))
             .ToSvg();
         Assert(rangeAreaSvg.Contains("data-cfx-role=\"range-area-upper-halo\"", StringComparison.Ordinal) && rangeAreaSvg.Contains("stroke-width=\"14\"", StringComparison.Ordinal), "SVG range-area halos should honor reusable line halo width tokens.");
         var transparentStroke = ChartColor.FromRgba(59, 130, 246, 0);
-        var transparentLineSvg = Chart.Create().WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddLine("Hidden", Points(10, 20, 30), transparentStroke).ToSvg();
-        var transparentTrendSvg = Chart.Create().WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddTrendLine("Hidden trend", Points(10, 20, 30), transparentStroke).ToSvg();
-        var transparentRangeSvg = Chart.Create().WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddRangeArea("Hidden band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, transparentStroke).ToSvg();
+        var transparentLineSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddLine("Hidden", Points(10, 20, 30), transparentStroke).ToSvg();
+        var transparentTrendSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddTrendLine("Hidden trend", Points(10, 20, 30), transparentStroke).ToSvg();
+        var transparentRangeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddRangeArea("Hidden band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, transparentStroke).ToSvg();
         Assert(!transparentLineSvg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && !transparentTrendSvg.Contains("data-cfx-role=\"trend-line-highlight\"", StringComparison.Ordinal) && !transparentRangeSvg.Contains("data-cfx-role=\"range-area-upper-highlight\"", StringComparison.Ordinal), "Premium SVG highlight layers should stay hidden when the source series stroke is transparent.");
         var pngCartesian = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
         Assert(!pngCartesian.Contains("Math.Max(24", StringComparison.Ordinal) && !pngCartesian.Contains("Math.Max(10", StringComparison.Ordinal), "PNG premium line halos should honor low opacity style tokens without renderer-specific alpha floors.");
@@ -167,7 +167,7 @@ internal static partial class SmokeTests {
         Assert(sharedLineLayers.Contains("HighlightOpacity(color, style)", StringComparison.Ordinal) && pngCartesian.Contains("ChartLineVisualLayers.Build", StringComparison.Ordinal), "PNG premium line highlights should derive opacity from the shared source-stroke-aware line layer model.");
         var pngRenderer = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.cs"));
         Assert(pngRenderer.Contains("HorizontalValueGridOpacity", StringComparison.Ordinal) && pngRenderer.Contains("HorizontalCategoryGridOpacity", StringComparison.Ordinal), "PNG horizontal-bar grids should preserve tuned default value/category guide emphasis.");
-        var compactSegmentedSvg = Chart.Create()
+        var compactSegmentedSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(220, 140)
             .WithYAxisBounds(0, 100000)
             .WithBarStyle(ChartBarStyle.SegmentedCapsule)
@@ -175,22 +175,22 @@ internal static partial class SmokeTests {
             .ToSvg();
         Assert(CountOccurrences(compactSegmentedSvg, "data-cfx-role=\"bar\"") == 1 && compactSegmentedSvg.Contains("height=\"1\"", StringComparison.Ordinal), "Segmented capsule bars should keep tiny non-zero values visible instead of dropping them.");
 
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithFocusedXAxisCategory(1, paletteIndex: -1), "Palette-based x-axis focus should reject negative palette indexes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithFocusedXAxisCategory(1, paletteIndex: -1), "Palette-based x-axis focus should reject negative palette indexes.");
 
         var reusableStyle = ChartBarVisualStyle.DashboardCapsule().WithCapThickness(9).WithBodyOpacity(0.3);
-        var reused = Chart.Create().WithBarVisualStyle(reusableStyle);
+        var reused = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithBarVisualStyle(reusableStyle);
         reusableStyle.WithCapThickness(3);
         Assert(reused.Options.BarVisualStyle.CapThickness == 9, "Charts should clone reusable bar style instances so later caller changes do not mutate chart output.");
 
         Assert(chart.Options.Theme.CardBackground.ToHex() == "#FFFFFF" && chart.Options.Theme.Palette[3].ToHex() == "#8B5CF6" && chart.Options.Theme.ShadowOpacity > 0.04 && chart.Options.Theme.ShadowColor.ToHex() == "#0F172A", "Dashboard styles should expose reusable surface, shadow, and palette tokens.");
 
-        var defaultPng = Chart.Create().WithSize(360, 220).WithStackedBars().AddBar("A", Points(20, 24)).AddBar("B", Points(18, 22)).ToPng();
-        var segmentedPng = Chart.Create().WithSize(360, 220).WithStackedBars().WithBarVisualStyle(ChartBarVisualStyle.DashboardCapsule()).AddBar("A", Points(20, 24)).AddBar("B", Points(18, 22)).ToPng();
+        var defaultPng = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithStackedBars().AddBar("A", Points(20, 24)).AddBar("B", Points(18, 22)).ToPng();
+        var segmentedPng = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithStackedBars().WithBarVisualStyle(ChartBarVisualStyle.DashboardCapsule()).AddBar("A", Points(20, 24)).AddBar("B", Points(18, 22)).ToPng();
         Assert(defaultPng.Length > 64 && segmentedPng.Length > 64 && !defaultPng.SequenceEqual(segmentedPng), "PNG output should render the segmented capsule style distinctly from default bars.");
-        var flatPanelPng = Chart.Create().WithSize(320, 200).WithTheme(ChartTheme.DashboardLight().WithShadowOpacity(0)).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToPng();
-        var shadowPanelPng = Chart.Create().WithSize(320, 200).WithTheme(ChartTheme.DashboardLight().WithShadowOpacity(0.22)).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToPng();
+        var flatPanelPng = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 200).WithTheme(ChartTheme.DashboardLight().WithShadowOpacity(0)).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToPng();
+        var shadowPanelPng = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 200).WithTheme(ChartTheme.DashboardLight().WithShadowOpacity(0.22)).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToPng();
         Assert(!flatPanelPng.SequenceEqual(shadowPanelPng), "PNG dashboard panels should honor theme shadow opacity instead of rendering flat cards.");
-        Assert(!shadowPanelPng.SequenceEqual(Chart.Create().WithSize(320, 200).WithTheme(ChartTheme.DashboardLight().WithShadowOpacity(0.22).WithShadowColor(ChartColor.FromHex("#7C3AED"))).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToPng()), "PNG dashboard panels should honor theme shadow color.");
+        Assert(!shadowPanelPng.SequenceEqual(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 200).WithTheme(ChartTheme.DashboardLight().WithShadowOpacity(0.22).WithShadowColor(ChartColor.FromHex("#7C3AED"))).WithDashboardPanelStyle().AddLine("A", Points(10, 20)).ToPng()), "PNG dashboard panels should honor theme shadow color.");
     }
 
     private static double[] ExtractHorizontalBarYPositions(string svg) {

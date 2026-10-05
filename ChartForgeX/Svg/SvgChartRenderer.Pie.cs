@@ -10,6 +10,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawPieLike(StringBuilder sb, Chart chart, ChartRect plot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout && !chart.Options.HasExplicitLegendPosition && !chart.Options.HasExplicitLegendBudget && DataLabelPlacement(chart, chart.Series[0]) == ChartDataLabelPlacement.Auto && chart.Series[0].PointSliceOffsets.Count == 0) { DrawGraphitePie(sb, chart, plot); return; }
         var series = chart.Series[0];
         var values = series.Points
             .Select((point, index) => new IndexedPieValue(point, index))
@@ -422,7 +423,8 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string PieSliceFill(Chart chart, ChartSeries series, int pointIndex, string id) =>
-        ChartMarkSurface.SliceHasPointColor(series, pointIndex)
+        chart.Options.Theme.FlatMarks ? PieSliceColor(chart, series, pointIndex).ToCss()
+            : ChartMarkSurface.SliceHasPointColor(series, pointIndex)
             ? series.PointColors[pointIndex]!.Value.ToCss()
             : $"url(#{id}-sliceFill{pointIndex % chart.Options.Theme.Palette.Length})";
 

@@ -56,7 +56,7 @@ public sealed partial class SvgChartRenderer {
         var colorCss = color.ToCss();
         var style = chart.Options.BarVisualStyle;
         var writer = new SvgMarkupWriter(768);
-        var radius = style.Kind == ChartBarStyle.SegmentedCapsule ? ChartSegmentedBarGeometry.RangeCap(style, x, y1, barWidth).Radius : Math.Min(7, barWidth / 2);
+        var radius = style.Kind == ChartBarStyle.SegmentedCapsule ? ChartSegmentedBarGeometry.RangeCap(style, x, y1, barWidth).Radius : Math.Min(style.Kind == ChartBarStyle.Flat ? 2 : 7, barWidth / 2);
         var opacity = style.Kind == ChartBarStyle.SegmentedCapsule ? style.BodyOpacity : style.Kind == ChartBarStyle.Flat ? 1 : ChartVisualPrimitives.RangeBarFillOpacity;
         writer.StartElement("rect")
             .Attribute("data-cfx-role", "range-bar")

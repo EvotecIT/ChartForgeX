@@ -66,6 +66,40 @@ public sealed class ThemedSvgShareTests {
         foreach (var (fill, text, label) in texts) Assert.True(Contrast(fill, text) >= 3, $"'{label}' is {text.ToHex()} on {fill.ToHex()}.");
     }
 
+    [Theory]
+    [InlineData("line")]
+    [InlineData("bars")]
+    [InlineData("donut")]
+    [InlineData("heatmap")]
+    [InlineData("heatmap-values")]
+    [InlineData("categorical-text")]
+    [InlineData("gantt-lanes")]
+    [InlineData("gauge")]
+    [InlineData("bullet")]
+    [InlineData("funnel")]
+    [InlineData("sankey")]
+    [InlineData("treemap")]
+    public void ApprovedGraphite_DefaultFamiliesShareOneSvgAcrossThemes(string family) {
+        var light = VisualDesignTokens.GraphiteLight();
+        var dark = VisualDesignTokens.GraphiteDark();
+        AssertShared(Build(family, light).WithSvgColorVariables(light.ToSvgColorVariables().Clone()).ToSvg(),
+            Build(family, dark).WithSvgColorVariables(dark.ToSvgColorVariables().Clone()).ToSvg(), dark);
+    }
+
+    [Theory]
+    [InlineData("heatmap-values")]
+    [InlineData("categorical-text")]
+    [InlineData("hexbin-values")]
+    [InlineData("gantt-lanes")]
+    public void ApprovedGraphite_SmallLabelsReachFourAndAHalfOnFilledMarks(string family) {
+        foreach (var tokens in new[] { VisualDesignTokens.GraphiteLight(), VisualDesignTokens.GraphiteDark() }) {
+            var texts = MarkTexts(Build(family, tokens).ToSvg(), Surface(tokens));
+            Assert.NotEmpty(texts);
+            foreach (var (fill, text, label) in texts)
+                Assert.True(Contrast(fill, text) >= 4.5, $"{family}: '{label}' is {text.ToHex()} on {fill.ToHex()} at {Contrast(fill, text):0.00}:1.");
+        }
+    }
+
     [Fact]
     public void MarkText_IsWrittenByRole_WithVariables() {
         var svg = Build("categorical-text", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
@@ -209,8 +243,8 @@ public sealed class ThemedSvgShareTests {
         Assert.DoesNotContain("#FFFFFF and", svg, StringComparison.Ordinal);
     }
 
-    private static void AssertShared(string light, string dark) {
-        var dictionary = Dark.ToSvgColorVariables().Variables.GroupBy(variable => variable.Name).ToDictionary(group => group.Key, group => Hex(group.First().Color));
+    private static void AssertShared(string light, string dark, VisualDesignTokens? darkTokens = null) {
+        var dictionary = (darkTokens ?? Dark).ToSvgColorVariables().Variables.GroupBy(variable => variable.Name).ToDictionary(group => group.Key, group => Hex(group.First().Color));
         // As the host compares: definitions nothing references are left out (the card and plot surface gradients of a
         // chart that draws neither), each property takes its dark value, and the ids of the rendering are made equal.
         string Canonical(string svg) {
@@ -287,6 +321,16 @@ public sealed class ThemedSvgShareTests {
     private static Chart Build(string family, VisualDesignTokens tokens) {
         var day = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         switch (family) {
+            case "gauge":
+                return Host(tokens).AddGauge("Readiness", 74).WithGauge(o => { o.Target = 90; o.Bands.Add(new(60, 80, ChartSeriesState.Warning)); });
+            case "bullet":
+                return Host(tokens).AddBullet("Coverage", 74, 90).AddBullet("TLS", 92, 80);
+            case "funnel":
+                return Host(tokens).WithXLabels("Detected", "Fixed", "Verified").AddFunnel("Findings", Points(100, 75, 60));
+            case "sankey":
+                return Host(tokens).AddSankey("Flow", new[] { new ChartSankeyLink("Assessment", "Fixed", 50), new ChartSankeyLink("Monitoring", "Fixed", 20) });
+            case "treemap":
+                return Host(tokens).AddTreemap("Files", new[] { new ChartTreemapItem("One", 50), new ChartTreemapItem("Two", 30), new ChartTreemapItem("Three", 20) });
             case "line":
                 return Host(tokens).AddLine("Inbound", Points(1, 3, 2, 5)).AddLine("Outbound", Points(2, 1, 3, 2));
             case "bars":

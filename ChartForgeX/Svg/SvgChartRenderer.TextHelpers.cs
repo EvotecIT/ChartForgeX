@@ -13,6 +13,7 @@ public sealed partial class SvgChartRenderer {
 
     /// <summary>Draws centred text whose fill is a typed paint; a colour set on <paramref name="style"/> still wins.</summary>
     private static void DrawSvgTextCenteredX(StringBuilder sb, Chart chart, string role, string text, double centerX, double y, SvgPaint fill, double fontSize, double maxWidth, string fontWeight, ChartColor? stroke = null, double strokeWidth = 0, bool middleBaseline = true, TextStyleOverride? style = null) {
+        if (chart.Options.Theme.UseGraphiteLayout) { style ??= GraphiteTextStyle(chart, role); strokeWidth = 0; }
         var preferredFontSize = fontSize;
         var resolvedStyle = style ?? new TextStyleOverride();
         var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));
@@ -35,6 +36,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawSvgTextLeft(StringBuilder sb, Chart chart, string role, string text, double x, double y, ChartColor fill, double fontSize, double maxWidth, string fontWeight, TextStyleOverride? style = null) {
+        if (chart.Options.Theme.UseGraphiteLayout) style ??= GraphiteTextStyle(chart, role);
         var preferredFontSize = fontSize;
         var resolvedStyle = style ?? new TextStyleOverride();
         var fittedFontSize = TextFontSizeForSvgWidth(chart, text, Math.Max(8, maxWidth), preferredFontSize, resolvedStyle, emphasized: IsEmphasizedWeight(fontWeight), minFontSize: Math.Min(8, preferredFontSize));

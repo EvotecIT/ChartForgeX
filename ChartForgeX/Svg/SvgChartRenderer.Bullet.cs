@@ -9,6 +9,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawBullet(StringBuilder sb, Chart chart, ChartRect basePlot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout) { DrawGraphiteBullet(sb, chart, basePlot); return; }
         var rows = chart.Series
             .Select((series, index) => new { series, index })
             .Where(item => item.series.Kind == ChartSeriesKind.Bullet && item.series.Points.Count >= 2)

@@ -33,7 +33,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-role", "timeline")
             .EndStartElement()
             .Line();
-        DrawTimelineItemGradients(writer, id, items);
+        if (!t.FlatMarks) DrawTimelineItemGradients(writer, id, items);
         foreach (var tick in ticks) {
             var x = ProjectTimelineX(tick, min, max, plot);
             if (chart.Options.ShowGrid) {
@@ -204,7 +204,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("width", width)
             .Attribute("height", rowHeight)
             .Attribute("rx", radius)
-            .Attribute("fill", "url(#" + id + "-timelineFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
+            .Attribute("fill", chart.Options.Theme.FlatMarks ? item.Color.ToCss() : "url(#" + id + "-timelineFill" + item.SeriesIndex.ToString(CultureInfo.InvariantCulture) + ")")
             .EndEmptyElement()
             .Line();
         writer
@@ -221,7 +221,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke-width", borderStroke)
             .EndEmptyElement()
             .Line();
-        if (highlightEnd > left + highlightInset) {
+        if (!chart.Options.Theme.FlatMarks && highlightEnd > left + highlightInset) {
             writer
                 .StartElement("line")
                 .Attribute("data-cfx-role", "timeline-item-highlight")

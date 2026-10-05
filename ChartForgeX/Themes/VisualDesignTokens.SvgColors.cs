@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Themes;
 
@@ -80,6 +81,23 @@ public sealed partial class VisualDesignTokens {
             AddList("ramps.diverging.negative", ToArray(DivergingRamp.Negative));
             Add("ramps.diverging.neutral", DivergingRamp.Neutral);
             AddList("ramps.diverging.positive", ToArray(DivergingRamp.Positive));
+        }
+
+        if (UseGraphiteLayout) {
+            void Ink(string path, ChartColor color, SvgColorRole role) {
+                var variable = name(path + ".ink");
+                if (variable != null) variables.AddInk(variable, color, ChartColorMath.AccessibleTextOnBackground(color), role);
+            }
+            for (var i = 0; i < _palette.Length; i++) Ink("series." + (i + 1).ToString(CultureInfo.InvariantCulture), _palette[i], SvgColorRole.Series);
+            if (_sequentialRamp != null)
+                for (var i = 0; i < _sequentialRamp.Length; i++) Ink("ramps.sequential." + (i + 1).ToString(CultureInfo.InvariantCulture), _sequentialRamp[i], SvgColorRole.Ramp);
+            if (Neutral3.HasValue) Ink("surface.neutral3", Neutral3.Value, SvgColorRole.Surface);
+            Ink("mark.danger", Negative, SvgColorRole.Status);
+            Ink("mark.warning", Warning, SvgColorRole.Status);
+            Ink("mark.success", Positive, SvgColorRole.Status);
+            if (Info.HasValue) Ink("mark.info", Info.Value, SvgColorRole.Status);
+            if (Quiet.HasValue) Ink("mark.quiet", Quiet.Value, SvgColorRole.Status);
+            if (Neutral.HasValue) Ink("mark.neutral", Neutral.Value, SvgColorRole.Status);
         }
 
         return variables;

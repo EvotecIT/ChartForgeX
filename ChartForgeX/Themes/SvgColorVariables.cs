@@ -55,6 +55,7 @@ public sealed class SvgColorVariables {
     private readonly Dictionary<int, SvgColorVariable> _any = new();
     private readonly Dictionary<int, SvgColorVariable> _text = new();
     private readonly Dictionary<long, SvgColorVariable> _byRole = new();
+    private readonly Dictionary<long, SvgColorVariable> _markInk = new();
 
     /// <summary>Gets the variables in the order they were added.</summary>
     public IReadOnlyList<SvgColorVariable> Variables => _variables.AsReadOnly();
@@ -85,8 +86,37 @@ public sealed class SvgColorVariables {
     /// <summary>Creates an independent copy.</summary>
     public SvgColorVariables Clone() {
         var copy = new SvgColorVariables();
-        foreach (var variable in _variables) copy.Add(variable.Name, variable.Color, variable.Role);
+        copy._variables.AddRange(_variables);
+        foreach (var entry in _any) copy._any.Add(entry.Key, entry.Value);
+        foreach (var entry in _text) copy._text.Add(entry.Key, entry.Value);
+        foreach (var entry in _byRole) copy._byRole.Add(entry.Key, entry.Value);
+        foreach (var entry in _markInk) copy._markInk.Add(entry.Key, entry.Value);
         return copy;
+    }
+
+    /// <summary>
+    /// Adds the contrasting text property paired with a filled mark. The renderer selects this property by the fill,
+    /// so black or white text follows that mark when the host switches themes, without changing unrelated text.
+    /// </summary>
+    /// <param name="name">The CSS custom property for the ink, for example <c>--cfx-series-1-ink</c>.</param>
+    /// <param name="fill">The opaque mark colour in this theme.</param>
+    /// <param name="ink">The contrasting text colour in this theme.</param>
+    /// <param name="fillRole">The role of the filled mark.</param>
+    /// <returns>The same instance.</returns>
+    /// <exception cref="ArgumentException">The property name is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The role is not defined.</exception>
+    public SvgColorVariables AddInk(string name, ChartColor fill, ChartColor ink, SvgColorRole fillRole) {
+        if (name == null || !VariableName.IsMatch(name)) throw new ArgumentException("Invalid CSS custom property name.", nameof(name));
+        if (!Enum.IsDefined(typeof(SvgColorRole), fillRole)) throw new ArgumentOutOfRangeException(nameof(fillRole));
+        var variable = new SvgColorVariable(name, ink, SvgColorRole.Text);
+        _variables.Add(variable);
+        _markInk[RoleKey(fillRole, Rgb(fill.R, fill.G, fill.B))] = variable;
+        return this;
+    }
+
+    internal bool TryInk(ChartColor fill, SvgColorRole role, out string paint) {
+        paint = string.Empty;
+        return _markInk.TryGetValue(RoleKey(role, Rgb(fill.R, fill.G, fill.B)), out var variable) && TryWrite(variable, 1, out paint);
     }
 
     /// <summary>

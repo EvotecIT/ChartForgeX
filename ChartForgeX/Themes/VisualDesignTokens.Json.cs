@@ -18,7 +18,9 @@ public sealed partial class VisualDesignTokens {
     /// <c>severity</c> (fill and ink), <c>outcome</c>, <c>state</c>, and <c>series</c>, plus optional <c>ramps</c>
     /// (<c>sequential</c>: colours weakest to strongest; <c>diverging</c>: <c>negative</c> and <c>positive</c> arms weakest to
     /// strongest around a <c>neutral</c> colour). Files without ramps still load. Other top-level members, such as
-    /// <c>name</c> or <c>notes</c>, are ignored.
+    /// <c>name</c> or <c>notes</c>, are ignored. An optional <c>graphite</c> object in each mode enables the flat look
+    /// and supplies <c>muted</c>, <c>grid</c>, <c>axis</c>, <c>info</c>, <c>quiet</c>, <c>quietLine</c>,
+    /// <c>neutral</c>, <c>neutral2</c>, and <c>neutral3</c> colour roles.
     /// </summary>
     /// <remarks>
     /// Mapping: <c>surface.page</c> is the page background, <c>surface.card</c> the card, <c>surface.cardAlt</c> the plot
@@ -59,7 +61,7 @@ public sealed partial class VisualDesignTokens {
             Neutral = Pair(outcome, "neutral", name + ".outcome"),
             Maintenance = Pair(state, "maintenance", name + ".state")
         };
-        return new VisualDesignTokens {
+        var tokens = new VisualDesignTokens {
             Background = Color(surface, "page", name + ".surface"),
             Surface = Color(surface, "cardAlt", name + ".surface"),
             ElevatedSurface = Color(surface, "card", name + ".surface"),
@@ -77,6 +79,20 @@ public sealed partial class VisualDesignTokens {
             SequentialRamp = SequentialRampOrNull(set, name),
             DivergingRamp = DivergingRampOrNull(set, name)
         };
+        var graphite = OptionalMember(set, "graphite", name + ".graphite");
+        if (graphite != null) {
+            tokens.UseGraphiteLayout = true;
+            tokens.Muted = Color(graphite, "muted", name + ".graphite");
+            tokens.Grid = Color(graphite, "grid", name + ".graphite");
+            tokens.Axis = Color(graphite, "axis", name + ".graphite");
+            tokens.Info = Color(graphite, "info", name + ".graphite");
+            tokens.Quiet = Color(graphite, "quiet", name + ".graphite");
+            tokens.QuietLine = Color(graphite, "quietLine", name + ".graphite");
+            tokens.Neutral = Color(graphite, "neutral", name + ".graphite");
+            tokens.Neutral2 = Color(graphite, "neutral2", name + ".graphite");
+            tokens.Neutral3 = Color(graphite, "neutral3", name + ".graphite");
+        }
+        return tokens;
     }
 
     /// <summary>Loads tokens from a generated design-token JSON file.</summary>

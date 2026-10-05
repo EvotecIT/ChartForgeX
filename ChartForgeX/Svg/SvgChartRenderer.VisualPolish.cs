@@ -53,6 +53,10 @@ public sealed partial class SvgChartRenderer {
         WriteSvgGuideLine(sb, null, x1, y1, x2, y2, stroke, strokeWidth, opacity, style);
 
     private static void WriteSvgGuideLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, string stroke, double strokeWidth, double? opacity = null, ChartGridLineStyle? style = null) {
+        WriteSvgGuideLine(sb, role, x1, y1, x2, y2, Themes.SvgPaint.Plain(stroke), strokeWidth, opacity, style);
+    }
+
+    private static void WriteSvgGuideLine(StringBuilder sb, string? role, double x1, double y1, double x2, double y2, Themes.SvgPaint stroke, double strokeWidth, double? opacity = null, ChartGridLineStyle? style = null) {
         var horizontal = Math.Abs(y1 - y2) < 0.000001;
         var vertical = Math.Abs(x1 - x2) < 0.000001;
         if (horizontal) y1 = y2 = CrispStrokeCoordinate(y1, strokeWidth);
@@ -65,7 +69,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("y1", y1)
                 .Attribute("x2", x2)
                 .Attribute("y2", y2)
-                .Attribute("stroke", stroke)
+                .Paint("stroke", stroke)
                 .Attribute("stroke-width", strokeWidth);
             if (opacity.HasValue) writer.Attribute("opacity", opacity.Value);
             if (style != null && style.Dash > 0 && style.Gap > 0) writer.Attribute("stroke-dasharray", $"{F(style.Dash)} {F(style.Gap)}");

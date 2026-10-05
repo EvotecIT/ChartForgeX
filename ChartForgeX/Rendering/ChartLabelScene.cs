@@ -80,7 +80,7 @@ internal sealed partial class ChartLabelScene {
     internal static double MeasureText(string text, double size, TextStyleOverride style, int weight) => Measurements.Measure(text, ResolveTextStyle(size, style, weight)).Width;
     internal static TextStyle ResolveTextStyle(double size, TextStyleOverride style, int weight) {
         var font = (CurrentFont ?? FontSpec.SystemSans()).Clone();
-        font.Family = style.FontFamily ?? font.Family; font.Weight = style.ResolveFontWeight(weight); font.Italic = style.Italic;
+        font.Family = style.FontFamily ?? font.Family; font.Weight = Math.Max(100, Math.Min(900, style.ResolveFontWeight(weight))); font.Italic = style.Italic;
         font.Variations = style.Variations ?? FontVariationSettings.Default;
         return new TextStyle { Font = font, FontSize = size, LineHeight = 1, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
     }

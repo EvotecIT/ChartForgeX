@@ -110,7 +110,8 @@ public enum MetricCardMicroVisualSurface {
 public sealed class VisualBlockOptions {
     private ChartSize _size = new(520, 300);
     private ChartPadding _padding = new(22, 22, 22, 22);
-    private ChartTheme _theme = ChartTheme.Light();
+    private bool _hasExplicitPadding;
+    private ChartTheme _theme = ChartTheme.GraphiteLight();
     private int _pngOutputScale = 1;
 
     /// <summary>Gets or sets the rendered block size in pixels.</summary>
@@ -124,13 +125,14 @@ public sealed class VisualBlockOptions {
 
     /// <summary>Gets or sets the inner content padding.</summary>
     public ChartPadding Padding {
-        get => _padding;
+        get => HostOwnsFrame ? new ChartPadding(0,0,0,0) : !_hasExplicitPadding && Theme.UseGraphiteLayout ? new ChartPadding(18,16,18,12) : _padding;
         set {
             ValidateNonNegative(value.Left, nameof(value));
             ValidateNonNegative(value.Top, nameof(value));
             ValidateNonNegative(value.Right, nameof(value));
             ValidateNonNegative(value.Bottom, nameof(value));
             _padding = value;
+            _hasExplicitPadding = true;
         }
     }
 
@@ -145,6 +147,8 @@ public sealed class VisualBlockOptions {
 
     /// <summary>Gets or sets whether the outer card surface should be rendered.</summary>
     public bool ShowCard { get; set; } = true;
+    /// <summary>Gets or sets whether the host owns the frame, removing the surface and outer padding.</summary>
+    public bool HostOwnsFrame { get; set; }
 
     /// <summary>Gets or sets the output pixel multiplier used by PNG exports.</summary>
     public int PngOutputScale {
@@ -220,6 +224,9 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
 
     /// <summary>Sets the visual theme.</summary>
     public TSelf WithTheme(ChartTheme theme) { Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme)); return Self(); }
+
+    /// <summary>Lets the embedding host own the surface and removes outer padding.</summary>
+    public TSelf WithHostFrame(bool hostOwnsFrame = true) { Options.HostOwnsFrame = hostOwnsFrame; return Self(); }
 
     /// <summary>Sets whether the full background should stay transparent.</summary>
     public TSelf WithTransparentBackground(bool enabled = true) { Options.TransparentBackground = enabled; return Self(); }
@@ -592,7 +599,7 @@ public sealed class VisualGrid {
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
     private int _columns = 2;
-    private int _gap = 18;
+    private int _gap = 16;
     private int _padding = 24;
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;

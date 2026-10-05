@@ -140,7 +140,7 @@ public sealed class ChartLineStrokeQualityTests {
     }
 
     private static Chart LineChart(IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool smooth) {
-        var chart = Chart.Create().WithSize(640, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithAxes(false).WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithAxes(false).WithLineVisualStyle(ChartLineVisualStyle.Plain());
         // Fixed domains keep the stroke cross-section proof independent of automatic tick rounding.
         chart.WithXAxisBounds(points.Min(point => point.X), points.Max(point => point.X)).WithYAxisBounds(0, 100);
         if (smooth) chart.AddSmoothLine("Series", points, color);

@@ -26,11 +26,11 @@ public sealed class PngVisualGridRenderer {
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
         canvas.Clear(background);
-        if (background.A == 255) {
+        if (background.A == 255 && !theme.FlatMarks) {
             var surfaceInset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
             canvas.FillRoundedRectVerticalGradient(surfaceInset, surfaceInset, Math.Max(1, layout.Width - surfaceInset * 2), Math.Max(1, layout.Height - surfaceInset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
         }
-        if (grid.FrameVisible) {
+        if (grid.FrameVisible && !theme.FlatMarks) {
             var inset = Math.Max(8, grid.Padding * 0.5);
             canvas.StrokeRoundedRect(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), Math.Max(theme.CornerRadius, 26), theme.CardBorder, 1.4);
             if (background.A > 0) canvas.StrokeRoundedRect(inset + ChartVisualPrimitives.CardInnerHighlightInset, inset + ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24), ChartColorMath.WithOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
@@ -52,6 +52,7 @@ public sealed class PngVisualGridRenderer {
     }
 
     private RgbaCanvas RenderChildChart(Chart chart, int density) {
+        chart = chart.PanelView();
         var transparentBackground = chart.Options.TransparentBackground;
         try {
             chart.Options.TransparentBackground = true;
@@ -64,12 +65,15 @@ public sealed class PngVisualGridRenderer {
 
     private RgbaCanvas RenderChildBlock(IVisualBlock block, int density) {
         var transparentBackground = block.Options.TransparentBackground;
+        var originalTheme = block.Options.Theme;
         try {
             block.Options.TransparentBackground = true;
+            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
             return _blockRenderer.RenderCanvas(block, density);
         }
         finally {
             block.Options.TransparentBackground = transparentBackground;
+            block.Options.Theme = originalTheme;
         }
     }
 

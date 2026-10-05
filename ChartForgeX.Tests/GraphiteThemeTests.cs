@@ -7,6 +7,27 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GraphiteThemeTests {
+    [Fact]
+    public void GeneratedJsonOptInLoadsTheIndependentGraphiteRoles() {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null && !File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) directory = directory.Parent;
+        var path = Path.Combine(directory!.FullName, "ChartForgeX.Tests", "Fixtures", "tokens", "palette-v1-graphite.json");
+        var document = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;
+        var roles = new Dictionary<string, string> {
+            ["muted"]="#626770", ["grid"]="#ECEEF0", ["axis"]="#C4C8CE", ["info"]="#0A728B",
+            ["quiet"]="#9FCDB3", ["quietLine"]="#A3A9B1", ["neutral"]="#C9CDD3", ["neutral2"]="#E4E6E9", ["neutral3"]="#F1F2F4"
+        };
+        var graphite = new System.Text.Json.Nodes.JsonObject();
+        foreach (var entry in roles) graphite[entry.Key] = entry.Value;
+        document["light"]!["graphite"] = graphite;
+        var tokens = VisualDesignTokens.FromJson(document.ToJsonString());
+        var theme = tokens.ApplyTo(new ChartTheme());
+        Assert.True(theme.UseGraphiteLayout && theme.FlatMarks);
+        Assert.Equal(ChartColor.FromHex(roles["quietLine"]), theme.QuietLine);
+        Assert.Equal(ChartColor.FromHex(roles["neutral3"]), theme.Neutral3);
+        Assert.Equal(ChartColor.FromHex(roles["axis"]), theme.Axis);
+        Assert.Equal(ChartColor.FromHex(roles["muted"]), theme.MutedText);
+    }
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

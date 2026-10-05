@@ -60,7 +60,7 @@ public sealed partial class Chart {
     /// <summary>
     /// Gets the chart options.
     /// </summary>
-    public ChartOptions Options { get; } = new();
+    public ChartOptions Options { get; private set; } = new();
 
     /// <summary>
     /// Gets the chart series.

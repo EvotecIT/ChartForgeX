@@ -29,7 +29,7 @@ public sealed class PngChartGridRenderer {
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
         var output = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
         output.Clear(background);
-        if (background.A == 255) {
+        if (background.A == 255 && !theme.FlatMarks) {
             var inset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
             output.FillRoundedRectVerticalGradient(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
         }
@@ -45,7 +45,7 @@ public sealed class PngChartGridRenderer {
 
         foreach (var cell in layout.Cells) {
             var density = ChartPanelDensity.OutputScale(cell.Chart.Options.Size, cell.Width, cell.Height, grid.PngOutputScale);
-            var chartCanvas = _chartRenderer.RenderCanvas(cell.Chart, density);
+            var chartCanvas = _chartRenderer.RenderCanvas(cell.Chart.PanelView(), density);
             output.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, chartCanvas.OutputWidth, chartCanvas.OutputHeight, chartCanvas.ToOutputPixels());
         }
 

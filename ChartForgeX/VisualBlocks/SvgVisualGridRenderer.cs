@@ -60,7 +60,7 @@ public sealed class SvgVisualGridRenderer {
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         writer.StartElement("defs").EndStartElement().Line();
         SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
-        SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualGridSurface", background);
+        if (!theme.FlatMarks) SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualGridSurface", background);
         if (grid.Motion != null) {
             writer.StartElement("style").EndStartElement()
                 .Raw(VisualMotionCss.Build("#" + id, grid.Motion, id))
@@ -68,8 +68,8 @@ public sealed class SvgVisualGridRenderer {
                 .Line();
         }
         writer.EndElement().Line();
-        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", "url(#" + id + "-visualGridSurface)").EndEmptyElement().Line();
-        if (grid.FrameVisible) {
+        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.FlatMarks ? background.ToCss() : "url(#" + id + "-visualGridSurface)").EndEmptyElement().Line();
+        if (grid.FrameVisible && !theme.FlatMarks) {
             var inset = Math.Max(8, grid.Padding * 0.5);
             writer.StartElement("rect")
                 .Attribute("data-cfx-role", "visual-grid-frame")
@@ -103,7 +103,7 @@ public sealed class SvgVisualGridRenderer {
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
-            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("data-cfx-motion-target", grid.Motion == null ? null : VisualGridMotion.TitleTarget).Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
+            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("data-cfx-motion-target", grid.Motion == null ? null : VisualGridMotion.TitleTarget).Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", theme.UseGraphiteLayout ? "700" : "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
             if (grid.Subtitle.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-subtitle").Attribute("data-cfx-motion-target", grid.Motion == null ? null : VisualGridMotion.SubtitleTarget).Attribute("x", grid.Padding + 2).Attribute("y", grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(grid.Subtitle, theme.SubtitleFontSize, headerWidth)).EndElement().Line();
         }
 
@@ -119,6 +119,7 @@ public sealed class SvgVisualGridRenderer {
     }
 
     private string RenderChildChart(Chart chart, string childScope) {
+        chart = chart.PanelView();
         var transparentBackground = chart.Options.TransparentBackground;
         try {
             chart.Options.TransparentBackground = true;
@@ -131,12 +132,15 @@ public sealed class SvgVisualGridRenderer {
 
     private string RenderChildBlock(IVisualBlock block, string childScope) {
         var transparentBackground = block.Options.TransparentBackground;
+        var originalTheme = block.Options.Theme;
         try {
             block.Options.TransparentBackground = true;
+            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
             return _blockRenderer.Render(block, childScope);
         }
         finally {
             block.Options.TransparentBackground = transparentBackground;
+            block.Options.Theme = originalTheme;
         }
     }
 

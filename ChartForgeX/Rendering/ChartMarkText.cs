@@ -27,11 +27,18 @@ internal static class ChartMarkText {
     public const double MinimumContrast = 3.0;
 
     /// <summary>Returns the text colour on a matrix or hexbin heatmap cell drawn by <see cref="ChartHeatmapSurface.CellBlend"/>.</summary>
-    public static ChartColorBlend OnHeatmapCell(Chart chart, ChartColor? highColor, double value, double min, double max) =>
-        For(chart, ChartHeatmapSurface.CellBlend(chart, highColor, value, min, max).Color, ChartHeatmapSurface.IsStrongCell(chart, highColor, value, min, max));
+    public static ChartColorBlend OnHeatmapCell(Chart chart, ChartColor? highColor, double value, double min, double max) {
+        var fill = ChartHeatmapSurface.CellBlend(chart, highColor, value, min, max);
+        return chart.Options.Theme.UseGraphiteLayout
+            ? ChartColorBlend.Contrast(fill.Color, fill.FromRole ?? SvgColorRole.Ramp)
+            : For(chart, fill.Color, ChartHeatmapSurface.IsStrongCell(chart, highColor, value, min, max));
+    }
 
     /// <summary>Returns the text colour on a state mark: fully filled marks are strong, quiet and outlined tints weak.</summary>
-    public static ChartColorBlend OnStateMark(Chart chart, ChartStateMark mark) => For(chart, mark.Surface, mark.FillOpacity >= 0.999);
+    public static ChartColorBlend OnStateMark(Chart chart, ChartStateMark mark) =>
+        chart.Options.Theme.UseGraphiteLayout
+            ? mark.FillOpacity >= 0.999 ? ChartColorBlend.Contrast(mark.Color, SvgColorRole.Status) : ChartColorBlend.Solid(chart.Options.Theme.Text, SvgColorRole.Text)
+            : For(chart, mark.Surface, mark.FillOpacity >= 0.999);
 
     private static ChartColorBlend For(Chart chart, ChartColor fill, bool strong) {
         var surface = ChartStateMark.Backdrop(chart);

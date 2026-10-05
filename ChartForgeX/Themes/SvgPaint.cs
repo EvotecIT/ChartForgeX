@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Themes;
 
@@ -24,7 +25,7 @@ internal readonly struct SvgPaint {
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-5][0-9A-F]{8})|(?<kind>M)(?<body>[0-9A-F]{8}[0-5L][0-9A-F]{8}[0-5L][0-9A-F]{8}[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant);
 
     private SvgPaint(string? value, bool raw) {
@@ -57,6 +58,10 @@ internal readonly struct SvgPaint {
     /// <summary>A token colour written for <paramref name="role"/>.</summary>
     public static SvgPaint Of(ChartColor color, SvgColorRole role) => new(Start + "P" + Digit(role) + Hex(color) + End, raw: true);
 
+    /// <summary>Black or white ink paired to this fill; an explicitly configured ink property follows theme changes.</summary>
+    public static SvgPaint Contrast(ChartColor fill, SvgColorRole role) =>
+        new(Start + "I" + Digit(role) + Hex(fill) + Hex(ChartColorMath.AccessibleTextOnBackground(fill)) + End, raw: true);
+
     /// <summary>
     /// A blend of <paramref name="from"/> towards <paramref name="to"/> by <paramref name="amount"/> (0 is
     /// <paramref name="from"/>). <paramref name="result"/> is the blended colour the renderer computes, written when no
@@ -81,6 +86,13 @@ internal readonly struct SvgPaint {
                     var color = Color(body, 1);
                     var role = Role(body[0]);
                     return variables != null && role.HasValue && variables.TryPaint(color, role.Value, out var paint) ? paint : color.ToCss();
+                }
+                case "I": {
+                    var fill = Color(body, 1);
+                    var ink = Color(body, 9);
+                    var role = Role(body[0])!.Value;
+                    if (variables != null && variables.TryInk(fill, role, out var paint)) return paint;
+                    return keepLiterals ? Literal(ink).Value! : ink.ToCss();
                 }
                 default: {
                     var result = Color(body, 0);

@@ -190,12 +190,13 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct HtmlHealth {
-        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasExpectedOverflow, bool hasPrintCss) {
+        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasExpectedOverflow, bool hasPrintCss, bool hasFlatSurface = false) {
             Bytes = bytes;
             HasDocumentShell = hasDocumentShell;
             HasViewport = hasViewport;
             HasInlineSvg = hasInlineSvg;
             HasSurfaceGradient = hasSurfaceGradient;
+            HasFlatSurface = hasFlatSurface;
             HasTextPolish = hasTextPolish;
             HasExpectedOverflow = hasExpectedOverflow;
             HasPrintCss = hasPrintCss;
@@ -210,6 +211,7 @@ public static partial class GalleryWriter {
         public bool HasInlineSvg { get; }
 
         public bool HasSurfaceGradient { get; }
+        public bool HasFlatSurface { get; }
 
         public bool HasTextPolish { get; }
 
@@ -217,7 +219,7 @@ public static partial class GalleryWriter {
 
         public bool HasPrintCss { get; }
 
-        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && HasSurfaceGradient && HasTextPolish && HasExpectedOverflow && HasPrintCss;
+        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && (HasSurfaceGradient || HasFlatSurface) && HasTextPolish && HasExpectedOverflow && HasPrintCss;
     }
 
     private readonly struct PngContentBounds {

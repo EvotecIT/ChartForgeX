@@ -70,26 +70,26 @@ public sealed class SvgChartGridRenderer {
         var palettes = Typography.TypographyPaletteCss.Rules(theme.FontFamily, grid.TitleStyle, grid.SubtitleStyle);
         if (palettes.Length > 0) writer.StartElement("style").Text(palettes).EndElement().Line();
         SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
-        SvgSurfacePolish.WriteSurfaceGradient(writer, id, "gridSurface", background);
+        if (!theme.FlatMarks) SvgSurfacePolish.WriteSurfaceGradient(writer, id, "gridSurface", background);
         writer.EndElement()
             .Line()
             .StartElement("rect")
             .Attribute("width", "100%")
             .Attribute("height", "100%")
-            .Attribute("fill", background.A == 0 ? "transparent" : "url(#" + id + "-gridSurface)")
+            .Attribute("fill", background.A == 0 ? "transparent" : theme.FlatMarks ? background.ToCss() : "url(#" + id + "-gridSurface)")
             .EndEmptyElement()
             .Line();
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
             var titleFontSize = StyleFontSize(grid.TitleStyle, theme.TitleFontSize);
             var subtitleFontSize = StyleFontSize(grid.SubtitleStyle, theme.SubtitleFontSize);
-            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.TitleStyle.TransformText(grid.Title, CultureInfo.InvariantCulture), titleFontSize, headerWidth, (text, size) => MeasureHeaderText(text, size, grid.TitleStyle, theme.FontFamily, "800")));
+            if (grid.Title.Length > 0) WriteGridText(writer, "grid-title", grid.Padding, grid.Padding + titleFontSize * 0.62, StyleColor(grid.TitleStyle, theme.Text).ToCss(), StyleFontFamily(grid.TitleStyle, theme.FontFamily), titleFontSize, StyleWeight(grid.TitleStyle, theme.UseGraphiteLayout ? "700" : "800"), grid.TitleStyle, ChartTextFitting.TrimEnd(grid.TitleStyle.TransformText(grid.Title, CultureInfo.InvariantCulture), titleFontSize, headerWidth, (text, size) => MeasureHeaderText(text, size, grid.TitleStyle, theme.FontFamily, theme.UseGraphiteLayout ? "700" : "800")));
             if (grid.Subtitle.Length > 0) WriteGridText(writer, "grid-subtitle", grid.Padding + 2, grid.Padding + titleFontSize + subtitleFontSize, StyleColor(grid.SubtitleStyle, theme.MutedText).ToCss(), StyleFontFamily(grid.SubtitleStyle, theme.FontFamily), subtitleFontSize, StyleWeight(grid.SubtitleStyle, "400"), grid.SubtitleStyle, ChartTextFitting.TrimEnd(grid.SubtitleStyle.TransformText(grid.Subtitle, CultureInfo.InvariantCulture), subtitleFontSize, headerWidth, (text, size) => MeasureHeaderText(text, size, grid.SubtitleStyle, theme.FontFamily, "400")));
         }
 
         for (var i = 0; i < layout.Cells.Count; i++) {
             var cell = layout.Cells[i];
-            var childSvg = _chartRenderer.RenderGridPanel(cell.Chart, id + "-cell-" + i.ToString(CultureInfo.InvariantCulture));
+            var childSvg = _chartRenderer.RenderGridPanel(cell.Chart.PanelView(), id + "-cell-" + i.ToString(CultureInfo.InvariantCulture));
             writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height)).Line();
         }
 

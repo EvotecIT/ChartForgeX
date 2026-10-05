@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
     private static void ZeroMarkerRadiusSuppressesOptionalLineMarkers() {
         var color = ChartColor.FromRgb(37, 99, 235);
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 30), new ChartPoint(3, 20) };
-        var referenceSvg = Chart.Create()
+        var referenceSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(320, 200)
             .WithTheme(theme => theme.WithMarkerRadius(4))
             .AddLine("Values", points, color)
@@ -22,7 +22,7 @@ internal static partial class SmokeTests {
             .ToArray();
         Assert(referenceMarkers.Length == points.Length, "Positive marker radii should preserve one SVG marker per line point.");
 
-        var markerless = Chart.Create()
+        var markerless = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(320, 200)
             .WithTheme(theme => theme.WithMarkerRadius(0))
             .AddLine("Values", points, color);
@@ -42,12 +42,12 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(pixels[offset] - color.R) <= 48 && Math.Abs(pixels[offset + 1] - color.G) <= 48 && Math.Abs(pixels[offset + 2] - color.B) <= 48,
             "A zero marker radius should not punch marker-outline holes through PNG line paths.");
 
-        var markedArea = Chart.Create()
+        var markedArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithLegend(true)
             .WithSize(320, 200)
             .WithTheme(theme => theme.WithMarkerRadius(4))
             .AddArea("Area", points, color);
-        var markerlessArea = Chart.Create()
+        var markerlessArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithLegend(true)
             .WithSize(320, 200)
             .WithTheme(theme => theme.WithMarkerRadius(0))

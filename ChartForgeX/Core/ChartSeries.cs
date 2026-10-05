@@ -79,7 +79,8 @@ public sealed class ChartSeries {
     public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets the semantic colour role; explicit colours still take precedence.</summary>
-    public ChartSeriesState StateRole { get; set; }
+    public ChartSeriesState StateRole { get => _stateRole; set { if (!Enum.IsDefined(typeof(ChartSeriesState), value)) throw new ArgumentOutOfRangeException(nameof(value)); _stateRole = value; } }
+    private ChartSeriesState _stateRole;
 
     /// <summary>
     /// Gets optional point-level colors. Null entries fall back to the series color or theme palette.

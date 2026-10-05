@@ -158,6 +158,9 @@ public sealed class TextStyleOverride {
     /// <summary>Transforms text according to this override.</summary>
     public string TransformText(string text, System.Globalization.CultureInfo? culture = null) => TextCaseTransformer.Apply(text, TextCase ?? TextCaseTransform.None, culture);
 
+    /// <summary>Creates an independent copy of the optional typography values.</summary>
+    public TextStyleOverride Clone() => (TextStyleOverride)MemberwiseClone();
+
     internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
 
     internal TextStyleOverride WithDefaultFontWeight(int weight) {

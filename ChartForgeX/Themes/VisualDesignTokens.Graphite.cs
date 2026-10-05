@@ -1,4 +1,5 @@
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Themes;
 
@@ -56,7 +57,12 @@ public sealed partial class VisualDesignTokens {
             FontFamily = "Calibri, Carlito, \"Segoe UI\", system-ui, sans-serif",
             CornerRadius = 8, StrokeWidth = 2
         };
-        tokens.Status = dark ? Dark().Status : new VisualStatusTokens();
+        VisualTokenColor Pair(ChartColor color) => new(color, ChartColorMath.AccessibleTextOnBackground(color));
+        tokens.Status = new VisualStatusTokens {
+            Critical = Pair(tokens.Negative), High = Pair(tokens.Negative), Medium = Pair(tokens.Warning),
+            Low = Pair(tokens.Info!.Value), Info = Pair(tokens.Info!.Value), Pass = Pair(tokens.Positive),
+            Neutral = Pair(tokens.Neutral!.Value), Maintenance = Pair(tokens.Quiet!.Value)
+        };
         return tokens;
     }
 }

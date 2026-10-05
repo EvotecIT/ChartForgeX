@@ -138,6 +138,14 @@ public sealed partial class VisualDesignTokens {
     /// <summary>Applies the shared tokens to a chart renderer theme.</summary>
     public ChartTheme ApplyTo(ChartTheme theme) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
+        if (theme.UseGraphiteLayout && !UseGraphiteLayout) {
+            var classic = ChartTheme.Light();
+            theme.WithTypography(classic.TitleFontSize, classic.SubtitleFontSize, classic.TickLabelFontSize, classic.AxisTitleFontSize, classic.LegendFontSize, classic.DataLabelFontSize);
+            theme.ShadowOpacity = classic.ShadowOpacity;
+            theme.MarkerRadius = classic.MarkerRadius;
+        }
+        theme.UseGraphiteLayout = UseGraphiteLayout;
+        theme.FlatMarks = UseGraphiteLayout;
         theme.Background = Background;
         theme.CardBackground = ElevatedSurface;
         theme.PlotBackground = Surface;

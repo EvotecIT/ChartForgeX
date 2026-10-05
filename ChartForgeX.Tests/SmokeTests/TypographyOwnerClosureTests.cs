@@ -40,7 +40,7 @@ internal static partial class SmokeTests {
             .WithSuperscript()
             .WithTextCase(TextCaseTransform.Uppercase));
 
-        var pie = Chart.Create().WithSize(560, 360).WithXLabels("north region", "south region").AddDonut("Coverage", Points(62, 38));
+        var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("north region", "south region").AddDonut("Coverage", Points(62, 38));
         var plainPiePng = pie.ToPng();
         ApplyLegendStyle(pie);
         var pieSvg = pie.ToSvg();
@@ -48,7 +48,7 @@ internal static partial class SmokeTests {
         Assert(pieSvg.Contains("fill=\"#D946EF\"", StringComparison.Ordinal) && pieSvg.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && pieSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && pieSvg.Contains("baseline-shift=\"super\"", StringComparison.Ordinal), "Custom slice legends should preserve the complete legend style in SVG.");
         Assert(!plainPiePng.SequenceEqual(pie.ToPng()), "Custom slice legends should preserve the complete legend style in raster output.");
 
-        var radial = Chart.Create().WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddRadialBar("Coverage", Points(82, 71));
+        var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddRadialBar("Coverage", Points(82, 71));
         var plainRadialPng = radial.ToPng();
         ApplyLegendStyle(radial);
         var radialSvg = radial.ToSvg();
