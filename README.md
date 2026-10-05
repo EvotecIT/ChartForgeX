@@ -286,16 +286,19 @@ var chart = Chart.Create()
     .WithSubtitle("Dependency-free SVG, HTML, and PNG chart rendering")
     .WithXAxis("Run")
     .WithYAxis("Checks")
-    .WithDesignTokens(VisualDesignTokens.Dark())
+    .WithDesignTokens(VisualDesignTokens.GraphiteDark())
     .WithAccessibility(accessibility => accessibility.WithTextAlternative(
         "Domain security checks",
         "Passed checks rise during the week while warnings and failures decline.",
         "en"))
     .WithSize(1180, 640)
     .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
-    .AddSmoothLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36))
-    .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18, 15, 13), ChartColor.FromRgb(248, 113, 113));
+    .AddLine("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
+    .AddLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72))
+    .AddLine("Failed", Points(22, 30, 28, 21, 18, 15, 13))
+    .WithSeriesState("Passed", ChartSeriesState.Quiet)
+    .WithSeriesState("Warnings", ChartSeriesState.Warning)
+    .WithSeriesState("Failed", ChartSeriesState.Danger);
 
 chart.SaveSvg("chart.svg");
 chart.SaveHtml("chart.html");
@@ -308,9 +311,37 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
 }
 ```
 
+### Graphite themes and framing
+
+Charts and visual blocks use Graphite light by default. Graphite dark uses the same layout with lifted colours:
+
+```csharp
+var tokens = VisualDesignTokens.GraphiteDark();
+var chart = Chart.Create()
+    .WithDesignTokens(tokens)
+    .WithSvgColorVariables(tokens.ToSvgColorVariables())
+    .WithTitle("Check results")
+    .AddLine("Passed", Points(820, 940, 980))
+    .AddLine("Warnings", Points(120, 138, 131))
+    .AddLine("Failed", Points(22, 30, 27))
+    .WithSeriesState("Passed", ChartSeriesState.Quiet)
+    .WithSeriesState("Warnings", ChartSeriesState.Warning)
+    .WithSeriesState("Failed", ChartSeriesState.Danger);
+```
+
+State roles are explicit; series names do not change colours. Healthy and quiet lines draw underneath the other series. Ordinary series use the categorical palette. SVG custom properties follow the token roles, including contrasting ink on filled marks, so a host can change the light/dark properties without regenerating the chart.
+
+Graphite uses flat marks, straight 2 px lines, a marker on the last point, horizontal guides, and inline legends below the subtitle. Single-series legends are hidden. Donut and pie charts use a value-and-percentage list, with smaller slices combined into **Other** when more than six slices are present. Gauges, bullets, funnels and Sankey charts label their data directly.
+
+Use `.WithHostFrame()` when the embedding host provides the surface and padding. `ChartGrid` and `VisualGrid` use 16 px gaps and 15 px panel titles. Value labels use compact numbers; SVG accessible names and numeric `data-cfx-*` attributes retain the full values.
+
+Arc gauges support targets and optional semantic bands through `.WithGauge(...)`; `ChartGaugeForm.Needle` selects a needle. `.AddLinearGauge("Readiness", 87)` uses neutral bullet bands, a thin measure and a value triangle. The named `ChartTheme.Light()`, `Dark()`, `ReportLight()`, `ReportDark()` and other presets remain available. `ChartBarStyle.Solid` and `SegmentedCapsule` opt into the earlier effect styles.
+
+The [approved look specification](docs/design/chart-look-spec.html) shows both themes and the family geometry. See the [1.0 migration notes](docs/1.0-migration.md#graphite-default-look) for changed rendering defaults.
+
 ### Generated design tokens
 
-Hosts that generate design tokens (the HtmlForgeX design tokens 1.x — 1.1.0 adds optional `ramps` — with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
+Hosts that generate design tokens (the HtmlForgeX design tokens 1.x — 1.1.0 adds optional `ramps` — with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and explicitly declared series states; ordinary series keep the categorical palette:
 
 ```csharp
 var tokens = VisualDesignTokens.FromJsonFile("tokens.json", VisualThemeMode.Dark);
