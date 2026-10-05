@@ -33,7 +33,7 @@ internal readonly struct ChartBulletLayout {
                 return ChartLabelScene.MeasureText(style.TransformText(text, System.Globalization.CultureInfo.InvariantCulture), resolved).Width;
             }
             widestLabel = Math.Max(widestLabel, Width(series.Name, style.FontSize ?? chart.Options.Theme.LegendFontSize, 700));
-            var value = chart.Options.ValueFormatter == null ? ChartNumericFormatter.FormatCompact(series.Points[0].Y) : chart.Options.ValueFormatter(series.Points[0].Y) ?? string.Empty;
+            var value = ChartNumericFormatter.FormatValue(chart.Options, series.Points[0].Y);
             widestValue = Math.Max(widestValue, Width(value, style.FontSize ?? chart.Options.Theme.DataLabelFontSize, 800));
         }
         var labelReserve = !labeled ? 10 : Math.Min(240, Math.Max(128, widestLabel + 34));

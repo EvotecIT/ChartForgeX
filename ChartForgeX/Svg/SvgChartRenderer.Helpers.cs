@@ -301,11 +301,7 @@ public sealed partial class SvgChartRenderer {
 
     private static string FormatNumber(double v) => ChartNumericFormatter.FormatCompact(v);
 
-    private static string FormatValue(Chart chart, double value) {
-        var formatter = chart.Options.ValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
-    }
+    private static string FormatValue(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
     private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
         return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);

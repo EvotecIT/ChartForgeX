@@ -567,11 +567,7 @@ public sealed partial class PngChartRenderer {
         Math.Abs(style.Dash) < 0.000001 &&
         Math.Abs(style.Gap) < 0.000001;
 
-    private static string FormatValue(Chart chart, double value) {
-        var formatter = chart.Options.ValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
-    }
+    private static string FormatValue(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
     private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
         return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);
