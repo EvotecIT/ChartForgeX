@@ -646,7 +646,8 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip {
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
   border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.16); padding: 11px 13px;
+  box-shadow: var(--cfx-tooltip-shadow); padding: 8px 12px;
+  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta { grid-template-columns: 1fr auto; gap: 6px 24px; color: var(--cfx-tooltip-text); }
