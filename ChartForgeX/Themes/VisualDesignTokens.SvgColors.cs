@@ -50,6 +50,9 @@ public sealed partial class VisualDesignTokens {
         Add("surface.line", Border);
         Add("text.primary", Foreground);
         Add("text.secondary", MutedForeground);
+        if (Muted.HasValue) Add("text.muted", Muted.Value);
+        if (Grid.HasValue) Add("guide.grid", Grid.Value);
+        if (Axis.HasValue) Add("guide.axis", Axis.Value);
         AddList("series", _palette);
         AddPair("severity.critical", Status.Critical);
         AddPair("severity.high", Status.High);
@@ -64,6 +67,12 @@ public sealed partial class VisualDesignTokens {
         Add("status.warning", Warning);
         Add("status.negative", Negative);
         Add("status.disabled", Disabled);
+        if (Info.HasValue) Add("status.info", Info.Value);
+        if (Quiet.HasValue) Add("status.quiet", Quiet.Value);
+        if (QuietLine.HasValue) Add("status.quietLine", QuietLine.Value);
+        if (Neutral.HasValue) Add("status.neutral", Neutral.Value);
+        if (Neutral2.HasValue) Add("surface.neutral2", Neutral2.Value);
+        if (Neutral3.HasValue) Add("surface.neutral3", Neutral3.Value);
         Add("accent.base", Accent);
         Add("chrome.accent", SecondaryAccent);
         if (_sequentialRamp != null) AddList("ramps.sequential", _sequentialRamp);
@@ -81,6 +90,8 @@ public sealed partial class VisualDesignTokens {
         if (path.StartsWith("surface.", StringComparison.Ordinal)) return SvgColorRole.Surface;
         if (path.StartsWith("text.", StringComparison.Ordinal)) return SvgColorRole.Text;
         if (path.StartsWith("series.", StringComparison.Ordinal)) return SvgColorRole.Series;
+        if (path == "guide.grid") return SvgColorRole.Grid;
+        if (path == "guide.axis") return SvgColorRole.Axis;
         if (path.StartsWith("ramps.", StringComparison.Ordinal)) return SvgColorRole.Ramp;
         if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal) || path.StartsWith("status.", StringComparison.Ordinal)) return SvgColorRole.Status;
         return SvgColorRole.Any;

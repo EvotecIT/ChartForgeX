@@ -251,7 +251,9 @@ public sealed partial class ChartTheme {
         LegendFontSize = LegendFontSize,
         DataLabelFontSize = DataLabelFontSize,
         MarkerRadius = MarkerRadius,
-        FontFamily = FontFamily
+        FontFamily = FontFamily,
+        UseGraphiteLayout = UseGraphiteLayout, FlatMarks = FlatMarks, Text2 = Text2,
+        Info = Info, Quiet = Quiet, QuietLine = QuietLine, Neutral = Neutral, Neutral2 = Neutral2, Neutral3 = Neutral3
     };
 
     /// <summary>
