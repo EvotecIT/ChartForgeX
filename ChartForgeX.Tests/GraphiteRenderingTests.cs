@@ -85,7 +85,9 @@ public sealed class GraphiteRenderingTests {
         Assert.All(Roles(svg, "bar"), e => { Assert.Equal("path", e.Name.LocalName); Assert.Contains(" Q ", (string)e.Attribute("d")!); });
         chart.WithHostFrame();
         Assert.Equal(0, chart.Options.Padding.Left);
-        Assert.Empty(Roles(renderer.Render(chart), "card-surface"));
+        var hosted = renderer.Render(chart);
+        Assert.Empty(Roles(hosted, "card-surface"));
+        Assert.Equal("placed", (string?)Assert.Single(Roles(hosted, "chart-title")).Attribute("data-cfx-label-status"));
     }
 
     [Fact]

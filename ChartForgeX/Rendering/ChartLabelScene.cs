@@ -34,7 +34,8 @@ internal sealed partial class ChartLabelScene {
         _definitions = SvgRasterDefinitions.From(raster);
         var outputWidth = Number(root, "width", raster.ViewBox.Width); var outputHeight = Number(root, "height", raster.ViewBox.Height);
         var fit = Math.Min(outputWidth / raster.ViewBox.Width, outputHeight / raster.ViewBox.Height);
-        var margin = Math.Max(4, (Math.Min(outputWidth, outputHeight) * 0.01 + 2) / Math.Max(0.0001, fit));
+        var margin = (string?)root.Attribute("data-cfx-host-frame") == "true" ? 0
+            : Math.Max(4, (Math.Min(outputWidth, outputHeight) * 0.01 + 2) / Math.Max(0.0001, fit));
         _bounds = new ChartRect(raster.ViewBox.X + margin, raster.ViewBox.Y + margin, Math.Max(1, raster.ViewBox.Width - margin * 2), Math.Max(1, raster.ViewBox.Height - margin * 2));
         Collect(root, SvgRasterParser.ReadStyleElement(root), SvgRasterStyle.Default, SvgRasterMatrix.Identity, new List<SvgRasterElement>());
         if (place) Place();

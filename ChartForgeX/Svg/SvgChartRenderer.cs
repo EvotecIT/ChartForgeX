@@ -147,6 +147,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("shape-rendering", "geometricPrecision")
                 .Attribute("text-rendering", "geometricPrecision");
             writer.Attribute("data-cfx-look", t.UseGraphiteLayout ? "graphite" : null);
+            writer.Attribute("data-cfx-host-frame", o.HostOwnsFrame ? "true" : null);
             WriteSeriesInteractionMap(writer, chart);
             writer.EndStartElement().Line();
         });

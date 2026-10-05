@@ -52,6 +52,7 @@ public sealed partial class SvgVisualBlockRenderer {
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
             .Attribute("data-cfx-look", theme.UseGraphiteLayout ? "graphite" : null)
+            .Attribute("data-cfx-host-frame", options.HostOwnsFrame ? "true" : null)
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .EndStartElement()
             .Line()
