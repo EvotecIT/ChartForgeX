@@ -12,10 +12,10 @@ public sealed partial class TopologySvgRenderer {
             .Paint("stroke", NodeAccentPaint(node, color, options)).Attribute("stroke-width", selected ? 2.8 : 1.5));
         if (!options.IncludeNodeLabels) return body;
         var subtitleOffset = string.IsNullOrWhiteSpace(node.Subtitle) ? 0 : 20;
-        var lines = NodeTextLines(node.Label, node.Width * .65, 12, true, options.MaxNodeLabelLines, options, node.MaximumLabelCharacters ?? NodeLabelMaxLength);
+        var lines = DiagramNodeLabelLines(node, options);
         for (var i = 0; i < lines.Count; i++) {
             var line = lines[i];
-            body.Element("text", text => text.Attribute("x", CenterX(node)).Attribute("y", (node.Shape == TopologyNodeShape.Actor ? node.Y + 84 : (node.Details.Count > 0 || subtitleOffset > 0 ? node.Y + 24 : CenterY(node))) - (lines.Count - 1) * 7 + i * 14 + 4)
+            body.Element("text", text => text.Attribute("x", CenterX(node)).Attribute("y", DiagramNodeLabelCenterY(node) - (lines.Count - 1) * 7 + i * 14 + 4)
                 .Attribute("text-anchor", "middle").Attribute("fill", theme.Foreground).Attribute("font-size", 12).Attribute("font-weight", 700).Text(line));
         }
         if (subtitleOffset > 0) body.Element("text", text => text.Attribute("x", CenterX(node)).Attribute("y", node.Y + 44).Attribute("text-anchor", "middle")

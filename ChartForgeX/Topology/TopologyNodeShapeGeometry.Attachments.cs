@@ -13,11 +13,7 @@ internal static partial class TopologyNodeShapeGeometry {
         var center = RoutingCenter(node);
         // Open stick figures have no enclosed boundary. Use an extremity rather than
         // a diagonal ray that can leave the torso immediately alongside an arm.
-        if (node.Shape == TopologyNodeShape.Actor && port == TopologyEdgePort.Auto) {
-            var dx = towardX - center.X; var dy = towardY - center.Y;
-            port = Math.Abs(dx) >= Math.Abs(dy) ? (dx >= 0 ? TopologyEdgePort.Right : TopologyEdgePort.Left)
-                : (dy >= 0 ? TopologyEdgePort.Bottom : TopologyEdgePort.Top);
-        }
+        if (node.Shape == TopologyNodeShape.Actor && port == TopologyEdgePort.Auto) port = AutomaticActorPort(node, towardX, towardY);
         var direction = port switch {
             TopologyEdgePort.Top => new ChartPoint(0, -1),
             TopologyEdgePort.Right => new ChartPoint(1, 0),
@@ -26,6 +22,13 @@ internal static partial class TopologyNodeShapeGeometry {
             _ => new ChartPoint(towardX - center.X, towardY - center.Y)
         };
         return SurfacePoint(node, center, direction, gap);
+    }
+
+    internal static TopologyEdgePort AutomaticActorPort(TopologyNode node, double towardX, double towardY) {
+        var center = RoutingCenter(node);
+        var dx = towardX - center.X; var dy = towardY - center.Y;
+        return Math.Abs(dx) >= Math.Abs(dy) ? (dx >= 0 ? TopologyEdgePort.Right : TopologyEdgePort.Left)
+            : (dy >= 0 ? TopologyEdgePort.Bottom : TopologyEdgePort.Top);
     }
 
     // Keep the last route leg on the same line after fan-out or named-port spreading.

@@ -114,6 +114,39 @@ public sealed class MermaidReviewRegressionTests {
     }
 
     [Theory]
+    [InlineData(0, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(12, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(22, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(0, TopologyEdgeRouting.Straight)]
+    [InlineData(12, TopologyEdgeRouting.Straight)]
+    [InlineData(22, TopologyEdgeRouting.Straight)]
+    public void ShortActorAssociationsKeepCaptionsClearAndApproachBothPaintedEndpoints(int gap, TopologyEdgeRouting routing) {
+        foreach (var incoming in new[] { false, true }) {
+            foreach (var caption in new[] { "User", "Project administrator" }) {
+                var chart = TopologyChart.Create().WithViewport(800, 700, 20)
+                    .AddNode("actor", caption, 300, 300, width: 180, height: 108)
+                    .AddNode("action", "Do work", 300, 408 + gap, width: 180, height: 70)
+                    .AddEdge("association", incoming ? "action" : "actor", incoming ? "actor" : "action");
+                chart.Nodes[0].Shape = TopologyNodeShape.Actor;
+                chart.Nodes[1].Shape = TopologyNodeShape.Ellipse;
+                foreach (var node in chart.Nodes) { node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; }
+                chart.Edges[0].Routing = routing;
+                chart.Edges[0].Direction = VisualLinkDirection.Forward;
+                var svg = XDocument.Parse(chart.ToSvg());
+                var path = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-path");
+                var actor = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node-body" && (string?)element.Attribute("data-node-id") == "actor");
+                foreach (var label in actor.Elements().Where(element => element.Name.LocalName == "text")) AssertPathAvoidsLabel(path, label, 12);
+                var points = Assert.Single(ChartMapPathParser.ParseSubpaths(path.Attribute("d")!.Value, 1)).Points;
+                AssertApproachHitsSurface(chart.Nodes[incoming ? 1 : 0], points[0], points[1]);
+                AssertApproachHitsSurface(chart.Nodes[incoming ? 0 : 1], points[^1], points[^2]);
+                if (routing == TopologyEdgeRouting.Orthogonal) {
+                    for (var i = 1; i < points.Count; i++) Assert.True(Math.Abs(points[i].X - points[i - 1].X) < .001 || Math.Abs(points[i].Y - points[i - 1].Y) < .001);
+                }
+            }
+        }
+    }
+
+    [Theory]
     [InlineData("block-basic.mmd")]
     [InlineData("packet-basic.mmd")]
     [InlineData("gitgraph-basic.mmd")]
@@ -182,5 +215,15 @@ public sealed class MermaidReviewRegressionTests {
             var px = point.X - start.X - t * dx; var py = point.Y - start.Y - t * dy;
             distance = Math.Min(distance, Math.Sqrt(px * px + py * py));
         }
+    }
+
+    private static void AssertApproachHitsSurface(TopologyNode node, ChartPoint endpoint, ChartPoint adjacent) {
+        var dx = endpoint.X - adjacent.X; var dy = endpoint.Y - adjacent.Y;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        Assert.True(length > .001, "An endpoint must have a directed approach leg.");
+        var closest = double.PositiveInfinity;
+        for (var step = 0; step <= 32; step++) closest = Math.Min(closest,
+            DistanceFromSurface(node, new ChartPoint(endpoint.X + dx / length * step / 2, endpoint.Y + dy / length * step / 2)));
+        Assert.True(closest <= 1, "The rendered approach must continue into the painted node surface: " + node.Id);
     }
 }

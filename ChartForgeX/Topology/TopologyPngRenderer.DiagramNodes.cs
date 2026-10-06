@@ -18,8 +18,8 @@ public sealed partial class TopologyPngRenderer {
         }
         if (!options.IncludeNodeLabels) return;
         var subtitleOffset = string.IsNullOrWhiteSpace(node.Subtitle) ? 0 : 20;
-        var lines = NodeTextLines(node.Label, node.Width * .65, 12, true, options.MaxNodeLabelLines, options, node.MaximumLabelCharacters ?? NodeLabelMaxLength);
-        DrawCenteredLines(canvas, CenterX(node), (node.Shape == TopologyNodeShape.Actor ? node.Y + 84 : (node.Details.Count > 0 || subtitleOffset > 0 ? node.Y + 24 : CenterY(node))) - (lines.Count - 1) * 7 - 7, lines, WithAlpha(Color(theme.Foreground), alpha), 12, true, 14);
+        var lines = DiagramNodeLabelLines(node, options);
+        DrawCenteredLines(canvas, CenterX(node), DiagramNodeLabelCenterY(node) - (lines.Count - 1) * 7 - 7, lines, WithAlpha(Color(theme.Foreground), alpha), 12, true, 14);
         if (subtitleOffset > 0) DrawCenteredLines(canvas, CenterX(node), node.Y + 35, new[] { TrimToEstimatedWidth(node.Subtitle!, node.Width - 24, 10, false, options.TextMeasurement) }, WithAlpha(Color(theme.MutedForeground), alpha), 10, false, 12);
         for (var i = 0; i < node.Details.Count; i++) {
             if (i == 0) canvas.DrawLine(node.X + 12, node.Y + 34 + subtitleOffset, node.X + node.Width - 12, node.Y + 34 + subtitleOffset, WithAlpha(Color(theme.Border), alpha), 1);

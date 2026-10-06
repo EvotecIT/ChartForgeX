@@ -276,7 +276,7 @@ internal static partial class TopologyRenderPrimitives {
                 : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane)
             : EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
         points = ApplySafeEndpointSpreading(chart, edge, nodes, source, target, points);
-        if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return AvoidActorCaptions(edge, source, target, points);
+        if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return ApplyActorEndpointRouting(chart, edge, source, target, points);
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
         var vectorTarget = ReferenceEquals(vectorSource, source) ? target : source;
@@ -287,7 +287,7 @@ internal static partial class TopologyRenderPrimitives {
 
         var ox = -dy / length * offset;
         var oy = dx / length * offset;
-        return AvoidActorCaptions(edge, source, target, OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy));
+        return ApplyActorEndpointRouting(chart, edge, source, target, OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy));
     }
 
     private static bool UsesOrthogonalRoute(TopologyEdge edge) =>
