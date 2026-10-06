@@ -323,6 +323,20 @@ body {
   font-weight: 800;
 }
 
+.cfx-tooltip__title--series {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cfx-tooltip__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 2px;
+}
+
 .cfx-tooltip__meta {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -698,6 +712,7 @@ body {
   font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--cfx-tooltip-line); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title--series:last-child { padding-bottom: 0; border-bottom: 0; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta { grid-template-columns: 1fr auto; gap: 6px 24px; color: var(--cfx-tooltip-text); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dt { display: flex; align-items: center; gap: 6px; color: inherit; font-weight: 400; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dd { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }

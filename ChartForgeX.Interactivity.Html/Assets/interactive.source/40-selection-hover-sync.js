@@ -343,6 +343,11 @@
   };
   const updateNearestPoint = (root, crosshair, tip, event) => {
     if (!hasFeature(root, 'Crosshair')) return;
+    if (event.target instanceof Element && event.target.closest('[data-cfx-role="legend-item"]')) {
+      // Legend items own their hover summary; the crosshair must not replace it.
+      hideCrosshair(root, crosshair);
+      return;
+    }
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);

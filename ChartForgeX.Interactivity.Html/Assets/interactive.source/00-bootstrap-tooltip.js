@@ -163,6 +163,7 @@
     return rows;
   };
   const renderTip = (tip, node) => {
+    if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
     const root = node.closest && node.closest('[data-cfx-look="graphite"]');
     const svg = node.closest && node.closest('svg');
     if (root && svg && node.dataset.cfxX !== undefined && node.dataset.cfxY !== undefined) {
