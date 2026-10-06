@@ -38,9 +38,15 @@ for (const file of files) {
     if (fixtureFiles.has(expectedFile)) {
       const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
       const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
-      const vertices = diagram.db.getVertices();
-      assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
-      assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
+      if (expected.nodes) {
+        const vertices = diagram.db.getVertices();
+        assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
+        assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
+      }
+      if (expected.tasks) {
+        const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
+        assert.deepEqual(diagram.db.getTasks().map((task, index) => [expected.tasks[index][0] === null ? null : task.id, day(task.startTime), day(task.endTime)]), expected.tasks);
+      }
     }
   } catch (error) {
     failures.push(`${file}: ${error?.message ?? error}`);

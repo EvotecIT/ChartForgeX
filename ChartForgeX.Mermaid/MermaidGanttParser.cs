@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidGanttParser {
+internal static partial class MermaidGanttParser {
     private static readonly HashSet<string> KnownTags = new(StringComparer.OrdinalIgnoreCase) { "active", "done", "crit", "milestone" };
 
     public static void ParseStatements(MermaidGanttDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
@@ -24,13 +24,18 @@ internal static class MermaidGanttParser {
             else if (StartsWithKeyword(trimmed, "axisFormat")) document.AxisFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "tickInterval")) document.TickInterval = trimmed.Substring(12).Trim();
             else if (StartsWithKeyword(trimmed, "excludes")) document.Excludes = trimmed.Substring(8).Trim();
+            else if (StartsWithKeyword(trimmed, "includes")) document.Includes = trimmed.Substring(8).Trim();
+            else if (StartsWithKeyword(trimmed, "weekend")) {
+                document.Weekend = trimmed.Substring(7).Trim().ToLowerInvariant();
+                if (document.Weekend != "friday" && document.Weekend != "saturday") Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt weekend must start on friday or saturday.");
+            }
             else if (StartsWithKeyword(trimmed, "todayMarker")) document.TodayMarker = trimmed.Substring(11).Trim();
             else if (StartsWithKeyword(trimmed, "section")) {
                 currentSection = trimmed.Substring(7).Trim();
                 if (currentSection.Length == 0) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt section names must not be empty.");
                 else document.Sections.Add(new MermaidGanttSection(currentSection, span));
             } else {
-                var task = ParseTask(trimmed, span, currentSection, previousEnd, document.Tasks, taskIds, document.DateFormat, result);
+                var task = ParseTask(trimmed, span, currentSection, previousEnd, document.Tasks, taskIds, document, result);
                 if (task == null) continue;
                 document.Tasks.Add(task);
                 previousEnd = task.End;
@@ -44,7 +49,8 @@ internal static class MermaidGanttParser {
         if (document.Tasks.Count == 0) Add(result, document.HeaderSpan.Line, document.HeaderSpan.Column, document.HeaderSpan.Length, MermaidDiagnosticSeverity.Error, "Mermaid Gantt diagrams require at least one task.");
     }
 
-    private static MermaidGanttTask? ParseTask(string text, MermaidSourceSpan span, string? section, DateTime? previousEnd, IReadOnlyList<MermaidGanttTask> previousTasks, Dictionary<string, MermaidGanttTask> taskIds, string dateFormat, MermaidParseResult<MermaidDocument> result) {
+    private static MermaidGanttTask? ParseTask(string text, MermaidSourceSpan span, string? section, DateTime? previousEnd, IReadOnlyList<MermaidGanttTask> previousTasks, Dictionary<string, MermaidGanttTask> taskIds, MermaidGanttDocument document, MermaidParseResult<MermaidDocument> result) {
+        var dateFormat = document.DateFormat;
         var colon = text.IndexOf(':');
         if (colon <= 0) {
             Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt tasks must use 'title : metadata' syntax.");
@@ -110,7 +116,12 @@ internal static class MermaidGanttParser {
         }
 
         DateTime end;
-        if (TryParseDuration(endSpec, out var duration)) end = start.Add(duration);
+        if (TryParseDuration(endSpec, out var duration)) {
+            if (!TryResolveDurationEnd(start, duration, document, out end)) {
+                Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt duration exceeds the supported date range or exclusion calendar has no reachable working day.");
+                return null;
+            }
+        }
         else if (!TryParseDate(endSpec, dateFormat, out end)) {
             Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt task end values must be dates or durations.");
             return null;
@@ -122,8 +133,8 @@ internal static class MermaidGanttParser {
         }
 
         var milestone = ContainsTag(tags, "milestone");
-        var progress = milestone || ContainsTag(tags, "done") ? 1.0 : ContainsTag(tags, "active") ? 0.5 : 0.0;
-        if (milestone) end = start;
+        var progress = milestone || ContainsTag(tags, "done") ? 1.0 : 0.0;
+        if (milestone) { start = start.AddTicks((end.Ticks - start.Ticks) / 2); end = start; }
         var task = new MermaidGanttTask(title, id, section, start, end, progress, milestone, tags, dependencies, rawMetadata, span) {
             DependencyIndex = dependencyIndex
         };
@@ -181,42 +192,44 @@ internal static class MermaidGanttParser {
         var index = 0;
         while (index < text.Length && (char.IsDigit(text[index]) || text[index] == '.')) index++;
         if (index == 0 || index == text.Length) return false;
-        if (!double.TryParse(text.Substring(0, index), NumberStyles.Float, CultureInfo.InvariantCulture, out var amount) || amount < 0) return false;
+        if (!double.TryParse(text.Substring(0, index), NumberStyles.Float, CultureInfo.InvariantCulture, out var amount) || amount < 0 || double.IsInfinity(amount)) return false;
         var unit = text.Substring(index).Trim().ToLowerInvariant();
-        switch (unit) {
-            case "ms":
-            case "millisecond":
-            case "milliseconds":
-                duration = TimeSpan.FromMilliseconds(amount);
-                return true;
-            case "s":
-            case "second":
-            case "seconds":
-                duration = TimeSpan.FromSeconds(amount);
-                return true;
-            case "m":
-            case "minute":
-            case "minutes":
-                duration = TimeSpan.FromMinutes(amount);
-                return true;
-            case "h":
-            case "hour":
-            case "hours":
-                duration = TimeSpan.FromHours(amount);
-                return true;
-            case "d":
-            case "day":
-            case "days":
-                duration = TimeSpan.FromDays(amount);
-                return true;
-            case "w":
-            case "week":
-            case "weeks":
-                duration = TimeSpan.FromDays(amount * 7);
-                return true;
-            default:
-                return false;
-        }
+        try {
+            switch (unit) {
+                case "ms":
+                case "millisecond":
+                case "milliseconds":
+                    duration = TimeSpan.FromMilliseconds(amount);
+                    return true;
+                case "s":
+                case "second":
+                case "seconds":
+                    duration = TimeSpan.FromSeconds(amount);
+                    return true;
+                case "m":
+                case "minute":
+                case "minutes":
+                    duration = TimeSpan.FromMinutes(amount);
+                    return true;
+                case "h":
+                case "hour":
+                case "hours":
+                    duration = TimeSpan.FromHours(amount);
+                    return true;
+                case "d":
+                case "day":
+                case "days":
+                    duration = TimeSpan.FromDays(amount);
+                    return true;
+                case "w":
+                case "week":
+                case "weeks":
+                    duration = TimeSpan.FromDays(amount * 7);
+                    return true;
+                default:
+                    return false;
+            }
+        } catch (OverflowException) { return false; }
     }
 
     internal static string ToDotNetDateFormat(string value) {

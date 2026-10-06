@@ -30,9 +30,14 @@ public sealed partial class MermaidParser {
             return result;
         }
 
+        var presentation = ReadPresentation(lines, header.Value.Line + 1, frontMatter.Text, result);
         MermaidDocument document;
-        if (descriptor.Kind == MermaidDiagramKind.Flowchart) {
+        if (descriptor.Kind == MermaidDiagramKind.Flowchart || descriptor.Kind == MermaidDiagramKind.Swimlane) {
             document = ParseFlowchart(source, lines, frontMatter, header.Value, descriptor, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.UseCase) {
+            document = ParseUseCase(source, lines, frontMatter, header.Value, result);
+        } else if (descriptor.Kind == MermaidDiagramKind.Cynefin) {
+            document = ParseCynefin(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Sequence) {
             document = ParseSequence(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Class) {
@@ -98,20 +103,22 @@ public sealed partial class MermaidParser {
         }
 
         AddDirectives(document, lines, frontMatter.EndLine + 1, header.Value.Line - 1);
+        document.Accessibility.Name = presentation.Accessibility.Name;
+        document.Accessibility.Description = presentation.Accessibility.Description;
+        document.Theme = presentation.Theme;
+        if (document is MermaidSequenceDocument && document.Theme != null) Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Warning, "Sequence previews use the static sequence palette; the source theme is retained but not applied.");
         result.Document = document;
         return result;
     }
 
     private static MermaidFlowchartDocument ParseFlowchart(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, DiagramDescriptor descriptor, MermaidParseResult<MermaidDocument> result) {
-        var document = new MermaidFlowchartDocument {
-            SourceText = source,
-            Kind = MermaidDiagramKind.Flowchart,
-            Header = header.Text,
-            HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
-            FrontMatter = frontMatter.Text,
-            Direction = ParseFlowchartDirection(descriptor.Direction)
-        };
-
+        MermaidFlowchartDocument document = descriptor.Kind == MermaidDiagramKind.Swimlane ? new MermaidSwimlaneDocument() : new MermaidFlowchartDocument();
+        document.SourceText = source;
+        document.Kind = descriptor.Kind;
+        document.Header = header.Text;
+        document.HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length);
+        document.FrontMatter = frontMatter.Text;
+        document.Direction = ParseFlowchartDirection(descriptor.Direction);
         var separator = header.Text.IndexOf(';');
         MermaidFlowchartParser.ParseStatements(document, lines, separator < 0 ? header.Line + 1 : header.Line, result,
             separator < 0 ? 0 : header.Column + separator);
@@ -401,6 +408,12 @@ public sealed partial class MermaidParser {
             case "flowchart":
             case "graph":
                 return new DiagramDescriptor(MermaidDiagramKind.Flowchart, tokens[0], direction);
+            case "swimlanebeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Swimlane, tokens[0], direction);
+            case "usecasebeta":
+                return new DiagramDescriptor(MermaidDiagramKind.UseCase, tokens[0], string.Empty);
+            case "cynefinbeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Cynefin, tokens[0], string.Empty);
             case "sequencediagram":
                 return new DiagramDescriptor(MermaidDiagramKind.Sequence, tokens[0], string.Empty);
             case "classdiagram":
@@ -429,6 +442,7 @@ public sealed partial class MermaidParser {
             case "sankey":
             case "sankeybeta":
                 return new DiagramDescriptor(MermaidDiagramKind.Sankey, tokens[0], string.Empty);
+            case "xychart":
             case "xychartbeta":
                 return new DiagramDescriptor(MermaidDiagramKind.XYChart, tokens[0], direction);
             case "blockbeta":

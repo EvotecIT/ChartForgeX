@@ -62,6 +62,7 @@ internal static partial class TopologyLayoutEngine {
             IconId = node.IconId,
             Artwork = node.Artwork?.Clone(),
             DisplayMode = node.DisplayMode,
+            Shape = node.Shape,
             Badge = node.Badge,
             Status = node.Status,
             GroupId = node.GroupId,
@@ -89,7 +90,7 @@ internal static partial class TopologyLayoutEngine {
             copy.Ports.Add(portCopy);
         }
         foreach (var detail in node.Details) {
-            var detailCopy = new TopologyNodeDetail { Label = detail.Label, Value = detail.Value, IconId = detail.IconId, Status = detail.Status, Color = detail.Color };
+            var detailCopy = new TopologyNodeDetail { Text = detail.Text, Label = detail.Label, Value = detail.Value, IconId = detail.IconId, Status = detail.Status, Color = detail.Color };
             foreach (var item in detail.Metadata) detailCopy.Metadata[item.Key] = item.Value;
             copy.Details.Add(detailCopy);
         }

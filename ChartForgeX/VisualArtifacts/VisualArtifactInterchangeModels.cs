@@ -238,6 +238,9 @@ public sealed class VisualArtifactInterchangePort {
 
 /// <summary>Represents one typed node detail row.</summary>
 public sealed class VisualArtifactInterchangeDetail {
+    /// <summary>Gets or sets full-width text instead of the label/value columns.</summary>
+    public string? Text { get; set; }
+
     /// <summary>Gets or sets the row label.</summary>
     public string Label { get; set; } = string.Empty;
     /// <summary>Gets or sets the row value.</summary>

@@ -23,6 +23,8 @@ public static class SequenceArtifactRendering {
         var layout = SequenceLayout.Calculate(sequence);
         var artifact = VisualArtifact.Create(sequence.Id, VisualArtifactKind.Sequence, sequence);
         artifact.SourceLanguage = sourceLanguage;
+        artifact.Accessibility.Name = sequence.Accessibility.Name;
+        artifact.Accessibility.Description = sequence.Accessibility.Description;
         artifact.Title = sequence.Title;
         artifact.Subtitle = sequence.Subtitle;
         artifact.NaturalSize = new VisualArtifactSize(layout.Width, layout.Height);
@@ -67,8 +69,11 @@ public static class SequenceArtifactRendering {
             .Attribute("width", layout.Width)
             .Attribute("height", layout.Height)
             .Attribute("role", "img")
-            .Attribute("aria-label", sequence.Title.Length == 0 ? sequence.Id : sequence.Title)
+            .Attribute("aria-label", sequence.Accessibility.Name ?? (sequence.Title.Length == 0 ? sequence.Id : sequence.Title))
             .EndStartElement().Line();
+
+        if (!string.IsNullOrWhiteSpace(sequence.Accessibility.Name)) writer.StartElement("title").EndStartElement().Text(sequence.Accessibility.Name!).EndElement().Line();
+        if (!string.IsNullOrWhiteSpace(sequence.Accessibility.Description)) writer.StartElement("desc").EndStartElement().Text(sequence.Accessibility.Description!).EndElement().Line();
 
         writer.StartElement("defs").EndStartElement().Line();
         writer.StartElement("marker").Attribute("id", sequence.Id + "-arrow").Attribute("viewBox", "0 0 10 10").Attribute("refX", 9).Attribute("refY", 5).Attribute("markerWidth", 8).Attribute("markerHeight", 8).Attribute("orient", "auto-start-reverse").EndStartElement();

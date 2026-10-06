@@ -40,7 +40,7 @@ public static class MermaidWardleyRendering {
             foreach (var component in pipeline.Components) mapped.AddComponent(component.Label, component.Evolution);
         }
 
-        return block;
+        return MermaidPresentation.Apply(block, document);
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public static class MermaidWardleyRendering {
         artifact.Metadata["mermaid.pipelines"] = document.Pipelines.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(WardleyMapBlock);
         artifact.Metadata["render.note"] = "Deterministic Wardley map preview; browser-exact Mermaid styling and all advanced grammar are not runtime dependencies.";
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid Wardley document to static SVG.</summary>

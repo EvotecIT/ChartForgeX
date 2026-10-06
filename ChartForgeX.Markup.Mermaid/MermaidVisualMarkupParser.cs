@@ -13,14 +13,14 @@ public sealed class MermaidVisualMarkupParser {
     /// <summary>
     /// Initializes a parser with default Mermaid flowchart rendering options.
     /// </summary>
-    public MermaidVisualMarkupParser() : this(new MermaidVisualMarkupRenderOptions()) {
+    public MermaidVisualMarkupParser() : this(new MermaidRenderOptions()) {
     }
 
     /// <summary>
     /// Initializes a parser with Mermaid rendering options.
     /// </summary>
     /// <param name="renderOptions">Optional rendering defaults by Mermaid diagram kind.</param>
-    public MermaidVisualMarkupParser(MermaidVisualMarkupRenderOptions renderOptions) {
+    public MermaidVisualMarkupParser(MermaidRenderOptions renderOptions) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
         _parser = new VisualMarkupParser(new MermaidVisualMarkupBlockParser(renderOptions));
     }

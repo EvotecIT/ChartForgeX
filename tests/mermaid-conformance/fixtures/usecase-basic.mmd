@@ -1,0 +1,11 @@
+usecase-beta
+direction LR
+actor Customer
+systemBoundary Store[Online store]
+ Browse("Browse products")
+ Pay("Pay for order")
+ Authenticate("Authenticate")
+end
+Customer --> Browse
+Browse ..> : include Authenticate
+Pay --|> Browse

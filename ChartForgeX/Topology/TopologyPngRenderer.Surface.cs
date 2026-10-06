@@ -41,7 +41,23 @@ public sealed partial class TopologyPngRenderer {
         }
     }
 
-    private static void DrawEndpointMarker(RgbaCanvas canvas, ChartPoint from, ChartPoint to, ChartColor color, TopologyMarkerKind kind, TopologyRenderOptions options) {
+    private static void DrawEndpointMarker(RgbaCanvas canvas, ChartPoint from, ChartPoint to, ChartColor color, TopologyMarkerKind kind, TopologyRenderOptions options, ChartColor background) {
+        if (TopologyEndpointGeometry.Path(kind) is string endpointPath) {
+            foreach (var subpath in ChartMapPathParser.ParseSubpaths(endpointPath, canvas.DeviceScale)) {
+                var points = new ChartPoint[subpath.Points.Count];
+                for (var i = 0; i < points.Length; i++) points[i] = TopologyEndpointGeometry.Project(subpath.Points[i], from, to);
+                if (TopologyEndpointGeometry.IsClosed(kind)) canvas.FillPolygon(points, background);
+                var stroke = new System.Collections.Generic.List<ChartPoint>(points);
+                if (subpath.IsClosed && stroke.Count > 0) stroke.Add(stroke[0]);
+                canvas.DrawPolyline(stroke, color, 1.5, RasterLineCap.Butt, RasterLineJoin.Round, null);
+            }
+            if (TopologyEndpointGeometry.HasCircle(kind)) {
+                var center = TopologyEndpointGeometry.Project(new ChartPoint(5, 6), from, to);
+                canvas.DrawCircle(center.X, center.Y, 3.5, background);
+                canvas.DrawCircleOutline(center.X, center.Y, 3.5, color, 1.5);
+            }
+            return;
+        }
         switch (kind) {
             case TopologyMarkerKind.Arrow:
                 DrawArrow(canvas, from, to, color, options);

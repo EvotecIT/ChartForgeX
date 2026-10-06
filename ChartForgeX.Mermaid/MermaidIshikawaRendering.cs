@@ -23,7 +23,7 @@ public static class MermaidIshikawaRendering {
             .WithPadding(options.Padding);
 
         foreach (var child in document.Root.Children) CopyCause(child, block.AddCause(child.Text));
-        return block;
+        return MermaidPresentation.Apply(block, document);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public static class MermaidIshikawaRendering {
         artifact.Metadata["mermaid.nodes"] = CountNodes(document.Root).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(FishboneDiagramBlock);
         artifact.Metadata["render.note"] = "Deterministic fishbone preview; Mermaid hand-drawn and exact browser layout are not runtime dependencies.";
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid Ishikawa document to static SVG.</summary>

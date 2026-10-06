@@ -25,7 +25,7 @@ public static class MermaidRadarRendering {
         if (document.Ticks.HasValue) chart.WithTickCount(document.Ticks.Value);
         if (document.Minimum.HasValue || document.Maximum.HasValue) chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
         foreach (var curve in document.Curves) chart.AddRadar(curve.Label, Points(document, curve));
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public static class MermaidRadarRendering {
         if (document.Ticks.HasValue) artifact.Metadata["mermaid.ticks"] = document.Ticks.Value.ToString(CultureInfo.InvariantCulture);
         if (!string.IsNullOrWhiteSpace(document.Graticule)) artifact.Metadata["mermaid.graticule"] = document.Graticule!;
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

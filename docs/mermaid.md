@@ -28,13 +28,46 @@ Reference rendering tools can be useful in tests and compatibility checks, but t
 
 ## Current Scope
 
-Flowchart, sequence, class, state, entity relationship, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, mindmaps, tree views, event modeling diagrams, and kanban boards render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; git graph diagrams render through `GitGraphBlock`; block diagrams render through `BlockLayoutBlock`; packet diagrams render through `PacketLayoutBlock`; Venn diagrams render through `VennDiagramBlock`; Ishikawa diagrams render through `FishboneDiagramBlock`; Wardley maps render through `WardleyMapBlock`; pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
+Flowchart, sequence, class, state, entity relationship, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case, and Cynefin diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, mindmaps, tree views, event modeling diagrams, kanban boards, swimlanes, use cases, and Cynefin diagrams render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; git graph diagrams render through `GitGraphBlock`; block diagrams render through `BlockLayoutBlock`; packet diagrams render through `PacketLayoutBlock`; Venn diagrams render through `VennDiagramBlock`; Ishikawa diagrams render through `FishboneDiagramBlock`; Wardley maps render through `WardleyMapBlock`; pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
 
 Recognized but not yet semantically parsed families include ZenUML. These produce an inspectable `MermaidDocument` with retained raw body statements plus a warning that the family is not implemented yet.
 
 Unknown diagram families produce a parser error.
 
 For the family-by-family completion status, evidence, and priority order, see `mermaid-support-matrix.md`.
+
+## Render source directly
+
+Use the shared renderer when the diagram family is selected by the source:
+
+```csharp
+using ChartForgeX.Mermaid;
+using ChartForgeX.VisualArtifacts;
+
+MermaidRenderResult result = MermaidRenderer.Render(source);
+if (!result.HasErrors && result.Artifact != null) {
+    result.Artifact.SaveSvg("diagram.svg");
+    result.Artifact.SavePng("diagram.png");
+}
+```
+
+Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Other theme names and configuration keys produce approximation warnings; sequence previews retain their fixed palette.
+
+`MermaidRenderOptions` lives in `ChartForgeX.Mermaid` and supplies family defaults to both the source renderer and `MermaidVisualMarkupParser`. Replace the former `ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions` type with this shared type when migrating source code.
+
+Topology diagram dimensions set the minimum canvas. The renderer expands the canvas when node content or relationship notation needs more space; the artifact's natural size reports those rendered dimensions.
+
+## Process diagrams
+
+`swimlane-beta` uses flowchart statements. Top-level subgraphs define responsibility lanes; nodes share process ranks across lanes. `LR`, `RL`, `TB`, `TD`, and `BT` select lane orientation.
+
+`usecase-beta` supports actors, ellipse or rectangle use cases, system boundaries, associations, include/extend links, and generalization. Include and extend require use case endpoints; generalization requires endpoints of the same kind. Nested system boundaries are rejected. Advanced actor configuration and notes remain outside the static preview grammar and produce diagnostics.
+
+`cynefin-beta` supports the five fixed domains, quoted domain items, titles, and labeled domain transitions. The static diagram shows four rectangular regions and an ellipse for confusion, with all authored items visible. Organic domain boundaries and the reference renderer's cliff treatment are not reproduced.
+
+Modern flowchart metadata (`A@{ shape: cloud, label: "API" }`) preserves node identity and label text. Fan-out groups (`A & B --> C & D`) emit every connection. Supported legacy shapes and the cloud, actor, and ellipse surfaces share SVG/PNG geometry; unsupported metadata has explicit warnings.
+
+Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete.
 
 ## Flowcharts
 
@@ -54,7 +87,7 @@ Supported flowchart parsing includes:
 
 Flowcharts accept semicolon-separated statements, including statements on the header line. Semicolons inside quoted labels, node shapes, and pipe edge labels stay inside that label. Every retained statement carries its original line and column. Incomplete shapes, missing edge targets, and unmatched `subgraph`/`end` declarations produce located errors; unsupported trailing syntax is diagnosed instead of being silently discarded.
 
-The compact and quoted-shape flowchart conformance fixtures check node ids and edge endpoints against the same expected documents in .NET and Mermaid.js. The remaining fixtures currently check syntax acceptance and the resulting .NET document type.
+The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixture compares task dates. Every conformance fixture also exercises static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -88,7 +121,7 @@ The conversion target for flowcharts is `TopologyChart`. Subgraphs become topolo
 
 ## Class Diagrams
 
-Class diagrams are parsed into `MermaidClassDocument` and converted to topology previews.
+Class diagrams are parsed into `MermaidClassDocument` and converted to topology previews with visible members, namespace groups, endpoint multiplicities, and UML inheritance, composition, and aggregation markers.
 
 Supported class parsing includes:
 
@@ -189,7 +222,7 @@ var document = result.Document;
 var artifact = document!.ToVisualArtifact();
 ```
 
-The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships become bidirectional mapping edges with Mermaid cardinality retained as metadata.
+The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships use identifying or dashed non-identifying lines with visible crow's-foot endpoint cardinality. Entity attributes, keys, and comments appear inside the entity boxes.
 
 ## Requirement Diagrams
 
@@ -1147,13 +1180,13 @@ var result = new MermaidVisualMarkupParser().ParseBlocks(blocks);
 
 That flow keeps Mermaid syntax handling inside ChartForgeX while avoiding a second Markdown scan in native IX or OfficeIMO-backed pipelines.
 
-Use `MermaidVisualMarkupRenderOptions` when a host wants shared defaults for several diagram families:
+Use `MermaidRenderOptions` when a host wants shared defaults for several diagram families:
 
 ```csharp
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 
-var parser = new MermaidVisualMarkupParser(new MermaidVisualMarkupRenderOptions {
+var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions {
     Flowchart = new MermaidFlowchartRenderOptions { Width = 1180, Height = 720 },
     Gantt = new MermaidGanttRenderOptions { Width = 960, Height = 560 }
 });

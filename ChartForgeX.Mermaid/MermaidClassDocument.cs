@@ -33,6 +33,9 @@ public sealed class MermaidClassNode : MermaidAstNode {
     /// <summary>Gets or sets an optional display label.</summary>
     public string? Label { get; set; }
 
+    /// <summary>Gets or sets the enclosing namespace path.</summary>
+    public string? Namespace { get; set; }
+
     /// <summary>Gets class annotations such as interface or abstract.</summary>
     public List<string> Annotations { get; } = new();
 
@@ -81,6 +84,12 @@ public sealed class MermaidClassRelationship : MermaidAstNode {
 
     /// <summary>Gets the Mermaid relationship connector.</summary>
     public string Connector { get; }
+
+    /// <summary>Gets or sets the source endpoint multiplicity.</summary>
+    public string? SourceMultiplicity { get; set; }
+
+    /// <summary>Gets or sets the target endpoint multiplicity.</summary>
+    public string? TargetMultiplicity { get; set; }
 
     /// <summary>Gets the optional relationship label.</summary>
     public string? Label { get; }

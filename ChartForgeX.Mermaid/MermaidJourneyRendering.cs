@@ -37,7 +37,7 @@ public static class MermaidJourneyRendering {
             series.WithPointLabel(i, document.Tasks[i].Text + actors);
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public static class MermaidJourneyRendering {
         artifact.Metadata["mermaid.tasks"] = document.Tasks.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.actors"] = CountActors(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

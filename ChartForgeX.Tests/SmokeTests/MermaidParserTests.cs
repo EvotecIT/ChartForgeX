@@ -674,7 +674,7 @@ Ship : milestone, ship, after impl, 0d";
         Assert(document.DateFormat == "YYYY-MM-DD" && document.AxisFormat == "%m/%d", "Mermaid Gantt parser should preserve schedule format directives.");
         Assert(document.Sections.Count == 1 && document.Sections[0].Name == "Build", "Mermaid Gantt parser should preserve sections.");
         Assert(document.Tasks.Count == 3, "Mermaid Gantt parser should parse task lines.");
-        Assert(document.Tasks[0].Id == "des" && Math.Abs(document.Tasks[0].Progress - 0.5) < 0.001, "Mermaid Gantt parser should parse ids and active progress.");
+        Assert(document.Tasks[0].Id == "des" && document.Tasks[0].Progress == 0, "Mermaid Gantt parser should parse ids without inventing a completion percentage for active tasks.");
         Assert(document.Tasks[1].DependencyIds.Count == 1 && document.Tasks[1].DependencyIds[0] == "des" && document.Tasks[1].DependencyIndex == 0, "Mermaid Gantt parser should resolve after dependencies.");
         Assert(document.Tasks[2].IsMilestone && document.Tasks[2].DependencyIndex == 1, "Mermaid Gantt parser should parse milestones with dependencies.");
         Assert(document.Tasks[0].End == new DateTime(2026, 1, 6), "Mermaid Gantt parser should resolve day durations from start dates.");

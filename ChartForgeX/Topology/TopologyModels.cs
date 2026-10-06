@@ -405,6 +405,9 @@ public sealed class TopologyNode {
     /// <summary>Gets typed label/value detail rows rendered by card-like node surfaces.</summary>
     public List<TopologyNodeDetail> Details { get; } = new();
 
+    /// <summary>Gets or sets a diagram surface; null preserves the display-mode card surface.</summary>
+    public TopologyNodeShape? Shape { get; set; }
+
     /// <summary>Gets arbitrary node metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
 
@@ -718,6 +721,9 @@ public sealed class TopologyNodePort {
 public sealed class TopologyNodeDetail {
     private string _label = string.Empty;
     private string _value = string.Empty;
+
+    /// <summary>Gets or sets full-width text instead of the label/value columns.</summary>
+    public string? Text { get; set; }
 
     /// <summary>Gets or sets the row label.</summary>
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }

@@ -79,6 +79,7 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static SvgElement BuildNodeBody(TopologyNode node, string prefix, TopologyTheme theme, string color, TopologyRenderOptions options, string rootId, bool selected) {
+        if (node.Shape.HasValue) return BuildDiagramNodeBody(node, theme, color, options, selected);
         var displayMode = EffectiveNodeDisplayMode(node, options);
         var body = new SvgElement("g")
             .Class(prefix + "__node-body")
@@ -227,6 +228,11 @@ public sealed partial class TopologySvgRenderer {
             var y = startY + i * 18;
             var color = !string.IsNullOrWhiteSpace(detail.Color) ? detail.Color!.Trim() : detail.Status.HasValue ? theme.StatusColor(detail.Status.Value) : theme.MutedForeground;
             body.Element("line", line => line.Attribute("x1", left).Attribute("y1", y - 8).Attribute("x2", right).Attribute("y2", y - 8).Attribute("stroke", theme.Border).Attribute("stroke-opacity", 0.45).Attribute("stroke-width", 1));
+            if (detail.Text != null) {
+                body.Element("text", text => text.Attribute("data-cfx-role", "topology-node-detail-label").Attribute("x", left).Attribute("y", y + 2)
+                    .Attribute("fill", theme.Foreground).Attribute("font-size", 10).Text(TrimToEstimatedWidth(detail.Text, right - left, 10, false, options.TextMeasurement)));
+                continue;
+            }
             body.Element("circle", circle => circle.Attribute("data-cfx-role", "topology-node-detail-status").Attribute("data-cfx-status", detail.Status?.ToString()).Attribute("cx", left + 3).Attribute("cy", y - 1).Attribute("r", 2.5).Paint("fill", !string.IsNullOrWhiteSpace(detail.Color) || !detail.Status.HasValue ? SvgPaint.Plain(color) : StatusColorPaint(color)));
             body.Element("text", text => text.Attribute("data-cfx-role", "topology-node-detail-label").Attribute("x", left + 10).Attribute("y", y + 2).Attribute("fill", theme.MutedForeground).Attribute("font-size", 8.5).Text(TrimTo(detail.Label, 14)));
             body.Element("text", text => text.Attribute("data-cfx-role", "topology-node-detail-value").Attribute("x", right).Attribute("y", y + 2).Attribute("fill", theme.Foreground).Attribute("font-size", 8.5).Attribute("font-weight", 700).Attribute("text-anchor", "end").Text(TrimTo(detail.Value, 16)));

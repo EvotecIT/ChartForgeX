@@ -310,7 +310,7 @@ public sealed partial class TopologySvgRenderer {
             if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), EdgePaint(color, key), options);
             foreach (var kind in new[] { EffectiveSourceMarker(edge), EffectiveTargetMarker(edge) }) {
                 if (kind is TopologyMarkerKind.None or TopologyMarkerKind.Arrow) continue;
-                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), EdgePaint(color, key), kind, options);
+                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), EdgePaint(color, key), kind, options, theme.Background);
             }
         }
 

@@ -52,7 +52,7 @@ public static class MermaidC4Rendering {
             ApplyPortHints(edge, relationship.Kind);
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public static class MermaidC4Rendering {
         artifact.Metadata["mermaid.relationships"] = document.Relationships.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.retained"] = document.RetainedStatements.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(TopologyChart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid C4 document to static SVG.</summary>

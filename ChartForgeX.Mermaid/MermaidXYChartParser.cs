@@ -108,7 +108,12 @@ internal static class MermaidXYChartParser {
             return;
         }
 
-        document.Series.Add(new MermaidXYChartSeries(kind, defaultName, values, span));
+        var name = Unquote(text.Substring(0, listStart).Trim());
+        if (text.Substring(listEnd + 1).Trim().Length > 0) {
+            Add(result, span.Line, span.Column + listEnd + 1, text.Length - listEnd - 1, MermaidDiagnosticSeverity.Error, "XY chart series contain unsupported trailing syntax.");
+            return;
+        }
+        document.Series.Add(new MermaidXYChartSeries(kind, name.Length == 0 ? defaultName : name, values, span));
     }
 
     private static List<double> ParseNumberList(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {

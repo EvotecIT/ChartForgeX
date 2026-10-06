@@ -36,7 +36,7 @@ public static class MermaidXYChartRendering {
             else chart.AddBar(series.Name, points);
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public static class MermaidXYChartRendering {
         artifact.Metadata["mermaid.lineSeries"] = CountSeries(document, MermaidXYChartSeriesKind.Line).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.xAxisLabels"] = document.XAxis.Labels.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

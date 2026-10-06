@@ -65,7 +65,7 @@ public static class MermaidArchitectureRendering {
             ApplyEndpointMetadata(edge.Metadata, "target", target);
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public static class MermaidArchitectureRendering {
         artifact.Metadata["mermaid.junctions"] = document.Junctions.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.edges"] = document.Edges.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(TopologyChart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid architecture document to static SVG.</summary>

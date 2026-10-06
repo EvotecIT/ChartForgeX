@@ -85,9 +85,19 @@ public sealed partial class TopologySvgRenderer {
         });
     }
 
-    private static void AddEndpointMarker(SvgElement defs, string id, SvgPaint color, TopologyMarkerKind kind, TopologyRenderOptions options) {
+    private static void AddEndpointMarker(SvgElement defs, string id, SvgPaint color, TopologyMarkerKind kind, TopologyRenderOptions options, string background) {
         if (kind == TopologyMarkerKind.Arrow) {
             AddArrowMarker(defs, id, color, options);
+            return;
+        }
+        if (TopologyEndpointGeometry.Path(kind) is string endpointPath) {
+            defs.Element("marker", marker => {
+                marker.Attribute("id", id).Attribute("viewBox", "0 0 20 12").Attribute("refX", 20).Attribute("refY", 6)
+                    .Attribute("markerWidth", 20).Attribute("markerHeight", 12).Attribute("markerUnits", "userSpaceOnUse")
+                    .Attribute("orient", "auto-start-reverse").Attribute("overflow", "visible");
+                marker.Element("path", path => path.Attribute("d", endpointPath).Attribute("fill", TopologyEndpointGeometry.IsClosed(kind) ? background : "none").Paint("stroke", color).Attribute("stroke-width", 1.5));
+                if (TopologyEndpointGeometry.HasCircle(kind)) marker.Element("circle", circle => circle.Attribute("cx", 5).Attribute("cy", 6).Attribute("r", 3.5).Attribute("fill", background).Paint("stroke", color).Attribute("stroke-width", 1.5));
+            });
             return;
         }
         defs.Element("marker", marker => {
