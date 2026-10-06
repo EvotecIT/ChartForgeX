@@ -61,7 +61,7 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 
 `swimlane-beta` uses flowchart statements. Top-level subgraphs define responsibility lanes; nodes share process ranks across lanes. `LR`, `RL`, `TB`, `TD`, and `BT` select lane orientation.
 
-`usecase-beta` supports actors, ellipse or rectangle use cases, system boundaries, associations, include/extend links, and generalization. Include and extend require use case endpoints; generalization requires endpoints of the same kind. Associations use straight routes; relationship stereotypes receive space between their endpoints. Nested system boundaries are rejected. Advanced actor configuration and notes remain outside the static preview grammar and produce diagnostics.
+`usecase-beta` supports actors, ellipse or rectangle use cases, system boundaries, associations, include/extend links, and generalization. Include and extend require use case endpoints; generalization requires endpoints of the same kind. Associations use direct routes with bends where needed to avoid actor captions; relationship stereotypes receive space between their endpoints. Nested system boundaries are rejected. Advanced actor configuration and notes remain outside the static preview grammar and produce diagnostics.
 
 `cynefin-beta` supports the five fixed domains, quoted domain items, titles, and labeled domain transitions. The static diagram shows four rectangular regions and an ellipse for confusion, with all authored items visible. Organic domain boundaries and the reference renderer's cliff treatment are not reproduced.
 

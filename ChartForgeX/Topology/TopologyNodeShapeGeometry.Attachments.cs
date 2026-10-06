@@ -11,6 +11,13 @@ internal static partial class TopologyNodeShapeGeometry {
 
     internal static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port, double gap) {
         var center = RoutingCenter(node);
+        // Open stick figures have no enclosed boundary. Use an extremity rather than
+        // a diagonal ray that can leave the torso immediately alongside an arm.
+        if (node.Shape == TopologyNodeShape.Actor && port == TopologyEdgePort.Auto) {
+            var dx = towardX - center.X; var dy = towardY - center.Y;
+            port = Math.Abs(dx) >= Math.Abs(dy) ? (dx >= 0 ? TopologyEdgePort.Right : TopologyEdgePort.Left)
+                : (dy >= 0 ? TopologyEdgePort.Bottom : TopologyEdgePort.Top);
+        }
         var direction = port switch {
             TopologyEdgePort.Top => new ChartPoint(0, -1),
             TopologyEdgePort.Right => new ChartPoint(1, 0),

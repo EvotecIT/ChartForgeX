@@ -12,6 +12,52 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidReviewRegressionTests {
+    [Fact]
+    public void ClassInheritanceAndAggregationHaveSeparateSourceMarkers() {
+        var result = MermaidRenderer.Render("classDiagram\nnamespace Services {\nclass User {\n+string name\n+save() void\n}\nclass Admin\n}\n<<interface>> User\nUser <|-- Admin\nUser \"1\" o-- \"0..*\" Session : opens");
+        Assert.False(result.HasErrors);
+        var svg = XDocument.Parse(result.Artifact!.ToSvg());
+        var edges = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge").ToArray();
+        Assert.Equal(new[] { "OpenTriangle", "OpenDiamond" }, edges.Select(element => (string?)element.Attribute("data-source-marker")));
+        var first = Number(edges[0], "data-route-start-y");
+        var second = Number(edges[1], "data-route-start-y");
+        Assert.True(Math.Abs(first - second) >= 16, "Different UML source markers must not cover each other.");
+        var multiplicity = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-endpoint-label" && element.Value == "1");
+        foreach (var edge in edges) {
+            var dx = Number(multiplicity, "x") - Number(edge, "data-route-start-x");
+            var dy = Number(multiplicity, "y") - Number(edge, "data-route-start-y");
+            Assert.True(Math.Sqrt(dx * dx + dy * dy) >= 20, "A multiplicity must not cover a neighboring relationship marker.");
+            var path = edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-path");
+            AssertPathAvoidsLabel(path, multiplicity, 9.5);
+        }
+    }
+
+    [Theory]
+    [InlineData("TB", false, "User")]
+    [InlineData("TB", true, "User")]
+    [InlineData("BT", false, "User")]
+    [InlineData("BT", true, "User")]
+    [InlineData("LR", false, "User")]
+    [InlineData("TB", false, "Project administrator")]
+    public void UseCaseAssociationsAvoidTheActorCaption(string direction, bool incoming, string actorLabel) {
+        var source = "usecase-beta\n" + (direction == "TB" ? "" : "direction " + direction + "\n") + "actor User[\"" + actorLabel + "\"]\n" +
+            (incoming ? "Action(Do work) --> User" : "User --> Action(Do work)");
+        var result = MermaidRenderer.Render(source);
+        Assert.False(result.HasErrors);
+        var artifact = result.Artifact!;
+        var svg = XDocument.Parse(artifact.ToSvg());
+        var body = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node-body" && (string?)element.Attribute("data-node-id") == "User");
+        var path = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-path");
+        foreach (var label in body.Elements().Where(element => element.Name.LocalName == "text")) {
+            AssertPathAvoidsLabel(path, label, 12);
+        }
+        var chart = Assert.IsType<TopologyChart>(artifact.Model);
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: chart.ResolveRenderOptions(null));
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var points = TopologyRenderPrimitives.EdgePoints(prepared, prepared.Edges[0], nodes);
+        Assert.InRange(DistanceFromSurface(nodes["User"], incoming ? points[^1] : points[0]), 0.5, 8);
+    }
+
     [Theory]
     [InlineData(210, 130, TopologyEdgeRouting.Orthogonal)]
     [InlineData(-210, 130, TopologyEdgeRouting.Orthogonal)]
@@ -102,6 +148,24 @@ public sealed class MermaidReviewRegressionTests {
         Assert.NotNull(group.Y);
         Assert.NotNull(group.Height);
         Assert.InRange(y, group.Y!.Value + 68, group.Y.Value + group.Height!.Value - 8);
+    }
+
+    private static double Number(XElement element, string attribute) => double.Parse(element.Attribute(attribute)!.Value, CultureInfo.InvariantCulture);
+
+    private static void AssertPathAvoidsLabel(XElement path, XElement label, double fontSize) {
+        var x = Number(label, "x"); var y = Number(label, "y");
+        var halfWidth = RgbaCanvas.MeasureTextEmphasizedWidth(label.Value, fontSize, null) / 2 + 3;
+        foreach (var subpath in ChartMapPathParser.ParseSubpaths(path.Attribute("d")!.Value, 1)) {
+            for (var i = 1; i < subpath.Points.Count; i++) {
+                var start = subpath.Points[i - 1]; var end = subpath.Points[i];
+                for (var step = 0; step <= 100; step++) {
+                    var px = start.X + (end.X - start.X) * step / 100;
+                    var py = start.Y + (end.Y - start.Y) * step / 100;
+                    Assert.False(px >= x - halfWidth && px <= x + halfWidth && py >= y - fontSize && py <= y + 3,
+                        "A relationship must leave its neighboring labels readable.");
+                }
+            }
+        }
     }
 
     private static double DistanceFromSurface(TopologyNode node, ChartPoint point) {

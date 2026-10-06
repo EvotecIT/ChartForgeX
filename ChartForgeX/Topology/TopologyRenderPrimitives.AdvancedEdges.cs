@@ -23,6 +23,18 @@ internal static partial class TopologyRenderPrimitives {
         var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 4)).ToList();
         if (options.IncludeGroups && options.IncludeGroupLabels) obstacles.AddRange(chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 4)));
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var segments = new List<(ChartPoint Start, ChartPoint End)>();
+        foreach (var edge in chart.Edges) {
+            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
+            var route = EdgePoints(chart, edge, nodes);
+            var painted = RenderedEdgeSamplePoints(chart, edge, nodes, route);
+            for (var i = 1; i < painted.Count; i++) segments.Add((painted[i - 1], painted[i]));
+            if (RenderedSourceMarker(edge, options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                obstacles.Add(LabelBox.FromCenter(route[0].X, route[0].Y, 30, 30));
+            if (RenderedTargetMarker(edge, options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                obstacles.Add(LabelBox.FromCenter(route[route.Count - 1].X, route[route.Count - 1].Y, 30, 30));
+        }
         var best = endpoint;
         var bestScore = double.PositiveInfinity;
         for (var step = 0; step < 6; step++) {
@@ -31,7 +43,9 @@ internal static partial class TopologyRenderPrimitives {
                 var candidate = new ChartPoint(endpoint.X + ux * along - uy * normalOffset * side,
                     endpoint.Y + uy * along + ux * normalOffset * side);
                 var box = LabelBox.FromCenter(candidate.X, candidate.Y, width, height);
-                var score = OverlapScore(box, obstacles) * 1000 + step * 12 + (side == 1 ? 0 : 1);
+                var clearance = box.Expand(3);
+                var crossings = segments.Count(segment => clearance.Intersects(segment.Start, segment.End));
+                var score = OverlapScore(box, obstacles) * 1000 + crossings * 1000 + step * 12 + (side == 1 ? 0 : 1);
                 if (score >= bestScore) continue;
                 best = candidate;
                 bestScore = score;
