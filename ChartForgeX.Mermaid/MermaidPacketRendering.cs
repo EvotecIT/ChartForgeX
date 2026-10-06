@@ -26,7 +26,7 @@ public static class MermaidPacketRendering {
             .WithBitNumbers(options.ShowBitNumbers);
 
         foreach (var field in document.Fields) block.AddField(field.StartBit, field.EndBit, field.Label);
-        return block;
+        return MermaidPresentation.Apply(block, document);
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public static class MermaidPacketRendering {
         artifact.Metadata["mermaid.fields"] = document.Fields.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.bits"] = TotalBits(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(PacketLayoutBlock);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid packet document to static SVG.</summary>

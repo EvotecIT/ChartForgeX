@@ -25,6 +25,12 @@ public sealed class MermaidGanttDocument : MermaidDocument {
     /// <summary>Gets or sets the optional Mermaid excludes directive.</summary>
     public string? Excludes { get; set; }
 
+    /// <summary>Gets or sets dates that override excluded days.</summary>
+    public string? Includes { get; set; }
+
+    /// <summary>Gets or sets the first weekend day, friday or saturday.</summary>
+    public string Weekend { get; set; } = "saturday";
+
     /// <summary>Gets or sets the optional Mermaid todayMarker directive.</summary>
     public string? TodayMarker { get; set; }
 

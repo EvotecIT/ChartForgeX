@@ -1,11 +1,16 @@
-using ChartForgeX.Mermaid;
-
-namespace ChartForgeX.Markup.Mermaid;
+namespace ChartForgeX.Mermaid;
 
 /// <summary>
-/// Provides per-diagram Mermaid rendering defaults for visual markup parsing.
+/// Provides per-diagram Mermaid rendering defaults for source rendering and markup adapters.
 /// </summary>
-public sealed class MermaidVisualMarkupRenderOptions {
+public sealed class MermaidRenderOptions {
+    /// <summary>Gets or sets rendering defaults for swimlane diagrams.</summary>
+    public MermaidFlowchartRenderOptions? Swimlane { get; set; }
+    /// <summary>Gets or sets rendering defaults for use case diagrams.</summary>
+    public MermaidFlowchartRenderOptions? UseCase { get; set; }
+    /// <summary>Gets or sets rendering defaults for Cynefin domain maps.</summary>
+    public MermaidTopologyRenderOptions? Cynefin { get; set; }
+
     /// <summary>
     /// Gets or sets default rendering options for Mermaid flowchart artifacts.
     /// </summary>

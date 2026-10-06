@@ -50,7 +50,7 @@ public static class MermaidRequirementRendering {
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.relationship"] = relationship.RelationshipType;
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public static class MermaidRequirementRendering {
         artifact.Metadata["mermaid.elements"] = document.Elements.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.relationships"] = document.Relationships.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(TopologyChart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid requirement document to static SVG.</summary>

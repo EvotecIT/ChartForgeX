@@ -114,6 +114,7 @@ internal static class VisualArtifactInterchangeValidation {
             }
             portsByNodeId.Add(node.Id, portIds);
             foreach (var detail in node.Details) {
+                OptionalText(detail.Text, "detail text");
                 Text(detail.Label, "detail label");
                 Text(detail.Value, "detail value");
                 OptionalText(detail.IconId, "detail icon id");
@@ -370,6 +371,7 @@ internal static class VisualArtifactInterchangeValidation {
             Defined(node.Topology.Kind, "topology node kind", envelope);
             Defined(node.Topology.Status, "topology node status", envelope);
             Defined(node.Topology.DisplayMode, "topology node display mode", envelope);
+            if (node.Topology.Shape.HasValue) Defined(node.Topology.Shape.Value, "topology node shape", envelope);
             GeographicCoordinates(node.Topology.Longitude, node.Topology.Latitude, "topology node", envelope);
             if (node.Topology.MaximumLabelCharacters is < 1) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.MaximumLabelCharacters, "Maximum label characters must be positive.");
             ValidateArtwork(node.Topology.Artwork, envelope);

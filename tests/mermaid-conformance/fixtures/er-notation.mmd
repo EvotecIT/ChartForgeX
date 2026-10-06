@@ -1,0 +1,10 @@
+erDiagram
+CUSTOMER {
+ int id PK "Customer key"
+ string name
+}
+ORDER {
+ int id PK
+ int customerId FK
+}
+CUSTOMER ||--o{ ORDER : places

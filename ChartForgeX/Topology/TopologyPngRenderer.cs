@@ -53,8 +53,8 @@ public sealed partial class TopologyPngRenderer {
         if (options.IncludeGroups) DrawGroups(canvas, prepared, theme, options, highlight);
         DrawEdges(canvas, prepared, theme, options, highlight);
         if (options.IncludeEdgeLabels) DrawEdgeLabels(canvas, prepared, theme, options, highlight);
-        if (options.IncludeEndpointLabels) DrawEndpointLabels(canvas, prepared, theme, options, highlight);
         DrawNodes(canvas, prepared, theme, options, highlight);
+        if (options.IncludeEndpointLabels) DrawEndpointLabels(canvas, prepared, theme, options, highlight);
         if (options.IncludeStatusBadges) DrawStatusBadges(canvas, prepared, theme, options, highlight);
         DrawMotionOverlay(canvas, prepared, theme, options, motionPlan);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
@@ -291,9 +291,9 @@ public sealed partial class TopologyPngRenderer {
             }
             DrawPremiumEdgeRoute(canvas, routePoints, color, width, dashArray, edge, options, isSelected);
 
-            DrawEndpointMarker(canvas, routePoints[1], routePoints[0], color, RenderedSourceMarker(edge, options.IncludeDirectionMarkers), options);
+            DrawEndpointMarker(canvas, routePoints[1], routePoints[0], color, RenderedSourceMarker(edge, options.IncludeDirectionMarkers), options, Color(theme.Background));
             if (!TopologyDenseRoutePlanner.IsTrunkBranch(chart, edge))
-                DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, RenderedTargetMarker(edge, options.IncludeDirectionMarkers), options);
+                DrawEndpointMarker(canvas, routePoints[routePoints.Count - 2], routePoints[routePoints.Count - 1], color, RenderedTargetMarker(edge, options.IncludeDirectionMarkers), options, Color(theme.Background));
         }
     }
 
@@ -337,6 +337,7 @@ public sealed partial class TopologyPngRenderer {
             var accent = Color(NodeAccentColor(node, theme, options));
             var displayMode = EffectiveNodeDisplayMode(node, options);
             if (displayMode == TopologyNodeDisplayMode.Hidden) continue;
+            if (node.Shape.HasValue) { DrawDiagramNode(canvas, node, theme, options, isSelected, highlight.IsActive && !isHighlighted ? highlight.DimmedOpacity : 1); continue; }
             if (displayMode == TopologyNodeDisplayMode.Dot) {
                 var radius = Math.Max(5, Math.Min(node.Width, node.Height) / 2);
                 if (isSelected) canvas.DrawCircleOutline(CenterX(node), CenterY(node), radius + 5, WithAlpha(accent, 140), 2.4);
@@ -421,6 +422,10 @@ public sealed partial class TopologyPngRenderer {
             var y = startY + i * 18;
             var color = !string.IsNullOrWhiteSpace(detail.Color) ? Color(detail.Color!) : detail.Status.HasValue ? Color(theme.StatusColor(detail.Status.Value)) : Color(theme.MutedForeground);
             canvas.DrawLine(left, y - 8, right, y - 8, WithAlpha(Color(theme.Border), 112), 1, RasterLineCap.Butt);
+            if (detail.Text != null) {
+                canvas.DrawText(left, y - 7, TrimToEstimatedWidth(detail.Text, right - left, 10, false, options.TextMeasurement), Color(theme.Foreground), 10);
+                continue;
+            }
             canvas.DrawCircle(left + 3, y - 1, 2.5, color);
             canvas.DrawText(left + 10, y - 6, TrimTo(detail.Label, 14), Color(theme.MutedForeground), 8.5);
             var value = TrimTo(detail.Value, 16);

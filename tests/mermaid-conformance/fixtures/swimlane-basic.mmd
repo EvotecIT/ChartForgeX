@@ -1,0 +1,8 @@
+swimlane-beta LR
+subgraph Requester
+ A[Submit] --> B[Review]
+end
+subgraph Service
+ C{Approved?} --> D[Deliver]
+end
+B --> C

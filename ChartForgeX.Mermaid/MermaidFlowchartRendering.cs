@@ -26,7 +26,7 @@ public static class MermaidFlowchartRendering {
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
+            .WithLayout(document.Kind == MermaidDiagramKind.Swimlane || (document.Kind == MermaidDiagramKind.UseCase && document.Subgraphs.Count > 0) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
         var inferredLayers = MermaidFlowchartLayering.Infer(document);
         var fitViewport = options.FitContent && !options.HasExplicitViewportSize;
 
@@ -48,6 +48,7 @@ public static class MermaidFlowchartRendering {
         for (var index = 0; index < document.Nodes.Count; index++) {
             var node = document.Nodes[index];
             var label = string.IsNullOrWhiteSpace(node.Text) ? node.Id : node.Text!;
+            var nodeWidth = ToNodeWidth(node.Shape, label, options.FitContent);
             chart.AddAutoNode(
                 node.Id,
                 label,
@@ -56,15 +57,18 @@ public static class MermaidFlowchartRendering {
                 groupId: node.SubgraphId,
                 href: node.Href,
                 tooltip: node.Tooltip,
-                width: ToNodeWidth(node.Shape, label, options.FitContent),
-                height: ToNodeHeight(node.Shape),
+                width: nodeWidth,
+                height: node.Shape is MermaidFlowchartNodeShape.Circle or MermaidFlowchartNodeShape.DoubleCircle ? nodeWidth : ToNodeHeight(node.Shape),
                 color: StyleValue(node.Styles, "stroke") ?? StyleValue(node.Styles, "color"),
                 cssClass: "cfx-mermaid-node cfx-mermaid-shape-" + ToShapeToken(node.Shape));
 
             var target = chart.Nodes[chart.Nodes.Count - 1];
+            target.Shape = node.Shape == MermaidFlowchartNodeShape.Rhombus ? TopologyNodeShape.Diamond :
+                node.Shape == MermaidFlowchartNodeShape.Default ? TopologyNodeShape.Rectangle :
+                (TopologyNodeShape)Enum.Parse(typeof(TopologyNodeShape), node.Shape.ToString());
             target.ShowStatusBadge = false;
-            target.DisplayMode = ToDisplayMode(node.Shape);
-            target.PreserveDisplayModeSize = target.DisplayMode is TopologyNodeDisplayMode.Pill or TopologyNodeDisplayMode.Tile;
+            target.DisplayMode = TopologyNodeDisplayMode.Card;
+            target.PreserveDisplayModeSize = true;
             target.MaximumLabelCharacters = 28;
             target.BackgroundColor = StyleValue(node.Styles, "fill");
             target.Metadata["mermaid.id"] = node.Id;
@@ -80,6 +84,7 @@ public static class MermaidFlowchartRendering {
             if (node.SubgraphId != null) target.Metadata["mermaid.subgraph"] = node.SubgraphId;
             if (node.Classes.Count > 0) target.Metadata["mermaid.classes"] = string.Join(",", node.Classes);
             WriteStyleMetadata(target.Metadata, node.Styles, "mermaid.style.");
+            WriteStyleMetadata(target.Metadata, node.Properties, "mermaid.property.");
         }
 
         for (var index = 0; index < document.Edges.Count; index++) {
@@ -97,9 +102,13 @@ public static class MermaidFlowchartRendering {
 
             var target = chart.Edges[chart.Edges.Count - 1];
             target.LineStyle = ToLineStyle(edge.Operator);
+            if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
             if (!string.IsNullOrWhiteSpace(edgeColor)) target.Color = edgeColor;
             if (edge.Styles.ContainsKey("stroke-dasharray")) target.LineStyle = TopologyEdgeLineStyle.Dashed;
+            if (document.Kind == MermaidDiagramKind.UseCase && edge.Operator == "--|>") target.TargetMarker = TopologyMarkerKind.OpenTriangle;
+            // UML relationship stereotypes need room between their two use-case surfaces.
+            if (document.Kind == MermaidDiagramKind.UseCase && !string.IsNullOrWhiteSpace(edge.Label)) target.MinimumRankSpan = 2;
             target.Metadata["mermaid.operator"] = edge.Operator;
             target.Metadata["mermaid.source"] = edge.SourceId;
             target.Metadata["mermaid.target"] = edge.TargetId;
@@ -112,7 +121,7 @@ public static class MermaidFlowchartRendering {
 
         if (fitViewport) ApplyContentFittedViewport(chart, document.Direction, options);
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -139,7 +148,7 @@ public static class MermaidFlowchartRendering {
         artifact.Metadata["mermaid.classDefinitions"] = document.ClassDefinitions.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.linkStyles"] = document.LinkStyles.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(TopologyChart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>
@@ -170,7 +179,7 @@ public static class MermaidFlowchartRendering {
     private static string ResolveTitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) {
         if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
         var frontMatterTitle = FindFrontMatterValue(document.FrontMatter, "title");
-        return string.IsNullOrWhiteSpace(frontMatterTitle) ? "Mermaid flowchart" : frontMatterTitle!;
+        return string.IsNullOrWhiteSpace(frontMatterTitle) ? document.Kind == MermaidDiagramKind.Swimlane ? "Mermaid swimlane" : document.Kind == MermaidDiagramKind.UseCase ? "Mermaid use case" : "Mermaid flowchart" : frontMatterTitle!;
     }
 
     private static string ResolveSubtitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) {
@@ -230,6 +239,8 @@ public static class MermaidFlowchartRendering {
 
     private static TopologyNodeKind ToNodeKind(MermaidFlowchartNodeShape shape) {
         switch (shape) {
+            case MermaidFlowchartNodeShape.Cloud:
+                return TopologyNodeKind.Cloud;
             case MermaidFlowchartNodeShape.Cylinder:
                 return TopologyNodeKind.Database;
             case MermaidFlowchartNodeShape.Circle:
@@ -243,20 +254,6 @@ public static class MermaidFlowchartRendering {
         }
     }
 
-    private static TopologyNodeDisplayMode ToDisplayMode(MermaidFlowchartNodeShape shape) {
-        switch (shape) {
-            case MermaidFlowchartNodeShape.Circle:
-            case MermaidFlowchartNodeShape.DoubleCircle:
-                return TopologyNodeDisplayMode.Tile;
-            case MermaidFlowchartNodeShape.Rounded:
-            case MermaidFlowchartNodeShape.Stadium:
-            case MermaidFlowchartNodeShape.Asymmetric:
-                return TopologyNodeDisplayMode.Pill;
-            default:
-                return TopologyNodeDisplayMode.Card;
-        }
-    }
-
     private static double ToNodeWidth(MermaidFlowchartNodeShape shape, string label, bool fitContent) {
         var shapeWidth = BaseNodeWidth(shape);
         if (!fitContent) return shapeWidth;
@@ -266,6 +263,10 @@ public static class MermaidFlowchartRendering {
 
     private static double BaseNodeWidth(MermaidFlowchartNodeShape shape) {
         switch (shape) {
+            case MermaidFlowchartNodeShape.Actor:
+                return 110;
+            case MermaidFlowchartNodeShape.Ellipse:
+                return 160;
             case MermaidFlowchartNodeShape.Circle:
             case MermaidFlowchartNodeShape.DoubleCircle:
                 return 88;
@@ -324,6 +325,8 @@ public static class MermaidFlowchartRendering {
 
     private static double ToNodeHeight(MermaidFlowchartNodeShape shape) {
         switch (shape) {
+            case MermaidFlowchartNodeShape.Actor: return 108;
+            case MermaidFlowchartNodeShape.Ellipse: return 70;
             case MermaidFlowchartNodeShape.Circle:
             case MermaidFlowchartNodeShape.DoubleCircle:
                 return 88;

@@ -32,7 +32,7 @@ public static class MermaidQuadrantRendering {
         var series = chart.Series[0];
         series.SemanticRole = "mermaid-quadrant-point";
         for (var i = 0; i < document.Points.Count; i++) series.WithPointLabel(i, document.Points[i].Label);
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public static class MermaidQuadrantRendering {
         artifact.Metadata["mermaid.points"] = document.Points.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.quadrants"] = document.QuadrantLabels.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

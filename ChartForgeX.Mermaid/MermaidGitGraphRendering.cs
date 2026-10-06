@@ -25,7 +25,7 @@ public static class MermaidGitGraphRendering {
 
         foreach (var branch in document.Branches) block.AddBranch(branch.Name, branch.Order);
         foreach (var commit in document.Commits) block.AddCommit(commit.Id, commit.BranchName, commit.ParentIds, commit.Type, commit.Label, commit.Tag, commit.SourceCommitId);
-        return block;
+        return MermaidPresentation.Apply(block, document);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public static class MermaidGitGraphRendering {
         artifact.Metadata["mermaid.branches"] = document.Branches.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.commits"] = document.Commits.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(GitGraphBlock);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid git graph document to static SVG.</summary>

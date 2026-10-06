@@ -117,10 +117,10 @@ public sealed partial class TopologySvgRenderer {
         if (options.IncludeGroups) AddGroups(root, chart, prefix, theme, options, highlight);
         AddEdges(root, chart, prefix, theme, options, id, highlight);
         AddEdgeLabels(root, chart, prefix, theme, options, highlight);
-        AddEndpointLabels(root, chart, prefix, theme, options, highlight);
         var motionPlan = TopologyMotionPlanner.Build(chart, options);
         AddMotionRouteLayer(root, chart, prefix, theme, options, motionPlan);
         AddNodes(root, chart, prefix, theme, options, highlight);
+        AddEndpointLabels(root, chart, prefix, theme, options, highlight);
         if (options.IncludeStatusBadges) AddNodeStatuses(root, chart, prefix, theme, options, highlight);
         AddMotionMarkerLayer(root, chart, prefix, theme, options, motionPlan);
         if (chart.LayoutMode == TopologyLayoutMode.Geographic) AddGeographicCallouts(root, chart, prefix, theme, options, highlight);
@@ -310,7 +310,7 @@ public sealed partial class TopologySvgRenderer {
             if (markerIds.Add(ArrowMarkerId(id, key))) AddArrowMarker(defs, ArrowMarkerId(id, key), EdgePaint(color, key), options);
             foreach (var kind in new[] { EffectiveSourceMarker(edge), EffectiveTargetMarker(edge) }) {
                 if (kind is TopologyMarkerKind.None or TopologyMarkerKind.Arrow) continue;
-                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), EdgePaint(color, key), kind, options);
+                if (markerIds.Add(EndpointMarkerId(id, key, kind))) AddEndpointMarker(defs, EndpointMarkerId(id, key, kind), EdgePaint(color, key), kind, options, theme.Background);
             }
         }
 

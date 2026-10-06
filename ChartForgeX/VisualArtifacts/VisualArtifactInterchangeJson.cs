@@ -197,6 +197,7 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.StartArray();
         foreach (var detail in details) {
             writer.StartObject();
+            OptionalString(writer, "text", detail.Text);
             String(writer, "label", detail.Label);
             String(writer, "value", detail.Value);
             OptionalString(writer, "iconId", detail.IconId);
@@ -345,7 +346,7 @@ internal static partial class VisualArtifactInterchangeJson {
             }
             foreach (var detailValue in OptionalArray(item, "details")) {
                 var detailItem = detailValue.AsObject("detail");
-                var detail = new VisualArtifactInterchangeDetail { Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color") };
+                var detail = new VisualArtifactInterchangeDetail { Text = OptionalString(detailItem, "text"), Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color") };
                 ReadExtensions(detailItem, detail.Extensions);
                 node.Details.Add(detail);
             }

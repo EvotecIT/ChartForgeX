@@ -13,6 +13,9 @@ namespace ChartForgeX.Markup.Mermaid;
 /// </summary>
 public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockParser {
     private readonly MermaidFlowchartRenderOptions _renderOptions;
+    private readonly MermaidFlowchartRenderOptions _swimlaneRenderOptions;
+    private readonly MermaidFlowchartRenderOptions _useCaseRenderOptions;
+    private readonly MermaidTopologyRenderOptions _cynefinRenderOptions;
     private readonly MermaidSequenceRenderOptions _sequenceRenderOptions;
     private readonly MermaidPieRenderOptions _pieRenderOptions;
     private readonly MermaidJourneyRenderOptions _journeyRenderOptions;
@@ -43,17 +46,20 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     /// <summary>
     /// Initializes a Mermaid visual block parser.
     /// </summary>
-    public MermaidVisualMarkupBlockParser() : this(new MermaidVisualMarkupRenderOptions()) {
+    public MermaidVisualMarkupBlockParser() : this(new MermaidRenderOptions()) {
     }
 
     /// <summary>
     /// Initializes a Mermaid visual block parser with rendering defaults.
     /// </summary>
     /// <param name="renderOptions">Optional rendering defaults by Mermaid diagram kind.</param>
-    public MermaidVisualMarkupBlockParser(MermaidVisualMarkupRenderOptions renderOptions) {
+    public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
 
         _renderOptions = renderOptions.Flowchart == null ? new MermaidFlowchartRenderOptions() : Clone(renderOptions.Flowchart);
+        _swimlaneRenderOptions = Clone(renderOptions.Swimlane ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
+        _useCaseRenderOptions = Clone(renderOptions.UseCase ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
+        _cynefinRenderOptions = Clone(renderOptions.Cynefin ?? new MermaidTopologyRenderOptions());
         _sequenceRenderOptions = renderOptions.Sequence == null ? new MermaidSequenceRenderOptions() : Clone(renderOptions.Sequence);
         _pieRenderOptions = renderOptions.Pie == null ? new MermaidPieRenderOptions() : Clone(renderOptions.Pie);
         _journeyRenderOptions = renderOptions.Journey == null ? new MermaidJourneyRenderOptions() : Clone(renderOptions.Journey);
@@ -99,267 +105,15 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
             });
         }
 
-        if (mermaidResult.HasErrors || mermaidResult.Document == null) return;
+        if (mermaidResult.HasErrors || mermaidResult.Document == null || mermaidResult.Document.Kind == MermaidDiagramKind.ZenUml) return;
         try {
-        if (mermaidResult.Document is MermaidClassDocument classDiagram) {
-            AddTopologyArtifact(result, block, classDiagram.ToVisualArtifact(BuildTopologyOptions(block, _classRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidStateDocument stateDiagram) {
-            AddTopologyArtifact(result, block, stateDiagram.ToVisualArtifact(BuildTopologyOptions(block, _stateRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidEntityRelationshipDocument erDiagram) {
-            AddTopologyArtifact(result, block, erDiagram.ToVisualArtifact(BuildTopologyOptions(block, _entityRelationshipRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidRequirementDocument requirement) {
-            AddTopologyArtifact(result, block, requirement.ToVisualArtifact(BuildTopologyOptions(block, _requirementRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidArchitectureDocument architecture) {
-            AddTopologyArtifact(result, block, architecture.ToVisualArtifact(BuildTopologyOptions(block, _architectureRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidC4Document c4) {
-            AddTopologyArtifact(result, block, c4.ToVisualArtifact(BuildTopologyOptions(block, _c4RenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidMindMapDocument mindMap) {
-            AddTopologyArtifact(result, block, mindMap.ToVisualArtifact(BuildTopologyOptions(block, _mindMapRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidTreeViewDocument treeView) {
-            AddTopologyArtifact(result, block, treeView.ToVisualArtifact(BuildTopologyOptions(block, _treeViewRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidEventModelingDocument eventModeling) {
-            AddTopologyArtifact(result, block, eventModeling.ToVisualArtifact(BuildTopologyOptions(block, _eventModelingRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidKanbanDocument kanban) {
-            AddTopologyArtifact(result, block, kanban.ToVisualArtifact(BuildTopologyOptions(block, _kanbanRenderOptions)));
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidFlowchartDocument flowchart) {
-            var options = BuildOptions(block);
-            var artifact = flowchart.ToVisualArtifact(options);
+            var options = BuildRenderOptions(block, mermaidResult.Document.Kind);
+            var artifact = mermaidResult.Document.ToVisualArtifact(options);
             artifact.Metadata["fence"] = block.FenceName;
             artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
             artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
             artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(TopologyChart);
             result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidSequenceDocument sequence) {
-            var options = BuildSequenceOptions(block);
-            var artifact = sequence.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(SequenceArtifact);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidPieDocument pie) {
-            var options = BuildPieOptions(block);
-            var artifact = pie.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidJourneyDocument journey) {
-            var options = BuildJourneyOptions(block);
-            var artifact = journey.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidGitGraphDocument gitGraph) {
-            var options = BuildGitGraphOptions(block);
-            var artifact = gitGraph.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(GitGraphBlock);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidTimelineDocument timeline) {
-            var options = BuildTimelineOptions(block);
-            var artifact = timeline.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidQuadrantDocument quadrant) {
-            var options = BuildQuadrantOptions(block);
-            var artifact = quadrant.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidXYChartDocument xyChart) {
-            var options = BuildXYChartOptions(block);
-            var artifact = xyChart.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidSankeyDocument sankey) {
-            var options = BuildSankeyOptions(block);
-            var artifact = sankey.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidRadarDocument radar) {
-            var options = BuildRadarOptions(block);
-            var artifact = radar.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidTreemapDocument treemap) {
-            var options = BuildTreemapOptions(block);
-            var artifact = treemap.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidGanttDocument gantt) {
-            var options = BuildGanttOptions(block);
-            var artifact = gantt.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(Chart);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidPacketDocument packet) {
-            var options = BuildPacketOptions(block);
-            var artifact = packet.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(PacketLayoutBlock);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidBlockDocument blockDiagram) {
-            var options = BuildBlockOptions(block);
-            var artifact = blockDiagram.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(BlockLayoutBlock);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidVennDocument venn) {
-            var options = BuildVennOptions(block);
-            var artifact = venn.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(VennDiagramBlock);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidIshikawaDocument ishikawa) {
-            var options = BuildIshikawaOptions(block);
-            var artifact = ishikawa.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(FishboneDiagramBlock);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        if (mermaidResult.Document is MermaidWardleyDocument wardley) {
-            var options = BuildWardleyOptions(block);
-            var artifact = wardley.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["render.model"] = nameof(WardleyMapBlock);
-            result.Artifacts.Add(artifact);
-            return;
-        }
-
-        result.Diagnostics.Add(new MarkupDiagnostic {
-            Line = block.FenceLine,
-            Severity = MarkupDiagnosticSeverity.Warning,
-            Message = "Mermaid diagram kind '" + mermaidResult.Document.Kind + "' is recognized but cannot produce a ChartForgeX visual artifact yet."
-        });
         } catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is OverflowException) {
             result.Diagnostics.Add(new MarkupDiagnostic {
                 Line = block.FenceLine,
@@ -369,17 +123,42 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         }
     }
 
-    private static void AddTopologyArtifact(VisualMarkupParseResult result, VisualMarkupBlock block, VisualArtifact artifact) {
-        artifact.Metadata["fence"] = block.FenceName;
-        artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-        artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-        artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-        artifact.Metadata["render.model"] = nameof(TopologyChart);
-        result.Artifacts.Add(artifact);
-    }
+    private MermaidRenderOptions BuildRenderOptions(VisualMarkupBlock block, MermaidDiagramKind kind) => kind switch {
+        MermaidDiagramKind.Swimlane => new MermaidRenderOptions { Swimlane = BuildOptions(block, _swimlaneRenderOptions) },
+        MermaidDiagramKind.UseCase => new MermaidRenderOptions { UseCase = BuildOptions(block, _useCaseRenderOptions) },
+        MermaidDiagramKind.Cynefin => new MermaidRenderOptions { Cynefin = BuildTopologyOptions(block, _cynefinRenderOptions) },
+        MermaidDiagramKind.Class => new MermaidRenderOptions { Class = BuildTopologyOptions(block, _classRenderOptions) },
+        MermaidDiagramKind.State => new MermaidRenderOptions { State = BuildTopologyOptions(block, _stateRenderOptions) },
+        MermaidDiagramKind.EntityRelationship => new MermaidRenderOptions { EntityRelationship = BuildTopologyOptions(block, _entityRelationshipRenderOptions) },
+        MermaidDiagramKind.Requirement => new MermaidRenderOptions { Requirement = BuildTopologyOptions(block, _requirementRenderOptions) },
+        MermaidDiagramKind.Architecture => new MermaidRenderOptions { Architecture = BuildTopologyOptions(block, _architectureRenderOptions) },
+        MermaidDiagramKind.C4 => new MermaidRenderOptions { C4 = BuildTopologyOptions(block, _c4RenderOptions) },
+        MermaidDiagramKind.MindMap => new MermaidRenderOptions { MindMap = BuildTopologyOptions(block, _mindMapRenderOptions) },
+        MermaidDiagramKind.TreeView => new MermaidRenderOptions { TreeView = BuildTopologyOptions(block, _treeViewRenderOptions) },
+        MermaidDiagramKind.EventModeling => new MermaidRenderOptions { EventModeling = BuildTopologyOptions(block, _eventModelingRenderOptions) },
+        MermaidDiagramKind.Kanban => new MermaidRenderOptions { Kanban = BuildTopologyOptions(block, _kanbanRenderOptions) },
+        MermaidDiagramKind.Flowchart => new MermaidRenderOptions { Flowchart = BuildOptions(block) },
+        MermaidDiagramKind.Sequence => new MermaidRenderOptions { Sequence = BuildSequenceOptions(block) },
+        MermaidDiagramKind.Pie => new MermaidRenderOptions { Pie = BuildPieOptions(block) },
+        MermaidDiagramKind.Journey => new MermaidRenderOptions { Journey = BuildJourneyOptions(block) },
+        MermaidDiagramKind.GitGraph => new MermaidRenderOptions { GitGraph = BuildGitGraphOptions(block) },
+        MermaidDiagramKind.Timeline => new MermaidRenderOptions { Timeline = BuildTimelineOptions(block) },
+        MermaidDiagramKind.Quadrant => new MermaidRenderOptions { Quadrant = BuildQuadrantOptions(block) },
+        MermaidDiagramKind.XYChart => new MermaidRenderOptions { XYChart = BuildXYChartOptions(block) },
+        MermaidDiagramKind.Sankey => new MermaidRenderOptions { Sankey = BuildSankeyOptions(block) },
+        MermaidDiagramKind.Radar => new MermaidRenderOptions { Radar = BuildRadarOptions(block) },
+        MermaidDiagramKind.Treemap => new MermaidRenderOptions { Treemap = BuildTreemapOptions(block) },
+        MermaidDiagramKind.Gantt => new MermaidRenderOptions { Gantt = BuildGanttOptions(block) },
+        MermaidDiagramKind.Packet => new MermaidRenderOptions { Packet = BuildPacketOptions(block) },
+        MermaidDiagramKind.Block => new MermaidRenderOptions { Block = BuildBlockOptions(block) },
+        MermaidDiagramKind.Venn => new MermaidRenderOptions { Venn = BuildVennOptions(block) },
+        MermaidDiagramKind.Ishikawa => new MermaidRenderOptions { Ishikawa = BuildIshikawaOptions(block) },
+        MermaidDiagramKind.Wardley => new MermaidRenderOptions { Wardley = BuildWardleyOptions(block) },
+        _ => new MermaidRenderOptions()
+    };
 
-    private MermaidFlowchartRenderOptions BuildOptions(VisualMarkupBlock block) {
-        var options = Clone(_renderOptions);
+    private MermaidFlowchartRenderOptions BuildOptions(VisualMarkupBlock block, MermaidFlowchartRenderOptions? defaults = null) {
+        var options = Clone(defaults ?? _renderOptions);
         if (TryGetAttribute(block, "id", out var id) && !string.IsNullOrWhiteSpace(id)) options.Id = id;
         if (TryGetAttribute(block, "title", out var title) && !string.IsNullOrWhiteSpace(title)) options.Title = title;
         if (TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) options.Subtitle = subtitle;

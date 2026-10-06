@@ -17,7 +17,7 @@ public sealed class FishboneDiagramBlock : VisualBlock<FishboneDiagramBlock> {
     public IReadOnlyList<FishboneCause> Causes => _causes;
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Title.Length == 0 ? (Effect.Length == 0 ? "Fishbone diagram" : Effect) : Title;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? (Effect.Length == 0 ? "Fishbone diagram" : Effect) : Title);
 
     /// <summary>Creates a fishbone diagram.</summary>
     public static FishboneDiagramBlock Create(string effect) => new() { Effect = effect };

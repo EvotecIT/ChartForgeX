@@ -27,7 +27,7 @@ public static class MermaidGanttRendering {
             else chart.AddGanttTask(name, task.Start, task.End, task.Progress, task.DependencyIndex);
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ public static class MermaidGanttRendering {
         if (!string.IsNullOrWhiteSpace(document.Excludes)) artifact.Metadata["mermaid.excludes"] = document.Excludes!;
         if (!string.IsNullOrWhiteSpace(document.TodayMarker)) artifact.Metadata["mermaid.todayMarker"] = document.TodayMarker!;
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

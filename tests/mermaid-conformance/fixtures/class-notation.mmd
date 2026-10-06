@@ -1,0 +1,11 @@
+classDiagram
+namespace Services {
+class User {
++string name
++save() void
+}
+class Admin
+}
+<<interface>> User
+User <|-- Admin
+User "1" o-- "0..*" Session : opens

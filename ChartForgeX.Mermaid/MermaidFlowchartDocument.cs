@@ -23,7 +23,7 @@ public enum MermaidFlowchartDirection {
 /// <summary>
 /// Describes a Mermaid flowchart or graph document.
 /// </summary>
-public sealed class MermaidFlowchartDocument : MermaidDocument {
+public class MermaidFlowchartDocument : MermaidDocument {
     /// <summary>Gets or sets the declared flowchart direction.</summary>
     public MermaidFlowchartDirection Direction { get; set; }
 
@@ -79,7 +79,13 @@ public enum MermaidFlowchartNodeShape {
     /// <summary>Trapezoid shape, such as <c>A[/Text\]</c>.</summary>
     Trapezoid,
     /// <summary>Alternate trapezoid shape, such as <c>A[\Text/]</c>.</summary>
-    TrapezoidAlt
+    TrapezoidAlt,
+    /// <summary>A cloud node.</summary>
+    Cloud,
+    /// <summary>A use case ellipse.</summary>
+    Ellipse,
+    /// <summary>A UML actor.</summary>
+    Actor
 }
 
 /// <summary>
@@ -101,6 +107,9 @@ public sealed class MermaidFlowchartNode : MermaidAstNode {
 
     /// <summary>Gets or sets the explicit Mermaid node shape.</summary>
     public MermaidFlowchartNodeShape Shape { get; set; }
+
+    /// <summary>Gets properties declared with modern Mermaid node metadata syntax.</summary>
+    public Dictionary<string, string> Properties { get; } = new();
 
     /// <summary>Gets class names assigned through Mermaid class syntax.</summary>
     public List<string> Classes { get; } = new();

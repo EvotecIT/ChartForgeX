@@ -9,12 +9,7 @@ if (Directory.Exists(output)) Directory.Delete(output, recursive: true);
 Directory.CreateDirectory(output);
 const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
 if (ExampleProgramOptions.TryHandle(args, output, DemoPngOutputScale)) return;
-void SaveChart(Chart chart, string name) {
-    chart.WithPngOutputScale(DemoPngOutputScale);
-    chart.SaveSvg(Path.Combine(output, name + ".svg"));
-    chart.SaveHtml(Path.Combine(output, name + ".html"));
-    chart.SavePng(Path.Combine(output, name + ".png"));
-}
+void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(chart, output, name, DemoPngOutputScale);
 var dnssec = Chart.Create()
     .WithTitle("Domain Security Checks")
     .WithSubtitle("Dependency-free SVG, HTML and PNG chart rendering")
@@ -40,6 +35,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
     ExampleInteractiveScenarios.ConfigureDomainSecurity(options.Interaction);
 });
 
+MermaidExamples.Write(output);
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);
 DenseLegendExamples.Write(output, DemoPngOutputScale);

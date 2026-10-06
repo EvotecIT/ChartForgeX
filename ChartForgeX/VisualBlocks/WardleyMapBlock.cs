@@ -41,7 +41,7 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     public IReadOnlyList<WardleyMapPipeline> Pipelines => _pipelines;
 
     /// <inheritdoc />
-    public override string AccessibleName => Title.Length == 0 ? "Wardley map" : Title;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Wardley map" : Title);
 
     /// <summary>Creates an empty Wardley map block.</summary>
     public static WardleyMapBlock Create() => new();

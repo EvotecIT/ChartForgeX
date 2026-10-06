@@ -25,7 +25,7 @@ public static class MermaidPieRendering {
         if (document.ShowData) chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue);
         else chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
         chart.AddPie(string.IsNullOrWhiteSpace(options.SeriesName) ? "Slices" : options.SeriesName!, GetPoints(document));
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public static class MermaidPieRendering {
         artifact.Metadata["mermaid.showData"] = document.ShowData ? "true" : "false";
         artifact.Metadata["mermaid.slices"] = document.Slices.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

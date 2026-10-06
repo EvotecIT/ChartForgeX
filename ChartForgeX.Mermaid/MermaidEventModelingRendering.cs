@@ -51,7 +51,7 @@ public static class MermaidEventModelingRendering {
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.inferred"] = relation.IsInferred ? "true" : "false";
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public static class MermaidEventModelingRendering {
         artifact.Metadata["mermaid.relations"] = document.Relations.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dataBlocks"] = document.DataBlocks.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(TopologyChart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders an Event Modeling document to static SVG.</summary>

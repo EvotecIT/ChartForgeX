@@ -15,11 +15,12 @@ public static class MermaidSankeyRendering {
     public static Chart ToChart(this MermaidSankeyDocument document, MermaidSankeyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidSankeyRenderOptions();
-        return Chart.Create()
+        var chart = Chart.Create()
             .WithTitle(ResolveTitle(options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
             .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToLinks(document));
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -35,7 +36,7 @@ public static class MermaidSankeyRendering {
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.links"] = document.Links.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

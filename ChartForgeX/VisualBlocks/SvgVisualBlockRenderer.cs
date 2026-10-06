@@ -27,6 +27,7 @@ public sealed partial class SvgVisualBlockRenderer {
     private static string RenderCore(IVisualBlock block, string id) {
         var options = block.Options;
         var theme = options.Theme;
+        var accessibility = options.Accessibility;
         var surfaceBackground = VisualBlockRendering.SurfaceBackground(options);
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
@@ -35,17 +36,20 @@ public sealed partial class SvgVisualBlockRenderer {
             .Attribute("width", options.Size.Width)
             .Attribute("height", options.Size.Height)
             .Attribute("viewBox", "0 0 " + options.Size.Width.ToString(CultureInfo.InvariantCulture) + " " + options.Size.Height.ToString(CultureInfo.InvariantCulture))
-            .Attribute("role", "img")
-            .Attribute("aria-labelledby", id + "-title " + id + "-desc")
+            .Attribute("role", accessibility.IsDecorative ? null : "img")
+            .Attribute("aria-hidden", accessibility.IsDecorative ? "true" : null)
+            .Attribute("lang", accessibility.Language)
+            .Attribute("aria-labelledby", accessibility.IsDecorative ? null : id + "-title " + id + "-desc")
             .Attribute("preserveAspectRatio", "xMidYMid meet")
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .EndStartElement()
-            .Line()
+            .Line();
+        if (!accessibility.IsDecorative) writer
             .StartElement("title").Attribute("id", id + "-title").Text(block.AccessibleName).EndElement()
             .Line()
-            .StartElement("desc").Attribute("id", id + "-desc").Text("Static ChartForgeX visual block.").EndElement()
+            .StartElement("desc").Attribute("id", id + "-desc").Text(accessibility.Description ?? "Static ChartForgeX visual block.").EndElement()
             .Line();
 
         writer.StartElement("defs").EndStartElement().Line();

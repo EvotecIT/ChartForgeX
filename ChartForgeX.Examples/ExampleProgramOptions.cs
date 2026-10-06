@@ -5,6 +5,12 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--mermaid-only")) {
+            MermaidExamples.Write(output);
+            GalleryWriter.Write(output);
+            return true;
+        }
+
         if (HasArg(args, "--dense-legends-only")) {
             DenseLegendExamples.Write(output, pngOutputScale);
             return true;

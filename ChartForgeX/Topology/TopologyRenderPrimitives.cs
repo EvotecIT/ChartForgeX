@@ -224,11 +224,17 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static List<ChartPoint> EdgePoints(TopologyNode source, TopologyNode target, TopologyEdgeRouting routing, TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double routeLane) {
-        var sourceCenterX = CenterX(source);
-        var sourceCenterY = CenterY(source);
-        var targetCenterX = CenterX(target);
-        var targetCenterY = CenterY(target);
+        var sourceCenter = TopologyNodeShapeGeometry.RoutingCenter(source);
+        var targetCenter = TopologyNodeShapeGeometry.RoutingCenter(target);
+        var sourceCenterX = sourceCenter.X;
+        var sourceCenterY = sourceCenter.Y;
+        var targetCenterX = targetCenter.X;
+        var targetCenterY = targetCenter.Y;
         if (routing != TopologyEdgeRouting.Orthogonal) {
+            if (routing == TopologyEdgeRouting.Curved) {
+                if (source.Shape.HasValue && sourcePort == TopologyEdgePort.Auto) sourcePort = TopologyEdgePort.Top;
+                if (target.Shape.HasValue && targetPort == TopologyEdgePort.Auto) targetPort = TopologyEdgePort.Top;
+            }
             return new List<ChartPoint> {
                 BoundaryPoint(source, targetCenterX, targetCenterY, sourcePort),
                 BoundaryPoint(target, sourceCenterX, sourceCenterY, targetPort)
@@ -236,6 +242,8 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         var horizontal = ShouldRouteHorizontally(sourcePort, targetPort, Math.Abs(targetCenterX - sourceCenterX) >= Math.Abs(targetCenterY - sourceCenterY));
+        sourcePort = OrthogonalShapePort(source, sourcePort, horizontal, targetCenter);
+        targetPort = OrthogonalShapePort(target, targetPort, horizontal, sourceCenter);
         var sourcePoint = BoundaryPoint(source, targetCenterX, targetCenterY, sourcePort);
         var targetPoint = BoundaryPoint(target, sourceCenterX, sourceCenterY, targetPort);
         if (horizontal) {
@@ -268,7 +276,7 @@ internal static partial class TopologyRenderPrimitives {
                 : EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane)
             : EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
         points = ApplySafeEndpointSpreading(chart, edge, nodes, source, target, points);
-        if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return points;
+        if (Math.Abs(offset) < 0.0001 || UsesOrthogonalRoute(edge)) return ApplyActorEndpointRouting(chart, edge, source, target, points);
 
         var vectorSource = string.Compare(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal) <= 0 ? source : target;
         var vectorTarget = ReferenceEquals(vectorSource, source) ? target : source;
@@ -279,120 +287,12 @@ internal static partial class TopologyRenderPrimitives {
 
         var ox = -dy / length * offset;
         var oy = dx / length * offset;
-        return OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy);
+        return ApplyActorEndpointRouting(chart, edge, source, target, OffsetParallelRoutePreservingNamedEndpoints(points, edge, ox, oy));
     }
 
     private static bool UsesOrthogonalRoute(TopologyEdge edge) =>
         edge.Routing is TopologyEdgeRouting.Orthogonal or TopologyEdgeRouting.ObstacleAvoidingOrthogonal ||
         edge.Waypoints.Count > 0;
-
-    private static void ApplyEndpointPortSpreading(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode source, TopologyNode target, List<ChartPoint> points, bool namedOnly = false) {
-        if (points.Count < 2) return;
-        // A direct segment has no independent legs for two named ports: adjusting either
-        // endpoint would otherwise move the opposite endpoint through its adjacent point.
-        if (UsesOrthogonalRoute(edge) && points.Count == 2 &&
-            !string.IsNullOrWhiteSpace(edge.SourcePortId) && !string.IsNullOrWhiteSpace(edge.TargetPortId)) {
-            var start = points[0];
-            var end = points[1];
-            if (Math.Abs(start.Y - end.Y) < 0.001) {
-                var middleX = (start.X + end.X) / 2;
-                points.Insert(1, new ChartPoint(middleX, start.Y));
-                points.Insert(2, new ChartPoint(middleX, end.Y));
-            } else if (Math.Abs(start.X - end.X) < 0.001) {
-                var middleY = (start.Y + end.Y) / 2;
-                points.Insert(1, new ChartPoint(start.X, middleY));
-                points.Insert(2, new ChartPoint(end.X, middleY));
-            }
-        }
-        if (!string.IsNullOrWhiteSpace(edge.SourcePortId)) {
-            ApplyNamedEndpoint(chart, source, edge.SourcePortId!, edge, points, 0, 1);
-        } else if (!namedOnly && edge.SourcePort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[0], points[1], edge.SourcePort)) {
-            var original = points[0];
-            var spread = SpreadEndpoint(chart, edge, nodes, source, edge.SourcePort, original);
-            points[0] = spread;
-            PreserveOrthogonalEndpointLeg(edge, points, 1, edge.SourcePort, original, spread);
-        }
-
-        if (!string.IsNullOrWhiteSpace(edge.TargetPortId)) {
-            ApplyNamedEndpoint(chart, target, edge.TargetPortId!, edge, points, points.Count - 1, points.Count - 2);
-        } else if (!namedOnly && edge.TargetPort != TopologyEdgePort.Auto && LegMatchesPort(chart, edge, points[points.Count - 1], points[points.Count - 2], edge.TargetPort)) {
-            var targetIndex = points.Count - 1;
-            var original = points[targetIndex];
-            var spread = SpreadEndpoint(chart, edge, nodes, target, edge.TargetPort, original);
-            points[targetIndex] = spread;
-            PreserveOrthogonalEndpointLeg(edge, points, targetIndex - 1, edge.TargetPort, original, spread);
-        }
-    }
-
-    // In a readable dense layout an edge the route planner could not connect falls back to the corridor candidates,
-    // which may leave through a different side than the inferred port; spreading along the recorded side would then
-    // push the endpoint off the card, so it only applies when the end leg runs along the port's axis.
-    private static bool LegMatchesPort(TopologyChart chart, TopologyEdge edge, ChartPoint end, ChartPoint next, TopologyEdgePort port) {
-        if (!TopologyLayoutEngine.UsesReadableDenseLayout(chart) || edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal || edge.Waypoints.Count > 0) return true;
-        var horizontal = Math.Abs(end.Y - next.Y) < 0.01;
-        var vertical = Math.Abs(end.X - next.X) < 0.01;
-        if (horizontal == vertical) return true;
-        return port is TopologyEdgePort.Left or TopologyEdgePort.Right ? horizontal : vertical;
-    }
-
-    private static ChartPoint SpreadEndpoint(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyNode node, TopologyEdgePort port, ChartPoint point) {
-        var related = EndpointPortPeers(chart, nodes, node.Id, port);
-        if (related.Count < 2) return point;
-        var index = related.FindIndex(candidate => ReferenceEquals(candidate, edge));
-        if (index < 0) return point;
-        var offset = (index - (related.Count - 1) / 2.0) * EdgePortFanSpacing;
-        var maximum = port is TopologyEdgePort.Top or TopologyEdgePort.Bottom
-            ? Math.Max(0, node.Width / 2 - EdgeEndpointSidePadding)
-            : Math.Max(0, node.Height / 2 - EdgeEndpointSidePadding);
-        offset = Clamp(offset, -maximum, maximum);
-        var spread = port switch {
-            TopologyEdgePort.Top or TopologyEdgePort.Bottom => new ChartPoint(point.X + offset, point.Y),
-            TopologyEdgePort.Left or TopologyEdgePort.Right => new ChartPoint(point.X, point.Y + offset),
-            _ => point
-        };
-        return spread;
-    }
-
-    private static void PreserveOrthogonalEndpointLeg(TopologyEdge edge, List<ChartPoint> points, int adjacentIndex, TopologyEdgePort port, ChartPoint original, ChartPoint spread) {
-        if (!UsesOrthogonalRoute(edge) || adjacentIndex < 0 || adjacentIndex >= points.Count) return;
-        var adjacent = points[adjacentIndex];
-        if (port is TopologyEdgePort.Top or TopologyEdgePort.Bottom) {
-            var deltaX = spread.X - original.X;
-            if (Math.Abs(deltaX) > 0.0001 && Math.Abs(adjacent.X - original.X) < 0.0001) {
-                points[adjacentIndex] = new ChartPoint(adjacent.X + deltaX, adjacent.Y);
-            }
-
-            return;
-        }
-
-        if (port is TopologyEdgePort.Left or TopologyEdgePort.Right) {
-            var deltaY = spread.Y - original.Y;
-            if (Math.Abs(deltaY) > 0.0001 && Math.Abs(adjacent.Y - original.Y) < 0.0001) {
-                points[adjacentIndex] = new ChartPoint(adjacent.X, adjacent.Y + deltaY);
-            }
-        }
-    }
-
-    private static List<TopologyEdge> EndpointPortPeers(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, string nodeId, TopologyEdgePort port) {
-        return chart.Edges
-            .Where(candidate => EndpointUsesPort(candidate, nodeId, port))
-            .OrderBy(candidate => EndpointPeerSortKey(candidate, nodeId, nodes))
-            .ThenBy(candidate => candidate.Id, StringComparer.Ordinal)
-            .ToList();
-    }
-
-    private static bool EndpointUsesPort(TopologyEdge edge, string nodeId, TopologyEdgePort port) {
-        return (string.Equals(edge.SourceNodeId, nodeId, StringComparison.Ordinal) && edge.SourcePort == port)
-            || (string.Equals(edge.TargetNodeId, nodeId, StringComparison.Ordinal) && edge.TargetPort == port);
-    }
-
-    private static double EndpointPeerSortKey(TopologyEdge edge, string nodeId, IReadOnlyDictionary<string, TopologyNode> nodes) {
-        var otherId = string.Equals(edge.SourceNodeId, nodeId, StringComparison.Ordinal) ? edge.TargetNodeId : edge.SourceNodeId;
-        if (!nodes.TryGetValue(nodeId, out var node) || !nodes.TryGetValue(otherId, out var other)) return 0;
-        var dx = CenterX(other) - CenterX(node);
-        var dy = CenterY(other) - CenterY(node);
-        return Math.Atan2(dy, dx);
-    }
 
     public static TopologyRouteDiagnostics EdgeRouteDiagnostics(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         return TopologyEdgeRouter.Diagnose(chart, edge, nodes);
@@ -616,47 +516,6 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         return sb.ToString().Trim('-');
-    }
-
-    private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY) {
-        return BoundaryPoint(node, towardX, towardY, TopologyEdgePort.Auto);
-    }
-
-    private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {
-        var centerX = CenterX(node);
-        var centerY = CenterY(node);
-        if (port != TopologyEdgePort.Auto) {
-            return port switch {
-                TopologyEdgePort.Top => new ChartPoint(centerX, node.Y - EdgeEndpointGap),
-                TopologyEdgePort.Right => new ChartPoint(node.X + node.Width + EdgeEndpointGap, centerY),
-                TopologyEdgePort.Bottom => new ChartPoint(centerX, node.Y + node.Height + EdgeEndpointGap),
-                TopologyEdgePort.Left => new ChartPoint(node.X - EdgeEndpointGap, centerY),
-                _ => new ChartPoint(centerX, centerY)
-            };
-        }
-
-        var dx = towardX - centerX;
-        var dy = towardY - centerY;
-        if (Math.Abs(dx) < 0.000001 && Math.Abs(dy) < 0.000001) return new ChartPoint(centerX, centerY);
-
-        var scaleX = Math.Abs(dx) < 0.000001 ? double.PositiveInfinity : (node.Width / 2 + EdgeEndpointGap) / Math.Abs(dx);
-        var scaleY = Math.Abs(dy) < 0.000001 ? double.PositiveInfinity : (node.Height / 2 + EdgeEndpointGap) / Math.Abs(dy);
-        var scale = Math.Min(scaleX, scaleY);
-        return new ChartPoint(centerX + dx * scale, centerY + dy * scale);
-    }
-
-    private static bool ShouldRouteHorizontally(TopologyEdgePort sourcePort, TopologyEdgePort targetPort, bool fallback) {
-        var hasHorizontalPort = sourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || targetPort is TopologyEdgePort.Left or TopologyEdgePort.Right;
-        var hasVerticalPort = sourcePort is TopologyEdgePort.Top or TopologyEdgePort.Bottom || targetPort is TopologyEdgePort.Top or TopologyEdgePort.Bottom;
-        if (hasHorizontalPort && !hasVerticalPort) return true;
-        if (hasVerticalPort && !hasHorizontalPort) return false;
-        return fallback;
-    }
-
-    private static double Distance(ChartPoint a, ChartPoint b) {
-        var dx = b.X - a.X;
-        var dy = b.Y - a.Y;
-        return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private readonly struct LabelBox {

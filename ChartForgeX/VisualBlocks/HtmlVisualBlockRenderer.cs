@@ -40,7 +40,7 @@ public sealed class HtmlVisualBlockRenderer {
         var title = string.IsNullOrWhiteSpace(block.AccessibleName) ? "ChartForgeX visual block" : block.AccessibleName;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
-            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("html").Attribute("lang", block.Options.Accessibility.Language ?? "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, VisualBlockRendering.CssFontFamily(theme.FontFamily)) + ".chartforgex-visual-block{width:min(100%," + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-visual-block svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-visual-block{width:100%;max-width:none}.chartforgex-visual-block svg{width:100%;height:auto}"));
         writer.EndElement().Line()

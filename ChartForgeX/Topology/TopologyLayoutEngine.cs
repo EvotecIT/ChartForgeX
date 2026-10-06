@@ -28,6 +28,9 @@ internal static partial class TopologyLayoutEngine {
             case TopologyLayoutMode.HubAndSpoke:
                 ApplyHubAndSpoke(copy);
                 break;
+            case TopologyLayoutMode.Swimlane:
+                ApplySwimlane(copy, options);
+                break;
             case TopologyLayoutMode.Layered:
                 ApplyLayered(copy, options);
                 break;

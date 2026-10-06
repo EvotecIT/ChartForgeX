@@ -128,9 +128,11 @@ public sealed class TopologyChartValidator {
             foreach (var duplicate in node.Ports.Where(port => !string.IsNullOrWhiteSpace(port.Id)).GroupBy(port => port.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
                 Add(result, "duplicate-node-port-id", "Node '" + node.Id + "' contains duplicate port id '" + duplicate.Key + "'.", node.Id);
             }
+            if (node.Shape.HasValue && !Enum.IsDefined(typeof(TopologyNodeShape), node.Shape.Value)) Add(result, "node-shape", "Node '" + node.Id + "' has an undefined diagram shape.", node.Id);
             foreach (var detail in node.Details) {
-                if (string.IsNullOrWhiteSpace(detail.Label)) Add(result, "node-detail-label-empty", "Node '" + node.Id + "' contains a detail row without a label.", node.Id);
-                if (string.IsNullOrWhiteSpace(detail.Value)) Add(result, "node-detail-value-empty", "Node '" + node.Id + "' contains a detail row without a value.", node.Id);
+                if (detail.Text != null && string.IsNullOrWhiteSpace(detail.Text)) Add(result, "node-detail-text-empty", "Node '" + node.Id + "' contains an empty full-width detail row.", node.Id);
+                if (detail.Text == null && string.IsNullOrWhiteSpace(detail.Label)) Add(result, "node-detail-label-empty", "Node '" + node.Id + "' contains a detail row without a label.", node.Id);
+                if (detail.Text == null && string.IsNullOrWhiteSpace(detail.Value)) Add(result, "node-detail-value-empty", "Node '" + node.Id + "' contains a detail row without a value.", node.Id);
                 if (detail.Status.HasValue && !Enum.IsDefined(typeof(TopologyHealthStatus), detail.Status.Value)) Add(result, "node-detail-status", "Node '" + node.Id + "' contains a detail row with an undefined status.", node.Id);
             }
         }

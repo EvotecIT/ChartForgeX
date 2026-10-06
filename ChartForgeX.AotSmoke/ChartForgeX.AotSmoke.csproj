@@ -18,6 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" Properties="TargetFramework=net8.0" />
+    <ProjectReference Include="..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" Properties="TargetFramework=net8.0" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" Properties="TargetFramework=net8.0" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" Properties="TargetFramework=net8.0" />
     <ProjectReference Include="..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" Properties="TargetFramework=net8.0" />

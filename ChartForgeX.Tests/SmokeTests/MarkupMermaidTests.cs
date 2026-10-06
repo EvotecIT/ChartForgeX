@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Markup;
 using ChartForgeX.Markup.Mermaid;
@@ -59,6 +60,9 @@ zenuml
         Assert(result.Diagnostics.Count >= 1, "Unsupported Mermaid families should produce diagnostics.");
         Assert(result.Diagnostics[0].Line == 4, "Mermaid diagnostics should map to Markdown payload source lines.");
         Assert(result.Diagnostics[0].Message.Contains("not implemented", StringComparison.Ordinal), "Unsupported Mermaid diagnostics should be explicit.");
+        var rendered = MermaidRenderer.Render("zenuml\nA.method()");
+        Assert(!rendered.HasErrors && rendered.Artifact == null && rendered.Diagnostics.Count > 0,
+            "The shared renderer should preserve diagnostic-only behavior for recognized unsupported families.");
     }
 
     private static void MermaidVisualMarkupParserMapsEventModelingFencesToArtifacts() {
@@ -592,7 +596,11 @@ todo[Todo]
         Assert(result.Artifacts[6].Id == "mind-map" && result.Artifacts[6].Model is TopologyChart && result.Artifacts[6].Metadata["mermaid.nodes"] == "2", "Mindmap fences should map to topology artifacts.");
         Assert(result.Artifacts[7].Id == "kanban" && result.Artifacts[7].Model is TopologyChart && result.Artifacts[7].Metadata["mermaid.tasks"] == "1", "Kanban fences should map to topology artifacts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Topology-backed Mermaid artifacts should expose natural size.");
-        Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Topology-backed Mermaid fence size attributes should map to artifact natural size.");
+        Assert(naturalSize.Width >= 720 && naturalSize.Height >= 420, "Topology-backed Mermaid fence size attributes should set the minimum canvas while keeping expanded notation visible.");
+        var svgRoot = System.Xml.Linq.XDocument.Parse(result.Artifacts[0].ToSvg()).Root!;
+        Assert(double.Parse(svgRoot.Attribute("width")!.Value, CultureInfo.InvariantCulture) == naturalSize.Width
+            && double.Parse(svgRoot.Attribute("height")!.Value, CultureInfo.InvariantCulture) == naturalSize.Height,
+            "Topology-backed Mermaid artifact natural size should match the rendered SVG canvas.");
     }
 
     private static void MermaidVisualMarkupParserUsesRenderOptionsBundle() {
@@ -604,7 +612,7 @@ dateFormat YYYY-MM-DD
 Task A : a, 2026-01-01, 2d
 ```";
 
-        var result = new MermaidVisualMarkupParser(new MermaidVisualMarkupRenderOptions {
+        var result = new MermaidVisualMarkupParser(new MermaidRenderOptions {
             Gantt = new MermaidGanttRenderOptions {
                 Id = "default-gantt",
                 Title = "Default Title",

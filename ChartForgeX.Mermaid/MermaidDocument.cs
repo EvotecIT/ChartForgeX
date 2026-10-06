@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Mermaid;
 
@@ -64,7 +65,13 @@ public enum MermaidDiagramKind {
     /// <summary>A tree view diagram.</summary>
     TreeView,
     /// <summary>A ZenUML diagram.</summary>
-    ZenUml
+    ZenUml,
+    /// <summary>A swimlane process diagram.</summary>
+    Swimlane,
+    /// <summary>A UML use case diagram.</summary>
+    UseCase,
+    /// <summary>A Cynefin domain map.</summary>
+    Cynefin
 }
 
 /// <summary>
@@ -88,6 +95,12 @@ public class MermaidDocument {
 
     /// <summary>Gets or sets optional YAML frontmatter text.</summary>
     public string? FrontMatter { get; set; }
+
+    /// <summary>Gets the text alternative declared by accTitle and accDescr statements.</summary>
+    public VisualAccessibility Accessibility { get; } = new();
+
+    /// <summary>Gets or sets the theme declared in source configuration.</summary>
+    public string? Theme { get; set; }
 
     /// <summary>Gets parsed Mermaid directives.</summary>
     public List<MermaidDirective> Directives { get; } = new();

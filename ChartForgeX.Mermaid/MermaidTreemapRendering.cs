@@ -16,11 +16,12 @@ public static class MermaidTreemapRendering {
     public static Chart ToChart(this MermaidTreemapDocument document, MermaidTreemapRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTreemapRenderOptions();
-        return Chart.Create()
+        var chart = Chart.Create()
             .WithTitle(ResolveTitle(options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
             .AddTreemap(string.IsNullOrWhiteSpace(options.SeriesName) ? "Treemap" : options.SeriesName!, ToItems(document));
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ public static class MermaidTreemapRendering {
         artifact.Metadata["mermaid.leaves"] = LeafCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.classes"] = ClassCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

@@ -30,7 +30,7 @@ public static class MermaidBlockRendering {
         }
 
         foreach (var edge in document.Edges) block.AddEdge(edge.SourceId, edge.TargetId, edge.Label, edge.Directed);
-        return block;
+        return MermaidPresentation.Apply(block, document);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static class MermaidBlockRendering {
         artifact.Metadata["mermaid.edges"] = document.Edges.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.columns"] = block.Columns.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(BlockLayoutBlock);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid block document to static SVG.</summary>

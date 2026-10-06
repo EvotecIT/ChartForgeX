@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidFlowchartParser {
+internal static partial class MermaidFlowchartParser {
     private static readonly string[] LabelSuffixOperators = { "-.->", "-->", "==>", "---", "--o", "--x" };
 
     public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result, int firstOffset = 0) {
@@ -35,26 +35,18 @@ internal static class MermaidFlowchartParser {
 
     private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph, MermaidParseResult<MermaidDocument> result) {
         var position = 0;
-        if (!TryParseNode(text, ref position, span, out var current)) {
+        if (!TryParseNodeGroup(document, nodes, text, ref position, span, subgraph, result, out var current)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unsupported flowchart statement: " + text);
             return;
         }
-        if (subgraph != null && current.SubgraphId == null) current.SubgraphId = subgraph.Id;
-        AddOrUpdateNode(document, nodes, current);
-        if (subgraph != null) AddNodeToSubgraph(subgraph, current.Id);
-
         while (TryParseEdgeOperator(text, ref position, out var edgeOperator, out var label)) {
-            if (!TryParseNode(text, ref position, span, out var target)) {
+            if (!TryParseNodeGroup(document, nodes, text, ref position, span, subgraph, result, out var target)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart edge operator '" + edgeOperator + "' is missing a target node.");
                 return;
             }
 
-            if (subgraph != null && target.SubgraphId == null) target.SubgraphId = subgraph.Id;
-            AddOrUpdateNode(document, nodes, target);
-            if (subgraph != null) AddNodeToSubgraph(subgraph, target.Id);
-
-            var edge = new MermaidFlowchartEdge(current.Id, target.Id, edgeOperator, span) { Label = label };
-            document.Edges.Add(edge);
+            foreach (var sourceNode in current) foreach (var targetNode in target)
+                document.Edges.Add(new MermaidFlowchartEdge(sourceNode.Id, targetNode.Id, edgeOperator, span) { Label = label });
             current = target;
         }
         SkipWhitespace(text, ref position);
@@ -73,6 +65,7 @@ internal static class MermaidFlowchartParser {
         if (candidate.SubgraphId != null) existing.SubgraphId = candidate.SubgraphId;
         if (candidate.Href != null) existing.Href = candidate.Href;
         if (candidate.Tooltip != null) existing.Tooltip = candidate.Tooltip;
+        foreach (var property in candidate.Properties) existing.Properties[property.Key] = property.Value;
         foreach (var className in candidate.Classes) AddUnique(existing.Classes, className);
         foreach (var style in candidate.Styles) existing.Styles[style.Key] = style.Value;
     }
@@ -359,7 +352,7 @@ internal static class MermaidFlowchartParser {
         ch != '-' &&
         ch != '=' &&
         ch != '.' &&
-        ch != ':';
+        ch != ':' && ch != '@' && ch != '&';
 
     private static bool IsOperatorCharacter(char ch) => ch == '<' || ch == '>' || ch == '-' || ch == '.' || ch == '=' || ch == 'o' || ch == 'x';
 

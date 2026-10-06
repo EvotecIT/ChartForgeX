@@ -18,14 +18,14 @@ public sealed partial class TopologyPngRenderer {
             var alpha = highlight.IsEdgeHighlighted(edge) ? edgeAlpha : HighlightAlpha(edgeAlpha, false, highlight);
             var color = WithAlpha(Color(theme.MutedForeground), alpha);
             var halo = WithAlpha(Color(theme.Background), alpha);
-            if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) DrawEndpointLabel(canvas, edge.SourceLabel!, EdgeEndpointLabelPoint(renderedPoints[0], renderedPoints[1]), color, halo);
-            if (!string.IsNullOrWhiteSpace(edge.TargetLabel)) DrawEndpointLabel(canvas, edge.TargetLabel!, EdgeEndpointLabelPoint(renderedPoints[renderedPoints.Count - 1], renderedPoints[renderedPoints.Count - 2]), color, halo);
+            if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) DrawEndpointLabel(canvas, edge.SourceLabel!, EdgeEndpointLabelPoint(chart, options, renderedPoints[0], renderedPoints[1], edge.SourceLabel!), color, halo);
+            if (!string.IsNullOrWhiteSpace(edge.TargetLabel)) DrawEndpointLabel(canvas, edge.TargetLabel!, EdgeEndpointLabelPoint(chart, options, renderedPoints[renderedPoints.Count - 1], renderedPoints[renderedPoints.Count - 2], edge.TargetLabel!), color, halo);
         }
     }
 
     private static void DrawEndpointLabel(RgbaCanvas canvas, string text, ChartPoint point, ChartColor color, ChartColor halo) {
         var label = text.Trim();
-        const double fontSize = 9.5;
+        const double fontSize = EndpointLabelFontSize;
         var width = RgbaCanvas.MeasureTextEmphasizedWidth(label, fontSize, null);
         DrawTextWithReadableHalo(canvas, point.X - width / 2, point.Y - fontSize / 2, label, color, halo, fontSize, true);
     }

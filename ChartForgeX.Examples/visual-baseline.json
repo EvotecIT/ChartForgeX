@@ -2042,6 +2042,176 @@
       }
     },
     {
+      "name": "mermaid-accessibility-dark",
+      "width": 640,
+      "height": 320,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 102400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 306,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-class-notation",
+      "width": 960,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 570,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-cynefin-basic",
+      "width": 960,
+      "height": 618,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 296640,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 499,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-er-notation",
+      "width": 1002,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 280560,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 455,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-flowchart-modern",
+      "width": 640,
+      "height": 320,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 102400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 467,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-calendar",
+      "width": 960,
+      "height": 560,
+      "svg": {
+        "minVisualNodes": 32,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 250639,
+        "minTransparentPixels": 18161,
+        "minDistinctColors": 756,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-swimlane-basic",
+      "width": 1034,
+      "height": 476,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 246092,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 540,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-usecase-basic",
+      "width": 1003,
+      "height": 518,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 259777,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 632,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-usecase-vertical",
+      "width": 640,
+      "height": 372,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 119040,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 453,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-xychart-stable",
+      "width": 900,
+      "height": 520,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 217059,
+        "minTransparentPixels": 16941,
+        "minDistinctColors": 884,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "monthly-posture-dark",
       "width": 760,
       "height": 540,

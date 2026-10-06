@@ -25,7 +25,9 @@ public enum TopologyLayoutMode {
     /// <summary>Place a selected/root relationship as a radial ego graph with first-hop and second-hop conversations on expanding rings.</summary>
     RelationshipRadial = 8,
     /// <summary>Place a centered root with balanced left and right hierarchy branches for mind-map style diagrams.</summary>
-    MindMap = 9
+    MindMap = 9,
+    /// <summary>Align responsibility lanes across shared process ranks.</summary>
+    Swimlane = 10
 }
 
 /// <summary>
@@ -548,5 +550,17 @@ public enum TopologyMarkerKind {
     /// <summary>A circle marker.</summary>
     Circle,
     /// <summary>A diamond marker.</summary>
-    Diamond
+    Diamond,
+    /// <summary>An unfilled inheritance triangle.</summary>
+    OpenTriangle,
+    /// <summary>An unfilled aggregation diamond.</summary>
+    OpenDiamond,
+    /// <summary>An exactly-one cardinality endpoint.</summary>
+    ExactlyOne,
+    /// <summary>A zero-or-one cardinality endpoint.</summary>
+    ZeroOrOne,
+    /// <summary>A one-or-many cardinality endpoint.</summary>
+    OneOrMany,
+    /// <summary>A zero-or-many cardinality endpoint.</summary>
+    ZeroOrMany
 }

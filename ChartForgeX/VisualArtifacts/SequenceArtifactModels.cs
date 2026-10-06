@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Accessibility;
 using System.Collections.Generic;
 
 namespace ChartForgeX.VisualArtifacts;
@@ -85,6 +86,9 @@ public enum SequenceArtifactBlockKind {
 /// Describes a reusable product-neutral sequence or interaction diagram artifact.
 /// </summary>
 public sealed class SequenceArtifact {
+    /// <summary>Gets accessible naming for static sequence previews.</summary>
+    public VisualAccessibility Accessibility { get; } = new();
+
     private readonly List<SequenceArtifactParticipant> _participants = new();
     private readonly List<SequenceArtifactMessage> _messages = new();
     private readonly List<SequenceArtifactActivation> _activations = new();

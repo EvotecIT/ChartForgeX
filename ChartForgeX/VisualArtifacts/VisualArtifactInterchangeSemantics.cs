@@ -197,6 +197,8 @@ public sealed class VisualArtifactInterchangeTopologyNode {
     public TopologyHealthStatus Status { get; set; }
     /// <summary>Gets or sets the effective display mode.</summary>
     public TopologyNodeDisplayMode DisplayMode { get; set; }
+    /// <summary>Gets or sets the optional diagram surface.</summary>
+    public TopologyNodeShape? Shape { get; set; }
     /// <summary>Gets or sets the optional longitude.</summary>
     public double? Longitude { get; set; }
     /// <summary>Gets or sets the optional latitude.</summary>

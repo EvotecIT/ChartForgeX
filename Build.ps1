@@ -781,7 +781,16 @@ try {
             New-Item -ItemType Directory -Path $consumerRoot | Out-Null
             Push-Location $consumerRoot
             try {
-                Invoke-DotNetCommand -Arguments @('new', 'console', '--framework', 'net8.0', '--no-restore') -Description 'Package consumer project creation' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
+'@ | Set-Content -Path (Join-Path $consumerRoot 'PackageConsumer.csproj') -Encoding UTF8
                 @"
 <configuration>
   <config>
@@ -867,6 +876,11 @@ if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Docu
 if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
 var markupMermaid = new MermaidVisualMarkupParser().Parse("~~~mermaid {#package-flow}\nflowchart LR\n  a --> b\n~~~");
 if (markupMermaid.HasErrors || markupMermaid.Artifacts.Count != 1 || markupMermaid.Artifacts[0].Id != "package-flow") throw new InvalidOperationException("Mermaid markup package parser failed.");
+var useCase = MermaidRenderer.Render("usecase-beta\nactor User\nUser --> Action(Do work)", new MermaidRenderOptions());
+if (useCase.HasErrors || useCase.Artifact is null) throw new InvalidOperationException("Mermaid source package renderer failed.");
+if (!useCase.Artifact.ToSvg().Contains("data-node-shape=\"Actor\"", StringComparison.Ordinal) || useCase.Artifact.ToPng().Length <= 64) throw new InvalidOperationException("Mermaid source package SVG/PNG output failed.");
+var useCaseJson = useCase.Artifact.ToInterchangeJson();
+if (VisualArtifactInterchangeEnvelope.FromJson(useCaseJson).ToJson() != useCaseJson) throw new InvalidOperationException("Mermaid source package interchange failed.");
 "@ | Set-Content -Path (Join-Path $consumerRoot 'Program.cs') -Encoding UTF8
                 Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
             } finally {

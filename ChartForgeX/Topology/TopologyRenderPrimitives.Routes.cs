@@ -12,6 +12,10 @@ internal static partial class TopologyRenderPrimitives {
             edge.Waypoints.Count == 0 && TopologyLayoutEngine.UsesReadableDenseLayout(chart);
         if (!readableObstacleRoute) {
             ApplyEndpointPortSpreading(chart, edge, nodes, source, target, points);
+            if (UsesOrthogonalRoute(edge)) {
+                TopologyNodeShapeGeometry.AttachRoute(source, points, 0, 1, EdgeEndpointGap);
+                TopologyNodeShapeGeometry.AttachRoute(target, points, points.Count - 1, points.Count - 2, EdgeEndpointGap);
+            }
             return points;
         }
 

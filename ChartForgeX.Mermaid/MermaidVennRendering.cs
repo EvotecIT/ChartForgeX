@@ -42,7 +42,7 @@ public static class MermaidVennRendering {
             var target = (VennTextNode)block.TextNodes[block.TextNodes.Count - 1];
             target.TextColor = textNode.TextColor;
         }
-        return block;
+        return MermaidPresentation.Apply(block, document);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public static class MermaidVennRendering {
         artifact.Metadata["mermaid.textNodes"] = document.TextNodes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(VennDiagramBlock);
         artifact.Metadata["render.note"] = "Deterministic one-to-three-set Venn preview; source sizes are retained but not area-proportional.";
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>Renders a Mermaid Venn document to static SVG.</summary>

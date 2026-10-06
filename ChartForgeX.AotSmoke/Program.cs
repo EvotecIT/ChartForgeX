@@ -1,4 +1,7 @@
 using System;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Markup.Mermaid;
+using ChartForgeX.VisualArtifacts;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
@@ -58,6 +61,26 @@ var interactive = chart.ToInteractiveHtmlPage(options => {
 });
 AssertContains(interactive, "data-cfx-export=\"png\"", "Interactive PNG export control missing.");
 AssertContains(interactive, "new CustomEvent('cfxsync'", "Interactive sync runtime missing.");
+
+var mermaidSources = new[] {
+    "flowchart LR\nA@{ shape: cloud, label: \"API\" } & B --> C & D",
+    "classDiagram\nclass User {\n+string name\n+save() void\n}\nUser <|-- Admin",
+    "erDiagram\nCUSTOMER ||--o{ ORDER : places",
+    "gantt\nexcludes weekends\nTask :2026-01-02, 2d",
+    "swimlane-beta LR\nsubgraph Client\nA\nend\nsubgraph Server\nB\nend\nA --> B",
+    "usecase-beta\nactor User\nUser --> Action(Do work)",
+    "cynefin-beta\ncomplex\n\"Discover\""
+};
+foreach (var source in mermaidSources) {
+    var rendered = MermaidRenderer.Render(source);
+    if (rendered.HasErrors || rendered.Artifact == null) throw new InvalidOperationException("Mermaid AOT render failed.");
+    AssertContains(rendered.Artifact.ToSvg(), "<svg", "Mermaid SVG render failed.");
+    AssertPng(rendered.Artifact.ToPng(), "Mermaid PNG render failed.");
+    var json = rendered.Artifact.ToInterchangeJson();
+    if (VisualArtifactInterchangeEnvelope.FromJson(json).ToJson() != json) throw new InvalidOperationException("Mermaid interchange round trip failed.");
+    var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+    if (markup.HasErrors || markup.Artifacts.Count != 1) throw new InvalidOperationException("Mermaid markup AOT render failed.");
+}
 
 static void AssertContains(string text, string expected, string message) {
     if (!text.Contains(expected, StringComparison.Ordinal)) throw new InvalidOperationException(message);

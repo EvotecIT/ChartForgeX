@@ -443,6 +443,7 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         foreach (var detail in node.Details) {
             var mappedDetail = new VisualArtifactInterchangeDetail {
+                Text = detail.Text,
                 Label = detail.Label,
                 Value = detail.Value,
                 IconId = detail.IconId,

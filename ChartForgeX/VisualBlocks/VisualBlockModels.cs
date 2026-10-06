@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Accessibility;
 using ChartForgeX.Core;
 using ChartForgeX.Motion;
 using ChartForgeX.Primitives;
@@ -113,6 +114,9 @@ public sealed class VisualBlockOptions {
     private ChartTheme _theme = ChartTheme.Light();
     private int _pngOutputScale = 1;
 
+    /// <summary>Gets the text alternative, language, and decorative metadata used by static exports.</summary>
+    public VisualAccessibility Accessibility { get; } = new();
+
     /// <summary>Gets or sets the rendered block size in pixels.</summary>
     public ChartSize Size {
         get => _size;
@@ -201,7 +205,7 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
     public VisualBlockOptions Options { get; } = new();
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public virtual string AccessibleName => Title.Length == 0 ? GetType().Name : Title;
+    public virtual string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? GetType().Name : Title);
 
     /// <summary>Sets the block title.</summary>
     public TSelf WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return Self(); }
@@ -540,7 +544,7 @@ public sealed class RadialMetricCard : VisualBlock<RadialMetricCard> {
     }
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Label.Length == 0 ? base.AccessibleName : Label;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Label.Length == 0 ? base.AccessibleName : Label);
 
     /// <summary>Creates a new radial metric card.</summary>
     public static RadialMetricCard Create() => new();

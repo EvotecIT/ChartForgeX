@@ -82,7 +82,7 @@ public static class MermaidSequenceRendering {
         }
 
         AddBlocks(document, sequence);
-        return sequence;
+        return MermaidPresentation.Apply(sequence, document);
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public static class MermaidSequenceRendering {
         artifact.Metadata["mermaid.activations"] = document.Activations.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.notes"] = document.Notes.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(SequenceArtifact);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>

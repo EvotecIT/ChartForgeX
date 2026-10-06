@@ -38,7 +38,7 @@ public static class MermaidTimelineRendering {
             }
         }
 
-        return chart;
+        return MermaidPresentation.Apply(chart, document);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public static class MermaidTimelineRendering {
         artifact.Metadata["mermaid.periods"] = document.Periods.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.events"] = CountEvents(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(Chart);
-        return artifact;
+        return MermaidPresentation.Apply(artifact, document);
     }
 
     /// <summary>
