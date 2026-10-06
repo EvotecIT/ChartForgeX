@@ -74,6 +74,47 @@ body {
   background: rgba(15, 23, 42, .58);
 }
 
+.cfx-frame {
+  position: relative;
+  min-width: 0;
+}
+
+.cfx-interactive-chart[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Contextual reset: a small ghost button in the frame corner, shown only after the view changes. */
+.cfx-reset {
+  position: absolute;
+  z-index: 13;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(148, 163, 184, .45);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, .78);
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cfx-reset[hidden] {
+  display: none;
+}
+
+.cfx-reset:hover,
+.cfx-reset:focus-visible {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
 .cfx-scenarios {
   display: flex;
   flex-wrap: wrap;
@@ -642,6 +683,13 @@ body {
 
 /* Graphite keeps host controls separate from the chart's single frame. */
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
+/* The frame hugs the chart card so the reset control sits in the card corner, not the page corner. */
+.cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
+  font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
 .cfx-dashboard { gap: 16px; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip {
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);

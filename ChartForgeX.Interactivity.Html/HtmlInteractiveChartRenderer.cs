@@ -138,16 +138,22 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
             .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
             .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
-            .EndStartElement().Line()
-            .StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
-            .RawTrusted(BuildToolbar(options))
-            .EndElement().Line();
+            .EndStartElement().Line();
+        var toolbar = BuildToolbar(options);
+        if (toolbar.Length > 0) {
+            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
+                .RawTrusted(toolbar)
+                .EndElement().Line();
+        }
+
         if (scenarioControls) {
             writer.RawTrusted(BuildScenarioControls(options));
             writer.RawTrusted(BuildScenarioPanel(options));
         }
 
-        writer.StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
+        writer.StartElement("div").Attribute("class", "cfx-frame").EndStartElement().Line()
+            .RawTrusted(BuildResetControl(options))
+            .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
             .RawTrusted(new SvgChartRenderer().RenderForInteraction(chart, scope)).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
@@ -157,6 +163,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
             .RawTrusted(BuildCompareTray(options))
+            .EndElement().Line()
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();
@@ -392,10 +399,25 @@ public sealed partial class HtmlInteractiveChartRenderer {
             AppendToolbarButton(writer, "PNG", ("data-cfx-export", "png"), ("title", "Download PNG"));
         }
 
-        if (options.IncludeResetButton) {
-            AppendToolbarButton(writer, "Reset", ("data-cfx-reset", "true"));
-        }
+        return writer.Build();
+    }
 
+    /// <summary>
+    /// Builds the contextual reset control. It starts hidden; the runtime reveals it only while the view
+    /// differs from its initial state, so the chart carries no permanent control chrome.
+    /// </summary>
+    private static string BuildResetControl(HtmlChartInteractionOptions options) {
+        if (!options.IncludeResetButton) return string.Empty;
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("button")
+            .Attribute("class", "cfx-reset")
+            .Attribute("type", "button")
+            .Attribute("data-cfx-reset", "true")
+            .BooleanAttribute("hidden")
+            .EndStartElement()
+            .Text("Reset view")
+            .EndElement()
+            .Line();
         return writer.Build();
     }
 

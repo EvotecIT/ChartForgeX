@@ -32,6 +32,7 @@
       }
       node.classList.toggle('cfx-series-muted', muted);
     });
+    syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
@@ -53,6 +54,7 @@
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
+    syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
     if (!hasFeature(root, 'LegendToggles')) return;
@@ -426,7 +428,10 @@
   const applySync = (root, detail) => {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
-    else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
+    else if (detail.action === 'brush') {
+      root.dataset.cfxBrush = detail.bounds || '';
+      syncResetControl(root);
+    }
     else if (detail.action === 'selection') {
       if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
       renderCompare(root);

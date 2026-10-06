@@ -216,7 +216,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("action: 'crosshair'", StringComparison.Ordinal) && html.Contains("action: 'lasso'", StringComparison.Ordinal) && html.Contains("action: 'series-focus'", StringComparison.Ordinal) && html.Contains("action: 'compare'", StringComparison.Ordinal), "Interactive HTML should synchronize crosshair hover, lasso selections, one-series focus, and compare markers across grouped charts.");
         Assert(html.Contains("if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter", StringComparison.Ordinal) && html.Contains("{ series: localSeries, seriesKey: target.seriesKey, label: target.label }", StringComparison.Ordinal), "Synchronized series toggles and isolation should resolve semantic targets in peers that do not render legends.");
         Assert(html.Contains("if (target) setSeriesIsolation(root, target, detail.isolated === true)", StringComparison.Ordinal) && !html.Contains("target || detail.isolated !== true", StringComparison.Ordinal), "Unmatched synchronized series focus should not clear an unrelated peer's local isolation state.");
-        Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>", StringComparison.Ordinal), "Interactive HTML should include a reset control by default.");
+        Assert(html.Contains("<button class=\"cfx-reset\" type=\"button\" data-cfx-reset=\"true\" hidden>Reset view</button>", StringComparison.Ordinal), "Interactive HTML should include a contextual reset control that starts hidden by default.");
+        Assert(!SampleChart().ToInteractiveHtmlPage().Contains("class=\"cfx-toolbar\"", StringComparison.Ordinal), "Report-review charts without zoom, pan, brush, or export should not render permanent toolbar chrome.");
         Assert(html.Contains("<svg", StringComparison.Ordinal), "Interactive HTML should embed the static SVG output.");
         Assert(html.Contains("aria-live=\"polite\"", StringComparison.Ordinal), "Interactive tooltips should expose polite assistive announcements.");
         Assert(html.Contains("const seriesLabel = (node) =>", StringComparison.Ordinal) && html.Contains("push('Series', seriesLabel(node))", StringComparison.Ordinal), "Interactive labels and tooltip metadata should resolve real series names from rendered legends instead of exposing numeric series indexes.");
@@ -257,7 +258,7 @@ internal static partial class SmokeTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
         });
-        Assert(!noReset.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>", StringComparison.Ordinal), "Interactive HTML should allow reset controls to be suppressed.");
+        Assert(!noReset.Contains("data-cfx-reset=\"true\"", StringComparison.Ordinal), "Interactive HTML should allow reset controls to be suppressed.");
         Assert(!noReset.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal), "Interactive HTML should hide zoom controls when zoom is disabled.");
         Assert(!noReset.Contains("data-cfx-mode-button=\"pan\"", StringComparison.Ordinal), "Interactive HTML should hide pan controls when pan is disabled.");
         Assert(!noReset.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal), "Interactive HTML should hide brush controls when brush is disabled.");
