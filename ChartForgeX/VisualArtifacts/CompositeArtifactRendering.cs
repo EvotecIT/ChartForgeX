@@ -93,6 +93,7 @@ public static class CompositeArtifactRendering {
             block.Options.Size.Width,
             block.Options.Size.Height,
             sourceLanguage);
+        CopyAccessibility(block.Options.Accessibility, artifact.Accessibility);
         artifact.Accessibility.Name = block.AccessibleName;
         artifact.Metadata["visual-block.type"] = block.GetType().Name;
         return artifact;

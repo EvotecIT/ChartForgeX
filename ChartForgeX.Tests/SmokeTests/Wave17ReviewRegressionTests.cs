@@ -45,8 +45,8 @@ internal static partial class SmokeTests {
         var edge = chart.Edges.Single();
         var points = TopologyRenderPrimitives.EdgePoints(chart, edge, nodes);
         var rendered = TopologyRenderPrimitives.RenderedEdgeSamplePoints(chart, edge, nodes, points);
-        var expectedSource = TopologyRenderPrimitives.EdgeEndpointLabelPoint(rendered[0], rendered[1]);
-        var expectedTarget = TopologyRenderPrimitives.EdgeEndpointLabelPoint(rendered[rendered.Count - 1], rendered[rendered.Count - 2]);
+        var expectedSource = TopologyRenderPrimitives.EdgeEndpointLabelPoint(chart, options, rendered[0], rendered[1], edge.SourceLabel!);
+        var expectedTarget = TopologyRenderPrimitives.EdgeEndpointLabelPoint(chart, options, rendered[rendered.Count - 1], rendered[rendered.Count - 2], edge.TargetLabel!);
         Assert(rendered.Count > 2 && rendered[rendered.Count / 2].Y < points[0].Y - 20, "Standard curved topology routes should expose sampled raster geometry instead of collapsing to their straight chord.");
         var diagnostics = TopologyLayoutDiagnostics.Analyze(chart, options).Edges.Single();
         Assert(diagnostics.Points.Count == rendered.Count && diagnostics.Points[diagnostics.Points.Count / 2].Y < diagnostics.Points[0].Y - 20, "Public topology diagnostics should expose the sampled rendered curve rather than raw endpoints or control polygons.");

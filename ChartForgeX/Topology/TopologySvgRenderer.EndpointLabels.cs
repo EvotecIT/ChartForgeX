@@ -18,8 +18,8 @@ public sealed partial class TopologySvgRenderer {
             if (points.Count < 2) continue;
             var renderedPoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
             var opacity = highlight.IsEdgeHighlighted(edge) ? EdgeOpacity(edge, options) : EdgeOpacity(edge, options) * highlight.DimmedOpacity;
-            if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) AddEndpointLabel(layer, edge, edge.SourceLabel!, EdgeEndpointLabelPoint(renderedPoints[0], renderedPoints[1]), "source", prefix, theme, opacity);
-            if (!string.IsNullOrWhiteSpace(edge.TargetLabel)) AddEndpointLabel(layer, edge, edge.TargetLabel!, EdgeEndpointLabelPoint(renderedPoints[renderedPoints.Count - 1], renderedPoints[renderedPoints.Count - 2]), "target", prefix, theme, opacity);
+            if (!string.IsNullOrWhiteSpace(edge.SourceLabel)) AddEndpointLabel(layer, edge, edge.SourceLabel!, EdgeEndpointLabelPoint(chart, options, renderedPoints[0], renderedPoints[1], edge.SourceLabel!), "source", prefix, theme, opacity);
+            if (!string.IsNullOrWhiteSpace(edge.TargetLabel)) AddEndpointLabel(layer, edge, edge.TargetLabel!, EdgeEndpointLabelPoint(chart, options, renderedPoints[renderedPoints.Count - 1], renderedPoints[renderedPoints.Count - 2], edge.TargetLabel!), "target", prefix, theme, opacity);
         }
         root.AddElement(layer);
     }
@@ -33,7 +33,7 @@ public sealed partial class TopologySvgRenderer {
             .Attribute("x", point.X)
             .Attribute("y", point.Y)
             .Attribute("fill", theme.MutedForeground)
-            .Attribute("font-size", 9.5)
+            .Attribute("font-size", EndpointLabelFontSize)
             .Attribute("font-weight", 600)
             .Attribute("text-anchor", "middle")
             .Attribute("dominant-baseline", "middle")

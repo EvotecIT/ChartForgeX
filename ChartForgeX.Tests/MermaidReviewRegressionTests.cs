@@ -1,0 +1,122 @@
+using System.Globalization;
+using System.Xml.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using Xunit;
+
+namespace ChartForgeX.Tests;
+
+public sealed class MermaidReviewRegressionTests {
+    [Theory]
+    [InlineData(210, 130, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(-210, 130, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(130, 210, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(130, -210, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(210, 130, TopologyEdgeRouting.Straight)]
+    [InlineData(210, 130, TopologyEdgeRouting.Curved)]
+    public void AssociationsAttachToPaintedSurfacesInTheirFinalRouteDirection(int dx, int dy, TopologyEdgeRouting routing) {
+        foreach (var shape in new[] { TopologyNodeShape.Actor, TopologyNodeShape.Ellipse, TopologyNodeShape.Diamond }) {
+            var chart = TopologyChart.Create().WithViewport(800, 700, 20)
+                .AddNode("a", "A", 300, 300, width: 180, height: 108)
+                .AddNode("b", "B", 300 + dx, 300 + dy, width: 180, height: 108)
+                .AddEdge("ab", "a", "b");
+            foreach (var node in chart.Nodes) node.Shape = shape;
+            chart.Edges[0].Routing = routing;
+            var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+            var points = TopologyRenderPrimitives.EdgePoints(chart, chart.Edges[0], nodes);
+            Assert.InRange(DistanceFromSurface(chart.Nodes[0], points[0]), 0.5, 8);
+            Assert.InRange(DistanceFromSurface(chart.Nodes[1], points[^1]), 0.5, 8);
+            if (routing == TopologyEdgeRouting.Orthogonal) {
+                Assert.True(Math.Abs(points[0].X - points[1].X) < .001 || Math.Abs(points[0].Y - points[1].Y) < .001);
+                Assert.True(Math.Abs(points[^1].X - points[^2].X) < .001 || Math.Abs(points[^1].Y - points[^2].Y) < .001);
+            }
+        }
+    }
+
+    [Fact]
+    public void MultiplicitiesStayOutsideClassCardsAndHaveVisibleRasterInk() {
+        var result = MermaidRenderer.Render("classDiagram\nnamespace Domain {\nclass Customer {\n+string name\n}\nclass Order {\n+string id\n}\nCustomer \"1\" o-- \"0..*\" Order : places\n}");
+        Assert.False(result.HasErrors);
+        var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
+        var svg = XDocument.Parse(artifact.ToSvg());
+        var envelope = artifact.ToInterchangeEnvelope();
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-endpoint-label").ToArray();
+        Assert.Equal(2, labels.Length);
+        var image = RasterImageDecoder.Decode(artifact.ToPng());
+        foreach (var label in labels) {
+            var x = double.Parse(label.Attribute("x")!.Value, CultureInfo.InvariantCulture);
+            var y = double.Parse(label.Attribute("y")!.Value, CultureInfo.InvariantCulture);
+            var halfWidth = RgbaCanvas.MeasureTextEmphasizedWidth(label.Value, 9.5, null) / 2 + 2;
+            foreach (var node in envelope.Nodes) {
+                Assert.False(x + halfWidth > node.X && x - halfWidth < node.X + node.Width && y + 7 > node.Y && y - 7 < node.Y + node.Height,
+                    "Multiplicity " + label.Value + " must not be covered by " + node.Label);
+            }
+            var ink = 0;
+            for (var py = Math.Max(0, (int)y - 7); py <= Math.Min(image.Height - 1, (int)y + 7); py++) {
+                for (var px = Math.Max(0, (int)(x - halfWidth)); px <= Math.Min(image.Width - 1, (int)(x + halfWidth)); px++) {
+                    var offset = (py * image.Width + px) * 4;
+                    if (image.Pixels[offset] < 180 && image.Pixels[offset + 1] < 180 && image.Pixels[offset + 2] < 180) ink++;
+                }
+            }
+            Assert.True(ink > 5, "Multiplicity " + label.Value + " must have visible PNG glyphs.");
+        }
+    }
+
+    [Theory]
+    [InlineData("block-basic.mmd")]
+    [InlineData("packet-basic.mmd")]
+    [InlineData("gitgraph-basic.mmd")]
+    [InlineData("venn-basic.mmd")]
+    [InlineData("ishikawa-basic.mmd")]
+    [InlineData("wardley-basic.mmd")]
+    public void VisualBlockFamiliesRetainAuthoredAccessibilityInSvgAndHtml(string fixture) {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root != null && !File.Exists(Path.Combine(root.FullName, "ChartForgeX.sln"))) root = root.Parent;
+        Assert.NotNull(root);
+        var source = File.ReadAllText(Path.Combine(root!.FullName, "tests", "mermaid-conformance", "fixtures", fixture));
+        var split = source.IndexOf('\n');
+        source = source.Insert(split + 1, "accTitle: Authored name\naccDescr: Authored description\n");
+        var result = MermaidRenderer.Render(source);
+        Assert.False(result.HasErrors, string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+        var block = Assert.IsAssignableFrom<IVisualBlock>(result.Artifact!.Model);
+        Assert.Equal("Authored name", block.AccessibleName);
+        foreach (var output in new[] { result.Artifact.ToSvg(), result.Artifact.ToHtmlPage() }) {
+            Assert.Contains(">Authored name</title>", output);
+            Assert.Contains(">Authored description</desc>", output);
+        }
+    }
+
+    [Fact]
+    public void UseCaseStereotypesStayBesideTheirRelationshipInsideTheBoundary() {
+        var result = MermaidRenderer.Render("usecase-beta\ndirection LR\nsystemBoundary App\nA(First)\nB(Second)\nend\nA ..> : include B");
+        Assert.False(result.HasErrors);
+        var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
+        var group = Assert.Single(artifact.ToInterchangeEnvelope().Groups);
+        var label = XDocument.Parse(artifact.ToSvg()).Descendants().Single(element => element.Name.LocalName == "text" && element.Value == "<<include>>");
+        var y = double.Parse(label.Attribute("y")!.Value, CultureInfo.InvariantCulture);
+        Assert.NotNull(group.Y);
+        Assert.NotNull(group.Height);
+        Assert.InRange(y, group.Y!.Value + 68, group.Y.Value + group.Height!.Value - 8);
+    }
+
+    private static double DistanceFromSurface(TopologyNode node, ChartPoint point) {
+        var distance = double.PositiveInfinity;
+        foreach (var path in ChartMapPathParser.ParseSubpaths(TopologyNodeShapeGeometry.Path(node), 1)) {
+            for (var i = 1; i < path.Points.Count; i++) Measure(path.Points[i - 1], path.Points[i]);
+            if (path.IsClosed && path.Points.Count > 1) Measure(path.Points[^1], path.Points[0]);
+        }
+        return distance;
+        void Measure(ChartPoint start, ChartPoint end) {
+            var dx = end.X - start.X; var dy = end.Y - start.Y;
+            var denominator = dx * dx + dy * dy;
+            var t = denominator < .000001 ? 0 : Math.Max(0, Math.Min(1, ((point.X - start.X) * dx + (point.Y - start.Y) * dy) / denominator));
+            var px = point.X - start.X - t * dx; var py = point.Y - start.Y - t * dy;
+            distance = Math.Min(distance, Math.Sqrt(px * px + py * py));
+        }
+    }
+}

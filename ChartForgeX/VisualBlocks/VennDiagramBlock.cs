@@ -22,7 +22,7 @@ public sealed class VennDiagramBlock : VisualBlock<VennDiagramBlock> {
     public IReadOnlyList<VennTextNode> TextNodes => _textNodes;
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Title.Length == 0 ? "Venn diagram" : Title;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Venn diagram" : Title);
 
     /// <summary>Creates a Venn diagram block.</summary>
     public static VennDiagramBlock Create() => new();

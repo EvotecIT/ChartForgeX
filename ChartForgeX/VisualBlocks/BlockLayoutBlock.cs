@@ -30,7 +30,7 @@ public sealed class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
     public bool ShowEdges { get; set; } = true;
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Title.Length == 0 ? "Block layout" : Title;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Block layout" : Title);
 
     /// <summary>Creates a block layout.</summary>
     public static BlockLayoutBlock Create() => new();

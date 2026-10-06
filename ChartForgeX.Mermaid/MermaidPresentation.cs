@@ -25,8 +25,10 @@ internal static class MermaidPresentation {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithTheme(string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light());
-        } else if (model is IVisualBlock block && document.Theme != null) {
-            block.Options.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light();
+        } else if (model is IVisualBlock block) {
+            block.Options.Accessibility.Name = document.Accessibility.Name;
+            block.Options.Accessibility.Description = document.Accessibility.Description;
+            if (document.Theme != null) block.Options.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light();
         }
         return model;
     }

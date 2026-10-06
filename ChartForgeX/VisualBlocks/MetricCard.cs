@@ -187,7 +187,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     }
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Label.Length == 0 ? base.AccessibleName : Label;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Label.Length == 0 ? base.AccessibleName : Label);
 
     /// <summary>Creates a new metric card.</summary>
     public static MetricCard Create() => new();

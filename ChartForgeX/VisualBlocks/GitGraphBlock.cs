@@ -24,7 +24,7 @@ public sealed class GitGraphBlock : VisualBlock<GitGraphBlock> {
     public bool ShowCommitLabels { get; set; } = true;
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Title.Length == 0 ? "Git graph" : Title;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Git graph" : Title);
 
     /// <summary>Creates a git graph block.</summary>
     public static GitGraphBlock Create() => new();

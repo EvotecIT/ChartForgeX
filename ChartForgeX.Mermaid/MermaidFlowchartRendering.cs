@@ -102,10 +102,13 @@ public static class MermaidFlowchartRendering {
 
             var target = chart.Edges[chart.Edges.Count - 1];
             target.LineStyle = ToLineStyle(edge.Operator);
+            if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
             if (!string.IsNullOrWhiteSpace(edgeColor)) target.Color = edgeColor;
             if (edge.Styles.ContainsKey("stroke-dasharray")) target.LineStyle = TopologyEdgeLineStyle.Dashed;
             if (document.Kind == MermaidDiagramKind.UseCase && edge.Operator == "--|>") target.TargetMarker = TopologyMarkerKind.OpenTriangle;
+            // UML relationship stereotypes need room between their two use-case surfaces.
+            if (document.Kind == MermaidDiagramKind.UseCase && !string.IsNullOrWhiteSpace(edge.Label)) target.MinimumRankSpan = 2;
             target.Metadata["mermaid.operator"] = edge.Operator;
             target.Metadata["mermaid.source"] = edge.SourceId;
             target.Metadata["mermaid.target"] = edge.TargetId;

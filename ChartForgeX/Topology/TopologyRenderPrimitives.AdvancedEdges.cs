@@ -8,14 +8,36 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
-    public static ChartPoint EdgeEndpointLabelPoint(ChartPoint endpoint, ChartPoint adjacent) {
+    public const double EndpointLabelFontSize = 9.5;
+
+    public static ChartPoint EdgeEndpointLabelPoint(TopologyChart chart, TopologyRenderOptions options, ChartPoint endpoint, ChartPoint adjacent, string text) {
         var dx = adjacent.X - endpoint.X;
         var dy = adjacent.Y - endpoint.Y;
         var length = Math.Sqrt(dx * dx + dy * dy);
-        if (length < 0.001) return endpoint;
+        if (length < 0.001) { dx = 1; dy = 0; length = 1; }
         var ux = dx / length;
         var uy = dy / length;
-        return new ChartPoint(endpoint.X + ux * 10 - uy * 14, endpoint.Y + uy * 10 + ux * 14);
+        var width = EstimateTextWidth(text.Trim(), EndpointLabelFontSize, true, options.TextMeasurement) + 6;
+        var height = EndpointLabelFontSize + 6;
+        var normalOffset = Math.Max(14, Math.Abs(uy) * width / 2 + Math.Abs(ux) * height / 2 + 4);
+        var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
+            .Select(node => EdgeLabelNodeObstacle(node, options, 4)).ToList();
+        if (options.IncludeGroups && options.IncludeGroupLabels) obstacles.AddRange(chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 4)));
+        var best = endpoint;
+        var bestScore = double.PositiveInfinity;
+        for (var step = 0; step < 6; step++) {
+            foreach (var side in new[] { 1, -1 }) {
+                var along = 10 + step * 12;
+                var candidate = new ChartPoint(endpoint.X + ux * along - uy * normalOffset * side,
+                    endpoint.Y + uy * along + ux * normalOffset * side);
+                var box = LabelBox.FromCenter(candidate.X, candidate.Y, width, height);
+                var score = OverlapScore(box, obstacles) * 1000 + step * 12 + (side == 1 ? 0 : 1);
+                if (score >= bestScore) continue;
+                best = candidate;
+                bestScore = score;
+            }
+        }
+        return best;
     }
 
     public static string EdgeDash(TopologyEdge edge) {

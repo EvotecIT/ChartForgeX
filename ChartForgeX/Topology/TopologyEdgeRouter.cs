@@ -460,6 +460,7 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {
+        if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, 7);
         var centerX = CenterX(node);
         var centerY = CenterY(node);
         const double edgeEndpointGap = 7;

@@ -15,9 +15,12 @@ internal static partial class TopologyLayoutEngine {
         var ranks = nodes.Select(GetLayer).Distinct().OrderBy(rank => rank).ToList();
         var offsets = new Dictionary<int, double>();
         var extent = 40.0;
+        var previousRank = ranks[0];
         foreach (var rank in ranks) {
+            extent += Math.Max(0, (double)rank - previousRank - 1) * 96;
             offsets[rank] = extent;
             extent += nodes.Where(node => GetLayer(node) == rank).Max(node => horizontal ? node.Width : node.Height) + 96;
+            previousRank = rank;
         }
         extent += 16;
         var laneOffset = 0.0;

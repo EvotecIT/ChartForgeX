@@ -4,7 +4,7 @@ using System.Globalization;
 namespace ChartForgeX.Topology;
 
 /// <summary>Builds diagram surface paths once for SVG and raster path consumers.</summary>
-internal static class TopologyNodeShapeGeometry {
+internal static partial class TopologyNodeShapeGeometry {
     internal static string Path(TopologyNode node) {
         var x = node.X; var y = node.Y; var w = node.Width; var h = node.Height;
         var inset = Math.Min(w * 0.18, h * 0.3);

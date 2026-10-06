@@ -26,7 +26,7 @@ public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
     public bool ShowBitNumbers { get; set; } = true;
 
     /// <summary>Gets a concise accessibility label.</summary>
-    public override string AccessibleName => Title.Length == 0 ? "Packet layout" : Title;
+    public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Packet layout" : Title);
 
     /// <summary>Creates a packet layout block.</summary>
     public static PacketLayoutBlock Create() => new();

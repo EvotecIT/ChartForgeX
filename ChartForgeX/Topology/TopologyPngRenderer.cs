@@ -53,8 +53,8 @@ public sealed partial class TopologyPngRenderer {
         if (options.IncludeGroups) DrawGroups(canvas, prepared, theme, options, highlight);
         DrawEdges(canvas, prepared, theme, options, highlight);
         if (options.IncludeEdgeLabels) DrawEdgeLabels(canvas, prepared, theme, options, highlight);
-        if (options.IncludeEndpointLabels) DrawEndpointLabels(canvas, prepared, theme, options, highlight);
         DrawNodes(canvas, prepared, theme, options, highlight);
+        if (options.IncludeEndpointLabels) DrawEndpointLabels(canvas, prepared, theme, options, highlight);
         if (options.IncludeStatusBadges) DrawStatusBadges(canvas, prepared, theme, options, highlight);
         DrawMotionOverlay(canvas, prepared, theme, options, motionPlan);
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) DrawGeographicCallouts(canvas, prepared, theme, options, highlight);
