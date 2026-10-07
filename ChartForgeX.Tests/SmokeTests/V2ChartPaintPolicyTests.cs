@@ -40,6 +40,30 @@ public sealed class V2ChartPaintPolicyTests {
     }
 
     [Fact]
+    public void GridOpacityMultipliesAuthoredAlphaForNativeAndSvgPaints() {
+        var border = ChartColor.FromRgba(40, 100, 180, 96);
+        var tokens = new VisualDesignTokens { Border = border };
+        var context = new VisualRenderContext(theme: new VisualTheme(tokens, tokens));
+        var chart = Fixture(ChartSeriesKind.Line)
+            .WithGridStyle(new ChartGridLineStyle().WithHorizontalOpacity(0.5).WithVerticalOpacity(0.25));
+        var prepared = chart.Prepare(context);
+        var literal = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
+        foreach (var role in new[] { "grid-x", "grid-y" }) {
+            var alpha = role == "grid-x" ? 24 : 48;
+            var marks = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(mark => mark.Role == role).ToArray();
+            Assert.NotEmpty(marks);
+            Assert.All(marks, mark => Assert.Equal(alpha, mark.Stroke!.Value.A));
+            Assert.All(Paints(literal, role, "stroke"), paint => Assert.Equal(border.WithAlpha((byte)alpha).ToCss(), paint));
+        }
+        var mapped = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables:
+            new SvgColorVariables().Add("--authored-grid", border, SvgColorRole.Grid))));
+        Assert.All(Paints(mapped, "grid-y", "stroke"), paint => {
+            Assert.Contains("var(--authored-grid,", paint);
+            Assert.Contains("50%", paint);
+        });
+    }
+
+    [Fact]
     public void FrameAxesGridAndExplicitPointColorsSeparateEqualRgbRolesWithoutChangingPixels() {
         var chart = Fixture(ChartSeriesKind.Scatter).WithTitle("Observation");
         chart.Series[0].StateRole = ChartSeriesState.Danger;
