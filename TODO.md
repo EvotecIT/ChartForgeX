@@ -22,10 +22,11 @@ Scope and later phases are defined in [the architecture](docs/v2/architecture.md
 Phases 2–3 build on the qualified Phase 0–1 candidate while its external checks settle. Consumer repositories remain read-only; package extraction and publication belong to later phases.
 
 - [x] Create `feature/v2-charts` from Phase 0–1 candidate `c8e765c39b927b0630de6c123c97a9baba280f43`; coordinate dependent branches centrally.
-- [ ] Complete existing Cartesian options, axis-isolated stacks, explicit styles, labels and semantic state treatments.
-- [ ] Complete pie/donut, gauge, radial-bar and layered-radial options on the shared scene.
-- [ ] Unify numeric formatting and sparse sparkline data, preserving missing observations separately from zero.
-- [ ] Extend shared scene paint, clipping and transformed text for migrated family requirements.
+- [x] Implement existing Cartesian options, axis-isolated stacks, explicit styles, labels and semantic state treatments on the prepared route.
+- [x] Implement pie/donut, gauge, radial-bar and layered-radial options on the shared scene.
+- [x] Unify numeric formatting and sparse sparkline data, preserving missing observations separately from zero; preserve original bar sample slots through missing observations.
+- [x] Extend shared scene paint, clipping and transformed text for migrated family requirements.
+- [x] Qualify the prepared option candidate with 2,614 tests, 42 Mermaid fixtures and four target frameworks; complete current-head AOT, artifact/package and affected performance proof below.
 - [ ] Remove replaced Cartesian/radial export paths after option and visual closure; update migration/API records.
 - [ ] Migrate topology, flow and sequence with native semantics and Mermaid acceptance fixtures.
 - [ ] Migrate remaining chart families in coherent groups, reusing existing layout owners.
