@@ -47,6 +47,7 @@ public static partial class VisualArtifactRendering {
         artifact.Accessibility.Language = semantics?.Language ?? accessibility.Language;
         artifact.Accessibility.IsDecorative = semantics?.IsDecorative ?? accessibility.IsDecorative;
         if (semantics != null) {
+            artifact.ExportFormats |= VisualArtifactExportFormat.Json;
             artifact.PreparedInterchangeSnapshot = semantics.ToJson();
             foreach (var pair in semantics.Extensions) artifact.Metadata.Add(pair.Key, pair.Value);
         }

@@ -33,8 +33,8 @@ public sealed partial class Chart : IVisualRenderable {
         if (radial) VisualRadialCompiler.Build(this, context, builder, content);
         else VisualCartesianCompiler.BuildInViewport(this, context, builder, content);
         var accessibility = Accessibility.Clone();
-        accessibility.Name ??= frame.Title;
-        accessibility.Description ??= frame.Subtitle;
+        accessibility.Name ??= string.IsNullOrWhiteSpace(frame.Title) ? Title : frame.Title;
+        accessibility.Description ??= string.IsNullOrWhiteSpace(frame.Subtitle) ? Subtitle : frame.Subtitle;
         return new PreparedVisual(builder.Build(), accessibility);
     }
 }

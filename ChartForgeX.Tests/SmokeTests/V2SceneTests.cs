@@ -126,6 +126,23 @@ public sealed class V2SceneTests : IDisposable {
     }
 
     [Theory]
+    [InlineData(320.5, 200.25, 2, 1)]
+    [InlineData(20.25, 12.75, 3, 2)]
+    public void FractionalViewportRoundsAfterOutputScaleAndBudgetsTheActualBuffer(double width, double height, int scale, int supersampling) {
+        var builder = Builder(width, height);
+        builder.Rect(new ChartRect(0, 0, width, height), ChartColor.Black);
+        var scene = builder.Build();
+        var pixelWidth = (int)Math.Ceiling(width * scale);
+        var pixelHeight = (int)Math.Ceiling(height * scale);
+        var budget = (long)pixelWidth * pixelHeight * supersampling * supersampling;
+        var image = VisualSceneRasterRenderer.Render(scene, scale, supersampling, budget);
+        Assert.Equal(pixelWidth, image.Width);
+        Assert.Equal(pixelHeight, image.Height);
+        Assert.True(Pixel(image, pixelWidth - 1, 1)[3] > 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => VisualSceneRasterRenderer.Render(scene, scale, supersampling, budget - 1));
+    }
+
+    [Theory]
     [InlineData("fractional-scene")]
     [InlineData("fractional-bounds")]
     [InlineData("fractional-origin")]

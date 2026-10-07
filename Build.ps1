@@ -694,14 +694,19 @@ try {
         )
 
         foreach ($packageProject in $packageProjects) {
+            $packageVersion = Invoke-DotNetCommand -Arguments @('msbuild', $packageProject.Project, '-nologo', '-getProperty:PackageVersion', "-p:Configuration=$Configuration") -Description "$($packageProject.Id) package-version evaluation" -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
+            if ([string]::IsNullOrWhiteSpace($packageVersion)) {
+                throw "Package version is missing for $($packageProject.Project)."
+            }
+            $packageProject.Version = $packageVersion.Trim()
             Invoke-DotNetCommand -Arguments @('pack', $packageProject.Project, '-c', $Configuration, '--no-build', '--output', $packageRoot) -Description "$($packageProject.Id) package creation" -TimeoutSeconds $DotNetCommandTimeoutSeconds
         }
 
-        $packages = @(Get-ChildItem $packageRoot -Filter 'ChartForgeX*.nupkg' | Sort-Object Name)
+        $packages = @($packageProjects | ForEach-Object { Get-Item -LiteralPath (Join-Path $packageRoot "$($_.Id).$($_.Version).nupkg") -ErrorAction Stop })
         if ($packages.Count -ne $packageProjects.Count) {
             throw "Expected $($packageProjects.Count) packages, found $($packages.Count)."
         }
-        $symbolsPackages = @(Get-ChildItem $packageRoot -Filter 'ChartForgeX*.snupkg' | Sort-Object Name)
+        $symbolsPackages = @($packageProjects | ForEach-Object { Get-Item -LiteralPath (Join-Path $packageRoot "$($_.Id).$($_.Version).snupkg") -ErrorAction Stop })
         if ($symbolsPackages.Count -ne $packageProjects.Count) {
             throw "Expected $($packageProjects.Count) symbol packages, found $($symbolsPackages.Count)."
         }
@@ -711,11 +716,7 @@ try {
         $mermaidPackageVersion = $null
         $markupMermaidPackageVersion = $null
         foreach ($packageProject in $packageProjects) {
-            $packageVersion = Invoke-DotNetCommand -Arguments @('msbuild', $packageProject.Project, '-nologo', '-getProperty:PackageVersion', "-p:Configuration=$Configuration") -Description "$($packageProject.Id) package-version evaluation" -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
-            if ([string]::IsNullOrWhiteSpace($packageVersion)) {
-                throw "Package version is missing for $($packageProject.Project)."
-            }
-
+            $packageVersion = $packageProject.Version
             $package = Get-Item (Join-Path $packageRoot "$($packageProject.Id).$packageVersion.nupkg")
             $symbolsPackage = Get-Item (Join-Path $packageRoot "$($packageProject.Id).$packageVersion.snupkg")
             if (-not $package) {
@@ -778,6 +779,9 @@ try {
         $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
         try {
             New-Item -ItemType Directory -Path $consumerRoot | Out-Null
+            $consumerFeed = Join-Path $consumerRoot 'packages'
+            New-Item -ItemType Directory -Path $consumerFeed | Out-Null
+            $packages | Copy-Item -Destination $consumerFeed
             Push-Location $consumerRoot
             try {
                 @'
@@ -797,7 +801,7 @@ try {
   </config>
   <packageSources>
     <clear />
-    <add key="local-chartforgex" value="$packageRoot" />
+    <add key="local-chartforgex" value="$consumerFeed" />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
   <packageSourceMapping>

@@ -51,7 +51,7 @@ public sealed class HtmlChartInteractionOptions {
 
     /// <summary>
     /// Gets or sets whether the generated chart includes a contextual "Reset view" button. The button stays hidden
-    /// until the reader zooms, pans, brushes, mutes, or isolates series, and hides again after the view is reset.
+    /// until the reader selects marks, zooms, pans, brushes, mutes, or isolates series, and hides again after the view is reset.
     /// Resetting also clears selections, focus trails, and pinned tooltips.
     /// </summary>
     public bool IncludeResetButton { get; set; }

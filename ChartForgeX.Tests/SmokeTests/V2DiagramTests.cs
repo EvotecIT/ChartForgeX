@@ -10,6 +10,18 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Native diagram producers share the fixed scene contract while rejecting unmigrated presentation.</summary>
 public sealed class V2DiagramTests {
+    [Fact]
+    public void HiddenDiagramHeadingsPreserveSourceTitlesAsAccessibleNames() {
+        var topology = Topology(); topology.Title = "Source network";
+        var sequence = Sequence(); sequence.Title = "Source session";
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), frame: new VisualFrame("", "", false));
+        foreach (var pair in new[] { (Model: (IVisualRenderable)topology, Title: topology.Title), (Model: (IVisualRenderable)sequence, Title: sequence.Title) }) {
+            var prepared = pair.Model.Prepare(context);
+            Assert.Equal(pair.Title, prepared.Accessibility.Name);
+            Assert.Equal(pair.Title, (string?)XDocument.Parse(prepared.ToSvg()).Root!.Attribute("aria-label"));
+            Assert.DoesNotContain("data-cfx-role=\"frame-heading\"", prepared.ToSvg());
+        }
+    }
     [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]

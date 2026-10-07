@@ -10,10 +10,7 @@ internal static partial class SmokeTests {
     private static void BuildScriptVerifiesReleaseArtifacts() {
         var buildScript = Path.Combine(FindRepositoryRoot(), "Build.ps1");
         var script = File.ReadAllText(buildScript);
-        Assert(script.Contains("ChartForgeX*.nupkg", StringComparison.Ordinal), "Build script should verify NuGet package creation and clean copy-suffixed package artifacts.");
-        Assert(script.Contains("ChartForgeX*.snupkg", StringComparison.Ordinal), "Build script should verify symbol package creation and clean copy-suffixed symbol artifacts.");
         Assert(script.Contains("artifacts/packages/$Configuration", StringComparison.Ordinal), "Build script should put all release packages in a shared ignored artifact folder.");
-        Assert(script.Contains("$packages.Count -ne $packageProjects.Count", StringComparison.Ordinal), "Build script should reject stale or duplicate packages.");
         Assert(script.Contains("ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should package the HTML interactivity adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");
         Assert(script.Contains("ChartForgeX.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid adapter.");

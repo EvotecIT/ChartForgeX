@@ -79,6 +79,7 @@
     if (!hasFeature(root, 'Selection')) return;
     const selected = !node.classList.contains('cfx-selected');
     setNodeSelected(node, selected);
+    syncResetControl(root);
     const target = targetIdentity(node);
     emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
     emitSync(root, { action: 'selection', label: text(node), selected, target });
@@ -392,6 +393,7 @@
     root.querySelectorAll(targetSelector).forEach((node) => {
       if (text(node) === label) setNodeSelected(node, selected);
     });
+    syncResetControl(root);
   };
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
@@ -417,6 +419,7 @@
       matched = true;
       setNodeSelected(node, selected);
     });
+    syncResetControl(root);
     return matched;
   };
   const clearSelections = (root) => {
@@ -424,6 +427,7 @@
       node.classList.remove('cfx-selected');
       node.removeAttribute('aria-selected');
     });
+    syncResetControl(root);
   };
   const applySelectionSetByTargets = (root, targets, replace) => {
     if (replace !== false) clearSelections(root);
@@ -451,6 +455,7 @@
       setNodeSelected(node, true);
       targets.push(targetIdentity(node));
     });
+    syncResetControl(root);
     return targets;
   };
   const applySync = (root, detail) => {
