@@ -21,15 +21,15 @@ public sealed class GraphiteBulletFormattingTests {
             .WithSize(200, height).WithPngOutputScale(1);
         for (var row = 0; row < rowCount; row++) chart.AddBullet("Count " + row, 40 + row, 70);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
-        Assert.Equal(rowCount, Roles(nodes, "bullet-row").Length);
+        Assert.Equal(rowCount, MarkRoles(nodes, "bullet-row").Length);
         foreach (var rectangle in nodes.Where(element => element.Name.LocalName == "rect")) {
             Assert.True((double)rectangle.Attribute("width")! >= 0, "SVG rectangle widths must be nonnegative.");
             Assert.True((double)rectangle.Attribute("height")! >= 0, "SVG rectangle heights must be nonnegative.");
         }
-        var ranges = Roles(nodes, "bullet-range");
+        var ranges = MarkRoles(nodes, "bullet-range");
         Assert.NotEmpty(ranges);
-        Assert.All(ranges.Concat(Roles(nodes, "bullet-value")), mark => Assert.True((double)mark.Attribute("height")! > 0));
-        Assert.All(Roles(nodes, "bullet-target"), mark => Assert.True((double)mark.Attribute("y2")! > (double)mark.Attribute("y1")!));
+        Assert.All(ranges.Concat(MarkRoles(nodes, "bullet-value")), mark => Assert.True((double)mark.Attribute("height")! > 0));
+        Assert.All(MarkRoles(nodes, "bullet-target"), mark => Assert.True((double)mark.Attribute("y2")! > (double)mark.Attribute("y1")!));
         var image = PngReader.Decode(chart.ToPng());
         Assert.Equal(200, image.Width);
         Assert.Equal(height, image.Height);
@@ -101,6 +101,7 @@ public sealed class GraphiteBulletFormattingTests {
         Assert.Equal(new[] { "0,0 ms", "500,0 ms", "1.000,0 ms", "1.500,0 ms", "2.000,0 ms" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
     }
 
-    private static XElement[] Roles(IEnumerable<XElement> nodes, string role) => nodes.Where(e => (string?)e.Attribute("data-cfx-role") == role)
+    private static XElement[] MarkRoles(IEnumerable<XElement> nodes, string role) => nodes.Where(e => (string?)e.Attribute("data-cfx-role") == role).ToArray();
+    private static XElement[] Roles(IEnumerable<XElement> nodes, string role) => MarkRoles(nodes, role)
         .SelectMany(element => element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text")).ToArray();
 }
