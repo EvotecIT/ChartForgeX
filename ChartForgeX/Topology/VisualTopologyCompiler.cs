@@ -76,6 +76,9 @@ internal sealed partial class VisualTopologyCompiler {
         input.Theme = Theme();
         var layoutOptions = _options.CloneForRendering();
         layoutOptions.IncludeTitle = false; layoutOptions.IncludeLegend = false;
+        // A view selects data and identity here. Its headings were already measured by the
+        // common frame; the detached layout copy must not reserve them a second time.
+        if (layoutOptions.View != null) { layoutOptions.View.Title = null; layoutOptions.View.Subtitle = null; }
         _chart = _resolvedLayout ? input : TopologyLayoutEngine.Prepare(input, layoutOptions.View, layoutOptions, new TextMeasurementContext(_context.Font, _options.TextMeasurementMode));
         if (layoutOptions.View != null) TopologyLayoutEngine.DetachOmittedSourceGroups(input, _chart);
         var validation = validator.Validate(_chart, validateScenarioReferences: false, layoutOptions);

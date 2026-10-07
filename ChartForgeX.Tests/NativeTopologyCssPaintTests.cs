@@ -1,12 +1,33 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
+using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyCssPaintTests {
+    [Theory]
+    [InlineData("#CC224480", .8, "80%", 102)]
+    [InlineData("#CC224400", 0, "0%", 0)]
+    [InlineData("#CC224400", .5, "50%", 0)]
+    public void VariableOpacityUsesTheAuthoredFactorIndependentlyOfFallbackAlpha(string fallback, double opacity, string percentage, int expectedAlpha) {
+        var chart = TopologyChart.Create().WithViewport(480, 240, 20).WithLegend(null)
+            .AddNode("source", "Source", 40, 90, width: 80, height: 50)
+            .AddNode("target", "Target", 340, 90, width: 80, height: 50)
+            .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)
+            .WithEdgeColor("route", "var(--relationship, " + fallback + ")")
+            .WithEdgeStroke("route", opacity: opacity);
+        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false }.WithPlainTopologyEdges());
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var line = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+        Assert.Contains("var(--relationship,", (string?)line.Attribute("stroke"));
+        Assert.Contains(percentage, (string?)line.Attribute("stroke"));
+        var native = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "topology-edge-line");
+        Assert.Equal(expectedAlpha, native.Stroke!.Value.A);
+    }
+
     [Fact]
     public void AuthoredVariablePaintRetainsItsLiteralRasterFallbackOnRoutesAndMarkers() {
         var chart = TopologyChart.Create().WithId("variable-route").WithViewport(480, 240, 20).WithLegend(null)
