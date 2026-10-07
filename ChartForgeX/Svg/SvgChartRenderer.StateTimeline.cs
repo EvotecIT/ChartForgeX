@@ -33,7 +33,8 @@ public sealed partial class SvgChartRenderer {
             : Array.Empty<ChartStateCategoryLegendItem>();
         var plot = model.PlotArea(bounds, laneLabelWidth, summaryWidth, EstimateSvgStyledTextHeight(tickFontSize, tickStyle), ChartStateTimelineModel.LegendHeight(chart, legend), axisLabelReserve, 0);
         var hatchId = id + "-stateHatch";
-        var writer = new SvgMarkupWriter(8192);
+        // The timeline is written straight into the chart markup: nothing else appends to it until the writer completes.
+        var writer = new SvgMarkupWriter(sb);
         writer.StartElement("g").Attribute("data-cfx-role", "state-timeline").EndStartElement().Line();
         WriteStateCategoryHatchPattern(writer, hatchId, chart);
 
@@ -130,7 +131,7 @@ public sealed partial class SvgChartRenderer {
         WriteStateCategoryLegend(writer, chart, legend, bounds.Bottom - ChartStateTimelineModel.LegendHeight(chart, legend) + 4, hatchId, bounds);
 
         writer.EndElement().Line();
-        sb.Append(writer.Build());
+        writer.Complete();
     }
 
 }
