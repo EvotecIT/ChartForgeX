@@ -110,11 +110,13 @@ internal static partial class VisualCartesianCompiler {
         var count = Math.Max(1, grouped ? barIndices.Length : stackAxes.Length);
         var position = grouped ? Math.Max(0, Array.IndexOf(barIndices, index)) : Math.Max(0, Array.IndexOf(stackAxes, series.YAxis));
         var centers = barIndices.SelectMany(i => chart.Series[i].Points.Select(point => map.X(point.X))).Distinct().OrderBy(value => value).ToArray();
-        var spacing = plot.Width;
-        for (var point = 1; point < centers.Length; point++) spacing = Math.Min(spacing, centers[point] - centers[point - 1]);
+        var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
+        var spacing = sampleSlots > 0 ? plot.Width / sampleSlots : plot.Width;
+        if (sampleSlots == 0)
+            for (var point = 1; point < centers.Length; point++) spacing = Math.Min(spacing, centers[point] - centers[point - 1]);
         var occupied = spacing * .68;
         var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
-        var width = Math.Max(.1, (occupied - gap * (count - 1)) / count);
+        var width = Math.Max(sampleSlots > 0 ? 0 : .1, (occupied - gap * (count - 1)) / count);
         var offset = (position - (count - 1) / 2d) * (width + gap);
         return (width, offset);
     }

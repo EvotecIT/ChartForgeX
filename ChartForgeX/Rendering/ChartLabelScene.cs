@@ -129,7 +129,7 @@ internal sealed partial class ChartLabelScene {
         clip = ResolveMarkClip(style.ClipPath, matrix, clip);
         var role = Role(element);
         var isLegendItem = role is "legend-item" or "slice-legend-item";
-        var isGroup = isLegendItem || role == "topology-edge-label";
+        var isGroup = isLegendItem || role is "topology-edge-label" or "topology-node-label";
         if (element.LocalName == "text" || isGroup) {
             var textElements = isGroup ? element.Elements().Where(e => e.LocalName == "text").ToArray() : new[] { element };
             if (textElements.Length != 0) {

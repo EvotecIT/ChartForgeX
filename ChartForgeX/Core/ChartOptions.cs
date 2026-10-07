@@ -593,6 +593,10 @@ public sealed partial class ChartOptions {
     /// </summary>
     public bool IsSparkline { get; set; }
 
+    // Original compact sample slots determine bar spacing independently of retained observations.
+    // Set only by the standalone Sparkline owner; general chart bars keep their coordinate-based layout.
+    internal int SparklineSampleCount { get; set; }
+
     internal List<string> SankeyNodeLabels { get; } = new();
 
     internal List<string> TreeNodeLabels { get; } = new();

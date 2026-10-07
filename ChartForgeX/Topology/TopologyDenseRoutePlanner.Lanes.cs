@@ -23,11 +23,11 @@ internal static partial class TopologyDenseRoutePlanner {
     /// Moves runs that share a corridor onto parallel lanes. Vertical runs are spread first, then horizontal runs on the
     /// updated geometry. A route whose new position would touch an obstacle keeps the position the search gave it.
     /// </summary>
-    private static void SeparateLanes(Scene scene, List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) {
+    private static void SeparateLanes(Scene scene, List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes, bool keepBoundaryRuns = false) {
         if (routes.Count < 2) return;
         var searched = routes.Select(route => new List<ChartPoint>(route.Points)).ToList();
-        SeparateAxis(scene, routes, vertical: true);
-        SeparateAxis(scene, routes, vertical: false);
+        SeparateAxis(scene, routes, vertical: true, keepBoundaryRuns);
+        SeparateAxis(scene, routes, vertical: false, keepBoundaryRuns);
         for (var i = 0; i < routes.Count; i++) {
             var before = Interaction(searched[i], new List<PlannedRoute>(), fixedRoutes, null);
             var after = Interaction(routes[i].Points, new List<PlannedRoute>(), fixedRoutes, null);
@@ -52,7 +52,7 @@ internal static partial class TopologyDenseRoutePlanner {
     /// code: <c>Position</c> is the coordinate a run is moved along (x for a vertical run) and <c>From</c>/<c>To</c>
     /// are its extent.
     /// </summary>
-    private static void SeparateAxis(Scene scene, List<PlannedRoute> routes, bool vertical) {
+    private static void SeparateAxis(Scene scene, List<PlannedRoute> routes, bool vertical, bool keepBoundaryRuns) {
         var runs = new List<Run>();
         for (var routeIndex = 0; routeIndex < routes.Count; routeIndex++) {
             var route = routes[routeIndex];
@@ -68,7 +68,7 @@ internal static partial class TopologyDenseRoutePlanner {
                 var after = i + 2 < points.Count ? Math.Sign(Position(points[i + 2], vertical) - run.Position) : 0;
                 run.LowSide = lowIsFirst ? before : after;
                 run.HighSide = lowIsFirst ? after : before;
-                Bound(scene, route, run, vertical, i == 0, i + 2 == points.Count);
+                Bound(scene, route, run, vertical, i == 0, i + 2 == points.Count, keepBoundaryRuns);
                 if (i > 0) KeepLeg(run, Position(points[i - 1], vertical), i == 1);
                 if (i + 2 < points.Count) KeepLeg(run, Position(points[i + 2], vertical), i + 3 == points.Count);
                 runs.Add(run);
@@ -161,10 +161,13 @@ internal static partial class TopologyDenseRoutePlanner {
     /// Limits how far a run may move: up to the lane clearance from the nearest obstacle on each side, inside the
     /// content area, and, for the first or last run of a route, along the card side it is attached to.
     /// </summary>
-    private static void Bound(Scene scene, PlannedRoute route, Run run, bool vertical, bool first, bool last) {
-        run.Low = (vertical ? scene.Region.Left : scene.Region.Top) + 1;
-        run.High = (vertical ? scene.Region.Right : scene.Region.Bottom) - 1;
-        var pinned = false;
+    private static void Bound(Scene scene, PlannedRoute route, Run run, bool vertical, bool first, bool last, bool keepBoundaryRuns) {
+        // Search may legally use the region boundary. Keep that original position in the interval so the final
+        // feasibility check does not pin a boundary run and prevent it from moving onto a clear lane inward.
+        run.Low = Math.Min(run.Position, (vertical ? scene.Region.Left : scene.Region.Top) + 1);
+        run.High = Math.Max(run.Position, (vertical ? scene.Region.Right : scene.Region.Bottom) - 1);
+        var pinned = keepBoundaryRuns && (Math.Abs(run.Position - (vertical ? scene.Region.Left : scene.Region.Top)) < 0.01 ||
+            Math.Abs(run.Position - (vertical ? scene.Region.Right : scene.Region.Bottom)) < 0.01);
         foreach (var obstacle in scene.Obstacles) {
             var box = obstacle.Box;
             var near = vertical ? box.Left : box.Top;

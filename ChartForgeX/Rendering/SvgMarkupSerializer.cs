@@ -4,8 +4,8 @@ using System.Text;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Writes a <see cref="SvgMarkupDocument"/> exactly as <c>XDocument.ToString(SaveOptions.DisableFormatting)</c> writes
-/// the equivalent tree: double-quoted attributes, <c>&lt;name /&gt;</c> for empty elements, line ends as the platform
+/// Writes a <see cref="SvgMarkupDocument"/> as equivalent compact XML: double-quoted attributes,
+/// <c>&lt;name/&gt;</c> for empty elements, line ends as the platform
 /// new line in text and as character references in attributes, and the framework's escaping.
 /// </summary>
 internal static class SvgMarkupSerializer {
@@ -42,7 +42,7 @@ internal static class SvgMarkupSerializer {
         }
 
         if (element.IsEmpty) {
-            builder.Append(" />");
+            builder.Append("/>");
             return;
         }
 

@@ -51,11 +51,21 @@ public sealed class Sparkline : IVisualRenderable {
         if (context == null) throw new ArgumentNullException(nameof(context));
         if (Style == SparklineStyle.Bars && Smooth) throw new InvalidOperationException("Bar sparklines do not use curve interpolation.");
         var chart = Chart.Create().WithSparkline().WithValueFormat(ValueFormat);
-        chart.Options.XAxis.WithBounds(Data.Values.Count == 1 ? 0 : 1, Data.Values.Count == 1 ? 2 : Data.Values.Count);
+        if (Style == SparklineStyle.Bars) {
+            // Sample coordinates are one-based centres. Reserve a complete slot on both ends,
+            // and keep the original slot count even when missing observations produce no points.
+            chart.Options.XAxis.WithBounds(.5, Data.Values.Count + .5);
+            chart.Options.SparklineSampleCount = Data.Values.Count;
+        } else chart.Options.XAxis.WithBounds(Data.Values.Count == 1 ? 0 : 1, Data.Values.Count == 1 ? 2 : Data.Values.Count);
         chart.Options.YAxis.WithBounds(Data.Minimum, Data.Maximum);
         chart.Options.LineMarkerMode = Data.Values[Data.Values.Count - 1].HasValue ? ChartLineMarkerMode.Last : ChartLineMarkerMode.None;
         var kind = Style == SparklineStyle.Bars ? ChartSeriesKind.Bar : Style == SparklineStyle.Area ? ChartSeriesKind.Area : ChartSeriesKind.Line;
-        var series = new ChartSeries("Trend", kind, Data.ToPoints()) { Color = Color, Smooth = Smooth, ShowInLegend = false };
+        var points = Data.ToPoints();
+        if (Style == SparklineStyle.Bars) {
+            // Missing slots separate independent bars by position, rather than by line segment markers.
+            for (var index = 0; index < points.Length; index++) points[index] = new ChartPoint(points[index].X, points[index].Y);
+        }
+        var series = new ChartSeries("Trend", kind, points) { Color = Color, Smooth = Smooth, ShowInLegend = false };
         chart.Series.Add(series);
         return chart.Prepare(context);
     }
