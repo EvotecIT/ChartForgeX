@@ -4,17 +4,19 @@
     {
       "name": "advanced-topology",
       "width": 920,
-      "height": 584,
+      "height": 585,
+      "logicalWidth": 920.0,
+      "logicalHeight": 584.553,
       "svg": {
-        "minVisualNodes": 37,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 268640,
+        "minVisiblePixels": 269100,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1008,
+        "minDistinctColors": 1005,
         "maxEdgeInkPixels": 0
       }
     },
@@ -22,8 +24,10 @@
       "name": "animated-engineering-portfolio-story",
       "width": 838,
       "height": 946,
+      "logicalWidth": 838.0,
+      "logicalHeight": 946.0,
       "svg": {
-        "minVisualNodes": 43,
+        "minVisualNodes": 39,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -39,16 +43,18 @@
       "name": "annotation-edge-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1612,
         "maxEdgeInkPixels": 0
       }
     },
@@ -56,6 +62,8 @@
       "name": "api-request-response-story",
       "width": 960,
       "height": 540,
+      "logicalWidth": 960.0,
+      "logicalHeight": 540.0,
       "svg": {
         "minVisualNodes": 2,
         "maxClippedTextNodes": 0,
@@ -73,16 +81,18 @@
       "name": "audience-pictorial-candy",
       "width": 860,
       "height": 500,
+      "logicalWidth": 860.0,
+      "logicalHeight": 500.0,
       "svg": {
-        "minVisualNodes": 40,
+        "minVisualNodes": 51,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 794304,
-        "minTransparentPixels": 65696,
-        "minDistinctColors": 1931,
+        "minVisiblePixels": 831325,
+        "minTransparentPixels": 28675,
+        "minDistinctColors": 1270,
         "maxEdgeInkPixels": 0
       }
     },
@@ -90,33 +100,37 @@
       "name": "axis-label-fitting-showcase",
       "width": 760,
       "height": 300,
+      "logicalWidth": 760.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 38,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 406691,
-        "minTransparentPixels": 49309,
-        "minDistinctColors": 1315,
+        "minVisiblePixels": 434362,
+        "minTransparentPixels": 21638,
+        "minDistinctColors": 1209,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "brand-kit-showcase-grid",
       "width": 912,
-      "height": 668,
+      "height": 666,
+      "logicalWidth": 912.0,
+      "logicalHeight": 665.878,
       "svg": {
-        "minVisualNodes": 55,
+        "minVisualNodes": 63,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1218432,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1214681,
+        "minTransparentPixels": 103,
+        "minDistinctColors": 1333,
         "maxEdgeInkPixels": 0
       }
     },
@@ -124,6 +138,8 @@
       "name": "chart-in-five-lines-story",
       "width": 1200,
       "height": 675,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 675.0,
       "svg": {
         "minVisualNodes": 2,
         "maxClippedTextNodes": 0,
@@ -133,24 +149,26 @@
         "outputScale": 1,
         "minVisiblePixels": 405000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1779,
+        "minDistinctColors": 1303,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "chart-mark-surfaces-showcase-grid",
       "width": 944,
-      "height": 996,
+      "height": 994,
+      "logicalWidth": 944.0,
+      "logicalHeight": 993.878,
       "svg": {
-        "minVisualNodes": 98,
+        "minVisualNodes": 150,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1880448,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1810364,
+        "minTransparentPixels": 66308,
+        "minDistinctColors": 1671,
         "maxEdgeInkPixels": 0
       }
     },
@@ -158,15 +176,17 @@
       "name": "colour-emoji-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -175,15 +195,17 @@
       "name": "control-contribution-polar-area-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -192,15 +214,17 @@
       "name": "control-coverage-heatmap-dark",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 47,
+        "minVisualNodes": 68,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024055,
-        "minTransparentPixels": 73545,
+        "minVisiblePixels": 1066388,
+        "minTransparentPixels": 31212,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -209,15 +233,17 @@
       "name": "control-coverage-radialbar-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 22,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -226,16 +252,18 @@
       "name": "control-hierarchy-tree-light",
       "width": 1040,
       "height": 600,
+      "logicalWidth": 1040.0,
+      "logicalHeight": 600.0,
       "svg": {
-        "minVisualNodes": 47,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1169571,
-        "minTransparentPixels": 78429,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1214762,
+        "minTransparentPixels": 33238,
+        "minDistinctColors": 1631,
         "maxEdgeInkPixels": 0
       }
     },
@@ -243,16 +271,18 @@
       "name": "control-improvement-slope-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 39,
+        "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1996,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1534,
         "maxEdgeInkPixels": 0
       }
     },
@@ -260,15 +290,17 @@
       "name": "control-partition-sunburst-aurora",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 21,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959495,
-        "minTransparentPixels": 70905,
+        "minVisiblePixels": 1000391,
+        "minTransparentPixels": 30009,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -277,32 +309,36 @@
       "name": "control-readiness-lollipop-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 34,
+        "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1516,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1437,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "control-scorecards-grid",
       "width": 1904,
-      "height": 1260,
+      "height": 1258,
+      "logicalWidth": 1904.0,
+      "logicalHeight": 1257.878,
       "svg": {
-        "minVisualNodes": 118,
+        "minVisualNodes": 114,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 4798080,
-        "minTransparentPixels": 0,
+        "minVisiblePixels": 4682573,
+        "minTransparentPixels": 107891,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -311,16 +347,18 @@
       "name": "control-targets-bullet-dark",
       "width": 920,
       "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
       "svg": {
-        "minVisualNodes": 41,
+        "minVisualNodes": 37,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 888135,
-        "minTransparentPixels": 68665,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 927588,
+        "minTransparentPixels": 29212,
+        "minDistinctColors": 1345,
         "maxEdgeInkPixels": 0
       }
     },
@@ -328,16 +366,18 @@
       "name": "ct-regional-light",
       "width": 880,
       "height": 560,
+      "logicalWidth": 880.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 32,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 916451,
-        "minTransparentPixels": 69149,
-        "minDistinctColors": 1118,
+        "minVisiblePixels": 956362,
+        "minTransparentPixels": 29238,
+        "minDistinctColors": 1295,
         "maxEdgeInkPixels": 0
       }
     },
@@ -345,16 +385,18 @@
       "name": "ct-volume-light",
       "width": 1180,
       "height": 640,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 47,
+        "minVisualNodes": 34,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1423571,
-        "minTransparentPixels": 86829,
-        "minDistinctColors": 1726,
+        "minVisiblePixels": 1473562,
+        "minTransparentPixels": 36838,
+        "minDistinctColors": 1719,
         "maxEdgeInkPixels": 0
       }
     },
@@ -362,8 +404,10 @@
       "name": "dashboard-appointment-operations-grid",
       "width": 1376,
       "height": 1525,
+      "logicalWidth": 1376.0,
+      "logicalHeight": 1525.0,
       "svg": {
-        "minVisualNodes": 187,
+        "minVisualNodes": 196,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -379,16 +423,18 @@
       "name": "dashboard-attendance-hexbin-heatmap",
       "width": 760,
       "height": 520,
+      "logicalWidth": 760.0,
+      "logicalHeight": 520.0,
       "svg": {
-        "minVisualNodes": 41,
+        "minVisualNodes": 61,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 727966,
-        "minTransparentPixels": 62434,
-        "minDistinctColors": 1520,
+        "minVisiblePixels": 762553,
+        "minTransparentPixels": 27847,
+        "minDistinctColors": 888,
         "maxEdgeInkPixels": 0
       }
     },
@@ -396,6 +442,8 @@
       "name": "dashboard-certificate-inventory-composition-strip",
       "width": 820,
       "height": 340,
+      "logicalWidth": 820.0,
+      "logicalHeight": 340.0,
       "svg": {
         "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
@@ -413,6 +461,8 @@
       "name": "dashboard-channel-share-capsule-loop",
       "width": 820,
       "height": 340,
+      "logicalWidth": 820.0,
+      "logicalHeight": 340.0,
       "svg": {
         "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
@@ -430,8 +480,10 @@
       "name": "dashboard-chart-portfolio-grid",
       "width": 1224,
       "height": 2331,
+      "logicalWidth": 1224.0,
+      "logicalHeight": 2331.0,
       "svg": {
-        "minVisualNodes": 609,
+        "minVisualNodes": 862,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -447,6 +499,8 @@
       "name": "dashboard-content-performance-rows",
       "width": 820,
       "height": 460,
+      "logicalWidth": 820.0,
+      "logicalHeight": 460.0,
       "svg": {
         "minVisualNodes": 414,
         "maxClippedTextNodes": 0,
@@ -464,6 +518,8 @@
       "name": "dashboard-conversion-funnel-columns",
       "width": 820,
       "height": 330,
+      "logicalWidth": 820.0,
+      "logicalHeight": 330.0,
       "svg": {
         "minVisualNodes": 79,
         "maxClippedTextNodes": 0,
@@ -481,16 +537,18 @@
       "name": "dashboard-device-progress-bars",
       "width": 520,
       "height": 260,
+      "logicalWidth": 520.0,
+      "logicalHeight": 260.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 233086,
-        "minTransparentPixels": 37314,
-        "minDistinctColors": 969,
+        "minVisiblePixels": 252793,
+        "minTransparentPixels": 17607,
+        "minDistinctColors": 799,
         "maxEdgeInkPixels": 0
       }
     },
@@ -498,8 +556,10 @@
       "name": "dashboard-hr-operations-grid",
       "width": 1376,
       "height": 1831,
+      "logicalWidth": 1376.0,
+      "logicalHeight": 1831.0,
       "svg": {
-        "minVisualNodes": 190,
+        "minVisualNodes": 174,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -515,8 +575,10 @@
       "name": "dashboard-hr-overview-grid",
       "width": 1292,
       "height": 1009,
+      "logicalWidth": 1292.0,
+      "logicalHeight": 1009.0,
       "svg": {
-        "minVisualNodes": 158,
+        "minVisualNodes": 164,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -532,16 +594,18 @@
       "name": "dashboard-kpi-bar-sparkline",
       "width": 520,
       "height": 260,
+      "logicalWidth": 520.0,
+      "logicalHeight": 260.0,
       "svg": {
-        "minVisualNodes": 25,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 233086,
-        "minTransparentPixels": 37314,
-        "minDistinctColors": 809,
+        "minVisiblePixels": 242158,
+        "minTransparentPixels": 28242,
+        "minDistinctColors": 552,
         "maxEdgeInkPixels": 0
       }
     },
@@ -549,16 +613,18 @@
       "name": "dashboard-mrr-driver-bars",
       "width": 920,
       "height": 480,
+      "logicalWidth": 920.0,
+      "logicalHeight": 480.0,
       "svg": {
-        "minVisualNodes": 37,
+        "minVisualNodes": 51,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 815982,
-        "minTransparentPixels": 67218,
-        "minDistinctColors": 1251,
+        "minVisiblePixels": 853725,
+        "minTransparentPixels": 29475,
+        "minDistinctColors": 1031,
         "maxEdgeInkPixels": 0
       }
     },
@@ -566,16 +632,18 @@
       "name": "dashboard-mrr-trend-card",
       "width": 920,
       "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
       "svg": {
-        "minVisualNodes": 41,
+        "minVisualNodes": 28,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 887342,
-        "minTransparentPixels": 69458,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 926525,
+        "minTransparentPixels": 30275,
+        "minDistinctColors": 1470,
         "maxEdgeInkPixels": 0
       }
     },
@@ -583,8 +651,10 @@
       "name": "dashboard-payment-analytics-grid",
       "width": 1416,
       "height": 1339,
+      "logicalWidth": 1416.0,
+      "logicalHeight": 1339.0,
       "svg": {
-        "minVisualNodes": 421,
+        "minVisualNodes": 292,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -600,8 +670,10 @@
       "name": "dashboard-premium-trend-style",
       "width": 920,
       "height": 360,
+      "logicalWidth": 920.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -609,7 +681,7 @@
         "outputScale": 2,
         "minVisiblePixels": 662400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 791,
         "maxEdgeInkPixels": 0
       }
     },
@@ -617,16 +689,18 @@
       "name": "dashboard-project-activity-sparkline",
       "width": 520,
       "height": 260,
+      "logicalWidth": 520.0,
+      "logicalHeight": 260.0,
       "svg": {
-        "minVisualNodes": 25,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 233086,
-        "minTransparentPixels": 37314,
-        "minDistinctColors": 862,
+        "minVisiblePixels": 242158,
+        "minTransparentPixels": 28242,
+        "minDistinctColors": 562,
         "maxEdgeInkPixels": 0
       }
     },
@@ -634,6 +708,8 @@
       "name": "dashboard-project-progress-card",
       "width": 820,
       "height": 360,
+      "logicalWidth": 820.0,
+      "logicalHeight": 360.0,
       "svg": {
         "minVisualNodes": 145,
         "maxClippedTextNodes": 0,
@@ -651,6 +727,8 @@
       "name": "dashboard-project-schedule-timeline",
       "width": 1320,
       "height": 720,
+      "logicalWidth": 1320.0,
+      "logicalHeight": 720.0,
       "svg": {
         "minVisualNodes": 96,
         "maxClippedTextNodes": 0,
@@ -668,6 +746,8 @@
       "name": "dashboard-project-task-composition-card",
       "width": 820,
       "height": 400,
+      "logicalWidth": 820.0,
+      "logicalHeight": 400.0,
       "svg": {
         "minVisualNodes": 47,
         "maxClippedTextNodes": 0,
@@ -685,16 +765,18 @@
       "name": "dashboard-project-track-card",
       "width": 820,
       "height": 420,
+      "logicalWidth": 820.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 41,
+        "minVisualNodes": 43,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 629783,
-        "minTransparentPixels": 59017,
-        "minDistinctColors": 872,
+        "minVisiblePixels": 662276,
+        "minTransparentPixels": 26524,
+        "minDistinctColors": 717,
         "maxEdgeInkPixels": 0
       }
     },
@@ -702,16 +784,18 @@
       "name": "dashboard-restaurant-customers-hexbin",
       "width": 420,
       "height": 300,
+      "logicalWidth": 420.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 63,
+        "minVisualNodes": 99,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 216846,
-        "minTransparentPixels": 35154,
-        "minDistinctColors": 802,
+        "minVisiblePixels": 225798,
+        "minTransparentPixels": 26202,
+        "minDistinctColors": 621,
         "maxEdgeInkPixels": 0
       }
     },
@@ -719,16 +803,18 @@
       "name": "dashboard-restaurant-occupation-bars",
       "width": 420,
       "height": 300,
+      "logicalWidth": 420.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 51,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 216846,
-        "minTransparentPixels": 35154,
-        "minDistinctColors": 528,
+        "minVisiblePixels": 225798,
+        "minTransparentPixels": 26202,
+        "minDistinctColors": 361,
         "maxEdgeInkPixels": 0
       }
     },
@@ -736,16 +822,18 @@
       "name": "dashboard-restaurant-order-status",
       "width": 420,
       "height": 300,
+      "logicalWidth": 420.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 19,
+        "minVisualNodes": 43,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 216846,
-        "minTransparentPixels": 35154,
-        "minDistinctColors": 650,
+        "minVisiblePixels": 225798,
+        "minTransparentPixels": 26202,
+        "minDistinctColors": 428,
         "maxEdgeInkPixels": 0
       }
     },
@@ -753,8 +841,10 @@
       "name": "dashboard-restaurant-overview-grid",
       "width": 1352,
       "height": 751,
+      "logicalWidth": 1352.0,
+      "logicalHeight": 751.0,
       "svg": {
-        "minVisualNodes": 237,
+        "minVisualNodes": 490,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -762,7 +852,7 @@
         "outputScale": 2,
         "minVisiblePixels": 2030704,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 1622,
         "maxEdgeInkPixels": 0
       }
     },
@@ -770,16 +860,18 @@
       "name": "dashboard-restaurant-reports-range-strip",
       "width": 860,
       "height": 320,
+      "logicalWidth": 860.0,
+      "logicalHeight": 320.0,
       "svg": {
-        "minVisualNodes": 96,
+        "minVisualNodes": 273,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 494766,
-        "minTransparentPixels": 55634,
-        "minDistinctColors": 457,
+        "minVisiblePixels": 508558,
+        "minTransparentPixels": 41842,
+        "minDistinctColors": 468,
         "maxEdgeInkPixels": 0
       }
     },
@@ -787,16 +879,18 @@
       "name": "dashboard-restaurant-weekly-summary",
       "width": 420,
       "height": 300,
+      "logicalWidth": 420.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 216846,
-        "minTransparentPixels": 35154,
-        "minDistinctColors": 1193,
+        "minVisiblePixels": 235693,
+        "minTransparentPixels": 16307,
+        "minDistinctColors": 711,
         "maxEdgeInkPixels": 0
       }
     },
@@ -804,8 +898,10 @@
       "name": "dashboard-saas-mrr-grid",
       "width": 1364,
       "height": 1171,
+      "logicalWidth": 1364.0,
+      "logicalHeight": 1171.0,
       "svg": {
-        "minVisualNodes": 121,
+        "minVisualNodes": 122,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -821,8 +917,10 @@
       "name": "dashboard-segmented-column-style",
       "width": 920,
       "height": 460,
+      "logicalWidth": 920.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 90,
+        "minVisualNodes": 91,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -830,7 +928,7 @@
         "outputScale": 2,
         "minVisiblePixels": 846400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1529,
+        "minDistinctColors": 1251,
         "maxEdgeInkPixels": 0
       }
     },
@@ -838,8 +936,10 @@
       "name": "dashboard-segmented-horizontal-style",
       "width": 920,
       "height": 220,
+      "logicalWidth": 920.0,
+      "logicalHeight": 220.0,
       "svg": {
-        "minVisualNodes": 55,
+        "minVisualNodes": 56,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -847,7 +947,7 @@
         "outputScale": 2,
         "minVisiblePixels": 404800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1160,
+        "minDistinctColors": 585,
         "maxEdgeInkPixels": 0
       }
     },
@@ -855,6 +955,8 @@
       "name": "dashboard-shipment-activity-panel",
       "width": 340,
       "height": 470,
+      "logicalWidth": 340.0,
+      "logicalHeight": 470.0,
       "svg": {
         "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
@@ -872,8 +974,10 @@
       "name": "dashboard-ticketing-analytics-grid",
       "width": 1376,
       "height": 1410,
+      "logicalWidth": 1376.0,
+      "logicalHeight": 1410.0,
       "svg": {
-        "minVisualNodes": 248,
+        "minVisualNodes": 242,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -889,16 +993,18 @@
       "name": "dashboard-ticketing-guest-funnel",
       "width": 520,
       "height": 300,
+      "logicalWidth": 520.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 272903,
-        "minTransparentPixels": 39097,
-        "minDistinctColors": 740,
+        "minVisiblePixels": 294176,
+        "minTransparentPixels": 17824,
+        "minDistinctColors": 674,
         "maxEdgeInkPixels": 0
       }
     },
@@ -906,16 +1012,18 @@
       "name": "dashboard-ticketing-package-mix",
       "width": 520,
       "height": 300,
+      "logicalWidth": 520.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 19,
+        "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 272903,
-        "minTransparentPixels": 39097,
-        "minDistinctColors": 764,
+        "minVisiblePixels": 294176,
+        "minTransparentPixels": 17824,
+        "minDistinctColors": 751,
         "maxEdgeInkPixels": 0
       }
     },
@@ -923,16 +1031,18 @@
       "name": "dashboard-ticketing-promoter-attribution",
       "width": 720,
       "height": 360,
+      "logicalWidth": 720.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 59,
+        "minVisualNodes": 61,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 467143,
-        "minTransparentPixels": 51257,
-        "minDistinctColors": 1494,
+        "minVisiblePixels": 480654,
+        "minTransparentPixels": 37746,
+        "minDistinctColors": 1077,
         "maxEdgeInkPixels": 0
       }
     },
@@ -940,33 +1050,37 @@
       "name": "dashboard-ticketing-revenue-trend",
       "width": 1180,
       "height": 460,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 81,
+        "minVisualNodes": 72,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1008503,
-        "minTransparentPixels": 77097,
-        "minDistinctColors": 1701,
+        "minVisiblePixels": 1050716,
+        "minTransparentPixels": 34884,
+        "minDistinctColors": 1564,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "data-label-placement-showcase-grid",
       "width": 668,
-      "height": 780,
+      "height": 778,
+      "logicalWidth": 668.0,
+      "logicalHeight": 777.878,
       "svg": {
-        "minVisualNodes": 37,
+        "minVisualNodes": 41,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1042080,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 988649,
+        "minTransparentPixels": 50759,
+        "minDistinctColors": 1900,
         "maxEdgeInkPixels": 0
       }
     },
@@ -974,33 +1088,37 @@
       "name": "data-label-readability-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 46,
+        "minVisualNodes": 35,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1713,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1645,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "dc-connectivity",
       "width": 1200,
-      "height": 743,
+      "height": 632,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 632.014,
       "svg": {
-        "minVisualNodes": 64,
+        "minVisualNodes": 62,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 445800,
+        "minVisiblePixels": 379800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1915,
+        "minDistinctColors": 1811,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1008,16 +1126,18 @@
       "name": "dense-legend-pie",
       "width": 1000,
       "height": 640,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 59,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1201091,
-        "minTransparentPixels": 78909,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1246762,
+        "minTransparentPixels": 33238,
+        "minDistinctColors": 1562,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1025,15 +1145,17 @@
       "name": "dense-legend-radial",
       "width": 1000,
       "height": 640,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 86,
+        "minVisualNodes": 110,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1201091,
-        "minTransparentPixels": 78909,
+        "minVisiblePixels": 1246762,
+        "minTransparentPixels": 33238,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1042,15 +1164,17 @@
       "name": "dense-legend-series",
       "width": 1000,
       "height": 640,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 954,
+        "minVisualNodes": 166,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1201091,
-        "minTransparentPixels": 78909,
+        "minVisiblePixels": 1246762,
+        "minTransparentPixels": 33238,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1059,16 +1183,18 @@
       "name": "dense-signal-decimated-light",
       "width": 1180,
       "height": 640,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1423571,
-        "minTransparentPixels": 86829,
-        "minDistinctColors": 1331,
+        "minVisiblePixels": 1473562,
+        "minTransparentPixels": 36838,
+        "minDistinctColors": 1238,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1076,16 +1202,18 @@
       "name": "dense-signal-gaps-light",
       "width": 1180,
       "height": 640,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1423571,
-        "minTransparentPixels": 86829,
-        "minDistinctColors": 1601,
+        "minVisiblePixels": 1473562,
+        "minTransparentPixels": 36838,
+        "minDistinctColors": 1201,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1093,16 +1221,18 @@
       "name": "detection-confidence-errorbar-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 36,
+        "minVisualNodes": 30,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1256,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1252,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1110,16 +1240,18 @@
       "name": "developer-consistency-calendar-light",
       "width": 980,
       "height": 420,
+      "logicalWidth": 980.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 209,
+        "minVisualNodes": 403,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 757491,
-        "minTransparentPixels": 65709,
-        "minDistinctColors": 1344,
+        "minVisiblePixels": 794762,
+        "minTransparentPixels": 28438,
+        "minDistinctColors": 1051,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1127,16 +1259,18 @@
       "name": "domain-control-horizontal-light",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 55,
+        "minVisualNodes": 44,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959491,
-        "minTransparentPixels": 70909,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1000362,
+        "minTransparentPixels": 30038,
+        "minDistinctColors": 1459,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1144,16 +1278,18 @@
       "name": "domain-findings-stacked-dark",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 51,
+        "minVisualNodes": 39,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959495,
-        "minTransparentPixels": 70905,
-        "minDistinctColors": 2020,
+        "minVisiblePixels": 1000388,
+        "minTransparentPixels": 30012,
+        "minDistinctColors": 1693,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1161,16 +1297,18 @@
       "name": "domain-remediation-funnel-dark",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 24,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959495,
-        "minTransparentPixels": 70905,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1000388,
+        "minTransparentPixels": 30012,
+        "minDistinctColors": 1123,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1178,6 +1316,8 @@
       "name": "domain-remediation-gantt-light",
       "width": 1040,
       "height": 600,
+      "logicalWidth": 1040.0,
+      "logicalHeight": 600.0,
       "svg": {
         "minVisualNodes": 48,
         "maxClippedTextNodes": 0,
@@ -1185,9 +1325,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1169571,
-        "minTransparentPixels": 78429,
-        "minDistinctColors": 1972,
+        "minVisiblePixels": 1214762,
+        "minTransparentPixels": 33238,
+        "minDistinctColors": 1456,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1195,16 +1335,18 @@
       "name": "domain-remediation-timeline-light",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 37,
+        "minVisualNodes": 36,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024051,
-        "minTransparentPixels": 73549,
-        "minDistinctColors": 1603,
+        "minVisiblePixels": 1066362,
+        "minTransparentPixels": 31238,
+        "minDistinctColors": 1322,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1212,15 +1354,17 @@
       "name": "domain-security-dark",
       "width": 1180,
       "height": 640,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 56,
+        "minVisualNodes": 33,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1423575,
-        "minTransparentPixels": 86825,
+        "minVisiblePixels": 1473588,
+        "minTransparentPixels": 36812,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1229,15 +1373,17 @@
       "name": "domain-signal-mix-stacked-area-dark",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 42,
+        "minVisualNodes": 32,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959495,
-        "minTransparentPixels": 70905,
+        "minVisiblePixels": 1000388,
+        "minTransparentPixels": 30012,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1246,16 +1392,18 @@
       "name": "endpoint-latency-boxplot-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 34,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1315,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1424,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1263,74 +1411,8 @@
       "name": "endpoint-latency-histogram-light",
       "width": 760,
       "height": 460,
-      "svg": {
-        "minVisualNodes": 34,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 871,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "endpoint-latency-light",
-      "width": 760,
-      "height": 460,
-      "svg": {
-        "minVisualNodes": 34,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1805,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "endpoint-latency-range-light",
-      "width": 760,
-      "height": 460,
-      "svg": {
-        "minVisualNodes": 33,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1085,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "exposure-clusters-bubble-light",
-      "width": 760,
-      "height": 460,
-      "svg": {
-        "minVisualNodes": 33,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1162,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "fallback-font-showcase",
-      "width": 960,
-      "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
         "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
@@ -1338,9 +1420,85 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 1104,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1103,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "endpoint-latency-light",
+      "width": 760,
+      "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1320,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "endpoint-latency-range-light",
+      "width": 760,
+      "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1081,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "exposure-clusters-bubble-light",
+      "width": 760,
+      "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1189,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "fallback-font-showcase",
+      "width": 960,
+      "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 22,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1103,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1348,15 +1506,17 @@
       "name": "finding-flow-sankey-light",
       "width": 1040,
       "height": 600,
+      "logicalWidth": 1040.0,
+      "logicalHeight": 600.0,
       "svg": {
-        "minVisualNodes": 35,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1169571,
-        "minTransparentPixels": 78429,
+        "minVisiblePixels": 1214762,
+        "minTransparentPixels": 33238,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -1365,16 +1525,18 @@
       "name": "findings-composition-treemap-light",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959491,
-        "minTransparentPixels": 70909,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1000362,
+        "minTransparentPixels": 30038,
+        "minDistinctColors": 1546,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1382,16 +1544,18 @@
       "name": "findings-pareto-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 37,
+        "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1565,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1399,16 +1563,18 @@
       "name": "font-bitmap-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 204039,
-        "minTransparentPixels": 16761,
-        "minDistinctColors": 692,
+        "minVisiblePixels": 213593,
+        "minTransparentPixels": 7207,
+        "minDistinctColors": 741,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1416,16 +1582,18 @@
       "name": "font-layout-showcase",
       "width": 860,
       "height": 440,
+      "logicalWidth": 860.0,
+      "logicalHeight": 440.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 695251,
-        "minTransparentPixels": 61549,
-        "minDistinctColors": 1038,
+        "minVisiblePixels": 730362,
+        "minTransparentPixels": 26438,
+        "minDistinctColors": 1101,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1433,16 +1601,18 @@
       "name": "font-palette-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 1128,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1142,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1450,16 +1620,18 @@
       "name": "forecast-envelope-rangeband-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 32,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1876,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1400,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1467,50 +1639,56 @@
       "name": "forecast-interval-rangearea-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 41,
+        "minVisualNodes": 28,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1496,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "foundation-dashboard-typography-dark",
       "width": 1344,
-      "height": 524,
+      "height": 493,
+      "logicalWidth": 1344.0,
+      "logicalHeight": 493.252,
       "svg": {
-        "minVisualNodes": 336,
+        "minVisualNodes": 83,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1408512,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1263660,
+        "minTransparentPixels": 62868,
+        "minDistinctColors": 2011,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "foundation-dashboard-typography-light",
       "width": 1344,
-      "height": 524,
+      "height": 493,
+      "logicalWidth": 1344.0,
+      "logicalHeight": 493.252,
       "svg": {
-        "minVisualNodes": 102,
+        "minVisualNodes": 83,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1408512,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1634,
+        "minVisiblePixels": 1263626,
+        "minTransparentPixels": 62902,
+        "minDistinctColors": 1868,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1518,16 +1696,18 @@
       "name": "foundation-histogram-rounding-dark",
       "width": 640,
       "height": 400,
+      "logicalWidth": 640.0,
+      "logicalHeight": 400.0,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 462375,
-        "minTransparentPixels": 49625,
-        "minDistinctColors": 966,
+        "minVisiblePixels": 490788,
+        "minTransparentPixels": 21212,
+        "minDistinctColors": 860,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1535,16 +1715,18 @@
       "name": "foundation-histogram-rounding-light",
       "width": 640,
       "height": 400,
+      "logicalWidth": 640.0,
+      "logicalHeight": 400.0,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 462371,
-        "minTransparentPixels": 49629,
-        "minDistinctColors": 775,
+        "minVisiblePixels": 490762,
+        "minTransparentPixels": 21238,
+        "minDistinctColors": 782,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1552,16 +1734,18 @@
       "name": "foundation-map-typography-dark",
       "width": 640,
       "height": 400,
+      "logicalWidth": 640.0,
+      "logicalHeight": 400.0,
       "svg": {
-        "minVisualNodes": 308,
+        "minVisualNodes": 48,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 462375,
-        "minTransparentPixels": 49625,
-        "minDistinctColors": 1782,
+        "minVisiblePixels": 490788,
+        "minTransparentPixels": 21212,
+        "minDistinctColors": 1482,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1569,16 +1753,18 @@
       "name": "foundation-map-typography-light",
       "width": 640,
       "height": 400,
+      "logicalWidth": 640.0,
+      "logicalHeight": 400.0,
       "svg": {
-        "minVisualNodes": 74,
+        "minVisualNodes": 48,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 462371,
-        "minTransparentPixels": 49629,
-        "minDistinctColors": 1314,
+        "minVisiblePixels": 490762,
+        "minTransparentPixels": 21238,
+        "minDistinctColors": 1363,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1586,16 +1772,18 @@
       "name": "foundation-plot-clipping-dark",
       "width": 640,
       "height": 400,
+      "logicalWidth": 640.0,
+      "logicalHeight": 400.0,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 462375,
-        "minTransparentPixels": 49625,
-        "minDistinctColors": 1315,
+        "minVisiblePixels": 490788,
+        "minTransparentPixels": 21212,
+        "minDistinctColors": 1114,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1603,16 +1791,18 @@
       "name": "foundation-plot-clipping-light",
       "width": 640,
       "height": 400,
+      "logicalWidth": 640.0,
+      "logicalHeight": 400.0,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 462371,
-        "minTransparentPixels": 49629,
-        "minDistinctColors": 1123,
+        "minVisiblePixels": 490762,
+        "minTransparentPixels": 21238,
+        "minDistinctColors": 990,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1620,23 +1810,27 @@
       "name": "foundation-sequential-ramp-heatmap",
       "width": 920,
       "height": 420,
+      "logicalWidth": 920.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 32,
+        "minVisualNodes": 41,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 709731,
-        "minTransparentPixels": 63069,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 745562,
+        "minTransparentPixels": 27238,
+        "minDistinctColors": 1656,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "foundation-typed-facets",
       "width": 924,
-      "height": 444,
+      "height": 442,
+      "logicalWidth": 924.0,
+      "logicalHeight": 441.878,
       "svg": {
         "minVisualNodes": 59,
         "maxClippedTextNodes": 0,
@@ -1644,9 +1838,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 820512,
+        "minVisiblePixels": 816816,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 1297,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1654,33 +1848,37 @@
       "name": "foundation-typed-log-scale",
       "width": 920,
       "height": 540,
+      "logicalWidth": 920.0,
+      "logicalHeight": 540.0,
       "svg": {
-        "minVisualNodes": 32,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 923811,
-        "minTransparentPixels": 69789,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 963962,
+        "minTransparentPixels": 29638,
+        "minDistinctColors": 1403,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "funnel-surfaces-showcase-grid",
       "width": 1160,
-      "height": 404,
+      "height": 402,
+      "logicalWidth": 1160.0,
+      "logicalHeight": 401.878,
       "svg": {
-        "minVisualNodes": 53,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 937280,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 879116,
+        "minTransparentPixels": 53524,
+        "minDistinctColors": 1215,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1688,8 +1886,10 @@
       "name": "geographic-topology",
       "width": 1200,
       "height": 680,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 680.0,
       "svg": {
-        "minVisualNodes": 982,
+        "minVisualNodes": 216,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1697,7 +1897,7 @@
         "outputScale": 1,
         "minVisiblePixels": 408000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 1768,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1705,6 +1905,8 @@
       "name": "graph-2000-stage-01-overview",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 5,
         "maxClippedTextNodes": 0,
@@ -1722,6 +1924,8 @@
       "name": "graph-2000-stage-02-depth-1",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 49,
         "maxClippedTextNodes": 0,
@@ -1739,6 +1943,8 @@
       "name": "graph-2000-stage-03-depth-2",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 153,
         "maxClippedTextNodes": 0,
@@ -1756,6 +1962,8 @@
       "name": "graph-2000-stage-04-depth-3",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 454,
         "maxClippedTextNodes": 0,
@@ -1773,6 +1981,8 @@
       "name": "graph-2000-stage-05-full",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 3051,
         "maxClippedTextNodes": 0,
@@ -1790,6 +2000,8 @@
       "name": "graph-neighborhood-page-1",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
@@ -1807,6 +2019,8 @@
       "name": "graph-neighborhood-page-2",
       "width": 1600,
       "height": 900,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 900.0,
       "svg": {
         "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
@@ -1824,16 +2038,18 @@
       "name": "graphite-dark-area",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 566,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 648,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1841,16 +2057,18 @@
       "name": "graphite-dark-bar",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 23,
+        "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 703,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 579,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1858,6 +2076,8 @@
       "name": "graphite-dark-bubble",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
         "minVisualNodes": 14,
         "maxClippedTextNodes": 0,
@@ -1865,9 +2085,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 522,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 643,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1875,16 +2095,18 @@
       "name": "graphite-dark-bullet",
       "width": 556,
       "height": 294,
+      "logicalWidth": 556.0,
+      "logicalHeight": 294.0,
       "svg": {
-        "minVisualNodes": 21,
+        "minVisualNodes": 30,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 326824,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 659,
+        "minVisiblePixels": 326916,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 706,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1892,8 +2114,10 @@
       "name": "graphite-dark-dashboard",
       "width": 664,
       "height": 580,
+      "logicalWidth": 664.0,
+      "logicalHeight": 580.0,
       "svg": {
-        "minVisualNodes": 50,
+        "minVisualNodes": 58,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -1901,7 +2125,7 @@
         "outputScale": 2,
         "minVisiblePixels": 770240,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1135,
+        "minDistinctColors": 1153,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1909,16 +2133,18 @@
       "name": "graphite-dark-donut",
       "width": 596,
       "height": 314,
+      "logicalWidth": 596.0,
+      "logicalHeight": 314.0,
       "svg": {
-        "minVisualNodes": 18,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 374184,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1159,
+        "minVisiblePixels": 374276,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1093,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1926,16 +2152,18 @@
       "name": "graphite-dark-funnel",
       "width": 556,
       "height": 324,
+      "logicalWidth": 556.0,
+      "logicalHeight": 324.0,
       "svg": {
-        "minVisualNodes": 9,
+        "minVisualNodes": 5,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 360184,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 502,
+        "minVisiblePixels": 360276,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 639,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1943,16 +2171,18 @@
       "name": "graphite-dark-gantt",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 786,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 504,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1960,16 +2190,18 @@
       "name": "graphite-dark-gauge",
       "width": 396,
       "height": 294,
+      "logicalWidth": 396.0,
+      "logicalHeight": 294.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 8,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 232744,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1029,
+        "minVisiblePixels": 232836,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 990,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1977,16 +2209,18 @@
       "name": "graphite-dark-heat",
       "width": 616,
       "height": 304,
+      "logicalWidth": 616.0,
+      "logicalHeight": 304.0,
       "svg": {
-        "minVisualNodes": 97,
+        "minVisualNodes": 188,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 374424,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 816,
+        "minVisiblePixels": 374516,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 672,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1994,16 +2228,18 @@
       "name": "graphite-dark-horizontal",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 11,
+        "minVisualNodes": 14,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 582,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 529,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2011,16 +2247,18 @@
       "name": "graphite-dark-host-frame",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 13,
+        "minVisualNodes": 14,
         "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
+        "maxNearEdgeTextNodes": 5
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 117828,
-        "minTransparentPixels": 285067,
-        "minDistinctColors": 645,
+        "minVisiblePixels": 159321,
+        "minTransparentPixels": 243575,
+        "minDistinctColors": 449,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2028,16 +2266,18 @@
       "name": "graphite-dark-inside-bar",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 19,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 843,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 744,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2045,16 +2285,18 @@
       "name": "graphite-dark-line",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 20,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 797,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 935,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2062,16 +2304,18 @@
       "name": "graphite-dark-linear",
       "width": 596,
       "height": 230,
+      "logicalWidth": 596.0,
+      "logicalHeight": 230.0,
       "svg": {
-        "minVisualNodes": 9,
+        "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 274056,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 452,
+        "minVisiblePixels": 274148,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 476,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2079,16 +2323,18 @@
       "name": "graphite-dark-multi-area",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 15,
+        "minVisualNodes": 18,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 752,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 824,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2096,16 +2342,18 @@
       "name": "graphite-dark-narrow-donut",
       "width": 360,
       "height": 510,
+      "logicalWidth": 360.0,
+      "logicalHeight": 510.0,
       "svg": {
-        "minVisualNodes": 18,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 367096,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1198,
+        "minVisiblePixels": 367188,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1311,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2113,6 +2361,8 @@
       "name": "graphite-dark-needle",
       "width": 396,
       "height": 294,
+      "logicalWidth": 396.0,
+      "logicalHeight": 294.0,
       "svg": {
         "minVisualNodes": 8,
         "maxClippedTextNodes": 0,
@@ -2120,9 +2370,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 232744,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 773,
+        "minVisiblePixels": 232836,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 873,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2130,16 +2380,18 @@
       "name": "graphite-dark-sankey",
       "width": 556,
       "height": 324,
+      "logicalWidth": 556.0,
+      "logicalHeight": 324.0,
       "svg": {
-        "minVisualNodes": 12,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 360184,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 942,
+        "minVisiblePixels": 360276,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 941,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2147,16 +2399,18 @@
       "name": "graphite-dark-scatter",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 15,
+        "minVisualNodes": 14,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 394,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 443,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2164,312 +2418,8 @@
       "name": "graphite-dark-stacked",
       "width": 596,
       "height": 338,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 592,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-dark-timeline",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 13,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 723,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-dark-tree",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 14,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 879,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-dark-treemap",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 8,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 817,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-dark-waterfall",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 19,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 614,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-area",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 14,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 635,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-bar",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 23,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 720,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-bubble",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 14,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 580,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-bullet",
-      "width": 556,
-      "height": 294,
-      "svg": {
-        "minVisualNodes": 21,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 326824,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 729,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-dashboard",
-      "width": 664,
-      "height": 580,
-      "svg": {
-        "minVisualNodes": 50,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 770240,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1140,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-donut",
-      "width": 596,
-      "height": 314,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 374184,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1217,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-funnel",
-      "width": 556,
-      "height": 324,
-      "svg": {
-        "minVisualNodes": 9,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 360184,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 565,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-gantt",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 17,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 816,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-gauge",
-      "width": 396,
-      "height": 294,
-      "svg": {
-        "minVisualNodes": 7,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 232744,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1124,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-heat",
-      "width": 616,
-      "height": 304,
-      "svg": {
-        "minVisualNodes": 97,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 374424,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 866,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-horizontal",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 11,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 612,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-host-frame",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 13,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 117828,
-        "minTransparentPixels": 285067,
-        "minDistinctColors": 942,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-inside-bar",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 19,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 844,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-line",
-      "width": 596,
-      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
         "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
@@ -2477,33 +2427,94 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 815,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 544,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "graphite-light-linear",
+      "name": "graphite-dark-timeline",
       "width": 596,
-      "height": 230,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 9,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 274056,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 494,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 478,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "graphite-light-multi-area",
+      "name": "graphite-dark-tree",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 699,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-treemap",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 6,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 710,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-waterfall",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 556,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-area",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
         "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
@@ -2511,118 +2522,37 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 781,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 718,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "graphite-light-narrow-donut",
-      "width": 360,
-      "height": 510,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 367096,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1245,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-needle",
-      "width": 396,
-      "height": 294,
-      "svg": {
-        "minVisualNodes": 8,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 232744,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 853,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-sankey",
-      "width": 556,
-      "height": 324,
-      "svg": {
-        "minVisualNodes": 12,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 360184,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 1046,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-scatter",
+      "name": "graphite-light-bar",
       "width": 596,
       "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
-        "minVisualNodes": 15,
+        "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 432,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 626,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "graphite-light-stacked",
+      "name": "graphite-light-bubble",
       "width": 596,
       "height": 338,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 615,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-timeline",
-      "width": 596,
-      "height": 338,
-      "svg": {
-        "minVisualNodes": 13,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 749,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "graphite-light-tree",
-      "width": 596,
-      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
       "svg": {
         "minVisualNodes": 14,
         "maxClippedTextNodes": 0,
@@ -2630,33 +2560,56 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 919,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 686,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "graphite-light-treemap",
-      "width": 596,
-      "height": 338,
+      "name": "graphite-light-bullet",
+      "width": 556,
+      "height": 294,
+      "logicalWidth": 556.0,
+      "logicalHeight": 294.0,
       "svg": {
-        "minVisualNodes": 8,
+        "minVisualNodes": 30,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 843,
+        "minVisiblePixels": 326916,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 753,
         "maxEdgeInkPixels": 0
       }
     },
     {
-      "name": "graphite-light-waterfall",
+      "name": "graphite-light-dashboard",
+      "width": 664,
+      "height": 580,
+      "logicalWidth": 664.0,
+      "logicalHeight": 580.0,
+      "svg": {
+        "minVisualNodes": 58,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 770240,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1273,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-donut",
       "width": 596,
-      "height": 338,
+      "height": 314,
+      "logicalWidth": 596.0,
+      "logicalHeight": 314.0,
       "svg": {
         "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
@@ -2664,24 +2617,387 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 402792,
-        "minTransparentPixels": 104,
-        "minDistinctColors": 632,
+        "minVisiblePixels": 374276,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1151,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-funnel",
+      "width": 556,
+      "height": 324,
+      "logicalWidth": 556.0,
+      "logicalHeight": 324.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 360276,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 668,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-gantt",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 523,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-gauge",
+      "width": 396,
+      "height": 294,
+      "logicalWidth": 396.0,
+      "logicalHeight": 294.0,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 232836,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1089,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-heat",
+      "width": 616,
+      "height": 304,
+      "logicalWidth": 616.0,
+      "logicalHeight": 304.0,
+      "svg": {
+        "minVisualNodes": 188,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 374516,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 698,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-horizontal",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 565,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-host-frame",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 5
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 159321,
+        "minTransparentPixels": 243575,
+        "minDistinctColors": 409,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-inside-bar",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 22,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 773,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-line",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 24,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-linear",
+      "width": 596,
+      "height": 230,
+      "logicalWidth": 596.0,
+      "logicalHeight": 230.0,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 274148,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 488,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-multi-area",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 967,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-narrow-donut",
+      "width": 360,
+      "height": 510,
+      "logicalWidth": 360.0,
+      "logicalHeight": 510.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 367188,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1415,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-needle",
+      "width": 396,
+      "height": 294,
+      "logicalWidth": 396.0,
+      "logicalHeight": 294.0,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 232836,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 935,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-sankey",
+      "width": 556,
+      "height": 324,
+      "logicalWidth": 556.0,
+      "logicalHeight": 324.0,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 360276,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 1175,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-scatter",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 476,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-stacked",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 576,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-timeline",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 496,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-tree",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 715,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-treemap",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 6,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 747,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-waterfall",
+      "width": 596,
+      "height": 338,
+      "logicalWidth": 596.0,
+      "logicalHeight": 338.0,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 402884,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 583,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "icon-palette",
       "width": 1600,
-      "height": 776,
+      "height": 843,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 842.553,
       "svg": {
-        "minVisualNodes": 157,
+        "minVisualNodes": 92,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 620800,
+        "minVisiblePixels": 674400,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -2691,6 +3007,8 @@
       "name": "image-before-after-story",
       "width": 960,
       "height": 540,
+      "logicalWidth": 960.0,
+      "logicalHeight": 540.0,
       "svg": {
         "minVisualNodes": 2,
         "maxClippedTextNodes": 0,
@@ -2708,16 +3026,18 @@
       "name": "incident-direction-polar-dark",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 35,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959495,
-        "minTransparentPixels": 70905,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1000388,
+        "minTransparentPixels": 30012,
+        "minDistinctColors": 1958,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2725,15 +3045,17 @@
       "name": "industrial-births-region-map-us-states-light",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 42,
+        "minVisualNodes": 35,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024051,
-        "minTransparentPixels": 73549,
+        "minVisiblePixels": 1066362,
+        "minTransparentPixels": 31238,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2742,16 +3064,18 @@
       "name": "label-placement-bullet-dark",
       "width": 640,
       "height": 360,
+      "logicalWidth": 640.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 413415,
-        "minTransparentPixels": 47385,
-        "minDistinctColors": 1988,
+        "minVisiblePixels": 440388,
+        "minTransparentPixels": 20412,
+        "minDistinctColors": 1081,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2759,16 +3083,18 @@
       "name": "label-placement-bullet-light",
       "width": 640,
       "height": 360,
+      "logicalWidth": 640.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 413411,
-        "minTransparentPixels": 47389,
-        "minDistinctColors": 1567,
+        "minVisiblePixels": 440362,
+        "minTransparentPixels": 20438,
+        "minDistinctColors": 980,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2776,15 +3102,17 @@
       "name": "label-placement-europe-routes-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 329,
+        "minVisualNodes": 62,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2793,16 +3121,18 @@
       "name": "label-placement-europe-routes-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 95,
+        "minVisualNodes": 62,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1970,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 2017,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2810,16 +3140,18 @@
       "name": "label-placement-funnel-dark",
       "width": 640,
       "height": 420,
+      "logicalWidth": 640.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 23,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 486855,
-        "minTransparentPixels": 50745,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 515988,
+        "minTransparentPixels": 21612,
+        "minDistinctColors": 1852,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2827,16 +3159,18 @@
       "name": "label-placement-funnel-light",
       "width": 640,
       "height": 420,
+      "logicalWidth": 640.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 23,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 486851,
-        "minTransparentPixels": 50749,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 515962,
+        "minTransparentPixels": 21638,
+        "minDistinctColors": 1680,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2844,16 +3178,18 @@
       "name": "label-placement-gauge-dark",
       "width": 480,
       "height": 340,
+      "logicalWidth": 480.0,
+      "logicalHeight": 340.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 10,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 287175,
-        "minTransparentPixels": 39225,
-        "minDistinctColors": 1272,
+        "minVisiblePixels": 309588,
+        "minTransparentPixels": 16812,
+        "minDistinctColors": 924,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2861,16 +3197,18 @@
       "name": "label-placement-gauge-light",
       "width": 480,
       "height": 340,
+      "logicalWidth": 480.0,
+      "logicalHeight": 340.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 10,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 287171,
-        "minTransparentPixels": 39229,
-        "minDistinctColors": 1026,
+        "minVisiblePixels": 309562,
+        "minTransparentPixels": 16838,
+        "minDistinctColors": 952,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2878,16 +3216,18 @@
       "name": "label-placement-sankey-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1658,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2895,32 +3235,36 @@
       "name": "label-placement-sankey-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1523,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "label-placement-scorecards-dark",
       "width": 1584,
-      "height": 1060,
+      "height": 1029,
+      "logicalWidth": 1584.0,
+      "logicalHeight": 1029.252,
       "svg": {
-        "minVisualNodes": 402,
+        "minVisualNodes": 141,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 3358080,
-        "minTransparentPixels": 0,
+        "minVisiblePixels": 3172204,
+        "minTransparentPixels": 89252,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2928,16 +3272,18 @@
     {
       "name": "label-placement-scorecards-light",
       "width": 1584,
-      "height": 1060,
+      "height": 1029,
+      "logicalWidth": 1584.0,
+      "logicalHeight": 1029.252,
       "svg": {
-        "minVisualNodes": 168,
+        "minVisualNodes": 141,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 3358080,
-        "minTransparentPixels": 0,
+        "minVisiblePixels": 3172170,
+        "minTransparentPixels": 89286,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -2946,8 +3292,10 @@
       "name": "label-placement-topology-dark",
       "width": 1000,
       "height": 500,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 500.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -2955,7 +3303,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1000000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1042,
+        "minDistinctColors": 800,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2963,8 +3311,10 @@
       "name": "label-placement-topology-light",
       "width": 1000,
       "height": 500,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 500.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -2972,7 +3322,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1000000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 984,
+        "minDistinctColors": 695,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2980,16 +3330,18 @@
       "name": "language-forms-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 1139,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1138,
         "maxEdgeInkPixels": 0
       }
     },
@@ -2997,16 +3349,18 @@
       "name": "license-cost-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 35,
+        "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1837,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1342,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3014,16 +3368,18 @@
       "name": "map-africa-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 103,
+        "minVisualNodes": 63,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1734,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1871,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3031,16 +3387,18 @@
       "name": "map-asia-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 99,
+        "minVisualNodes": 64,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1738,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1814,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3048,16 +3406,18 @@
       "name": "map-europe-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 80,
+        "minVisualNodes": 51,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1544,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1614,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3065,16 +3425,18 @@
       "name": "map-north-america-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 70,
+        "minVisualNodes": 46,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1612,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1701,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3082,16 +3444,18 @@
       "name": "map-oceania-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 57,
+        "minVisualNodes": 37,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1436,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1367,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3099,16 +3463,18 @@
       "name": "map-poland-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 30,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1524,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1459,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3116,32 +3482,36 @@
       "name": "map-south-america-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 50,
+        "minVisualNodes": 33,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1714,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1654,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "map-viewport-showcase-grid",
       "width": 1118,
-      "height": 1550,
+      "height": 1548,
+      "logicalWidth": 1118.0,
+      "logicalHeight": 1547.878,
       "svg": {
-        "minVisualNodes": 808,
+        "minVisualNodes": 466,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 3465800,
-        "minTransparentPixels": 0,
+        "minVisiblePixels": 3461225,
+        "minTransparentPixels": 103,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -3150,16 +3520,18 @@
       "name": "map-world-route-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 316,
+        "minVisualNodes": 188,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1542,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1665,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3167,33 +3539,37 @@
       "name": "markup-chart-release-trend",
       "width": 920,
       "height": 520,
+      "logicalWidth": 920.0,
+      "logicalHeight": 520.0,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 239180,
-        "minTransparentPixels": 20,
-        "minDistinctColors": 871,
+        "minVisiblePixels": 239198,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 884,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "markup-flow-approval",
       "width": 1120,
-      "height": 712,
+      "height": 620,
+      "logicalWidth": 1120.0,
+      "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 47,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 398720,
+        "minVisiblePixels": 347200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1679,
+        "minDistinctColors": 1516,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3201,93 +3577,10 @@
       "name": "markup-sequence-incident",
       "width": 960,
       "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 13,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 268800,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 965,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "markup-table-release-gates",
-      "width": 760,
-      "height": 360,
-      "svg": {
-        "minVisualNodes": 12,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 26091,
-        "minTransparentPixels": 110708,
-        "minDistinctColors": 1208,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "markup-timeline-release-plan",
-      "width": 980,
-      "height": 560,
-      "svg": {
-        "minVisualNodes": 22,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 274380,
-        "minTransparentPixels": 20,
-        "minDistinctColors": 696,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "markup-topology-service-map",
-      "width": 1144,
-      "height": 689,
-      "svg": {
-        "minVisualNodes": 48,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 394108,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1392,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "mermaid-accessibility-dark",
-      "width": 640,
-      "height": 320,
-      "svg": {
-        "minVisualNodes": 8,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 102400,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 306,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "mermaid-class-notation",
-      "width": 960,
-      "height": 560,
-      "svg": {
-        "minVisualNodes": 18,
+        "minVisualNodes": 19,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -3300,19 +3593,116 @@
       }
     },
     {
-      "name": "mermaid-cynefin-basic",
-      "width": 960,
-      "height": 618,
+      "name": "markup-table-release-gates",
+      "width": 760,
+      "height": 360,
+      "logicalWidth": 760.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 16,
+        "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 296640,
+        "minVisiblePixels": 25474,
+        "minTransparentPixels": 111326,
+        "minDistinctColors": 1067,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-timeline-release-plan",
+      "width": 980,
+      "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 36,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 274398,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 505,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "markup-topology-service-map",
+      "width": 1144,
+      "height": 620,
+      "logicalWidth": 1144.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 31,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 354640,
         "minTransparentPixels": 0,
-        "minDistinctColors": 499,
+        "minDistinctColors": 936,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-accessibility-dark",
+      "width": 640,
+      "height": 320,
+      "logicalWidth": 640.0,
+      "logicalHeight": 320.0,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 102400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 326,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-class-notation",
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 21,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 533,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-cynefin-basic",
+      "width": 960,
+      "height": 629,
+      "logicalWidth": 960.0,
+      "logicalHeight": 629.262,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 302400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 469,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3320,6 +3710,8 @@
       "name": "mermaid-er-notation",
       "width": 1002,
       "height": 560,
+      "logicalWidth": 1002.0,
+      "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
@@ -3337,8 +3729,10 @@
       "name": "mermaid-flowchart-modern",
       "width": 640,
       "height": 320,
+      "logicalWidth": 640.0,
+      "logicalHeight": 320.0,
       "svg": {
-        "minVisualNodes": 21,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -3346,7 +3740,7 @@
         "outputScale": 1,
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 467,
+        "minDistinctColors": 492,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3354,40 +3748,27 @@
       "name": "mermaid-gantt-calendar",
       "width": 960,
       "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 15,
+        "minVisualNodes": 25,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 268780,
-        "minTransparentPixels": 20,
-        "minDistinctColors": 594,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 513,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "mermaid-swimlane-basic",
       "width": 1034,
-      "height": 476,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 246092,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 540,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "mermaid-usecase-basic",
-      "width": 1003,
-      "height": 518,
+      "height": 475,
+      "logicalWidth": 1034.0,
+      "logicalHeight": 474.553,
       "svg": {
         "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
@@ -3395,9 +3776,28 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 259777,
+        "minVisiblePixels": 245575,
         "minTransparentPixels": 0,
-        "minDistinctColors": 632,
+        "minDistinctColors": 608,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-usecase-basic",
+      "width": 1003,
+      "height": 517,
+      "logicalWidth": 1003.0,
+      "logicalHeight": 516.553,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 259275,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 711,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3405,6 +3805,8 @@
       "name": "mermaid-usecase-vertical",
       "width": 640,
       "height": 372,
+      "logicalWidth": 640.0,
+      "logicalHeight": 372.0,
       "svg": {
         "minVisualNodes": 8,
         "maxClippedTextNodes": 0,
@@ -3414,7 +3816,7 @@
         "outputScale": 1,
         "minVisiblePixels": 119040,
         "minTransparentPixels": 0,
-        "minDistinctColors": 453,
+        "minDistinctColors": 454,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3422,16 +3824,18 @@
       "name": "mermaid-xychart-stable",
       "width": 900,
       "height": 520,
+      "logicalWidth": 900.0,
+      "logicalHeight": 520.0,
       "svg": {
-        "minVisualNodes": 11,
+        "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 233980,
-        "minTransparentPixels": 20,
-        "minDistinctColors": 466,
+        "minVisiblePixels": 233998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 519,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3439,15 +3843,17 @@
       "name": "monthly-posture-dark",
       "width": 760,
       "height": 540,
+      "logicalWidth": 760.0,
+      "logicalHeight": 540.0,
       "svg": {
-        "minVisualNodes": 67,
+        "minVisualNodes": 35,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 758055,
-        "minTransparentPixels": 62745,
+        "minVisiblePixels": 794388,
+        "minTransparentPixels": 26412,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -3456,100 +3862,112 @@
       "name": "observed-remediation-trend-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 36,
+        "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1855,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1669,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "paged-facets-1",
       "width": 944,
-      "height": 996,
+      "height": 994,
+      "logicalWidth": 944.0,
+      "logicalHeight": 993.878,
       "svg": {
-        "minVisualNodes": 194,
+        "minVisualNodes": 123,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1880448,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1173,
+        "minVisiblePixels": 1810364,
+        "minTransparentPixels": 66308,
+        "minDistinctColors": 1036,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "paged-facets-2",
       "width": 944,
-      "height": 996,
+      "height": 994,
+      "logicalWidth": 944.0,
+      "logicalHeight": 993.878,
       "svg": {
-        "minVisualNodes": 194,
+        "minVisualNodes": 123,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1880448,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1145,
+        "minVisiblePixels": 1810364,
+        "minTransparentPixels": 66308,
+        "minDistinctColors": 1047,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "paged-facets-3",
       "width": 944,
-      "height": 404,
+      "height": 402,
+      "logicalWidth": 944.0,
+      "logicalHeight": 401.878,
       "svg": {
-        "minVisualNodes": 34,
+        "minVisualNodes": 28,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 762752,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 902,
+        "minVisiblePixels": 712796,
+        "minTransparentPixels": 46180,
+        "minDistinctColors": 885,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "palette-swatch-showcase-grid",
       "width": 912,
-      "height": 944,
+      "height": 942,
+      "logicalWidth": 912.0,
+      "logicalHeight": 941.878,
       "svg": {
-        "minVisualNodes": 101,
+        "minVisualNodes": 48,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1721856,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1718105,
+        "minTransparentPixels": 103,
+        "minDistinctColors": 1166,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "people-infographic-showcase-grid",
       "width": 1352,
-      "height": 1466,
+      "height": 1464,
+      "logicalWidth": 1352.0,
+      "logicalHeight": 1463.878,
       "svg": {
-        "minVisualNodes": 366,
+        "minVisualNodes": 241,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 3964064,
-        "minTransparentPixels": 0,
+        "minVisiblePixels": 3958552,
+        "minTransparentPixels": 104,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -3557,41 +3975,9 @@
     {
       "name": "pictorial-isotype-showcase-grid",
       "width": 932,
-      "height": 412,
-      "svg": {
-        "minVisualNodes": 243,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 767968,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2032,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "pictorial-symbol-showcase-grid",
-      "width": 1160,
-      "height": 932,
-      "svg": {
-        "minVisualNodes": 151,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 2162240,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1734,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "point-color-customization-showcase-grid",
-      "width": 932,
-      "height": 1004,
+      "height": 409,
+      "logicalWidth": 932.0,
+      "logicalHeight": 408.75,
       "svg": {
         "minVisualNodes": 184,
         "maxClippedTextNodes": 0,
@@ -3599,9 +3985,47 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1871456,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 762317,
+        "minTransparentPixels": 59,
+        "minDistinctColors": 1116,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "pictorial-symbol-showcase-grid",
+      "width": 1160,
+      "height": 929,
+      "logicalWidth": 1160.0,
+      "logicalHeight": 928.75,
+      "svg": {
+        "minVisualNodes": 174,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 2084131,
+        "minTransparentPixels": 71149,
+        "minDistinctColors": 1458,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "point-color-customization-showcase-grid",
+      "width": 932,
+      "height": 1002,
+      "logicalWidth": 932.0,
+      "logicalHeight": 1001.878,
+      "svg": {
+        "minVisualNodes": 129,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 1867625,
+        "minTransparentPixels": 103,
+        "minDistinctColors": 1953,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3609,16 +4033,18 @@
       "name": "policy-backlog-step-area-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 46,
+        "minVisualNodes": 32,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1617,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1142,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3626,16 +4052,18 @@
       "name": "policy-readiness-circle-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 1129,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1184,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3643,16 +4071,18 @@
       "name": "policy-state-step-line-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 34,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1313,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1357,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3660,6 +4090,8 @@
       "name": "powerbginfo-endpoint-snapshot",
       "width": 1376,
       "height": 300,
+      "logicalWidth": 1376.0,
+      "logicalHeight": 300.0,
       "svg": {
         "minVisualNodes": 42,
         "maxClippedTextNodes": 0,
@@ -3677,6 +4109,8 @@
       "name": "powerbginfo-social-preview-canvas",
       "width": 1200,
       "height": 630,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 630.0,
       "svg": {
         "minVisualNodes": 64,
         "maxClippedTextNodes": 0,
@@ -3694,6 +4128,8 @@
       "name": "powershell-console-story",
       "width": 886,
       "height": 376,
+      "logicalWidth": 886.0,
+      "logicalHeight": 376.0,
       "svg": {
         "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
@@ -3711,6 +4147,8 @@
       "name": "premium-desktop-wallpaper-canvas",
       "width": 1920,
       "height": 1080,
+      "logicalWidth": 1920.0,
+      "logicalHeight": 1080.0,
       "svg": {
         "minVisualNodes": 75,
         "maxClippedTextNodes": 0,
@@ -3728,6 +4166,8 @@
       "name": "premium-email-summary-grid",
       "width": 584,
       "height": 424,
+      "logicalWidth": 584.0,
+      "logicalHeight": 424.0,
       "svg": {
         "minVisualNodes": 32,
         "maxClippedTextNodes": 0,
@@ -3745,8 +4185,10 @@
       "name": "readable-topology-detail",
       "width": 1200,
       "height": 800,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 800.0,
       "svg": {
-        "minVisualNodes": 75,
+        "minVisualNodes": 42,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -3754,7 +4196,7 @@
         "outputScale": 1,
         "minVisiblePixels": 480000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 443,
+        "minDistinctColors": 389,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3762,16 +4204,18 @@
       "name": "remediation-impact-waterfall-dark",
       "width": 920,
       "height": 540,
+      "logicalWidth": 920.0,
+      "logicalHeight": 540.0,
       "svg": {
-        "minVisualNodes": 31,
+        "minVisualNodes": 28,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 923815,
-        "minTransparentPixels": 69785,
-        "minDistinctColors": 1233,
+        "minVisiblePixels": 963988,
+        "minTransparentPixels": 29612,
+        "minDistinctColors": 1321,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3779,84 +4223,94 @@
       "name": "remediation-lift-dumbbell-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 25,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 961,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1064,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "replication-mesh",
       "width": 1200,
-      "height": 754,
+      "height": 713,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 713.014,
       "svg": {
-        "minVisualNodes": 85,
+        "minVisualNodes": 71,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 452400,
+        "minVisiblePixels": 428400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1394,
+        "minDistinctColors": 1242,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "replication-mesh-critical-view",
       "width": 1200,
-      "height": 721,
+      "height": 713,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 713.014,
       "svg": {
-        "minVisualNodes": 53,
+        "minVisualNodes": 43,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 432600,
+        "minVisiblePixels": 428400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1251,
+        "minDistinctColors": 1126,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "replication-mesh-dc-view",
       "width": 1200,
-      "height": 721,
+      "height": 713,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 713.014,
       "svg": {
-        "minVisualNodes": 73,
+        "minVisualNodes": 63,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 432600,
+        "minVisiblePixels": 428400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 970,
+        "minDistinctColors": 799,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "replication-mesh-offenders-view",
       "width": 1200,
-      "height": 721,
+      "height": 713,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 713.014,
       "svg": {
-        "minVisualNodes": 85,
+        "minVisualNodes": 71,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 432600,
+        "minVisiblePixels": 428400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1321,
+        "minDistinctColors": 1262,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3864,16 +4318,18 @@
       "name": "report-host-flat-histogram",
       "width": 760,
       "height": 360,
+      "logicalWidth": 760.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 39,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 494531,
-        "minTransparentPixels": 52669,
-        "minDistinctColors": 970,
+        "minVisiblePixels": 524362,
+        "minTransparentPixels": 22838,
+        "minDistinctColors": 884,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3881,16 +4337,18 @@
       "name": "report-host-rotated-matrix",
       "width": 620,
       "height": 440,
+      "logicalWidth": 620.0,
+      "logicalHeight": 440.0,
       "svg": {
-        "minVisualNodes": 63,
+        "minVisualNodes": 103,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 494611,
-        "minTransparentPixels": 50989,
-        "minDistinctColors": 1613,
+        "minVisiblePixels": 523962,
+        "minTransparentPixels": 21638,
+        "minDistinctColors": 1492,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3898,16 +4356,18 @@
       "name": "report-host-short-calendar",
       "width": 760,
       "height": 230,
+      "logicalWidth": 760.0,
+      "logicalHeight": 230.0,
       "svg": {
-        "minVisualNodes": 68,
+        "minVisualNodes": 121,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 304211,
-        "minTransparentPixels": 45389,
-        "minDistinctColors": 817,
+        "minVisiblePixels": 329362,
+        "minTransparentPixels": 20238,
+        "minDistinctColors": 545,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3915,16 +4375,18 @@
       "name": "report-host-themed-calendar",
       "width": 760,
       "height": 300,
+      "logicalWidth": 760.0,
+      "logicalHeight": 300.0,
       "svg": {
-        "minVisualNodes": 58,
+        "minVisualNodes": 97,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 406691,
-        "minTransparentPixels": 49309,
-        "minDistinctColors": 1747,
+        "minVisiblePixels": 434362,
+        "minTransparentPixels": 21638,
+        "minDistinctColors": 915,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3932,15 +4394,17 @@
       "name": "report-host-themed-status-counts",
       "width": 760,
       "height": 360,
+      "logicalWidth": 760.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 55,
+        "minVisualNodes": 123,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 494531,
-        "minTransparentPixels": 52669,
+        "minVisiblePixels": 524362,
+        "minTransparentPixels": 22838,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -3949,6 +4413,8 @@
       "name": "report-summary-metric-strip",
       "width": 980,
       "height": 294,
+      "logicalWidth": 980.0,
+      "logicalHeight": 294.0,
       "svg": {
         "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
@@ -3966,16 +4432,18 @@
       "name": "reporting-change-calendar",
       "width": 760,
       "height": 360,
+      "logicalWidth": 760.0,
+      "logicalHeight": 360.0,
       "svg": {
-        "minVisualNodes": 25,
+        "minVisualNodes": 34,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 494531,
-        "minTransparentPixels": 52669,
-        "minDistinctColors": 984,
+        "minVisiblePixels": 524362,
+        "minTransparentPixels": 22838,
+        "minDistinctColors": 847,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3983,16 +4451,18 @@
       "name": "reporting-classic-wall-clock",
       "width": 1000,
       "height": 340,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 340.0,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 617891,
-        "minTransparentPixels": 62109,
-        "minDistinctColors": 749,
+        "minVisiblePixels": 652762,
+        "minTransparentPixels": 27238,
+        "minDistinctColors": 898,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4000,16 +4470,18 @@
       "name": "reporting-hour-weekday",
       "width": 1180,
       "height": 440,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 440.0,
       "svg": {
-        "minVisualNodes": 120,
+        "minVisualNodes": 213,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 962771,
-        "minTransparentPixels": 75629,
-        "minDistinctColors": 1225,
+        "minVisiblePixels": 1005562,
+        "minTransparentPixels": 32838,
+        "minDistinctColors": 1172,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4017,16 +4489,18 @@
       "name": "reporting-incident-lanes",
       "width": 1180,
       "height": 560,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 44,
+        "minVisualNodes": 62,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1239251,
-        "minTransparentPixels": 82349,
-        "minDistinctColors": 1656,
+        "minVisiblePixels": 1286362,
+        "minTransparentPixels": 35238,
+        "minDistinctColors": 1736,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4034,16 +4508,18 @@
       "name": "reporting-state-timeline",
       "width": 1180,
       "height": 620,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 89,
+        "minVisualNodes": 149,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1377491,
-        "minTransparentPixels": 85709,
-        "minDistinctColors": 1678,
+        "minVisiblePixels": 1426762,
+        "minTransparentPixels": 36438,
+        "minDistinctColors": 1499,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4051,15 +4527,17 @@
       "name": "reporting-status-matrix",
       "width": 1180,
       "height": 620,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 89,
+        "minVisualNodes": 167,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1377491,
-        "minTransparentPixels": 85709,
+        "minVisiblePixels": 1426762,
+        "minTransparentPixels": 36438,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4068,16 +4546,18 @@
       "name": "reporting-time-axis-subsecond",
       "width": 1000,
       "height": 340,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 340.0,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 617891,
-        "minTransparentPixels": 62109,
-        "minDistinctColors": 1240,
+        "minVisiblePixels": 652762,
+        "minTransparentPixels": 27238,
+        "minDistinctColors": 1170,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4085,16 +4565,18 @@
       "name": "reporting-time-axis-utc",
       "width": 1180,
       "height": 480,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 480.0,
       "svg": {
-        "minVisualNodes": 31,
+        "minVisualNodes": 25,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1054931,
-        "minTransparentPixels": 77869,
-        "minDistinctColors": 1634,
+        "minVisiblePixels": 1099162,
+        "minTransparentPixels": 33638,
+        "minDistinctColors": 1506,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4102,23 +4584,8 @@
       "name": "result-mix-donut",
       "width": 820,
       "height": 460,
-      "svg": {
-        "minVisualNodes": 17,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 693491,
-        "minTransparentPixels": 60909,
-        "minDistinctColors": 1296,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "result-mix-pie-light",
-      "width": 820,
-      "height": 460,
+      "logicalWidth": 820.0,
+      "logicalHeight": 460.0,
       "svg": {
         "minVisualNodes": 18,
         "maxClippedTextNodes": 0,
@@ -4126,9 +4593,28 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 693491,
-        "minTransparentPixels": 60909,
-        "minDistinctColors": 1328,
+        "minVisiblePixels": 728362,
+        "minTransparentPixels": 26038,
+        "minDistinctColors": 1191,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "result-mix-pie-light",
+      "width": 820,
+      "height": 460,
+      "logicalWidth": 820.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 728362,
+        "minTransparentPixels": 26038,
+        "minDistinctColors": 1222,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4136,15 +4622,17 @@
       "name": "revenue-europe-country-map-light",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 92,
+        "minVisualNodes": 58,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024051,
-        "minTransparentPixels": 73549,
+        "minVisiblePixels": 1066362,
+        "minTransparentPixels": 31238,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4153,16 +4641,18 @@
       "name": "revenue-region-map-us-states-light",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 40,
+        "minVisualNodes": 35,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024051,
-        "minTransparentPixels": 73549,
-        "minDistinctColors": 1144,
+        "minVisiblePixels": 1066362,
+        "minTransparentPixels": 31238,
+        "minDistinctColors": 993,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4170,16 +4660,18 @@
       "name": "revenue-tile-map-us-states-light",
       "width": 980,
       "height": 500,
+      "logicalWidth": 980.0,
+      "logicalHeight": 500.0,
       "svg": {
-        "minVisualNodes": 65,
+        "minVisualNodes": 60,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 909811,
-        "minTransparentPixels": 70189,
-        "minDistinctColors": 1964,
+        "minVisiblePixels": 949962,
+        "minTransparentPixels": 30038,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4187,16 +4679,18 @@
       "name": "script-shaping-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 1089,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1118,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4204,15 +4698,17 @@
       "name": "sea-route-suez-cape-map-light",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 314,
+        "minVisualNodes": 188,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024051,
-        "minTransparentPixels": 73549,
+        "minVisiblePixels": 1066362,
+        "minTransparentPixels": 31238,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4221,16 +4717,18 @@
       "name": "security-findings-grouped-light",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 38,
+        "minVisualNodes": 30,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959491,
-        "minTransparentPixels": 70909,
-        "minDistinctColors": 1817,
+        "minVisiblePixels": 1000362,
+        "minTransparentPixels": 30038,
+        "minDistinctColors": 1416,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4238,16 +4736,18 @@
       "name": "security-posture-gauge-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1623,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1231,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4255,67 +4755,75 @@
       "name": "security-posture-radar-dark",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 28,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959495,
-        "minTransparentPixels": 70905,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1000388,
+        "minTransparentPixels": 30012,
+        "minDistinctColors": 1842,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "service-dependency",
       "width": 1200,
-      "height": 848,
+      "height": 731,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 731.014,
       "svg": {
-        "minVisualNodes": 77,
+        "minVisualNodes": 69,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 508800,
+        "minVisiblePixels": 439200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2041,
+        "minDistinctColors": 1768,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "service-dependency-api-neighbors-view",
       "width": 1200,
-      "height": 817,
+      "height": 731,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 731.014,
       "svg": {
-        "minVisualNodes": 54,
+        "minVisualNodes": 53,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 490200,
+        "minVisiblePixels": 439200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1626,
+        "minDistinctColors": 1560,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "service-dependency-compact-view",
       "width": 1200,
-      "height": 800,
+      "height": 719,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 719.014,
       "svg": {
-        "minVisualNodes": 76,
+        "minVisualNodes": 69,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 480000,
+        "minVisiblePixels": 432000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1993,
+        "minDistinctColors": 1768,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4323,8 +4831,10 @@
       "name": "service-dependency-critical-dependencies-view",
       "width": 1200,
       "height": 640,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 640.0,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 38,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4332,24 +4842,26 @@
         "outputScale": 1,
         "minVisiblePixels": 384000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1032,
+        "minDistinctColors": 1132,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "shared-axis-coverage-grid",
       "width": 1080,
-      "height": 440,
+      "height": 438,
+      "logicalWidth": 1080.0,
+      "logicalHeight": 437.878,
       "svg": {
-        "minVisualNodes": 53,
+        "minVisualNodes": 56,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 950400,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1992,
+        "minVisiblePixels": 894052,
+        "minTransparentPixels": 52028,
+        "minDistinctColors": 1198,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4357,16 +4869,18 @@
       "name": "signal-windows-candlestick-light",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 33,
+        "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640931,
-        "minTransparentPixels": 58269,
-        "minDistinctColors": 888,
+        "minVisiblePixels": 674362,
+        "minTransparentPixels": 24838,
+        "minDistinctColors": 1102,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4374,16 +4888,18 @@
       "name": "signal-windows-ohlc-dark",
       "width": 760,
       "height": 460,
+      "logicalWidth": 760.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 36,
+        "minVisualNodes": 32,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 640935,
-        "minTransparentPixels": 58265,
-        "minDistinctColors": 1060,
+        "minVisiblePixels": 674388,
+        "minTransparentPixels": 24812,
+        "minDistinctColors": 1214,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4391,33 +4907,37 @@
       "name": "sinhala-myanmar-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 22,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 1111,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1093,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "site-topology",
       "width": 1200,
-      "height": 786,
+      "height": 721,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 721.014,
       "svg": {
-        "minVisualNodes": 85,
+        "minVisualNodes": 71,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 471600,
+        "minVisiblePixels": 433200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1600,
+        "minDistinctColors": 1408,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4425,8 +4945,10 @@
       "name": "site-topology-emea-view",
       "width": 1200,
       "height": 680,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 680.0,
       "svg": {
-        "minVisualNodes": 30,
+        "minVisualNodes": 27,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4434,7 +4956,7 @@
         "outputScale": 1,
         "minVisiblePixels": 408000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 823,
+        "minDistinctColors": 848,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4442,16 +4964,18 @@
       "name": "small-text-layout-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 31,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 935,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1114,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4459,6 +4983,8 @@
       "name": "styled-multilingual-text",
       "width": 960,
       "height": 440,
+      "logicalWidth": 960.0,
+      "logicalHeight": 440.0,
       "svg": {
         "minVisualNodes": 5,
         "maxClippedTextNodes": 0,
@@ -4475,17 +5001,19 @@
     {
       "name": "subnets-site-links",
       "width": 1200,
-      "height": 805,
+      "height": 731,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 731.014,
       "svg": {
-        "minVisualNodes": 74,
+        "minVisualNodes": 56,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 483000,
+        "minVisiblePixels": 439200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1585,
+        "minDistinctColors": 1306,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4493,15 +5021,17 @@
       "name": "support-themes-word-cloud-editorial",
       "width": 860,
       "height": 500,
+      "logicalWidth": 860.0,
+      "logicalHeight": 500.0,
       "svg": {
-        "minVisualNodes": 21,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 795244,
-        "minTransparentPixels": 64756,
+        "minVisiblePixels": 832604,
+        "minTransparentPixels": 27396,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4510,15 +5040,17 @@
       "name": "target-tile-map-diverging-steps-light",
       "width": 980,
       "height": 500,
+      "logicalWidth": 980.0,
+      "logicalHeight": 500.0,
       "svg": {
-        "minVisualNodes": 67,
+        "minVisualNodes": 60,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 909811,
-        "minTransparentPixels": 70189,
+        "minVisiblePixels": 949962,
+        "minTransparentPixels": 30038,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4527,33 +5059,37 @@
       "name": "text-style-showcase-editorial",
       "width": 860,
       "height": 480,
+      "logicalWidth": 860.0,
+      "logicalHeight": 480.0,
       "svg": {
-        "minVisualNodes": 40,
+        "minVisualNodes": 31,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 761964,
-        "minTransparentPixels": 63636,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 798604,
+        "minTransparentPixels": 26996,
+        "minDistinctColors": 1831,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "theme-font-showcase-grid",
       "width": 912,
-      "height": 668,
+      "height": 666,
+      "logicalWidth": 912.0,
+      "logicalHeight": 665.878,
       "svg": {
-        "minVisualNodes": 108,
+        "minVisualNodes": 96,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1218432,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1160755,
+        "minTransparentPixels": 54029,
+        "minDistinctColors": 1885,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4561,8 +5097,10 @@
       "name": "topology-measured-typography-mono",
       "width": 1000,
       "height": 420,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4570,7 +5108,7 @@
         "outputScale": 1,
         "minVisiblePixels": 210000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 802,
+        "minDistinctColors": 619,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4578,8 +5116,10 @@
       "name": "topology-measured-typography-sans",
       "width": 1000,
       "height": 420,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4587,7 +5127,7 @@
         "outputScale": 1,
         "minVisiblePixels": 210000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 846,
+        "minDistinctColors": 630,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4595,6 +5135,8 @@
       "name": "transparent-report-summary-metric-strip",
       "width": 980,
       "height": 294,
+      "logicalWidth": 980.0,
+      "logicalHeight": 294.0,
       "svg": {
         "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
@@ -4612,15 +5154,17 @@
       "name": "travel-dotted-map-dark",
       "width": 980,
       "height": 560,
+      "logicalWidth": 980.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 957,
+        "minVisualNodes": 193,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1024055,
-        "minTransparentPixels": 73545,
+        "minVisiblePixels": 1066388,
+        "minTransparentPixels": 31212,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4629,16 +5173,18 @@
       "name": "variable-font-showcase",
       "width": 960,
       "height": 460,
+      "logicalWidth": 960.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 29,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 816131,
-        "minTransparentPixels": 67069,
-        "minDistinctColors": 1094,
+        "minVisiblePixels": 854362,
+        "minTransparentPixels": 28838,
+        "minDistinctColors": 1080,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4646,8 +5192,10 @@
       "name": "visual-ad-sites-hierarchy",
       "width": 1180,
       "height": 560,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 98,
+        "minVisualNodes": 77,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4655,7 +5203,7 @@
         "outputScale": 1,
         "minVisiblePixels": 330400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1511,
+        "minDistinctColors": 1188,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4663,23 +5211,8 @@
       "name": "visual-dc-connectivity-map",
       "width": 1180,
       "height": 560,
-      "svg": {
-        "minVisualNodes": 66,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 330400,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 1535,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "visual-directory-health-replication",
-      "width": 1080,
-      "height": 593,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 62,
         "maxClippedTextNodes": 0,
@@ -4687,41 +5220,64 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 320220,
+        "minVisiblePixels": 330400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1737,
+        "minDistinctColors": 1184,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-directory-health-replication",
+      "width": 1080,
+      "height": 585,
+      "logicalWidth": 1080.0,
+      "logicalHeight": 585.014,
+      "svg": {
+        "minVisualNodes": 52,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 316440,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1482,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-directory-level-window",
       "width": 1180,
-      "height": 703,
+      "height": 634,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 634.014,
       "svg": {
-        "minVisualNodes": 78,
+        "minVisualNodes": 74,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 414770,
+        "minVisiblePixels": 374650,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1382,
+        "minDistinctColors": 1381,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 846,
+      "height": 735,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 735.014,
       "svg": {
-        "minVisualNodes": 149,
+        "minVisualNodes": 143,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 478490,
+        "minVisiblePixels": 434240,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4730,15 +5286,17 @@
     {
       "name": "visual-evidence-timeline-relationship",
       "width": 980,
-      "height": 612,
+      "height": 603,
+      "logicalWidth": 980.0,
+      "logicalHeight": 603.014,
       "svg": {
-        "minVisualNodes": 76,
+        "minVisualNodes": 75,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 298900,
+        "minVisiblePixels": 295960,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4746,16 +5304,18 @@
     },
     {
       "name": "visual-force-busy-relationship-graph",
-      "width": 1500,
-      "height": 920,
+      "width": 1800,
+      "height": 1181,
+      "logicalWidth": 1800.0,
+      "logicalHeight": 1180.553,
       "svg": {
-        "minVisualNodes": 455,
+        "minVisualNodes": 352,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 690000,
+        "minVisiblePixels": 1062900,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4764,17 +5324,19 @@
     {
       "name": "visual-force-relationship-graph",
       "width": 1280,
-      "height": 760,
+      "height": 784,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 783.553,
       "svg": {
-        "minVisualNodes": 119,
+        "minVisualNodes": 86,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 486400,
+        "minVisiblePixels": 501760,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 1804,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4782,15 +5344,17 @@
       "name": "visual-geographic-region-map",
       "width": 1180,
       "height": 620,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 321,
+        "minVisualNodes": 192,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1377491,
-        "minTransparentPixels": 85709,
+        "minVisiblePixels": 1426762,
+        "minTransparentPixels": 36438,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -4799,8 +5363,10 @@
       "name": "visual-geographic-topology-map",
       "width": 1280,
       "height": 720,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 720.0,
       "svg": {
-        "minVisualNodes": 416,
+        "minVisualNodes": 267,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4816,8 +5382,10 @@
       "name": "visual-identity-mind-map",
       "width": 1648,
       "height": 900,
+      "logicalWidth": 1648.0,
+      "logicalHeight": 900.0,
       "svg": {
-        "minVisualNodes": 77,
+        "minVisualNodes": 68,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4832,15 +5400,17 @@
     {
       "name": "visual-impact-dependency-overview",
       "width": 1120,
-      "height": 811,
+      "height": 731,
+      "logicalWidth": 1120.0,
+      "logicalHeight": 731.014,
       "svg": {
-        "minVisualNodes": 114,
+        "minVisualNodes": 113,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 454160,
+        "minVisiblePixels": 409920,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4849,32 +5419,36 @@
     {
       "name": "visual-mini-correlation-map",
       "width": 920,
-      "height": 474,
+      "height": 455,
+      "logicalWidth": 920.0,
+      "logicalHeight": 454.553,
       "svg": {
-        "minVisualNodes": 72,
+        "minVisualNodes": 70,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 218040,
+        "minVisiblePixels": 209300,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1872,
+        "minDistinctColors": 1642,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-nested-user-hierarchy",
-      "width": 1320,
-      "height": 920,
+      "width": 1600,
+      "height": 1120,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 1120.0,
       "svg": {
-        "minVisualNodes": 348,
+        "minVisualNodes": 269,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 607200,
+        "minVisiblePixels": 896000,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4882,16 +5456,18 @@
     },
     {
       "name": "visual-nested-user-hierarchy-bottom-top",
-      "width": 1320,
-      "height": 920,
+      "width": 1600,
+      "height": 1120,
+      "logicalWidth": 1600.0,
+      "logicalHeight": 1120.0,
       "svg": {
-        "minVisualNodes": 346,
+        "minVisualNodes": 269,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 607200,
+        "minVisiblePixels": 896000,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4901,8 +5477,10 @@
       "name": "visual-nested-user-hierarchy-left-right",
       "width": 1540,
       "height": 760,
+      "logicalWidth": 1540.0,
+      "logicalHeight": 760.0,
       "svg": {
-        "minVisualNodes": 325,
+        "minVisualNodes": 269,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4910,7 +5488,7 @@
         "outputScale": 1,
         "minVisiblePixels": 585200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 1909,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4918,8 +5496,10 @@
       "name": "visual-nested-user-hierarchy-right-left",
       "width": 1540,
       "height": 760,
+      "logicalWidth": 1540.0,
+      "logicalHeight": 760.0,
       "svg": {
-        "minVisualNodes": 325,
+        "minVisualNodes": 269,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4927,22 +5507,24 @@
         "outputScale": 1,
         "minVisiblePixels": 585200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 1900,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-ownership-evidence-bundle",
       "width": 1120,
-      "height": 711,
+      "height": 677,
+      "logicalWidth": 1120.0,
+      "logicalHeight": 677.014,
       "svg": {
-        "minVisualNodes": 116,
+        "minVisualNodes": 115,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 398160,
+        "minVisiblePixels": 379680,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4951,32 +5533,36 @@
     {
       "name": "visual-readable-dense-replication",
       "width": 1400,
-      "height": 1065,
+      "height": 985,
+      "logicalWidth": 1400.0,
+      "logicalHeight": 985.014,
       "svg": {
-        "minVisualNodes": 264,
+        "minVisualNodes": 220,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 745500,
+        "minVisiblePixels": 690200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1531,
+        "minDistinctColors": 1221,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-relationship-radial-500-ego-graph",
       "width": 1680,
-      "height": 1060,
+      "height": 1114,
+      "logicalWidth": 1680.0,
+      "logicalHeight": 1113.553,
       "svg": {
-        "minVisualNodes": 918,
+        "minVisualNodes": 561,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 890400,
+        "minVisiblePixels": 935760,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -4985,66 +5571,74 @@
     {
       "name": "visual-relationship-radial-ego-graph",
       "width": 1320,
-      "height": 820,
+      "height": 845,
+      "logicalWidth": 1320.0,
+      "logicalHeight": 844.553,
       "svg": {
-        "minVisualNodes": 39,
+        "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 541200,
+        "minVisiblePixels": 557700,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1881,
+        "minDistinctColors": 1281,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-replication-health-hub",
       "width": 1240,
-      "height": 761,
+      "height": 758,
+      "logicalWidth": 1240.0,
+      "logicalHeight": 758.014,
       "svg": {
-        "minVisualNodes": 184,
+        "minVisualNodes": 128,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 471820,
+        "minVisiblePixels": 470580,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1350,
+        "minDistinctColors": 1281,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-replication-mesh-explorer",
       "width": 1280,
-      "height": 814,
+      "height": 751,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 751.014,
       "svg": {
-        "minVisualNodes": 150,
+        "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 520960,
+        "minVisiblePixels": 481280,
         "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minDistinctColors": 2032,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-replication-mesh-route-motion",
       "width": 1280,
-      "height": 814,
+      "height": 751,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 751.014,
       "svg": {
-        "minVisualNodes": 154,
+        "minVisualNodes": 137,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 520960,
+        "minVisiblePixels": 481280,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -5053,15 +5647,17 @@
     {
       "name": "visual-reusable-regional-topology",
       "width": 1316,
-      "height": 748,
+      "height": 656,
+      "logicalWidth": 1316.0,
+      "logicalHeight": 656.014,
       "svg": {
-        "minVisualNodes": 106,
+        "minVisualNodes": 83,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 492184,
+        "minVisiblePixels": 432306,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -5070,15 +5666,17 @@
     {
       "name": "visual-secure-access-arbitrary-icons",
       "width": 1280,
-      "height": 714,
+      "height": 658,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 658.0,
       "svg": {
-        "minVisualNodes": 81,
+        "minVisualNodes": 45,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 456960,
+        "minVisiblePixels": 421120,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -5088,8 +5686,10 @@
       "name": "visual-service-dependency-map",
       "width": 1180,
       "height": 600,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 600.0,
       "svg": {
-        "minVisualNodes": 52,
+        "minVisualNodes": 37,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5097,7 +5697,7 @@
         "outputScale": 1,
         "minVisiblePixels": 354000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1637,
+        "minDistinctColors": 1210,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5105,15 +5705,17 @@
       "name": "visual-site-distribution-map",
       "width": 1180,
       "height": 620,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 335,
+        "minVisualNodes": 200,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1377491,
-        "minTransparentPixels": 85709,
+        "minVisiblePixels": 1426762,
+        "minTransparentPixels": 36438,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -5121,15 +5723,17 @@
     {
       "name": "visual-subnets-site-links-map",
       "width": 1280,
-      "height": 894,
+      "height": 811,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 811.014,
       "svg": {
-        "minVisualNodes": 116,
+        "minVisualNodes": 89,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 572160,
+        "minVisiblePixels": 519680,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -5138,32 +5742,36 @@
     {
       "name": "visual-team-hierarchy-builder",
       "width": 1180,
-      "height": 951,
+      "height": 871,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 871.014,
       "svg": {
-        "minVisualNodes": 108,
+        "minVisualNodes": 87,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 561090,
+        "minVisiblePixels": 514480,
         "minTransparentPixels": 0,
-        "minDistinctColors": 915,
+        "minDistinctColors": 1004,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-topology-explorer",
       "width": 1280,
-      "height": 868,
+      "height": 783,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 783.014,
       "svg": {
-        "minVisualNodes": 180,
+        "minVisualNodes": 130,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 555520,
+        "minVisiblePixels": 501760,
         "minTransparentPixels": 0,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
@@ -5173,8 +5781,10 @@
       "name": "visual-topology-fallback-attachments",
       "width": 600,
       "height": 440,
+      "logicalWidth": 600.0,
+      "logicalHeight": 440.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5182,41 +5792,45 @@
         "outputScale": 1,
         "minVisiblePixels": 132000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 359,
+        "minDistinctColors": 319,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-topology-mixed-routing",
       "width": 1000,
-      "height": 530,
+      "height": 555,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 554.553,
       "svg": {
-        "minVisualNodes": 23,
+        "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 265000,
+        "minVisiblePixels": 277500,
         "minTransparentPixels": 0,
-        "minDistinctColors": 734,
+        "minDistinctColors": 708,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "visual-topology-shared-trunks",
       "width": 1000,
-      "height": 500,
+      "height": 515,
+      "logicalWidth": 1000.0,
+      "logicalHeight": 514.553,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 250000,
+        "minVisiblePixels": 257500,
         "minTransparentPixels": 0,
-        "minDistinctColors": 524,
+        "minDistinctColors": 523,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5224,15 +5838,17 @@
       "name": "visual-wan-latency-map",
       "width": 1180,
       "height": 620,
+      "logicalWidth": 1180.0,
+      "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 326,
+        "minVisualNodes": 195,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 1377491,
-        "minTransparentPixels": 85709,
+        "minVisiblePixels": 1426762,
+        "minTransparentPixels": 36438,
         "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
@@ -5241,16 +5857,18 @@
       "name": "warnings-sparkline",
       "width": 360,
       "height": 90,
+      "logicalWidth": 360.0,
+      "logicalHeight": 90.0,
       "svg": {
-        "minVisualNodes": 9,
+        "minVisualNodes": 3,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 37453,
-        "minTransparentPixels": 27347,
-        "minDistinctColors": 522,
+        "minVisiblePixels": 36935,
+        "minTransparentPixels": 27864,
+        "minDistinctColors": 316,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5258,8 +5876,10 @@
       "name": "wellness-calories-intake-dashboard",
       "width": 1164,
       "height": 565,
+      "logicalWidth": 1164.0,
+      "logicalHeight": 565.0,
       "svg": {
-        "minVisualNodes": 40,
+        "minVisualNodes": 39,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5267,7 +5887,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1315320,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1158,
+        "minDistinctColors": 1150,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5275,16 +5895,18 @@
       "name": "wellness-layered-radial-progress",
       "width": 560,
       "height": 560,
+      "logicalWidth": 560.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 9,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 570706,
-        "minTransparentPixels": 56494,
-        "minDistinctColors": 950,
+        "minVisiblePixels": 586592,
+        "minTransparentPixels": 40608,
+        "minDistinctColors": 861,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5292,6 +5914,8 @@
       "name": "wellness-weekly-progress-dashboard",
       "width": 820,
       "height": 1002,
+      "logicalWidth": 820.0,
+      "logicalHeight": 1002.0,
       "svg": {
         "minVisualNodes": 64,
         "maxClippedTextNodes": 0,
@@ -5309,6 +5933,8 @@
       "name": "wellness-weight-data-gauge",
       "width": 560,
       "height": 420,
+      "logicalWidth": 560.0,
+      "logicalHeight": 420.0,
       "svg": {
         "minVisualNodes": 10,
         "maxClippedTextNodes": 0,
@@ -5325,17 +5951,19 @@
     {
       "name": "word-cloud-control-showcase-grid",
       "width": 932,
-      "height": 412,
+      "height": 409,
+      "logicalWidth": 932.0,
+      "logicalHeight": 408.75,
       "svg": {
-        "minVisualNodes": 31,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 767968,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 762268,
+        "minTransparentPixels": 108,
+        "minDistinctColors": 2029,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5343,6 +5971,8 @@
       "name": "zero-value-donut-light",
       "width": 820,
       "height": 460,
+      "logicalWidth": 820.0,
+      "logicalHeight": 460.0,
       "svg": {
         "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
@@ -5350,9 +5980,9 @@
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 693491,
-        "minTransparentPixels": 60909,
-        "minDistinctColors": 1216,
+        "minVisiblePixels": 728362,
+        "minTransparentPixels": 26038,
+        "minDistinctColors": 1167,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5360,16 +5990,18 @@
       "name": "zero-value-funnel-stage-light",
       "width": 920,
       "height": 560,
+      "logicalWidth": 920.0,
+      "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 10,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 959491,
-        "minTransparentPixels": 70909,
-        "minDistinctColors": 2048,
+        "minVisiblePixels": 1000362,
+        "minTransparentPixels": 30038,
+        "minDistinctColors": 872,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5377,16 +6009,18 @@
       "name": "zero-value-polar-area-light",
       "width": 820,
       "height": 460,
+      "logicalWidth": 820.0,
+      "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 19,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 2,
-        "minVisiblePixels": 693491,
-        "minTransparentPixels": 60909,
-        "minDistinctColors": 1604,
+        "minVisiblePixels": 728362,
+        "minTransparentPixels": 26038,
+        "minDistinctColors": 1447,
         "maxEdgeInkPixels": 0
       }
     }

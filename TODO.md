@@ -26,7 +26,7 @@ All 49 chart kinds, ChartGrid, topology, flow and sequence compile into the shar
 - [x] Complete shared frame, theme, typography, paint, accessible source alternatives and semantic snapshot contracts needed by the migrated families.
 - [x] Complete independent contract reviews and reproduce their remediations, including typed paints, responsive topology, artwork, linked heatmap keyboard navigation, Flow lane/order semantics and animated topology natural sizing.
 - [ ] Close final integrated Phase 3 quality, observed light/dark SVG and native PNG, framework/package/AOT checks and representative performance comparisons. Investigate each per-workload regression above 10%.
-- [ ] Qualify the checked-in 122-artifact selected gallery after the final owner corrections; retain the full review matrix as private evidence.
+- [x] Qualify the checked-in 122-artifact selected gallery for all 49 kinds in both themes, with final native output and two executed browser viewports; retain the full review matrix as private evidence.
 - [ ] Publish dependent PR layers, address validated feedback and settle current-head checks before merge.
 - [ ] Reassess Phases 2–3 and clean superseded task output before package extraction or consumer migration.
 
