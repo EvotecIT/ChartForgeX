@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
@@ -19,7 +18,7 @@ internal sealed partial class ChartLabelScene {
         }
     };
 
-    private ChartRect TextBox(XElement element, SvgRasterStyle style, SvgRasterMatrix matrix) {
+    private ChartRect TextBox(SvgMarkupElement element, SvgRasterStyle style, SvgRasterMatrix matrix) {
         var resolved = TextStyle(style);
         var metrics = Measurements.Measure(element.Value, resolved);
         var face = TypographyFontResolver.ResolveFace(resolved.Font);
@@ -35,12 +34,12 @@ internal sealed partial class ChartLabelScene {
         var halo = style.Stroke.IsNone ? 0 : style.StrokeWidth / 2;
         var box = TransformBox(new ChartRect(x - halo, y - halo, metrics.Width + halo * 2, metrics.Height + halo * 2), matrix);
         // Explicitly positioned spans represent multiline captions. Preserve their formatting and include their full footprint.
-        foreach (var span in element.Elements().Where(e => e.Name.LocalName == "tspan")) {
+        foreach (var span in element.Elements().Where(e => e.LocalName == "tspan")) {
             if (span.Attribute("x") == null && span.Attribute("y") == null && span.Attribute("dy") == null) continue;
-            var copy = new XElement(span); copy.Name = element.Name;
+            var copy = span.Clone(); copy.Name = element.Name;
             if (copy.Attribute("x") == null) copy.SetAttributeValue("x", Number(element, "x"));
             if (copy.Attribute("y") == null) copy.SetAttributeValue("y", Number(element, "y"));
-            var dy = (string?)copy.Attribute("dy");
+            var dy = copy.Attribute("dy");
             if (dy != null && dy.EndsWith("em", StringComparison.Ordinal)) {
                 if (double.TryParse(dy.Substring(0, dy.Length - 2), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var em)) copy.SetAttributeValue("dy", F(em * resolved.FontSize));
             }
@@ -58,7 +57,7 @@ internal sealed partial class ChartLabelScene {
 
     private static bool CanMove(string role) => !role.Contains("axis") && !role.Contains("tick") && !role.Contains("column-label") && !role.Contains("row-label") && !role.Contains("legend")
         && !role.Contains("header") && role != "chart-title" && role != "chart-subtitle" && role != "donut-total-label" && role != "donut-title";
-    private static string LabelRole(XElement element) => Role(element).Length != 0 ? Role(element)
+    private static string LabelRole(SvgMarkupElement element) => Role(element).Length != 0 ? Role(element)
         : element.Ancestors().Select(Role).FirstOrDefault(role => role.Length != 0) ?? "";
     private static int Priority(string role) => role is "chart-title" or "chart-subtitle" || role.Contains("header") ? 1000
         : role.Contains("legend") ? 900 : role.Contains("axis") || role.Contains("tick") || role.Contains("column-label") || role.Contains("row-label") ? 800
@@ -104,10 +103,10 @@ internal sealed partial class ChartLabelScene {
             return;
         }
         if (Role(element) == "data-label" && entry.Associated is { Kind: "bar" or "horizontal-bar" } mark &&
-            (string?)mark.SvgRoot?.Attribute("data-cfx-look") == "graphite" && mark.Shape.Contains(result.Bounds) &&
+            mark.SvgRoot?.Attribute("data-cfx-look") == "graphite" && mark.Shape.Contains(result.Bounds) &&
             entry.Ink?.ToHex() is "#4D525B" or "#B0B4BC" &&
-            ChartColor.TryParse(Themes.SvgPaint.Resolve((string?)mark.Element.Attribute("data-cfx-color") ?? "", null), out var fill)) {
-            var state = (string?)mark.SvgRoot.Attribute("data-cfx-series-state-" + (string?)mark.Element.Attribute("data-cfx-series"));
+            ChartColor.TryParse(Themes.SvgPaint.Resolve(mark.Element.Attribute("data-cfx-color") ?? "", null), out var fill)) {
+            var state = mark.SvgRoot.Attribute("data-cfx-series-state-" + mark.Element.Attribute("data-cfx-series"));
             var role = state != null && state != "none" ? Themes.SvgColorRole.Status : Themes.SvgColorRole.Series;
             element.SetAttributeValue("fill", Themes.SvgPaint.Contrast(fill, role).Value);
         }
@@ -118,13 +117,13 @@ internal sealed partial class ChartLabelScene {
             element.Value = result.Text;
             if (entry.Matrix.TryInvert(out var inverse)) {
                 var ascent = TypographyFontResolver.ResolveFace(entry.Style.Font).Font?.Ascent(entry.Style.FontSize) ?? entry.Style.FontSize * 0.82;
-                var script = (string?)element.Attribute("baseline-shift");
+                var script = element.Attribute("baseline-shift");
                 var shift = script == "super" ? -entry.Style.FontSize * 0.35 : script == "sub" ? entry.Style.FontSize * 0.22 : 0;
                 var position = inverse.Transform(new ChartPoint(entry.ContentBox.X, entry.ContentBox.Y + ascent - shift));
                 element.SetAttributeValue("text-anchor", "start"); element.SetAttributeValue("dominant-baseline", "auto");
                 element.SetAttributeValue("x", F(position.X)); element.SetAttributeValue("y", F(position.Y));
             }
-            foreach (var decoration in entry.Decorations.Where(e => e.Name.LocalName == "rect")) {
+            foreach (var decoration in entry.Decorations.Where(e => e.LocalName == "rect")) {
                 decoration.SetAttributeValue("width", F(Math.Max(0, Number(decoration, "width") + result.Bounds.Width - entry.Box.Width)));
                 decoration.SetAttributeValue("height", F(Math.Max(0, Number(decoration, "height") + result.Bounds.Height - entry.Box.Height)));
             }
@@ -141,28 +140,30 @@ internal sealed partial class ChartLabelScene {
             var start = leaderInverse.Transform(origin);
             var end = leaderInverse.Transform(result.LeaderEnd);
             var leaderRole = entry.Decorations.FirstOrDefault(IsLeader) is { } existingLeader ? Role(existingLeader) : "label-leader";
-            var line = new XElement(element.Name.Namespace + "line", new XAttribute("data-cfx-role", leaderRole), new XAttribute("data-cfx-label-decoration", "true"),
-                new XAttribute("x1", F(start.X)), new XAttribute("y1", F(start.Y)), new XAttribute("x2", F(end.X)), new XAttribute("y2", F(end.Y)),
-                new XAttribute("stroke", (string?)element.Attribute("fill") ?? "currentColor"), new XAttribute("stroke-width", "1"), new XAttribute("stroke-opacity", "0.65"));
+            // A new element in the label's namespace, written with the label's prefix.
+            var line = new SvgMarkupElement(element.PrefixWithColon + "line", 10);
+            line.AddAttribute("data-cfx-role", leaderRole); line.AddAttribute("data-cfx-label-decoration", "true");
+            line.AddAttribute("x1", F(start.X)); line.AddAttribute("y1", F(start.Y)); line.AddAttribute("x2", F(end.X)); line.AddAttribute("y2", F(end.Y));
+            line.AddAttribute("stroke", element.Attribute("fill") ?? "currentColor"); line.AddAttribute("stroke-width", "1"); line.AddAttribute("stroke-opacity", "0.65");
             element.AddBeforeSelf(line);
         }
     }
-    private static bool IsLeader(XElement element) => Role(element).Contains("leader") || Role(element).Contains("connector");
+    private static bool IsLeader(SvgMarkupElement element) => Role(element).Contains("leader") || Role(element).Contains("connector");
 
-    private static bool MoveLeader(Entry entry, XElement leader, PlacedLabel result, double dx, double dy) {
+    private static bool MoveLeader(Entry entry, SvgMarkupElement leader, PlacedLabel result, double dx, double dy) {
         var nested = leader.Parent == entry.Element;
         var parent = nested ? entry.Matrix : entry.ParentMatrix;
-        var original = parent.Multiply(SvgRasterMatrix.ParseTransform((string?)leader.Attribute("transform")));
+        var original = parent.Multiply(SvgRasterMatrix.ParseTransform(leader.Attribute("transform")));
         var moved = nested ? SvgRasterMatrix.Translate(dx, dy).Multiply(original) : original;
         if (!moved.TryInvert(out var inverse)) return false;
-        if (leader.Name.LocalName == "line") {
+        if (leader.LocalName == "line") {
             var start = inverse.Transform(original.Transform(new ChartPoint(Number(leader, "x1"), Number(leader, "y1"))));
             var end = inverse.Transform(result.LeaderEnd);
             leader.SetAttributeValue("x1", F(start.X)); leader.SetAttributeValue("y1", F(start.Y));
             leader.SetAttributeValue("x2", F(end.X)); leader.SetAttributeValue("y2", F(end.Y));
             return true;
         }
-        if (leader.Name.LocalName != "path" || (string?)leader.Attribute("d") is not { } path) return false;
+        if (leader.LocalName != "path" || leader.Attribute("d") is not { } path) return false;
         var rings = Core.ChartMapPathParser.ParseRings(path);
         if (rings.Count != 1 || rings[0].Count < 2 || rings[0].Count > 3) return false;
         var points = rings[0];
@@ -175,15 +176,15 @@ internal sealed partial class ChartLabelScene {
         return true;
     }
 
-    private static void Translate(XElement element, SvgRasterMatrix parent, double dx, double dy) {
+    private static void Translate(SvgMarkupElement element, SvgRasterMatrix parent, double dx, double dy) {
         if (Math.Abs(dx) < 0.0001 && Math.Abs(dy) < 0.0001 || !parent.TryInvert(out var inverse)) return;
         var zero = inverse.Transform(new ChartPoint(0, 0)); var translated = inverse.Transform(new ChartPoint(dx, dy));
-        element.SetAttributeValue("transform", "translate(" + F(translated.X - zero.X) + " " + F(translated.Y - zero.Y) + ") " + ((string?)element.Attribute("transform") ?? ""));
+        element.SetAttributeValue("transform", "translate(" + F(translated.X - zero.X) + " " + F(translated.Y - zero.Y) + ") " + (element.Attribute("transform") ?? ""));
     }
-    private static void KeepAccessibleValue(XElement mark, string text) {
-        var original = (string?)mark.Attribute("aria-label") ?? (string?)mark.Attribute("data-cfx-label") ?? "";
+    private static void KeepAccessibleValue(SvgMarkupElement mark, string text) {
+        var original = mark.Attribute("aria-label") ?? mark.Attribute("data-cfx-label") ?? "";
         if (original.IndexOf(text, StringComparison.Ordinal) < 0) mark.SetAttributeValue("aria-label", original.Length == 0 ? text : original + ", " + text);
-        var labels = (string?)mark.Attribute("data-cfx-label-text") ?? "";
+        var labels = mark.Attribute("data-cfx-label-text") ?? "";
         if (labels.IndexOf(text, StringComparison.Ordinal) < 0) mark.SetAttributeValue("data-cfx-label-text", labels.Length == 0 ? text : labels + "; " + text);
     }
 }

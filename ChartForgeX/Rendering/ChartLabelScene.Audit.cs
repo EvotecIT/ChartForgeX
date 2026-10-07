@@ -1,8 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
 using ChartForgeX.Typography;
 using ChartForgeX.Primitives;
 
@@ -11,10 +8,8 @@ namespace ChartForgeX.Rendering;
 internal sealed partial class ChartLabelScene {
     /// <summary>Re-measures the emitted scene without placing it, for gallery collision diagnostics.</summary>
     internal static LabelOverlapReport Inspect(string svg, FontSpec font) {
-        using var source = new StringReader(svg);
-        using var reader = XmlReader.Create(source, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
-        var document = XDocument.Load(reader, LoadOptions.PreserveWhitespace);
-        var dropped = document.Descendants().Count(e => (string?)e.Attribute("data-cfx-label-status") == "dropped");
+        var document = SvgMarkupParser.Parse(svg);
+        var dropped = document.Descendants().Count(e => e.Attribute("data-cfx-label-status") == "dropped");
         var scene = new ChartLabelScene(document, font, false);
         var labelPairs = 0; var markPairs = 0; var contained = 0; var details = new System.Text.StringBuilder();
         for (var i = 0; i < scene._labels.Count; i++) {

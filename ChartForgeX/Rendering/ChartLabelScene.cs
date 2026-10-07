@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -21,36 +18,31 @@ internal sealed partial class ChartLabelScene {
     private readonly List<LabelObstacle> _obstacles = new();
     private readonly FontSpec _font;
     private readonly ChartRect _bounds;
-    private readonly XDocument _document;
+    private readonly SvgMarkupDocument _document;
     private readonly SvgRasterDefinitions _definitions;
     [ThreadStatic] private static FontSpec? CurrentFont;
 
-    private ChartLabelScene(XDocument document, FontSpec font, bool place = true) {
+    private ChartLabelScene(SvgMarkupDocument document, FontSpec font, bool place = true) {
         _document = document; _font = font;
-        var root = document.Root!;
+        var root = document.Root;
         SvgRasterParser.ValidateElementDepth(root);
-        var definitions = new XElement(root.Name, root.Attributes(), root.Elements().Where(e => e.Name.LocalName is "defs" or "style"));
-        var raster = SvgRasterParser.FromDocumentRoot(definitions);
+        var raster = SvgRasterParser.FromMarkupRoot(root, e => e.LocalName is "defs" or "style");
         _definitions = SvgRasterDefinitions.From(raster);
         var outputWidth = Number(root, "width", raster.ViewBox.Width); var outputHeight = Number(root, "height", raster.ViewBox.Height);
         var fit = Math.Min(outputWidth / raster.ViewBox.Width, outputHeight / raster.ViewBox.Height);
-        var margin = (string?)root.Attribute("data-cfx-host-frame") == "true" ? 0
+        var margin = root.Attribute("data-cfx-host-frame") == "true" ? 0
             : Math.Max(4, (Math.Min(outputWidth, outputHeight) * 0.01 + 2) / Math.Max(0.0001, fit));
         _bounds = new ChartRect(raster.ViewBox.X + margin, raster.ViewBox.Y + margin, Math.Max(1, raster.ViewBox.Width - margin * 2), Math.Max(1, raster.ViewBox.Height - margin * 2));
         Collect(root, SvgRasterParser.ReadStyleElement(root), SvgRasterStyle.Default, SvgRasterMatrix.Identity, new List<SvgRasterElement>());
         if (place) Place();
     }
 
-    internal static ChartLabelScene Create(string svg, FontSpec font) {
-        using var source = new StringReader(svg);
-        using var reader = XmlReader.Create(source, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
-        return new ChartLabelScene(XDocument.Load(reader, LoadOptions.PreserveWhitespace), font);
-    }
-    internal string ToSvg() => _document.ToString(SaveOptions.DisableFormatting);
+    internal static ChartLabelScene Create(string svg, FontSpec font) => new(SvgMarkupParser.Parse(svg), font);
+    internal string ToSvg() => _document.ToString();
     internal ChartRect PlotBounds {
         get {
-            var rect = _document.Descendants().First(e => e.Name.LocalName == "clipPath" && ((string?)e.Attribute("id"))?.EndsWith("-plotClip", StringComparison.Ordinal) == true)
-                .Elements().First(e => e.Name.LocalName == "rect");
+            var rect = _document.Descendants().First(e => e.LocalName == "clipPath" && e.Attribute("id")?.EndsWith("-plotClip", StringComparison.Ordinal) == true)
+                .Elements().First(e => e.LocalName == "rect");
             return new ChartRect(Number(rect, "x"), Number(rect, "y"), Number(rect, "width"), Number(rect, "height"));
         }
     }
@@ -63,23 +55,43 @@ internal sealed partial class ChartLabelScene {
         }
     }
     internal void Paint(RgbaCanvas canvas, TrueTypeFont? explicitFont = null) {
-        var layer = PaintLayer(_document.Root!);
-        if (layer != null) SvgRasterRenderer.PaintLabelLayer(canvas, SvgRasterParser.FromDocumentRoot(layer), explicitFont);
+        var root = _document.Root;
+        var layer = PaintLayer(root);
+        if (layer == null) return;
+        var viewBox = SvgRasterViewBox.FromDimensions(root.Attribute("width"), root.Attribute("height"));
+        if (string.Equals(root.LocalName, "svg", StringComparison.OrdinalIgnoreCase) && root.Attribute("viewBox") is { } box) viewBox = SvgRasterViewBox.Parse(box);
+        SvgRasterRenderer.PaintLabelLayer(canvas, new SvgRasterDocument(viewBox, layer), explicitFont);
     }
 
-    private static XElement? PaintLayer(XElement element) {
-        if ((string?)element.Attribute("display") == "none" || Role(element) == "topology-icon-artwork") return null;
-        if (element.Name.LocalName is "defs" or "style" or "text" || (string?)element.Attribute("data-cfx-label-decoration") == "true") {
-            var copy = new XElement(element);
+    // The raster tree of the label layer: text, label decorations and definitions, with the elements that lead to them.
+    private static SvgRasterElement? PaintLayer(SvgMarkupElement element) {
+        if (element.Attribute("display") == "none" || Role(element) == "topology-icon-artwork") return null;
+        if (element.LocalName is "defs" or "style" or "text" || element.Attribute("data-cfx-label-decoration") == "true") {
             // Inside-mark ink is resolved after placement. Native label painting needs its current-theme literal;
             // SVG serialization keeps the paired paint so host colour properties can switch themes.
-            foreach (var paint in copy.DescendantsAndSelf().Attributes().Where(a => a.Name.LocalName is "fill" or "stroke"))
-                paint.Value = Themes.SvgPaint.Resolve(paint.Value, null);
-            return copy;
+            return SvgRasterParser.ReadMarkupElement(element, null, (name, value) => name is "fill" or "stroke" ? Themes.SvgPaint.Resolve(value, null) : value, out _);
         }
-        var children = new List<XElement>();
+        var children = new List<SvgRasterElement>();
         foreach (var child in element.Elements()) { var copy = PaintLayer(child); if (copy != null) children.Add(copy); }
-        return children.Count == 0 ? null : new XElement(element.Name, element.Attributes(), children);
+        if (children.Count == 0) return null;
+        var styled = SvgRasterParser.ReadStyleElement(element);
+        var attributes = new Dictionary<string, string>(element.AttributeCount, StringComparer.Ordinal);
+        for (var i = 0; i < element.AttributeCount; i++) {
+            var name = element.AttributeName(i);
+            if (name == "xmlns" || name.StartsWith("xmlns:", StringComparison.Ordinal)) continue;
+            attributes[name.StartsWith("xml:", StringComparison.Ordinal) ? name : name.Substring(name.IndexOf(':') + 1)] = element.AttributeValue(i);
+        }
+        var content = new List<SvgRasterContent>(children.Count);
+        foreach (var child in children) content.Add(SvgRasterContent.FromElement(child));
+        // The copied element holds only these children, so text, tspan and style aggregate their text alone.
+        var text = styled.Name is "text" or "tspan" or "style" ? string.Concat(children.Select(LayerText)) : string.Empty;
+        return new SvgRasterElement(styled.Name, attributes, children, text, content);
+    }
+
+    private static string LayerText(SvgRasterElement element) {
+        var builder = new System.Text.StringBuilder();
+        foreach (var item in element.Content) builder.Append(item.Element == null ? item.Text : LayerText(item.Element));
+        return builder.ToString();
     }
 
     internal static IDisposable OpenFontScope(FontSpec font) => new FontScope(font);
@@ -98,18 +110,18 @@ internal sealed partial class ChartLabelScene {
     }
 
     // siblings holds the element's earlier sibling elements in order; XLinq can only walk back to them from the first child.
-    private void Collect(XElement element, SvgRasterElement raster, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, List<SvgRasterElement> ancestors, ChartRect? clip = null, List<XElement>? siblings = null) {
+    private void Collect(SvgMarkupElement element, SvgRasterElement raster, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, List<SvgRasterElement> ancestors, ChartRect? clip = null, List<SvgMarkupElement>? siblings = null) {
         // Imported artwork is an atomic asset, already painted by the native mark renderer.
         // Its internal captions must not be relocated or painted a second time as chart labels.
-        if (element.Name.LocalName is "defs" or "style" or "title" or "desc" || Role(element) == "topology-icon-artwork") return;
+        if (element.LocalName is "defs" or "style" or "title" or "desc" || Role(element) == "topology-icon-artwork") return;
         var style = SvgRasterStyle.Resolve(parentStyle, raster, _definitions.StyleSheet, ancestors);
         if (!style.Displayed || !style.VisibilityVisible || style.Opacity == 0) return;
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(raster.Get("transform")));
-        if (element.Name.LocalName == "svg" && element.Parent != null && element.Attribute("viewBox") is { } viewBox) {
-            var view = SvgRasterViewBox.Parse(viewBox.Value);
+        if (element.LocalName == "svg" && element.Parent != null && element.Attribute("viewBox") is { } viewBox) {
+            var view = SvgRasterViewBox.Parse(viewBox);
             var width = Number(element, "width", view.Width); var height = Number(element, "height", view.Height);
             var scale = Math.Min(width / view.Width, height / view.Height);
-            var align = (string?)element.Attribute("preserveAspectRatio") ?? "xMidYMid meet";
+            var align = element.Attribute("preserveAspectRatio") ?? "xMidYMid meet";
             var x = Number(element, "x") + (align.Contains("xMin") ? 0 : (width - view.Width * scale) / 2);
             var y = Number(element, "y") + (align.Contains("YMin") ? 0 : (height - view.Height * scale) / 2);
             matrix = matrix.Multiply(SvgRasterMatrix.Translate(x, y)).Multiply(SvgRasterMatrix.Scale(scale, scale)).Multiply(SvgRasterMatrix.Translate(-view.X, -view.Y));
@@ -118,8 +130,8 @@ internal sealed partial class ChartLabelScene {
         var role = Role(element);
         var isLegendItem = role is "legend-item" or "slice-legend-item";
         var isGroup = isLegendItem || role == "topology-edge-label";
-        if (element.Name.LocalName == "text" || isGroup) {
-            var textElements = isGroup ? element.Elements().Where(e => e.Name.LocalName == "text").ToArray() : new[] { element };
+        if (element.LocalName == "text" || isGroup) {
+            var textElements = isGroup ? element.Elements().Where(e => e.LocalName == "text").ToArray() : new[] { element };
             if (textElements.Length != 0) {
                 var box = default(ChartRect);
                 var first = true;
@@ -131,7 +143,7 @@ internal sealed partial class ChartLabelScene {
                 }
                 var contentBox = box;
                 var value = isGroup ? string.Join(" ", textElements.Select(e => e.Value)) : element.Value;
-                var decorations = isGroup ? element.Elements().Where(e => e.Name.LocalName != "text").ToList() : Decorations(element, false, siblings);
+                var decorations = isGroup ? element.Elements().Where(e => e.LocalName != "text").ToList() : Decorations(element, false, siblings);
                 foreach (var decoration in decorations) {
                     decoration.SetAttributeValue("data-cfx-label-decoration", "true");
                     var decorationBox = IsLeader(decoration) ? null : Shape(decoration, matrix, null)?.Bounds;
@@ -155,9 +167,9 @@ internal sealed partial class ChartLabelScene {
         }
         ancestors.Add(raster);
         // Collect changes attributes only, so the list of earlier children stays the parent's real order.
-        List<XElement>? children = null;
+        List<SvgMarkupElement>? children = null;
         foreach (var child in element.Elements()) {
-            children ??= new List<XElement>();
+            children ??= new List<SvgMarkupElement>();
             Collect(child, SvgRasterParser.ReadStyleElement(child), style, matrix, ancestors, clip, children);
             children.Add(child);
         }
@@ -183,7 +195,7 @@ internal sealed partial class ChartLabelScene {
         }
         var results = Measurements.Place(requests, _bounds, _obstacles);
         for (var i = 0; i < results.Count; i++) Apply(_labels[i], results[i]);
-        _document.Root!.SetAttributeValue("data-cfx-label-layout", "measured");
+        _document.Root.SetAttributeValue("data-cfx-label-layout", "measured");
         _document.Root.SetAttributeValue("data-cfx-label-count", results.Count);
         _document.Root.SetAttributeValue("data-cfx-label-dropped", results.Count(label => label.IsDropped));
     }
@@ -201,29 +213,29 @@ internal sealed partial class ChartLabelScene {
     private ChartRect? FunnelLabelBounds(Entry label, Mark? associated) {
         if (associated == null) return null;
         var stage = associated.Shape.Bounds;
-        var outside = label.Element.AncestorsAndSelf().Any(e => (string?)e.Attribute("data-cfx-label-lane") == "outside");
+        var outside = label.Element.AncestorsAndSelf().Any(e => e.Attribute("data-cfx-label-lane") == "outside");
         return outside
             ? new ChartRect(stage.Right, stage.Top, Math.Max(1, _bounds.Right - stage.Right), stage.Height)
             : stage;
     }
 
-    internal static string Role(XElement element) => (string?)element.Attribute("data-cfx-role") ?? "";
-    private static double Number(XElement element, string name, double fallback = 0) => double.TryParse((string?)element.Attribute(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : fallback;
+    internal static string Role(SvgMarkupElement element) => element.Attribute("data-cfx-role") ?? "";
+    private static double Number(SvgMarkupElement element, string name, double fallback = 0) => double.TryParse(element.Attribute(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : fallback;
     private static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
     private static ChartRect Union(ChartRect a, ChartRect b) => new(Math.Min(a.Left, b.Left), Math.Min(a.Top, b.Top), Math.Max(a.Right, b.Right) - Math.Min(a.Left, b.Left), Math.Max(a.Bottom, b.Bottom) - Math.Min(a.Top, b.Top));
 
     private sealed class Entry {
-        internal Entry(XElement element, string text, TextStyle style, ChartRect box, ChartRect contentBox, SvgRasterMatrix matrix, SvgRasterMatrix parentMatrix, List<XElement> decorations, bool legend, ChartRect? clip, ChartColor? ink) {
+        internal Entry(SvgMarkupElement element, string text, TextStyle style, ChartRect box, ChartRect contentBox, SvgRasterMatrix matrix, SvgRasterMatrix parentMatrix, List<SvgMarkupElement> decorations, bool legend, ChartRect? clip, ChartColor? ink) {
             Element = element; Text = text; Style = style; Box = box; ContentBox = contentBox; Matrix = matrix; ParentMatrix = parentMatrix; Decorations = decorations; IsLegendItem = legend; Clip = clip; Ink = ink;
         }
-        internal XElement Element { get; }
+        internal SvgMarkupElement Element { get; }
         internal string Text { get; }
         internal TextStyle Style { get; }
         internal ChartRect Box { get; }
         internal ChartRect ContentBox { get; }
         internal SvgRasterMatrix Matrix { get; }
         internal SvgRasterMatrix ParentMatrix { get; }
-        internal List<XElement> Decorations { get; }
+        internal List<SvgMarkupElement> Decorations { get; }
         internal bool IsLegendItem { get; }
         internal ChartRect? Clip { get; }
         internal ChartColor? Ink { get; }

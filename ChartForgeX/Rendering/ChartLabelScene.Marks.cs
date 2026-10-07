@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.SvgRaster;
@@ -28,12 +27,12 @@ internal sealed partial class ChartLabelScene {
         or "sankey-node" or "sankey-link" or "dotted-map-point" or "dotted-map-connector" or "region-map-region" or "tile-map-region"
         or "topology-node-body" or "topology-edge-path" or "annotation-line" or "annotation-band";
 
-    private static LabelMarkShape? Shape(XElement element, SvgRasterMatrix matrix, SvgRasterStyle? style) {
+    private static LabelMarkShape? Shape(SvgMarkupElement element, SvgRasterMatrix matrix, SvgRasterStyle? style) {
         var rings = new List<List<ChartPoint>>();
         var fill = style == null || !style.Fill.IsNone && style.FillOpacity * style.Opacity > 0 && (style.Fill.Color?.A ?? 255) > 0;
         var stroke = style == null ? Number(element, "stroke-width") : style.Stroke.IsNone || style.StrokeOpacity * style.Opacity <= 0 || (style.Stroke.Color?.A ?? 255) == 0 ? 0 : style.StrokeWidth;
         if (!fill && stroke == 0) return null;
-        switch (element.Name.LocalName) {
+        switch (element.LocalName) {
             case "rect":
                 var x = Number(element, "x"); var y = Number(element, "y"); var w = Number(element, "width"); var h = Number(element, "height");
                 rings.Add(new List<ChartPoint> { new(x, y), new(x + w, y), new(x + w, y + h), new(x, y + h) }); break;
@@ -45,14 +44,14 @@ internal sealed partial class ChartLabelScene {
                 for (var i = 0; i < 32; i++) { var angle = i * Math.PI / 16; circle.Add(new ChartPoint(cx + Math.Cos(angle) * rx, cy + Math.Sin(angle) * ry)); }
                 rings.Add(circle); break;
             case "path":
-                var path = (string?)element.Attribute("d"); if (string.IsNullOrEmpty(path)) return null;
+                var path = element.Attribute("d"); if (string.IsNullOrEmpty(path)) return null;
                 rings = ChartMapPathParser.ParseRings(path!); break;
             case "line":
                 fill = false;
                 rings.Add(new List<ChartPoint> { new(Number(element, "x1"), Number(element, "y1")), new(Number(element, "x2"), Number(element, "y2")) }); break;
             case "polygon":
             case "polyline":
-                var points = ((string?)element.Attribute("points") ?? "").Split(new[] { ' ', ',', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                var points = (element.Attribute("points") ?? "").Split(new[] { ' ', ',', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 var polygon = new List<ChartPoint>();
                 for (var i = 0; i + 1 < points.Length; i += 2) polygon.Add(new ChartPoint(double.Parse(points[i], System.Globalization.CultureInfo.InvariantCulture), double.Parse(points[i + 1], System.Globalization.CultureInfo.InvariantCulture)));
                 rings.Add(polygon); break;
@@ -64,18 +63,18 @@ internal sealed partial class ChartLabelScene {
 
     private Mark? AssociatedMark(Entry entry) {
         if (!CanMove(LabelRole(entry.Element)) || entry.IsLegendItem) return null;
-        var svg = entry.Element.AncestorsAndSelf().FirstOrDefault(e => e.Name.LocalName == "svg");
-        if ((string?)entry.Element.Attribute("data-cfx-label-mark") is { } key) {
+        var svg = entry.Element.AncestorsAndSelf().FirstOrDefault(e => e.LocalName == "svg");
+        if (entry.Element.Attribute("data-cfx-label-mark") is { } key) {
             return _marks.FirstOrDefault(mark => mark.SourceId == key && mark.SvgRoot == svg);
         }
-        var series = (string?)entry.Element.Attribute("data-cfx-series");
-        var point = (string?)entry.Element.Attribute("data-cfx-point");
+        var series = entry.Element.Attribute("data-cfx-series");
+        var point = entry.Element.Attribute("data-cfx-point");
         var labelRole = LabelRole(entry.Element);
         if (labelRole.StartsWith("funnel-", StringComparison.Ordinal)) {
-            point ??= entry.Element.Ancestors().Select(e => (string?)e.Attribute("data-cfx-point")).FirstOrDefault(value => value != null);
+            point ??= entry.Element.Ancestors().Select(e => e.Attribute("data-cfx-point")).FirstOrDefault(value => value != null);
         }
         if (labelRole == "dotted-map-label" && point != null) {
-            return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "dotted-map-point" && (string?)mark.Element.Attribute("data-cfx-point") == point);
+            return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "dotted-map-point" && mark.Element.Attribute("data-cfx-point") == point);
         }
         if (labelRole is "bullet-target-label" or "bullet-value-label") {
             var row = entry.Element.Ancestors().FirstOrDefault(e => Role(e) == "bullet-row");
@@ -83,32 +82,32 @@ internal sealed partial class ChartLabelScene {
                 && mark.Kind == (labelRole == "bullet-target-label" ? "bullet-target" : "bullet-value"));
         }
         if (labelRole.StartsWith("topology-edge", StringComparison.Ordinal)) {
-            var edgeId = entry.Element.AncestorsAndSelf().Select(e => (string?)e.Attribute("data-edge-id")).FirstOrDefault(id => id != null);
+            var edgeId = entry.Element.AncestorsAndSelf().Select(e => e.Attribute("data-edge-id")).FirstOrDefault(id => id != null);
             if (edgeId != null) return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "topology-edge-path"
-                && mark.Element.AncestorsAndSelf().Any(e => (string?)e.Attribute("data-edge-id") == edgeId));
+                && mark.Element.AncestorsAndSelf().Any(e => e.Attribute("data-edge-id") == edgeId));
         }
         if (labelRole == "sankey-node-label") {
-            var node = (string?)entry.Element.Attribute("data-cfx-node");
+            var node = entry.Element.Attribute("data-cfx-node");
             return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "sankey-node"
-                && (node != null ? (string?)mark.Element.Attribute("data-cfx-node") == node : (string?)mark.Element.Attribute("data-cfx-label") == entry.Text));
+                && (node != null ? mark.Element.Attribute("data-cfx-node") == node : mark.Element.Attribute("data-cfx-label") == entry.Text));
         }
         if (labelRole is "region-map-label" or "tile-map-label") {
             return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == labelRole.Replace("-label", "-region")
-                && (string?)mark.Element.Attribute("data-cfx-region") == ((string?)entry.Element.Attribute("data-cfx-label-original") ?? entry.Text));
+                && mark.Element.Attribute("data-cfx-region") == (entry.Element.Attribute("data-cfx-label-original") ?? entry.Text));
         }
         if (labelRole == "dotted-map-connector-label") {
             return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "dotted-map-connector"
-                && (string?)mark.Element.Attribute("data-cfx-connector") == (string?)entry.Element.Attribute("data-cfx-connector"));
+                && mark.Element.Attribute("data-cfx-connector") == entry.Element.Attribute("data-cfx-connector"));
         }
         if (point != null && LabelRole(entry.Element).StartsWith("funnel-", StringComparison.Ordinal)) {
-            return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "funnel-segment" && (string?)mark.Element.Attribute("data-cfx-point") == point);
+            return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "funnel-segment" && mark.Element.Attribute("data-cfx-point") == point);
         }
         if (series != null && point != null) {
-            var own = _marks.FirstOrDefault(mark => mark.SvgRoot == svg && (string?)mark.Element.Attribute("data-cfx-series") == series
-                && (string?)mark.Element.Attribute("data-cfx-point") == point);
+            var own = _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Element.Attribute("data-cfx-series") == series
+                && mark.Element.Attribute("data-cfx-point") == point);
             if (own != null) return own;
         }
-        var nodeId = entry.Element.AncestorsAndSelf().Select(e => (string?)e.Attribute("data-node-id")).FirstOrDefault(id => id != null);
+        var nodeId = entry.Element.AncestorsAndSelf().Select(e => e.Attribute("data-node-id")).FirstOrDefault(id => id != null);
         if (nodeId != null) {
             var own = _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "topology-node-body" && mark.NodeId == nodeId);
             if (own != null) return own;
@@ -116,19 +115,19 @@ internal sealed partial class ChartLabelScene {
         // Explicit point/node identities take precedence over geometric proximity.
         var ancestors = entry.Element.AncestorsAndSelf().ToArray();
         foreach (var mark in _marks) {
-            if (mark.SvgRoot != svg || series != null && (string?)mark.Element.Attribute("data-cfx-series") != series) continue;
+            if (mark.SvgRoot != svg || series != null && mark.Element.Attribute("data-cfx-series") != series) continue;
             if (ancestors.Contains(mark.Element)) return mark;
             var owner = mark.Owner;
             if (owner != null && ancestors.Contains(owner) && mark.Shape.Contains(entry.Box)) return mark;
         }
-        var contained = _marks.Where(mark => mark.SvgRoot == svg && (series == null || (string?)mark.Element.Attribute("data-cfx-series") == series)
+        var contained = _marks.Where(mark => mark.SvgRoot == svg && (series == null || mark.Element.Attribute("data-cfx-series") == series)
             && CanContain(entry, mark) && mark.Shape.Contains(entry.Box)).OrderBy(mark => mark.Shape.Bounds.Width * mark.Shape.Bounds.Height).FirstOrDefault();
         if (contained != null) return contained;
         var role = Role(entry.Element);
         var center = new ChartPoint(entry.Box.Left + entry.Box.Width / 2, entry.Box.Top + entry.Box.Height / 2);
         Mark? nearest = null; var distance = 64d * 64;
         foreach (var mark in _marks) {
-            if (mark.SvgRoot != svg || series != null && (string?)mark.Element.Attribute("data-cfx-series") != series) continue;
+            if (mark.SvgRoot != svg || series != null && mark.Element.Attribute("data-cfx-series") != series) continue;
             var box = mark.Shape.Bounds;
             var dx = Math.Max(box.Left - center.X, Math.Max(0, center.X - box.Right));
             var dy = Math.Max(box.Top - center.Y, Math.Max(0, center.Y - box.Bottom));
@@ -147,10 +146,10 @@ internal sealed partial class ChartLabelScene {
         return false;
     }
 
-    private static List<XElement> Decorations(XElement element, bool legend, List<XElement>? earlierSiblings) {
-        if (legend) return new List<XElement>(); // Swatches travel with their legend group.
+    private static List<SvgMarkupElement> Decorations(SvgMarkupElement element, bool legend, List<SvgMarkupElement>? earlierSiblings) {
+        if (legend) return new List<SvgMarkupElement>(); // Swatches travel with their legend group.
         var role = Role(element);
-        var result = new List<XElement>();
+        var result = new List<SvgMarkupElement>();
         // The nearest earlier sibling elements, as ElementsBeforeSelf().LastOrDefault() walks them.
         var index = earlierSiblings == null ? -1 : earlierSiblings.Count - 1;
         var previous = index >= 0 ? earlierSiblings![index] : null;
@@ -167,21 +166,21 @@ internal sealed partial class ChartLabelScene {
     }
 
     private sealed class Mark {
-        internal Mark(XElement element, string id, LabelMarkShape shape, string kind) {
+        internal Mark(SvgMarkupElement element, string id, LabelMarkShape shape, string kind) {
             Element = element; Id = id; Shape = shape;
             Kind = kind;
-            SourceId = (string?)element.Attribute("data-cfx-mark-key") ?? id;
-            SvgRoot = element.Ancestors().FirstOrDefault(e => e.Name.LocalName == "svg");
+            SourceId = element.Attribute("data-cfx-mark-key") ?? id;
+            SvgRoot = element.Ancestors().FirstOrDefault(e => e.LocalName == "svg");
             Owner = element.Ancestors().FirstOrDefault(e => Role(e) is "topology-node" or "bullet-row");
-            NodeId = element.AncestorsAndSelf().Select(e => (string?)e.Attribute("data-node-id")).FirstOrDefault(value => value != null);
+            NodeId = element.AncestorsAndSelf().Select(e => e.Attribute("data-node-id")).FirstOrDefault(value => value != null);
         }
-        internal XElement Element { get; }
+        internal SvgMarkupElement Element { get; }
         internal string Id { get; }
         internal LabelMarkShape Shape { get; }
-        internal XElement? Owner { get; }
+        internal SvgMarkupElement? Owner { get; }
         internal string SourceId { get; }
         internal string Kind { get; }
         internal string? NodeId { get; }
-        internal XElement? SvgRoot { get; }
+        internal SvgMarkupElement? SvgRoot { get; }
     }
 }

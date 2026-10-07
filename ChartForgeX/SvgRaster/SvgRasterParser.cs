@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace ChartForgeX.SvgRaster;
 
-internal static class SvgRasterParser {
+internal static partial class SvgRasterParser {
     internal const int MaximumElementDepth = 256;
     private const long MaximumDocumentCharacters = 16_000_000;
 
