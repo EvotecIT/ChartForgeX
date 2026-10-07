@@ -476,7 +476,8 @@ public sealed partial class ChartOptions {
     public bool ShowCircleStatusLabel { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets optional SVG path data used as the pictorial symbol in SVG and HTML output.
+    /// Gets or sets optional input path data used as the pictorial symbol. Prepared SVG and native PNG output
+    /// paint the same numeric geometry compiled from this path.
     /// </summary>
     public string? PictorialSvgPathData {
         get => _pictorialSvgPathData;
@@ -504,7 +505,8 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets the built-in shape used by PNG output when <see cref="PictorialSvgPathData"/> is configured.
+    /// Gets or sets the fallback shape for the legacy PNG exporter when <see cref="PictorialSvgPathData"/> is configured.
+    /// Prepared SVG and native PNG output use the actual custom path and ignore this legacy setting.
     /// </summary>
     public ChartPictorialShape PictorialPngFallbackShape {
         get => _pictorialPngFallbackShape;

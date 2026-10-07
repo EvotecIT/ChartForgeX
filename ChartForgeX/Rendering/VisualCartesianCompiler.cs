@@ -16,10 +16,17 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].Points.Count > 1) {
             var series = chart.Series[0];
-            for (var point = 0; point < series.Points.Count; point++) {
-                var label = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point].X) ?? "Item " + Number(point + 1);
+            var stride = ObservationStride(series.Kind);
+            for (var point = 0; point < series.Points.Count / stride; point++) {
+                var label = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point * stride].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
-                entries.Add(new VisualLegendEntry(label, PointColor(series, 0, point, colors), PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey));
+                var color = PointColor(series, 0, point, colors);
+                if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)
+                    color = FinancialColor(series, 0, point, series.Points[point * stride + 3].Y >= series.Points[point * stride].Y, colors);
+                else if (series.Kind == ChartSeriesKind.Waterfall && !series.Color.HasValue && series.StateRole == ChartSeriesState.None
+                    && !(point < series.PointColors.Count && series.PointColors[point].HasValue))
+                    color = series.Points[point].Y >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
+                entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey));
             }
             return entries;
         }
@@ -52,14 +59,25 @@ internal static partial class VisualCartesianCompiler {
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range) : null;
         var axisLabels = new AxisLabelCache();
-        if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
+        var horizontal = Horizontal(chart);
+        if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
+            var steps = ChartWaterfallSteps.Create(chart.Series[0]);
+            axisLabels.SetTicks(chart.Options.XAxis, steps.Select(step => step.X).Distinct().OrderBy(value => value).ToArray());
+            if (steps.Count > 0 && chart.Options.XAxis.LabelFormatter == null && ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, steps[steps.Count - 1].X) == null)
+                axisLabels.Set(chart.Options.XAxis, steps[steps.Count - 1].X, "Total");
+        }
+        if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
+            : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         if (plot.Width <= 0 || plot.Height <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.insufficient-space", "No plotting area remains after measuring the frame and axes."));
             return;
         }
-        var map = new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+        var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
-        using (builder.PushClip(viewport)) DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
+        using (builder.PushClip(viewport)) {
+            if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels);
+            else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
+        }
         var labels = new List<LabelPlacementRequest>();
         var obstacles = new List<LabelObstacle>();
         using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null) {
@@ -75,24 +93,31 @@ internal static partial class VisualCartesianCompiler {
                     ["data-cfx-decimation"] = series.DecimationMode?.ToString() ?? string.Empty, ["aria-label"] = series.Name
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, builder, plot, coordinates, seriesMap, index, colors, labels, obstacles);
-                    else DrawPoints(chart, context, builder, plot, seriesMap, index, colors, labels, obstacles);
+                    else if (series.Kind == ChartSeriesKind.Line || series.Kind == ChartSeriesKind.StepLine || series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Scatter)
+                        DrawPoints(chart, context, builder, plot, seriesMap, index, colors, labels, obstacles);
+                    else DrawExtensionSeries(chart, context, builder, plot, seriesMap, index, colors, labels, obstacles);
                 }
             }
             DrawAnnotations(chart, context, builder, plot, map, colors, false);
         }
-        if (chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked)
-            AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, colors, labels);
+        if (chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked) {
+            if (horizontal) AddHorizontalTotals(chart, context, builder, plot, map, colors, labels);
+            else AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, colors, labels);
+        }
         DrawDataLabels(context, builder, plot, labels, obstacles);
     }
 
     private static void Validate(Chart chart) {
+        if (Horizontal(chart) && chart.Series.Any(series => series.Kind != ChartSeriesKind.HorizontalBar || series.YAxis != ChartAxisSide.Primary))
+            throw new NotSupportedException("Horizontal bars require a homogeneous chart on the primary horizontal value axis.");
         foreach (var series in chart.Series) {
-            switch (series.Kind) {
-                case ChartSeriesKind.Line: case ChartSeriesKind.StepLine: case ChartSeriesKind.Area:
-                case ChartSeriesKind.StepArea: case ChartSeriesKind.StackedArea: case ChartSeriesKind.Bar: case ChartSeriesKind.Scatter:
-                    break;
-                default: throw Unsupported("series kind " + series.Kind);
-            }
+            if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
+            if (series.Points.Count % ObservationStride(series.Kind) != 0)
+                throw new InvalidOperationException(series.Kind + " requires complete observation tuples.");
+            if ((series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) && series.Points.Count != 2)
+                throw new InvalidOperationException(series.Kind + " requires exactly two endpoints.");
+            if (series.Kind == ChartSeriesKind.Waterfall && chart.Series.Count != 1)
+                throw new NotSupportedException("A waterfall requires a single cumulative series.");
             var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
             if (series.Kind == ChartSeriesKind.StackedArea && axis.Scale == ChartScaleKind.Logarithmic && series.Points.Any(point => point.Y <= 0))
                 throw new InvalidOperationException("Logarithmic stacked areas require positive values.");

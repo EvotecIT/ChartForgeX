@@ -163,9 +163,9 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
-        ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels) {
+        ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
-        var value = series.Points[pointIndex].Y;
+        var value = observationValue ?? series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         if (placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar && chart.Options.BarMode == ChartBarMode.Stacked)
@@ -183,7 +183,7 @@ internal static partial class VisualCartesianCompiler {
             candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
             candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
         }
-        var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, resolvedLabel.Style, candidates) { AssociatedMarkId = PointId(seriesIndex, pointIndex) };
+        var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, resolvedLabel.Style, candidates) { AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex) };
         if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) request.Bounds = mark;
         labels.Add(request);
     }

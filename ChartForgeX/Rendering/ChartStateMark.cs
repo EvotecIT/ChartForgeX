@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Core;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -51,7 +52,7 @@ internal readonly struct ChartStateMark {
     private ChartColor Background { get; }
 
     /// <summary>Gets the fill as it appears on the backdrop (see <see cref="Backdrop"/>), for choosing a readable text colour on the mark.</summary>
-    public ChartColor Surface => FillOpacity >= 0.999 ? Color : ChartColorMath.Blend(Background, Color, FillOpacity);
+    public ChartColor Surface => Over(ChartColorMath.WithOpacity(Color, FillOpacity), Background);
 
     /// <summary>Gets the pattern token written to <c>data-cfx-pattern</c>, or null for a solid mark.</summary>
     public string? PatternToken => State.Pattern switch {
@@ -90,6 +91,18 @@ internal readonly struct ChartStateMark {
         return backdrop;
     }
 
+    /// <summary>
+    /// Resolves a prepared mark backdrop from the shared frame and tokens. A transparent frame assumes the host
+    /// uses the selected theme background, unless the caller selects its card or plot token explicitly.
+    /// </summary>
+    internal static ChartColor Backdrop(ChartOptions options, VisualThemeColors colors, VisualFrame frame) {
+        var opaqueBase = ChartColorMath.RelativeLuminance(colors.Foreground) > .5 ? ChartColor.Black : ChartColor.White;
+        if (options.MarkBackdrop == ChartMarkBackdrop.Card) return Over(colors.ElevatedSurface, opaqueBase);
+        if (options.MarkBackdrop == ChartMarkBackdrop.Plot) return Over(colors.Surface, opaqueBase);
+        var background = Over(colors.Background, opaqueBase);
+        return options.MarkBackdrop == ChartMarkBackdrop.Layered && frame.ShowSurface ? Over(colors.Surface, background) : background;
+    }
+
     private static ChartColor Over(ChartColor top, ChartColor bottom) {
         var alpha = top.A / 255.0;
         return ChartColor.FromRgb(
@@ -99,8 +112,12 @@ internal readonly struct ChartStateMark {
     }
 
     public static ChartStateMark For(Chart chart, ChartStateCategory state) {
+        return For(state, Backdrop(chart));
+    }
+
+    /// <summary>Resolves the same state vocabulary against an already resolved prepared backdrop.</summary>
+    internal static ChartStateMark For(ChartStateCategory state, ChartColor background) {
         var quiet = state.Emphasis == ChartStateEmphasis.Quiet;
-        var background = Backdrop(chart);
         switch (state.Pattern) {
             case ChartStatePattern.Outlined:
                 return new ChartStateMark(state.Color, quiet ? QuietOutlinedFill : OutlinedFill, true, quiet ? QuietOutline : 1, ChartFillPattern.None, background, background, state);

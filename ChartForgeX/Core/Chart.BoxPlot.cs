@@ -16,7 +16,11 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddBoxPlot(string name, double x, IEnumerable<double> values, ChartColor? color = null) {
         ChartGuards.Finite(x, nameof(x));
-        return AddBoxPlot(name, new[] { BoxPlotFromValues(x, values) }, color);
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        var source = values.ToArray();
+        AddBoxPlot(name, new[] { BoxPlotFromValues(x, source) }, color);
+        Series[Series.Count - 1].SetBoxPlotSourceSamples(source);
+        return this;
     }
 
     /// <summary>

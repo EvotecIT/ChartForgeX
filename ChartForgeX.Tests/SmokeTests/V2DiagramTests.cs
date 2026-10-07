@@ -27,7 +27,7 @@ public sealed class V2DiagramTests {
         Assert.Contains(first.Regions, region => region.Id == "source" && region.Role == "topology-node");
         Assert.Contains(first.Regions, region => region.Id == "route" && region.Role == "topology-edge");
         Assert.Contains(second.Regions, region => region.Id == "client" && region.Role == "sequence-participant");
-        Assert.Contains(second.Regions, region => region.Id == "session-message-0" && region.Label == "Request\npayload");
+        Assert.Contains(second.Regions, region => region.Id == "message-1" && region.Label == "Request\npayload");
         Assert.Contains("data-source=\"client\"", second.ToSvg());
         Assert.Contains("data-direction=\"Forward\"", first.ToSvg());
     }
@@ -72,25 +72,23 @@ public sealed class V2DiagramTests {
 
     [Fact]
     public void BoundedDiagramsRejectUnmigratedFeaturesAndContentThatWouldBeClipped() {
-        var shape = Topology(); shape.Nodes[0].Shape = TopologyNodeShape.Diamond;
-        Assert.Throws<NotSupportedException>(() => shape.Prepare(Context()));
-        var curve = Topology(); curve.Edges[0].Routing = TopologyEdgeRouting.Curved;
-        Assert.Throws<NotSupportedException>(() => curve.Prepare(Context()));
         var oversized = Topology(); oversized.Nodes[0].Width = 800;
         Assert.Contains("fixed viewport", Assert.Throws<NotSupportedException>(() => oversized.Prepare(Context())).Message);
         var actor = Sequence(); actor.Participants[0].Kind = SequenceArtifactParticipantKind.Actor;
-        Assert.Throws<NotSupportedException>(() => actor.Prepare(Context()));
+        Assert.Contains("data-kind=\"Actor\"", actor.Prepare(Context()).ToSvg());
         var self = Sequence(); self.Messages[0].TargetId = self.Messages[0].SourceId;
-        Assert.Throws<NotSupportedException>(() => self.Prepare(Context()));
+        Assert.Equal(4, self.Prepare(Context()).ToArtifact("self", VisualArtifactKind.Sequence).ToInterchangeEnvelope().Edges[0].ResolvedRoute.Count);
         var tall = Sequence(); for (var i = 0; i < 12; i++) tall.AddMessage("client", "server", "More");
-        Assert.Contains("available", Assert.Throws<NotSupportedException>(() => tall.Prepare(Context())).Message);
+        Assert.Contains("enlarge", Assert.Throws<NotSupportedException>(() => tall.Prepare(Context())).Message);
     }
 
     [Fact]
-    public void DiagramLabelsUseTheActualPreparedFontAndRejectOverflowInsteadOfEstimating() {
+    public void DiagramLabelsUseTheActualPreparedFontAndDiagnoseTruncationWithoutLosingSourceText() {
         var topology = Topology(); topology.Nodes[0].Label = new string('W', 100);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), font: new ChartForgeX.Typography.FontSpec { Family = "CFX intentionally missing diagram font" });
-        Assert.Contains("label", Assert.Throws<NotSupportedException>(() => topology.Prepare(context)).Message);
+        var prepared = topology.Prepare(context);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code.StartsWith("topology.label", StringComparison.Ordinal));
+        Assert.Contains(new string('W', 100), prepared.ToArtifact("labels", VisualArtifactKind.Topology).ToInterchangeJson());
     }
 
     private static VisualRenderContext Context(VisualThemeMode mode = VisualThemeMode.Light) => new(

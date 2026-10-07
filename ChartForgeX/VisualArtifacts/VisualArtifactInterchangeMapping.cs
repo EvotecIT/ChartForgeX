@@ -242,7 +242,7 @@ public static partial class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
+    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualArtifactSize? preparedSize = null) {
         envelope.Family = VisualArtifactInterchangeFamily.Sequence;
         envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact();
         var ids = new InterchangeIdScope();
@@ -251,7 +251,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Id = BoundedGeneratedId(sequence.Id, "sequence");
         envelope.Title = sequence.Title;
         envelope.Subtitle = sequence.Subtitle;
-        VisualArtifactSize naturalSize = SequenceArtifactRendering.CalculateNaturalSize(sequence);
+        VisualArtifactSize naturalSize = preparedSize ?? SequenceArtifactRendering.CalculateNaturalSize(sequence);
         envelope.Width = naturalSize.Width;
         envelope.Height = naturalSize.Height;
         CopyMissing(sequence.Metadata, envelope.Extensions, artifactMetadataKeys);

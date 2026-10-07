@@ -9,8 +9,10 @@ namespace ChartForgeX.Rendering;
 
 internal sealed class VisualLegendEntry {
     internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
-        ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null) {
+        ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null,
+        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null) {
         Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
+        State = state; PinStateColors = pinStateColors; Marker = marker;
     }
     internal string Label { get; }
     internal ChartColor Color { get; }
@@ -19,6 +21,9 @@ internal sealed class VisualLegendEntry {
     internal ChartFillPattern Pattern { get; }
     internal ChartSeriesState StateRole { get; }
     internal string? SeriesKey { get; }
+    internal ChartStateCategory? State { get; }
+    internal bool PinStateColors { get; }
+    internal Action<VisualSceneBuilder, ChartRect>? Marker { get; }
 }
 
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
@@ -78,7 +83,13 @@ internal static class VisualFrameLayout {
                             ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
                             ["aria-label"] = entry.Label
                         })) {
-                            if (entry.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine)
+                            using (builder.PushClip(swatch)) {
+                            if (entry.Marker != null) entry.Marker(builder, swatch);
+                            else if (entry.State != null) {
+                                using (builder.PushGroup("legend-" + entry.Id + "-swatch", "state-legend-swatch",
+                                    VisualStateSceneTools.StateMetadata(entry.PinStateColors, entry.State)))
+                                    VisualStateSceneTools.StateRect(builder, swatch, entry.State, colors, ChartStateCategoryLegend.SwatchRadius, "legend-swatch");
+                            } else if (entry.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine)
                                 builder.Line(swatch.Left, swatch.Top + 5, swatch.Right, swatch.Top + 5, entry.Color, context.Theme.SeriesStrokeWidth, role: "legend-swatch");
                             else {
                                 builder.Rect(swatch, entry.Color, role: "legend-swatch");
@@ -86,6 +97,7 @@ internal static class VisualFrameLayout {
                                     ChartPathCommand.MoveTo(swatch.Left, swatch.Top), ChartPathCommand.LineTo(swatch.Right, swatch.Top),
                                     ChartPathCommand.LineTo(swatch.Right, swatch.Bottom), ChartPathCommand.LineTo(swatch.Left, swatch.Bottom)
                                 }), entry.Pattern, colors.Surface, spacing: 4, strokeWidth: 1, role: "legend-pattern");
+                            }
                             }
                             var label = Fit(OneLine(entry.Label), Math.Max(0, width - 22), legendStyle);
                             var anchor = cursor + 18 + (legendStyle.Alignment == TextAlignment.Center ? Math.Max(0, width - 22) / 2 : legendStyle.Alignment == TextAlignment.Right ? Math.Max(0, width - 22) : 0);

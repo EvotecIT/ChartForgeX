@@ -13,6 +13,16 @@ internal static partial class VisualCartesianCompiler {
     // One formatter result per axis/value serves gutter measurement, placement and detached semantics.
     private sealed class AxisLabelCache {
         private readonly Dictionary<ChartAxis, Dictionary<double, string>> _labels = new();
+        private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _ticks = new();
+        internal ChartAxis? HorizontalValueAxis { get; set; }
+        internal ChartAxis? HorizontalCategoryAxis { get; set; }
+        internal void Set(ChartAxis axis, double value, string text) {
+            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
+            labels[value] = text;
+        }
+        internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
+        internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) => _ticks.TryGetValue(axis, out var ticks)
+            ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : AxisTicks(axis, minimum, maximum);
         internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
             if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
             if (!labels.TryGetValue(value, out var text)) labels.Add(value, text = ChartAxisValueFormatter.Format(axis, value, fallback, ticks));
@@ -45,7 +55,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static TextMetrics TickMetrics(VisualSceneBuilder builder, ChartAxis axis, double minimum, double maximum, TextStyle style, Func<double, string>? fallback, AxisLabelCache labels) {
-        var ticks = AxisTicks(axis, minimum, maximum);
+        var ticks = labels.Ticks(axis, minimum, maximum);
         var width = 0d; var height = 0d;
         foreach (var tick in ticks) {
             var metrics = RotatedMetrics(builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style), axis.LabelAngle);
@@ -65,7 +75,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRange range,
         ChartMapper map, ChartRange? secondaryRange, ChartMapper? secondaryMap, VisualThemeColors colors, ChartRect viewport, AxisLabelCache labels) {
-        var xTicks = AxisTicks(chart.Options.XAxis, range.MinX, range.MaxX);
+        var xTicks = labels.Ticks(chart.Options.XAxis, range.MinX, range.MaxX);
         var yTicks = AxisTicks(chart.Options.YAxis, range.MinY, range.MaxY);
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle();

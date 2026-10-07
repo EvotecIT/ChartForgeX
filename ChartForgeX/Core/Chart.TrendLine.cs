@@ -37,9 +37,11 @@ public sealed partial class Chart {
 
         var slope = (count * sumXY - sumX * sumY) / denominator;
         var intercept = (sumY - slope * sumX) / count;
-        return Add(name, ChartSeriesKind.TrendLine, new[] {
+        Add(name, ChartSeriesKind.TrendLine, new[] {
             new ChartPoint(minX, slope * minX + intercept),
             new ChartPoint(maxX, slope * maxX + intercept)
         }, color);
+        Series[Series.Count - 1].SetTrendSourcePoints(materialized);
+        return this;
     }
 }

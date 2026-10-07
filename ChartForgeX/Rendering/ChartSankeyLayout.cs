@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+
+namespace ChartForgeX.Rendering;
+
+/// <summary>Canonical weighted DAG geometry for every Sankey painter. Ribbon and node thickness share one exact scale.</summary>
+internal static class ChartSankeyLayout {
+    internal static ChartSankeyModel Compute(Chart chart, ChartRect plot, double? nodeWidth = null, bool orderNodes = true) {
+        var model = Build(chart); Layout(model, plot, nodeWidth, orderNodes); return model;
+    }
+
+    internal static ChartSankeyModel Build(Chart chart) {
+        var series = chart.Series.FirstOrDefault(s => s.Kind == ChartSeriesKind.Sankey);
+        if (series == null || series.Points.Count == 0) return ChartSankeyModel.Empty;
+        if (series.Points.Count % 2 != 0) throw new InvalidOperationException("Sankey input requires endpoint/weight pairs.");
+        var links = new List<ChartSankeyLayoutLink>(); int count = chart.Options.SankeyNodeLabels.Count;
+        for (int i = 0; i < series.Points.Count; i += 2) {
+            var p = series.Points[i]; double weight = series.Points[i + 1].Y;
+            if (!Finite(p.X) || !Finite(p.Y) || p.X < 0 || p.Y < 0 || p.X != Math.Floor(p.X) || p.Y != Math.Floor(p.Y) || p.X > series.Points.Count || p.Y > series.Points.Count)
+                throw new InvalidOperationException("Sankey endpoints must be finite dense node indices.");
+            if (!Finite(weight) || weight <= 0 || p.X == p.Y) throw new InvalidOperationException("Sankey links require positive finite weights and distinct endpoints.");
+            count = Math.Max(count, (int)Math.Max(p.X, p.Y) + 1);
+            links.Add(new ChartSankeyLayoutLink(i / 2, (int)p.X, (int)p.Y, weight));
+        }
+        var nodes = Enumerable.Range(0, count).Select(i => new ChartSankeyNode(i,
+            i < chart.Options.SankeyNodeLabels.Count ? chart.Options.SankeyNodeLabels[i] : "Node " + (i + 1).ToString(CultureInfo.InvariantCulture))).ToList();
+        var incoming = new int[count]; var outgoing = new List<int>[count];
+        for (int i = 0; i < count; i++) outgoing[i] = new List<int>();
+        foreach (var link in links) {
+            nodes[link.Source].Outgoing += link.Value; nodes[link.Target].Incoming += link.Value;
+            outgoing[link.Source].Add(link.Target); incoming[link.Target]++;
+        }
+        if (nodes.Any(n => !Finite(n.Value))) throw new InvalidOperationException("Sankey aggregate weights exceed the finite range.");
+        var ready = new Queue<int>(Enumerable.Range(0, count).Where(i => incoming[i] == 0)); int visited = 0;
+        while (ready.Count > 0) {
+            int source = ready.Dequeue(); visited++;
+            foreach (int target in outgoing[source]) {
+                nodes[target].Layer = Math.Max(nodes[target].Layer, nodes[source].Layer + 1);
+                if (--incoming[target] == 0) ready.Enqueue(target);
+            }
+        }
+        if (visited != count) throw new InvalidOperationException("Sankey links must not contain cycles.");
+        int maxLayer = Math.Max(1, nodes.Max(n => n.Layer));
+        foreach (var node in nodes) if (node.Outgoing == 0 && node.Incoming > 0) node.Layer = maxLayer;
+        return new ChartSankeyModel(nodes, links, maxLayer);
+    }
+
+    internal static void Layout(ChartSankeyModel model, ChartRect plot, double? nodeWidth = null, bool orderNodes = true, double gap = 18) {
+        if (model.Nodes.Count == 0) return;
+        if (plot.Width <= 0 || plot.Height <= 0) throw new NotSupportedException("Sankey layout requires positive content dimensions.");
+        var nodes = model.Nodes; var links = model.Links;
+        model.NodeWidth = nodeWidth ?? Math.Max(14, Math.Min(24, plot.Width / (model.MaxLayer + 1) * .08));
+        if (!Finite(model.NodeWidth) || model.NodeWidth <= 0 || model.NodeWidth * (model.MaxLayer + 1) >= plot.Width)
+            throw new NotSupportedException("Sankey columns require a wider common viewport.");
+        if (orderNodes) Order(nodes, links, model.MaxLayer);
+        else foreach (var node in nodes) node.Order = node.Index;
+        double scale = double.PositiveInfinity;
+        for (int layer = 0; layer <= model.MaxLayer; layer++) {
+            var column = nodes.Where(n => n.Layer == layer).ToArray(); if (column.Length == 0) continue;
+            double total = column.Sum(n => n.Value), available = plot.Height - (column.Length - 1) * gap;
+            if (!Finite(total)) throw new InvalidOperationException("Sankey column weights exceed the finite range.");
+            if (available <= 0) throw new NotSupportedException("Sankey nodes require a taller common viewport.");
+            if (total > 0) scale = Math.Min(scale, available / total);
+        }
+        if (!Finite(scale) || scale <= 0) throw new NotSupportedException("Sankey weights cannot be represented in the available viewport.");
+        model.Scale = scale;
+        for (int layer = 0; layer <= model.MaxLayer; layer++) {
+            var column = nodes.Where(n => n.Layer == layer).OrderBy(n => n.Order).ThenBy(n => n.Index).ToArray();
+            double height = column.Sum(n => n.Value * scale) + Math.Max(0, column.Length - 1) * gap;
+            double y = plot.Y + (plot.Height - height) / 2;
+            foreach (var node in column) {
+                node.X = plot.X + layer / (double)model.MaxLayer * (plot.Width - model.NodeWidth);
+                node.Y = y; node.Height = node.Value * scale; y += node.Height + gap;
+            }
+        }
+        var from = new double[nodes.Count]; var to = new double[nodes.Count];
+        foreach (var link in links.OrderBy(l => nodes[l.Source].Layer).ThenBy(l => nodes[l.Source].Y).ThenBy(l => nodes[l.Target].Y).ThenBy(l => l.Index)) {
+            link.Width = link.Value * scale;
+            link.SourceY = nodes[link.Source].Y + from[link.Source] + link.Width / 2;
+            link.TargetY = nodes[link.Target].Y + to[link.Target] + link.Width / 2;
+            from[link.Source] += link.Width; to[link.Target] += link.Width;
+        }
+    }
+
+    internal static ChartPath Ribbon(ChartSankeyModel model, ChartSankeyLayoutLink link) {
+        double x1 = model.Nodes[link.Source].X + model.NodeWidth, x2 = model.Nodes[link.Target].X, mid = x1 + (x2 - x1) * .55;
+        double half = link.Width / 2;
+        return new ChartPath(new[] { ChartPathCommand.MoveTo(x1, link.SourceY - half),
+            ChartPathCommand.CubicTo(mid, link.SourceY - half, mid, link.TargetY - half, x2, link.TargetY - half),
+            ChartPathCommand.LineTo(x2, link.TargetY + half),
+            ChartPathCommand.CubicTo(mid, link.TargetY + half, mid, link.SourceY + half, x1, link.SourceY + half) });
+    }
+
+    private static void Order(List<ChartSankeyNode> nodes, List<ChartSankeyLayoutLink> links, int maxLayer) {
+        foreach (var node in nodes) node.Order = node.Index;
+        for (int pass = 0; pass < 6; pass++) {
+            bool forward = pass % 2 == 0;
+            for (int step = 0; step <= maxLayer; step++) {
+                int layer = forward ? step : maxLayer - step;
+                var ordered = nodes.Where(n => n.Layer == layer).Select(node => {
+                    var edges = links.Where(link => forward ? link.Target == node.Index : link.Source == node.Index).ToArray();
+                    double total = edges.Sum(link => link.Value);
+                    // Normalize before multiplication so a finite flow cannot overflow a barycentre.
+                    double mean = total == 0 ? node.Order : edges.Sum(link => nodes[forward ? link.Source : link.Target].Order * (link.Value / total));
+                    return new { node, mean };
+                }).OrderBy(item => item.mean).ThenBy(item => item.node.Index).ToArray();
+                for (int i = 0; i < ordered.Length; i++) ordered[i].node.Order = i;
+            }
+        }
+    }
+    private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+}
+
+internal sealed class ChartSankeyModel {
+    internal ChartSankeyModel(List<ChartSankeyNode> nodes, List<ChartSankeyLayoutLink> links, int maxLayer) { Nodes = nodes; Links = links; MaxLayer = maxLayer; }
+    internal static ChartSankeyModel Empty => new(new List<ChartSankeyNode>(), new List<ChartSankeyLayoutLink>(), 0);
+    internal List<ChartSankeyNode> Nodes { get; }
+    internal List<ChartSankeyLayoutLink> Links { get; }
+    internal int MaxLayer { get; }
+    internal double NodeWidth { get; set; }
+    internal double Scale { get; set; }
+}
+internal sealed class ChartSankeyNode {
+    internal ChartSankeyNode(int index, string label) { Index = index; Label = label; }
+    internal int Index { get; }
+    internal string Label { get; }
+    internal double Incoming { get; set; }
+    internal double Outgoing { get; set; }
+    internal double Value => Math.Max(Incoming, Outgoing);
+    internal int Layer { get; set; }
+    internal double Order { get; set; }
+    internal double X { get; set; }
+    internal double Y { get; set; }
+    internal double Height { get; set; }
+}
+internal sealed class ChartSankeyLayoutLink {
+    internal ChartSankeyLayoutLink(int index, int source, int target, double value) { Index = index; Source = source; Target = target; Value = value; }
+    internal int Index { get; }
+    internal int Source { get; }
+    internal int Target { get; }
+    internal double Value { get; }
+    internal double Width { get; set; }
+    internal double SourceY { get; set; }
+    internal double TargetY { get; set; }
+}

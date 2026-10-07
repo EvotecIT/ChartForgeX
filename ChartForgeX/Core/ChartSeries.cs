@@ -70,6 +70,24 @@ public sealed class ChartSeries {
     /// <summary>Gets the source index represented by each retained point after explicit decimation.</summary>
     public IReadOnlyList<int> SourcePointIndices { get; private set; } = Array.Empty<int>();
 
+    // A regression's fitted endpoints do not replace its source observations in detached alternatives.
+    internal IReadOnlyList<ChartPoint> TrendSourcePoints { get; private set; } = Array.Empty<ChartPoint>();
+    internal IReadOnlyList<double> BoxPlotSourceSamples { get; private set; } = Array.Empty<double>();
+
+    internal void SetBoxPlotSourceSamples(IReadOnlyList<double> samples) {
+        var snapshot = new double[samples.Count];
+        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = samples[index];
+        BoxPlotSourceSamples = Array.AsReadOnly(snapshot);
+        SourcePointCount = snapshot.Length;
+    }
+
+    internal void SetTrendSourcePoints(IReadOnlyList<ChartPoint> points) {
+        var snapshot = new ChartPoint[points.Count];
+        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = points[index];
+        TrendSourcePoints = Array.AsReadOnly(snapshot);
+        SourcePointCount = snapshot.Length;
+    }
+
     /// <summary>Gets whether this series renders fewer points than its source sequence.</summary>
     public bool IsDecimated => DecimationMode.HasValue && Points.Count < SourcePointCount;
 

@@ -36,6 +36,11 @@ public sealed partial class ChartGrid {
             };
             CopyStyle(TitleStyle, grid.TitleStyle);
             CopyStyle(SubtitleStyle, grid.SubtitleStyle);
+            grid.SvgColorVariables = SvgColorVariables?.Clone();
+            grid.Accessibility.Name = Accessibility.Name;
+            grid.Accessibility.Description = Accessibility.Description;
+            grid.Accessibility.Language = Accessibility.Language;
+            grid.Accessibility.IsDecorative = Accessibility.IsDecorative;
             for (var i = first; i < first + count; i++) {
                 var span = _panelSpans[i];
                 grid.Add(_charts[i], span.ColumnSpan, span.RowSpan);

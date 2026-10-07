@@ -13,7 +13,7 @@ internal static class ChartTreemapLayout {
             if (point.Y > 0) items.Add(new TreemapItem(i, point, point.Y));
         }
 
-        items.Sort((left, right) => right.Value.CompareTo(left.Value));
+        items.Sort((left, right) => { int order = right.Value.CompareTo(left.Value); return order != 0 ? order : left.PointIndex.CompareTo(right.PointIndex); });
         var tiles = new List<ChartTreemapTile>(items.Count);
         Split(items, 0, items.Count, plot, tiles);
         return tiles;

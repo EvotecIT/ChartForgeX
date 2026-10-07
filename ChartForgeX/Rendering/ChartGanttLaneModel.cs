@@ -59,8 +59,8 @@ internal sealed class ChartGanttLaneModel {
     /// <summary>Gets the layout height in lane units: one per sub-row plus a smaller unit per group header.</summary>
     public double Units { get; }
 
-    public static ChartGanttLaneModel Build(Chart chart) {
-        var legend = new ChartStateCategoryLegend(chart);
+    public static ChartGanttLaneModel Build(Chart chart, double? preparedPackingWidth = null, ChartColor? fallback = null) {
+        var legend = new ChartStateCategoryLegend(chart, fallback);
         var min = double.PositiveInfinity;
         var max = double.NegativeInfinity;
         var hasOpen = false;
@@ -96,12 +96,12 @@ internal sealed class ChartGanttLaneModel {
 
         // Renderer text metrics differ slightly. Pack against the shared minimum possible plot width so a bar
         // with the two-pixel visual floor never obscures the next item in either SVG or PNG.
-        var contentWidth = ChartStateTimelineModel.ContentBounds(ChartLayout.PlotArea(chart.Options)).Width;
+        var contentWidth = preparedPackingWidth ?? ChartStateTimelineModel.ContentBounds(ChartLayout.PlotArea(chart.Options)).Width;
         var hasSummary = !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) ||
             chart.Series.Any(series => series.Kind == ChartSeriesKind.GanttLane && !string.IsNullOrWhiteSpace(series.LaneSummary));
         var labelReserve = chart.Options.ShowAxes && chart.Options.ShowYAxis ? contentWidth * 0.34 : 0;
         var summaryReserve = hasSummary ? Math.Max(8, contentWidth * 0.2 - ChartStateTimelineModel.ColumnGap) + ChartStateTimelineModel.ColumnGap : 0;
-        var packingPlot = new ChartRect(0, 0, Math.Max(1, contentWidth - labelReserve - summaryReserve), 1);
+        var packingPlot = new ChartRect(0, 0, Math.Max(1, preparedPackingWidth ?? (contentWidth - labelReserve - summaryReserve)), 1);
         var rows = new List<ChartGanttLaneRow>();
         string? currentGroup = null;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
@@ -150,6 +150,14 @@ internal sealed class ChartGanttLaneModel {
     }
 
     public double UnitHeight(ChartRect plot) => plot.Height / Math.Max(1, Units);
+
+    /// <summary>Reuses the snapshotted window and current time while packing against the measured prepared viewport.</summary>
+    internal ChartGanttLaneModel Repack(double width) {
+        var plot = new ChartRect(0, 0, Math.Max(1, width), 1);
+        var rows = Rows.Select(row => row.IsGroup ? row : ChartGanttLaneRow.Lane(row.SeriesIndex, row.Name, row.Summary,
+            Pack(Chart.Series[row.SeriesIndex], Legend, Now, Min, Max, plot))).ToList();
+        return new ChartGanttLaneModel(Chart, rows, Min, Max, Now, Ticks, Legend);
+    }
 
     public double Band(ChartRect plot) => Math.Min(UnitHeight(plot) * 0.9, Math.Max(BandMinimum, Math.Min(BandMaximum, UnitHeight(plot) * 0.72)));
 

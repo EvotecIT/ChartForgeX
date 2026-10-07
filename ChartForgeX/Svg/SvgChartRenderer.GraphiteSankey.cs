@@ -40,21 +40,4 @@ public sealed partial class SvgChartRenderer {
         return chart.Options.Theme.Palette[(ordinal<0?index:ordinal)%chart.Options.Theme.Palette.Length];
     }
 
-    // Alternating weighted barycentres reduce crossings while stable source indices break ties.
-    private static void OrderSankeyNodes(System.Collections.Generic.List<SankeyNode> nodes,System.Collections.Generic.List<SankeyLink> links,int maxLayer) {
-        foreach(var n in nodes)n.Order=n.Index;
-        for(var pass=0;pass<6;pass++) {
-            var forward=pass%2==0;
-            for(var step=0;step<=maxLayer;step++) {
-                var layer=forward?step:maxLayer-step;
-                var ordered=nodes.Where(n=>n.Layer==layer).Select(n=> {
-                    var edges=links.Where(l=>forward?l.Target==n.Index:l.Source==n.Index).ToArray();
-                    var sum=edges.Sum(l=>l.Value);
-                    var barycentre=sum>0?edges.Sum(l=>nodes[forward?l.Source:l.Target].Order*l.Value)/sum:n.Order;
-                    return new{n,barycentre};
-                }).OrderBy(v=>v.barycentre).ThenBy(v=>v.n.Index).ToArray();
-                for(var i=0;i<ordered.Length;i++)ordered[i].n.Order=i;
-            }
-        }
-    }
 }

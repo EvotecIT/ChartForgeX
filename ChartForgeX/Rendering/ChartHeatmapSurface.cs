@@ -7,6 +7,34 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartHeatmapSurface {
+    /// <summary>Resolves numeric cells from the shared prepared theme without a renderer-specific theme path.</summary>
+    internal static ChartColor CellColor(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max) {
+        if (chart.Options.HeatmapRelativeScale && value == 0 && min >= 0) return ZeroColor(colors);
+        return Color(chart, colors, high, value, min, max);
+    }
+
+    internal static ChartColor Color(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max) {
+        var ratio = Ratio(chart, value, min, max);
+        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic)
+            return SemanticBlend(colors.Status.Critical.Fill, colors.Status.Medium.Fill, colors.Status.Pass.Fill, ratio).Color;
+        if (!high.HasValue && colors.SequentialRamp.Count > 0) return RampColor(colors.SequentialRamp, ratio);
+        return ChartColorMath.Blend(colors.Surface, high ?? colors.Palette[0], .18 + ratio * .82);
+    }
+
+    internal static ChartColor MapColor(Chart chart, VisualThemeColors colors, ChartColor? pointColor, ChartColor? highColor, double value, double min, double max) =>
+        pointColor ?? (chart.Options.MapColorScale?.ColorFor(value, min, max) ?? Color(chart, colors, highColor, value, min, max));
+
+    internal static ChartColor MapNoDataColor(Chart chart, VisualThemeColors colors) =>
+        chart.Options.MapColorScale?.NoDataColor ?? ChartColorMath.Blend(colors.Surface, colors.Border, .46);
+
+    internal static ChartColor CalendarColor(VisualThemeColors colors, ChartColor? high, double value, double min, double max) {
+        var ratio = CalendarRatio(value, min, max);
+        return !high.HasValue && colors.SequentialRamp.Count > 0 ? RampColor(colors.SequentialRamp, ratio)
+            : ChartColorMath.Blend(colors.Surface, high ?? colors.Palette[0], .30 + ratio * .70);
+    }
+
+    internal static ChartColor ZeroColor(VisualThemeColors colors) => ChartColorMath.Blend(colors.Surface, colors.MutedForeground, .14);
+    internal static ChartColor CalendarEmptyColor(VisualThemeColors colors) => ChartColorMath.Blend(colors.Surface, colors.MutedForeground, .30);
     public static double CategoricalLabelFontSize(double configuredSize) => Math.Max(8, configuredSize);
 
     // Auto categorical labels keep the configured size in both renderers; Always may explicitly fit smaller text.
@@ -142,9 +170,13 @@ internal static class ChartHeatmapSurface {
 
     private static ChartColorBlend SemanticBlend(Chart chart, double ratio) {
         var t = chart.Options.Theme;
-        if (ratio < 0.60) return new ChartColorBlend(t.Negative, SvgColorRole.Status, t.Warning, SvgColorRole.Status, ratio / 0.60 * 0.42);
-        if (ratio < 0.80) return new ChartColorBlend(t.Warning, SvgColorRole.Status, t.Positive, SvgColorRole.Status, (ratio - 0.60) / 0.20 * 0.5);
-        return new ChartColorBlend(t.Warning, SvgColorRole.Status, t.Positive, SvgColorRole.Status, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
+        return SemanticBlend(t.Negative, t.Warning, t.Positive, ratio);
+    }
+
+    private static ChartColorBlend SemanticBlend(ChartColor negative, ChartColor warning, ChartColor positive, double ratio) {
+        if (ratio < 0.60) return new ChartColorBlend(negative, SvgColorRole.Status, warning, SvgColorRole.Status, ratio / 0.60 * 0.42);
+        if (ratio < 0.80) return new ChartColorBlend(warning, SvgColorRole.Status, positive, SvgColorRole.Status, (ratio - 0.60) / 0.20 * 0.5);
+        return new ChartColorBlend(warning, SvgColorRole.Status, positive, SvgColorRole.Status, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
     }
 
     /// <summary>

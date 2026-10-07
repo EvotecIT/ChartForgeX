@@ -36,15 +36,13 @@ internal sealed class ChartGridLayout {
         var subtitleFontSize = grid.SubtitleStyle.FontSize ?? theme.SubtitleFontSize;
         var headerHeight = grid.Title.Length == 0 && grid.Subtitle.Length == 0 ? 0 : Math.Max(76, (int)Math.Ceiling(titleFontSize + (grid.Subtitle.Length == 0 ? 0 : subtitleFontSize) + 37));
         var width = grid.Padding * 2 + columns * panelWidth + (columns - 1) * grid.Gap;
-        var occupied = new List<bool[]>();
+        var placements = PlacePanels(grid, columns);
         var cells = new List<ChartGridCell>(grid.Charts.Count);
         for (var i = 0; i < grid.Charts.Count; i++) {
             var chart = grid.Charts[i];
-            var span = i < grid.PanelSpans.Count ? grid.PanelSpans[i] : new ChartGridPanelSpan(1, 1);
-            var columnSpan = Math.Min(span.ColumnSpan, columns);
-            var rowSpan = span.RowSpan;
-            var (row, column) = FindPlacement(occupied, columns, columnSpan, rowSpan);
-            MarkOccupied(occupied, columns, row, column, columnSpan, rowSpan);
+            var placement = placements[i];
+            var row = placement.Row; var column = placement.Column;
+            var columnSpan = placement.ColumnSpan; var rowSpan = placement.RowSpan;
             var panelX = grid.Padding + column * (panelWidth + grid.Gap);
             var panelY = grid.Padding + headerHeight + row * (panelHeight + grid.Gap);
             var spannedPanelWidth = columnSpan * panelWidth + (columnSpan - 1) * grid.Gap;
@@ -58,9 +56,24 @@ internal sealed class ChartGridLayout {
             }
         }
 
-        var rows = occupied.Count;
+        var rows = 0;
+        foreach (var placement in placements) rows = Math.Max(rows, placement.Row + placement.RowSpan);
         var height = grid.Padding * 2 + headerHeight + rows * panelHeight + Math.Max(0, rows - 1) * grid.Gap;
         return new ChartGridLayout(width, height, headerHeight, cells);
+    }
+
+    /// <summary>Shares span packing between natural-size exports and fixed prepared viewports.</summary>
+    internal static IReadOnlyList<ChartGridPlacement> PlacePanels(ChartGrid grid, int columns) {
+        var occupied = new List<bool[]>();
+        var placements = new List<ChartGridPlacement>(grid.Charts.Count);
+        for (var i = 0; i < grid.Charts.Count; i++) {
+            var span = i < grid.PanelSpans.Count ? grid.PanelSpans[i] : new ChartGridPanelSpan(1, 1);
+            var columnSpan = Math.Min(span.ColumnSpan, columns);
+            var position = FindPlacement(occupied, columns, columnSpan, span.RowSpan);
+            MarkOccupied(occupied, columns, position.Row, position.Column, columnSpan, span.RowSpan);
+            placements.Add(new ChartGridPlacement(position.Row, position.Column, span.RowSpan, columnSpan));
+        }
+        return placements;
     }
 
     private static (int Row, int Column) FindPlacement(IReadOnlyList<bool[]> occupied, int columns, int columnSpan, int rowSpan) {
@@ -99,4 +112,14 @@ internal sealed class ChartGridLayout {
         var y = panelY + (panelHeight - height) / 2;
         return new ChartGridCell(chart, x, y, width, height);
     }
+}
+
+internal readonly struct ChartGridPlacement {
+    internal ChartGridPlacement(int row, int column, int rowSpan, int columnSpan) {
+        Row = row; Column = column; RowSpan = rowSpan; ColumnSpan = columnSpan;
+    }
+    internal int Row { get; }
+    internal int Column { get; }
+    internal int RowSpan { get; }
+    internal int ColumnSpan { get; }
 }

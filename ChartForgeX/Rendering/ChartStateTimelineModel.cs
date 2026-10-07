@@ -87,8 +87,8 @@ internal sealed class ChartStateTimelineModel {
 
     public string? SummaryHeader => Chart.Options.LaneSummaryHeader;
 
-    public static ChartStateTimelineModel Build(Chart chart) {
-        var legend = new ChartStateCategoryLegend(chart);
+    public static ChartStateTimelineModel Build(Chart chart, ChartColor? fallback = null) {
+        var legend = new ChartStateCategoryLegend(chart, fallback);
         var lanes = new List<ChartStateTimelineLane>();
         var min = double.PositiveInfinity;
         var max = double.NegativeInfinity;

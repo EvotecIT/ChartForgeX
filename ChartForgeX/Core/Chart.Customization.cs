@@ -547,7 +547,7 @@ public sealed partial class Chart {
     /// Sets custom SVG path data for pictorial symbols using a 24 by 24 viewBox.
     /// </summary>
     /// <param name="pathData">The SVG path data.</param>
-    /// <param name="pngFallbackShape">The built-in shape used by PNG output.</param>
+    /// <param name="pngFallbackShape">The legacy PNG exporter's fallback shape. Prepared exports use the custom geometry.</param>
     /// <returns>The current chart.</returns>
     public Chart WithPictorialSvgPath(string pathData, ChartPictorialShape pngFallbackShape = ChartPictorialShape.Circle) =>
         WithPictorialSvgPath(pathData, new ChartRect(0, 0, 24, 24), pngFallbackShape);
@@ -557,7 +557,7 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="pathData">The SVG path data.</param>
     /// <param name="viewBox">The SVG path viewBox used to scale the path into each symbol slot.</param>
-    /// <param name="pngFallbackShape">The built-in shape used by PNG output.</param>
+    /// <param name="pngFallbackShape">The legacy PNG exporter's fallback shape. Prepared exports use the custom geometry.</param>
     /// <returns>The current chart.</returns>
     public Chart WithPictorialSvgPath(string pathData, ChartRect viewBox, ChartPictorialShape pngFallbackShape = ChartPictorialShape.Circle) {
         Options.SetPictorialSvgPath(pathData, viewBox, pngFallbackShape);

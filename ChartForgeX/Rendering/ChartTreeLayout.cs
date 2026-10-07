@@ -8,7 +8,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartTreeLayout {
-    public static ChartTreeModel Build(Chart chart, ChartRect plot) {
+    public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Tree);
         if (series == null || series.Points.Count < 2) return ChartTreeModel.Empty;
         var nodeCount = chart.Options.TreeNodeLabels.Count;
@@ -37,7 +37,7 @@ internal static class ChartTreeLayout {
         var root = 0;
         for (var i = 0; i < incoming.Length; i++) if (!incoming[i]) { root = i; break; }
         ApplyDepths(nodes, children, root, 0);
-        LayoutNodes(nodes, children, root, plot, out var nodeWidth, out var nodeHeight, out var maxDepth);
+        LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var nodeHeight, out var maxDepth);
         var maxLinkValue = links.Max(link => link.Value);
         return new ChartTreeModel(nodes, links, nodeWidth, nodeHeight, maxDepth, maxLinkValue);
     }
@@ -47,25 +47,30 @@ internal static class ChartTreeLayout {
         foreach (var child in children[node]) ApplyDepths(nodes, children, child, depth + 1);
     }
 
-    private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, out double nodeWidth, out double nodeHeight, out int maxDepth) {
+    private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, bool fitViewport, out double nodeWidth, out double nodeHeight, out int maxDepth) {
         maxDepth = Math.Max(1, nodes.Max(node => node.Depth));
         var leafCount = Math.Max(1, nodes.Count(node => children[node.Index].Count == 0));
         nodeWidth = Math.Max(ChartVisualPrimitives.TreeNodeMinWidth, Math.Min(ChartVisualPrimitives.TreeNodeMaxWidth, plot.Width / (maxDepth + 1) * ChartVisualPrimitives.TreeNodeWidthFactor));
         nodeHeight = Math.Max(ChartVisualPrimitives.TreeNodeMinHeight, Math.Min(ChartVisualPrimitives.TreeNodeMaxHeight, plot.Height / Math.Max(1, leafCount) * ChartVisualPrimitives.TreeNodeHeightFactor));
+        if (fitViewport) {
+            nodeWidth = Math.Min(nodeWidth, Math.Max(1, plot.Width / (maxDepth + 1) * .68));
+            nodeHeight = Math.Min(nodeHeight, Math.Max(1, plot.Height / leafCount * .68));
+        }
         var effectiveNodeHeight = nodeHeight;
-        var availableHeight = Math.Max(1, plot.Height - effectiveNodeHeight - ChartVisualPrimitives.TreeLayoutVerticalPadding);
+        var leafInset = fitViewport ? Math.Min(ChartVisualPrimitives.TreeLayoutLeafInset, Math.Max(0, (plot.Height - nodeHeight) / 2)) : ChartVisualPrimitives.TreeLayoutLeafInset;
+        var availableHeight = Math.Max(fitViewport ? 0 : 1, plot.Height - effectiveNodeHeight - (fitViewport ? leafInset * 2 : ChartVisualPrimitives.TreeLayoutVerticalPadding));
         var nextLeaf = 0;
         AssignY(root);
         foreach (var node in nodes) {
             var horizontalPadding = Math.Min(ChartVisualPrimitives.TreeLayoutHorizontalPadding, Math.Max(0, (plot.Width - nodeWidth) / 2));
-            var availableWidth = Math.Max(1, plot.Width - nodeWidth - horizontalPadding * 2);
+            var availableWidth = Math.Max(fitViewport ? 0 : 1, plot.Width - nodeWidth - horizontalPadding * 2);
             node.X = maxDepth == 0 ? plot.Left + plot.Width / 2 - nodeWidth / 2 : plot.Left + horizontalPadding + node.Depth / (double)maxDepth * availableWidth;
             node.Y -= nodeHeight / 2;
         }
 
         double AssignY(int nodeIndex) {
             if (children[nodeIndex].Count == 0) {
-                var y = leafCount == 1 ? plot.Top + plot.Height / 2 : plot.Top + effectiveNodeHeight / 2 + ChartVisualPrimitives.TreeLayoutLeafInset + nextLeaf / (double)Math.Max(1, leafCount - 1) * availableHeight;
+                var y = leafCount == 1 ? plot.Top + plot.Height / 2 : plot.Top + effectiveNodeHeight / 2 + leafInset + nextLeaf / (double)Math.Max(1, leafCount - 1) * availableHeight;
                 nodes[nodeIndex].Y = y;
                 nextLeaf++;
                 return y;
