@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Primitives;
 
@@ -41,15 +42,16 @@ namespace ChartForgeX.Themes;
 public sealed class SvgColorVariables {
     private static readonly Regex VariableName = new("^--[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant);
     private const string Paint = @"#[0-9A-Fa-f]{6}(?![0-9A-Fa-f])|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*[0-9]*\.?[0-9]+\s*)?\)";
-    private static readonly Regex StartTag = new(@"<(?<tag>[A-Za-z][\w:.-]*)(?<attrs>(?:[^<>""']|""[^""]*""|'[^']*')*)>", RegexOptions.CultureInvariant);
-    private static readonly Regex StyleElement = new(@"(?<open><style\b(?:[^<>""']|""[^""]*""|'[^']*')*>)(?<css>.*?)(?<close></style>)", RegexOptions.CultureInvariant | RegexOptions.Singleline);
+    // Compiled: Apply scans every tag of finished, often very large, markup. Compilation does not change what matches.
+    private static readonly Regex StartTag = new(@"<(?<tag>[A-Za-z][\w:.-]*)(?<attrs>(?:[^<>""']|""[^""]*""|'[^']*')*)>", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex StyleElement = new(@"(?<open><style\b(?:[^<>""']|""[^""]*""|'[^']*')*>)(?<css>.*?)(?<close></style>)", RegexOptions.CultureInvariant | RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex PaintAttribute = new(
         @"(?<lead>(?<![\w:-])(?:fill|stroke|stop-color|flood-color|lighting-color|color)\s*=\s*"")(?<value>" + Paint + @")(?="")",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex StyleAttribute = new(@"(?<open>(?<![\w:-])style\s*=\s*"")(?<css>[^""]*)(?<close>"")", RegexOptions.CultureInvariant);
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex StyleAttribute = new(@"(?<open>(?<![\w:-])style\s*=\s*"")(?<css>[^""]*)(?<close>"")", RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly Regex PaintDeclaration = new(
         @"(?<lead>(?<![\w-])(?<property>fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*)(?<value>" + Paint + @")(?=\s*(?:[;}]|!important|$))",
-        RegexOptions.CultureInvariant);
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private readonly List<SvgColorVariable> _variables = new();
     private readonly Dictionary<int, SvgColorVariable> _any = new();
@@ -128,9 +130,35 @@ public sealed class SvgColorVariables {
     public string Apply(string svg) {
         if (svg == null) throw new ArgumentNullException(nameof(svg));
         if (_any.Count == 0) return svg;
-        var result = StyleElement.Replace(svg, match => match.Groups["open"].Value + Declarations(match.Groups["css"].Value, textElement: false) + match.Groups["close"].Value);
-        return StartTag.Replace(result, ReplaceTag);
+        var result = svg.IndexOf("<style", StringComparison.Ordinal) < 0 ? svg
+            : StyleElement.Replace(svg, match => match.Groups["open"].Value + Declarations(match.Groups["css"].Value, textElement: false) + match.Groups["close"].Value);
+        return ReplaceTags(result);
     }
+
+    /// <summary>
+    /// Replaces the paints of every start tag, as <c>StartTag.Replace(svg, ReplaceTag)</c> does, but only rebuilds tags
+    /// whose attributes name a paint or a style and copies the markup once, only when a tag changed.
+    /// </summary>
+    private string ReplaceTags(string svg) {
+        StringBuilder? builder = null;
+        var copied = 0;
+        for (var match = StartTag.Match(svg); match.Success; match = match.NextMatch()) {
+            var attrs = match.Groups["attrs"];
+            // Every paint attribute name contains "fill", "stroke" or "color"; style attributes contain "style".
+            if (attrs.Length == 0 || !Contains(svg, "fill", attrs) && !Contains(svg, "stroke", attrs) && !Contains(svg, "color", attrs) && !Contains(svg, "style", attrs)) continue;
+            var replaced = ReplaceTag(match);
+            if (replaced.Length == match.Length && string.CompareOrdinal(replaced, 0, svg, match.Index, match.Length) == 0) continue;
+            builder ??= new StringBuilder(svg.Length + svg.Length / 8);
+            builder.Append(svg, copied, match.Index - copied).Append(replaced);
+            copied = match.Index + match.Length;
+        }
+
+        if (builder == null) return svg;
+        builder.Append(svg, copied, svg.Length - copied);
+        return builder.ToString();
+    }
+
+    private static bool Contains(string text, string value, Group range) => text.IndexOf(value, range.Index, range.Length, StringComparison.Ordinal) >= 0;
 
     /// <summary>
     /// Returns the CSS paint for a colour written for <paramref name="role"/>: the variable of that role with that colour,
