@@ -109,7 +109,9 @@ public static partial class TopologyChartExtensions {
         motion.Validate();
         effective.Motion = null;
         var request = VisualExportRequest.ForTopology(chart, effective);
-        var compiler = new VisualTopologyCompiler(chart, request.Context, effective);
+        // Animated convenience exports share the natural frame policy of Prepare(options).
+        // The compiler still honors explicit FitContentToViewport without growing the canvas.
+        var compiler = new VisualTopologyCompiler(chart, request.Context, effective, naturalSize: true);
         var prepared = compiler.Compile();
         var motionOptions = effective.CloneForRendering(); motionOptions.Motion = motion;
         var plan = compiler.MotionPlan(motionOptions);
