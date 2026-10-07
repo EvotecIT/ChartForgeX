@@ -3355,15 +3355,15 @@
       "width": 960,
       "height": 560,
       "svg": {
-        "minVisualNodes": 32,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 250639,
-        "minTransparentPixels": 18161,
-        "minDistinctColors": 756,
+        "minVisiblePixels": 268780,
+        "minTransparentPixels": 20,
+        "minDistinctColors": 594,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3423,15 +3423,15 @@
       "width": 900,
       "height": 520,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 217059,
-        "minTransparentPixels": 16941,
-        "minDistinctColors": 884,
+        "minVisiblePixels": 233980,
+        "minTransparentPixels": 20,
+        "minDistinctColors": 466,
         "maxEdgeInkPixels": 0
       }
     },

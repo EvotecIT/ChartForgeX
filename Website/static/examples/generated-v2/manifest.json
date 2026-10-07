@@ -36,7 +36,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 24
+      "semanticRegions": 39
     },
     {
       "id": "cartesian-compact-light",
@@ -63,7 +63,7 @@
       "diagnostics": [
         "cartesian.axis-label-overflow"
       ],
-      "semanticRegions": 24
+      "semanticRegions": 39
     },
     {
       "id": "cartesian-explicit-status-light",
@@ -88,7 +88,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 24
+      "semanticRegions": 39
     },
     {
       "id": "cartesian-wide-dark",
@@ -113,7 +113,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 24
+      "semanticRegions": 39
     },
     {
       "id": "cartesian-compact-dark",
@@ -140,7 +140,7 @@
       "diagnostics": [
         "cartesian.axis-label-overflow"
       ],
-      "semanticRegions": 24
+      "semanticRegions": 39
     },
     {
       "id": "cartesian-explicit-status-dark",
@@ -165,7 +165,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 24
+      "semanticRegions": 39
     },
     {
       "id": "donut-wide-light",
@@ -190,7 +190,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "donut-compact-light",
@@ -215,7 +215,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "donut-explicit-status-light",
@@ -240,7 +240,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "donut-wide-dark",
@@ -265,7 +265,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "donut-compact-dark",
@@ -290,7 +290,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "donut-explicit-status-dark",
@@ -315,7 +315,7 @@
         "html"
       ],
       "diagnostics": [],
-      "semanticRegions": 12
+      "semanticRegions": 14
     },
     {
       "id": "topology-feasibility-light",
