@@ -40,7 +40,7 @@ public sealed class PreparedTopologyDotTypographyTests {
     }
 
     [Fact]
-    public void BroadResolvedFaceFitsCompleteDotSymbolAndReservesActualBadgePadding() {
+    public void BroadResolvedFaceRetainsReadableDotPrefixAndActualBadgePadding() {
         const string family = "CFX Topology Broad Compact";
         try {
             // Two 800-unit advances exceed the 11px dot at the preferred 8px size.
@@ -60,9 +60,10 @@ public sealed class PreparedTopologyDotTypographyTests {
             var options = new TopologyRenderOptions { IncludeLegend = false };
             var prepared = chart.Prepare(context, options);
             var symbol = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "topology-node-symbol");
-            Assert.Equal("DC", Assert.Single(symbol.Text.Lines).Text);
-            Assert.InRange(symbol.Text.Size, double.Epsilon, 8);
+            Assert.Equal("D", Assert.Single(symbol.Text.Lines).Text);
+            Assert.Equal(8, symbol.Text.Size);
             Assert.True(symbol.Text.Metrics.Width <= 11 && symbol.Text.Metrics.Height <= 11);
+            Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "topology.label-truncated");
             var badge = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "topology-node-badge-surface");
             var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "topology-node-badge");
             Assert.True(badge.Bounds.Width >= caption.Text.Metrics.Width + 12);

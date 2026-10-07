@@ -37,7 +37,8 @@ function Assert-VisualComparisonHealth {
     }
 
     if ($Comparison.healthySvgs -ne $Comparison.chartPairs -or $Comparison.healthyPngs -ne $Comparison.chartPairs -or $Comparison.healthyHtmls -ne $Comparison.chartPairs) {
-        throw "SVG/PNG/HTML comparison health is incomplete: $($Comparison.healthySvgs) SVG(s), $($Comparison.healthyPngs) PNG(s), $($Comparison.healthyHtmls) HTML(s), $($Comparison.chartPairs) chart pair(s). See $ComparisonManifest."
+        $unhealthy = @($Comparison.charts | Where-Object { -not $_.svg.healthy -or -not $_.png.healthy -or -not $_.html.healthy } | ForEach-Object { $_.name }) -join ', '
+        throw "SVG/PNG/HTML comparison health is incomplete: $($Comparison.healthySvgs) SVG(s), $($Comparison.healthyPngs) PNG(s), $($Comparison.healthyHtmls) HTML(s), $($Comparison.chartPairs) chart pair(s). Affected charts: $unhealthy. See $ComparisonManifest."
     }
 
     if ($Comparison.warnings -ne 0) {

@@ -149,11 +149,12 @@ internal sealed partial class VisualTopologyCompiler {
         if (fitSingleLine) {
             var preferred = _builder.MeasureText(value, size, weight);
             if (preferred.Width > bounds.Width || preferred.Height > bounds.Height) {
-                var lower = 0d; var upper = size;
+                var lower = Math.Min(size, DotNodeSymbolFontSize * _scale); var upper = size;
                 // Font metrics can be discrete for the built-in bitmap face. Search measured
-                // sizes rather than assuming that every face scales linearly or imposing a
-                // platform-dependent minimum. Keep the preferred size whenever it already fits.
-                for (var attempt = 0; attempt < 28; attempt++) {
+                // sizes without shrinking ordinary symbols below their readable 8px size.
+                // Explicit smaller dots retain their proportional size; a symbol that still
+                // cannot fit uses the measured prefix below instead of unreadable lettering.
+                for (var attempt = 0; attempt < 28 && upper > lower; attempt++) {
                     var candidate = (lower + upper) / 2;
                     var measured = _builder.MeasureText(value, candidate, weight);
                     if (measured.Width <= bounds.Width && measured.Height <= bounds.Height) lower = candidate;
@@ -176,8 +177,8 @@ internal sealed partial class VisualTopologyCompiler {
             var text = queue.Dequeue();
             if (_builder.MeasureText(text, size, weight).Width <= bounds.Width) { lines.Add(text); continue; }
             if (fitSingleLine) {
-                // Irreducible bitmap advances can exceed a tiny dot even at the smallest
-                // nominal size. Retain a fitting text-element prefix and disclose the loss;
+                // Broad faces and irreducible bitmap advances can exceed a tiny dot at its
+                // readable size. Retain a fitting text-element prefix and disclose the loss;
                 // appending an ellipsis must not erase the only glyph that could fit.
                 lines.Add(ChartTextFitting.FitEnd(text, bounds.Width, probe => _builder.MeasureText(probe, size, weight).Width, string.Empty));
                 _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A compact topology symbol exceeds its measured bounds; complete source text remains in semantic interchange."));
