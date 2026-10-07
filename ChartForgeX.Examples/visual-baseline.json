@@ -4713,7 +4713,7 @@
     {
       "name": "visual-entity-relationship-overview",
       "width": 1180,
-      "height": 811,
+      "height": 846,
       "svg": {
         "minVisualNodes": 149,
         "maxClippedTextNodes": 0,
@@ -4730,7 +4730,7 @@
     {
       "name": "visual-evidence-timeline-relationship",
       "width": 980,
-      "height": 610,
+      "height": 612,
       "svg": {
         "minVisualNodes": 76,
         "maxClippedTextNodes": 0,
