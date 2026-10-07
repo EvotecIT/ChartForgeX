@@ -79,8 +79,15 @@ internal static partial class SmokeTests {
         Assert(europeSvg.Contains("data-cfx-role=\"topology-map-boundary\"", StringComparison.Ordinal), "Regional geographic topology should render filled land areas.");
         var regionalBoundaries = XDocument.Parse(europeSvg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-map-boundary").ToArray();
         Assert(regionalBoundaries.Any(element => element.Attribute("d") != null && (double?)element.Attribute("stroke-width") > 0
-            && element.RenderedColor("stroke").A > 0 && (string?)element.Attribute("fill") != "none"),
-            "Regional geographic topology should paint both filled land and visible boundary outlines from its native paths.");
+            && element.RenderedColor("stroke").A > 0), "Regional geographic topology should paint visible native boundary outlines.");
+        Assert(XDocument.Parse(europeSvg).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-map-land"
+            && element.Name.LocalName == "ellipse" && element.RenderedColor("fill").A > 0),
+            "Dotted regional maps should paint their land dots alongside the boundary outlines.");
+        var silhouetteOptions = options.Clone(); silhouetteOptions.MapBackgroundStyle = TopologyMapBackgroundStyle.SoftSilhouette;
+        var silhouetteSvg = europe.ToSvg(silhouetteOptions);
+        Assert(XDocument.Parse(silhouetteSvg).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-map-boundary"
+            && (string?)element.Attribute("fill") != "none" && element.RenderedColor("fill").A > 0 && element.RenderedColor("stroke").A > 0),
+            "Soft regional maps should paint both land fill and visible outlines from the same native boundary geometry.");
 
         var invalid = TopologyChart.Create()
             .AddNode("partial", "Partial", 0, 0);

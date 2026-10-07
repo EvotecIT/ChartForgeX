@@ -96,7 +96,7 @@ internal static partial class VisualCartesianCompiler {
                 left = histogramLeft;
                 barWidth = histogramWidth;
             }
-            var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
+            var bounds = VisibleSegmentBounds(chart, new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y)), point.Y);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, baseValue)) {
                 DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);

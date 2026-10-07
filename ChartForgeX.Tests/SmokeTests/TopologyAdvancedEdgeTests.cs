@@ -157,6 +157,9 @@ internal static partial class SmokeTests {
         var lastHeaderY = double.Parse(lastHeader.Attribute("y")!.Value, System.Globalization.CultureInfo.InvariantCulture);
         var firstDetailY = double.Parse(firstDetail.Attribute("y")!.Value, System.Globalization.CultureInfo.InvariantCulture);
         Assert(firstDetailY - 8 > lastHeaderY + 4, "Detailed card separators should start below every rendered title and subtitle line.");
+        var separator = TopologyEntity(wrappedSvg, "node", "wrapped").Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node-detail-separator");
+        Assert((double)separator.Attribute("y1")! > lastHeaderY + 4 && (double)separator.Attribute("y1")! < firstDetailY - 4,
+            "A visible native separator should sit between the final subtitle line and the first detail.");
         Assert(wrapped.ToPng(wrappedOptions).Length > 64, "Wrapped detailed cards should preserve PNG output parity.");
     }
 

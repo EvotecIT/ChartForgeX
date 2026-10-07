@@ -84,6 +84,19 @@ internal sealed partial class VisualTopologyCompiler {
             } else Text(node.Subtitle!, subtitle, size * .85, Highlight(_colors.MutedForeground, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption);
             y += subtitle.Height;
         }
+        if (node.Details.Count > 0) {
+            // The canonical card layout reserves this baseline for the first detail. Keep
+            // the separator below the complete measured header when typography wraps it.
+            var firstBaseline = Point(new ChartPoint(node.X, node.Y + NodeDetailStartOffset(node, _options))).Y;
+            y = Math.Max(y + 12 * _scale, firstBaseline - _builder.TextAscent(size * .8 * _scale, 400));
+            var separator = y - 6 * _scale;
+            var detailLineHeight = _builder.MeasureText("Ag", size * .8 * _scale, 400).LineHeight;
+            if (bounds.Width > 0 && separator >= bounds.Top && y + detailLineHeight <= bounds.Bottom) {
+                var color = Highlight(_colors.Border, active);
+                _builder.Line(bounds.X, separator, bounds.Right, separator, color, _context.Theme.AxisStrokeWidth * _scale,
+                    "topology-node-detail-separator", paint: Paint(stroke: color, strokeRole: SvgColorRole.Surface));
+            }
+        }
         foreach (var detail in node.Details) {
             var row = new ChartRect(bounds.X, y, bounds.Width, Math.Min(Math.Max(0, bounds.Bottom - y), size * _scale * 1.4));
             var reserve = 0d;

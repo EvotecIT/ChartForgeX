@@ -21,7 +21,7 @@ internal static partial class VisualCartesianCompiler {
             }
             var startX = baseValue == 0 ? map.XBaseline() : map.X(baseValue); var endX = map.X(baseValue + point.Y);
             var y = map.Y(point.X) + offset;
-            var bounds = new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height);
+            var bounds = VisibleSegmentBounds(chart, new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height), point.Y, horizontal: true);
             var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
             using (ObservationGroup(builder, series, index, item, item, 1, bounds, label, ("category", point.X), ("value", point.Y), ("base", baseValue)))
                 DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true);

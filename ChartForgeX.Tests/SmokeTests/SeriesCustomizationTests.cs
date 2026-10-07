@@ -3,6 +3,7 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -292,7 +293,14 @@ internal static partial class SmokeTests {
                 new ChartBubble(3, 26, 14)
             }, ChartColor.FromHex("#14B8A6"));
         bubble.Series[0].WithPointColor(1, "#7C3AED");
-        Assert(bubble.ToSvg().Contains("stroke=\"#7C3AED\"", StringComparison.Ordinal), "Bubble markers should honor point-specific colors in SVG.");
+        var bubbleColor = ChartColor.FromHex("#7C3AED");
+        Assert(CartesianPoint(bubble.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "bubble"
+            && (string?)element.Attribute("stroke") == ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleStrokeOpacity).ToCss()),
+            "The authored bubble observation should retain its point-specific stroke and style opacity in SVG.");
+        var nativeBubble = PreparedFamily(bubble).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Where(node => node.Role == "bubble").ElementAt(1);
+        Assert(nativeBubble.Fill!.Value.Equals(ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleFillOpacity))
+            && nativeBubble.Stroke!.Value.Equals(ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleStrokeOpacity)),
+            "Native bubble paint should use the authored point color for both translucent fill and stroke.");
         Assert(bubble.ToPng().Length > 64, "Bubble point colors should render PNG output.");
 
         var errorBar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -332,7 +340,10 @@ internal static partial class SmokeTests {
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104)
             }, ChartColor.FromHex("#14B8A6"));
         boxPlot.Series[0].WithPointColor(1, "#8B5CF6");
-        Assert(boxPlot.ToSvg().Contains("data-cfx-role=\"box-body\"", StringComparison.Ordinal) && boxPlot.ToSvg().Contains("fill=\"#8B5CF6\"", StringComparison.Ordinal), "Box-plot summaries should honor point-specific colors in SVG.");
+        Assert(CartesianPoint(boxPlot.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "boxplot-body"
+            && (string?)element.Attribute("stroke") == "#8B5CF6"), "Box-plot summaries should honor point-specific colors in SVG.");
+        Assert(PreparedFamily(boxPlot).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(node => node.Role == "boxplot-body").ElementAt(1).Stroke!.Value.Equals(ChartColor.FromHex("#8B5CF6")),
+            "Native box-plot outlines should retain the authored observation color.");
         Assert(boxPlot.ToPng().Length > 64, "Box-plot point colors should render PNG output.");
 
         var candles = new[] {
@@ -357,7 +368,8 @@ internal static partial class SmokeTests {
             .WithSize(540, 320)
             .AddSlope("Before/after", 24, 52, ChartColor.FromHex("#14B8A6"));
         slope.Series[0].WithPointColor(1, "#E11D48");
-        Assert(slope.ToSvg().Contains("data-cfx-role=\"slope-end\"", StringComparison.Ordinal) && slope.ToSvg().Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "Slope endpoint markers should honor point-specific colors in SVG.");
+        Assert(CartesianPoint(slope.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "slope-marker"
+            && (string?)element.Attribute("fill") == "#E11D48"), "Slope endpoint markers should honor point-specific colors in SVG.");
         Assert(slope.ToPng().Length > 64, "Slope endpoint point colors should render PNG output.");
 
         var pointLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -380,7 +392,10 @@ internal static partial class SmokeTests {
             .WithPointLegend()
             .AddLine("Latency", Points(12, 18, 15), ChartColor.FromHex("#2563EB"));
         var aggregateLineLegendSvg = aggregateLineLegend.ToSvg();
-        Assert(aggregateLineLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Latency\" data-cfx-series-key=\"Latency\"", StringComparison.Ordinal) && !aggregateLineLegendSvg.Contains("data-cfx-series-name=\"Latency\" data-cfx-series-key=\"Latency\" data-cfx-point=", StringComparison.Ordinal), "Aggregate line geometry should fall back to a series legend instead of advertising point-level muting.");
+        var lineLegendEntry = System.Xml.Linq.XDocument.Parse(aggregateLineLegendSvg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "legend-entry");
+        Assert((string?)lineLegendEntry.Attribute("data-cfx-source-id") == "legend-series-0"
+            && (string?)lineLegendEntry.Attribute("data-cfx-series-key") == "Latency" && !lineLegendEntry.DescendantsAndSelf().Any(element => element.Attribute("data-cfx-point") != null),
+            "Aggregate line geometry should retain one series legend identity instead of advertising point-level muting.");
         Assert(aggregateLineLegend.ToPng().Length > 64, "Aggregate line point-legend fallback should preserve PNG parity.");
 
         chart.Series[0].UseSeriesColor(1);

@@ -6,6 +6,17 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
+    // A nonzero capsule must retain colored ink at ordinary output density. Anchor
+    // its minimum painted extent at the base without changing the numeric source.
+    private static ChartRect VisibleSegmentBounds(Chart chart, ChartRect bounds, double value, bool horizontal = false) {
+        if (value == 0 || chart.Options.ResolvePreparedBarVisualStyle().Kind != ChartBarStyle.SegmentedCapsule) return bounds;
+        if (horizontal && bounds.Width < 1)
+            return new ChartRect(value > 0 ? bounds.Left : bounds.Right - 1, bounds.Top, 1, bounds.Height);
+        if (!horizontal && bounds.Height < 1)
+            return new ChartRect(bounds.Left, value > 0 ? bounds.Bottom - 1 : bounds.Top, bounds.Width, 1);
+        return bounds;
+    }
+
     private static void DrawBarSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
         int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double? value = null) {
         var style = chart.Options.ResolvePreparedBarVisualStyle();
