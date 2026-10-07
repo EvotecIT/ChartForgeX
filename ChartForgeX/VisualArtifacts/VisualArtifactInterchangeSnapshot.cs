@@ -434,4 +434,3 @@ internal static class VisualArtifactInterchangeSnapshot {
         return copy;
     }
 }
-

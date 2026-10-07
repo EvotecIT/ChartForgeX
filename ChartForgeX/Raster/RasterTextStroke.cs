@@ -87,4 +87,3 @@ internal static class RasterTextStroke {
         destination[index + 3] = (byte)(outputAlpha * 255);
     }
 }
-
