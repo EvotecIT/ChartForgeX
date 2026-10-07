@@ -11,8 +11,9 @@ Scope and later phases are defined in [the architecture](docs/v2/architecture.md
 - [x] Close architecture, API conventions, versioned theme/interchange and migration documentation against the implemented proof.
 - [x] Implement shared prepared scene, frame/theme/text and selected Cartesian/donut compilers; pass focused contract tests.
 - [x] Prove tiny topology/sequence and generic static/semantic artifact handoff in focused tests; AOT/runtime qualification remains below.
-- [ ] Close runtime gallery qualification: final inline SVG and native PNG inspected; compact/wide browser tests and font evidence pending.
-- [ ] Pass focused/full quality, framework/package and AOT checks; compare representative performance against the frozen baseline.
+- [x] Close runtime gallery qualification: 56 proof cases, final SVG/native PNG inspection, 14 executed browser cases, compact/wide layout and pinned regular/bold font evidence.
+- [x] Pass focused/full quality, framework/package and AOT checks: 2,491 tests, 42 Mermaid conformance fixtures, 317 healthy visual pairs, six packages and isolated package consumption. Opaque viewport clearing preserves ordinary contour pixels across clipping, alpha, fractional sizes and raster density.
+- [x] Confirm representative performance against the frozen baseline: 30 paired workloads within 10% elapsed/allocation, 756 retained samples and no failures. All 18 prepared-scene comparisons are faster; 12 unchanged-output comparisons preserve exact SVG/PNG bytes. Record the larger redesigned output payloads separately from timing gains.
 - [ ] Reassess Phases 0–1, settle one PR and clean task-owned disposable output.
 
 ## Rendering Pipeline
@@ -23,6 +24,7 @@ Scope and later phases are defined in [the architecture](docs/v2/architecture.md
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
 
 - Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
+- Reduce repeated paint attributes and scoped-ID payload in dense prepared SVG while preserving complete source alternatives and embedding isolation; compare raw and compressed output sizes.
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
 - Dense polylines stroke about 1.3-1.7x slower than the old per-segment quads (thousands of points, with every scanline crossing many outline edges), while gridlines, axes, and topology edges are faster. If dense charts need it, skip join pieces whose outer wedge is under a sub-pixel and emit fill edges from the stroker without intermediate piece lists.

@@ -137,8 +137,9 @@ Phase 1 color intake does not establish universal status-treatment rendering. Ha
 
 ## Qualification sequence and open gates
 
-- [ ] Compile and inspect the Phase 1 shared-frame/theme/direct-scene and adapter-shaped fixtures, and link their executable examples here.
-- [ ] Close the full public type/member ledger before removing old APIs or moving files; the consumer CSV alone is not that ledger.
+- [x] Compile and inspect the Phase 1 shared-frame/theme/direct-scene and adapter-shaped owner fixtures. The [executable gallery producer](../../ChartForgeX.Examples/V2Examples.cs), [diagram fixtures](../../ChartForgeX.Examples/V2Examples.Diagrams.cs), [review gallery](../../Website/static/examples/generated-v2/index.html) and [artifact handoff tests](../../ChartForgeX.Tests/PreparedVisualArtifactTests.cs) provide the implemented examples. This qualifies the owner proof, not downstream consumers.
+- [x] Close the [integrated public type/member ledger](api-ledger.md): 773 public types and 7,678 records across the six existing runtime assemblies. Its planned API fates guide later removals and package extraction; they do not claim those migrations are implemented.
+- [x] Complete the Phase 1 representative performance comparison: all 30 paired workloads remain within 10% elapsed/allocation, with 756 retained samples and no failures. Earlier flags were investigated before qualifying the stable runtime. Larger redesigned SVG/PNG payloads remain an explicit cost in the [reassessment](architecture.md#phase-1-reassessment).
 - [ ] Migrate remaining core families and qualify the core-focused private HTML adapter and OfficeIMO candidates, preserving artifact/interchange contracts.
 - [ ] Extract Visuals and qualify PowerBGInfo plus static ImagePlayground; extract Stories and qualify animated workflows.
 - [ ] Restore the private reporting consumer's reproducible dependency closure and qualify representative reports.
