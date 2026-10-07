@@ -1,6 +1,7 @@
 using ChartForgeX.Composition;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
+using System.Xml.Linq;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -11,6 +12,24 @@ namespace ChartForgeX.Tests;
 /// family return early on hosts without it.
 /// </summary>
 public sealed class VisualCanvasFontTests {
+    [Theory]
+    [InlineData("Georgia")]
+    [InlineData("Segoe UI, sans-serif")]
+    [InlineData("No Such Family")]
+    public void DefaultCanvasFittingKeepsPortableTextAcrossHostFamilies(string family) {
+        var theme = new VisualCanvasTheme { FontFamily = family };
+        var canvas = VisualCanvas.Create(120, 80).WithTheme(theme)
+            .AddText(10, 10, 80, "iiiiiiiiiiiiiiii", 20, ChartColors.White);
+        var text = XDocument.Parse(canvas.ToSvg()).Descendants()
+            .Single(element => (string?)element.Attribute("data-cfx-role") == "visual-canvas-text");
+        Assert.Equal(TextMeasurementMode.PortableEstimate, theme.TextMeasurementMode);
+        // Seven portable advances fit the box: four source characters and the ellipsis.
+        Assert.Equal("iiii...", text.Value);
+        Assert.Equal(10, (double)text.Attribute("x")!);
+        Assert.Equal(30, (double)text.Attribute("y")!);
+        Assert.Equal(20, (double)text.Attribute("font-size")!);
+    }
+
     [Fact]
     public void PngTextUsesTheThemeFamilyAndRealWeights() {
         if (!HasFace("Georgia", 400) || !HasFace("Georgia", 700) || !HasFace("Segoe UI", 400)) return;

@@ -2,11 +2,47 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
+using ChartForgeX.Raster;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class GraphiteBulletFormattingTests {
+    [Theory]
+    [InlineData(false, 60, 1)]
+    [InlineData(true, 60, 1)]
+    [InlineData(false, 60, 3)]
+    [InlineData(true, 60, 3)]
+    [InlineData(false, 80, 1)]
+    [InlineData(true, 80, 1)]
+    public void CompactBulletRowsKeepPositiveMarksInSvgAndPng(bool dark, int height, int rowCount) {
+        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithSize(200, height).WithPngOutputScale(1);
+        for (var row = 0; row < rowCount; row++) chart.AddBullet("Count " + row, 40 + row, 70);
+        var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
+        Assert.Equal(rowCount, Roles(nodes, "bullet-row").Length);
+        foreach (var rectangle in nodes.Where(element => element.Name.LocalName == "rect")) {
+            Assert.True((double)rectangle.Attribute("width")! >= 0, "SVG rectangle widths must be nonnegative.");
+            Assert.True((double)rectangle.Attribute("height")! >= 0, "SVG rectangle heights must be nonnegative.");
+        }
+        var ranges = Roles(nodes, "bullet-range");
+        Assert.NotEmpty(ranges);
+        Assert.All(ranges.Concat(Roles(nodes, "bullet-value")), mark => Assert.True((double)mark.Attribute("height")! > 0));
+        Assert.All(Roles(nodes, "bullet-target"), mark => Assert.True((double)mark.Attribute("y2")! > (double)mark.Attribute("y1")!));
+        var image = PngReader.Decode(chart.ToPng());
+        Assert.Equal(200, image.Width);
+        Assert.Equal(height, image.Height);
+        // The same SVG mark scene drives Graphite raster output. Sample the first range's row
+        // against its adjacent card surface so a valid PNG containing only the frame cannot pass.
+        var first = ranges[0];
+        var x = (int)Math.Ceiling((double)first.Attribute("x")! + (double)first.Attribute("width")! / 2);
+        var y = (int)Math.Floor((double)first.Attribute("y")!);
+        var outsideX = Math.Max(0, (int)Math.Floor((double)first.Attribute("x")!) - 2);
+        var ink = image.Pixels.AsSpan((y * image.Width + x) * 4, 4);
+        var surface = image.Pixels.AsSpan((y * image.Width + outsideX) * 4, 4);
+        Assert.False(ink.SequenceEqual(surface), "The compact range must remain painted in PNG.");
+    }
+
     [Theory]
     [InlineData(false, 556)]
     [InlineData(true, 556)]

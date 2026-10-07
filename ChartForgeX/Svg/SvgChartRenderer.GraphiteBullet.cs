@@ -20,7 +20,10 @@ public sealed partial class SvgChartRenderer {
                 +EstimateSvgStyledTextWidth(chart,"of "+FormatValue(chart,BulletTarget(v.s)),StyleFontSize(targetStyle,12),targetStyle)+24;
         })):0;
         var x=plot.Left+labelWidth; var width=Math.Max(1,plot.Width-labelWidth-rightReserve);
-        var rowHeight=Math.Min(42,(plot.Height-30)/rows.Length); var h=Math.Min(22,rowHeight*.65);
+        // Reserve the usual axis space only when it leaves room for the rows. Compact
+        // viewports still divide their positive plot height instead of emitting negative bars.
+        var rowSpace=Math.Max(Math.Min(plot.Height,rows.Length),plot.Height-30);
+        var rowHeight=Math.Min(42,rowSpace/rows.Length); var h=Math.Min(22,rowHeight*.65);
         var min=rows.Min(v=>BulletMin(v.s)); var max=rows.Max(v=>BulletMax(v.s)); if(max<=min)max=min+1;
         var w=new SvgMarkupWriter(4096);
         w.StartElement("g").Attribute("data-cfx-role","bullet-chart").EndStartElement();
