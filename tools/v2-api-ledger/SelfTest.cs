@@ -5,7 +5,7 @@ namespace ApiLedger;
 
 /// <summary>Checks ledger reachability and overload fidelity using an independent miniature public API.</summary>
 internal static class SelfTest {
-    internal static void Run() {
+    internal static void Run(string? scratchDirectory = null) {
         const string source = """
             namespace Fixture;
             public partial class Api<T> where T : class {
@@ -46,7 +46,8 @@ internal static class SelfTest {
         Require(rows.Any(row => row.DocId == "M:Fixture.IContract.Read"), "Explicit implementation must remain reachable through interface contract.");
         Require(rows.Any(row => row.DocId == "T:Fixture.Callback") && rows.Any(row => row.Name == "Invoke"), "Delegate invocation contract must be captured.");
         Require(rows.Single(row => row.DocId == "P:Fixture.Api`1.Value").Signature.Contains("private set", StringComparison.Ordinal), "Accessor visibility must be retained.");
-        Console.WriteLine("API ledger self-test passed: reachability, partials, overloads, defaults, protected API, constructors, enum values, delegates and accessors.");
+        EvidenceSelfTest.Run(scratchDirectory, rows.Single(row => row.DocId == "M:Fixture.Api`1.Add(System.Int32)"));
+        Console.WriteLine("API ledger self-test passed: symbol fidelity, private evidence anonymization, external mapping validation and LF CSV serialization.");
     }
 
     private static void Require(bool condition, string message) {

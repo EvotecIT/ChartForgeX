@@ -191,7 +191,7 @@ internal sealed class SvgMarkupWriter {
             var ch = value[i];
             // Characters written unchanged are copied in runs; every other character takes the cases below.
             if (ch >= 0x20 && ch < 0x7F ? ch != '&' && ch != '<' && ch != '>' && (ch != '"' || !escapeQuotes)
-                : ch is '\t' or '\n' or '\r' || ch >= 0xA0 && ch < 0xD800 || ch >= 0xE000 && ch < 0xFDD0 || ch > 0xFDEF && ch < 0xFFFE) continue;
+                : !escapeQuotes && ch is ('\t' or '\n' or '\r') || ch >= 0xA0 && ch < 0xD800 || ch >= 0xE000 && ch < 0xFDD0 || ch > 0xFDEF && ch < 0xFFFE) continue;
             builder.Append(value, run, i - run);
             run = i + 1;
             if (char.IsHighSurrogate(ch)) {
@@ -214,6 +214,16 @@ internal sealed class SvgMarkupWriter {
                 continue;
             }
             switch (ch) {
+                // XML normalizes literal attribute whitespace; references preserve source alternatives exactly.
+                case '\t' when escapeQuotes:
+                    builder.Append("&#9;");
+                    break;
+                case '\n' when escapeQuotes:
+                    builder.Append("&#10;");
+                    break;
+                case '\r' when escapeQuotes:
+                    builder.Append("&#13;");
+                    break;
                 case '&':
                     builder.Append("&amp;");
                     break;

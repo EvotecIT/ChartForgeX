@@ -30,18 +30,19 @@ public static partial class V2Examples {
                         VisualTheme.Graphite(), mode, new VisualFrame(title, Subtitle(variant), showSurface: variant == "surface"), FontSpec.FromFamily(ProofFont));
                     var prepared = chart.Prepare(context);
                     var id = family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
-                    File.WriteAllText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                     var thumbnail = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
                         VisualTheme.Graphite(), mode, new VisualFrame("", "", showSurface: false), FontSpec.FromFamily(ProofFont)));
-                    File.WriteAllText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
-                    File.WriteAllText(Path.Combine(output, id + ".csharp.txt"), Snippet(family, variant, mode, width, height));
+                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
+                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), Snippet(family, variant, mode, width, height));
                     WritePage(output, id, title, mode);
                     artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
                         prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count));
                 }
             }
         }
+        if (!curated) WriteRadialLabels(output, artifacts);
         WriteDiagrams(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);

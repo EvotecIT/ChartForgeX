@@ -15,12 +15,12 @@ public static partial class V2Examples {
                 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
                     VisualTheme.Graphite(), mode, new VisualFrame(title, "Product-neutral diagram semantics", showLegend: false), FontSpec.FromFamily(ProofFont));
                 var prepared = model.Prepare(context);
-                File.WriteAllText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
+                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
                 File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                 var thumbnail = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
                     VisualTheme.Graphite(), mode, new VisualFrame("", "", showLegend: false), FontSpec.FromFamily(ProofFont)));
-                File.WriteAllText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
-                File.WriteAllText(Path.Combine(output, id + ".csharp.txt"), DiagramSnippet(family, title, mode));
+                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
+                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), DiagramSnippet(family, title, mode));
                 WritePage(output, id, title, mode);
                 artifacts.Add(new ProofArtifact(id, family, title, "feasibility", mode.ToString().ToLowerInvariant(), 640, 400,
                     prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count));
@@ -51,19 +51,23 @@ public static partial class V2Examples {
     // </sequence-source>
 
     private static string DiagramSnippet(string family, string title, VisualThemeMode mode) {
-        using var stream = typeof(V2Examples).Assembly.GetManifestResourceStream("ChartForgeX.Examples.V2DiagramSource")
-            ?? throw new InvalidOperationException("Diagram example source is missing.");
-        using var reader = new StreamReader(stream);
-        var source = reader.ReadToEnd();
-        var marker = "// <" + family + "-source>";
-        var start = source.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
-        var end = source.IndexOf("// </" + family + "-source>", start, StringComparison.Ordinal);
-        var factory = source.Substring(start, end - start).Trim().Replace("public static ", "static ", StringComparison.Ordinal);
+        var factory = ReadFactorySource("ChartForgeX.Examples.V2DiagramSource", family);
         return "using ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\n\n" +
             "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Bold.ttf\", 700);\n" +
             "var model = " + (family == "topology" ? "CreateTopology" : "CreateSequence") + "();\n" +
             "var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode." + mode + ",\n" +
             "    new VisualFrame(" + Literal(title) + ", \"Product-neutral diagram semantics\", showLegend: false), FontSpec.FromFamily(\"" + ProofFont + "\"));\n" +
             "var prepared = model.Prepare(context);\nSystem.IO.File.WriteAllText(\"diagram.svg\", prepared.ToSvg());\nSystem.IO.File.WriteAllBytes(\"diagram.png\", prepared.ToPng());\n\n" + factory + "\n";
+    }
+
+    private static string ReadFactorySource(string resource, string name) {
+        using var stream = typeof(V2Examples).Assembly.GetManifestResourceStream(resource)
+            ?? throw new InvalidOperationException("Example source is missing: " + resource);
+        using var reader = new StreamReader(stream);
+        var source = reader.ReadToEnd();
+        var marker = "// <" + name + "-source>";
+        var start = source.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
+        var end = source.IndexOf("// </" + name + "-source>", start, StringComparison.Ordinal);
+        return source.Substring(start, end - start).Trim().Replace("public static ", "static ", StringComparison.Ordinal);
     }
 }

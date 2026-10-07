@@ -619,6 +619,14 @@ public sealed partial class SvgChartRenderer {
             plot = new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         }
 
+        if (chart.Options.Theme.UseGraphiteLayout && ChartSeriesKindTraits.UsesCartesianXAxis(chart) &&
+            ShowYAxis(chart) && !string.IsNullOrWhiteSpace(chart.YAxisTitle)) {
+            // Graphite places the horizontal axis title above the plot. Keep that row below the
+            // header/legend instead of asking label placement to hide a colliding requested title.
+            var reserve = Math.Min(Math.Max(0, plot.Height - 1), SvgYAxisTitleHeight(chart, plot.Width) + 8);
+            plot = new ChartRect(plot.X, plot.Y + reserve, plot.Width, plot.Height - reserve);
+        }
+
         var bottomReserve = 0.0;
         // A matrix heatmap reserves the band under it for its own column labels (see ApplyHeatmapLabelReserve).
         if (ShowXAxis(chart) && !IsHeatmapChart(chart)) {

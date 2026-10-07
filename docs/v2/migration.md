@@ -6,11 +6,11 @@ Consumer repositories remain unchanged. Revalidate their intended branch before 
 
 | Consumer | Inspected source | Declared dependency / boundary |
 | --- | --- | --- |
-| PowerBGInfo | `v2-speedygonzales`, `b267584067aa58370ce8954423ec6582268950e7`, clean; three commits behind cached upstream | `Sources/PowerBGInfo/PowerBGInfo.csproj`: core `1.7.0`, optional source override. Core + Visuals required. |
-| ImagePlayground | `master`, `46bd2fd5e06b076c8c038e134239edf2639ea724`, clean; nine commits behind cached upstream `c1df15a` | Primary core/HTML pins `1.6.0`; cached upstream pins `1.8.1`. PowerShell surface needs core + Visuals + Stories and selected interaction adapters. |
-| OfficeIMO.ChartForgeX | Primary `a7207099322cd4496eca9c54990c835291df2a4d`, clean; relevant adapter also inspected at cached `origin/master fc7f5718c4e152257fedcc0651344a7c44a60c14` | `[1.6.0,2.0.0)` explicitly excludes v2. Review the major range and adapter contract together. |
-| HtmlForgeX.ChartForgeX | Primary `ed1f78b5`; cached master `c9154b0d9c798061ecb178add498cac3c035ddec`; reporting worktree `8fdc944333568cd0b2d4d1e25a7fe557395d8463` | Primary fallback `1.6.0`, cached master `1.8.1`; reporting APIs are a separate source candidate. Keep the base adapter core-focused. |
-| TestimoX reporting | `.claude/worktrees/funny-ritchie-6f3eef`, `ca9537d0e6add4a6c51e4cb14e3abdd1024a4f4c` | Nominal ChartForgeX `1.8.1` / HtmlForgeX `1.1.0`; ignored local props reference missing snapshots. Preserve untracked `ReportScopeHeader.cs`. |
+| [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo) | `v2-speedygonzales`, `b267584067aa58370ce8954423ec6582268950e7`, clean; three commits behind cached upstream | `Sources/PowerBGInfo/PowerBGInfo.csproj`: core `1.7.0`, optional source override. Core + Visuals required. |
+| [ImagePlayground](https://github.com/EvotecIT/ImagePlayground) | `master`, `46bd2fd5e06b076c8c038e134239edf2639ea724`, clean; nine commits behind cached upstream `c1df15a` | Primary core/HTML pins `1.6.0`; cached upstream pins `1.8.1`. PowerShell surface needs core + Visuals + Stories and selected interaction adapters. |
+| [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO) | Primary `a7207099322cd4496eca9c54990c835291df2a4d`, clean; relevant adapter also inspected at cached `origin/master fc7f5718c4e152257fedcc0651344a7c44a60c14` | `[1.6.0,2.0.0)` explicitly excludes v2. Review the major range and adapter contract together. |
+| Private HTML adapter | Read-only source inspection | Keep the base adapter core-focused; qualify optional composition/story integration independently. |
+| Private reporting consumer | Read-only source inspection | Restore a reproducible dependency closure before claiming consumer build proof. |
 
 Paths in this guide and the CSV are repository-relative. Resolve the repository root through `EVOTEC_GITHUB_ROOT`, with the platform default described in `AGENTS.md` when unset. Source findings are not consumer builds, installed-module tests or package publication proof.
 
@@ -107,15 +107,15 @@ Retain `ToOfficeVisual`, portable `OfficeVisualSource`, `ToOfficeDrawing`, Word/
 
 Existing fixtures cover SVG fidelity reject/rasterize/preserve policy, text/image watermarks, static tables, repeated placement, accessibility and exported document content. Reuse those observable contracts against packed v2 owner artifacts. Watermark application becomes a Visuals decoration step; native Visio must continue reporting presentation that it cannot project. Keep JSON ingestion across assembly load contexts; do not replace it with casts between consumer-local copies of moved types.
 
-## HtmlForgeX and TestimoX: one host theme mapping
+## Private adapters: one host theme mapping
 
-HtmlForgeX owns report cards, menus, selection controls, navigation and actions. Keep `HtmlForgeX.ChartForgeX` core-focused for charts/diagrams, scoped color variables, artifact embedding and interaction wiring. Typed canvas/block/story conveniences may require optional `.Visuals` / `.Stories` adapters; those adapter package names remain a later type-ledger decision. A common static artifact can avoid optional concrete overloads where sufficient.
+The private HTML adapter's host owns report cards, menus, selection controls, navigation and actions. Keep the adapter core-focused for charts/diagrams, scoped color variables, artifact embedding and interaction wiring. Typed canvas/block/story conveniences may require optional Visuals/Stories adapters; their package identities remain a later type-ledger decision. A common static artifact can avoid optional concrete overloads where sufficient.
 
 Migrate `ReportChartContext.CreateChart` once: transparent no-card/no-header plots, explicit mark backdrop, flat marks, token roles, culture/date labels, accessible descriptions and status category mappings. Preserve scoped SVG IDs and nested light/dark islands. Live color binding does not promise layout reflow when font metrics change; static PNG resolves explicit literal colors.
 
-TestimoX keeps domain data, report layout, category keys and localized labels. Its chart factory/theme mapping changes in the adapter, without per-report palette copies. Preserve severity/outcome/operational-state distinctions, unknown/not-observable/not-evaluated treatments, null versus zero, category and legend order, time zone labels and interval semantics. Qualify grouped availability timelines, sparse health matrices, overlapping/open jobs, hour/weekday/calendar heatmaps and replication/documentation topology in compact/wide and light/dark output.
+The private reporting consumer keeps domain data, report layout, category keys and localized labels. Its chart factory/theme mapping changes in the adapter, without per-report palette copies. Preserve severity/outcome/operational-state distinctions, unknown/not-observable/not-evaluated treatments, null versus zero, category and legend order, time zone labels and interval semantics. Qualify grouped availability timelines, sparse health matrices, overlapping/open jobs, hour/weekday/calendar heatmaps and replication/documentation topology in compact/wide and light/dark output.
 
-The inspected TestimoX reporting worktree's local dependency props reference absent `hfx-a5ed225` / `cfx-d066d3a` snapshots. A later consumer task must restore a reproducible dependency closure before claiming build proof; nominal package pins do not establish that newer report APIs are published.
+The private reporting consumer's local dependency overrides reference unavailable development snapshots. A later consumer task must restore a reproducible dependency closure before claiming build proof; nominal package pins do not establish that newer report APIs are published.
 
 ## Canonical color import
 
@@ -123,16 +123,15 @@ HtmlForgeX owns the values; ChartForgeX owns its generic theme contract. The imp
 
 | Evidence | Pinned identity |
 | --- | --- |
-| Owner source | `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, version `1.1.0`, Git blob `af906aceb366249828fc91322ece98199e3145ae` |
-| Generated export | `Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json`, Git blob `efe1fcf67d73cf0a8c6b21ffeb1023062698c24a` |
-| Source revision | HtmlForgeX `c9154b0d9c798061ecb178add498cac3c035ddec` |
+| Owner source | `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, token schema version `1.1.0` |
+| Generated export | `Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json` |
 | Generator / contract | `Tools/HfxTokens/Generator/DesignTokenTargetWriters.cs`, `Build/Build-HfxTokens.ps1`, `Docs/DESIGN_TOKENS.md` |
 
 The export has `name`, `decision`, `source`, `notes`, `light`, `dark`; it has no numeric schema-version field. Each mode supplies surface page/card/cardAlt/line/lineStrong, text primary/secondary/muted, chrome background/text/textMuted/accent, accent base/soft, five severity fill/ink pairs, outcome pass/neutral pairs, state maintenance pair, six ordered series colors, five sequential steps and diverging negative-three/neutral/positive-three. Values are resolved hex colors. Series colors carry category identity, not status.
 
 The full owner source defines aliases and treatments omitted from that palette export: fail uses severity when known, otherwise neutral; notEvaluated is neutral plus hatching; couldNotEvaluate is neutral plus dashed outline; up→pass, degraded→medium, down→critical, recovering→low, unknown/notObservable→neutral plus hatching. Preserve separate semantic keys and legend labels even when colors match. A shared presentation model does not collapse these vocabularies into one enum.
 
-The export also omits typography, spacing, radius, elevation, motion and accessibility overrides. Phase 1 must document its explicit defaults/role mapping for those fields and never invent another authoritative Evotec palette. Expanding the export is later HtmlForgeX owner work. Do not import the full owner source with a parser expecting the generated chart shape.
+The export also omits typography, spacing, radius, elevation, motion and accessibility overrides. Phase 1 must document its explicit defaults/role mapping for those fields and never invent another authoritative Evotec palette. Expanding the export is later token-owner work. Do not import the full owner source with a parser expecting the generated chart shape.
 
 Phase 1 color intake does not establish universal status-treatment rendering. Hatch patterns, dashed-outline outcomes, forced-colors behavior and status legend treatment must be qualified as their mark families migrate in Phase 2 and later. Matching neutral colors alone is insufficient proof that not-evaluated, could-not-evaluate, unknown and not-observable remain distinguishable.
 
@@ -140,9 +139,9 @@ Phase 1 color intake does not establish universal status-treatment rendering. Ha
 
 - [ ] Compile and inspect the Phase 1 shared-frame/theme/direct-scene and adapter-shaped fixtures, and link their executable examples here.
 - [ ] Close the full public type/member ledger before removing old APIs or moving files; the consumer CSV alone is not that ledger.
-- [ ] Migrate remaining core families and qualify core-focused HtmlForgeX/OfficeIMO candidates, preserving artifact/interchange contracts.
+- [ ] Migrate remaining core families and qualify the core-focused private HTML adapter and OfficeIMO candidates, preserving artifact/interchange contracts.
 - [ ] Extract Visuals and qualify PowerBGInfo plus static ImagePlayground; extract Stories and qualify animated workflows.
-- [ ] Restore TestimoX's reproducible dependency closure and qualify representative reports.
+- [ ] Restore the private reporting consumer's reproducible dependency closure and qualify representative reports.
 - [ ] Pack all target assets into a clean feed; record hashes/dependency graphs and run package-only consumer proof without project-reference fallbacks.
 - [ ] With separate release authority, publish/verify owner packages, then repin and release consumers in dependency order.
 

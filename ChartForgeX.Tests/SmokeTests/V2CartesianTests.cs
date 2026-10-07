@@ -1,6 +1,7 @@
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -8,11 +9,121 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects Cartesian data geometry, explicit paint and immutable source identity.</summary>
 public sealed class V2CartesianTests {
     [Fact]
+    public void PreparedGridDefaults_IgnoreLegacyThemes_AndPreserveCompleteExplicitStyles() {
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(ChartTheme.Light());
+        var classic = Compile(chart);
+        chart.WithTheme(ChartTheme.GraphiteLight());
+        var graphite = Compile(chart);
+        Assert.Equal(VisualSceneSvgRenderer.Render(classic), VisualSceneSvgRenderer.Render(graphite));
+        Assert.DoesNotContain(classic.Nodes, node => node.Role == "grid-x");
+        Assert.Contains(classic.Nodes, node => node.Role == "grid-y");
+        chart.Options.GridLineStyle = new ChartGridLineStyle { ShowVerticalLines = true, StrokeWidth = 3, Dash = 2, Gap = 4 };
+        var configured = Compile(chart).Nodes.OfType<VisualSceneLine>().Where(line => line.Role is "grid-x" or "grid-y").ToArray();
+        Assert.Contains(configured, line => line.Role == "grid-x");
+        Assert.All(configured, line => { Assert.Equal(3, line.StrokeWidth); Assert.Equal(new[] { 2d, 4d }, line.Dash); });
+        chart.WithTheme(ChartTheme.Light());
+        Assert.Equal(VisualSceneSvgRenderer.Render(Compile(chart)), VisualSceneSvgRenderer.Render(Compile(chart.WithTheme(ChartTheme.GraphiteLight()))));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PreparedGrid_PreservesDirectGetterChangesAcrossLegacyThemeSwitches(bool graphite) {
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light());
+        chart.Options.GridLineStyle.ShowHorizontalLines = false;
+        chart.Options.GridLineStyle.StrokeWidth = 4;
+        var configured = Compile(chart);
+        Assert.DoesNotContain(configured.Nodes, node => node.Role == "grid-y");
+        chart.WithTheme(graphite ? ChartTheme.Light() : ChartTheme.GraphiteLight());
+        Assert.Equal(VisualSceneSvgRenderer.Render(configured), VisualSceneSvgRenderer.Render(Compile(chart)));
+        chart.Options.BarVisualStyle.Kind = ChartBarStyle.SegmentedCapsule;
+        Assert.Contains("segmented capsule", Assert.Throws<NotSupportedException>(() => Compile(chart)).Message);
+        chart.WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light());
+        Assert.Contains("segmented capsule", Assert.Throws<NotSupportedException>(() => Compile(chart)).Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DroppedPointLabels_RetainFullTextAndOneFormatterResult_InDetachedSemantics(bool bars) {
+        var chart = bars ? Chart.Create().AddBar("Observed", Points(3, 8)) : Chart.Create().AddScatter("Observed", Points(3, 8));
+        chart.WithAxes(false).WithDataLabels(); chart.Options.ShowGrid = false;
+        const string explicitLabel = "Complete operator supplied observation label that cannot fit this tiny viewport";
+        chart.Series[0].WithPointLabel(0, explicitLabel);
+        var calls = 0;
+        chart.Options.ValueFormatter = value => "formatted value " + value + ", call " + ++calls;
+        var scene = Compile(chart, new ChartRect(70, 30, 18, 5));
+        Assert.Equal(1, calls);
+        Assert.DoesNotContain(scene.Nodes, node => node.Role == "data-label");
+        var points = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
+        Assert.Equal(explicitLabel, points[0].Metadata["data-cfx-label"]);
+        Assert.Equal("formatted value 8, call 1", points[1].Metadata["data-cfx-label"]);
+        Assert.Equal("2", points[1].Metadata["data-cfx-x"]);
+        Assert.Equal("8", points[1].Metadata["data-cfx-y"]);
+        Assert.Contains(explicitLabel, scene.Regions[0].Label!);
+        Assert.Contains("formatted value 8, call 1", scene.Regions[1].Label!);
+        var svg = VisualSceneSvgRenderer.Render(scene);
+        chart.Series[0].PointLabels[0] = "Changed after preparation";
+        chart.Options.ValueFormatter = _ => throw new InvalidOperationException("Prepared export must not format again.");
+        Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public void ShortenedPointLabel_RetainsItsCompleteDisplayTextInSemanticMetadata() {
+        const string full = "A complete long observation label with details that do not fit the bar";
+        var chart = Chart.Create().AddBar("Observed", Points(8)).WithAxes(false).WithDataLabels();
+        chart.Options.ShowGrid = false;
+        chart.Series[0].WithPointLabel(0, full).WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        var scene = Compile(chart, new ChartRect(70, 30, 90, 80));
+        var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label");
+        Assert.EndsWith("…", label.Text.Lines[0].Text);
+        Assert.Equal(full, Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "point").Metadata["data-cfx-label"]);
+        Assert.Contains(full, Assert.Single(scene.Regions).Label!);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FittedOrDroppedAxisText_RetainsCompleteDescriptions_AndFormatsEachTickOnce(bool dropped) {
+        const string title = "Complete axis title with operational context beyond the available width";
+        const string prefix = "Complete formatted axis value with additional operational details ";
+        var chart = Chart.Create().AddScatter("Observed", new[] { new ChartPoint(0, 3), new ChartPoint(1, 8) }).WithXAxis(title);
+        chart.Options.XAxis.WithBounds(0, 1);
+        chart.Options.YAxis.Visible = false;
+        var calls = new Dictionary<double, int>();
+        chart.Options.XAxis.WithLabelFormatter(value => {
+            calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
+            return prefix + value.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
+        });
+        var context = new VisualRenderContext();
+        var builder = new VisualSceneBuilder(new VisualSize(640, 400), context.Font);
+        var viewport = new ChartRect(70, 30, 90, 120);
+        if (dropped) VisualCartesianCompiler.Build(chart, context, builder, viewport, viewport);
+        else VisualCartesianCompiler.BuildInViewport(chart, context, builder, viewport);
+        var scene = builder.Build();
+        Assert.NotEmpty(calls);
+        Assert.All(calls.Values, count => Assert.Equal(1, count));
+        var regions = scene.Regions.Where(region => region.Role == "axis-x-label").ToArray();
+        Assert.Equal(calls.Count, regions.Length);
+        Assert.All(regions, region => Assert.StartsWith(prefix, region.Label));
+        Assert.Equal(title, Assert.Single(scene.Regions, region => region.Role == "axis-x-title").Label);
+        var visible = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role is "axis-x-label" or "axis-x-title").ToArray();
+        if (dropped) Assert.Empty(visible);
+        else Assert.Contains(visible, text => text.Text.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)));
+        var svg = VisualSceneSvgRenderer.Render(scene);
+        chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Prepared export must not format again."));
+        chart.WithXAxis("Changed after preparation");
+        Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
+        Assert.Equal(title, Assert.Single(scene.Regions, region => region.Role == "axis-x-title").Label);
+    }
+
+    [Fact]
     public void EmptySeries_ReportsNoData_AndSinglePointKeepsItsIdentity() {
         var empty = Compile(Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>()));
         Assert.Contains(empty.Diagnostics, diagnostic => diagnostic.Code == "cartesian.no-data");
         var single = Compile(Chart.Create().AddLine("Single", new[] { new ChartPoint(2, 3) }));
-        Assert.Single(single.Regions);
+        Assert.Single(single.Regions, region => region.Role == "point");
         var line = Assert.Single(single.Nodes.OfType<VisualScenePath>());
         Assert.Equal(2, line.Commands.Count);
         Assert.All(line.Commands, command => { Assert.True(double.IsFinite(command.X)); Assert.True(double.IsFinite(command.Y)); });
@@ -108,7 +219,7 @@ public sealed class V2CartesianTests {
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
         Assert.Equal(color, scene.Nodes.OfType<VisualSceneEllipse>().First().Fill);
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.TryGetValue("data-cfx-series-key", out var key) && key == "measurements");
-        Assert.Equal("series-0-point-0", scene.Regions[0].Id);
+        Assert.Equal("series-0-point-0", scene.Regions.First(region => region.Role == "point").Id);
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.TryGetValue("data-cfx-source-point", out var point) && point == "0");
     }
 

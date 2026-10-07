@@ -40,14 +40,15 @@ internal static partial class VisualCartesianCompiler {
         var range = ChartRange.FromChart(chart, coordinates);
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range) : null;
-        if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors);
+        var axisLabels = new AxisLabelCache();
+        if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         if (plot.Width <= 0 || plot.Height <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.insufficient-space", "No plotting area remains after measuring the frame and axes."));
             return;
         }
         var map = new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
-        using (builder.PushClip(viewport)) DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport);
+        using (builder.PushClip(viewport)) DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
         var labels = new List<LabelPlacementRequest>();
         var obstacles = new List<LabelObstacle>();
         using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null) {
@@ -85,7 +86,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (chart.Options.XAxis.LabelAngle != 0 || chart.Options.YAxis.LabelAngle != 0 || chart.Options.SecondaryYAxis.LabelAngle != 0)
             throw Unsupported("rotated axis labels");
-        if (chart.Options.BarStyle == ChartBarStyle.SegmentedCapsule) throw Unsupported("segmented capsule bars");
+        if (chart.Options.HasPreparedSegmentedBars) throw Unsupported("segmented capsule bars");
         if (chart.Options.ShowStackTotals) throw Unsupported("stack total labels");
         if (chart.Options.ShowPointLegend) throw Unsupported("point legends for Cartesian series");
         if (chart.Options.XAxis.LabelDensity == ChartLabelDensity.All || chart.Options.YAxis.LabelDensity == ChartLabelDensity.All || chart.Options.SecondaryYAxis.LabelDensity == ChartLabelDensity.All)
@@ -101,15 +102,16 @@ internal static partial class VisualCartesianCompiler {
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds) {
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel) {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
-        var label = series.Name + ": " + Number(point.X) + ", " + Number(point.Y);
+        var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + Number(point.X) + ", " + Number(point.Y) + ")";
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         return builder.PushGroup(id, "point", new Dictionary<string, string> {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
-            ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y), ["aria-label"] = label
+            ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
+            ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         });
     }
 

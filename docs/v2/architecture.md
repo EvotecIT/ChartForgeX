@@ -84,7 +84,7 @@ A host can edit artifact titles, metadata and accessibility without mutating pre
 
 Existing topology/flow/sequence interchange readers keep their explicit schema-version policy. Family/source IDs and entity relationships are retained for native Office consumers. Generic static artifacts may use SVG/PNG fallback; that fallback cannot be described as editable native diagram fidelity.
 
-The [consumer capability ledger](consumer-capabilities.csv) covers PowerBGInfo, ImagePlayground, OfficeIMO.ChartForgeX, HtmlForgeX.ChartForgeX and TestimoX. Its owner fixtures and later consumer/package qualification are separate gates. Read-only inspection does not count as executing a consumer. No downstream source or dependency pins change in Phases 0–1.
+The [consumer capability ledger](consumer-capabilities.csv) covers [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo), [ImagePlayground](https://github.com/EvotecIT/ImagePlayground), [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO), a private HTML adapter and a private reporting consumer. Public documentation records the private consumers' technical requirements; their identities and exact source evidence stay in the private planning audit. Owner fixtures and later consumer/package qualification are separate gates. Read-only inspection does not count as executing a consumer. No downstream source or dependency pins change in Phases 0–1.
 
 ## API and catalog closure
 

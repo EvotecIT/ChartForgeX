@@ -24,7 +24,8 @@ public static partial class LegacySceneBenchmarkCases {
         if (!Fixtures.Contains(fixture)) throw new ArgumentOutOfRangeException(nameof(fixture));
         var tokens = VisualDesignTokens.FromJson(_tokens);
         tokens.UseGraphiteLayout = true;
-        var theme = tokens.ApplyTo(ChartTheme.GraphiteLight()).WithFontFamily("CFX Proof Carlito");
+        var theme = tokens.ApplyTo(ChartTheme.GraphiteLight()).WithFontFamily("CFX Proof Carlito")
+            .WithTypography(22, 13, 11, 11, 12, 11);
         var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
             .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPngOutputScale(1)
             .WithXLabels(Enumerable.Range(1, fixture.EndsWith("bars", StringComparison.Ordinal) ? 24 : 7).Select(index => "Day " + index).ToArray());

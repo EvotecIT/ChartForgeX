@@ -16,7 +16,7 @@ public static partial class V2Examples {
         page.Append("<div class=\"full\">").Append(File.ReadAllText(Path.Combine(output, id + ".svg"))).Append("</div>");
         page.Append("<p><a href=\"").Append(id).Append(".svg\">SVG</a> · <a href=\"").Append(id).Append(".png\">PNG</a> · <a href=\"").Append(id).Append(".csharp.txt\">C# source</a></p>");
         page.Append("<h2>Source</h2><pre><code>").Append(Escape(File.ReadAllText(Path.Combine(output, id + ".csharp.txt")))).Append("</code></pre></main></body></html>");
-        File.WriteAllText(Path.Combine(output, id + ".html"), page.ToString());
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".html"), page.ToString());
     }
 
     private static void WriteCatalog(string output, IReadOnlyList<ProofArtifact> artifacts, bool curated) {
@@ -38,11 +38,11 @@ public static partial class V2Examples {
                 diagnostics = artifact.Diagnostics, semanticRegions = artifact.SemanticRegions
             })
         };
-        File.WriteAllText(Path.Combine(output, "manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n");
+        ExampleArtifactWriter.WriteText(Path.Combine(output, "manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n");
         var page = new StringBuilder();
         StartPage(page, "ChartForgeX direct-scene catalog", "light");
         page.Append("<header><h1>ChartForgeX direct-scene catalog</h1><p>Charts and diagram feasibility · light and dark · SVG and native PNG from one prepared scene</p><p><a href=\"manifest.json\">Artifact manifest</a></p></header><main>");
-        foreach (var family in new[] { "cartesian", "donut", "topology", "sequence" }) {
+        foreach (var family in new[] { "cartesian", "donut", "pie", "topology", "sequence" }.Where(family => artifacts.Any(artifact => artifact.Family == family))) {
             page.Append("<h2>").Append(char.ToUpperInvariant(family[0]) + family.Substring(1)).Append("</h2><div class=\"grid\">");
             foreach (var artifact in artifacts.Where(artifact => artifact.Family == family)) {
                 page.Append("<article class=\"tile\" data-theme=\"").Append(artifact.Theme).Append("\"><a class=\"preview\" href=\"").Append(artifact.Id).Append(".html\" aria-label=\"").Append(Escape(artifact.Title)).Append("\">").Append(File.ReadAllText(Path.Combine(output, artifact.Id + ".thumbnail.svg"))).Append("</a>");
@@ -52,7 +52,7 @@ public static partial class V2Examples {
             page.Append("</div>");
         }
         page.Append("</main></body></html>");
-        File.WriteAllText(Path.Combine(output, "index.html"), page.ToString());
+        ExampleArtifactWriter.WriteText(Path.Combine(output, "index.html"), page.ToString());
     }
 
     private static void StartPage(StringBuilder page, string title, string theme) {
@@ -60,7 +60,7 @@ public static partial class V2Examples {
         AppendThemeCss(page, ":root", VisualThemeMode.Light);
         AppendThemeCss(page, "[data-theme=dark]", VisualThemeMode.Dark);
         page.Append("@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}.preview svg,.full svg{display:block;width:100%;height:100%}.full svg{height:auto}");
-        page.Append("*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;font-family:").Append(VisualTheme.Graphite().Typography.Family).Append("}header,main{max-width:1500px;margin:auto;padding:24px}h1,h2,h3{line-height:1.2}h1{font-size:28px}h2{margin-top:32px}h3{font-size:16px;margin:0 0 8px}p{color:var(--muted)}a{color:var(--link)}a:focus-visible{outline:3px solid currentColor;outline-offset:3px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:20px}.tile{border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}.preview{height:260px;display:grid;place-items:center;padding:12px;border-bottom:1px solid var(--line)}.preview img{display:block;width:100%;height:100%;object-fit:contain}.caption{padding:16px;min-height:130px}.caption p{margin:0 0 10px}.full{display:block;width:100%;height:auto;max-width:1100px}pre{overflow:auto;border:1px solid var(--line);padding:16px;font-size:13px}@media(max-width:480px){header,main{padding:16px}.preview{height:240px}} ");
+        page.Append("*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;font-family:'").Append(ProofFont).Append("',").Append(VisualTheme.Graphite().Typography.Family).Append("}header,main{max-width:1500px;margin:auto;padding:24px}h1,h2,h3{line-height:1.2}h1{font-size:28px}h2{margin-top:32px}h3{font-size:16px;margin:0 0 8px}p{color:var(--muted)}a{color:var(--link)}a:focus-visible{outline:3px solid currentColor;outline-offset:3px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:20px}.tile{border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}.preview{height:260px;display:grid;place-items:center;padding:12px;border-bottom:1px solid var(--line)}.preview img{display:block;width:100%;height:100%;object-fit:contain}.caption{padding:16px;min-height:130px}.caption p{margin:0 0 10px}.full{display:block;width:100%;height:auto;max-width:1100px}pre{overflow:auto;border:1px solid var(--line);padding:16px;font-size:13px}@media(max-width:480px){header,main{padding:16px}.preview{height:240px}} ");
         page.Append("</style></head><body>");
     }
 

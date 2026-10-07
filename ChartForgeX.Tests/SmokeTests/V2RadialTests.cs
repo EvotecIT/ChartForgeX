@@ -4,6 +4,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -112,6 +113,47 @@ public sealed class V2RadialTests {
     }
 
     [Fact]
+    public void FittedRadialAndCenterText_RetainsCompleteSingleFormatterResultsInSvgRegionsAndArtifact() {
+        const string prefix = "Custom formatted slice output with operator context beyond the available space: ";
+        const string centerValue = "Complete total with all formatted units and additional contextual information";
+        const string centerCaption = "Complete center caption explaining the total and its reporting period";
+        var calls = 0;
+        var chart = Donut(40, 60).WithXLabels("A", "B").WithDataLabels().WithDonutCenterText(centerValue, centerCaption)
+            .WithPieSliceLabelFormatter(slice => { calls++; return prefix + slice.Label; });
+        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Inside;
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(240, 200), padding: 8),
+            frame: new VisualFrame(showLegend: false)));
+        Assert.Equal(2, calls);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var displayed = svg.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
+        var complete = new[] { prefix + "A", prefix + "B", centerValue, centerCaption };
+        Assert.All(complete, full => Assert.DoesNotContain(full, displayed));
+        Assert.Contains(displayed, text => text.EndsWith("…", StringComparison.Ordinal));
+        Assert.Equal(complete.Take(2), svg.Descendants().Attributes("data-cfx-full-label").Select(attribute => attribute.Value));
+        Assert.Equal(centerValue, Assert.Single(svg.Descendants().Attributes("data-cfx-center-value")).Value);
+        Assert.Equal(centerCaption, Assert.Single(svg.Descendants().Attributes("data-cfx-center-caption")).Value);
+        Assert.All(complete, full => Assert.Contains(prepared.Regions, region => region.Label == full));
+        var dataLabel = Assert.Single(prepared.Regions, region => region.Id == "series-0-point-0-label");
+        Assert.Equal(Assert.Single(prepared.Regions, region => region.Id == "series-0-point-0").Bounds, dataLabel.Bounds);
+        var center = Assert.Single(prepared.Regions, region => region.Id == "series-0-center-value");
+        Assert.True(center.Bounds.Width > 0 && center.Bounds.Height > 0);
+        Assert.True(center.Bounds.Width < dataLabel.Bounds.Width);
+
+        var artifact = prepared.ToArtifact("retained-radial-text", VisualArtifactKind.Chart);
+        Assert.All(complete, full => Assert.Contains(artifact.Regions, region => region.Label == full && region.AlternativeText == full));
+        var artifactSvg = XDocument.Parse(artifact.ToSvg());
+        Assert.Equal(complete.Take(2), artifactSvg.Descendants().Attributes("data-cfx-full-label").Select(attribute => attribute.Value));
+        Assert.Equal(centerValue, Assert.Single(artifactSvg.Descendants().Attributes("data-cfx-center-value")).Value);
+        Assert.Equal(centerCaption, Assert.Single(artifactSvg.Descendants().Attributes("data-cfx-center-caption")).Value);
+        string snapshot = prepared.ToSvg();
+        chart.WithDonutCenterText("Changed after preparation", "Changed caption")
+            .WithPieSliceLabelFormatter(_ => throw new InvalidOperationException("Prepared export must not format again."));
+        Assert.Equal(snapshot, prepared.ToSvg());
+        Assert.NotEmpty(artifact.ToPng());
+        Assert.Equal(2, calls);
+    }
+
+    [Fact]
     public void OutsideLabelOverflow_IsReportedAndKeptWithinAvailableHeight() {
         var chart = Donut(1, 1, 1, 1, 1, 1, 1, 1).WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
         chart.Options.MaximumPieSlices = 10;
@@ -124,6 +166,74 @@ public sealed class V2RadialTests {
             var previousBottom = labels[index - 1].Baseline - labels[index - 1].Text.Ascent + labels[index - 1].Text.Metrics.Height;
             Assert.True(previousBottom <= labels[index].Baseline - labels[index].Text.Ascent + 0.001);
         }
+    }
+
+    [Theory]
+    [InlineData(false, ChartDataLabelPlacement.Above)]
+    [InlineData(false, ChartDataLabelPlacement.Below)]
+    [InlineData(true, ChartDataLabelPlacement.Above)]
+    [InlineData(true, ChartDataLabelPlacement.Below)]
+    public void VerticalLabels_EqualSlicesHaveDistinctMeasuredSvgAndNativePositions(bool donut, ChartDataLabelPlacement placement) {
+        var chart = (donut ? Donut(1, 1, 1, 1) : Chart.Create().AddPie("Total", Points(1, 1, 1, 1)))
+            .WithXLabels("A", "B", "C", "D").WithDataLabels()
+            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDonutCenterLabel(false);
+        chart.Options.DataLabelPlacement = placement;
+        var scene = Compile(chart);
+        var labels = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "data-label").ToArray();
+        Assert.Equal(new[] { "A", "B", "C", "D" }, labels.Select(label => Assert.Single(label.Text.Lines).Text));
+        Assert.DoesNotContain(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
+        var bounds = labels.Select(label => new ChartRect(label.X, label.Baseline - label.Text.Ascent,
+            label.Text.Metrics.Width, label.Text.Metrics.Height)).ToArray();
+        var slices = scene.Nodes.OfType<VisualSceneSlice>().ToArray();
+        for (var index = 0; index < bounds.Length; index++) {
+            Assert.True(bounds[index].Left >= 0 && bounds[index].Right <= scene.Size.Width);
+            Assert.True(bounds[index].Top >= 0 && bounds[index].Bottom <= scene.Size.Height);
+            Assert.All(slices, slice => Assert.True(placement == ChartDataLabelPlacement.Above
+                ? bounds[index].Bottom <= slice.Cy - slice.Outer : bounds[index].Top >= slice.Cy + slice.Outer));
+            for (var previous = 0; previous < index; previous++)
+                Assert.True(bounds[previous].Right <= bounds[index].Left || bounds[index].Right <= bounds[previous].Left);
+        }
+        var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(scene));
+        var exported = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "data-label")
+            .Select(element => Assert.Single(element.Elements())).ToArray();
+        Assert.Equal(labels.Length, exported.Length);
+        for (var index = 0; index < labels.Length; index++) {
+            Assert.Equal(labels[index].Text.Lines[0].Text, exported[index].Value);
+            Assert.True(Math.Abs(labels[index].X - double.Parse(exported[index].Attribute("x")!.Value, CultureInfo.InvariantCulture)) <= .001);
+            Assert.True(Math.Abs(labels[index].Baseline - double.Parse(exported[index].Attribute("y")!.Value, CultureInfo.InvariantCulture)) <= .001);
+        }
+        var textScene = new VisualScene(scene.Size, labels, Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>());
+        var image = VisualSceneRasterRenderer.Render(textScene);
+        Assert.All(bounds, rect => {
+            var painted = false;
+            for (var y = (int)Math.Floor(rect.Top); y < Math.Ceiling(rect.Bottom); y++)
+                for (var x = (int)Math.Floor(rect.Left); x < Math.Ceiling(rect.Right); x++)
+                    painted |= image.Pixels[(y * image.Width + x) * 4 + 3] > 0;
+            Assert.True(painted, "Every measured label box must contain its native text paint.");
+        });
+    }
+
+    [Theory]
+    [InlineData(ChartDataLabelPlacement.Above)]
+    [InlineData(ChartDataLabelPlacement.Below)]
+    public void VerticalLabelBand_InsufficientHeightReportsOmission(ChartDataLabelPlacement placement) {
+        const string prefix = "Complete formatter result omitted from the bounded label band: ";
+        var calls = 0;
+        var chart = Donut(1, 1, 1, 1).WithXLabels("A", "B", "C", "D").WithDataLabels()
+            .WithPieSliceLabelFormatter(slice => { calls++; return prefix + slice.Label; }).WithDonutCenterLabel(false);
+        chart.Options.DataLabelPlacement = placement;
+        chart.Options.DataLabelStyle.FontSize = 100;
+        var scene = Compile(chart, new ChartRect(0, 0, 200, 100));
+        Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
+        Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label");
+        Assert.DoesNotContain(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "data-label-connector");
+        var complete = new[] { "A", "B", "C", "D" }.Select(label => prefix + label).ToArray();
+        Assert.Equal(4, calls);
+        Assert.All(complete, full => Assert.Contains(scene.Regions, region => region.Label == full));
+        var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(scene));
+        Assert.Equal(complete, svg.Descendants().Attributes("data-cfx-full-label").Select(attribute => attribute.Value));
+        var artifact = new PreparedVisual(scene).ToArtifact("omitted-radial-text", VisualArtifactKind.Chart);
+        Assert.All(complete, full => Assert.Contains(artifact.Regions, region => region.Label == full));
     }
 
     private static VisualScene Compile(Chart chart, ChartRect? bounds = null) {

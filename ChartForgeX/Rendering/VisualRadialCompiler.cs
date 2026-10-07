@@ -60,18 +60,23 @@ internal static partial class VisualRadialCompiler {
                 var sliceX = cx + Math.Cos(mid) * offset;
                 var sliceY = cy + Math.Sin(mid) * offset;
                 var role = inner > 0 ? "donut-slice" : "pie-slice";
-                using (builder.PushGroup(null, "radial-point", Metadata(slice, percent))) {
+                var resolvedLabel = (series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? FormatLabel(chart, slice, total) : null;
+                using (builder.PushGroup(null, "radial-point", Metadata(slice, percent, resolvedLabel))) {
                     builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice));
                 }
+                var bounds = new ChartRect(sliceX - radius, sliceY - radius, radius * 2, radius * 2);
                 builder.AddRegion(new VisualSemanticRegion(SliceId(slice), role,
-                    new ChartRect(sliceX - radius, sliceY - radius, radius * 2, radius * 2),
+                    bounds,
                     slice.Label + ": " + ChartNumericFormatter.FormatValue(chart.Options, slice.Value)));
-                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) {
-                    AddLabel(chart, context, builder, plot, labels, slice, total, mid, sliceX, sliceY, cx, cy, radius, inner, placement);
+                if (!string.IsNullOrWhiteSpace(resolvedLabel)) {
+                    // The associated slice extent is descriptive, including when its visible label is omitted.
+                    builder.AddRegion(new VisualSemanticRegion(SliceId(slice) + "-label", "radial-data-label", bounds, resolvedLabel));
+                    AddLabel(chart, context, builder, plot, labels, slice, resolvedLabel!, total, mid, sliceX, sliceY, cx, cy, radius, inner, placement);
                 }
                 start += sweep;
             }
-            DrawOutsideLabels(chart, context, builder, plot, labels, radius);
+            if (vertical) DrawVerticalLabels(chart, context, builder, plot, labels, radius, cy, maximumOffset, placement);
+            else DrawOutsideLabels(chart, context, builder, plot, labels, radius);
             if (inner > 0 && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false)
                 DrawCenter(chart, context, builder, cx, cy, inner, total);
         }
@@ -109,14 +114,18 @@ internal static partial class VisualRadialCompiler {
 
     private static string SliceId(RadialSlice slice) => slice.PointIndex < 0 ? "series-0-point-other" : "series-0-point-" + slice.PointIndex.ToString(CultureInfo.InvariantCulture);
 
-    private static IReadOnlyDictionary<string, string> Metadata(RadialSlice slice, double percent) => new Dictionary<string, string> {
-        ["data-cfx-series"] = "0",
-        ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
-        ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
-        ["data-cfx-label"] = slice.Label,
-        ["data-cfx-value"] = slice.Value.ToString("G17", CultureInfo.InvariantCulture),
-        ["data-cfx-percent"] = percent.ToString("G17", CultureInfo.InvariantCulture)
-    };
+    private static IReadOnlyDictionary<string, string> Metadata(RadialSlice slice, double percent, string? resolvedLabel) {
+        var metadata = new Dictionary<string, string> {
+            ["data-cfx-series"] = "0",
+            ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
+            ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
+            ["data-cfx-label"] = slice.Label,
+            ["data-cfx-value"] = slice.Value.ToString("G17", CultureInfo.InvariantCulture),
+            ["data-cfx-percent"] = percent.ToString("G17", CultureInfo.InvariantCulture)
+        };
+        if (!string.IsNullOrWhiteSpace(resolvedLabel)) metadata.Add("data-cfx-full-label", resolvedLabel!);
+        return metadata;
+    }
 
     private static string FormatLabel(Chart chart, RadialSlice slice, double total) {
         var percent = slice.Value / total;

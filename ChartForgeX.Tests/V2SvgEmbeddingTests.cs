@@ -93,6 +93,19 @@ public sealed class V2SvgEmbeddingTests {
         AssertDisjoint(roots[1], roots[2]);
     }
 
+    [Fact]
+    public void MultilineSourceMetadata_RoundTripsWithoutXmlAttributeNormalization() {
+        const string alternative = "First\r\nSecond\t<&>";
+        var chart = Chart(alternative);
+        chart.Accessibility.Name = alternative;
+        var prepared = chart.Prepare(Context("Shared frame"));
+        var root = XDocument.Parse(prepared.ToSvg()).Root!;
+        Assert.Equal(alternative, (string?)root.Attribute("aria-label"));
+        var series = root.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "series");
+        Assert.Equal(alternative, (string?)series.Attribute("aria-label"));
+        Assert.Equal(alternative, prepared.Accessibility.Name);
+    }
+
     private static void AssertDisjoint(XElement first, XElement second) {
         var left = Ids(first);
         var right = Ids(second);

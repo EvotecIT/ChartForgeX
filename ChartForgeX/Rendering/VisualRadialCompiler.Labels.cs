@@ -9,10 +9,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualRadialCompiler {
     private static void AddLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        List<RadialLabel> labels, RadialSlice slice, double total, double angle, double sx, double sy,
+        List<RadialLabel> labels, RadialSlice slice, string text, double total, double angle, double sx, double sy,
         double cx, double cy, double radius, double inner, ChartDataLabelPlacement placement) {
-        var text = FormatLabel(chart, slice, total);
-        if (string.IsNullOrWhiteSpace(text)) return;
         var outside = placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -30,16 +28,63 @@ internal static partial class VisualRadialCompiler {
         if (vertical) {
             x = cx + Math.Cos(angle) * radius;
             y = cy + (placement == ChartDataLabelPlacement.Above ? -1 : 1) * radius * 1.12;
+            labels.Add(new RadialLabel(slice, text, angle, x, y, sx, sy, false, style));
+            return;
         }
         var maxWidth = Math.Min(radius * 0.9, Math.Max(0, Math.Min(x - plot.Left, plot.Right - x) * 2));
         var fitted = Fit(text, style, maxWidth, builder);
         // A label must fit the angular width of its slice instead of overlapping a neighbouring value.
         var angularWidth = 2 * labelRadius * Math.Sin(Math.Min(Math.PI / 2, slice.Value / total * Math.PI));
-        if (!vertical && builder.MeasureText(fitted, style).Width > angularWidth) return;
+        if (builder.MeasureText(fitted, style).Width > angularWidth) return;
         if (fitted.Length == 0) return;
-        if (vertical) Connector(chart, builder, slice, angle, sx, sy, radius, x, y, false);
         style.Alignment = TextAlignment.Center;
         builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label");
+    }
+
+    private static void DrawVerticalLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
+        ChartRect plot, List<RadialLabel> labels, double radius, double cy, double maximumOffset, ChartDataLabelPlacement placement) {
+        if (labels.Count == 0) return;
+        var spacing = context.Theme.Spacing;
+        var extent = radius * (1 + maximumOffset);
+        var above = placement == ChartDataLabelPlacement.Above;
+        var top = above ? plot.Top : Math.Min(plot.Bottom, cy + extent + spacing);
+        var bottom = above ? Math.Max(plot.Top, cy - extent - spacing) : plot.Bottom;
+        var band = new ChartRect(plot.Left, top, plot.Width, bottom - top);
+        // Angular anchors may coincide. Resolve them together with backend measurements, outside every exploded slice.
+        var metrics = labels.Select(label => builder.MeasureText(label.Text, label.Style)).ToArray();
+        var step = Math.Max(1, Math.Min(band.Width / Math.Max(1, labels.Count), metrics.Max(value => value.Width) + spacing));
+        var maximumHeight = metrics.Max(value => value.Height);
+        var requests = new List<LabelPlacementRequest>(labels.Count);
+        for (var index = 0; index < labels.Count; index++) {
+            var label = labels[index];
+            var centerY = Math.Min(bottom - maximumHeight / 2, Math.Max(top + maximumHeight / 2, label.Y));
+            var candidates = new List<LabelCandidate> { new LabelCandidate(0, 0, .5, .5) };
+            for (var shift = 1; shift <= labels.Count; shift++) {
+                candidates.Add(new LabelCandidate(shift * step, 0, .5, .5));
+                candidates.Add(new LabelCandidate(-shift * step, 0, .5, .5));
+            }
+            requests.Add(new LabelPlacementRequest(label.Text, new ChartPoint(label.X, centerY), label.Style, candidates) {
+                MeasuredSize = metrics[index], AssociatedMarkId = SliceId(label.Slice)
+            });
+        }
+        var placed = new LabelPlacementService().Place(requests, band, null, Math.Max(2, spacing / 2), builder.MeasureText);
+        if (placed.Any(label => label.IsDropped || label.IsEllipsized))
+            builder.AddDiagnostic(new VisualDiagnostic("radial.label-overflow", "Some radial labels were shortened or omitted to fit their measured positions within the fixed canvas."));
+        for (var index = 0; index < placed.Count; index++) {
+            var result = placed[index];
+            if (result.IsDropped) continue;
+            var label = labels[index];
+            var centerX = result.Bounds.Left + result.Bounds.Width / 2;
+            var centerY = result.Bounds.Top + result.Bounds.Height / 2;
+            Connector(chart, builder, label.Slice, label.Angle, label.SliceX, label.SliceY, radius, centerX, centerY, false);
+            var displayed = label.Style.Clone();
+            displayed.FontSize = label.Style.EffectiveFontSize;
+            displayed.Baseline = TextBaseline.Normal;
+            displayed.TextCase = TextCaseTransform.None;
+            displayed.Alignment = TextAlignment.Left;
+            builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(displayed), displayed,
+                "data-label", SliceId(label.Slice) + "-label");
+        }
     }
 
     private static void DrawOutsideLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -98,20 +143,28 @@ internal static partial class VisualRadialCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var value = chart.Options.DonutCenterValue ?? ChartNumericFormatter.FormatValue(chart.Options, total);
         var label = chart.Options.DonutCenterLabel ?? chart.Series[0].Name;
+        // These describe the hole's content, rather than claiming exact hit boxes for fitted text.
+        var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
+        builder.AddRegion(new VisualSemanticRegion("series-0-center-value", "donut-total-label", bounds, value));
+        builder.AddRegion(new VisualSemanticRegion("series-0-center-caption", "donut-title", bounds, label));
         var valueStyle = Style(chart, context, -1, colors.Foreground, Math.Min(context.Theme.Typography.TitleSize, inner * 0.44), 700);
         var labelStyle = Style(chart, context, -1, colors.MutedForeground, Math.Min(context.Theme.Typography.DataLabelSize, inner * 0.25));
         valueStyle.FontSize = Math.Min(valueStyle.FontSize, inner * 0.44);
         labelStyle.FontSize = Math.Min(labelStyle.FontSize, inner * 0.25);
         valueStyle.Alignment = labelStyle.Alignment = TextAlignment.Center;
         var width = inner * 1.6;
-        value = Fit(value, valueStyle, width, builder);
-        label = Fit(label, labelStyle, width, builder);
-        var valueHeight = builder.MeasureText(value, valueStyle).Height;
-        var labelHeight = builder.MeasureText(label, labelStyle).Height;
+        var fittedValue = Fit(value, valueStyle, width, builder);
+        var fittedLabel = Fit(label, labelStyle, width, builder);
+        var valueHeight = builder.MeasureText(fittedValue, valueStyle).Height;
+        var labelHeight = builder.MeasureText(fittedLabel, labelStyle).Height;
         var gap = Math.Min(context.Theme.Spacing, inner * 0.1);
         var top = cy - (valueHeight + gap + labelHeight) / 2;
-        builder.Text(value, cx, top + builder.TextAscent(valueStyle), valueStyle, "donut-total-label");
-        builder.Text(label, cx, top + valueHeight + gap + builder.TextAscent(labelStyle), labelStyle, "donut-title");
+        using (builder.PushGroup("series-0-center", "donut-center", new Dictionary<string, string> {
+            ["data-cfx-center-value"] = value, ["data-cfx-center-caption"] = label, ["aria-label"] = value + "\n" + label
+        })) {
+            builder.Text(fittedValue, cx, top + builder.TextAscent(valueStyle), valueStyle, "donut-total-label");
+            builder.Text(fittedLabel, cx, top + valueHeight + gap + builder.TextAscent(labelStyle), labelStyle, "donut-title");
+        }
     }
 
     private static string Fit(string text, TextStyle style, double width, VisualSceneBuilder builder) =>

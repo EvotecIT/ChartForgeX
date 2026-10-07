@@ -53,6 +53,31 @@ public sealed partial class ChartOptions {
         set { _gridLineStyle = (value ?? throw new ArgumentNullException(nameof(value))).Clone(); _hasExplicitGridStyle = true; }
     }
 
+    /// <summary>Snapshots explicit grid settings over the prepared pipeline's theme-independent guide defaults.</summary>
+    /// <remarks>Direct getter mutations are compared against their original legacy defaults. Assign a complete style when a value equal to a legacy default must override a different prepared default.</remarks>
+    internal ChartGridLineStyle ResolvePreparedGridLineStyle() {
+        if (_hasExplicitGridStyle) return _gridLineStyle.Clone();
+        var prepared = new ChartGridLineStyle { ShowVerticalLines = false };
+        ApplyDifferences(_gridLineStyle, ChartGridLineStyle.Default());
+        ApplyDifferences(_graphiteGridLineStyle, new ChartGridLineStyle { ShowVerticalLines = false });
+        return prepared;
+
+        void ApplyDifferences(ChartGridLineStyle configured, ChartGridLineStyle original) {
+            if (configured.ShowHorizontalLines != original.ShowHorizontalLines) prepared.ShowHorizontalLines = configured.ShowHorizontalLines;
+            if (configured.ShowVerticalLines != original.ShowVerticalLines) prepared.ShowVerticalLines = configured.ShowVerticalLines;
+            if (configured.HorizontalOpacity != original.HorizontalOpacity) prepared.HorizontalOpacity = configured.HorizontalOpacity;
+            if (configured.VerticalOpacity != original.VerticalOpacity) prepared.VerticalOpacity = configured.VerticalOpacity;
+            if (configured.StrokeWidth != original.StrokeWidth) prepared.StrokeWidth = configured.StrokeWidth;
+            if (configured.Dash != original.Dash) prepared.Dash = configured.Dash;
+            if (configured.Gap != original.Gap) prepared.Gap = configured.Gap;
+        }
+    }
+
+    internal bool HasPreparedGridStrokeWidth => _hasExplicitGridStyle || _gridLineStyle.StrokeWidth != 1 || _graphiteGridLineStyle.StrokeWidth != 1;
+
+    internal bool HasPreparedSegmentedBars => _hasExplicitBarStyle ? _barVisualStyle.Kind == ChartBarStyle.SegmentedCapsule
+        : _barVisualStyle.Kind == ChartBarStyle.SegmentedCapsule || _flatBarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule;
+
     /// <summary>
     /// Gets or sets a value indicating whether stacked bar totals are rendered above each category.
     /// </summary>

@@ -63,8 +63,10 @@ public sealed partial class SvgChartRenderer {
         if (string.IsNullOrWhiteSpace(chart.YAxisTitle)) return;
         var t = chart.Options.Theme;
         if (t.UseGraphiteLayout) {
+            var cartesian = ChartSeriesKindTraits.UsesCartesianXAxis(chart);
             DrawSvgTextLeft(sb, chart, string.IsNullOrEmpty(role) ? "y-axis-title" : role, chart.YAxisTitle,
-                chart.Options.Padding.Left, plot.Top - 8, t.MutedText, t.AxisTitleFontSize, Math.Max(32, plot.Left - chart.Options.Padding.Left - 8), "400", chart.Options.AxisTitleStyle);
+                cartesian ? plot.Left : chart.Options.Padding.Left, plot.Top - 8, t.MutedText, t.AxisTitleFontSize,
+                cartesian ? plot.Width : Math.Max(32, plot.Left - chart.Options.Padding.Left - 8), "400", chart.Options.AxisTitleStyle);
             return;
         }
         var maxWidth = Math.Max(40, plot.Height * 0.72);

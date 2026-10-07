@@ -4,7 +4,7 @@
   "analysisRuntime": ".NET 10.0.12",
   "frameworkScope": "Source-symbol analysis against tool runtime BCL; no source conditionals tolerated for declaring all-TFM source equivalence. Compiled four-TFM asset verification is a separate owner gate.",
   "compiledAssetVerification": "not-run-by-ledger-tool",
-  "evidenceMode": "Local tracked consumer source token co-occurrence, not semantic calls or published-package proof",
+  "evidenceMode": "Local tracked consumer source token co-occurrence, not semantic calls or published-package proof; optional private consumers expose neutral roles and counts only, with full evidence retained externally",
   "consumerRepositories": [
     {
       "Name": "PowerBGInfo",
@@ -25,15 +25,15 @@
       "Files": 35
     },
     {
-      "Name": "HtmlForgeX",
-      "Sha": "ed1f78b5c9d87d6d0c61ef8cb4ec1e9b9fdc5a96",
-      "Status": "clean-local-source",
+      "Name": "private-consumer-rendering-adapter",
+      "Sha": "",
+      "Status": "private-audit-details-external",
       "Files": 23
     },
     {
-      "Name": "TestimoX",
-      "Sha": "895d8d2aa3e60749c89bc2aeb6cbcc7d145a266f",
-      "Status": "clean-local-source",
+      "Name": "private-consumer-reporting",
+      "Sha": "",
+      "Status": "private-audit-details-external",
       "Files": 20
     },
     {
@@ -201,8 +201,8 @@
       },
       "ledgerArtifact": {
         "pathFromConsumerRoot": "_worktrees/ChartForgeX-v2/docs/v2/api-ledger-integrated.csv",
-        "sha256": "4B1C4BD55C99C1D6883519830A0E1BBD6A982B36986064B4235F56864471DE55",
-        "bytes": 7052383
+        "sha256": "B2FCBDB30CD55CF1ACDAAC085D1888BED7CE45A2EFFCEDDC7AD517B9601D79D8",
+        "bytes": 7019444
       },
       "exportedTypes": 773,
       "totalRows": 7678,

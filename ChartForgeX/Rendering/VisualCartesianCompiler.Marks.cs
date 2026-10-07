@@ -47,16 +47,18 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         var radius = series.MarkerRadius ?? context.Theme.MarkerRadius;
+        var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
             var bounds = new ChartRect(point.X - radius, point.Y - radius, radius * 2, radius * 2);
             var visible = series.Kind == ChartSeriesKind.Scatter || ShowMarker(chart, series, pointIndex);
-            using (PointGroup(builder, series, index, pointIndex, bounds)) {
+            var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
                 if (visible)
                     builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors), role: "marker");
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
-            AddLabel(chart, context, series, index, pointIndex, point, bounds, colors, labels);
+            AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels);
         }
     }
 
@@ -74,6 +76,7 @@ internal static partial class VisualCartesianCompiler {
         var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
         var width = Math.Max(.1, (occupied - gap * (count - 1)) / count);
         var offset = (position - (count - 1) / 2d) * (width + gap);
+        var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
             var point = series.Points[pointIndex];
             var baseValue = grouped ? 0 : ChartBarStacking.BaseValue(chart, coordinates, index, pointIndex);
@@ -86,11 +89,12 @@ internal static partial class VisualCartesianCompiler {
                 barWidth = histogramWidth;
             }
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
-            using (PointGroup(builder, series, index, pointIndex, bounds)) {
+            var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
                 builder.Rect(bounds, PointColor(series, index, pointIndex, colors), radius: Math.Min(context.Theme.BarRadius, barWidth / 2), role: "bar");
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
-            AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, colors, labels);
+            AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels);
         }
     }
 
@@ -116,17 +120,32 @@ internal static partial class VisualCartesianCompiler {
         return series.Points.Count <= 24;
     }
 
-    private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
-        ChartPoint anchor, ChartRect mark, VisualThemeColors colors, List<LabelPlacementRequest> labels) {
-        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels)) return;
+    private static TextStyle SeriesLabelStyle(Chart chart, VisualRenderContext context, ChartSeries series, VisualThemeColors colors) =>
+        series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
+            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+        }));
+
+    private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
         var value = series.Points[pointIndex].Y;
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : chart.Options.ValueFormatter?.Invoke(value) ?? ChartNumericFormatter.FormatCompact(value);
-        if (text.Length == 0) return;
-        var style = chart.Options.DataLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground });
-        style = series.DataLabelStyle.Resolve(style);
+        var style = seriesStyle;
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
+        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture), style);
+    }
+
+    private readonly struct ResolvedPointLabel {
+        internal ResolvedPointLabel(string text, string displayedText, TextStyle style) { Text = text; DisplayedText = displayedText; Style = style; }
+        internal string Text { get; }
+        internal string DisplayedText { get; }
+        internal TextStyle Style { get; }
+    }
+
+    private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
+        ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels) {
+        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
+        var value = series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var candidates = new List<LabelCandidate>();
@@ -142,7 +161,7 @@ internal static partial class VisualCartesianCompiler {
             candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
             candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
         }
-        var request = new LabelPlacementRequest(text, anchor, style, candidates) { AssociatedMarkId = PointId(seriesIndex, pointIndex) };
+        var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, resolvedLabel.Style, candidates) { AssociatedMarkId = PointId(seriesIndex, pointIndex) };
         if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) request.Bounds = mark;
         labels.Add(request);
     }
