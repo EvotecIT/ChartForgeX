@@ -5,7 +5,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 /// <summary>
-/// Text measurement is memoized in two generations and computed outside the cache lock; the cache must never change a
+/// Text measurement is memoized in lock-striped shards of two generations each and computed outside the shard locks; the cache must never change a
 /// measurement, whether a value comes from either generation, is recomputed after eviction or is measured concurrently.
 /// </summary>
 public sealed class LabelMeasurementCacheTests {
@@ -29,6 +29,19 @@ public sealed class LabelMeasurementCacheTests {
         var style = new TextStyle { Font = FontSpec.SystemSans(), FontSize = 11, LineHeight = 1.2 };
         var texts = Enumerable.Range(0, 2_000).Select(i => "Concurrent label " + (i % 500).ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
         var expected = texts.Select(text => new LabelPlacementService().Measure(text, style)).ToArray();
+        var shared = new LabelPlacementService();
+        var actual = new TextMetrics[texts.Length];
+        Parallel.For(0, texts.Length, i => actual[i] = shared.Measure(texts[i], style));
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Measure_ConcurrentlyWithEvictionInEveryShard_ReturnsTheSequentialMetrics() {
+        var style = new TextStyle { Font = FontSpec.SystemSans(), FontSize = 13, LineHeight = 1.1 };
+        // More distinct texts than both generations of all shards hold, measured twice in a scrambled order.
+        var texts = Enumerable.Range(0, 12_000).Select(i => "Sharded " + ((i * 7919) % 6_000).ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+        var reference = new LabelPlacementService();
+        var expected = texts.Select(text => reference.Measure(text, style)).ToArray();
         var shared = new LabelPlacementService();
         var actual = new TextMetrics[texts.Length];
         Parallel.For(0, texts.Length, i => actual[i] = shared.Measure(texts[i], style));

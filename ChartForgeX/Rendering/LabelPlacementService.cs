@@ -11,11 +11,9 @@ namespace ChartForgeX.Rendering;
 /// <remarks>For the same fonts and input order, placement is deterministic. Unresolvable fonts use portable measurements.
 /// Intersections with other labels and marks are rejected. Intentional containment in an associated mark is allowed.</remarks>
 public sealed class LabelPlacementService {
-    private Dictionary<MeasurementKey, TextMetrics> _measurements = new();
-    private Dictionary<MeasurementKey, TextMetrics> _previousMeasurements = new();
-    private readonly object _gate = new();
     private const int CacheCapacity = 4096;
-    private int _fontVersion = -1;
+    private const int ShardCount = 16;
+    private readonly MeasurementShard[] _shards = CreateShards();
 
     /// <summary>Measures shaped text with real font metrics, or a portable estimate if no font is available.</summary>
     public TextMetrics Measure(string text, TextStyle style) {
@@ -25,17 +23,20 @@ public sealed class LabelPlacementService {
     }
 
     // Measurement is a pure function of the text, the style and the registered fonts, so it runs outside the cache lock
-    // (the font resolver and shaper guard their own caches); concurrent renders only serialize on the cache itself. The
-    // cache keeps two generations, so a full cache keeps the recently used half instead of starting empty.
+    // (the font resolver and shaper guard their own caches). The cache is split into shards by key hash, each with its
+    // own lock, so concurrent renders sharing the service rarely wait on each other; the key hash is computed before any
+    // lock is taken. Each shard keeps two generations, so a full shard keeps the recently used half instead of starting
+    // empty.
     private TextMetrics MeasureDisplayed(string text, TextStyle style) {
         var key = new MeasurementKey(text, style);
+        var shard = _shards[(uint)key.GetHashCode() % ShardCount];
         int version;
-        lock (_gate) {
+        lock (shard.Gate) {
             version = TypographyFontResolver.CacheVersion;
-            if (version != _fontVersion) { _measurements.Clear(); _previousMeasurements.Clear(); _fontVersion = version; }
-            if (_measurements.TryGetValue(key, out var cached)) return cached;
-            if (_previousMeasurements.TryGetValue(key, out cached)) {
-                Store(key, cached);
+            if (version != shard.FontVersion) { shard.Current.Clear(); shard.Previous.Clear(); shard.FontVersion = version; }
+            if (shard.Current.TryGetValue(key, out var cached)) return cached;
+            if (shard.Previous.TryGetValue(key, out cached)) {
+                shard.Store(key, cached);
                 return cached;
             }
         }
@@ -51,20 +52,34 @@ public sealed class LabelPlacementService {
             lines++;
         }
         var measured = new TextMetrics(width, Math.Max(1, lines) * lineHeight, lineHeight);
-        lock (_gate) {
-            if (_fontVersion == version && TypographyFontResolver.CacheVersion == version) Store(key, measured);
+        lock (shard.Gate) {
+            if (shard.FontVersion == version && TypographyFontResolver.CacheVersion == version) shard.Store(key, measured);
         }
 
         return measured;
     }
 
-    private void Store(MeasurementKey key, TextMetrics measured) {
-        if (_measurements.Count >= CacheCapacity) {
-            (_previousMeasurements, _measurements) = (_measurements, _previousMeasurements);
-            _measurements.Clear();
-        }
+    private static MeasurementShard[] CreateShards() {
+        var shards = new MeasurementShard[ShardCount];
+        for (var i = 0; i < shards.Length; i++) shards[i] = new MeasurementShard();
+        return shards;
+    }
 
-        _measurements[key] = measured;
+    // One lock-guarded part of the measurement cache: two generations of CacheCapacity / ShardCount entries each.
+    private sealed class MeasurementShard {
+        internal readonly object Gate = new();
+        internal Dictionary<MeasurementKey, TextMetrics> Current = new();
+        internal Dictionary<MeasurementKey, TextMetrics> Previous = new();
+        internal int FontVersion = -1;
+
+        internal void Store(MeasurementKey key, TextMetrics measured) {
+            if (Current.Count >= CacheCapacity / ShardCount) {
+                (Previous, Current) = (Current, Previous);
+                Current.Clear();
+            }
+
+            Current[key] = measured;
+        }
     }
 
     /// <summary>Places a complete scene, returning results in the original request order.</summary>
@@ -139,15 +154,17 @@ public sealed class LabelPlacementService {
         private readonly int _weight, _index;
         private readonly bool _italic;
         private readonly FontVariationSettings _variations;
+        private readonly int _hash;
         public MeasurementKey(string text, TextStyle style) {
             _text = text; _family = style.Font.Family; _path = style.Font.FilePath ?? ""; _face = style.Font.FaceName ?? "";
             _language = style.OpenTypeLanguageTag ?? ""; _size = style.EffectiveFontSize; _lineHeight = style.LineHeight;
             _weight = style.Font.Weight; _index = style.Font.CollectionIndex ?? -1; _italic = style.Font.Italic; _variations = style.Font.Variations;
+            unchecked { var hash = _text.GetHashCode(); hash = hash * 31 + _family.GetHashCode(); hash = hash * 31 + _size.GetHashCode(); _hash = hash * 31 + _weight; }
         }
         public bool Equals(MeasurementKey other) => _text == other._text && _family == other._family && _path == other._path && _face == other._face
             && _language == other._language && _size == other._size && _lineHeight == other._lineHeight && _weight == other._weight
             && _index == other._index && _italic == other._italic && _variations.Equals(other._variations);
         public override bool Equals(object? obj) => obj is MeasurementKey key && Equals(key);
-        public override int GetHashCode() { unchecked { var hash = _text.GetHashCode(); hash = hash * 31 + _family.GetHashCode(); hash = hash * 31 + _size.GetHashCode(); return hash * 31 + _weight; } }
+        public override int GetHashCode() => _hash;
     }
 }
