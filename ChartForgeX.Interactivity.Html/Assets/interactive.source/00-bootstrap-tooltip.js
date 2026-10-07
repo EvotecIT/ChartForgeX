@@ -23,7 +23,9 @@
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
     const link = node.parentElement;
-    return link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]') ? link : node;
+    if (link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]')) return link;
+    // Prepared marks put identity on the outer group and their cell link inside it.
+    return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
   };
   const seriesLegend = (node) => {
     const data = node.dataset || {};

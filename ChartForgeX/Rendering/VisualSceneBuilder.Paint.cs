@@ -4,6 +4,7 @@ using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
 
 namespace ChartForgeX.Rendering;
 
@@ -19,9 +20,30 @@ internal sealed partial class VisualSceneBuilder {
         return OpenGroup(new VisualSceneGroup(role, id, null, null, tooltip: text));
     }
 
-    internal void Image(RgbaImage image, ChartRect bounds, string? role = null, string? id = null) {
+    internal void Image(RgbaImage image, ChartRect bounds, string? role = null, string? id = null, double opacity = 1, string? preserveAspectRatio = "none") {
         ValidateRect(bounds);
-        _nodes.Add(new VisualSceneImage(image, bounds, role, id));
+        ImageOpacity(opacity);
+        var aspect = SvgRasterPreserveAspectRatio.Parse(preserveAspectRatio);
+        var destination = bounds;
+        if (!aspect.Stretch) {
+            var scaleX = bounds.Width / image.Width; var scaleY = bounds.Height / image.Height;
+            var scale = aspect.Slice ? Math.Max(scaleX, scaleY) : Math.Min(scaleX, scaleY);
+            var width = image.Width * scale; var height = image.Height * scale;
+            destination = new ChartRect(bounds.X + aspect.AlignX(bounds.Width - width), bounds.Y + aspect.AlignY(bounds.Height - height), width, height);
+        }
+        using (aspect.Slice ? PushClip(bounds) : null) _nodes.Add(new VisualSceneImage(image, destination, role, id, opacity));
+    }
+
+    /// <summary>Retains a host-managed SVG image and ordinary native fallback geometry without resolving external I/O.</summary>
+    internal IDisposable PushImageResource(string href, ChartRect bounds, string? preserveAspectRatio = null, double opacity = 1, string? role = null, string? id = null) {
+        ValidateRect(bounds); ImageOpacity(opacity);
+        return OpenGroup(new VisualSceneGroup(null, null, bounds, null,
+            imageResource: new VisualSceneImageResource(href, bounds, preserveAspectRatio, opacity, role, id)));
+    }
+
+    private static void ImageOpacity(double opacity) {
+        ChartGuards.Finite(opacity, nameof(opacity));
+        if (opacity < 0 || opacity > 1) throw new ArgumentOutOfRangeException(nameof(opacity));
     }
 
     internal IDisposable PushRotation(double degrees, double originX, double originY) =>

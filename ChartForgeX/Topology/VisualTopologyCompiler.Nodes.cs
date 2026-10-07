@@ -25,22 +25,26 @@ internal sealed partial class VisualTopologyCompiler {
         var accentRole = AccentRole(authoredAccent);
         var baseAccent = Color(authoredAccent, Status(node.Status));
         var accent = Highlight(baseAccent, active);
-        var fill = Highlight(Color(NodeFill(node, Theme(), baseAccent.ToHexRgba(), _options), _colors.Surface), active);
-        var surfacePaint = new VisualScenePaintBinding(NodeFillPaint(node, fill, baseAccent, accentRole), SvgPaint.Of(accent, accentRole));
+        var baseFill = string.IsNullOrWhiteSpace(node.BackgroundColor) && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
+            ? ChartColorMath.BlendPremultiplied(_colors.Background, baseAccent, IsMonitoringDashboardStyle(_options) ? .065 : .10)
+            : Color(NodeFill(node, Theme(), baseAccent.ToHexRgba(), _options), _colors.Surface);
+        var fill = Highlight(baseFill, active);
+        var accentPaint = NodeAccentPaint(node, accent, active);
+        var surfacePaint = new VisualScenePaintBinding(NodeFillPaint(node, baseFill, baseAccent, accentRole, active), accentPaint);
         var strokeWidth = (_options.SelectedNodeIds.Contains(node.Id) ? 2.8 : _context.Theme.AxisStrokeWidth) * _scale;
         using (Host(node.Href, node.Tooltip, node.Id, "topology-node-host"))
         using (_builder.PushGroup(node.Id, "topology-node", NodeMetadata(node))) {
             var image = mode == TopologyNodeDisplayMode.Artwork && BuildArtwork(node, bounds);
             if (!image) {
                 if (mode == TopologyNodeDisplayMode.Dot) {
-                    using (PinnedState()) _builder.Ellipse(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, bounds.Width / 2, bounds.Height / 2, accent, role: "topology-node-surface", paint: Paint(accent, accentRole));
+                    using (PinnedState()) _builder.Ellipse(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, bounds.Width / 2, bounds.Height / 2, accent, role: "topology-node-surface", paint: new VisualScenePaintBinding(accentPaint));
                     if (!string.IsNullOrWhiteSpace(node.Symbol)) Text(node.Symbol!, bounds, Math.Min(_context.Theme.Typography.DataLabelSize, node.Height * .65), _colors.Surface, 700, "topology-node-symbol", centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
                 }
                 else if (node.Shape.HasValue) {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
                 } else _builder.Rect(bounds, fill, accent, strokeWidth, mode == TopologyNodeDisplayMode.Pill ? bounds.Height / 2 : _context.Theme.BarRadius * _scale, role: "topology-node-surface", paint: surfacePaint);
-                if (UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: Paint(accent, accentRole));
-                var hasGlyph = node.Kind != TopologyNodeKind.Generic || node.Symbol != null || node.IconId != null || mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
+                if (UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
+                var hasGlyph = node.Kind != TopologyNodeKind.Generic || node.Symbol != null || node.IconId != null || ResolveRenderableNodeArtwork(node, _options) != null || mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
                 if (hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
                     var center = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
                     BuildGlyph(node, center ? node.X + node.Width / 2 : node.X + 22, node.Y + (mode == TopologyNodeDisplayMode.Card && _options.IncludeNodeLabels && node.Details.Count > 0 ? 28 : node.Height / 2), accent, glyphRole: accentRole);
@@ -62,7 +66,7 @@ internal sealed partial class VisualTopologyCompiler {
             }
             if (!string.IsNullOrWhiteSpace(node.Badge)) {
                 var badge = Bounds(node.X + node.Width - 42, node.Y + node.Height - 18, 38, 16);
-                _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: Paint(accent, accentRole));
+                _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));
                 Text(node.Badge!, badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
             }
         }
@@ -103,13 +107,20 @@ internal sealed partial class VisualTopologyCompiler {
             if (row.Height > 0 && (!string.IsNullOrWhiteSpace(detail.IconId) || detail.Status.HasValue)) {
                 reserve = 14 * _scale;
                 var color = Highlight(Color(detail.Color, detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground), active);
-                if (!string.IsNullOrWhiteSpace(detail.IconId)) BuildGlyph(new TopologyNode { IconId = detail.IconId },
-                    (row.X - _offsetX) / _scale + 5, (row.Y - _offsetY) / _scale + row.Height / _scale / 2, color, .45, !string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Any : detail.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Text);
-                else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: Paint(color, AccentRole(detail.Color)));
+                if (!string.IsNullOrWhiteSpace(detail.IconId)) {
+                    var glyph = new TopologyNode { IconId = detail.IconId, Color = detail.Color, Status = detail.Status ?? TopologyHealthStatus.Unknown };
+                    var fallback = detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground;
+                    var authored = detail.Color ?? ResolveNodeIcon(glyph, _options)?.Color;
+                    var glyphColor = Highlight(Color(authored, fallback), active);
+                    BuildGlyph(glyph, (row.X - _offsetX) / _scale + 5, (row.Y - _offsetY) / _scale + row.Height / _scale / 2, glyphColor, .45,
+                        !string.IsNullOrWhiteSpace(authored) ? SvgColorRole.Any : detail.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Text,
+                        artworkOpacity: HighlightFactor(active), sourceFallback: fallback);
+                }
+                else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: new VisualScenePaintBinding(SourcePaint(detail.Color, color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
             }
             Text(detail.Text ?? (detail.Label + " " + detail.Value), new ChartRect(row.X + reserve, row.Y, Math.Max(0, row.Width - reserve), row.Height), size * .8,
                 Highlight(Color(detail.Color, _colors.Foreground), active), 400, "topology-node-detail", 1,
-                paint: SvgPaint.Of(Highlight(Color(detail.Color, _colors.Foreground), active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any));
+                paint: SourcePaint(detail.Color, Highlight(Color(detail.Color, _colors.Foreground), active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
             y += row.Height;
         }
     }
@@ -176,19 +187,27 @@ internal sealed partial class VisualTopologyCompiler {
         return ChartPathCommand.CubicTo(a.X, a.Y, b.X, b.Y, p.X, p.Y);
     }).ToArray());
 
-    private void BuildGlyph(TopologyNode node, double x, double y, ChartColor color, double glyphScale = 1, SvgColorRole glyphRole = SvgColorRole.Any) {
+    private void BuildGlyph(TopologyNode node, double x, double y, ChartColor color, double glyphScale = 1, SvgColorRole glyphRole = SvgColorRole.Any,
+        double? artworkOpacity = null, bool allowArtwork = true, ChartColor? sourceFallback = null) {
         ChartPoint Project(ChartPoint p) => Point(new ChartPoint(x + (p.X - x) * glyphScale, y + (p.Y - y) * glyphScale));
-        if (ResolveRenderableNodeArtwork(node, _options) != null &&
-            BuildArtwork(node, Bounds(x - 13 * glyphScale, y - 13 * glyphScale, 26 * glyphScale, 26 * glyphScale))) return;
+        if (allowArtwork && ResolveRenderableNodeArtwork(node, _options) != null &&
+            BuildArtwork(node, Bounds(x - 13 * glyphScale, y - 13 * glyphScale, 26 * glyphScale, 26 * glyphScale), selectedOutline: false,
+                opacity: artworkOpacity, fallbackColor: color)) return;
         var icon = ResolveNodeIcon(node, _options);
         if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
         var kind = icon?.NodeKind ?? node.Kind;
         var resolved = new TopologyNode { Kind = kind, IconId = node.IconId };
         var shape = EffectiveIconShape(resolved, _options);
-        BuildGlyphSurface(node, shape, x, y, color, glyphScale, glyphRole);
+        var authored = node.Color ?? icon?.Color;
+        var opacity = artworkOpacity ?? HighlightFactor(_highlight.IsNodeHighlighted(node));
+        var fallback = sourceFallback ?? Status(node.Status);
+        var glyphPaint = SourcePaint(authored, color, glyphRole, opacity, fallback);
+        var baseColor = SvgPaint.TryCssVariable(authored, fallback, out var variableFallback, out _) ? variableFallback : Color(authored, color);
+        BuildGlyphSurface(node, shape, x, y, color, glyphScale, glyphRole, glyphPaint, baseColor,
+            string.IsNullOrWhiteSpace(authored) ? 1 : opacity, fallback);
         if (shape == TopologyIconShape.Cloud || shape == TopologyIconShape.Database || kind == TopologyNodeKind.Database) return;
         var marks = TopologyInfrastructureGlyphs.Build(shape, kind, x, y);
-        if (marks == null) { Text(NodeGlyph(node, _options), Bounds(x - 12 * glyphScale, y - 10 * glyphScale, 24 * glyphScale, 22 * glyphScale), _context.Theme.Typography.DataLabelSize * glyphScale, color, 600, "topology-node-icon", centered: true, paint: SvgPaint.Of(color, glyphRole)); return; }
+        if (marks == null) { Text(NodeGlyph(node, _options), Bounds(x - 12 * glyphScale, y - 10 * glyphScale, 24 * glyphScale, 22 * glyphScale), _context.Theme.Typography.DataLabelSize * glyphScale, color, 600, "topology-node-icon", centered: true, paint: glyphPaint); return; }
         foreach (var mark in marks) {
             if (mark.PathData != null) {
                 // Decode canonical authored glyph geometry, never an exported chart or SVG document.
@@ -202,34 +221,10 @@ internal sealed partial class VisualTopologyCompiler {
                         mark.StrokeWidth * _scale * glyphScale, role: "topology-node-icon", close: contours.Key,
                         cap: mark.RoundCap ? VisualStrokeCap.Round : VisualStrokeCap.Butt,
                         join: mark.RoundJoin ? VisualStrokeJoin.Round : VisualStrokeJoin.Miter,
-                        paint: Paint(color, glyphRole, color, glyphRole));
+                        paint: new VisualScenePaintBinding(glyphPaint, glyphPaint));
                 }
-            } else { var p = Project(new ChartPoint(mark.Cx, mark.Cy)); _builder.Ellipse(p.X, p.Y, mark.Rx * _scale * glyphScale, mark.Ry * _scale * glyphScale, mark.Filled ? color : null, mark.Filled ? null : color, mark.StrokeWidth * _scale * glyphScale, "topology-node-icon", paint: Paint(color, glyphRole, color, glyphRole)); }
+            } else { var p = Project(new ChartPoint(mark.Cx, mark.Cy)); _builder.Ellipse(p.X, p.Y, mark.Rx * _scale * glyphScale, mark.Ry * _scale * glyphScale, mark.Filled ? color : null, mark.Filled ? null : color, mark.StrokeWidth * _scale * glyphScale, "topology-node-icon", paint: new VisualScenePaintBinding(glyphPaint, glyphPaint)); }
         }
-    }
-
-    private bool BuildArtwork(TopologyNode node, ChartRect bounds) {
-        var artwork = ResolveRenderableNodeArtwork(node, _options);
-        if (artwork?.ImageHref is string href && href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {
-            var separator = href.IndexOf(',');
-            if (separator > 0 && href.Substring(0, separator).EndsWith(";base64", StringComparison.OrdinalIgnoreCase)) {
-                try {
-                    if (RasterImageDecoder.TryDecode(Convert.FromBase64String(href.Substring(separator + 1)), out var image)) {
-                        _builder.Image(image, bounds, "topology-node-artwork"); return true;
-                    }
-                } catch (FormatException) { }
-            }
-        }
-        if (artwork?.HasSvgBody == true) {
-            // Artwork sampling is bounded by its visible destination and the shared raster budget.
-            var factor = Math.Min(2, 2048d / Math.Max(bounds.Width, bounds.Height));
-            var width = Math.Max(1, (int)Math.Ceiling(bounds.Width * factor)); var height = Math.Max(1, (int)Math.Ceiling(bounds.Height * factor));
-            if (SvgRasterRenderer.TryRenderFragment(artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio, width, height, out var pixels)) {
-                _builder.Image(new RgbaImage(width, height, pixels), bounds, "topology-node-artwork"); return true;
-            }
-        }
-        _builder.AddDiagnostic(new VisualDiagnostic("topology.artwork-fallback", "Artwork could not be resolved into the immutable scene; the canonical node glyph is used."));
-        return false;
     }
 
     private IDisposable? Host(string? href, string? tooltip, string id, string role) {

@@ -21,12 +21,12 @@ internal sealed partial class VisualTopologyCompiler {
         var colorPaint = SvgPaint.TryCssVariable(item.Color, color, out _, out var variablePaint) ? variablePaint : SvgPaint.Of(color, colorRole);
         var centerX = bounds.X + bounds.Width / 2; var centerY = bounds.Y + bounds.Height / 2;
         if (item.Kind == TopologyLegendItemKind.Node) {
-            var node = new TopologyNode { Kind = item.NodeKind ?? TopologyNodeKind.Generic, Symbol = item.Symbol, IconId = item.IconId };
+            var node = new TopologyNode { Kind = item.NodeKind ?? TopologyNodeKind.Generic, Symbol = item.Symbol, IconId = item.IconId, Color = item.Color, Status = item.Status ?? TopologyHealthStatus.Unknown };
             if (_options.RequireResolvedIcons && node.IconId != null && TopologyRenderPrimitives.ResolveNodeIcon(node, _options) == null)
                 throw new System.InvalidOperationException("Unresolved topology legend icon: " + node.IconId);
             _builder.Rect(bounds, Color(item.BackgroundColor, _colors.Surface), color, _context.Theme.AxisStrokeWidth,
-                _context.Theme.BarRadius, "topology-legend-node", paint: Paint(Color(item.BackgroundColor, _colors.Surface), string.IsNullOrWhiteSpace(item.BackgroundColor) ? SvgColorRole.Surface : SvgColorRole.Any, color, colorRole));
-            BuildGlyph(node, centerX, centerY, color, System.Math.Min(bounds.Width, bounds.Height) / 26, colorRole);
+                _context.Theme.BarRadius, "topology-legend-node", paint: new VisualScenePaintBinding(SourcePaint(item.BackgroundColor, Color(item.BackgroundColor, _colors.Surface), string.IsNullOrWhiteSpace(item.BackgroundColor) ? SvgColorRole.Surface : SvgColorRole.Any, fallback: _colors.Surface), colorPaint));
+            BuildGlyph(node, centerX, centerY, color, System.Math.Min(bounds.Width, bounds.Height) / 26, colorRole, artworkOpacity: 1);
         } else {
             using (PinnedState()) {
                 if (item.Kind == TopologyLegendItemKind.Edge) {

@@ -6,6 +6,39 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractivePreparedIdentityBrowserTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LinkedHeatmapCellHasOneKeyboardTargetAndRetainsNativeEnterNavigation(bool dark) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(596, 338).WithTitle("Service evidence")
+            .WithTheme(dark ? ChartForgeX.Themes.ChartTheme.GraphiteDark() : ChartForgeX.Themes.ChartTheme.GraphiteLight())
+            .WithXLabels("Directory")
+            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+            .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass", "3", href: "#evidence", tooltip: "Open evidence"));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
+        var page = session.Page;
+        var cell = page.Locator("[data-cfx-role=\"heatmap-cell\"]");
+        var link = cell.Locator("a[data-cfx-role=\"heatmap-cell-link\"]");
+        Assert.Null(await cell.GetAttributeAsync("tabindex"));
+        Assert.Equal(1, await cell.Locator("a[href], [tabindex='0']").CountAsync());
+        await link.FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await cell.GetAttributeAsync("aria-selected"));
+        Assert.Equal("", await page.EvaluateAsync<string>("() => location.hash"));
+        await page.Keyboard.PressAsync("Enter");
+        await page.WaitForFunctionAsync("() => location.hash === '#evidence'");
+        Assert.Equal("#evidence", await page.EvaluateAsync<string>("() => location.hash"));
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            await page.ScreenshotAsync(new Microsoft.Playwright.PageScreenshotOptions {
+                Path = Path.Combine(capture, "heatmap-link-keyboard-" + (dark ? "dark" : "light") + ".png")
+            });
+        }
+        AssertNoConsoleErrors(session);
+    }
+
     [Fact]
     public async Task MarkerFreeDecimatedObservationEmitsOneOriginalSourceSelectionAndSupportsKeyboard() {
         if (!Enabled) return;

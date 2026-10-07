@@ -122,7 +122,7 @@ internal sealed partial class VisualTopologyCompiler {
         var semantics = SemanticSnapshot(accessibility);
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
         var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,
-            _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext);
+            _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext, responsive: _options.UseResponsiveSvg);
         return new PreparedVisual(_builder.Build(), accessibility, semanticInterchange: semantics, svgOptions: svgOptions);
     }
 

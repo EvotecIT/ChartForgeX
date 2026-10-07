@@ -24,6 +24,7 @@ internal static partial class VisualCartesianCompiler {
             var point = series.Points[raw];
             var x = map.X(point.X); var y = map.Y(point.Y);
             var color = PointColor(series, index, item, colors);
+            var sourcePaint = VisualChartPaint.Series(series, color, item);
             var radius = series.MarkerRadius ?? context.Theme.MarkerRadius;
             if (series.Kind == ChartSeriesKind.Bubble) {
                 var size = series.Points[raw + 1].Y;
@@ -36,7 +37,9 @@ internal static partial class VisualCartesianCompiler {
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("y", point.Y), ("size", size))) {
                     var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
                     builder.Ellipse(x, y, radius, radius, fill, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity),
-                        series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BubbleStrokeWidth, role: "bubble");
+                        series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BubbleStrokeWidth, role: "bubble",
+                        paint: new VisualScenePaintBinding(fill: sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity),
+                            stroke: sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity), ChartVisualPrimitives.BubbleStrokeOpacity)));
                     DrawPattern(builder, EllipsePath(x, y, radius, radius), ObservationPattern(series, item), fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern");
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y - radius), bounds, size, label, labels, obstacles);
@@ -50,10 +53,10 @@ internal static partial class VisualCartesianCompiler {
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("value", point.Y), ("lower", lower), ("upper", upper))) {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.ErrorBarStrokeWidth;
                     var paint = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.ErrorBarRangeOpacity);
-                    builder.Line(x, lowerY, x, upperY, paint, stroke, role: "error-range");
-                    builder.Line(x - cap / 2, lowerY, x + cap / 2, lowerY, color, stroke, role: "error-cap");
-                    builder.Line(x - cap / 2, upperY, x + cap / 2, upperY, color, stroke, role: "error-cap");
-                    builder.Ellipse(x, y, radius, radius, color, role: "error-marker");
+                    builder.Line(x, lowerY, x, upperY, paint, stroke, role: "error-range", paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(paint, ChartVisualPrimitives.ErrorBarRangeOpacity)));
+                    builder.Line(x - cap / 2, lowerY, x + cap / 2, lowerY, color, stroke, role: "error-cap", paint: VisualChartPaint.Stroke(sourcePaint));
+                    builder.Line(x - cap / 2, upperY, x + cap / 2, upperY, color, stroke, role: "error-cap", paint: VisualChartPaint.Stroke(sourcePaint));
+                    builder.Ellipse(x, y, radius, radius, color, role: "error-marker", paint: VisualChartPaint.Fill(sourcePaint));
                     DrawPattern(builder, EllipsePath(x, y, radius, radius), ObservationPattern(series, item), color, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "error-marker-pattern");
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles);
@@ -64,9 +67,10 @@ internal static partial class VisualCartesianCompiler {
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y) + "–" + Value(chart, end));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("start", point.Y), ("end", end), ("delta", end - point.Y))) {
                     builder.Line(x, y, x, endY, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity),
-                        series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth, role: "dumbbell-connector");
-                    builder.Ellipse(x, y, radius, radius, colors.MutedForeground, role: "dumbbell-start");
-                    builder.Ellipse(x, endY, radius, radius, color, role: "dumbbell-end");
+                        series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth, role: "dumbbell-connector",
+                        paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity), ChartVisualPrimitives.DumbbellConnectorOpacity)));
+                    builder.Ellipse(x, y, radius, radius, colors.MutedForeground, role: "dumbbell-start", paint: VisualChartPaint.Fill(colors.MutedForeground, SvgColorRole.Text));
+                    builder.Ellipse(x, endY, radius, radius, color, role: "dumbbell-end", paint: VisualChartPaint.Fill(sourcePaint));
                     DrawPattern(builder, EllipsePath(x, endY, radius, radius), ObservationPattern(series, item), color, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "dumbbell-pattern");
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, end, label, labels, obstacles);
@@ -76,8 +80,10 @@ internal static partial class VisualCartesianCompiler {
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("value", point.Y))) {
                     builder.Line(x, baseline, x, y, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.LollipopStemOpacity),
-                        Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, SeriesStroke(series, context) * .62), role: "lollipop-stem");
-                    builder.Ellipse(x, y, radius, radius, color, colors.Surface, ChartVisualPrimitives.LollipopMarkerStrokeWidth, role: "lollipop-marker");
+                        Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, SeriesStroke(series, context) * .62), role: "lollipop-stem",
+                        paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.LollipopStemOpacity), ChartVisualPrimitives.LollipopStemOpacity)));
+                    builder.Ellipse(x, y, radius, radius, color, colors.Surface, ChartVisualPrimitives.LollipopMarkerStrokeWidth, role: "lollipop-marker",
+                        paint: new VisualScenePaintBinding(fill: sourcePaint, stroke: SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     DrawPattern(builder, EllipsePath(x, y, radius, radius), ObservationPattern(series, item), color, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "lollipop-pattern");
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles);
@@ -93,7 +99,8 @@ internal static partial class VisualCartesianCompiler {
         var points = new[] { new ChartPoint(map.X(first.X), map.Y(first.Y)), new ChartPoint(map.X(last.X), map.Y(last.Y)) };
         var path = ChartPathBuilder.FromPoints(points, ChartSeriesKind.Line, false);
         var trend = series.Kind == ChartSeriesKind.TrendLine;
-        DrawLayeredPath(chart, builder, path, Color(series, index, colors), Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context)),
+        var sourceColor = Color(series, index, colors);
+        DrawLayeredPath(chart, builder, path, sourceColor, VisualChartPaint.Series(series, sourceColor), Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context)),
             trend ? "trend-line" : "slope-line", trend ? new[] { 8d, 6d } : null);
         if (trend) {
             var slope = (last.Y - first.Y) / (last.X - first.X);
@@ -118,7 +125,7 @@ internal static partial class VisualCartesianCompiler {
             using (ObservationGroup(builder, series, index, endpoint, raw, 1, bounds, label, ("x", source.X), ("value", source.Y))) {
                 if (!trend) {
                     var color = PointColor(series, index, endpoint, colors);
-                    builder.Ellipse(point.X, point.Y, radius, radius, color, role: "slope-marker");
+                    builder.Ellipse(point.X, point.Y, radius, radius, color, role: "slope-marker", paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, endpoint)));
                     DrawPattern(builder, EllipsePath(point.X, point.Y, radius, radius), ObservationPattern(series, endpoint), color, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "slope-pattern");
                 }
             }

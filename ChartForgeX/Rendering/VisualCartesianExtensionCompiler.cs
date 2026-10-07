@@ -101,9 +101,10 @@ internal static partial class VisualCartesianCompiler {
     private static double SeriesStroke(ChartSeries series, VisualRenderContext context) =>
         series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
 
-    private static void DrawLayeredPath(Chart chart, VisualSceneBuilder builder, ChartPath path, ChartColor color, double width, string role, double[]? dash = null) {
+    private static void DrawLayeredPath(Chart chart, VisualSceneBuilder builder, ChartPath path, ChartColor color, SvgPaint sourcePaint, double width, string role, double[]? dash = null) {
         foreach (var layer in ChartLineVisualLayers.Build(color, width, chart.Options.ResolvePreparedLineVisualStyle()))
-            if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: role + layer.RoleSuffix, dash: dash);
+            if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: role + layer.RoleSuffix, dash: dash,
+                paint: VisualChartPaint.Stroke(layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity()) : sourcePaint.WithOpacity(layer.ColorWithOpacity(), layer.Opacity)));
     }
 
     private static void ObservationLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int observation,
@@ -117,8 +118,14 @@ internal static partial class VisualCartesianCompiler {
 
     private static string Value(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
+    private static bool HasSeriesPaint(ChartSeries series, int observation) => series.Color.HasValue || series.StateRole != ChartSeriesState.None
+        || observation < series.PointColors.Count && series.PointColors[observation].HasValue;
+
+    private static SvgColorRole SemanticMarkPaintRole(ChartSeries series, int observation) =>
+        HasSeriesPaint(series, observation) ? VisualChartPaint.SeriesRole(series, observation) : SvgColorRole.Status;
+
     private static ChartColor FinancialColor(ChartSeries series, int seriesIndex, int observation, bool rising, VisualThemeColors colors) {
-        if (series.Color.HasValue || series.StateRole != ChartSeriesState.None || observation < series.PointColors.Count && series.PointColors[observation].HasValue)
+        if (HasSeriesPaint(series, observation))
             return PointColor(series, seriesIndex, observation, colors);
         return rising ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
     }

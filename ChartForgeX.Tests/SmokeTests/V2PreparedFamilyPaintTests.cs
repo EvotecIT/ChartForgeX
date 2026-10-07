@@ -8,7 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 /// <summary>Equal RGB tokens must retain the producer's meaning across prepared family exports.</summary>
-public sealed class V2PreparedFamilyPaintTests {
+public sealed partial class V2PreparedFamilyPaintTests {
     private static readonly ChartColor Shared = ChartColor.FromHex("#2864B4");
 
     [Theory]

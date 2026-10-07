@@ -39,7 +39,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
         return basis.WithScene(builder.Build(),
             new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,
-                _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext));
+                _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext, responsive: _options.UseResponsiveSvg));
     }
 
     internal TopologyMotionPlan? MotionPlan(TopologyRenderOptions options) {

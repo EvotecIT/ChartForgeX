@@ -49,6 +49,14 @@ internal readonly partial struct SvgPaint {
     private static bool HasCssVariableToken(string? token, int depth) {
         if (token == null || token.Length < 3 || depth > 32 || token[0] != Start || TokenLength(token, 0) != token.Length) return false;
         if (token[1] == 'V') return true;
+        if (token[1] == 'N') {
+            var parts = token.Substring(10, token.Length - 11).Split(':');
+            if (parts.Length != 3) return false;
+            try {
+                return HasCssVariableToken(Encoding.UTF8.GetString(Convert.FromBase64String(parts[0])), depth + 1)
+                    || HasCssVariableToken(Encoding.UTF8.GetString(Convert.FromBase64String(parts[1])), depth + 1);
+            } catch (FormatException) { return false; }
+        }
         if (token[1] != 'O') return false;
         var separator = token.IndexOf(':', 10);
         try {

@@ -9,9 +9,13 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void BuildGlyphSurface(TopologyNode node, TopologyIconShape shape, double x, double y,
-        ChartColor accent, double scale, SvgColorRole role) {
-        var tint = Color(StatusFill(accent.ToHexRgba(), _colors.Background.ToHexRgba(), .10), _colors.Surface);
-        var paint = new VisualScenePaintBinding(SvgPaint.Mix(tint, _colors.Background, SvgColorRole.Surface, accent, role, .10), SvgPaint.Of(accent, role));
+        ChartColor accent, double scale, SvgColorRole role, SvgPaint sourcePaint, ChartColor baseColor, double opacity, ChartColor fallback) {
+        var baseTint = ChartForgeX.Rendering.ChartColorMath.BlendPremultiplied(_colors.Background, baseColor, .10);
+        var tint = ChartForgeX.Rendering.ChartColorMath.WithOpacity(baseTint, opacity);
+        var source = SourcePaint(node.Color ?? ResolveNodeIcon(node, _options)?.Color, baseColor, role, fallback: fallback);
+        var tintPaint = source.HasCssVariable ? SvgPaint.Mix(baseTint, SvgPaint.Of(_colors.Background, SvgColorRole.Surface), source, .10)
+            : SvgPaint.Mix(baseTint, _colors.Background, SvgColorRole.Surface, baseColor, role, .10);
+        var paint = new VisualScenePaintBinding(opacity == 1 ? tintPaint : tintPaint.WithOpacity(tint, opacity), sourcePaint);
         var center = Point(new ChartPoint(x, y));
         var s = scale * _scale;
         if (shape == TopologyIconShape.Cloud) {

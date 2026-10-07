@@ -15,8 +15,9 @@ internal sealed partial class VisualTopologyCompiler {
         var height = IconLabelPlateHeight(_chart.TextMeasurement, size) * _scale;
         var origin = Point(new ChartPoint(node.X + node.Width / 2, IconLabelPlateY(node)));
         var bounds = new ChartRect(origin.X - width / 2, origin.Y, width, height);
-        _builder.Rect(bounds, Highlight(_colors.Surface, active), accent.WithOpacity(.4), _context.Theme.AxisStrokeWidth * _scale,
-            _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: Paint(Highlight(_colors.Surface, active), SvgColorRole.Surface, accent.WithOpacity(.4), AccentRole(node.Color)));
+        var stroke = ChartForgeX.Rendering.ChartColorMath.WithOpacity(accent, .4);
+        _builder.Rect(bounds, Highlight(_colors.Surface, active), stroke, _context.Theme.AxisStrokeWidth * _scale,
+            _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(SvgPaint.Of(Highlight(_colors.Surface, active), SvgColorRole.Surface), NodeAccentPaint(node, stroke, active, .4)));
         Text(text, bounds, size, Highlight(_colors.Foreground, active), 700, "topology-node-label", centered: true, id: node.Id + "-label");
     }
 
@@ -56,8 +57,9 @@ internal sealed partial class VisualTopologyCompiler {
         var bounds = new ChartRect(tile ? origin.X - width / 2 : origin.X, origin.Y, width, height);
         var role = tile ? "topology-node-subtitle" : "topology-node-card-subtitle";
         using (_builder.PushGroup(node.Id + "-subtitle", role, new Dictionary<string, string> { ["data-node-id"] = node.Id })) {
-            _builder.Rect(bounds, accent.WithOpacity(.1), accent.WithOpacity(.45), _context.Theme.AxisStrokeWidth * _scale,
-                height / 2, "topology-subtitle-chip", paint: Paint(accent.WithOpacity(.1), AccentRole(node.Color ?? ResolveNodeIcon(node, _options)?.Color), accent.WithOpacity(.45), AccentRole(node.Color ?? ResolveNodeIcon(node, _options)?.Color)));
+            var fill = ChartForgeX.Rendering.ChartColorMath.WithOpacity(accent, .1); var stroke = ChartForgeX.Rendering.ChartColorMath.WithOpacity(accent, .45);
+            _builder.Rect(bounds, fill, stroke, _context.Theme.AxisStrokeWidth * _scale,
+                height / 2, "topology-subtitle-chip", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(NodeAccentPaint(node, fill, active, .1), NodeAccentPaint(node, stroke, active, .45)));
             _builder.Text(chip.Text, bounds.X + width / 2,
                 bounds.Y + (height - metrics.Height) / 2 + _builder.TextAscent(size * _scale, 700), size * _scale,
                 Highlight(_colors.MutedForeground, active), 700, "topology-subtitle-chip-text", alignment: TextAlignment.Center,

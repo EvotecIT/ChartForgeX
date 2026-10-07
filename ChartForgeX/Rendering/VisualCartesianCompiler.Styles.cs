@@ -18,9 +18,10 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawBarSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
-        int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double? value = null) {
+        int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double? value = null, SvgColorRole? sourceRole = null) {
         var style = chart.Options.ResolvePreparedBarVisualStyle();
-        var sourcePaint = VisualChartPaint.Series(series, color, pointIndex);
+        var resolvedRole = sourceRole ?? VisualChartPaint.SeriesRole(series, pointIndex);
+        var sourcePaint = SvgPaint.Of(color, resolvedRole);
         var radius = Math.Min(chart.Options.HasPreparedBarCornerRadius ? style.CornerRadius : context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) / 2);
         var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
             ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
@@ -39,9 +40,9 @@ internal static partial class VisualCartesianCompiler {
             if (style.Kind == ChartBarStyle.Solid) {
                 builder.RectGradient(bounds, new ChartPoint(bounds.Left, bounds.Top), horizontal ? new ChartPoint(bounds.Right, bounds.Top) : new ChartPoint(bounds.Left, bounds.Bottom),
                     new[] { new VisualGradientStop(0, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientTop(color).WithAlpha(color.A), ChartVisualPrimitives.BarFillOpacity),
-                            VisualChartPaint.BarGradient(color, VisualChartPaint.SeriesRole(series, pointIndex), true, ChartVisualPrimitives.BarFillOpacity)),
+                            VisualChartPaint.BarGradient(color, resolvedRole, true, ChartVisualPrimitives.BarFillOpacity)),
                         new VisualGradientStop(1, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientBottom(color).WithAlpha(color.A), ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity),
-                            VisualChartPaint.BarGradient(color, VisualChartPaint.SeriesRole(series, pointIndex), false, ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity)) },
+                            VisualChartPaint.BarGradient(color, resolvedRole, false, ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity)) },
                     radius: radius, role: role);
                 if (ChartMarkSurface.HasBarHighlight(bounds.Width, bounds.Height)) {
                     var inset = ChartVisualPrimitives.BarHighlightInset;

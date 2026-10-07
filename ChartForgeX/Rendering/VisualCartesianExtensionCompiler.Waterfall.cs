@@ -19,7 +19,7 @@ internal static partial class VisualCartesianCompiler {
             var step = steps[item]; var x = map.X(step.X); var startY = map.YOrBaseline(step.Start); var endY = map.YOrBaseline(step.End);
             var bounds = new ChartRect(x - width / 2, Math.Min(startY, endY), width, Math.Abs(startY - endY));
             var color = step.IsTotal ? colors.Status.Medium.Fill : step.Delta >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
-            if (series.Color.HasValue || series.StateRole != ChartSeriesState.None || item < series.PointColors.Count && series.PointColors[item].HasValue)
+            if (HasSeriesPaint(series, item))
                 color = PointColor(series, index, item, colors);
             var label = ResolveObservationLabel(chart, context, series, item, colors,
                 () => (step.IsTotal || step.Delta < 0 ? string.Empty : "+") + Value(chart, step.Delta));
@@ -34,8 +34,10 @@ internal static partial class VisualCartesianCompiler {
             })) {
                 if (previous.HasValue && !step.IsTotal && !series.Points[item].BreakBefore)
                     builder.Line(previous.Value.Right, startY, bounds.Left, startY, ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity),
-                        ChartVisualPrimitives.WaterfallConnectorStrokeWidth, role: "waterfall-connector", dash: new[] { ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap });
-                DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "waterfall-bar", value: step.Delta);
+                        ChartVisualPrimitives.WaterfallConnectorStrokeWidth, role: "waterfall-connector", dash: new[] { ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap },
+                        paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text).WithOpacity(
+                            ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorOpacity)));
+                DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "waterfall-bar", value: step.Delta, sourceRole: SemanticMarkPaintRole(series, item));
             }
             obstacles.Add(new LabelObstacle(id, bounds));
             AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.IsTotal ? step.End : step.Delta, id);

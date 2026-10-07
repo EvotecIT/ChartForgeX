@@ -22,15 +22,15 @@ Scope and later phases are defined in [the architecture](docs/v2/architecture.md
 Phases 2–3 build on the qualified Phase 0–1 candidate while its external checks settle. Consumer repositories remain read-only; package extraction and publication belong to later phases.
 
 - [x] Create `feature/v2-charts` from Phase 0–1 candidate `c8e765c39b927b0630de6c123c97a9baba280f43`; coordinate dependent branches centrally.
-- [x] Implement Cartesian options, axis-isolated stacks, explicit styles, labels and semantic state treatments; the Phase 2 quality loop passes, with inherited platform fixes subject to the final integrated check below.
+- [x] Implement Cartesian options, axis-isolated stacks, explicit styles, labels and semantic state treatments; the integrated Phase 2 quality loop passes.
 - [x] Implement pie/donut, gauge, radial-bar and layered-radial options on the shared scene; focused and Phase 2 quality checks pass.
 - [x] Unify numeric formatting and sparse sparkline data, preserving missing observations separately from zero; focused contracts pass.
 - [x] Extend shared scene paint, clipping and transformed text for migrated family requirements; Phase 2 paint-policy suite passes 160 focused cases.
 - [x] Remove replaced Cartesian/radial export paths and document the native shared export route; final family validation remains below.
 - [x] Implement native topology, flow and sequence producers with prepared semantic handoff; complete their retained-option and Mermaid validation below.
 - [x] Implement native producers for all 49 chart kinds and shared grids, reusing existing geometry owners; retire replaced SVG and PNG backends.
-- [ ] Close native family integration: automatic accessible descriptions, continuous-scale permission and zero semantics, prepared topology diagnostics, exact typography, theme-aware contrast and retained monitoring text outlines. Latest full closure: 2,862 of 2,877 pass; 15 failures remain assigned to their owners. All dense SVG fixtures pass the unchanged payload limits.
-- [x] Qualify the Phase 2 candidate before the latest foundation review fixes: 2,615 tests, 42 Mermaid fixtures, 317 healthy SVG/PNG/HTML pairs, four target frameworks, native AOT and six packages with isolated consumption. All 18 original measured SVG/RGBA/PNG benchmark pairs improve elapsed time without an allocation regression; revalidate affected proof after inheritance and the shared gradient-stroke correction.
+- [ ] Close native family integration and the independent review findings: preserve typed paints on specialized Cartesian marks and topology surfaces, responsive topology SVG, artwork resources and layout, and linked heatmap keyboard navigation. All four failures from the preceding full run pass their complete smoke methods after repair; the final integrated run follows the review fixes. Dense SVG fixtures retain their unchanged payload limits.
+- [x] Qualify the integrated Phase 2 candidate: 2,637 tests, 42 Mermaid fixtures, 317 healthy SVG/PNG/HTML pairs, four target frameworks without warnings, native AOT and six local packages with isolated consumption. All 18 complete-export benchmark pairs pass the 10% elapsed/allocation regression gate with zero correctness failures across 540 retained samples; timings improve on the measured Windows host.
 - [x] Execute compact static fragment browser checks in both themes, preserving aspect ratio without page CSS, overflow, scripts or console errors; inspect both screenshots.
 - [ ] Inspect light/dark SVG and native PNG fixtures, then run full quality, framework/package/AOT and representative performance checks.
 - [ ] Publish coherent dependent PR layers, address validated review feedback and settle current-head checks.

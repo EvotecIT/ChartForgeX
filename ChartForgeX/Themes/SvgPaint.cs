@@ -12,7 +12,7 @@ namespace ChartForgeX.Themes;
 /// A paint a renderer writes with its colour role, resolved against <see cref="SvgColorVariables"/> when the SVG is
 /// finished. <see cref="Literal"/> is a colour the renderer derives (a white sheen, a contrast stroke) that must never
 /// take a token's property because it happens to equal its colour; <see cref="Of"/> is a token colour written for a
-/// role; <see cref="Mix"/> is a blend of two colours, written as <c>color-mix()</c> of their properties when one of them
+/// role; blend operations write <c>color-mix()</c> of the two colours' properties when one of them
 /// is mapped. <see cref="Plain(ChartColor)"/> is an ordinary literal that the value-based <see cref="SvgColorVariables.Apply"/>
 /// still maps.
 /// </summary>
@@ -27,7 +27,7 @@ internal readonly partial struct SvgPaint {
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -151,6 +151,7 @@ internal readonly partial struct SvgPaint {
                 i += amount;
                 return Close(text, i) ? i + 1 - index : 0;
             }
+            case 'N': return SourceMixLength(text, ref i) && Close(text, i) ? i + 1 - index : 0;
             case 'O': {
                 if (!Hex(text, ref i, 8)) return 0;
                 var source = 0;
@@ -210,6 +211,7 @@ internal readonly partial struct SvgPaint {
             }
             case 'C': return ResolveContrastSource(body, variables, keepLiterals);
             case 'V': return ResolveCssVariable(body);
+            case 'N': return ResolveSourceMix(body, variables, keepLiterals);
             case 'O': {
                 var result = Color(body, 0);
                 var separator = body.IndexOf(':', 8);

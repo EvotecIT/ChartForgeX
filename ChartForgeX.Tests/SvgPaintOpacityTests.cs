@@ -9,6 +9,23 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects source role and exact RGBA fallback through derived opacity expressions.</summary>
 public sealed class SvgPaintOpacityTests {
     [Fact]
+    public void TypedSourceMixRetainsValidatedVariablesAndPremultipliedRasterFallbackThroughOpacity() {
+        Assert.True(SvgPaint.TryCssVariable("var(--node, #2864B480)", ChartColor.Black, out var color, out var source));
+        var tint = ChartColorMath.BlendPremultiplied(ChartColor.White, color, .1);
+        var dimmed = ChartColorMath.WithOpacity(tint, .5);
+        var paint = SvgPaint.Mix(tint, SvgPaint.Of(ChartColor.White, SvgColorRole.Surface), source, .1).WithOpacity(dimmed, .5);
+        Assert.True(paint.HasCssVariable);
+        Assert.Equal(SvgPaint.ResolveWithPattern(paint.Value!, null), SvgPaint.Resolve(paint.Value!, null));
+        Assert.Equal("color-mix(in srgb, color-mix(in srgb, #FFFFFF 90%, var(--node, " + color.ToCss() + ")) 50%, transparent)", SvgPaint.Resolve(paint.Value!, null));
+        Assert.Equal(242, tint.A);
+        Assert.Equal(121, dimmed.A);
+        var unbound = SvgPaint.Mix(tint, SvgPaint.Literal(ChartColor.White), SvgPaint.Literal(color), .1);
+        Assert.Equal(tint.ToCss(), SvgPaint.Resolve(unbound.Value!, null));
+        var unsafeOperand = SvgPaint.Mix(tint, SvgPaint.Plain("url(https://invalid.test/paint)"), source, .1);
+        Assert.Equal(tint.ToCss(), SvgPaint.Resolve(unsafeOperand.Value!, null));
+    }
+
+    [Fact]
     public void OpacityRetainsOriginalAlphaBeforeApplyingItsMultiplier() {
         var source = ChartColor.FromHex("#2864B4").WithAlpha(128);
         var actual = ChartColorMath.WithOpacity(source, .5);

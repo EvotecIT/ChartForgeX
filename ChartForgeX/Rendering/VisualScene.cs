@@ -36,10 +36,10 @@ internal abstract class VisualSceneNode {
 internal sealed class VisualSceneGroup : VisualSceneNode {
     internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata,
         VisualScenePath? pathClip = null, VisualRotation? rotation = null, string? href = null, string? tooltip = null,
-        ChartPoint? translation = null)
+        ChartPoint? translation = null, VisualSceneImageResource? imageResource = null)
         : base(role, id) {
         Clip = clip;
-        PathClip = pathClip; Rotation = rotation; Href = href; Tooltip = tooltip; Translation = translation;
+        PathClip = pathClip; Rotation = rotation; Href = href; Tooltip = tooltip; Translation = translation; ImageResource = imageResource;
         var copy = new SortedDictionary<string, string>(StringComparer.Ordinal);
         if (metadata != null) foreach (var item in metadata) copy.Add(item.Key, item.Value);
         Metadata = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(copy);
@@ -51,6 +51,7 @@ internal sealed class VisualSceneGroup : VisualSceneNode {
     internal ChartPoint? Translation { get; }
     internal string? Href { get; }
     internal string? Tooltip { get; }
+    internal VisualSceneImageResource? ImageResource { get; }
 }
 
 internal sealed class VisualSceneEndGroup : VisualSceneNode {

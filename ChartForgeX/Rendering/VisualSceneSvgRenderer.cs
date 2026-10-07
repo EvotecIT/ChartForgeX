@@ -60,6 +60,11 @@ internal static partial class VisualSceneSvgRenderer {
                 }
                 writer.EndStartElement();
                 if (group.Tooltip != null) writer.StartElement("title").Text(group.Tooltip).EndElement();
+                if (group.ImageResource != null) {
+                    WriteImageResource(writer, group.ImageResource, prefix, i);
+                    SkipImageFallback(scene, ref i);
+                    writer.EndElement();
+                }
             } else if (node is VisualSceneEndGroup) writer.EndElement();
             else if (node is VisualSceneRectangle rect) {
                 writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
@@ -88,6 +93,7 @@ internal static partial class VisualSceneSvgRenderer {
                 writer.StartElement("image").Attribute("x", image.Bounds.X).Attribute("y", image.Bounds.Y)
                     .Attribute("width", image.Bounds.Width).Attribute("height", image.Bounds.Height)
                     .Attribute("preserveAspectRatio", "none").Attribute("href", image.DataUri);
+                if (image.Opacity != 1) writer.Attribute("opacity", image.Opacity);
                 Semantics(writer, image, prefix, i); writer.EndEmptyElement();
             } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i, options);
             else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, options);
@@ -216,6 +222,12 @@ internal static partial class VisualSceneSvgRenderer {
                     Text(writer, group.Href); Text(writer, group.Tooltip);
                     writer.Write(group.Translation.HasValue);
                     if (group.Translation.HasValue) Point(writer, group.Translation.Value);
+                    writer.Write(group.ImageResource != null);
+                    if (group.ImageResource != null) {
+                        var resource = group.ImageResource;
+                        Text(writer, resource.Href); Text(writer, resource.PreserveAspectRatio); Rectangle(writer, resource.Bounds);
+                        writer.Write(resource.Opacity); Text(writer, resource.Role); Text(writer, resource.Id);
+                    }
                     writer.Write(group.Metadata.Count);
                     // The immutable scene sorts metadata with ordinal keys before export.
                     foreach (var item in group.Metadata) { writer.Write(item.Key); writer.Write(item.Value); }
@@ -233,7 +245,7 @@ internal static partial class VisualSceneSvgRenderer {
                     writer.Write(slice.Cx); writer.Write(slice.Cy); writer.Write(slice.Outer);
                     writer.Write(slice.Inner); writer.Write(slice.Start); writer.Write(slice.Sweep);
                 } else if (node is VisualSceneImage image) {
-                    Rectangle(writer, image.Bounds); writer.Write(image.Image.Width); writer.Write(image.Image.Height);
+                    Rectangle(writer, image.Bounds); writer.Write(image.Opacity); writer.Write(image.Image.Width); writer.Write(image.Image.Height);
                     writer.Write(image.Image.Pixels.Length); writer.Write(image.Image.Pixels);
                 } else if (node is VisualSceneGradient gradient) {
                     WriteGradientIdentity(writer, gradient);

@@ -23,24 +23,28 @@ internal static partial class VisualCartesianCompiler {
                 var box = new ChartRect(x - width / 2, Math.Min(top, bottom), width, Math.Max(2, Math.Abs(bottom - top)));
                 var bounds = Extents(x - width / 2, Math.Min(maxY, box.Top), x + width / 2, Math.Max(minY, box.Bottom));
                 var color = PointColor(series, index, item, colors);
+                var sourcePaint = VisualChartPaint.Series(series, color, item);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, median));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label,
                     ("x", xValue), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
-                    builder.Line(x, minY, x, maxY, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity), stroke, role: "boxplot-whisker");
-                    builder.Line(x - cap / 2, minY, x + cap / 2, minY, color, stroke, role: "boxplot-cap");
-                    builder.Line(x - cap / 2, maxY, x + cap / 2, maxY, color, stroke, role: "boxplot-cap");
+                    builder.Line(x, minY, x, maxY, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity), stroke, role: "boxplot-whisker",
+                        paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity), ChartVisualPrimitives.BoxPlotWhiskerOpacity)));
+                    builder.Line(x - cap / 2, minY, x + cap / 2, minY, color, stroke, role: "boxplot-cap", paint: VisualChartPaint.Stroke(sourcePaint));
+                    builder.Line(x - cap / 2, maxY, x + cap / 2, maxY, color, stroke, role: "boxplot-cap", paint: VisualChartPaint.Stroke(sourcePaint));
                     var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotBodyFillOpacity);
                     var radius = Math.Min(ChartVisualPrimitives.BoxPlotBodyRadius, box.Height / 2);
-                    builder.Rect(box, fill, color, stroke, radius, role: "boxplot-body");
+                    builder.Rect(box, fill, color, stroke, radius, role: "boxplot-body",
+                        paint: new VisualScenePaintBinding(fill: sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BoxPlotBodyFillOpacity), stroke: sourcePaint));
                     DrawPattern(builder, RoundedRectanglePath(box, radius), ObservationPattern(series, item), fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "boxplot-pattern");
                     builder.Line(box.Left, map.Y(median), box.Right, map.Y(median), color,
-                        series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth, role: "boxplot-median");
+                        series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth, role: "boxplot-median", paint: VisualChartPaint.Stroke(sourcePaint));
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, map.Y(median)), bounds, median, label, labels, obstacles);
             } else {
                 var open = series.Points[raw].Y; var high = series.Points[raw + 1].Y; var low = series.Points[raw + 2].Y; var close = series.Points[raw + 3].Y;
                 var rising = close >= open; var color = FinancialColor(series, index, item, rising, colors);
+                var sourcePaint = SvgPaint.Of(color, SemanticMarkPaintRole(series, item));
                 var candle = series.Kind == ChartSeriesKind.Candlestick;
                 var width = candle ? Math.Max(8, Math.Min(22, plot.Width / Math.Max(1, count * 5))) : Math.Max(7, Math.Min(18, plot.Width / Math.Max(1, count * 6)));
                 var highY = map.Y(high); var lowY = map.Y(low); var openY = map.Y(open); var closeY = map.Y(close);
@@ -49,17 +53,18 @@ internal static partial class VisualCartesianCompiler {
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label,
                     ("x", xValue), ("open", open), ("high", high), ("low", low), ("close", close))) {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : candle ? ChartVisualPrimitives.CandlestickStrokeWidth : ChartVisualPrimitives.OhlcStrokeWidth;
-                    builder.Line(x, highY, x, lowY, color, stroke, role: candle ? "candlestick-wick" : "ohlc-stem");
+                    builder.Line(x, highY, x, lowY, color, stroke, role: candle ? "candlestick-wick" : "ohlc-stem", paint: VisualChartPaint.Stroke(sourcePaint));
                     if (candle) {
                         var height = Math.Max(2, Math.Abs(closeY - openY));
                         var body = new ChartRect(x - width / 2, (openY + closeY - height) / 2, width, height);
                         var opacity = rising ? ChartVisualPrimitives.CandlestickRisingFillOpacity : ChartVisualPrimitives.CandlestickFallingFillOpacity;
                         var fill = ChartColorMath.WithOpacity(color, opacity); var radius = Math.Min(ChartVisualPrimitives.CandlestickBodyRadius, height / 2);
-                        builder.Rect(body, fill, color, stroke, radius, role: "candlestick-body");
+                        builder.Rect(body, fill, color, stroke, radius, role: "candlestick-body",
+                            paint: new VisualScenePaintBinding(fill: sourcePaint.WithOpacity(fill, opacity), stroke: sourcePaint));
                         DrawPattern(builder, RoundedRectanglePath(body, radius), ObservationPattern(series, item), fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "candlestick-pattern");
                     } else {
-                        builder.Line(x - width / 2, openY, x, openY, color, stroke, role: "ohlc-open");
-                        builder.Line(x, closeY, x + width / 2, closeY, color, stroke, role: "ohlc-close");
+                        builder.Line(x - width / 2, openY, x, openY, color, stroke, role: "ohlc-open", paint: VisualChartPaint.Stroke(sourcePaint));
+                        builder.Line(x, closeY, x + width / 2, closeY, color, stroke, role: "ohlc-close", paint: VisualChartPaint.Stroke(sourcePaint));
                     }
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, closeY), bounds, close, label, labels, obstacles);

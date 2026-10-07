@@ -11,7 +11,7 @@ internal static partial class VisualSceneRasterRenderer {
         var origin = transform.Apply(new ChartPoint(node.Bounds.X, node.Bounds.Y));
         var scaleX = node.Bounds.Width / node.Image.Width; var scaleY = node.Bounds.Height / node.Image.Height;
         canvas.DrawImageTransformed(node.Image.Width, node.Image.Height, node.Image.Pixels,
-            transform.A * scaleX, transform.B * scaleX, transform.C * scaleY, transform.D * scaleY, origin.X, origin.Y);
+            transform.A * scaleX, transform.B * scaleX, transform.C * scaleY, transform.D * scaleY, origin.X, origin.Y, node.Opacity);
     }
 
     private static IDisposable? GroupClip(RgbaCanvas canvas, VisualSceneGroup group, VisualSceneTransform transform) {

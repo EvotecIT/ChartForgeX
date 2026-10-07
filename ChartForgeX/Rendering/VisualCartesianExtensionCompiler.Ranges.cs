@@ -13,6 +13,7 @@ internal static partial class VisualCartesianCompiler {
         var series = chart.Series[index]; var count = series.Points.Count / 2;
         var lower = new List<ChartPoint>(); var upper = new List<ChartPoint>(); var middle = new List<ChartPoint>();
         var area = series.Kind == ChartSeriesKind.RangeArea; var color = Color(series, index, colors);
+        var sourcePaint = VisualChartPaint.Series(series, color);
         for (var item = 0; item < count; item++) {
             var low = series.Points[item * 2]; var high = series.Points[item * 2 + 1]; var x = map.X(low.X);
             var breakBefore = low.BreakBefore || high.BreakBefore;
@@ -31,14 +32,19 @@ internal static partial class VisualCartesianCompiler {
             for (var p = lowFlat.Count - 1; p >= 0; p--) commands.Add(ChartPathCommand.LineTo(lowFlat[p].X, lowFlat[p].Y));
             var polygon = new ChartPath(commands); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
-            builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true);
+            builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true,
+                paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(fill, opacity)));
             DrawPattern(builder, polygon, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), area ? "range-area-pattern" : "range-band-pattern");
             var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : area ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, context.Theme.SeriesStrokeWidth) : ChartVisualPrimitives.RangeBandBoundaryStrokeWidth;
-            DrawLayeredPath(chart, builder, highPath, area ? color : ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeBandBoundaryOpacity), stroke, "range-upper");
-            DrawLayeredPath(chart, builder, lowPath, ChartColorMath.WithOpacity(color, area ? ChartVisualPrimitives.RangeAreaLowerStrokeOpacity : ChartVisualPrimitives.RangeBandBoundaryOpacity), stroke, "range-lower");
+            var upperOpacity = area ? 1 : ChartVisualPrimitives.RangeBandBoundaryOpacity;
+            var lowerOpacity = area ? ChartVisualPrimitives.RangeAreaLowerStrokeOpacity : ChartVisualPrimitives.RangeBandBoundaryOpacity;
+            var upperColor = ChartColorMath.WithOpacity(color, upperOpacity); var lowerColor = ChartColorMath.WithOpacity(color, lowerOpacity);
+            DrawLayeredPath(chart, builder, highPath, upperColor, sourcePaint.WithOpacity(upperColor, upperOpacity), stroke, "range-upper");
+            DrawLayeredPath(chart, builder, lowPath, lowerColor, sourcePaint.WithOpacity(lowerColor, lowerOpacity), stroke, "range-lower");
             if (area) builder.Path(ChartPathBuilder.FromPoints(middle.GetRange(offset, segment.Count), ChartSeriesKind.Line, series.Smooth),
                 stroke: ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), strokeWidth: ChartVisualPrimitives.RangeAreaMidlineStrokeWidth,
-                role: "range-midline", dash: new[] { ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap });
+                role: "range-midline", dash: new[] { ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap },
+                paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineOpacity)));
             obstacles.Add(new LabelObstacle(SeriesId(index) + "-envelope-" + Number(offset), new LabelMarkShape(new[] { highFlat.Concat(lowFlat.AsEnumerable().Reverse()).ToList() }, true, stroke, plot)));
             offset += segment.Count;
         }
@@ -51,8 +57,9 @@ internal static partial class VisualCartesianCompiler {
                 var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
                 if (hasOverride || series.MarkerRadius.HasValue) {
                     var r = series.MarkerRadius ?? context.Theme.MarkerRadius; var pointColor = PointColor(series, index, item, colors);
-                    builder.Ellipse(upper[item].X, upper[item].Y, r, r, pointColor, role: "range-marker");
-                    builder.Ellipse(lower[item].X, lower[item].Y, r, r, pointColor, role: "range-marker");
+                    var pointPaint = VisualChartPaint.Fill(VisualChartPaint.Series(series, pointColor, item));
+                    builder.Ellipse(upper[item].X, upper[item].Y, r, r, pointColor, role: "range-marker", paint: pointPaint);
+                    builder.Ellipse(lower[item].X, lower[item].Y, r, r, pointColor, role: "range-marker", paint: pointPaint);
                     DrawPattern(builder, EllipsePath(upper[item].X, upper[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
                     DrawPattern(builder, EllipsePath(lower[item].X, lower[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
                 }
@@ -81,12 +88,12 @@ internal static partial class VisualCartesianCompiler {
                 if (style.Kind == ChartBarStyle.SegmentedCapsule) {
                     DrawRangeCap(firstY); DrawRangeCap(secondY);
                 } else {
-                    builder.Line(x - width * .75, firstY, x + width * .75, firstY, color, stroke, role: "range-bar-cap");
-                    builder.Line(x - width * .75, secondY, x + width * .75, secondY, color, stroke, role: "range-bar-cap");
+                    builder.Line(x - width * .75, firstY, x + width * .75, firstY, color, stroke, role: "range-bar-cap", paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, item)));
+                    builder.Line(x - width * .75, secondY, x + width * .75, secondY, color, stroke, role: "range-bar-cap", paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, item)));
                 }
                 void DrawRangeCap(double y) {
                     var geometry = ChartSegmentedBarGeometry.RangeCap(style, x, y, bounds.Width);
-                    DrawSegmentedCap(builder, geometry, style, color, "range-bar");
+                    DrawSegmentedCap(builder, geometry, style, color, "range-bar", VisualChartPaint.Series(series, color, item));
                 }
             }
             ObservationLabel(chart, context, series, index, item, new ChartPoint(x, Math.Min(firstY, secondY)), bounds, Math.Max(first.Y, second.Y), label, labels, obstacles);

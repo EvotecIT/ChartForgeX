@@ -75,7 +75,8 @@ public sealed class PreparedTopology {
     private string AnimationPrefix(VisualAccessibility accessibility) => VisualSvgOptions.NamespaceFromExternalId(_options.IdScope)
         ?? VisualSceneSvgRenderer.Identity(_staticVisual.Scene, accessibility.Name, accessibility.Description, accessibility.Language,
             accessibility.IsDecorative, new VisualSvgOptions(colorVariables: _options.SvgColorVariables,
-                linkTarget: _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext)) + "-" + _animation!.PolicyIdentity;
+                linkTarget: _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext,
+                responsive: _options.UseResponsiveSvg)) + "-" + _animation!.PolicyIdentity;
 
     /// <summary>Renders the same prepared geometry through the dependency-free raster renderer.</summary>
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);

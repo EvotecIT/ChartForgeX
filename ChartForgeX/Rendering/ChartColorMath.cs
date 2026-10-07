@@ -4,6 +4,15 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartColorMath {
+    /// <summary>Interpolates RGBA paints in premultiplied sRGB, matching CSS color-mix().</summary>
+    internal static ChartColor BlendPremultiplied(ChartColor from, ChartColor to, double amount) {
+        amount = Clamp01(amount);
+        var a = from.A * (1 - amount); var b = to.A * amount; var alpha = a + b;
+        if (alpha <= 0) return ChartColor.Transparent;
+        byte Channel(byte first, byte second) => (byte)Math.Round((first * a + second * b) / alpha);
+        return ChartColor.FromRgba(Channel(from.R, to.R), Channel(from.G, to.G), Channel(from.B, to.B), (byte)Math.Round(alpha));
+    }
+
     public static ChartColor Blend(ChartColor a, ChartColor b, double amount) {
         amount = Clamp01(amount);
         var r = (byte)Math.Round(a.R + (b.R - a.R) * amount);
