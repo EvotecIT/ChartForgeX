@@ -18,7 +18,7 @@ Run the explicit dense-series reduction suite through the same wrapper:
 
 It reduces a deterministic 100,000-point signal to at most 1,200 retained points with both LTTB and min/max algorithms. Validation checks source count, point budget, endpoint preservation, and source-index consumption. The suite measures point reduction only; the rendering suite remains the separate artifact-generation baseline.
 
-The topology suite measures dense layout, completed routes and exports on small linked groups, a wrapped mesh, an overview and mixed authored/planned routes:
+The topology suite measures dense layout, completed routes and exports on small linked groups, a wrapped mesh, an overview, a 60-site replication capture from a large directory-monitoring report and mixed authored/planned routes:
 
 ```powershell
 .\Benchmarks\Invoke-RenderingBenchmark.ps1 -Suite Topology -WarmupCount 2 -IterationCount 9
@@ -26,6 +26,13 @@ The topology suite measures dense layout, completed routes and exports on small 
 
 `Prepare` measures detached layout and can defer route planning. `CompletePrepare` includes `Analyze()` to finish and inspect the routes inside the timed operation. `Svg` creates a fresh snapshot and exports it; `PreparedSvg` reuses a fully planned snapshot. Each lane checks attached ends, dimensions, node/edge counts, complete diagnostic digests and SVG outside timing.
 
+The charts suite measures the report charts of that large monitoring report: a 60-lane status timeline with about 1,300 periods, an 8-lane overview timeline, a two-series latency line and a calendar heatmap, each with host colour variables, rendered to SVG and PNG:
+
+```powershell
+.\Benchmarks\Invoke-RenderingBenchmark.ps1 -Suite Charts -WarmupCount 2 -IterationCount 9
+```
+
+Every lane validates byte-identical SVG and PNG outside timing, and both suites record `ThreadAllocatedBytes`, the managed allocation of the rendering thread inside the measured operation.
 Pass `-BaselineAssemblyPath` with a saved `net8.0/ChartForgeX.dll` to compare a change against that binary. Both binaries run in the same process with rotated ordering and identical fixtures; a geometry or SVG difference fails the comparison. Without a saved baseline, both lanes use the current binary as a repeatability check. Keep raw samples, binary hashes, source commits and processor/power settings with qualified comparisons. These machine-specific measurements run separately from ordinary correctness CI.
 
 ## Accepted rendering history

@@ -12,6 +12,7 @@ public static class TopologyBenchmarkCases {
         "small" => (DenseRouteFixture.Small(), DenseRouteFixture.Options(legend: false)),
         "mesh" => (DenseRouteFixture.Mesh(), DenseRouteFixture.Options(legend: false)),
         "overview" => (DenseRouteFixture.Overview(), DenseRouteFixture.Options(legend: false)),
+        "replication" => (DenseReplicationFixture.Sites60(), DenseReplicationFixture.Options()),
         "mixed" => (TopologyRoutingFixtures.Mixed(TopologyEdgeRouting.Orthogonal)
             .WithEdgeWaypoints("fixed", new ChartPoint(380, 142), new ChartPoint(550, 142)), TopologyRoutingFixtures.Options()),
         _ => throw new ArgumentOutOfRangeException(nameof(fixture))

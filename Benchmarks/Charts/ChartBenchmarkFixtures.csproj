@@ -8,8 +8,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ChartForgeX"><HintPath>$(ProductDll)</HintPath></Reference>
-    <Compile Include="../../ChartForgeX.Tests/DenseRouteFixture.cs" Link="DenseRouteFixture.cs" />
-    <Compile Include="../../ChartForgeX.Tests/TopologyRoutingFixtures.cs" Link="TopologyRoutingFixtures.cs" />
-    <Compile Include="../../ChartForgeX.Tests/DenseReplicationFixture.cs" Link="DenseReplicationFixture.cs" />
   </ItemGroup>
 </Project>

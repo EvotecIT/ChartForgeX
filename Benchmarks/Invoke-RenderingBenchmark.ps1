@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Rendering', 'Decimation', 'Topology')]
+    [ValidateSet('Rendering', 'Decimation', 'Topology', 'Charts')]
     [string] $Suite = 'Rendering',
 
     [ValidateRange(0, 100)]
@@ -41,15 +41,16 @@ if (-not (Test-Path -LiteralPath $assemblyPath -PathType Leaf)) {
 }
 
 $variables = @{ AssemblyPath = $assemblyPath }
-if ($Suite -eq 'Topology') {
+if ($Suite -in 'Topology', 'Charts') {
     if ([string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) { $BaselineAssemblyPath = $assemblyPath }
     $variables.BaselineAssemblyPath = (Resolve-Path -LiteralPath $BaselineAssemblyPath).Path
     $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
-    & dotnet build (Join-Path $PSScriptRoot 'Topology/TopologyBenchmarkFixtures.csproj') -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
-    if ($LASTEXITCODE -ne 0) { throw 'The topology benchmark fixture build failed.' }
-    $variables.FixtureAssemblyPath = Join-Path $fixtureOutput 'TopologyBenchmarkFixtures.dll'
+    $fixtureName = if ($Suite -eq 'Topology') { 'TopologyBenchmarkFixtures' } else { 'ChartBenchmarkFixtures' }
+    & dotnet build (Join-Path $PSScriptRoot "$Suite/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
+    if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
+    $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"
 } elseif (-not [string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) {
-    throw '-BaselineAssemblyPath is supported by the Topology suite.'
+    throw '-BaselineAssemblyPath is supported by the Topology and Charts suites.'
 }
 
 Import-Module PSPublishModule -MinimumVersion 3.0.72 -Force -ErrorAction Stop
