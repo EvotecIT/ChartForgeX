@@ -238,7 +238,7 @@ public sealed class PngVisualCanvasRenderer {
         foreach (var segment in ChartPointSegments.Split(points)) if (segment.Count == 1) canvas.DrawCircle(segment[0].X, segment[0].Y, 1.1, accent);
     }
 
-    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts) {
+    private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         if (kind == VisualCanvasInfoTileIconKind.Text) {
             var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(text, size, fontFamily, mode);
             // Baselines match the SVG output: DrawText takes the top of the em box, one font size above the baseline.
@@ -327,7 +327,7 @@ public sealed class PngVisualCanvasRenderer {
                 canvas.DrawLine(left, y + size * 0.36, cx, top, color, thick);
                 break;
             default:
-                DrawTileIcon(canvas, VisualCanvasInfoTileIconKind.Text, text, x, y, size, color, fontFamily);
+                DrawTileIcon(canvas, VisualCanvasInfoTileIconKind.Text, text, x, y, size, color, fontFamily, mode);
                 break;
         }
     }

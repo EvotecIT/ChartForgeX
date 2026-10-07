@@ -44,11 +44,7 @@ internal static partial class VisualSceneRasterRenderer {
         var stops = new RasterGradientStop[gradient.Stops.Count];
         for (var i = 0; i < stops.Length; i++) stops[i] = new RasterGradientStop(gradient.Stops[i].Offset, gradient.Stops[i].Color);
         canvas.FillContoursLinearGradient(contours, transform.Apply(gradient.Start), transform.Apply(gradient.End), stops, RasterGradientSpreadMethod.Pad);
-        if (gradient.Shape.Stroke.HasValue && gradient.Shape.StrokeWidth > 0) {
-            var lines = new List<IReadOnlyList<ChartPoint>>();
-            foreach (var contour in contours) lines.Add(contour);
-            canvas.StrokePolylines(lines, gradient.Shape.Stroke.Value, gradient.Shape.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round);
-        }
+        StrokeContours(canvas, contours, gradient.Shape);
     }
 
     private static void PaintTransformedText(RgbaCanvas canvas, VisualSceneText node, VisualSceneTransform transform, Typography.TextHinting? textHinting = null) {

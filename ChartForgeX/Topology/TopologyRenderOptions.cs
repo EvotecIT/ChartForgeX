@@ -11,8 +11,8 @@ public sealed class TopologyRenderOptions {
     internal TextMeasurementContext? TextMeasurement { get; set; }
     internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
     internal double ResolvedEdgeLabelScale { get; set; } = 1;
-    /// <summary>Gets or sets the text-width policy. Installed fonts measure the same faces used by PNG; portable estimates remain available as an explicit compatibility option.</summary>
-    public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.InstalledFonts;
+    /// <summary>Gets or sets the text-width policy. Portable estimates preserve host-independent geometry by default; installed-font measurement is opt-in.</summary>
+    public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.PortableEstimate;
     private ChartLineVisualStyle? _edgeVisualStyle;
     private TopologyLayoutPreset _layoutPreset;
     private TopologyViewPreset _preset;

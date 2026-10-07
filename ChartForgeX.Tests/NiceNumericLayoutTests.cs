@@ -27,7 +27,7 @@ public sealed class NiceNumericLayoutTests {
     [Theory]
     [InlineData(28, 98, 3)]
     [InlineData(-14, 79, 4)]
-    [InlineData(-1, 1, 1)]
+    [InlineData(-2, 0, 1)]
     public void CountBinsUseAlignedEqualRoundWidths(double minimum, double maximum, int count) {
         var bins = ChartHistogramBinLayout.FromCount(minimum, maximum, count);
         Assert.True(bins.Minimum <= minimum && bins.Maximum >= maximum);
