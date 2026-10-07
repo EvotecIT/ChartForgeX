@@ -4,6 +4,7 @@ using ChartForgeX.Accessibility;
 using ChartForgeX.Diagnostics;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.VisualArtifacts;
 
 namespace ChartForgeX.Rendering;
 
@@ -64,11 +65,15 @@ public sealed class PreparedVisual {
     private readonly VisualScene _scene;
     private readonly VisualAccessibility _accessibility;
     private readonly Lazy<string> _svgIdPrefix;
-    internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null) {
+    private readonly string? _semanticInterchange;
+    internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
+        _semanticInterchange = semanticInterchange?.ToJson();
         _svgIdPrefix = new Lazy<string>(() => VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative));
     }
+    internal VisualArtifactInterchangeEnvelope? SemanticInterchange => _semanticInterchange == null ? null : VisualArtifactInterchangeEnvelope.FromJson(_semanticInterchange);
+    internal VisualScene Scene => _scene;
     /// <summary>Gets the logical viewport.</summary>
     public VisualSize Size => _scene.Size;
     /// <summary>Gets preparation diagnostics.</summary>

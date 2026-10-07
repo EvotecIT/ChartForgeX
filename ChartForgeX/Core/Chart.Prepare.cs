@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Core;
 
@@ -11,11 +12,14 @@ public sealed partial class Chart : IVisualRenderable {
     public PreparedVisual Prepare(VisualRenderContext context) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         if (Series.Any(series => series == null)) throw new InvalidOperationException("Chart series must not contain null entries.");
-        var radial = Series.Count == 1 && (Series[0].Kind == ChartSeriesKind.Pie || Series[0].Kind == ChartSeriesKind.Donut);
+        var kind = Series.Count == 1 ? Series[0].Kind : (ChartSeriesKind?)null;
+        var radial = kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut;
+        var gauge = kind == ChartSeriesKind.Gauge;
+        var progress = kind is ChartSeriesKind.RadialBar or ChartSeriesKind.LayeredRadial;
         if (radial) {
             if (Series[0].Points.Any(point => double.IsNaN(point.Y) || double.IsInfinity(point.Y) || point.Y < 0))
                 throw new InvalidOperationException("Pie and donut values must be finite and non-negative.");
-        } else {
+        } else if (!gauge && !progress) {
             if (Series.Any(series => series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine &&
                 series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.StackedArea &&
                 series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.Scatter))
@@ -23,14 +27,28 @@ public sealed partial class Chart : IVisualRenderable {
             ChartGuards.RenderCompatibility(this);
         }
         var sourceFrame = context.Frame;
+        var frameColors = context.Theme.Resolve(context.ThemeMode);
+        TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
+            var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
+            if (configured == null) fallback.Font.Weight = weight;
+            return model.Resolve(fallback);
+        }
         var frame = new VisualFrame(sourceFrame.Title ?? Title, sourceFrame.Subtitle ?? Subtitle,
-            sourceFrame.ShowLegend, sourceFrame.LegendPosition, sourceFrame.ShowSurface, sourceFrame.TransparentBackground);
+            sourceFrame.ShowLegend, sourceFrame.LegendPosition, sourceFrame.ShowSurface, sourceFrame.TransparentBackground,
+            RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, 600),
+            RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
+            RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400));
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var entries = radial ? VisualRadialCompiler.LegendEntries(this, colors) : VisualCartesianCompiler.LegendEntries(this, colors);
+        var entries = radial ? VisualRadialCompiler.LegendEntries(this, colors)
+            : gauge ? VisualGaugeCompiler.LegendEntries(this, colors)
+            : progress ? VisualRadialProgressCompiler.LegendEntries(this, colors)
+            : VisualCartesianCompiler.LegendEntries(this, colors);
         var content = VisualFrameLayout.Build(builder, context, entries);
         if (radial) VisualRadialCompiler.Build(this, context, builder, content);
+        else if (gauge) VisualGaugeCompiler.Build(this, context, builder, content);
+        else if (progress) VisualRadialProgressCompiler.Build(this, context, builder, content);
         else VisualCartesianCompiler.BuildInViewport(this, context, builder, content);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= frame.Title;

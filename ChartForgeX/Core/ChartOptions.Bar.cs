@@ -75,8 +75,29 @@ public sealed partial class ChartOptions {
 
     internal bool HasPreparedGridStrokeWidth => _hasExplicitGridStyle || _gridLineStyle.StrokeWidth != 1 || _graphiteGridLineStyle.StrokeWidth != 1;
 
-    internal bool HasPreparedSegmentedBars => _hasExplicitBarStyle ? _barVisualStyle.Kind == ChartBarStyle.SegmentedCapsule
-        : _barVisualStyle.Kind == ChartBarStyle.SegmentedCapsule || _flatBarVisualStyle.Kind == ChartBarStyle.SegmentedCapsule;
+    /// <summary>Resolves explicitly configured bar treatments without inheriting a legacy theme path.</summary>
+    internal ChartBarVisualStyle ResolvePreparedBarVisualStyle() {
+        if (_hasExplicitBarStyle) return _barVisualStyle.Clone();
+        var prepared = ChartBarVisualStyle.Flat();
+        Apply(_barVisualStyle, ChartBarVisualStyle.Solid());
+        Apply(_flatBarVisualStyle, ChartBarVisualStyle.Flat());
+        return prepared;
+
+        void Apply(ChartBarVisualStyle configured, ChartBarVisualStyle original) {
+            if (configured.Kind != original.Kind) prepared.Kind = configured.Kind;
+            if (configured.BodyOpacity != original.BodyOpacity) prepared.BodyOpacity = configured.BodyOpacity;
+            if (configured.CapOpacity != original.CapOpacity) prepared.CapOpacity = configured.CapOpacity;
+            if (configured.CapThickness != original.CapThickness) prepared.CapThickness = configured.CapThickness;
+            if (configured.CapInset != original.CapInset) prepared.CapInset = configured.CapInset;
+            if (configured.CornerRadius != original.CornerRadius) prepared.CornerRadius = configured.CornerRadius;
+            if (configured.CapShadowOpacity != original.CapShadowOpacity) prepared.CapShadowOpacity = configured.CapShadowOpacity;
+            if (configured.CapShadowOffset != original.CapShadowOffset) prepared.CapShadowOffset = configured.CapShadowOffset;
+            if (configured.CapShadowSpread != original.CapShadowSpread) prepared.CapShadowSpread = configured.CapShadowSpread;
+            if (configured.CapHighlightOpacity != original.CapHighlightOpacity) prepared.CapHighlightOpacity = configured.CapHighlightOpacity;
+        }
+    }
+
+    internal bool HasPreparedBarCornerRadius => _hasExplicitBarStyle || _barVisualStyle.CornerRadius != 0 || _flatBarVisualStyle.CornerRadius != 0;
 
     /// <summary>
     /// Gets or sets a value indicating whether stacked bar totals are rendered above each category.

@@ -628,7 +628,7 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
 }
 
 /// <summary>Reusable information tile layer.</summary>
-public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
+public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     private readonly List<double> _miniChartValues = new();
     private string _icon;
     private string _label;
@@ -671,7 +671,7 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     public VisualCanvasInfoTileMiniChartKind MiniChartKind { get; set; }
     /// <summary>Gets or sets how label, value, and detail text should be fitted inside this tile.</summary>
     public VisualCanvasTextFitPolicy TextFitPolicy { get; set; }
-    /// <summary>Gets compact chart values rendered inside the tile.</summary>
+    /// <summary>Gets finite compact observations. Use <see cref="SparklineData"/> for original nullable sample slots.</summary>
     public IReadOnlyList<double> MiniChartValues => _miniChartValues;
     /// <summary>Gets or sets the optional compact chart maximum. When empty, the values define the scale.</summary>
     public double? MiniChartMaximum {
@@ -693,6 +693,7 @@ public sealed class VisualCanvasInfoTileLayer : VisualCanvasLayer {
 
     /// <summary>Sets the compact chart rendered inside the tile.</summary>
     public VisualCanvasInfoTileLayer WithMiniChart(VisualCanvasInfoTileMiniChartKind kind, IEnumerable<double>? values, double? maximum = null) {
+        SparklineData = null;
         VisualCanvas.ValidateEnum(kind, nameof(kind));
         _miniChartValues.Clear();
         if (values != null) {

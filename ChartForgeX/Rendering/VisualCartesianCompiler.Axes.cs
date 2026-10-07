@@ -39,6 +39,8 @@ internal static partial class VisualCartesianCompiler {
         // Tick text is shortened in its reserved strip; it cannot consume the entire chart width.
         left = Math.Min(left, viewport.Width * .35);
         right = Math.Min(right, viewport.Width * .35);
+        bottom = Math.Min(bottom, viewport.Height * .45);
+        top = Math.Min(top, viewport.Height * .25);
         return new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left - right), Math.Max(0, viewport.Height - top - bottom));
     }
 
@@ -46,7 +48,7 @@ internal static partial class VisualCartesianCompiler {
         var ticks = AxisTicks(axis, minimum, maximum);
         var width = 0d; var height = 0d;
         foreach (var tick in ticks) {
-            var metrics = builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style);
+            var metrics = RotatedMetrics(builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style), axis.LabelAngle);
             width = Math.Max(width, metrics.Width); height = Math.Max(height, metrics.Height);
         }
         return new TextMetrics(width, height, height);
@@ -86,10 +88,12 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.XAxis.Visible) {
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-x");
             var tickHeight = TickMetrics(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, null, labels).Height;
-            var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width,
-                Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing)));
-            DrawAxisLabels(builder, chart.Options.XAxis, xTicks, map.X, true, false, bounds, style, spacing, null, labels);
             var title = XAxisTitle(chart);
+            var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
+                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground })).Height + spacing;
+            var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width,
+                Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing - titleHeight)));
+            DrawAxisLabels(builder, chart.Options, chart.Options.XAxis, xTicks, map.X, true, false, bounds, style, spacing, null, labels);
             if (!string.IsNullOrEmpty(title)) DrawAxisTitle(chart, context, builder, title,
                 new ChartRect(plot.Left, bounds.Bottom + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - spacing)),
                 colors, TextAlignment.Center, "axis-x-title");
@@ -97,7 +101,7 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.YAxis.Visible) {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-y");
             var bounds = new ChartRect(viewport.Left, plot.Top, Math.Max(0, plot.Left - viewport.Left - spacing), plot.Height);
-            DrawAxisLabels(builder, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, style, spacing, chart.Options.ValueFormatter, labels);
+            DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, style, spacing, chart.Options.ValueFormatter, labels);
             if (!string.IsNullOrEmpty(chart.YAxisTitle)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
                 new ChartRect(plot.Left, viewport.Top, Math.Max(0, secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0 ? plot.Width / 2 - spacing / 2 : plot.Width), Math.Max(0, plot.Top - viewport.Top - spacing)),
                 colors, TextAlignment.Left, "axis-y-title");
@@ -106,7 +110,7 @@ internal static partial class VisualCartesianCompiler {
             var ticks = AxisTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             if (chart.Options.SecondaryYAxis.ShowLine) builder.Line(plot.Right, plot.Top, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-secondary-y");
             var bounds = new ChartRect(plot.Right + spacing, plot.Top, Math.Max(0, viewport.Right - plot.Right - spacing), plot.Height);
-            DrawAxisLabels(builder, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, style, spacing, chart.Options.ValueFormatter, labels);
+            DrawAxisLabels(builder, chart.Options, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, style, spacing, chart.Options.ValueFormatter, labels);
             if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle)) {
                 var width = chart.YAxisTitle.Length > 0 && chart.Options.YAxis.Visible ? plot.Width / 2 - spacing / 2 : plot.Width;
                 DrawAxisTitle(chart, context, builder, chart.SecondaryYAxisTitle,
@@ -120,7 +124,7 @@ internal static partial class VisualCartesianCompiler {
         axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray()
             : ChartTicks.GenerateInside(axis, minimum, maximum);
 
-    private static void DrawAxisLabels(VisualSceneBuilder builder, ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> coordinate,
+    private static void DrawAxisLabels(VisualSceneBuilder builder, ChartOptions options, ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> coordinate,
         bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels) {
         var requests = new List<LabelPlacementRequest>();
         var role = horizontal ? "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
@@ -134,21 +138,35 @@ internal static partial class VisualCartesianCompiler {
             builder.AddRegion(new VisualSemanticRegion(role + "-" + Number(index++), role, regionBounds,
                 TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture) + " (" + Number(tick) + ")"));
             if (text.Length == 0) continue;
-            requests.Add(new LabelPlacementRequest(text, anchor, style, horizontal
+            var tickStyle = style;
+            if (horizontal && options.TryGetXAxisLabelHighlight(tick, out var highlight)) { tickStyle = style.Clone(); tickStyle.Color = highlight; }
+            requests.Add(new LabelPlacementRequest(text, anchor, tickStyle, horizontal
                 ? new[] { new LabelCandidate(0, 0, .5, 0), new LabelCandidate(0, 0, 0, 0), new LabelCandidate(0, 0, 1, 0) }
                 : new[] { new LabelCandidate(0, 0, secondary ? 0 : 1, .5), new LabelCandidate(0, 0, secondary ? 0 : 1, 0), new LabelCandidate(0, 0, secondary ? 0 : 1, 1) }));
         }
         // End ticks use the same bounds policy as intermediate ticks: labels cannot escape the measured frame.
-        foreach (var request in requests) request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
+        foreach (var request in requests) request.MeasuredSize = RotatedMetrics(builder.MeasureText(request.Text, request.Style), axis.LabelAngle);
         var gap = axis.LabelDensity == ChartLabelDensity.Dense ? 0 : axis.LabelDensity == ChartLabelDensity.Relaxed ? spacing * 2 : spacing / 2;
-        var placed = new LabelPlacementService().Place(requests, bounds, null, gap, builder.MeasureText);
+        TextMetrics MeasureRotated(string text, TextStyle textStyle) => RotatedMetrics(builder.MeasureText(text, textStyle), axis.LabelAngle);
+        var placement = new LabelPlacementService();
+        // All explicitly permits overlaps; fitting still keeps each individual label inside its axis strip.
+        var placed = axis.LabelDensity == ChartLabelDensity.All
+            ? requests.Select(request => placement.Place(new[] { request }, bounds, null, 0, MeasureRotated)[0]).ToArray()
+            : placement.Place(requests, bounds, null, gap, MeasureRotated);
         if (placed.Any(label => label.IsDropped || label.IsEllipsized))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "Axis labels were shortened or omitted to remain within the available frame."));
         foreach (var label in placed) {
             if (label.IsDropped) continue;
             var displayedStyle = DisplayedStyle(label.Request.Style);
-            builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
-                role: role);
+            displayedStyle.Alignment = TextAlignment.Left;
+            if (axis.LabelAngle == 0) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle, role: role);
+            else {
+                var metrics = builder.MeasureText(label.Text, displayedStyle);
+                var cx = label.Bounds.Left + label.Bounds.Width / 2;
+                var cy = label.Bounds.Top + label.Bounds.Height / 2;
+                using (builder.PushRotation(axis.LabelAngle, cx, cy))
+                    builder.Text(label.Text, cx - metrics.Width / 2, cy - metrics.Height / 2 + builder.TextAscent(displayedStyle), displayedStyle, role: role);
+            }
         }
     }
 
@@ -164,5 +182,12 @@ internal static partial class VisualCartesianCompiler {
         if (label.IsDropped) return;
         var displayed = DisplayedStyle(style); displayed.Alignment = TextAlignment.Left;
         builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayed), displayed, role: role);
+    }
+
+    private static TextMetrics RotatedMetrics(TextMetrics metrics, double angle) {
+        if (angle == 0) return metrics;
+        var radians = angle * Math.PI / 180;
+        var cosine = Math.Abs(Math.Cos(radians)); var sine = Math.Abs(Math.Sin(radians));
+        return new TextMetrics(metrics.Width * cosine + metrics.Height * sine, metrics.Width * sine + metrics.Height * cosine, metrics.LineHeight);
     }
 }

@@ -33,15 +33,23 @@ internal abstract class VisualSceneNode {
 }
 
 internal sealed class VisualSceneGroup : VisualSceneNode {
-    internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata)
+    internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata,
+        VisualScenePath? pathClip = null, VisualRotation? rotation = null, string? href = null, string? tooltip = null,
+        ChartPoint? translation = null)
         : base(role, id) {
         Clip = clip;
+        PathClip = pathClip; Rotation = rotation; Href = href; Tooltip = tooltip; Translation = translation;
         var copy = new SortedDictionary<string, string>(StringComparer.Ordinal);
         if (metadata != null) foreach (var item in metadata) copy.Add(item.Key, item.Value);
         Metadata = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(copy);
     }
     internal ChartRect? Clip { get; }
     internal IReadOnlyDictionary<string, string> Metadata { get; }
+    internal VisualScenePath? PathClip { get; }
+    internal VisualRotation? Rotation { get; }
+    internal ChartPoint? Translation { get; }
+    internal string? Href { get; }
+    internal string? Tooltip { get; }
 }
 
 internal sealed class VisualSceneEndGroup : VisualSceneNode {
@@ -89,13 +97,18 @@ internal sealed class VisualSceneLine : VisualSceneMark {
 
 internal sealed class VisualScenePath : VisualSceneMark {
     internal VisualScenePath(ChartPath path, bool close, ChartColor? fill, ChartColor? stroke,
-        double strokeWidth, string? role, string? id) : base(fill, stroke, strokeWidth, role, id) {
+        double strokeWidth, string? role, string? id, double[]? dash = null,
+        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round) : base(fill, stroke, strokeWidth, role, id) {
         var copy = new ChartPathCommand[path.Commands.Count];
         for (var i = 0; i < copy.Length; i++) copy[i] = path.Commands[i];
         Commands = Array.AsReadOnly(copy); Close = close;
+        Dash = dash == null ? null : Array.AsReadOnly((double[])dash.Clone()); Cap = cap; Join = join;
     }
     internal IReadOnlyList<ChartPathCommand> Commands { get; }
     internal bool Close { get; }
+    internal IReadOnlyList<double>? Dash { get; }
+    internal VisualStrokeCap Cap { get; }
+    internal VisualStrokeJoin Join { get; }
 }
 
 internal sealed class VisualSceneSlice : VisualSceneMark {

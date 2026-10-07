@@ -76,7 +76,7 @@ internal static partial class VisualBlockRendering {
             if (card.MiniBarMinimum.HasValue && card.MiniBarMaximum.HasValue && card.MiniBarMaximum.Value <= card.MiniBarMinimum.Value) throw new InvalidOperationException("Metric card mini bar maximum must be greater than minimum.");
             if (card.MiniBarHighlightIndex.HasValue && card.MiniBarHighlightIndex.Value >= card.MiniBars.Count) throw new InvalidOperationException("Metric card mini bar highlight index must reference an existing mini bar.");
             if (card.MiniSparklineMinimum.HasValue && card.MiniSparklineMaximum.HasValue && card.MiniSparklineMaximum.Value <= card.MiniSparklineMinimum.Value) throw new InvalidOperationException("Metric card mini sparkline maximum must be greater than minimum.");
-            if (card.SecondaryMiniSparkline.Count > 0 && card.SecondaryMiniSparkline.Count != card.MiniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
+            if (card.SecondarySparklineCount > 0 && card.SecondarySparklineCount != card.SparklineCount) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
             return;
         }
 
@@ -314,11 +314,14 @@ internal static partial class VisualBlockRendering {
     public static int MiniBarHighlightIndex(MetricCard card) => card.MiniBarHighlightIndex ?? card.MiniBars.Count - 1;
 
     public static (double Minimum, double Maximum) MiniSparklineBounds(MetricCard card) {
-        if (card.SecondaryMiniSparkline.Count == 0 || card.MiniSparklineStyle != MetricCardSparklineStyle.Line) return ValueBounds(card.MiniSparkline, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
-        var values = new List<double>(card.MiniSparkline.Count + card.SecondaryMiniSparkline.Count);
-        values.AddRange(card.MiniSparkline);
-        values.AddRange(card.SecondaryMiniSparkline);
-        return ValueBounds(values, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: false);
+        var primary = card.GetSparklineData();
+        var values = new List<double?>(primary.Values); var includeZero = primary.IncludeZero;
+        if (card.SecondarySparklineCount > 0 && card.MiniSparklineStyle == MetricCardSparklineStyle.Line) {
+            var secondary = card.GetSecondarySparklineData();
+            values.AddRange(secondary.Values); includeZero |= secondary.IncludeZero;
+        }
+        var data = new SparklineData(values, card.MiniSparklineMinimum, card.MiniSparklineMaximum, includeZero: includeZero);
+        return (data.Minimum, data.Maximum);
     }
 
     public static VisualMiniBar[] CreateMiniBars(MetricCard card, double x, double y, double width, double height) {
@@ -346,37 +349,25 @@ internal static partial class VisualBlockRendering {
     }
 
     public static VisualMiniSparkline CreateMiniSparkline(MetricCard card, double x, double y, double width, double height) {
-        return CreateMiniSparkline(card, card.MiniSparkline, card.MiniSparklineColor, card.MiniSparklineFillColor, x, y, width, height);
+        return CreateMiniSparkline(card, card.GetSparklineData(), card.MiniSparklineColor, card.MiniSparklineFillColor, x, y, width, height);
     }
 
     public static VisualMiniSparkline CreateSecondaryMiniSparkline(MetricCard card, double x, double y, double width, double height) {
         var color = card.SecondaryMiniSparklineColor ?? (card.MiniSparklineColor ?? PaletteAt(card.Options.Theme, 0)).WithAlpha(220);
-        return CreateMiniSparkline(card, card.SecondaryMiniSparkline, color, null, x, y, width, height);
+        return CreateMiniSparkline(card, card.GetSecondarySparklineData(), color, null, x, y, width, height);
     }
 
-    private static VisualMiniSparkline CreateMiniSparkline(MetricCard card, IReadOnlyList<double> values, ChartColor? lineColor, ChartColor? fill, double x, double y, double width, double height) {
+    private static VisualMiniSparkline CreateMiniSparkline(MetricCard card, SparklineData samples, ChartColor? lineColor, ChartColor? fill, double x, double y, double width, double height) {
         var theme = card.Options.Theme;
         var bounds = MiniSparklineBounds(card);
         var color = lineColor ?? (card.Status == VisualStatus.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Status));
         var fillColor = fill ?? color.WithAlpha((byte)Math.Round(255 * ChartVisualPrimitives.MiniSparklineFillOpacity));
-        var points = new ChartPoint[values.Count];
-        var step = width / Math.Max(1, values.Count - 1);
-        for (var i = 0; i < values.Count; i++) {
-            var ratio = Math.Max(0, Math.Min(1, (values[i] - bounds.Minimum) / (bounds.Maximum - bounds.Minimum)));
-            points[i] = new ChartPoint(x + i * step, y + height - ratio * height);
-        }
-
-        var area = new ChartPoint[points.Length + 2];
-        area[0] = new ChartPoint(points[0].X, y + height);
-        for (var i = 0; i < points.Length; i++) area[i + 1] = points[i];
-        area[area.Length - 1] = new ChartPoint(points[points.Length - 1].X, y + height);
+        var data = new SparklineData(samples.Values, bounds.Minimum, bounds.Maximum, samples.MissingDataPolicy);
+        var points = SparklineLayout.Project(data, new ChartRect(x, y, width, height));
         var strokeWidth = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? 3.4 : ChartVisualPrimitives.MiniSparklineStrokeWidth;
         var currentRadius = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? 5.2 : ChartVisualPrimitives.MiniSparklineCurrentRadius;
-        return new VisualMiniSparkline(points, area, color, fillColor, strokeWidth, currentRadius);
-    }
-
-    public static IReadOnlyList<ChartPoint> SmoothMiniSparklinePoints(VisualMiniSparkline sparkline) {
-        return ChartPathBuilder.FromPoints(sparkline.Points, ChartSeriesKind.Line, smooth: true).Flatten(5);
+        return new VisualMiniSparkline(points, color, fillColor, strokeWidth, currentRadius,
+            samples.Values[0].HasValue, samples.Values[samples.Values.Count - 1].HasValue);
     }
 
     public static double SegmentedTotal(SegmentedMetricBlock block) {
@@ -645,6 +636,9 @@ internal static partial class VisualBlockRendering {
     }
 
     public static (double Minimum, double Maximum) TableCellMicroVisualBounds(ChartTableCell cell) {
+        if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline) {
+            var data = cell.GetSparklineData(); return (data.Minimum, data.Maximum);
+        }
         var minimum = cell.MicroVisualMinimum ?? Minimum(cell.MicroVisualValues);
         var maximum = cell.MicroVisualMaximum ?? Maximum(cell.MicroVisualValues);
         if (Math.Abs(maximum - minimum) < double.Epsilon) maximum = minimum + 1;
@@ -656,9 +650,9 @@ internal static partial class VisualBlockRendering {
     private static void ValidateTableCellMicroVisual(ChartTableCell cell) {
         if (cell.BadgeText.Length > 24) throw new InvalidOperationException("Chart table cell badge text must be twenty-four characters or fewer.");
         if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.None) return;
-        if (cell.MicroVisualValues.Count == 0) throw new InvalidOperationException("Chart table cell microvisuals must contain values.");
-        if (cell.MicroVisualValues.Count > MaximumTableMicroVisualPoints) throw new InvalidOperationException("Chart table cell microvisuals must contain no more than " + MaximumTableMicroVisualPoints.ToString(CultureInfo.InvariantCulture) + " values.");
-        if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline && cell.MicroVisualValues.Count < 2) throw new InvalidOperationException("Chart table cell sparklines require at least two values.");
+        if (cell.MicroVisualSampleCount == 0) throw new InvalidOperationException("Chart table cell microvisuals must contain values.");
+        if (cell.MicroVisualSampleCount > MaximumTableMicroVisualPoints) throw new InvalidOperationException("Chart table cell microvisuals must contain no more than " + MaximumTableMicroVisualPoints.ToString(CultureInfo.InvariantCulture) + " values.");
+        if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline && cell.MicroVisualSampleCount < 2) throw new InvalidOperationException("Chart table cell sparklines require at least two values.");
         foreach (var value in cell.MicroVisualValues) if (!IsFinite(value)) throw new InvalidOperationException("Chart table cell microvisual values must be finite.");
         if (cell.MicroVisualMinimum.HasValue && !IsFinite(cell.MicroVisualMinimum.Value)) throw new InvalidOperationException("Chart table cell microvisual minimum values must be finite.");
         if (cell.MicroVisualMaximum.HasValue && !IsFinite(cell.MicroVisualMaximum.Value)) throw new InvalidOperationException("Chart table cell microvisual maximum values must be finite.");

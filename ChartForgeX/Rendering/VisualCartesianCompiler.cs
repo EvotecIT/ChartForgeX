@@ -9,13 +9,24 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>Compiles the initial Cartesian proof directly into shared, immutable scene commands.</summary>
+/// <summary>Compiles Cartesian geometry, styles and semantic alternatives into shared immutable scene commands.</summary>
 internal static partial class VisualCartesianCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         var entries = new List<VisualLegendEntry>();
+        if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
+            && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].Points.Count > 1) {
+            var series = chart.Series[0];
+            for (var point = 0; point < series.Points.Count; point++) {
+                var label = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point].X) ?? "Item " + Number(point + 1);
+                var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
+                entries.Add(new VisualLegendEntry(label, PointColor(series, 0, point, colors), PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey));
+            }
+            return entries;
+        }
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (series.ShowInLegend) entries.Add(new VisualLegendEntry(series.Name, Color(series, index, colors), SeriesId(index)));
+            if (series.ShowInLegend) entries.Add(new VisualLegendEntry(series.Name, Color(series, index, colors), SeriesId(index),
+                series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey));
         }
         return entries;
     }
@@ -52,19 +63,25 @@ internal static partial class VisualCartesianCompiler {
         var labels = new List<LabelPlacementRequest>();
         var obstacles = new List<LabelObstacle>();
         using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null) {
-            DrawAnnotations(chart, context, builder, plot, map, colors);
-            for (var index = 0; index < chart.Series.Count; index++) {
+            DrawAnnotations(chart, context, builder, plot, map, colors, true);
+            foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
                 var seriesMap = series.YAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
                 using (builder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
-                    ["aria-label"] = series.Name
+                    ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
+                    ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
+                    ["data-cfx-source-points"] = Number(series.SourcePointCount), ["data-cfx-rendered-points"] = Number(series.Points.Count),
+                    ["data-cfx-decimation"] = series.DecimationMode?.ToString() ?? string.Empty, ["aria-label"] = series.Name
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, builder, plot, coordinates, seriesMap, index, colors, labels, obstacles);
                     else DrawPoints(chart, context, builder, plot, seriesMap, index, colors, labels, obstacles);
                 }
             }
+            DrawAnnotations(chart, context, builder, plot, map, colors, false);
         }
+        if (chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked)
+            AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, colors, labels);
         DrawDataLabels(context, builder, plot, labels, obstacles);
     }
 
@@ -76,27 +93,15 @@ internal static partial class VisualCartesianCompiler {
                     break;
                 default: throw Unsupported("series kind " + series.Kind);
             }
-            if (series.FillPattern != ChartFillPattern.None || series.PointFillPatterns.Any(pattern => pattern.HasValue && pattern != ChartFillPattern.None))
-                throw Unsupported("fill patterns");
-            if (series.StateRole != ChartSeriesState.None) throw Unsupported("state color treatments; provide an explicit color for this proof");
-            if ((series.Kind == ChartSeriesKind.StackedArea || series.Kind == ChartSeriesKind.Bar && chart.Options.BarMode == ChartBarMode.Stacked)
-                && series.YAxis == ChartAxisSide.Secondary) throw Unsupported("secondary-axis stacks");
-            if (series.Kind == ChartSeriesKind.StackedArea && chart.Options.YAxis.Scale == ChartScaleKind.Logarithmic && series.Points.Any(point => point.Y <= 0))
+            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            if (series.Kind == ChartSeriesKind.StackedArea && axis.Scale == ChartScaleKind.Logarithmic && series.Points.Any(point => point.Y <= 0))
                 throw new InvalidOperationException("Logarithmic stacked areas require positive values.");
         }
-        if (chart.Options.XAxis.LabelAngle != 0 || chart.Options.YAxis.LabelAngle != 0 || chart.Options.SecondaryYAxis.LabelAngle != 0)
-            throw Unsupported("rotated axis labels");
-        if (chart.Options.HasPreparedSegmentedBars) throw Unsupported("segmented capsule bars");
-        if (chart.Options.ShowStackTotals) throw Unsupported("stack total labels");
-        if (chart.Options.ShowPointLegend) throw Unsupported("point legends for Cartesian series");
-        if (chart.Options.XAxis.LabelDensity == ChartLabelDensity.All || chart.Options.YAxis.LabelDensity == ChartLabelDensity.All || chart.Options.SecondaryYAxis.LabelDensity == ChartLabelDensity.All)
-            throw Unsupported("unconditionally visible axis labels; use automatic, dense or relaxed placement");
     }
 
-    private static NotSupportedException Unsupported(string feature) => new("The Phase 1 prepared Cartesian compiler does not support " + feature + ". The legacy export remains available.");
-    private static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors) => series.Color ?? colors.Palette[index % colors.Palette.Count];
-    private static ChartColor PointColor(ChartSeries series, int seriesIndex, int pointIndex, VisualThemeColors colors) =>
-        pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue ? series.PointColors[pointIndex]!.Value : Color(series, seriesIndex, colors);
+    private static NotSupportedException Unsupported(string feature) => new("The Cartesian compiler does not support " + feature + ".");
+    private static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors) => ChartSeriesColours.Resolve(series, index, colors);
+    private static ChartColor PointColor(ChartSeries series, int seriesIndex, int pointIndex, VisualThemeColors colors) => ChartSeriesColours.Point(series, seriesIndex, pointIndex, colors);
     private static string SeriesId(int index) => "series-" + Number(index);
     private static string PointId(int series, int point) => SeriesId(series) + "-point-" + Number(point);
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
@@ -111,24 +116,44 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
+            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         });
     }
 
-    private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors) {
+    private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands) {
         for (var index = 0; index < chart.Annotations.Count; index++) {
             var annotation = chart.Annotations[index];
+            if (annotation.EndValue.HasValue != bands) continue;
             var horizontal = annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand;
-            var position = horizontal ? map.Y(annotation.Value) : map.X(annotation.Value);
+            var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.Value)));
             var color = annotation.Color;
+            var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
+            var id = "annotation-" + Number(index);
+            using (builder.PushGroup(id, bands ? "annotation-band" : "annotation-line", new Dictionary<string, string> {
+                ["data-cfx-kind"] = annotation.Kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
+                ["data-cfx-end"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty, ["data-cfx-label"] = annotation.Label
+            })) {
             if (annotation.EndValue.HasValue) {
-                var end = horizontal ? map.Y(annotation.EndValue.Value) : map.X(annotation.EndValue.Value);
-                builder.Rect(horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
-                    : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height), color.WithAlpha((byte)Math.Round(color.A * annotation.Opacity)), role: "annotation-band");
-            } else if (horizontal) builder.Line(plot.Left, position, plot.Right, position, color, context.Theme.AxisStrokeWidth, role: "annotation-line");
-            else builder.Line(position, plot.Top, position, plot.Bottom, color, context.Theme.AxisStrokeWidth, role: "annotation-line");
-            if (!string.IsNullOrEmpty(annotation.Label)) builder.Text(annotation.Label, horizontal ? plot.Left + context.Theme.Spacing : position + context.Theme.Spacing,
-                horizontal ? position - context.Theme.Spacing : plot.Top + context.Theme.Typography.AxisSize, context.Theme.Typography.AxisSize, colors.MutedForeground, role: "annotation-label");
+                var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.EndValue.Value)));
+                bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
+                    : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height);
+                builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band");
+            } else if (horizontal) builder.Line(plot.Left, position, plot.Right, position, color, context.Theme.AxisStrokeWidth, role: "annotation-line",
+                dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap });
+            else builder.Line(position, plot.Top, position, plot.Bottom, color, context.Theme.AxisStrokeWidth, role: "annotation-line",
+                dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap });
+            builder.AddRegion(new VisualSemanticRegion(id, bands ? "annotation-band" : "annotation-line", bounds, annotation.Label));
+            if (!string.IsNullOrEmpty(annotation.Label)) {
+                var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = bands ? colors.MutedForeground : color };
+                var anchor = new ChartPoint(horizontal ? plot.Left + context.Theme.Spacing : position + context.Theme.Spacing,
+                    horizontal ? position + (bands ? context.Theme.Spacing : -context.Theme.Spacing) : plot.Top + context.Theme.Spacing);
+                var request = new LabelPlacementRequest(annotation.Label, anchor, style, new[] { new LabelCandidate(0, 0), new LabelCandidate(0, 0, 1, 1) });
+                var label = new LabelPlacementService().Place(new[] { request }, plot, null, 0, builder.MeasureText)[0];
+                if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("cartesian.annotation-label-overflow", "An annotation label was shortened or omitted within the plot."));
+                if (!label.IsDropped) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(style), style, role: "annotation-label");
+            }
+            }
         }
     }
 }

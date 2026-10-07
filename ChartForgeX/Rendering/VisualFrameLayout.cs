@@ -8,10 +8,17 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal sealed class VisualLegendEntry {
-    internal VisualLegendEntry(string label, ChartColor color, string id) { Label = label; Color = color; Id = id; }
+    internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
+        ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null) {
+        Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
+    }
     internal string Label { get; }
     internal ChartColor Color { get; }
     internal string Id { get; }
+    internal ChartSeriesKind? Kind { get; }
+    internal ChartFillPattern Pattern { get; }
+    internal ChartSeriesState StateRole { get; }
+    internal string? SeriesKey { get; }
 }
 
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
@@ -22,11 +29,19 @@ internal static class VisualFrameLayout {
         var typography = context.Theme.Typography;
         var gap = context.Theme.Spacing;
         var pad = context.Layout.Padding;
+        TextStyle Style(TextStyle? explicitStyle, double size, int weight, ChartColor color) {
+            if (explicitStyle != null) return explicitStyle;
+            var font = context.Font; font.Weight = weight;
+            return new TextStyle { Font = font, FontSize = size, Color = color, LineHeight = 1 };
+        }
+        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 600, colors.Foreground);
+        var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
+        var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background");
         var left = pad; var right = size.Width - pad; var top = pad; var bottom = size.Height - pad;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
-            Header(context.Frame.Title, typography.TitleSize, 600, colors.Foreground);
-            Header(context.Frame.Subtitle, typography.SubtitleSize, 400, colors.MutedForeground);
+            Header(context.Frame.Title, titleStyle);
+            Header(context.Frame.Subtitle, subtitleStyle);
         }
         if (context.Frame.ShowLegend && entries.Count > 0) {
             var position = context.Frame.LegendPosition;
@@ -35,12 +50,12 @@ internal static class VisualFrameLayout {
             var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
             var rows = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
             foreach (var entry in entries) {
-                var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), typography.LegendSize).Width + 28);
+                var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), legendStyle).Width + 28);
                 if (row.Count > 0 && (side || used + gap + width > legendWidth)) { rows.Add(row); row = new(); used = 0; }
                 row.Add(entry); used += (row.Count > 1 ? gap : 0) + width;
             }
             if (row.Count > 0) rows.Add(row);
-            var lineHeight = typography.LegendSize * 1.5;
+            var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
             var available = Math.Max(0, (bottom - top) * (side ? 1 : 0.35));
             var visible = Math.Min(rows.Count, (int)Math.Floor(available / lineHeight));
             if (visible < rows.Count) builder.AddDiagnostic(new VisualDiagnostic("frame.legend-overflow", "Some legend entries do not fit the resolved frame."));
@@ -50,17 +65,32 @@ internal static class VisualFrameLayout {
             using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {
                 for (var r = 0; r < visible; r++) {
                     var rowWidth = 0d;
-                    foreach (var entry in rows[r]) rowWidth += Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), typography.LegendSize).Width + 28) + gap;
+                    foreach (var entry in rows[r]) rowWidth += Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), legendStyle).Width + 28) + gap;
                     rowWidth = Math.Max(0, rowWidth - gap);
                     var alignRight = position is ChartLegendPosition.TopRight or ChartLegendPosition.BottomRight;
                     var alignCenter = position is ChartLegendPosition.Top or ChartLegendPosition.Bottom;
                     var cursor = x + (alignRight ? legendWidth - rowWidth : alignCenter ? (legendWidth - rowWidth) / 2 : 0);
                     foreach (var entry in rows[r]) {
-                        var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), typography.LegendSize).Width + 28);
-                        var baseline = y + r * lineHeight + builder.TextAscent(typography.LegendSize);
-                        builder.Rect(new ChartRect(cursor, baseline - typography.LegendSize * 0.65, 10, 10), entry.Color, role: "legend-swatch");
-                        var label = Fit(OneLine(entry.Label), Math.Max(0, width - 22), typography.LegendSize, 400);
-                        builder.Text(label, cursor + 18, baseline, typography.LegendSize, colors.Foreground, role: "legend-label");
+                        var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), legendStyle).Width + 28);
+                        var baseline = y + r * lineHeight + builder.TextAscent(legendStyle);
+                        var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, 10, 10);
+                        using (builder.PushGroup("legend-" + entry.Id, "legend-entry", new Dictionary<string, string> {
+                            ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
+                            ["aria-label"] = entry.Label
+                        })) {
+                            if (entry.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine)
+                                builder.Line(swatch.Left, swatch.Top + 5, swatch.Right, swatch.Top + 5, entry.Color, context.Theme.SeriesStrokeWidth, role: "legend-swatch");
+                            else {
+                                builder.Rect(swatch, entry.Color, role: "legend-swatch");
+                                if (entry.Pattern != ChartFillPattern.None) builder.Pattern(new ChartPath(new[] {
+                                    ChartPathCommand.MoveTo(swatch.Left, swatch.Top), ChartPathCommand.LineTo(swatch.Right, swatch.Top),
+                                    ChartPathCommand.LineTo(swatch.Right, swatch.Bottom), ChartPathCommand.LineTo(swatch.Left, swatch.Bottom)
+                                }), entry.Pattern, colors.Surface, spacing: 4, strokeWidth: 1, role: "legend-pattern");
+                            }
+                            var label = Fit(OneLine(entry.Label), Math.Max(0, width - 22), legendStyle);
+                            var anchor = cursor + 18 + (legendStyle.Alignment == TextAlignment.Center ? Math.Max(0, width - 22) / 2 : legendStyle.Alignment == TextAlignment.Right ? Math.Max(0, width - 22) : 0);
+                            builder.Text(label, anchor, baseline, legendStyle, role: "legend-label");
+                        }
                         builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + r * lineHeight, width, lineHeight), entry.Label));
                         cursor += width + gap;
                     }
@@ -77,29 +107,32 @@ internal static class VisualFrameLayout {
         if (context.Frame.ShowSurface) builder.Rect(content, colors.Surface, colors.Border, radius: context.Theme.BarRadius, role: "content-surface");
         return content;
 
-        void Header(string? text, double fontSize, int weight, ChartColor color) {
+        void Header(string? text, TextStyle style) {
             if (string.IsNullOrEmpty(text)) return;
+            var fontSize = style.EffectiveFontSize;
+            var lineHeight = Math.Max(fontSize * 1.3, builder.MeasureText("Mg", style).Height);
             // Bounded two-line wrapping leaves content space; full text remains in accessibility metadata.
             var paragraphs = new Queue<string>(text!.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'));
             var remainder = paragraphs.Dequeue(); var count = 0;
-            while ((remainder.Length > 0 || paragraphs.Count > 0) && count < 2 && top + fontSize * 1.3 < bottom) {
+            while ((remainder.Length > 0 || paragraphs.Count > 0) && count < 2 && top + lineHeight < bottom) {
                 if (remainder.Length == 0) { remainder = paragraphs.Dequeue(); continue; }
-                var line = Fit(remainder, right - left, fontSize, weight, count == 1);
+                var line = Fit(remainder, right - left, style, count == 1);
                 if (line.Length == 0) break;
-                builder.Text(line, left, top + builder.TextAscent(fontSize, weight), fontSize, color, weight, role: count == 0 ? "frame-heading" : "frame-heading-continuation");
-                top += fontSize * 1.3; count++;
+                var anchor = style.Alignment == TextAlignment.Center ? (left + right) / 2 : style.Alignment == TextAlignment.Right ? right : left;
+                builder.Text(line, anchor, top + builder.TextAscent(style), style, role: count == 0 ? "frame-heading" : "frame-heading-continuation");
+                top += lineHeight; count++;
                 if (line.EndsWith("…", StringComparison.Ordinal)) { remainder = ""; break; }
                 remainder = remainder.Substring(Math.Min(remainder.Length, line.Length)).TrimStart();
             }
             if (remainder.Length > 0 || paragraphs.Count > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.heading-overflow", "The heading exceeds the available frame space."));
             top += gap;
         }
-        string Fit(string text, double width, double fontSize, int weight, bool ellipsis = true) {
-            if (builder.MeasureText(text, fontSize, weight).Width <= width) return text;
+        string Fit(string text, double width, TextStyle style, bool ellipsis = true) {
+            if (builder.MeasureText(text, style).Width <= width) return text;
             var elements = StringInfo.ParseCombiningCharacters(text);
             var count = elements.Length;
             var length = text.Length;
-            while (count > 0 && builder.MeasureText(text.Substring(0, length) + (ellipsis ? "…" : ""), fontSize, weight).Width > width) {
+            while (count > 0 && builder.MeasureText(text.Substring(0, length) + (ellipsis ? "…" : ""), style).Width > width) {
                 count--; length = count == 0 ? 0 : elements[count];
             }
             if (ellipsis) {

@@ -198,7 +198,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var footerHeight = hasAction ? Math.Min(46, Math.Max(36, options.Size.Height * 0.24)) : 0;
         var footerY = options.Size.Height - footerHeight;
         var detailBottom = hasAction ? footerY - 12 : options.Size.Height - options.Padding.Bottom;
-        var hasMicroVisual = card.MiniBars.Count > 0 || card.MiniSparkline.Count > 0;
+        var hasMicroVisual = card.MiniBars.Count > 0 || card.SparklineCount > 0;
         var heroMicroVisual = hasMicroVisual && card.MicroVisualPlacement == MetricCardMicroVisualPlacement.Hero;
         var valueInsetSurface = !theme.FlatMarks && !hasMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset;
         var labelX = content.X;
@@ -257,7 +257,7 @@ public sealed partial class SvgVisualBlockRenderer {
             microHeight = Math.Max(1, surfaceHeight - (microY - surfaceY) - 18);
         }
 
-        if (card.MiniSparkline.Count > 0) RenderMetricMiniSparkline(writer, card, microX, microY, microWidth, microHeight);
+        if (card.SparklineCount > 0) RenderMetricMiniSparkline(writer, card, microX, microY, microWidth, microHeight);
         else if (card.MiniBars.Count > 0) RenderMetricMiniBars(writer, card, microX, microY, microWidth, microHeight);
         var detailsTop = heroMicroVisual ? microY + microHeight + 10 : content.Y + labelSize + valueSize + 22 + valueYOffset;
         RenderMetricDetails(writer, card, content, detailsTop, detailBottom);
@@ -318,36 +318,38 @@ public sealed partial class SvgVisualBlockRenderer {
         var sparkline = VisualBlockRendering.CreateMiniSparkline(card, x, y, width, height);
 
         writer.StartElement("g").Attribute("data-cfx-role", "metric-mini-sparkline").Attribute("data-cfx-style", card.MiniSparklineStyle.ToString().ToLowerInvariant()).Attribute("data-cfx-min", bounds.Minimum).Attribute("data-cfx-max", bounds.Maximum).EndStartElement().Line();
+        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line && card.SecondarySparklineCount > 0) {
+            var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
+            writer.StartElement("path").Attribute("data-cfx-role", "metric-mini-sparkline-secondary").Attribute("d", SparklineSmoothPath(secondary.Points, 0)).Attribute("fill", "none").Attribute("stroke", secondary.LineColor.ToCss()).Attribute("stroke-width", Math.Max(1.8, secondary.StrokeWidth * 0.72)).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
+        }
+        if (sparkline.Points.Length == 0) { writer.EndElement().Line(); return; }
         if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) {
-            writer.StartElement("polygon")
-                .Attribute("data-cfx-role", "metric-mini-sparkline-fill")
-                .Attribute("points", SparklinePoints(sparkline.Area))
-                .Attribute("fill", sparkline.FillColor.ToCss())
-                .EndEmptyElement()
-                .Line();
-            writer.StartElement("polyline")
-                .Attribute("data-cfx-role", "metric-mini-sparkline-line")
-                .Attribute("points", SparklinePoints(sparkline.Points))
-                .Attribute("fill", "none")
-                .Attribute("stroke", sparkline.LineColor.ToCss())
-                .Attribute("stroke-width", sparkline.StrokeWidth)
-                .Attribute("stroke-linecap", "round")
-                .Attribute("stroke-linejoin", "round")
-                .EndEmptyElement()
-                .Line();
+            foreach (var segment in ChartPointSegments.Split(sparkline.Points)) {
+                writer.StartElement("polygon")
+                    .Attribute("data-cfx-role", "metric-mini-sparkline-fill")
+                    .Attribute("points", SparklinePoints(SparklineLayout.Area(segment, y + height)))
+                    .Attribute("fill", sparkline.FillColor.ToCss())
+                    .EndEmptyElement()
+                    .Line();
+                writer.StartElement("polyline")
+                    .Attribute("data-cfx-role", "metric-mini-sparkline-line")
+                    .Attribute("points", SparklinePoints(segment.Count == 1 ? new[] { segment[0], segment[0] } : segment))
+                    .Attribute("fill", "none")
+                    .Attribute("stroke", sparkline.LineColor.ToCss())
+                    .Attribute("stroke-width", sparkline.StrokeWidth)
+                    .Attribute("stroke-linecap", "round")
+                    .Attribute("stroke-linejoin", "round")
+                    .EndEmptyElement()
+                    .Line();
+            }
         } else {
             var path = SparklineSmoothPath(sparkline.Points, 0);
-            if (card.SecondaryMiniSparkline.Count > 0) {
-                var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
-                writer.StartElement("path").Attribute("data-cfx-role", "metric-mini-sparkline-secondary").Attribute("d", SparklineSmoothPath(secondary.Points, 0)).Attribute("fill", "none").Attribute("stroke", secondary.LineColor.ToCss()).Attribute("stroke-width", Math.Max(1.8, secondary.StrokeWidth * 0.72)).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
-            }
-
             writer.StartElement("path").Attribute("data-cfx-role", "metric-mini-sparkline-line").Attribute("d", path).Attribute("fill", "none").Attribute("stroke", sparkline.LineColor.ToCss()).Attribute("stroke-width", sparkline.StrokeWidth).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
-            writer.StartElement("circle").Attribute("data-cfx-role", "metric-mini-sparkline-start").Attribute("cx", sparkline.Points[0].X).Attribute("cy", sparkline.Points[0].Y).Attribute("r", sparkline.CurrentRadius * 0.82).Attribute("fill", sparkline.LineColor.ToCss()).EndEmptyElement().Line();
+            if (sparkline.ShowStart) writer.StartElement("circle").Attribute("data-cfx-role", "metric-mini-sparkline-start").Attribute("cx", sparkline.Points[0].X).Attribute("cy", sparkline.Points[0].Y).Attribute("r", sparkline.CurrentRadius * 0.82).Attribute("fill", sparkline.LineColor.ToCss()).EndEmptyElement().Line();
         }
 
         var last = sparkline.Current;
-        writer.StartElement("circle").Attribute("data-cfx-role", "metric-mini-sparkline-current").Attribute("cx", last.X).Attribute("cy", last.Y).Attribute("r", sparkline.CurrentRadius).Attribute("fill", sparkline.LineColor.ToCss()).EndEmptyElement().Line();
+        if (sparkline.ShowCurrent) writer.StartElement("circle").Attribute("data-cfx-role", "metric-mini-sparkline-current").Attribute("cx", last.X).Attribute("cy", last.Y).Attribute("r", sparkline.CurrentRadius).Attribute("fill", sparkline.LineColor.ToCss()).EndEmptyElement().Line();
         writer.EndElement().Line();
     }
 
@@ -557,25 +559,12 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     private static string SparklineSmoothPath(IReadOnlyList<ChartPoint> points, double yOffset) {
-        if (points.Count == 0) return string.Empty;
-        var path = new SvgPathDataBuilder().MoveTo(points[0].X, points[0].Y + yOffset);
-        if (points.Count < 3) {
-            for (var i = 1; i < points.Count; i++) path.LineTo(points[i].X, points[i].Y + yOffset);
-            return path.Build();
-        }
-
-        for (var i = 0; i < points.Count - 1; i++) {
-            var p0 = points[Math.Max(0, i - 1)];
-            var p1 = points[i];
-            var p2 = points[i + 1];
-            var p3 = points[Math.Min(points.Count - 1, i + 2)];
-            path.CubicTo(
-                p1.X + (p2.X - p0.X) / 6,
-                p1.Y + yOffset + (p2.Y - p0.Y) / 6,
-                p2.X - (p3.X - p1.X) / 6,
-                p2.Y + yOffset - (p3.Y - p1.Y) / 6,
-                p2.X,
-                p2.Y + yOffset);
+        var path = new SvgPathDataBuilder();
+        foreach (var command in ChartPathBuilder.FromPoints(points, ChartSeriesKind.Line, true).Commands) {
+            if (command.Kind == ChartPathCommandKind.MoveTo) path.MoveTo(command.X, command.Y + yOffset);
+            else if (command.Kind == ChartPathCommandKind.LineTo) path.LineTo(command.X, command.Y + yOffset);
+            else if (command.Kind == ChartPathCommandKind.CubicTo) path.CubicTo(command.Control1X, command.Control1Y + yOffset,
+                command.Control2X, command.Control2Y + yOffset, command.X, command.Y + yOffset);
         }
 
         return path.Build();

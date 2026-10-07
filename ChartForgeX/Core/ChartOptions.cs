@@ -582,7 +582,10 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets a formatter used for y-axis ticks, data labels, stack totals, and donut totals.
     /// </summary>
-    public Func<double, string>? ValueFormatter { get; set; }
+    public Func<double, string>? ValueFormatter {
+        get => ReferenceEquals(ValueFormat, ChartValueFormat.ExistingValue) ? null : ValueFormat.Callback;
+        set => ValueFormat = value == null ? ChartValueFormat.ExistingValue : ChartValueFormat.Custom(value);
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the chart is rendered as a compact sparkline.

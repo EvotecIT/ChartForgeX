@@ -7,7 +7,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Collects native geometry and already positioned text without an SVG intermediate.</summary>
-internal sealed class VisualSceneBuilder {
+internal sealed partial class VisualSceneBuilder {
     private readonly VisualSize _size;
     private readonly FontSpec _font;
     private readonly List<VisualSceneNode> _nodes = new();
@@ -47,16 +47,20 @@ internal sealed class VisualSceneBuilder {
     }
 
     internal void Path(ChartPath path, ChartColor? fill = null, ChartColor? stroke = null, double strokeWidth = 1,
-        string? role = null, string? id = null, bool close = false) {
+        string? role = null, string? id = null, bool close = false, double[]? dash = null,
+        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round) {
         if (path == null) throw new ArgumentNullException(nameof(path));
         NonNegative(strokeWidth, nameof(strokeWidth));
+        if (!Enum.IsDefined(typeof(VisualStrokeCap), cap)) throw new ArgumentOutOfRangeException(nameof(cap));
+        if (!Enum.IsDefined(typeof(VisualStrokeJoin), join)) throw new ArgumentOutOfRangeException(nameof(join));
+        if (dash != null) foreach (var length in dash) VisualSize.Positive(length, nameof(dash));
         foreach (var command in path.Commands) {
             if (!Enum.IsDefined(typeof(ChartPathCommandKind), command.Kind)) throw new ArgumentException("Unknown path command.", nameof(path));
             ChartGuards.Finite(command.X, nameof(path)); ChartGuards.Finite(command.Y, nameof(path));
             ChartGuards.Finite(command.Control1X, nameof(path)); ChartGuards.Finite(command.Control1Y, nameof(path));
             ChartGuards.Finite(command.Control2X, nameof(path)); ChartGuards.Finite(command.Control2Y, nameof(path));
         }
-        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id));
+        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join));
     }
 
     /// <summary>Adds a clockwise slice in radians, including a full-ring case without a radial seam.</summary>

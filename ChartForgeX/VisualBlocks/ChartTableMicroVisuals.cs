@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualBlocks;
@@ -44,8 +45,15 @@ public sealed partial class ChartTableCell {
         }
     }
 
-    /// <summary>Gets microvisual values.</summary>
+    /// <summary>Gets finite microvisual observations. Use <see cref="SparklineData"/> for original nullable sample slots.</summary>
     public IReadOnlyList<double> MicroVisualValues => _microVisualValues;
+
+    /// <summary>Gets configured sparkline slots, including missing observations.</summary>
+    public SparklineData? SparklineData { get; private set; }
+    internal int MicroVisualSampleCount => SparklineData?.Values.Count ?? MicroVisualValues.Count;
+    internal SparklineData GetSparklineData() => SparklineData == null
+        ? Core.SparklineData.FromValues(MicroVisualValues, MicroVisualMinimum, MicroVisualMaximum)
+        : new SparklineData(SparklineData.Values, MicroVisualMinimum, MicroVisualMaximum, SparklineData.MissingDataPolicy, SparklineData.IncludeZero);
 
     /// <summary>Gets or sets an optional microvisual minimum.</summary>
     public double? MicroVisualMinimum { get; set; }
@@ -92,6 +100,16 @@ public sealed partial class ChartTableCell {
         return this;
     }
 
+    /// <summary>Sets shared sparkline sample slots without moving or replacing missing observations.</summary>
+    public ChartTableCell WithSparkline(SparklineData data, ChartColor? color = null) {
+        if (data == null) throw new ArgumentNullException(nameof(data));
+        SparklineData = data; MicroVisualKind = ChartTableCellMicroVisualKind.Sparkline;
+        _microVisualValues.Clear();
+        foreach (var value in data.Values) if (value.HasValue) _microVisualValues.Add(value.Value);
+        MicroVisualMinimum = data.RequestedMinimum; MicroVisualMaximum = data.RequestedMaximum; MicroVisualColor = color;
+        return this;
+    }
+
     /// <summary>Sets a compact badge for this table cell.</summary>
     public ChartTableCell WithBadge(string text, VisualStatus status = VisualStatus.Neutral, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
         BadgeText = text ?? throw new ArgumentNullException(nameof(text));
@@ -103,6 +121,7 @@ public sealed partial class ChartTableCell {
 
     private void SetMicroVisual(ChartTableCellMicroVisualKind kind, IEnumerable<double> values, double? minimum, double? maximum, ChartColor? color) {
         if (values == null) throw new ArgumentNullException(nameof(values));
+        SparklineData = null;
         MicroVisualKind = kind;
         _microVisualValues.Clear();
         foreach (var value in values) {

@@ -13,16 +13,18 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualRadialCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
         chart.Series[0].ShowInLegend
-            ? GetSlices(chart, colors).Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice))).ToArray()
+            ? GetSlices(chart, colors).Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice),
+                chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey)).ToArray()
             : Array.Empty<VisualLegendEntry>();
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
-        Validate(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var slices = GetSlices(chart, colors);
         var series = chart.Series[0];
         if (slices.Any(slice => slice.PointIndex < 0 && slice.SourcePointIndices.Any(index => index < series.PointSliceOffsets.Count && series.PointSliceOffsets[index] > 0)))
             builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-offsets", "An aggregate Other slice uses the default position; its source slice offsets remain available in the original data."));
+        if (slices.Any(slice => slice.SourcePatterns.Distinct().Count() > 1))
+            builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-patterns", "The Other slice combines different source patterns and uses a solid fill; source patterns remain in its metadata."));
         var total = slices.Sum(slice => slice.Value);
         if (double.IsInfinity(total)) throw new ArgumentException("The sum of pie values must be finite.", nameof(chart));
         if (total <= 0) {
@@ -60,14 +62,18 @@ internal static partial class VisualRadialCompiler {
                 var sliceX = cx + Math.Cos(mid) * offset;
                 var sliceY = cy + Math.Sin(mid) * offset;
                 var role = inner > 0 ? "donut-slice" : "pie-slice";
-                var resolvedLabel = (series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? FormatLabel(chart, slice, total) : null;
+                var formattedValue = ChartNumericFormatter.FormatValue(chart.Options, slice.Value);
+                var resolvedLabel = (series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? FormatLabel(chart, slice, total, formattedValue) : null;
                 using (builder.PushGroup(null, "radial-point", Metadata(slice, percent, resolvedLabel))) {
                     builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice));
+                    if (slice.Pattern != ChartFillPattern.None)
+                        builder.PatternSlice(sliceX, sliceY, radius, inner, start, sweep, slice.Pattern,
+                            ChartColorMath.AccessibleTextOnBackground(slice.Color).WithAlpha(110), role: "radial-fill-pattern");
                 }
                 var bounds = new ChartRect(sliceX - radius, sliceY - radius, radius * 2, radius * 2);
                 builder.AddRegion(new VisualSemanticRegion(SliceId(slice), role,
                     bounds,
-                    slice.Label + ": " + ChartNumericFormatter.FormatValue(chart.Options, slice.Value)));
+                    slice.Label + ": " + formattedValue));
                 if (!string.IsNullOrWhiteSpace(resolvedLabel)) {
                     // The associated slice extent is descriptive, including when its visible label is omitted.
                     builder.AddRegion(new VisualSemanticRegion(SliceId(slice) + "-label", "radial-data-label", bounds, resolvedLabel));
@@ -82,28 +88,23 @@ internal static partial class VisualRadialCompiler {
         }
     }
 
-    private static void Validate(Chart chart) {
-        var series = chart.Series[0];
-        if (series.FillPattern != ChartFillPattern.None || series.PointFillPatterns.Any(pattern => pattern.HasValue && pattern.Value != ChartFillPattern.None))
-            throw new NotSupportedException("The Phase 1 prepared radial compiler does not support patterned fills. The legacy export remains available.");
-        if (series.StateRole != ChartSeriesState.None)
-            throw new NotSupportedException("The Phase 1 prepared radial compiler requires an explicit color for semantic state treatments. The legacy export remains available.");
-    }
-
     /// <summary>Uses the explicit aggregation budget independently of theme or label placement.</summary>
     private static IReadOnlyList<RadialSlice> GetSlices(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
         var slices = series.Points.Select((point, index) => new RadialSlice(index, new[] { index },
-            Label(chart, point, index), point.Y, index < series.PointColors.Count && series.PointColors[index].HasValue
-                ? series.PointColors[index]!.Value : series.Color ?? colors.Palette[index % colors.Palette.Count])).ToList();
+            Label(chart, point, index), point.Y, ChartSeriesColours.Point(series, index, index, colors),
+            index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern)).ToList();
         var positive = slices.Where(slice => slice.Value > 0).ToList();
         if (positive.Count <= chart.Options.MaximumPieSlices) return slices;
         var retained = positive.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex)
             .Take(chart.Options.MaximumPieSlices - 1).Select(slice => slice.PointIndex).ToArray();
         var rest = positive.Where(slice => !retained.Contains(slice.PointIndex)).ToArray();
         var result = slices.Where(slice => retained.Contains(slice.PointIndex)).ToList();
+        var patterns = rest.Select(slice => slice.Pattern).Distinct().ToArray();
         result.Add(new RadialSlice(-1, rest.SelectMany(slice => slice.SourcePointIndices).ToArray(), "Other",
-            rest.Sum(slice => slice.Value), colors.MutedForeground));
+            rest.Sum(slice => slice.Value), series.Color.HasValue || series.StateRole != ChartSeriesState.None
+                ? ChartSeriesColours.Resolve(series, 0, colors) : colors.MutedForeground, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
+            rest.Select(slice => slice.Pattern).ToArray()));
         return result;
     }
 
@@ -120,6 +121,8 @@ internal static partial class VisualRadialCompiler {
             ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
             ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
             ["data-cfx-label"] = slice.Label,
+            ["data-cfx-pattern"] = slice.Pattern.ToString(),
+            ["data-cfx-source-patterns"] = string.Join(",", slice.SourcePatterns),
             ["data-cfx-value"] = slice.Value.ToString("G17", CultureInfo.InvariantCulture),
             ["data-cfx-percent"] = percent.ToString("G17", CultureInfo.InvariantCulture)
         };
@@ -127,9 +130,8 @@ internal static partial class VisualRadialCompiler {
         return metadata;
     }
 
-    private static string FormatLabel(Chart chart, RadialSlice slice, double total) {
+    private static string FormatLabel(Chart chart, RadialSlice slice, double total, string value) {
         var percent = slice.Value / total;
-        var value = ChartNumericFormatter.FormatValue(chart.Options, slice.Value);
         var percentage = percent.ToString("0.#%", CultureInfo.InvariantCulture);
         if (chart.Options.PieSliceLabelFormatter != null)
             return chart.Options.PieSliceLabelFormatter(new ChartPieSliceLabelContext(chart.Series[0].Name, slice.Label,
@@ -153,13 +155,16 @@ internal static partial class VisualRadialCompiler {
     }
 
     private sealed class RadialSlice {
-        internal RadialSlice(int pointIndex, int[] sources, string label, double value, ChartColor color) {
-            PointIndex = pointIndex; SourcePointIndices = sources; Label = label; Value = value; Color = color;
+        internal RadialSlice(int pointIndex, int[] sources, string label, double value, ChartColor color, ChartFillPattern pattern, ChartFillPattern[]? sourcePatterns = null) {
+            PointIndex = pointIndex; SourcePointIndices = sources; Label = label; Value = value; Color = color; Pattern = pattern;
+            SourcePatterns = sourcePatterns ?? new[] { pattern };
         }
         internal int PointIndex { get; }
         internal int[] SourcePointIndices { get; }
         internal string Label { get; }
         internal double Value { get; }
         internal ChartColor Color { get; }
+        internal ChartFillPattern Pattern { get; }
+        internal ChartFillPattern[] SourcePatterns { get; }
     }
 }

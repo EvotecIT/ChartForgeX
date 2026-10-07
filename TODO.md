@@ -16,6 +16,22 @@ Scope and later phases are defined in [the architecture](docs/v2/architecture.md
 - [x] Confirm representative performance against the frozen baseline: 30 paired workloads within 10% elapsed/allocation, 756 retained samples and no failures. All 18 prepared-scene comparisons are faster; 12 unchanged-output comparisons preserve exact SVG/PNG bytes. Record the larger redesigned output payloads separately from timing gains.
 - [ ] Reassess Phases 0–1, settle one PR and clean task-owned disposable output.
 
+## Shared rendering migration: Phases 2–3
+
+Phases 2–3 build on the qualified Phase 0–1 candidate while its external checks settle. Consumer repositories remain read-only; package extraction and publication belong to later phases.
+
+- [x] Create `feature/v2-charts` from Phase 0–1 candidate `c8e765c39b927b0630de6c123c97a9baba280f43`; coordinate dependent branches centrally.
+- [ ] Complete existing Cartesian options, axis-isolated stacks, explicit styles, labels and semantic state treatments.
+- [ ] Complete pie/donut, gauge, radial-bar and layered-radial options on the shared scene.
+- [ ] Unify numeric formatting and sparse sparkline data, preserving missing observations separately from zero.
+- [ ] Extend shared scene paint, clipping and transformed text for migrated family requirements.
+- [ ] Remove replaced Cartesian/radial export paths after option and visual closure; update migration/API records.
+- [ ] Migrate topology, flow and sequence with native semantics and Mermaid acceptance fixtures.
+- [ ] Migrate remaining chart families in coherent groups, reusing existing layout owners.
+- [ ] Inspect light/dark SVG and native PNG fixtures, then run full quality, framework/package/AOT and representative performance checks.
+- [ ] Publish coherent dependent PR layers, address validated review feedback and settle current-head checks.
+- [ ] Reassess Phases 2–3 and clean superseded task output before package extraction or consumer migration.
+
 ## Rendering Pipeline
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.

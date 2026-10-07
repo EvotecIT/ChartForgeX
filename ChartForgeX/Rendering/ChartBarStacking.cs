@@ -12,7 +12,8 @@ internal static class ChartBarStacking {
         var coordinate = coordinateMap.Resolve(seriesIndex, pointIndex);
         for (var index = 0; index < seriesIndex; index++) {
             var series = chart.Series[index];
-            if (series.Kind != ChartSeriesKind.Bar || !TryFindPoint(coordinateMap, index, series, coordinate, out var candidate)) continue;
+            if (series.Kind != ChartSeriesKind.Bar || series.YAxis != chart.Series[seriesIndex].YAxis
+                || !TryFindPoint(coordinateMap, index, series, coordinate, out var candidate)) continue;
             if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
         }
 

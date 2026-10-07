@@ -43,11 +43,14 @@ public sealed class VisualLayoutOptions {
 
 /// <summary>Common title, subtitle, legend and surface configuration.</summary>
 public sealed class VisualFrame {
+    private readonly TextStyle? _titleStyle, _subtitleStyle, _legendStyle;
     /// <summary>Creates an immutable frame configuration.</summary>
     public VisualFrame(string? title = null, string? subtitle = null, bool showLegend = true,
-        ChartLegendPosition legendPosition = ChartLegendPosition.Bottom, bool showSurface = false, bool transparentBackground = false) {
+        ChartLegendPosition legendPosition = ChartLegendPosition.Bottom, bool showSurface = false, bool transparentBackground = false,
+        TextStyle? titleStyle = null, TextStyle? subtitleStyle = null, TextStyle? legendStyle = null) {
         if (!Enum.IsDefined(typeof(ChartLegendPosition), legendPosition)) throw new ArgumentOutOfRangeException(nameof(legendPosition));
         Title = title; Subtitle = subtitle; ShowLegend = showLegend; LegendPosition = legendPosition; ShowSurface = showSurface; TransparentBackground = transparentBackground;
+        _titleStyle = titleStyle?.Clone(); _subtitleStyle = subtitleStyle?.Clone(); _legendStyle = legendStyle?.Clone();
     }
     /// <summary>Gets the title.</summary>
     public string? Title { get; }
@@ -61,6 +64,14 @@ public sealed class VisualFrame {
     public bool ShowSurface { get; }
     /// <summary>Gets whether the outer canvas has no background paint, for overlays and embedding.</summary>
     public bool TransparentBackground { get; }
+    /// <summary>Gets a defensive copy of the explicit heading typography.</summary>
+    public TextStyle? TitleStyle => _titleStyle?.Clone();
+    /// <summary>Gets a defensive copy of the explicit subtitle typography.</summary>
+    public TextStyle? SubtitleStyle => _subtitleStyle?.Clone();
+    /// <summary>Gets a defensive copy of the explicit legend typography.</summary>
+    public TextStyle? LegendStyle => _legendStyle?.Clone();
+    internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, ShowLegend, LegendPosition,
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle);
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>

@@ -1,6 +1,8 @@
 using System;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Composition;
 
@@ -203,16 +205,8 @@ public sealed class PngVisualCanvasRenderer {
         canvas.DrawLine(x + 4, y + height * 0.72, x + width - 4, y + height * 0.72, theme.TileMiniChartTrackColor, 1);
         canvas.DrawLine(x + 4, y + height * 0.38, x + width - 4, y + height * 0.38, theme.TileMiniChartTrackColor.WithOpacity(0.62), 1);
 
-        var values = tile.MiniChartValues;
-        if (values.Count == 0) return;
-
-        var min = 0.0;
-        var max = tile.MiniChartMaximum ?? 0.0;
-        for (var i = 0; i < values.Count; i++) {
-            if (values[i] < min) min = values[i];
-            if (!tile.MiniChartMaximum.HasValue && values[i] > max) max = values[i];
-        }
-        if (max <= min) max = min + 1;
+        var data = tile.GetSparklineData();
+        var values = data.Values;
 
         var plotX = x + 7;
         var plotY = y + 6;
@@ -223,32 +217,25 @@ public sealed class PngVisualCanvasRenderer {
             var gap = values.Count > 1 ? Math.Min(Math.Max(1, plotW * 0.035), plotW / (values.Count * 3.0)) : 0;
             var barW = Math.Max(0.5, (plotW - gap * (values.Count - 1)) / values.Count);
             for (var i = 0; i < values.Count; i++) {
-                var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
+                if (!values[i].HasValue) continue;
+                var ratio = data.Ratio(values[i]!.Value);
                 var barH = Math.Max(2, plotH * ratio);
                 canvas.FillRoundedRect(plotX + i * (barW + gap), baseY - barH, barW, barH, Math.Min(4, barW * 0.42), accent.WithOpacity(0.82));
             }
             return;
         }
 
-        var points = new ChartPoint[values.Count];
-        for (var i = 0; i < values.Count; i++) {
-            var px = values.Count == 1 ? plotX + plotW / 2 : plotX + plotW * i / (values.Count - 1);
-            var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
-            var py = plotY + plotH - plotH * ratio;
-            points[i] = new ChartPoint(px, py);
-        }
+        var points = SparklineLayout.Project(data, new ChartRect(plotX, plotY, plotW, plotH), centerSingle: true);
 
         if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Area && points.Length > 1) {
-            var polygon = new ChartPoint[points.Length + 2];
-            polygon[0] = new ChartPoint(points[0].X, baseY);
-            for (var i = 0; i < points.Length; i++) polygon[i + 1] = points[i];
-            polygon[polygon.Length - 1] = new ChartPoint(points[points.Length - 1].X, baseY);
-            canvas.FillPolygon(polygon, theme.TileMiniChartFillColor);
+            foreach (var segment in ChartPointSegments.Split(points)) canvas.FillPolygon(SparklineLayout.Area(segment, baseY), theme.TileMiniChartFillColor);
         }
 
         for (var i = 1; i < points.Length; i++) {
+            if (points[i].BreakBefore) continue;
             canvas.DrawLine(points[i - 1].X, points[i - 1].Y, points[i].X, points[i].Y, accent, 2.2);
         }
+        foreach (var segment in ChartPointSegments.Split(points)) if (segment.Count == 1) canvas.DrawCircle(segment[0].X, segment[0].Y, 1.1, accent);
     }
 
     private static void DrawTileIcon(RgbaCanvas canvas, VisualCanvasInfoTileIconKind kind, string text, double x, double y, double size, ChartColor color, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts) {

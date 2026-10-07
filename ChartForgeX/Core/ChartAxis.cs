@@ -113,7 +113,13 @@ public sealed class ChartAxis {
     internal bool HasExplicitLine { get; private set; }
 
     /// <summary>Gets or sets a formatter for generated labels.</summary>
-    public Func<double, string>? LabelFormatter { get; set; }
+    public Func<double, string>? LabelFormatter {
+        get => ValueFormat?.Callback;
+        set => ValueFormat = value == null ? null : ChartValueFormat.Custom(value);
+    }
+
+    /// <summary>Gets or sets the numeric display policy. Null uses the chart fallback or the scale-aware default for time axes.</summary>
+    public ChartValueFormat? ValueFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the display time zone for <see cref="ChartScaleKind.Time"/> axes. Axis values are UTC instants;
@@ -174,6 +180,9 @@ public sealed class ChartAxis {
 
     /// <summary>Sets the label formatter.</summary>
     public ChartAxis WithLabelFormatter(Func<double, string>? formatter) { LabelFormatter = formatter; return this; }
+
+    /// <summary>Sets the numeric display policy; null restores scale-aware automatic formatting.</summary>
+    public ChartAxis WithValueFormat(ChartValueFormat? format) { ValueFormat = format; return this; }
 
     private void ValidateLogarithmicBound(double? value, string parameterName) {
         if (Scale == ChartScaleKind.Logarithmic && value.HasValue && value.Value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Logarithmic axes require positive bounds.");

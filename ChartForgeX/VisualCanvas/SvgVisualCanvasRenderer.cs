@@ -4,6 +4,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.Composition;
@@ -289,14 +290,8 @@ public sealed class SvgVisualCanvasRenderer {
         writer.StartElement("rect").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height).Attribute("rx", Math.Min(8, height * 0.24)).Attribute("fill", theme.TileMiniChartTrackColor.WithOpacity(0.20).ToCss()).EndEmptyElement().Line();
         writer.StartElement("path").Attribute("d", "M " + F(x + 4) + " " + F(y + height * 0.72) + " L " + F(x + width - 4) + " " + F(y + height * 0.72) + " M " + F(x + 4) + " " + F(y + height * 0.38) + " L " + F(x + width - 4) + " " + F(y + height * 0.38)).Attribute("fill", "none").Attribute("stroke", theme.TileMiniChartTrackColor.ToCss()).Attribute("stroke-width", 1).EndEmptyElement().Line();
 
-        var values = tile.MiniChartValues;
-        var min = 0.0;
-        var max = tile.MiniChartMaximum ?? 0.0;
-        for (var i = 0; i < values.Count; i++) {
-            if (values[i] < min) min = values[i];
-            if (!tile.MiniChartMaximum.HasValue && values[i] > max) max = values[i];
-        }
-        if (max <= min) max = min + 1;
+        var data = tile.GetSparklineData();
+        var values = data.Values;
 
         var plotX = x + 7;
         var plotY = y + 6;
@@ -307,7 +302,8 @@ public sealed class SvgVisualCanvasRenderer {
             var gap = values.Count > 1 ? Math.Min(Math.Max(1, plotW * 0.035), plotW / (values.Count * 3.0)) : 0;
             var barW = Math.Max(0.5, (plotW - gap * (values.Count - 1)) / values.Count);
             for (var i = 0; i < values.Count; i++) {
-                var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
+                if (!values[i].HasValue) continue;
+                var ratio = data.Ratio(values[i]!.Value);
                 var barH = Math.Max(2, plotH * ratio);
                 writer.StartElement("rect").Attribute("x", plotX + i * (barW + gap)).Attribute("y", baseY - barH).Attribute("width", barW).Attribute("height", barH).Attribute("rx", Math.Min(4, barW * 0.42)).Attribute("fill", accent.WithOpacity(0.82).ToCss()).EndEmptyElement().Line();
             }
@@ -317,20 +313,22 @@ public sealed class SvgVisualCanvasRenderer {
 
         var line = new StringBuilder();
         var area = new StringBuilder();
-        for (var i = 0; i < values.Count; i++) {
-            var px = values.Count == 1 ? plotX + plotW / 2 : plotX + plotW * i / (values.Count - 1);
-            var ratio = Math.Max(0, Math.Min(1, (values[i] - min) / (max - min)));
-            var py = plotY + plotH - plotH * ratio;
-            if (i == 0) {
-                line.Append("M ").Append(F(px)).Append(' ').Append(F(py));
-                area.Append("M ").Append(F(px)).Append(' ').Append(F(baseY)).Append(" L ").Append(F(px)).Append(' ').Append(F(py));
-            } else {
-                line.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
-                area.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+        var points = SparklineLayout.Project(data, new ChartRect(plotX, plotY, plotW, plotH), centerSingle: true);
+        foreach (var segment in ChartPointSegments.Split(points)) {
+            for (var i = 0; i < segment.Count; i++) {
+                var px = segment[i].X; var py = segment[i].Y;
+                if (i == 0) {
+                    line.Append("M ").Append(F(px)).Append(' ').Append(F(py));
+                    area.Append("M ").Append(F(px)).Append(' ').Append(F(baseY)).Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+                    if (segment.Count == 1) line.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+                } else {
+                    line.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+                    area.Append(" L ").Append(F(px)).Append(' ').Append(F(py));
+                }
+                if (i == segment.Count - 1) area.Append(" L ").Append(F(px)).Append(' ').Append(F(baseY)).Append(" Z");
             }
-            if (i == values.Count - 1) area.Append(" L ").Append(F(px)).Append(' ').Append(F(baseY)).Append(" Z");
         }
-        if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Area && values.Count > 1) {
+        if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Area && points.Length > 1) {
             writer.StartElement("path").Attribute("d", area.ToString()).Attribute("fill", theme.TileMiniChartFillColor.ToCss()).EndEmptyElement().Line();
         }
         writer.StartElement("path").Attribute("d", line.ToString()).Attribute("fill", "none").Attribute("stroke", accent.ToCss()).Attribute("stroke-width", 2.2).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();

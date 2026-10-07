@@ -24,6 +24,10 @@ public static partial class VisualArtifactRendering {
         if (!Enum.IsDefined(typeof(VisualArtifactKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind));
         new VisualArtifactInterchangeEnvelope { Id = id, Kind = kind }.Validate();
         VisualArtifactInterchangeEnvelope? semantics = null;
+        if (semanticInterchange == null) {
+            semanticInterchange = prepared.SemanticInterchange;
+            if (semanticInterchange != null) semanticInterchange.Id = id;
+        }
         if (semanticInterchange != null) {
             // The versioned writer/reader captures every supported typed field and validates the portable boundary.
             semantics = VisualArtifactInterchangeEnvelope.FromUtf8Json(semanticInterchange.ToUtf8Json());

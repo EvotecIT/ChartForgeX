@@ -37,9 +37,9 @@ public sealed class V2CartesianTests {
         chart.WithTheme(graphite ? ChartTheme.Light() : ChartTheme.GraphiteLight());
         Assert.Equal(VisualSceneSvgRenderer.Render(configured), VisualSceneSvgRenderer.Render(Compile(chart)));
         chart.Options.BarVisualStyle.Kind = ChartBarStyle.SegmentedCapsule;
-        Assert.Contains("segmented capsule", Assert.Throws<NotSupportedException>(() => Compile(chart)).Message);
+        var withBarStyle = Compile(chart);
         chart.WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light());
-        Assert.Contains("segmented capsule", Assert.Throws<NotSupportedException>(() => Compile(chart)).Message);
+        Assert.Equal(VisualSceneSvgRenderer.Render(withBarStyle), VisualSceneSvgRenderer.Render(Compile(chart)));
     }
 
     [Theory]
@@ -238,17 +238,6 @@ public sealed class V2CartesianTests {
                 Assert.False(box.Left < otherBox.Right && box.Right > otherBox.Left && box.Top < otherBox.Bottom && box.Bottom > otherBox.Top);
             }
         }
-    }
-
-    [Fact]
-    public void UnsupportedPreparedFeatures_ProduceActionableErrors_WithoutChangingLegacyModels() {
-        var chart = Chart.Create().AddBar("Secondary stack", Points(1, 2));
-        chart.Options.BarMode = ChartBarMode.Stacked;
-        chart.Series[0].UseSecondaryYAxis();
-        var exception = Assert.Throws<NotSupportedException>(() => Compile(chart));
-        Assert.Contains("secondary-axis stacks", exception.Message);
-        chart.Series[0].UsePrimaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
-        Assert.Contains("fill patterns", Assert.Throws<NotSupportedException>(() => Compile(chart)).Message);
     }
 
     private static VisualScene Compile(Chart chart, ChartRect? bounds = null) {

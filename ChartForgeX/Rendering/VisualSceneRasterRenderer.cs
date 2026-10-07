@@ -7,7 +7,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Paints compiled scene decisions through the existing dependency-free raster engine.</summary>
-internal static class VisualSceneRasterRenderer {
+internal static partial class VisualSceneRasterRenderer {
     internal static RgbaImage Render(VisualScene scene, int scale = 1, int supersampling = 2, long pixelBudget = 64000000) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         if (scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
@@ -20,11 +20,21 @@ internal static class VisualSceneRasterRenderer {
         // Fonts are already retained by each text run. Do not resolve a canvas default font at export.
         var canvas = new RgbaCanvas(width, height, supersampling, null, scale, useDefaultOutlineFont: false);
         var groups = new Stack<IDisposable?>();
+        var transforms = new Stack<VisualSceneTransform>();
+        var transform = VisualSceneTransform.Identity;
         try {
             for (var nodeIndex = 0; nodeIndex < scene.Nodes.Count; nodeIndex++) {
                 var node = scene.Nodes[nodeIndex];
-                if (node is VisualSceneGroup group) groups.Push(group.Clip.HasValue ? canvas.PushClipBounds(group.Clip.Value) : null);
-                else if (node is VisualSceneEndGroup) groups.Pop()?.Dispose();
+                if (node is VisualSceneGroup group) {
+                    transforms.Push(transform);
+                    if (group.Rotation.HasValue) transform = transform.Rotate(group.Rotation.Value);
+                    if (group.Translation.HasValue) transform = transform.Translate(group.Translation.Value);
+                    groups.Push(GroupClip(canvas, group, transform));
+                }
+                else if (node is VisualSceneEndGroup) { groups.Pop()?.Dispose(); transform = transforms.Pop(); }
+                else if (node is VisualSceneImage image) PaintImage(canvas, image, transform);
+                else if (node is VisualSceneGradient gradient) PaintGradient(canvas, gradient, transform);
+                else if (!transform.IsIdentity && node is VisualSceneMark transformedMark) PaintContours(canvas, transform.Apply(Contours(transformedMark, canvas.PixelsPerUnit)), transformedMark);
                 else if (node is VisualSceneRectangle rect) {
                     var b = rect.Bounds;
                     // Only an un-clipped first opaque viewport paint can replace contour blending.
@@ -44,7 +54,10 @@ internal static class VisualSceneRasterRenderer {
                         line.Stroke!.Value, line.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, line.Dash);
                 } else if (node is VisualScenePath path) PaintContours(canvas, VisualSceneGeometry.Flatten(path, canvas.PixelsPerUnit), path);
                 else if (node is VisualSceneSlice slice) PaintContours(canvas, VisualSceneGeometry.Flatten(slice, canvas.PixelsPerUnit), slice);
-                else if (node is VisualSceneText text) PaintText(canvas, text);
+                else if (node is VisualSceneText text) {
+                    if (transform.IsIdentity) PaintText(canvas, text);
+                    else PaintTransformedText(canvas, text, transform);
+                }
             }
         } finally {
             while (groups.Count > 0) groups.Pop()?.Dispose();
@@ -63,7 +76,10 @@ internal static class VisualSceneRasterRenderer {
         if (mark.Stroke.HasValue && mark.StrokeWidth > 0) {
             var lines = new List<IReadOnlyList<ChartPoint>>(contours.Count);
             foreach (var contour in contours) lines.Add(contour);
-            canvas.StrokePolylines(lines, mark.Stroke.Value, mark.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round);
+            canvas.StrokePolylines(lines, mark.Stroke.Value, mark.StrokeWidth,
+                mark is VisualScenePath path ? (RasterLineCap)path.Cap : RasterLineCap.Round,
+                mark is VisualScenePath joined ? (RasterLineJoin)joined.Join : RasterLineJoin.Round,
+                mark is VisualSceneLine line ? line.Dash : mark is VisualScenePath dashed ? dashed.Dash : null);
         }
     }
 

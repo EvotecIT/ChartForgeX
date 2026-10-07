@@ -7,7 +7,7 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// A compact KPI or metric card visual block.
 /// </summary>
-public sealed class MetricCard : VisualBlock<MetricCard> {
+public sealed partial class MetricCard : VisualBlock<MetricCard> {
     private readonly List<MetricCardDetail> _details = new();
     private readonly List<double> _miniBars = new();
     private readonly List<double> _miniSparkline = new();
@@ -37,9 +37,11 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     public IReadOnlyList<double> MiniBars => _miniBars;
 
     /// <summary>Gets compact sparkline values rendered inside the metric card.</summary>
+    /// <remarks>For nullable samples this view contains only finite observations. Use <see cref="SparklineData"/> to retain original sample slots.</remarks>
     public IReadOnlyList<double> MiniSparkline => _miniSparkline;
 
     /// <summary>Gets optional secondary sparkline values rendered beside the primary sparkline.</summary>
+    /// <remarks>For nullable samples this view contains only finite observations. Use <see cref="SecondarySparklineData"/> to retain original sample slots.</remarks>
     public IReadOnlyList<double> SecondaryMiniSparkline => _secondaryMiniSparkline;
 
     /// <summary>Gets compact supporting detail rows rendered inside the card.</summary>
@@ -270,6 +272,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     /// <summary>Replaces compact sparkline values rendered inside the metric card.</summary>
     public MetricCard WithMiniSparkline(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null, ChartColor? fillColor = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
+        SparklineData = null;
         _miniSparkline.Clear();
         foreach (var value in values) {
             if (!IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(values), value, "Mini sparkline values must be finite.");
@@ -277,7 +280,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
 
         if (_miniSparkline.Count < 2) throw new ArgumentException("Metric card mini sparklines require at least two values.", nameof(values));
-        if (_secondaryMiniSparkline.Count > 0 && _secondaryMiniSparkline.Count != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
+        if (SecondarySparklineCount > 0 && SecondarySparklineCount != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
         MiniSparklineMinimum = minimum;
         MiniSparklineMaximum = maximum;
         MiniSparklineColor = color;
@@ -288,6 +291,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
 
     /// <summary>Clears compact sparkline values from the metric card.</summary>
     public MetricCard WithoutMiniSparkline() {
+        SparklineData = null; SecondarySparklineData = null;
         _miniSparkline.Clear();
         _secondaryMiniSparkline.Clear();
         MiniSparklineMinimum = null;
@@ -325,6 +329,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
     /// <summary>Replaces optional secondary sparkline values rendered with the primary sparkline.</summary>
     public MetricCard WithSecondaryMiniSparkline(IEnumerable<double> values, ChartColor? color = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
+        SecondarySparklineData = null;
         _secondaryMiniSparkline.Clear();
         foreach (var value in values) {
             if (!IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(values), value, "Secondary mini sparkline values must be finite.");
@@ -332,7 +337,7 @@ public sealed class MetricCard : VisualBlock<MetricCard> {
         }
 
         if (_secondaryMiniSparkline.Count < 2) throw new ArgumentException("Metric card secondary mini sparklines require at least two values.", nameof(values));
-        if (_miniSparkline.Count > 0 && _secondaryMiniSparkline.Count != _miniSparkline.Count) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
+        if (SparklineCount > 0 && _secondaryMiniSparkline.Count != SparklineCount) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
         SecondaryMiniSparklineColor = color;
         return this;
     }
