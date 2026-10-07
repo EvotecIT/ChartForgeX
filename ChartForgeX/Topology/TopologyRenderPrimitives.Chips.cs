@@ -18,7 +18,8 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     internal static double NodeBadgeWidth(TopologyNode node, TopologyRenderOptions options) =>
-        Math.Max(18, EstimateTextWidth(NodeBadge(node), 9, true, options.TextMeasurement) + 12);
+        Math.Max(18, (options.ResolvedBadgeTextWidth?.Invoke(NodeBadge(node)) ??
+            EstimateTextWidth(NodeBadge(node), 9, true, options.TextMeasurement)) + 12);
 
     /// <summary>Returns the shared badge extent used for layout reservation and native painting.</summary>
     internal static ChartRect NodeBadgeBounds(TopologyNode node, TopologyNodeDisplayMode mode, TopologyRenderOptions options) {

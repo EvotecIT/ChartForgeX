@@ -27,6 +27,7 @@ All 49 chart kinds, ChartGrid, topology, flow and sequence compile into the shar
 - [x] Complete independent contract reviews and reproduce their remediations, including typed paints, responsive topology, artwork, linked heatmap keyboard navigation, Flow lane/order semantics and animated topology natural sizing.
 - [x] Qualify integrated Phase 3: 2,999 tests, 42 Mermaid fixtures, four target frameworks without warnings, 317 healthy outputs, native AOT and isolated package consumption. All 24 complete-export benchmark pairs pass the 10% elapsed/allocation gate across 720 retained samples; larger SVG payloads remain a separate cost.
 - [x] Qualify the checked-in 122-artifact selected gallery for all 49 kinds in both themes, with final native output and two executed browser viewports; retain the full review matrix as private evidence.
+- [ ] Close cross-platform CI findings: resolved-font topology symbol and badge bounds, rotated heatmap edge reservation, and portable geometry assertions; qualify the consolidated corrections before publication.
 - [ ] Publish dependent PR layers, address validated feedback and settle current-head checks before merge.
 - [x] Record the Phases 2–3 reassessment and clean superseded task output; preserve open chart options and keep package extraction and consumer execution as separate gates.
 

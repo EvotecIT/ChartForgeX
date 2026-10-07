@@ -217,15 +217,34 @@ internal static partial class SmokeTests {
         scaleWatermark.Opacity = 1;
         var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 } };
         var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
+        var scaleOnePlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
+        var scaleTwoPlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
         scaleOneOptions.Watermarks.Add(scaleWatermark);
         scaleTwoOptions.Watermarks.Add(scaleWatermark);
-        var scaleOnePlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 }));
-        var scaleTwoPlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 }));
         var scaleOneDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
         var scaleTwoDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
-        var scaleOneChanged = CountChangedPixels(scaleOnePlain, scaleOneDecorated);
-        var scaleTwoChanged = CountChangedPixels(scaleTwoPlain, scaleTwoDecorated);
-        Assert(scaleTwoChanged > scaleOneChanged * 3, "PNG watermark geometry should scale with topology output scale instead of shrinking relative to the rendered chart.");
+        Assert(scaleWatermark.Scale == 1 && scaleWatermark.FontSize == 20 && scaleWatermark.Opacity == 1
+            && scaleWatermark.Anchor == VisualCanvasAnchor.Center && scaleWatermark.OffsetX == 0 && scaleWatermark.OffsetY == 0,
+            "Artifact rendering should preserve the caller's watermark sizing and placement options.");
+        Assert(scaleTwoPlain.Width == scaleOnePlain.Width * 2 && scaleTwoPlain.Height == scaleOnePlain.Height * 2,
+            "Topology output scale should double both raster dimensions without changing the logical viewport.");
+        // Compare the artifact's logical-to-raster transform with an explicitly scaled watermark
+        // on that same pixel canvas. Host fonts can have different ink-area ratios at 20 and 40px.
+        var scaleOneExpected = VisualWatermarkRendering.ApplyToImage(scaleOnePlain, new[] { scaleWatermark });
+        RgbaImage scaleTwoExpected;
+        var originalWatermarkScale = scaleWatermark.Scale;
+        try {
+            scaleWatermark.Scale = originalWatermarkScale * 2;
+            scaleTwoExpected = VisualWatermarkRendering.ApplyToImage(scaleTwoPlain, new[] { scaleWatermark });
+        } finally { scaleWatermark.Scale = originalWatermarkScale; }
+        Assert(!scaleOnePlain.Pixels.SequenceEqual(scaleOneDecorated.Pixels) && !scaleTwoPlain.Pixels.SequenceEqual(scaleTwoDecorated.Pixels),
+            "Both output densities should paint a visible text watermark.");
+        Assert(scaleOneExpected.Width == scaleOneDecorated.Width && scaleOneExpected.Height == scaleOneDecorated.Height
+            && scaleOneExpected.Pixels.SequenceEqual(scaleOneDecorated.Pixels),
+            "Density-one artifact watermarking should match direct decoration of the same pixel canvas.");
+        Assert(scaleTwoExpected.Width == scaleTwoDecorated.Width && scaleTwoExpected.Height == scaleTwoDecorated.Height
+            && scaleTwoExpected.Pixels.SequenceEqual(scaleTwoDecorated.Pixels),
+            "Density-two artifact watermarking should match an explicitly doubled text watermark, including placement and alpha.");
 
         var wideTopology = TopologyChart.Create()
             .WithViewport(320, 180, 16)
@@ -284,17 +303,6 @@ internal static partial class SmokeTests {
         var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
         Assert(renderedX > 300, "Watermark placement should follow current rendered dimensions when natural-size preservation is disabled.");
 
-        static int CountChangedPixels(RgbaImage plainImage, RgbaImage decoratedImage) {
-            Assert(plainImage.Width == decoratedImage.Width && plainImage.Height == decoratedImage.Height, "Compared watermark images should have matching dimensions.");
-            var changed = 0;
-            for (var index = 0; index < plainImage.Pixels.Length; index += 4) {
-                if (plainImage.Pixels[index] != decoratedImage.Pixels[index] ||
-                    plainImage.Pixels[index + 1] != decoratedImage.Pixels[index + 1] ||
-                    plainImage.Pixels[index + 2] != decoratedImage.Pixels[index + 2] ||
-                    plainImage.Pixels[index + 3] != decoratedImage.Pixels[index + 3]) changed++;
-            }
-            return changed;
-        }
     }
 
     private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {

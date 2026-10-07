@@ -536,8 +536,21 @@ internal static partial class SmokeTests {
 
     private static void EdgeXAxisLabelsStayInsidePlot() {
         var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
-        var plot = CartesianPlot(chart.ToSvg());
-        var labels = FamilyLabels(PreparedFamily(chart), "axis-x-label");
+        var prepared = PreparedFamily(chart);
+        var scopes = new System.Collections.Generic.Stack<VisualSceneGroup>();
+        var plot = default(ChartRect);
+        var foundPlot = false;
+        foreach (var node in prepared.Scene.Nodes) {
+            if (node is VisualSceneGroup group) scopes.Push(group);
+            else if (node is VisualSceneEndGroup) scopes.Pop();
+            else if (node is VisualScenePath { Role: "line" }) {
+                plot = scopes.First(scope => scope.Clip.HasValue).Clip!.Value;
+                foundPlot = true;
+                break;
+            }
+        }
+        Assert(foundPlot, "The prepared data line should retain its actual plot clip.");
+        var labels = FamilyLabels(prepared, "axis-x-label");
         Assert(labels.Any(label => label.Text.Lines.Single().Text == "January") && labels.Any(label => label.Text.Lines.Single().Text == "December"),
             "Edge x-axis labels should preserve their complete visible category text.");
         Assert(labels.All(label => label.Text.Lines.All(line => label.LineLeft(line) >= plot.Left - .000001
@@ -574,13 +587,33 @@ internal static partial class SmokeTests {
         var rightRegions = PreparedFamily(rightLegend).Regions.Where(region => region.Role == "legend" && region.Bounds.Width > 0).ToArray();
         Assert(rightRegions.Length > 0 && rightRegions.All(region => region.Bounds.Left >= rightLegend.Options.Size.Width * .6 && region.Bounds.Right <= rightLegend.Options.Size.Width),
             "Right legends should remain inside their reserved right-side lane.");
-        Assert(rightLegendSvg.Contains("…</text>", StringComparison.Ordinal), "Side legends should shorten long series names inside their reserved lane.");
+        Assert(SvgHasAttributes(rightLegendSvg, "data-cfx-role=\"legend-entry\""), "Side legends should retain their semantic entries.");
+        AssertBoundedLegend(rightLegend, "Primary domain checks with a realistic name", "Certificate transparency drift with another realistic name");
         Assert(rightLegend.ToPng().Length > 64, "Configured legend positions should render PNG output.");
 
-        var longSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 220).AddLine("Extremely long certificate transparency drift monitor", Points(1, 2, 3)).AddLine("Extremely long DNSSEC posture remediation backlog", Points(2, 3, 4)).ToSvg();
+        var font = System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert(System.IO.File.Exists(font), "The existing Carlito fixture should make forced legend truncation independent of installed fonts.");
+        var longNames = new[] {
+            string.Join(" / ", Enumerable.Repeat("Extremely long certificate transparency drift monitor", 3)),
+            string.Join(" / ", Enumerable.Repeat("Extremely long DNSSEC posture remediation backlog", 3))
+        };
+        var longLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 220).WithPngFont(font)
+            .AddLine(longNames[0], Points(1, 2, 3)).AddLine(longNames[1], Points(2, 3, 4));
+        var longSvg = longLegend.ToSvg();
         Assert(longSvg.Contains("…</text>", StringComparison.Ordinal), "SVG legends should shorten series names that exceed the bounded legend lane.");
+        AssertBoundedLegend(longLegend, longNames);
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLegendPosition((ChartLegendPosition)999), "Legend positions should reject undefined enum values.");
 
+        void AssertBoundedLegend(Chart model, params string[] fullNames) {
+            var native = PreparedFamily(model);
+            var regions = native.Regions.Where(region => region.Role == "legend" && region.Bounds.Width > 0).ToArray();
+            var visible = FamilyLabels(native, "legend-label");
+            Assert(visible.Length > 0 && visible.All(label => label.Text.Lines.All(line => regions.Any(region =>
+                label.LineLeft(line) >= region.Bounds.Left - .000001 && label.LineLeft(line) + line.Width <= region.Bounds.Right + .000001))),
+                "Visible legend text should fit the measured entry bounds for the resolved font.");
+            Assert(fullNames.All(name => native.Regions.Any(region => region.Role == "legend" && region.Label?.Contains(name, StringComparison.Ordinal) == true)),
+                "Legend semantic descriptions should retain every complete source name after trimming.");
+        }
     }
 
     private static void SvgHasNoInvalidNumbers() {

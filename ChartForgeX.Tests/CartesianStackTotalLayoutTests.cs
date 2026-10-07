@@ -12,6 +12,50 @@ public sealed class CartesianStackTotalLayoutTests {
     [Theory]
     [InlineData(1)]
     [InlineData(-1)]
+    [InlineData(0)]
+    public void DenseVerticalTotalsReserveMeasuredSpaceAboveAndBelowExactValueBounds(int sign) {
+        var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert.True(File.Exists(font));
+        var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
+            .WithPngFont(font).WithStackedBars().WithStackTotals().WithDataLabelStyle(style => style.WithFontSize(18))
+            .WithYAxisBounds(sign < 0 ? -16 : sign > 0 ? 0 : -16, sign < 0 ? 0 : 16);
+        var signs = sign == 0 ? new[] { 1, -1 } : new[] { sign };
+        foreach (var direction in signs) {
+            chart.AddBar("Passed " + direction, Enumerable.Range(1, 16).Select(x => new ChartPoint(x, 13 * direction)).ToArray());
+            chart.AddBar("Warnings " + direction, Enumerable.Range(1, 16).Select(x => new ChartPoint(x, 3 * direction)).ToArray());
+        }
+        foreach (var series in chart.Series)
+            for (var point = 0; point < series.Points.Count; point++) series.WithPointLabel(point, "Observation");
+        var calls = 0;
+        chart.WithValueFormatter(value => { calls++; return "Total " + value.ToString(CultureInfo.InvariantCulture); });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(16 * signs.Length, calls);
+        var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
+        var regions = prepared.Regions.Where(region => region.Role == "stack-total").ToArray();
+        Assert.Equal(16 * signs.Length, regions.Length);
+        foreach (var direction in signs)
+            Assert.Contains(totals, total => regions.Any(region => total.Id == region.Id + "-label" && region.Label == "Total " + (16 * direction)));
+        var boxes = totals.Select(total => new ChartRect(total.X, total.Baseline - total.Text.Ascent,
+            total.Text.Metrics.Width, total.Text.Metrics.Height)).ToArray();
+        var marks = prepared.Regions.Where(region => region.Role == "point").Select(region => region.Bounds).ToArray();
+        for (var index = 0; index < boxes.Length; index++) {
+            Assert.True(boxes[index].Top >= 0 && boxes[index].Bottom <= 220);
+            Assert.True(boxes[index].Left >= 0 && boxes[index].Right <= 300);
+            Assert.DoesNotContain(marks, mark => Overlaps(boxes[index], mark));
+            for (var other = index + 1; other < boxes.Length; other++) Assert.False(Overlaps(boxes[index], boxes[other]));
+        }
+        var svg = prepared.ToSvg();
+        Assert.Equal(totals.Length, XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "stack-total-label"));
+        Assert.True(prepared.ToPng().Length > 64);
+        Assert.Equal(16 * signs.Length, calls);
+
+        static bool Overlaps(ChartRect first, ChartRect second) => first.Left < second.Right && first.Right > second.Left
+            && first.Top < second.Bottom && first.Bottom > second.Top;
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(-1)]
     public void DashboardRowsKeepEveryFullTotalBesideItsStack(int sign) {
         var chart = DashboardRows(sign);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

@@ -73,7 +73,8 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
-            AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels);
+            AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
+                calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null);
         }
     }
 
@@ -172,7 +173,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
-        ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null) {
+        ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
+        TextMetrics? calloutMetrics = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
         var value = observationValue ?? series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
@@ -226,6 +228,22 @@ internal static partial class VisualCartesianCompiler {
             }
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+            if (calloutMetrics.HasValue) {
+                // A broad caption at an endpoint can cross the adjacent sloping stroke in
+                // the first lane. Try half and full measured text heights inward: jumping
+                // straight to a full height can skip the clear band between two lines.
+                // Placement still rejects every collision and out-of-bounds candidate.
+                foreach (var fraction in new[] { .5, 1d }) {
+                    var lane = spacing + calloutMetrics.Value.Height * fraction;
+                    foreach (var direction in new[] { 1d, -1d }) {
+                        var alignment = direction > 0 ? 0 : 1;
+                        candidates.Add(new LabelCandidate(leftOffset, lane * direction, 1, alignment));
+                        candidates.Add(new LabelCandidate(rightOffset, lane * direction, 0, alignment));
+                        candidates.Add(new LabelCandidate(0, lane * direction, 1, alignment));
+                        candidates.Add(new LabelCandidate(0, lane * direction, 0, alignment));
+                    }
+                }
+            }
         }
         var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center;
         var autoInside = placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar;

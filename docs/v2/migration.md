@@ -65,6 +65,8 @@ When a host switches one exported SVG between themes, obtain its binding collect
 
 DateTime timeline and Gantt builders select a time axis by default. An explicitly configured scale, formatter, time zone or bounds remains in effect; numeric overloads retain linear axes. Heatmap, calendar and map scales require both their model visibility settings and the host frame's legend permission even though they have no categorical legend entries. Observed zero and missing data remain separate states.
 
+`ChartAnnotation.ShowLabel` controls the visible caption and defaults to `true`. Setting the constructor's optional `showLabel` argument to `false` preserves `Label` in accessible descriptions and semantic metadata. `WithDashboardTrendFocus` uses this separation to retain its labeled crosshair with one measured point-callout caption. Rebuild compiled consumers for v2, including callers of the annotation constructor; existing six-argument source calls remain valid.
+
 ## Shared static handoff
 
 The target adapter flow is typed model → common renderable → immutable prepared output → SVG/PNG or semantic artifact. Compile once when producing both backends. Keep IDs, alternative text, semantic regions and family data with the artifact; the display scene and its SVG cannot replace native topology/flow/sequence data.

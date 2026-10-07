@@ -110,7 +110,9 @@ public sealed partial class Chart {
         ChartGuards.Finite(y, nameof(y));
         var focusColor = color ?? Options.Theme.Palette[0];
         WithHighlightedXAxisLabel(x, focusColor);
-        AddVerticalLine(x, label, focusColor);
+        // The callout owns the visible caption; the crosshair retains its full label
+        // for accessibility and semantic exports without painting a duplicate.
+        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalLine, x, null, label, focusColor, 1, showLabel: false));
         AddPointCallout(label, x, y, focusColor, placement);
         return this;
     }

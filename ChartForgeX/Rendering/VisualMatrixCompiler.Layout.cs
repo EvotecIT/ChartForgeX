@@ -24,7 +24,10 @@ internal static partial class VisualMatrixCompiler {
         var xTitle = x ? ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle) : string.Empty;
         var titleHeight = xTitle.Length > 0 ? builder.MeasureText(xTitle, titleStyle).Height + gap : 0;
         var scaleHeight = !categorical && ScaleVisible(chart, context) ? Math.Min(viewport.Height * .22, lineHeight * 2 + gap) : 0;
-        var side = x && ChartHeatmapColumnLabels.IsRotated(chart) ? Math.Min(viewport.Width * .15, ChartHeatmapColumnLabels.SideReserve(chart, widest, lineHeight, left)) : 0;
+        // Only left-slanting captions can use the row-label gutter. The right side has no
+        // equivalent gutter inside the common viewport, so reserve its complete reach there.
+        var spaceBeside = ChartHeatmapColumnLabels.EndsAtColumn(chart) ? left : 0;
+        var side = x && ChartHeatmapColumnLabels.IsRotated(chart) ? Math.Min(viewport.Width * .15, ChartHeatmapColumnLabels.SideReserve(chart, widest, lineHeight, spaceBeside)) : 0;
         var plotLeft = viewport.Left + left + (ChartHeatmapColumnLabels.EndsAtColumn(chart) ? side : 0);
         var plot = new ChartRect(plotLeft, viewport.Top + top, Math.Max(0, viewport.Width - left - side), Math.Max(0, viewport.Height - top - labels - titleHeight - scaleHeight));
         return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle);

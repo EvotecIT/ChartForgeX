@@ -44,7 +44,7 @@ internal sealed partial class VisualTopologyCompiler {
                         // the common measured text fitter still owns line and width containment.
                         var symbolRatio = DotNodeSymbolFontSize / 11;
                         var symbolSize = Math.Min(_context.Theme.Typography.DataLabelSize, node.Height) * symbolRatio;
-                        Text(node.Symbol!, bounds, symbolSize, _colors.Surface, 700, "topology-node-symbol", centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
+                        Text(node.Symbol!, bounds, symbolSize, _colors.Surface, 700, "topology-node-symbol", centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface), fitSingleLine: true);
                     }
                 }
                 else if (node.Shape.HasValue) {
@@ -143,9 +143,25 @@ internal sealed partial class VisualTopologyCompiler {
         return Math.Min(Math.Max(1, maximum), count);
     }
 
-    private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1) {
+    private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1, bool fitSingleLine = false) {
         if (string.IsNullOrEmpty(value) || bounds.Width <= 0 || bounds.Height <= 0) return null;
         size *= _scale;
+        if (fitSingleLine) {
+            var preferred = _builder.MeasureText(value, size, weight);
+            if (preferred.Width > bounds.Width || preferred.Height > bounds.Height) {
+                var lower = 0d; var upper = size;
+                // Font metrics can be discrete for the built-in bitmap face. Search measured
+                // sizes rather than assuming that every face scales linearly or imposing a
+                // platform-dependent minimum. Keep the preferred size whenever it already fits.
+                for (var attempt = 0; attempt < 28; attempt++) {
+                    var candidate = (lower + upper) / 2;
+                    var measured = _builder.MeasureText(value, candidate, weight);
+                    if (measured.Width <= bounds.Width && measured.Height <= bounds.Height) lower = candidate;
+                    else upper = candidate;
+                }
+                if (lower > 0) size = lower;
+            }
+        }
         var lineHeight = _builder.MeasureText("Ag", size, weight).LineHeight;
         maxLines = Math.Min(Math.Max(1, maxLines), (int)Math.Floor(bounds.Height / lineHeight));
         if (maxLines < 1) {
@@ -159,6 +175,14 @@ internal sealed partial class VisualTopologyCompiler {
         while (queue.Count > 0 && lines.Count < maxLines) {
             var text = queue.Dequeue();
             if (_builder.MeasureText(text, size, weight).Width <= bounds.Width) { lines.Add(text); continue; }
+            if (fitSingleLine) {
+                // Irreducible bitmap advances can exceed a tiny dot even at the smallest
+                // nominal size. Retain a fitting text-element prefix and disclose the loss;
+                // appending an ellipsis must not erase the only glyph that could fit.
+                lines.Add(ChartTextFitting.FitEnd(text, bounds.Width, probe => _builder.MeasureText(probe, size, weight).Width, string.Empty));
+                _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A compact topology symbol exceeds its measured bounds; complete source text remains in semantic interchange."));
+                continue;
+            }
             var elements = StringInfo.ParseCombiningCharacters(text); var count = elements.Length;
             while (count > 0 && _builder.MeasureText(text.Substring(0, count == elements.Length ? text.Length : elements[count]) + "…", size, weight).Width > bounds.Width) count--;
             var length = count == 0 ? 0 : count == elements.Length ? text.Length : elements[count];

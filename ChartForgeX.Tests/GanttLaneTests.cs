@@ -55,12 +55,18 @@ public sealed class GanttLaneTests {
 
     [Fact]
     public void ToSvg_OpenItem_RunsToNowAndIsMarkedOngoing() {
-        var svg = XDocument.Parse(CreateChart().ToSvg());
+        var chart = CreateChart();
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
         var now = ByRole(svg, "gantt-now").Single();
         Assert.DoesNotContain(now.DescendantsAndSelf(), element => element.Attribute("href") != null || element.Attribute("tabindex") != null);
         var open = ByRole(svg, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-open") == "true");
-        Assert.Equal(Number(now, "x1"), Number(open, "x") + Number(open, "width"), 3);
-        Assert.NotNull(open.Attribute("data-cfx-end")); // Prepared output snapshots the resolved current endpoint.
+        var openBounds = AssertSerializedLaneBounds(prepared, open);
+        var nowLine = prepared.Scene.Nodes.OfType<VisualSceneLine>().Single(line => line.Role == "gantt-now-line");
+        // SVG rounds x and width independently; compare the endpoint before serialization, then each serialized coordinate.
+        Assert.Equal(nowLine.Start.X - openBounds.X, openBounds.Width);
+        Assert.Equal(nowLine.Start.X.ToString("0.###", CultureInfo.InvariantCulture), (string?)now.RenderedAttribute("x1"));
+        Assert.Equal((string?)now.Attribute("data-cfx-value"), (string?)open.Attribute("data-cfx-end")); // The open endpoint snapshots Now.
         Assert.Contains("ongoing", Title(open), StringComparison.Ordinal);
         Assert.Equal(new[] { "Now" }, Texts(svg, "gantt-now-label"));
 
@@ -74,8 +80,12 @@ public sealed class GanttLaneTests {
 
         var lateStart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).WithGanttToday(Start.AddHours(2)).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(6), "low"), new ChartGanttLaneItem(Start.AddHours(4), null, "high") });
-        var late = ByRole(XDocument.Parse(lateStart.ToSvg()), "gantt-lane-item");
-        Assert.Equal(Number(late[0], "x") + Number(late[0], "width"), Number(late[1], "x") + Number(late[1], "width"), 3);
+        var latePrepared = lateStart.Prepare(VisualExportRequest.ForChart(lateStart).Context);
+        var late = ByRole(XDocument.Parse(latePrepared.ToSvg()), "gantt-lane-item");
+        var closedBounds = AssertSerializedLaneBounds(latePrepared, late[0]);
+        var lateBounds = AssertSerializedLaneBounds(latePrepared, late[1]);
+        Assert.Equal(closedBounds.Right, lateBounds.Right);
+        Assert.Equal((string?)late[0].Attribute("data-cfx-end"), (string?)late[1].Attribute("data-cfx-end"));
     }
 
     [Fact]
@@ -484,6 +494,14 @@ public sealed class GanttLaneTests {
     private static string[] Texts(XDocument svg, string role) => ByRole(svg, role).Select(element => element.Value).ToArray();
 
     private static string Title(XElement element) => element.Tooltip();
+
+    private static ChartRect AssertSerializedLaneBounds(PreparedVisual prepared, XElement item) {
+        var bounds = prepared.Regions.Single(region => region.Role == "gantt-lane-item"
+            && region.Id == (string?)item.Attribute("data-cfx-source-id")).Bounds;
+        Assert.Equal(bounds.X.ToString("0.###", CultureInfo.InvariantCulture), (string?)item.RenderedAttribute("x"));
+        Assert.Equal(bounds.Width.ToString("0.###", CultureInfo.InvariantCulture), (string?)item.RenderedAttribute("width"));
+        return bounds;
+    }
 
     private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
 }

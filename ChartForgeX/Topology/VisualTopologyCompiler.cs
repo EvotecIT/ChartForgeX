@@ -42,6 +42,9 @@ internal sealed partial class VisualTopologyCompiler {
         _options = options.CloneForRendering();
         _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
         _options.ResolvedEdgeLabelScale = context.Theme.Typography.DataLabelSize / 11;
+        var badgeFace = new VisualSceneTextFace(context.Font, 600);
+        var badgeFontSize = context.Theme.Typography.DataLabelSize * .75;
+        _options.ResolvedBadgeTextWidth = value => badgeFace.Prepare(value, badgeFontSize).Metrics.Width;
         if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
         _builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         _colors = context.Theme.Resolve(context.ThemeMode);

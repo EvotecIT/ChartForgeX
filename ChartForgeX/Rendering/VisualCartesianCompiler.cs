@@ -79,7 +79,10 @@ internal static partial class VisualCartesianCompiler {
         var labelBounds = plot;
         var horizontalTotals = horizontal && chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked
             ? ResolveHorizontalTotals(chart, context, builder, colors) : Array.Empty<HorizontalStackTotal>();
+        var verticalTotals = !horizontal && chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked
+            ? ResolveVerticalTotals(chart, context, builder, colors, coordinates) : null;
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(plot, horizontalTotals, context.Theme.Spacing);
+        if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(plot, verticalTotals, context.Theme.Spacing);
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         using (builder.PushClip(viewport)) {
@@ -116,7 +119,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked) {
             if (horizontal) AddHorizontalTotals(horizontalTotals, context, builder, map, labels);
-            else AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, colors, labels);
+            else AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, labels, verticalTotals!);
         }
         DrawDataLabels(context, builder, labelBounds, labels, obstacles);
     }
@@ -180,7 +183,7 @@ internal static partial class VisualCartesianCompiler {
             using (builder.PushGroup(id, "annotation", new Dictionary<string, string> {
                 ["data-cfx-kind"] = annotation.Kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
                 ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
-                ["data-cfx-label"] = annotation.Label, ["aria-label"] = description
+                ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
             })) {
             if (annotation.EndValue.HasValue) {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.EndValue.Value)));
@@ -196,7 +199,7 @@ internal static partial class VisualCartesianCompiler {
                     dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
             }
             builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
-            if (!string.IsNullOrEmpty(annotation.Label)) {
+            if (annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
                 var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, SvgColorRole.Axis, .12);
                 var backplate = plate.Color;
                 var ink = ChartColorBlend.Contrast(plate);
