@@ -9,8 +9,13 @@ namespace ChartForgeX.Rendering;
 /// do, and the plot reserves the height they take. Shared by the SVG and PNG renderers so both reserve the same band.
 /// </summary>
 internal static class ChartHeatmapColumnLabels {
-    /// <summary>The longest a rotated label is drawn before it is shortened, in pixels along its baseline.</summary>
-    public const double MaximumRotatedLength = 120;
+    /// <summary>Limits the rotated label band to a portion of the available canvas height, retaining room for cells.</summary>
+    private static double MaximumRotatedLength(Chart chart, double textHeight) {
+        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
+        var height = Math.Max(0, chart.Options.Size.Height - chart.Options.Padding.Top - chart.Options.Padding.Bottom);
+        var band = height * 0.4 - RotatedOffset - 8 - Math.Cos(radians) * textHeight;
+        return Math.Max(0, band / Math.Max(0.000001, Math.Sin(radians)));
+    }
 
     /// <summary>Baseline offset of unrotated labels below the plot.</summary>
     public const double LabelOffset = 22;
@@ -38,7 +43,7 @@ internal static class ChartHeatmapColumnLabels {
     public static double Reserve(Chart chart, double widestLabel, double textHeight) {
         if (!IsRotated(chart)) return textHeight + 24;
         var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
-        return RotatedOffset + Math.Sin(radians) * Math.Min(MaximumRotatedLength, widestLabel) + Math.Cos(radians) * textHeight + 8;
+        return RotatedOffset + Math.Sin(radians) * Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel) + Math.Cos(radians) * textHeight + 8;
     }
 
     /// <summary>
@@ -58,19 +63,19 @@ internal static class ChartHeatmapColumnLabels {
     /// <param name="spaceBeside">Space between the plot and the chart edge on that side before the reserve.</param>
     public static double SideReserve(Chart chart, double widestLabel, double textHeight, double spaceBeside) {
         if (!IsRotated(chart)) return 0;
-        return Math.Max(0, Reach(chart, Math.Min(MaximumRotatedLength, widestLabel), textHeight) - spaceBeside);
+        return Math.Max(0, Reach(chart, Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel), textHeight) - spaceBeside);
     }
 
     /// <summary>
-    /// Returns the longest a rotated label anchored at <paramref name="x"/> may be: <see cref="MaximumRotatedLength"/>,
-    /// or less where the slant would carry it past the left or right edge of the chart.
+    /// Returns the longest a rotated label anchored at <paramref name="x"/> may be within its reserved height band
+    /// and the left or right edge of the chart.
     /// </summary>
     public static double MaximumLength(Chart chart, double x, double textHeight) {
         var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
         var cos = Math.Cos(radians);
         var room = (EndsAtColumn(chart) ? x : chart.Options.Size.Width - x) - EdgeInset - Math.Sin(radians) * textHeight / 2;
-        if (cos < 0.000001) return MaximumRotatedLength;
-        return Math.Max(0, Math.Min(MaximumRotatedLength, room / cos));
+        if (cos < 0.000001) return MaximumRotatedLength(chart, textHeight);
+        return Math.Max(0, Math.Min(MaximumRotatedLength(chart, textHeight), room / cos));
     }
 
     /// <summary>Returns how far a rotated label of <paramref name="length"/> reaches sideways from its column, edge inset included.</summary>
@@ -92,7 +97,7 @@ internal static class ChartHeatmapColumnLabels {
     /// <param name="widestLabel">Width of the widest label at the tick font size.</param>
     public static int Step(Chart chart, double columnPitch, double textHeight, double widestLabel) {
         var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
-        if (Math.Min(MaximumRotatedLength, widestLabel) <= columnPitch * Math.Cos(radians)) return 1;
+        if (Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel) <= columnPitch * Math.Cos(radians)) return 1;
         var spacing = columnPitch * Math.Sin(radians);
         if (spacing <= 0) return 1;
         return Math.Max(1, (int)Math.Ceiling(textHeight * 0.9 / spacing - 0.000001));

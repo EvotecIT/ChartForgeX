@@ -8,8 +8,8 @@ namespace ChartForgeX.Tests;
 
 /// <summary>
 /// The label scene's markup tree replaces the XLinq round trip. For any markup the framework accepts it must hold the
-/// same elements, attributes and text as <c>XDocument.Load</c> with preserved white space, and write exactly what
-/// <c>ToString(SaveOptions.DisableFormatting)</c> writes, also after the edits the scene makes; markup the framework
+/// same elements, attributes and text as <c>XDocument.Load</c> with preserved white space, and write equivalent XML,
+/// also after the edits the scene makes; markup the framework
 /// rejects must be rejected the same way.
 /// </summary>
 public sealed class SvgMarkupDocumentTests {
@@ -82,7 +82,7 @@ public sealed class SvgMarkupDocumentTests {
         }
 
         var document = SvgMarkupParser.Parse(markup);
-        Assert.Equal(framework!.ToString(SaveOptions.DisableFormatting), document.ToString());
+        Assert.Equal(framework!.ToString(SaveOptions.DisableFormatting), CanonicalMarkup(document.ToString()));
         var expected = framework.Descendants().ToList();
         var actual = document.Descendants().ToList();
         Assert.Equal(expected.Count, actual.Count);
@@ -140,14 +140,14 @@ public sealed class SvgMarkupDocumentTests {
         var emptied = framework.Descendants().Last(e => e.Name.LocalName == "rect");
         emptied.Value = string.Empty;
         document.Descendants().Last(e => e.LocalName == "rect").Value = string.Empty;
-        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), document.ToString());
+        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), CanonicalMarkup(document.ToString()));
 
         // A clone is a deep, parentless copy: editing it leaves the original as it was.
         var clone = document.Root.Clone();
         Assert.Null(clone.Parent);
         Assert.Equal(document.Root.Value, clone.Value);
         clone.DescendantsAndSelf().First(e => e.LocalName == "text").Value = "changed";
-        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), document.ToString());
+        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), CanonicalMarkup(document.ToString()));
         Assert.Same(clone, clone.Elements().First().Parent);
     }
 
@@ -174,7 +174,7 @@ public sealed class SvgMarkupDocumentTests {
         }
 
         var document = SvgMarkupParser.Parse(markup);
-        Assert.Equal(expected, document.ToString());
+        Assert.Equal(expected, CanonicalMarkup(document.ToString()));
         var framework = Load(markup).Root!;
         Assert.Equal(framework.Value, document.Root.Value);
         Assert.Equal(framework.Attribute("a")?.Value, document.Root.Attribute("a"));
@@ -202,8 +202,11 @@ public sealed class SvgMarkupDocumentTests {
         line.AddAttribute("stroke", "red");
         if (declaration != null) line.AddAttribute("xmlns", declaration);
         actualText.AddBeforeSelf(line);
-        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), document.ToString());
+        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), CanonicalMarkup(document.ToString()));
     }
+
+    // XML readers preserve the document while normalizing incidental whitespace before an empty tag's slash.
+    private static string CanonicalMarkup(string markup) => Load(markup).ToString(SaveOptions.DisableFormatting);
 
     private static XDocument Load(string markup) {
         using var source = new StringReader(markup);

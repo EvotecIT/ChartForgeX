@@ -26,8 +26,13 @@ internal static class ChartLayout {
     /// </summary>
     public static double HeaderBottom(Chart chart) {
         if (chart.Options.Theme.UseGraphiteLayout) {
-            if (!string.IsNullOrWhiteSpace(chart.Subtitle)) return SubtitleBaseline(chart) + 4;
-            return string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Padding.Top : TitleBaseline(chart) + 4;
+            if (!string.IsNullOrWhiteSpace(chart.Subtitle)) {
+                var metrics = SubtitleMetrics(chart);
+                return SubtitleBaseline(chart) + metrics.Height - metrics.Ascent + 4;
+            }
+            if (string.IsNullOrWhiteSpace(chart.Title)) return chart.Options.Padding.Top;
+            var title = TitleMetrics(chart);
+            return TitleBaseline(chart) + title.Height - title.Ascent + 4;
         }
         if (!string.IsNullOrWhiteSpace(chart.Subtitle)) return HeaderSubtitleBaseline + 12;
         return string.IsNullOrWhiteSpace(chart.Title) ? 0 : HeaderTitleBaseline + 14;
@@ -35,6 +40,19 @@ internal static class ChartLayout {
 
     internal static double TitleBaseline(Chart chart) => chart.Options.Theme.UseGraphiteLayout
         ? chart.Options.Padding.Top + (chart.Options.IsPanel ? 15 : chart.Options.TitleStyle.FontSize ?? chart.Options.Theme.TitleFontSize) : HeaderTitleBaseline;
-    internal static double SubtitleBaseline(Chart chart) => chart.Options.Theme.UseGraphiteLayout
-        ? TitleBaseline(chart) + (chart.Options.SubtitleStyle.FontSize ?? chart.Options.Theme.SubtitleFontSize) + 4 : HeaderSubtitleBaseline;
+    internal static double SubtitleBaseline(Chart chart) {
+        if (!chart.Options.Theme.UseGraphiteLayout) return HeaderSubtitleBaseline;
+        var separation = (chart.Options.SubtitleStyle.FontSize ?? chart.Options.Theme.SubtitleFontSize) + 4;
+        if (!string.IsNullOrWhiteSpace(chart.Title)) {
+            var title = TitleMetrics(chart);
+            var subtitle = SubtitleMetrics(chart);
+            separation = Math.Max(separation, title.Height - title.Ascent + subtitle.Ascent + 2.25);
+        }
+        return TitleBaseline(chart) + separation;
+    }
+
+    private static (double Height, double Ascent) TitleMetrics(Chart chart) => ChartTextLineMetrics.Measure(chart, chart.Title,
+        chart.Options.TitleStyle.FontSize ?? (chart.Options.IsPanel ? 15 : chart.Options.Theme.TitleFontSize), chart.Options.TitleStyle, 700);
+    private static (double Height, double Ascent) SubtitleMetrics(Chart chart) => ChartTextLineMetrics.Measure(chart, chart.Subtitle,
+        chart.Options.SubtitleStyle.FontSize ?? chart.Options.Theme.SubtitleFontSize, chart.Options.SubtitleStyle, 400);
 }

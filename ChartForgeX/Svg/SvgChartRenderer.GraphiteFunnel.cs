@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Svg;
 
@@ -27,9 +28,21 @@ public sealed partial class SvgChartRenderer {
                 var limit=Math.Max(8,(h-6)/2/1.2);
                 if(style.FontSize.HasValue) style.FontSize=Math.Min(style.FontSize.Value,limit);
                 var labelSize=StyleFontSize(style,Math.Min(13,limit)); var valueSize=StyleFontSize(style,Math.Min(12,limit));
-                var labelY=y+h/2-3; var valueY=labelY+(labelSize+valueSize)*.6+1;
-                DrawSvgTextLeft(w,chart,"funnel-label",FormatX(chart,p.X),plot.Left+bandWidth+20,labelY,t.Text,labelSize,labelWidth,"400",style);
-                DrawSvgTextLeft(w,chart,"funnel-value",FormatValue(chart,p.Y)+" · "+FormatPercent(retention),plot.Left+bandWidth+20,valueY,t.MutedText,valueSize,labelWidth,"400",style);
+                var label=FormatX(chart,p.X); var value=FormatValue(chart,p.Y)+" · "+FormatPercent(retention);
+                var labelMetrics=ChartTextLineMetrics.Measure(chart,label,labelSize,style,400);
+                var valueMetrics=ChartTextLineMetrics.Measure(chart,value,valueSize,style,400);
+                var available=Math.Max(1,h-6); const double gap=2.25;
+                if(labelMetrics.Height+valueMetrics.Height+gap>available) {
+                    var scale=Math.Max(0,(available-gap)/(labelMetrics.Height+valueMetrics.Height));
+                    labelSize=Math.Max(8,labelSize*scale); valueSize=Math.Max(8,valueSize*scale);
+                    if(style.FontSize.HasValue) style.FontSize=labelSize;
+                    labelMetrics=ChartTextLineMetrics.Measure(chart,label,labelSize,style,400);
+                    valueMetrics=ChartTextLineMetrics.Measure(chart,value,valueSize,style,400);
+                }
+                var top=y+(h-labelMetrics.Height-valueMetrics.Height-gap)/2;
+                var labelY=top+labelMetrics.Ascent; var valueY=top+labelMetrics.Height+gap+valueMetrics.Ascent;
+                DrawSvgTextLeft(w,chart,"funnel-label",label,plot.Left+bandWidth+20,labelY,t.Text,labelSize,labelWidth,"400",style);
+                DrawSvgTextLeft(w,chart,"funnel-value",value,plot.Left+bandWidth+20,valueY,t.MutedText,valueSize,labelWidth,"400",style);
             }
             w.EndElement();
         }

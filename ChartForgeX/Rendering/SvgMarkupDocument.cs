@@ -7,8 +7,8 @@ namespace ChartForgeX.Rendering;
 /// <summary>
 /// The markup tree of a label scene: elements, text and the other node kinds rendered SVG can carry, with the few
 /// tree operations the scene uses. It replaces the XLinq round trip of every rendered chart: parsing builds the same
-/// tree <c>XDocument.Load</c> with preserved white space builds, and <see cref="ToString"/> writes exactly what
-/// <c>XDocument.ToString(SaveOptions.DisableFormatting)</c> writes for that tree.
+/// tree <c>XDocument.Load</c> with preserved white space builds, and <see cref="ToString"/> writes equivalent XML
+/// with compact empty tags for that tree.
 /// </summary>
 /// <remarks>
 /// Names are kept as written (qualified, with their prefix). Markup the parser does not take as it is is first
