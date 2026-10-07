@@ -129,7 +129,10 @@ internal static class VisualSceneSvgRenderer {
     internal static string Identity(VisualScene scene, string? title, string? description, string? language, bool decorative) {
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
-        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
+        // Batch primitive writes without changing the identity byte stream. Dense scenes otherwise
+        // send thousands of tiny updates through the crypto transform while exporting SVG.
+        using var buffered = new BufferedStream(stream, 16384);
+        using (var writer = new BinaryWriter(buffered, Encoding.UTF8, leaveOpen: true)) {
             writer.Write("cfx-native-svg-1");
             writer.Write(scene.Size.Width); writer.Write(scene.Size.Height);
             Text(writer, title); Text(writer, description); Text(writer, language); writer.Write(decorative);
@@ -181,6 +184,7 @@ internal static class VisualSceneSvgRenderer {
                 } else throw new NotSupportedException("Unknown native scene command.");
             }
         }
+        buffered.Flush();
         stream.FlushFinalBlock();
         var result = new StringBuilder("cfx-v2-");
         foreach (var value in hash.Hash!) result.Append(value.ToString("x2", CultureInfo.InvariantCulture));

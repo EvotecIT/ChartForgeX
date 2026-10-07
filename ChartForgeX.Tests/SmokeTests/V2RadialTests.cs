@@ -236,8 +236,73 @@ public sealed class V2RadialTests {
         Assert.All(complete, full => Assert.Contains(artifact.Regions, region => region.Label == full));
     }
 
-    private static VisualScene Compile(Chart chart, ChartRect? bounds = null) {
-        var context = new VisualRenderContext();
+    [Theory]
+    [InlineData(ChartDataLabelPlacement.Above, ChartDataLabelConnectorStyle.Straight)]
+    [InlineData(ChartDataLabelPlacement.Above, ChartDataLabelConnectorStyle.Elbow)]
+    [InlineData(ChartDataLabelPlacement.Above, ChartDataLabelConnectorStyle.Curve)]
+    [InlineData(ChartDataLabelPlacement.Below, ChartDataLabelConnectorStyle.Straight)]
+    [InlineData(ChartDataLabelPlacement.Below, ChartDataLabelConnectorStyle.Elbow)]
+    [InlineData(ChartDataLabelPlacement.Below, ChartDataLabelConnectorStyle.Curve)]
+    public void VerticalLeaders_BypassUnrelatedSlicesAndEndAtLabelEdges(ChartDataLabelPlacement placement, ChartDataLabelConnectorStyle style) {
+        foreach (var donut in new[] { false, true }) {
+            var chart = (donut ? Donut(1, 1, 1, 1) : Chart.Create().AddPie("Total", Points(1, 1, 1, 1)))
+                .WithXLabels("A", "B", "C", "D").WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label)
+                .WithDonutCenterLabel(false).WithDataLabelConnectorStyle(style).WithDataLabelConnectorOpacity(1)
+                .WithDataLabelConnectorStrokeWidth(2);
+            chart.Options.DataLabelPlacement = placement;
+            chart.Series[0].WithPointSliceOffset(0, .25).WithPointSliceOffset(2, .15);
+            var scene = Compile(chart);
+            var slices = scene.Nodes.OfType<VisualSceneSlice>().ToArray();
+            var leaders = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "data-label-connector").ToArray();
+            var labels = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "data-label").ToArray();
+            Assert.Equal(4, leaders.Length);
+            Assert.Equal(4, labels.Length);
+            Assert.DoesNotContain(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
+            for (var index = 0; index < slices.Length; index++) {
+                var source = slices[index];
+                var leader = Assert.Single(leaders, path => path.Id == source.Id + "-connector");
+                var label = Assert.Single(labels, text => text.Id == source.Id + "-label");
+                Assert.Equal(source.Fill, leader.Stroke);
+                var points = Assert.Single(VisualSceneGeometry.Flatten(leader, 2));
+                Assert.All(points, point => Assert.True(point.X >= 1 && point.X <= scene.Size.Width - 1 &&
+                    point.Y >= 1 && point.Y <= scene.Size.Height - 1, "The full stroked leader must fit its viewport."));
+                Assert.Equal(label.X + label.Text.Metrics.Width / 2, points[points.Count - 1].X, 8);
+                var nearEdge = label.Baseline - label.Text.Ascent + (placement == ChartDataLabelPlacement.Above ? label.Text.Metrics.Height : 0);
+                Assert.Equal(nearEdge, points[points.Count - 1].Y, 8);
+                Assert.Equal(style == ChartDataLabelConnectorStyle.Curve, leader.Commands.Any(command => command.Kind == ChartPathCommandKind.CubicTo));
+                // In this equal-sector fixture the unrelated disks do not contain the source's radial attachment.
+                // Testing every flattened segment catches inward straight, elbow and curved opposite-hemisphere leaders.
+                foreach (var unrelated in slices.Where(slice => slice != source))
+                    for (var segment = 1; segment < points.Count; segment++)
+                        Assert.True(DistanceToSegment(new ChartPoint(unrelated.Cx, unrelated.Cy), points[segment - 1], points[segment]) >= unrelated.Outer - .001,
+                            "A vertical leader must not cross an unrelated filled slice, including when slices are exploded.");
+            }
+        }
+    }
+
+    [Fact]
+    public void VerticalLeader_InsufficientClearanceOmitsLabelAndReportsOverflow() {
+        var chart = Donut(1).WithXLabels("A").WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label)
+            .WithDonutCenterLabel(false).WithDataLabelConnectorStrokeWidth(8);
+        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Above;
+        var theme = VisualTheme.Graphite();
+        var compactTheme = new VisualTheme(theme.Resolve(VisualThemeMode.Light).ToTokens(), theme.Resolve(VisualThemeMode.Dark).ToTokens(), spacing: 6);
+        var scene = Compile(chart, context: new VisualRenderContext(theme: compactTheme));
+        Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
+        Assert.DoesNotContain(scene.Nodes, node => node.Role is "data-label" or "data-label-connector");
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-point-0-label" && region.Label == "A");
+    }
+
+    private static double DistanceToSegment(ChartPoint point, ChartPoint first, ChartPoint last) {
+        var dx = last.X - first.X; var dy = last.Y - first.Y;
+        var square = dx * dx + dy * dy;
+        var fraction = square == 0 ? 0 : Math.Max(0, Math.Min(1, ((point.X - first.X) * dx + (point.Y - first.Y) * dy) / square));
+        var x = first.X + fraction * dx - point.X; var y = first.Y + fraction * dy - point.Y;
+        return Math.Sqrt(x * x + y * y);
+    }
+
+    private static VisualScene Compile(Chart chart, ChartRect? bounds = null, VisualRenderContext? context = null) {
+        context ??= new VisualRenderContext();
         var plot = bounds ?? new ChartRect(0, 0, 420, 320);
         var builder = new VisualSceneBuilder(new VisualSize(Math.Max(1, plot.Right), Math.Max(1, plot.Bottom)), context.Font);
         VisualRadialCompiler.Build(chart, context, builder, plot);

@@ -68,15 +68,18 @@ internal static partial class VisualRadialCompiler {
             });
         }
         var placed = new LabelPlacementService().Place(requests, band, null, Math.Max(2, spacing / 2), builder.MeasureText);
-        if (placed.Any(label => label.IsDropped || label.IsEllipsized))
-            builder.AddDiagnostic(new VisualDiagnostic("radial.label-overflow", "Some radial labels were shortened or omitted to fit their measured positions within the fixed canvas."));
+        var overflow = placed.Any(label => label.IsDropped || label.IsEllipsized);
+        var leftCount = Enumerable.Range(0, placed.Count).Count(index => !placed[index].IsDropped && Math.Cos(labels[index].Angle) < 0);
+        var rightCount = placed.Count(label => !label.IsDropped) - leftCount;
+        var leftLane = 0; var rightLane = 0;
         for (var index = 0; index < placed.Count; index++) {
             var result = placed[index];
             if (result.IsDropped) continue;
             var label = labels[index];
-            var centerX = result.Bounds.Left + result.Bounds.Width / 2;
-            var centerY = result.Bounds.Top + result.Bounds.Height / 2;
-            Connector(chart, builder, label.Slice, label.Angle, label.SliceX, label.SliceY, radius, centerX, centerY, false);
+            var left = Math.Cos(label.Angle) < 0;
+            var lane = left ? leftLane++ : rightLane++;
+            if (!VerticalConnector(chart, context, builder, plot, label, result.Bounds, radius, cy, extent, above,
+                lane, left ? leftCount : rightCount)) { overflow = true; continue; }
             var displayed = label.Style.Clone();
             displayed.FontSize = label.Style.EffectiveFontSize;
             displayed.Baseline = TextBaseline.Normal;
@@ -85,7 +88,58 @@ internal static partial class VisualRadialCompiler {
             builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(displayed), displayed,
                 "data-label", SliceId(label.Slice) + "-label");
         }
+        if (overflow)
+            builder.AddDiagnostic(new VisualDiagnostic("radial.label-overflow", "Some radial labels were shortened or omitted to fit their measured text and external leaders within the fixed canvas."));
     }
+
+    private static bool VerticalConnector(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        RadialLabel label, ChartRect bounds, double radius, double cy, double extent, bool above, int lane, int laneCount) {
+        var halfStroke = chart.Options.DataLabelConnectorStrokeWidth / 2;
+        var clearance = Math.Max(2 + halfStroke, context.Theme.Spacing / 2);
+        var outerClearance = context.Theme.Spacing - halfStroke - 1;
+        if (outerClearance < clearance) return false;
+        var cx = plot.Left + plot.Width / 2;
+        var cos = Math.Cos(label.Angle); var sin = Math.Sin(label.Angle);
+        var side = cos < 0 ? -1 : 1;
+        var routeRadius = extent + clearance + (outerClearance - clearance) * (lane + 1) / (laneCount + 1);
+        var sideX = cx + side * routeRadius;
+        var railY = cy + (above ? -1 : 1) * routeRadius;
+        var endX = bounds.Left + bounds.Width / 2;
+        var endY = above ? bounds.Bottom : bounds.Top;
+        var points = new[] {
+            new ChartPoint(label.SliceX + cos * radius, label.SliceY + sin * radius),
+            new ChartPoint(cx + cos * (extent + clearance), cy + sin * (extent + clearance)),
+            new ChartPoint(sideX, cy + sin * (extent + clearance)),
+            new ChartPoint(sideX, railY), new ChartPoint(endX, railY), new ChartPoint(endX, endY)
+        };
+        // The initial segment exits its own slice; every bypass segment stays outside the exploded envelope.
+        if (points.Any(point => point.X - halfStroke < plot.Left || point.X + halfStroke > plot.Right ||
+            point.Y - halfStroke < plot.Top || point.Y + halfStroke > plot.Bottom)) return false;
+        var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(points[0].X, points[0].Y) };
+        for (var index = 1; index < points.Length - 1; index++) {
+            var corner = points[index]; var previous = points[index - 1]; var next = points[index + 1];
+            var incomingLength = Distance(previous, corner); var outgoingLength = Distance(corner, next);
+            var cut = chart.Options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Curve
+                ? Math.Min(Math.Max(0, (clearance - halfStroke - 1) / 2), Math.Min(incomingLength, outgoingLength) / 2) : 0;
+            if (cut <= 0) { commands.Add(ChartPathCommand.LineTo(corner.X, corner.Y)); continue; }
+            var incoming = new ChartPoint(corner.X + (previous.X - corner.X) * cut / incomingLength,
+                corner.Y + (previous.Y - corner.Y) * cut / incomingLength);
+            var outgoing = new ChartPoint(corner.X + (next.X - corner.X) * cut / outgoingLength,
+                corner.Y + (next.Y - corner.Y) * cut / outgoingLength);
+            commands.Add(ChartPathCommand.LineTo(incoming.X, incoming.Y));
+            commands.Add(ChartPathCommand.CubicTo(incoming.X + (corner.X - incoming.X) * 2 / 3,
+                incoming.Y + (corner.Y - incoming.Y) * 2 / 3, outgoing.X + (corner.X - outgoing.X) * 2 / 3,
+                outgoing.Y + (corner.Y - outgoing.Y) * 2 / 3, outgoing.X, outgoing.Y));
+        }
+        commands.Add(ChartPathCommand.LineTo(endX, endY));
+        var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? label.Slice.Color, chart.Options.DataLabelConnectorOpacity);
+        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth,
+            role: "data-label-connector", id: SliceId(label.Slice) + "-connector");
+        return true;
+    }
+
+    private static double Distance(ChartPoint first, ChartPoint second) =>
+        Math.Sqrt((second.X - first.X) * (second.X - first.X) + (second.Y - first.Y) * (second.Y - first.Y));
 
     private static void DrawOutsideLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, List<RadialLabel> labels, double radius) {
