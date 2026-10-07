@@ -9,11 +9,13 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawBarSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
         int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors) {
         var style = chart.Options.ResolvePreparedBarVisualStyle();
+        var sourcePaint = VisualChartPaint.Series(series, color, pointIndex);
         var radius = Math.Min(chart.Options.HasPreparedBarCornerRadius ? style.CornerRadius : context.Theme.BarRadius, bounds.Width / 2);
         var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
             ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
         if (style.Kind == ChartBarStyle.SegmentedCapsule) {
-            builder.Rect(bounds, ChartColorMath.WithOpacity(color, style.BodyOpacity), radius: radius, role: "bar");
+            builder.Rect(bounds, ChartColorMath.WithOpacity(color, style.BodyOpacity), radius: radius, role: "bar",
+                paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, style.BodyOpacity), style.BodyOpacity)));
             DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), colors.Surface, "bar-pattern");
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
             var geometry = ChartSegmentedBarGeometry.Vertical(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, series.Points[pointIndex].Y);
@@ -24,20 +26,25 @@ internal static partial class VisualCartesianCompiler {
         } else {
             if (style.Kind == ChartBarStyle.Solid) {
                 builder.RectGradient(bounds, new ChartPoint(bounds.Left, bounds.Top), new ChartPoint(bounds.Left, bounds.Bottom),
-                    new[] { new VisualGradientStop(0, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientTop(color).WithAlpha(color.A), ChartVisualPrimitives.BarFillOpacity)),
-                        new VisualGradientStop(1, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientBottom(color).WithAlpha(color.A), ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity)) },
+                    new[] { new VisualGradientStop(0, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientTop(color).WithAlpha(color.A), ChartVisualPrimitives.BarFillOpacity),
+                            VisualChartPaint.BarGradient(color, VisualChartPaint.SeriesRole(series, pointIndex), true, ChartVisualPrimitives.BarFillOpacity)),
+                        new VisualGradientStop(1, ChartColorMath.WithOpacity(ChartMarkSurface.BarGradientBottom(color).WithAlpha(color.A), ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity),
+                            VisualChartPaint.BarGradient(color, VisualChartPaint.SeriesRole(series, pointIndex), false, ChartVisualPrimitives.BarGradientBottomOpacity * ChartVisualPrimitives.BarFillOpacity)) },
                     radius: radius, role: "bar");
                 if (ChartMarkSurface.HasBarHighlight(bounds.Width, bounds.Height)) {
                     var inset = ChartVisualPrimitives.BarHighlightInset;
                     builder.Line(bounds.Left + inset, bounds.Top + inset, bounds.Right - inset, bounds.Top + inset,
-                        ChartColorMath.WithOpacity(ChartColor.White.WithAlpha(color.A), ChartVisualPrimitives.BarHighlightOpacity), ChartVisualPrimitives.BarHighlightStrokeWidth, role: "bar-highlight");
+                        ChartColorMath.WithOpacity(ChartColor.White.WithAlpha(color.A), ChartVisualPrimitives.BarHighlightOpacity), ChartVisualPrimitives.BarHighlightStrokeWidth, role: "bar-highlight",
+                        paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.WithOpacity(ChartColor.White.WithAlpha(color.A), ChartVisualPrimitives.BarHighlightOpacity))));
                 }
-            } else builder.Rect(bounds, color, radius: radius, role: "bar");
+            } else builder.Rect(bounds, color, radius: radius, role: "bar", paint: VisualChartPaint.Fill(sourcePaint));
             DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, color, colors.Surface, "bar-pattern");
         }
 
         void DrawCap(ChartSegmentedLine line, ChartColor paint, double width, double opacity, string role) {
-            if (opacity > 0 && width > 0) builder.Line(line.X1, line.Y1, line.X2, line.Y2, ChartColorMath.WithOpacity(paint, opacity), width, role: role);
+            if (opacity > 0 && width > 0) builder.Line(line.X1, line.Y1, line.X2, line.Y2, ChartColorMath.WithOpacity(paint, opacity), width, role: role,
+                paint: VisualChartPaint.Stroke(role == "bar-cap-highlight" ? SvgPaint.Literal(ChartColorMath.WithOpacity(paint, opacity))
+                    : sourcePaint.WithOpacity(ChartColorMath.WithOpacity(paint, opacity), opacity)));
         }
     }
 

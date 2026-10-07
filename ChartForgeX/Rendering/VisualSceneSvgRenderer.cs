@@ -34,7 +34,7 @@ internal static partial class VisualSceneSvgRenderer {
             if (node is VisualSceneGroup group) {
                 writer.StartElement(group.Href == null ? "g" : "a"); Semantics(writer, group, prefix, i);
                 if (group.Href != null) {
-                    writer.Attribute("href", group.Href).Attribute("tabindex", 0);
+                    writer.Attribute("href", group.Href).Attribute("tabindex", decorative ? -1 : 0);
                     if (options?.LinkTarget == VisualSvgLinkTarget.NewContext) writer.Attribute("target", "_blank").Attribute("rel", "noopener noreferrer");
                 }
                 foreach (var item in group.Metadata) writer.Attribute(item.Key, item.Value);

@@ -17,9 +17,11 @@ internal static class VisualRadialProgressCompiler {
         if (!series.ShowInLegend) return Array.Empty<VisualLegendEntry>();
         return series.Kind == ChartSeriesKind.LayeredRadial
             ? series.RadialLayers.Select((layer, index) => new VisualLegendEntry(layer.Name, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), Id(index), series.Kind,
-                stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey)).ToArray()
+                stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey,
+                paint: VisualChartPaint.Series(series, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), index, layer.Color.HasValue))).ToArray()
             : series.Points.Select((point, index) => new VisualLegendEntry(VisualRadialPrimitives.Label(chart, point, index), VisualRadialPrimitives.Color(series, index, colors), Id(index), series.Kind,
-                stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey)).ToArray();
+                stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey,
+                paint: VisualChartPaint.Series(series, VisualRadialPrimitives.Color(series, index, colors), index))).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -56,12 +58,13 @@ internal static class VisualRadialProgressCompiler {
                 radius * 2 + layout.StrokeWidth, radius * 2 + layout.StrokeWidth);
             builder.AddRegion(new VisualSemanticRegion(Id(index), "radial-bar-ring", bounds, label + ": " + formatted));
             using (builder.PushGroup(Id(index), "radial-bar-point", Metadata(index, label, point.Y, 0, 100))) {
-                VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2, colors.Border, "radial-bar-track");
+                VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2, colors.Border, "radial-bar-track", paint: SvgPaint.Of(colors.Border, SvgColorRole.Surface));
                 VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2 * point.Y / 100,
-                    color, "radial-bar-ring", round: true);
+                    color, "radial-bar-ring", round: true, paint: VisualChartPaint.Series(series, color, index));
             }
         }
-        builder.Ellipse(cx, cy, layout.CenterRadius, layout.CenterRadius, colors.Surface, colors.Border, role: "radial-bar-center");
+        builder.Ellipse(cx, cy, layout.CenterRadius, layout.CenterRadius, colors.Surface, colors.Border, role: "radial-bar-center",
+            paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
         if (series.ShowDataLabels != false && chart.Options.ShowRadialBarCenterLabel)
             Center(builder, cx, cy, layout.CenterRadius, value, series.Name,
                 CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.TitleSize, layout.CenterRadius, 700),
@@ -89,7 +92,8 @@ internal static class VisualRadialProgressCompiler {
             centerValue = ChartNumericFormatter.FormatValue(chart.Options, layer.Value);
             builder.AddRegion(new VisualSemanticRegion(Id(index), "layered-radial-layer", bounds, layer.Name + ": " + centerValue));
             using (builder.PushGroup(Id(index), "layered-radial-point", Metadata(index, layer.Name, layer.Value, layer.Minimum, layer.Maximum))) {
-                VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep, color, "layered-radial-layer", round: layer.LineCap == ChartRadialLayerCap.Round);
+                VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep, color, "layered-radial-layer", round: layer.LineCap == ChartRadialLayerCap.Round,
+                    paint: VisualChartPaint.Series(series, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), index, layer.Color.HasValue).WithOpacity(color, layer.Opacity));
                 if (sweep <= 0 || layer.SeparatorCount <= 0) continue;
                 var inset = Math.Min(Math.Max(0, stroke / 2 - .5), stroke * layer.SeparatorInsetRatio);
                 var inner = Math.Max(0, radius - stroke / 2 + inset); var outside = radius + stroke / 2 - inset;
@@ -97,7 +101,7 @@ internal static class VisualRadialProgressCompiler {
                     var angle = start + sweep * separator / (layer.SeparatorCount + 1);
                     builder.Line(cx + Math.Cos(angle) * inner, cy + Math.Sin(angle) * inner,
                         cx + Math.Cos(angle) * outside, cy + Math.Sin(angle) * outside,
-                        layer.SeparatorColor ?? colors.Surface, layer.SeparatorStrokeWidth, "layered-radial-separator");
+                        layer.SeparatorColor ?? colors.Surface, layer.SeparatorStrokeWidth, "layered-radial-separator", paint: VisualChartPaint.Stroke(layer.SeparatorColor ?? colors.Surface, SvgColorRole.Surface));
                 }
             }
         }

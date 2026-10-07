@@ -19,14 +19,15 @@ internal static partial class VisualCartesianCompiler {
             for (var point = 0; point < series.Points.Count; point++) {
                 var label = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
-                entries.Add(new VisualLegendEntry(label, PointColor(series, 0, point, colors), PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey));
+                var color = PointColor(series, 0, point, colors);
+                entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey, VisualChartPaint.Series(series, color, point)));
             }
             return entries;
         }
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             if (series.ShowInLegend) entries.Add(new VisualLegendEntry(series.Name, Color(series, index, colors), SeriesId(index),
-                series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey));
+                series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey, VisualChartPaint.Series(series, Color(series, index, colors))));
         }
         return entries;
     }
@@ -44,7 +45,7 @@ internal static partial class VisualCartesianCompiler {
         if (!chart.Series.Any(series => series.Points.Count > 0)) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
-                context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center);
+                context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
             return;
         }
         var coordinates = ChartBarCoordinateMap.Create(chart);
@@ -138,11 +139,12 @@ internal static partial class VisualCartesianCompiler {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.EndValue.Value)));
                 bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
                     : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height);
-                builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band");
+                builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band",
+                    paint: VisualChartPaint.Fill(SvgPaint.Of(color, SvgColorRole.Axis).WithOpacity(ChartColorMath.WithOpacity(color, annotation.Opacity), annotation.Opacity)));
             } else if (horizontal) builder.Line(plot.Left, position, plot.Right, position, color, context.Theme.AxisStrokeWidth, role: "annotation-line",
-                dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap });
+                dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
             else builder.Line(position, plot.Top, position, plot.Bottom, color, context.Theme.AxisStrokeWidth, role: "annotation-line",
-                dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap });
+                dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
             builder.AddRegion(new VisualSemanticRegion(id, bands ? "annotation-band" : "annotation-line", bounds, annotation.Label));
             if (!string.IsNullOrEmpty(annotation.Label)) {
                 var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = bands ? colors.MutedForeground : color };
@@ -151,7 +153,7 @@ internal static partial class VisualCartesianCompiler {
                 var request = new LabelPlacementRequest(annotation.Label, anchor, style, new[] { new LabelCandidate(0, 0), new LabelCandidate(0, 0, 1, 1) });
                 var label = new LabelPlacementService().Place(new[] { request }, plot, null, 0, builder.MeasureText)[0];
                 if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("cartesian.annotation-label-overflow", "An annotation label was shortened or omitted within the plot."));
-                if (!label.IsDropped) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(style), style, role: "annotation-label");
+                if (!label.IsDropped) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(style), style, role: "annotation-label", paint: VisualChartPaint.Text(style));
             }
             }
         }

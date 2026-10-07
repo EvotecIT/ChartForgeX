@@ -26,7 +26,7 @@ internal readonly struct SvgPaint {
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -71,6 +71,16 @@ internal readonly struct SvgPaint {
     /// </summary>
     public static SvgPaint Mix(ChartColor result, ChartColor from, SvgColorRole? fromRole, ChartColor to, SvgColorRole? toRole, double amount) =>
         new(Start + "M" + Hex(result) + Digit(fromRole) + Hex(from) + Digit(toRole) + Hex(to) + Clamp(amount).ToString("R", CultureInfo.InvariantCulture) + End, raw: true);
+
+    /// <summary>Multiplies a source paint's opacity without losing its role or blend operands.</summary>
+    /// <param name="result">The exact resolved raster colour, retained as the static fallback.</param>
+    /// <param name="opacity">The multiplier applied to the source paint's alpha.</param>
+    internal SvgPaint WithOpacity(ChartColor result, double opacity) {
+        if (Value == null) return Literal(result);
+        var source = Convert.ToBase64String(Encoding.UTF8.GetBytes(Value));
+        if (source.Length > 1024) throw new ArgumentException("Paint opacity expressions are too deeply nested.", nameof(opacity));
+        return new SvgPaint(Start + "O" + Hex(result) + source + ":" + Clamp(opacity).ToString("R", CultureInfo.InvariantCulture) + End, raw: true);
+    }
 
     /// <summary>
     /// Replaces the paint tokens in <paramref name="svg"/>. With <paramref name="keepLiterals"/> derived literals stay
@@ -132,6 +142,18 @@ internal readonly struct SvgPaint {
                 i += amount;
                 return Close(text, i) ? i + 1 - index : 0;
             }
+            case 'O': {
+                if (!Hex(text, ref i, 8)) return 0;
+                var source = 0;
+                while (source <= 1024 && i + source < text.Length && IsBase64(text[i + source])) source++;
+                if (source < 1 || source > 1024 || i + source >= text.Length || text[i + source] != ':') return 0;
+                i += source + 1;
+                var amount = 0;
+                while (amount <= 32 && i + amount < text.Length && IsAmountChar(text[i + amount])) amount++;
+                if (amount < 1 || amount > 32) return 0;
+                i += amount;
+                return Close(text, i) ? i + 1 - index : 0;
+            }
             default:
                 return 0;
         }
@@ -156,6 +178,7 @@ internal readonly struct SvgPaint {
     }
 
     private static bool IsAmountChar(char c) => c is >= '0' and <= '9' || c is '.' or 'E' or 'e' or '+' or '-';
+    private static bool IsBase64(char c) => c is >= 'A' and <= 'Z' || c is >= 'a' and <= 'z' || c is >= '0' and <= '9' || c is '+' or '/' or '=';
 
     private static bool Close(string text, int index) => index < text.Length && text[index] == End;
 
@@ -175,6 +198,19 @@ internal readonly struct SvgPaint {
                 var role = Role(body[0])!.Value;
                 if (variables != null && variables.TryInk(fill, role, out var paint)) return paint;
                 return keepLiterals ? Literal(ink).Value! : ink.ToCss();
+            }
+            case 'O': {
+                var result = Color(body, 0);
+                var separator = body.IndexOf(':', 8);
+                string source;
+                try { source = Encoding.UTF8.GetString(Convert.FromBase64String(body.Substring(8, separator - 8))); }
+                catch (FormatException) { return keepLiterals ? Literal(result).Value! : result.ToCss(); }
+                if (!double.TryParse(body.Substring(separator + 1), NumberStyles.Float, CultureInfo.InvariantCulture, out var opacity)) opacity = 0;
+                var paint = Resolve(source, variables);
+                if (variables == null || paint.IndexOf("var(", StringComparison.Ordinal) < 0)
+                    return keepLiterals ? Literal(result).Value! : result.ToCss();
+                if (opacity >= 1) return paint;
+                return "color-mix(in srgb, " + paint + " " + (Clamp(opacity) * 100).ToString("0.##", CultureInfo.InvariantCulture) + "%, transparent)";
             }
             default: {
                 var result = Color(body, 0);

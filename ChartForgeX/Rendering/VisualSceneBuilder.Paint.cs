@@ -71,7 +71,7 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void Pattern(ChartPath clip, ChartFillPattern pattern, ChartColor color,
-        double spacing = 8, double strokeWidth = 1.5, string? role = null) {
+        double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null) {
         if (!Enum.IsDefined(typeof(ChartFillPattern), pattern)) throw new ArgumentOutOfRangeException(nameof(pattern));
         VisualSize.Positive(spacing, nameof(spacing)); NonNegative(strokeWidth, nameof(strokeWidth));
         if (pattern == ChartFillPattern.None || strokeWidth == 0) return;
@@ -83,19 +83,20 @@ internal sealed partial class VisualSceneBuilder {
         var width = points.Max(point => point.X) - left; var height = points.Max(point => point.Y) - top;
         using (PushClip(clip)) {
             foreach (var line in ChartPatternLineGeometry.BuildUserSpace(pattern, left, top, width, height, 0, spacing, 0))
-                Line(line.X1, line.Y1, line.X2, line.Y2, color, strokeWidth, role);
+                Line(line.X1, line.Y1, line.X2, line.Y2, color, strokeWidth, role,
+                    paint: paint.HasValue ? new VisualScenePaintBinding(stroke: paint) : null);
         }
     }
 
     internal void PatternSlice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
-        ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null) {
+        ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null) {
         // Retain one numeric contour clip independent of either export backend.
         var slice = new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, sweep, color, null, 0, null, null);
         var contours = VisualSceneGeometry.Flatten(slice, 4);
         var commands = new List<ChartPathCommand>();
         foreach (var contour in contours) for (var i = 0; i < contour.Count; i++)
             commands.Add(i == 0 ? ChartPathCommand.MoveTo(contour[i].X, contour[i].Y) : ChartPathCommand.LineTo(contour[i].X, contour[i].Y));
-        Pattern(new ChartPath(commands), pattern, color, spacing, strokeWidth, role);
+        Pattern(new ChartPath(commands), pattern, color, spacing, strokeWidth, role, paint);
     }
 
     private VisualScenePath SnapshotPath(ChartPath path, bool close) {

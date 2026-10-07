@@ -53,6 +53,7 @@ public sealed partial class Chart : IVisualRenderable {
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= string.IsNullOrWhiteSpace(frame.Title) ? Title : frame.Title;
         accessibility.Description ??= string.IsNullOrWhiteSpace(frame.Subtitle) ? Subtitle : frame.Subtitle;
-        return new PreparedVisual(builder.Build(), accessibility);
+        return new PreparedVisual(builder.Build(), accessibility,
+            svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables));
     }
 }
