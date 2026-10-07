@@ -32,10 +32,11 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true };
         var svg = chart.ToSvg(options);
-        var badgeY = GetAttribute(svg, "data-cfx-role=\"topology-node-badge\"", "y");
+        var badgeY = GetAttribute(svg, "data-cfx-role=\"topology-node-badge-surface\"", "y");
+        var badgeHeight = GetAttribute(svg, "data-cfx-role=\"topology-node-badge-surface\"", "height");
         var plateY = GetAttribute(svg, "data-cfx-role=\"topology-node-icon-label\"", "y");
 
-        Assert(plateY >= badgeY + 19, "Icon label plates should stack below icon badges instead of sharing the badge slot.");
+        Assert(badgeHeight > 0 && plateY >= badgeY + badgeHeight, "Icon label plates should stack below icon badges instead of sharing the badge slot.");
         Assert(chart.ToPng(options).Length > 64, "Stacked icon labels and badges should render as PNG.");
     }
 
