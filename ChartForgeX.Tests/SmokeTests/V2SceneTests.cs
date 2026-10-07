@@ -98,6 +98,60 @@ public sealed class V2SceneTests : IDisposable {
         Assert.Throws<ArgumentOutOfRangeException>(() => VisualSceneRasterRenderer.Render(scene, scale: int.MaxValue));
     }
 
+    [Theory]
+    [InlineData(1, 1)]
+    [InlineData(1, 2)]
+    [InlineData(2, 3)]
+    public void OpaqueViewportBackgroundPreservesSubsequentClippingAndPaintOrder(int scale, int supersampling) {
+        var background = ChartColor.FromRgb(20, 40, 80);
+        var red = ChartColor.FromRgb(200, 30, 40);
+        var overlay = ChartColor.FromArgb(128, 20, 200, 40);
+        var bounds = new ChartRect(0, 0, 16, 12);
+        var clip = new ChartRect(2, 3, 8, 6);
+        var overlayBounds = new ChartRect(7, 5, 7, 5);
+        var builder = Builder(16, 12);
+        builder.Rect(bounds, background);
+        using (builder.PushClip(clip)) builder.Rect(bounds, red);
+        builder.Rect(overlayBounds, overlay);
+        var actual = VisualSceneRasterRenderer.Render(builder.Build(), scale, supersampling);
+
+        // Paint the reference through the ordinary contours, without the scene optimization.
+        var reference = ReferenceCanvas(16, 12, scale, supersampling);
+        reference.FillRoundedRect(0, 0, 16, 12, 0, background);
+        using (reference.PushClipBounds(clip)) reference.FillRoundedRect(0, 0, 16, 12, 0, red);
+        reference.FillRoundedRect(7, 5, 7, 5, 0, overlay);
+        Assert.Equal(reference.ToImage().Pixels, actual.Pixels);
+        Assert.Equal(new byte[] { 20, 40, 80, 255 }, Pixel(actual, scale, scale));
+        Assert.Equal(new byte[] { 200, 30, 40, 255 }, Pixel(actual, 3 * scale, 4 * scale));
+    }
+
+    [Theory]
+    [InlineData("fractional-scene")]
+    [InlineData("fractional-bounds")]
+    [InlineData("fractional-origin")]
+    [InlineData("translucent")]
+    [InlineData("rounded")]
+    [InlineData("stroked")]
+    [InlineData("unfilled")]
+    public void OtherViewportRectanglesRetainOrdinaryContourOutput(string variant) {
+        var sceneWidth = variant == "fractional-scene" ? 15.25 : 16;
+        var bounds = new ChartRect(variant == "fractional-origin" ? 0.25 : 0, 0,
+            variant is "fractional-scene" or "fractional-bounds" ? 15.25 : 16, 12);
+        ChartColor? fill = variant == "unfilled" ? null : ChartColor.FromArgb(variant == "translucent" ? (byte)128 : (byte)255, 20, 40, 80);
+        ChartColor? stroke = variant == "stroked" ? ChartColor.FromRgb(200, 30, 40) : null;
+        var radius = variant == "rounded" ? 3 : 0;
+        var builder = Builder(sceneWidth, 12);
+        builder.Rect(bounds, fill, stroke, 2, radius);
+        var actual = VisualSceneRasterRenderer.Render(builder.Build());
+        var reference = ReferenceCanvas((int)Math.Ceiling(sceneWidth), 12, 1, 2);
+        if (fill.HasValue) reference.FillRoundedRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, radius, fill.Value);
+        if (stroke.HasValue) reference.StrokeRoundedRectCentered(bounds.X, bounds.Y, bounds.Width, bounds.Height, radius, stroke.Value, 2);
+        Assert.Equal(reference.ToImage().Pixels, actual.Pixels);
+    }
+
+    private static RgbaCanvas ReferenceCanvas(int width, int height, int scale, int supersampling) =>
+        new(width, height, supersampling, null, scale, useDefaultOutlineFont: false);
+
     private static VisualSceneBuilder Builder(double width, double height) => new(new VisualSize(width, height), FontSpec.SystemSans());
     private static byte[] Pixel(RgbaImage image, int x, int y) => image.Pixels.Skip((y * image.Width + x) * 4).Take(4).ToArray();
     public void Dispose() => FontRegistry.Clear();

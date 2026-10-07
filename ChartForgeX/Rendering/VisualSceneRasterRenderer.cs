@@ -21,11 +21,19 @@ internal static class VisualSceneRasterRenderer {
         var canvas = new RgbaCanvas(width, height, supersampling, null, scale, useDefaultOutlineFont: false);
         var groups = new Stack<IDisposable?>();
         try {
-            foreach (var node in scene.Nodes) {
+            for (var nodeIndex = 0; nodeIndex < scene.Nodes.Count; nodeIndex++) {
+                var node = scene.Nodes[nodeIndex];
                 if (node is VisualSceneGroup group) groups.Push(group.Clip.HasValue ? canvas.PushClipBounds(group.Clip.Value) : null);
                 else if (node is VisualSceneEndGroup) groups.Pop()?.Dispose();
                 else if (node is VisualSceneRectangle rect) {
                     var b = rect.Bounds;
+                    // Only an un-clipped first opaque viewport paint can replace contour blending.
+                    if (nodeIndex == 0 && !rect.Stroke.HasValue && rect.Radius == 0 &&
+                        rect.Fill.HasValue && rect.Fill.Value.A == 255 && b.X == 0 && b.Y == 0 &&
+                        scene.Size.Width == width && scene.Size.Height == height && b.Width == width && b.Height == height) {
+                        canvas.Clear(rect.Fill.Value);
+                        continue;
+                    }
                     if (rect.Fill.HasValue) canvas.FillRoundedRect(b.X, b.Y, b.Width, b.Height, rect.Radius, rect.Fill.Value);
                     if (rect.Stroke.HasValue && rect.StrokeWidth > 0) canvas.StrokeRoundedRectCentered(b.X, b.Y, b.Width, b.Height, rect.Radius, rect.Stroke.Value, rect.StrokeWidth);
                 } else if (node is VisualSceneEllipse ellipse) {
