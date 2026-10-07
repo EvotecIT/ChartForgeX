@@ -69,7 +69,7 @@ public sealed class HtmlInteractiveDashboardOptions {
 
     /// <summary>
     /// Gets or sets whether each chart includes a contextual "Reset view" button. The button stays hidden until
-    /// the reader zooms, pans, brushes, mutes, or isolates series, and hides again after the view is reset.
+    /// the reader selects marks, zooms, pans, brushes, mutes, or isolates series, and hides again after the view is reset.
     /// </summary>
     public bool IncludeResetButton { get; set; }
 

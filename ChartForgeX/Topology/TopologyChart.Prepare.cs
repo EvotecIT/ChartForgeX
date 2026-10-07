@@ -47,8 +47,8 @@ public sealed partial class TopologyChart : IVisualRenderable {
             builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));
         }
         var accessibility = Accessibility.Clone();
-        accessibility.Name ??= context.Frame.Title ?? Id;
-        accessibility.Description ??= context.Frame.Subtitle;
+        accessibility.Name ??= string.IsNullOrWhiteSpace(context.Frame.Title) ? Title ?? Id : context.Frame.Title;
+        accessibility.Description ??= string.IsNullOrWhiteSpace(context.Frame.Subtitle) ? Subtitle : context.Frame.Subtitle;
         return new PreparedVisual(builder.Build(), accessibility);
     }
 

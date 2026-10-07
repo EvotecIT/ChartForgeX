@@ -5,7 +5,7 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 var output = ExampleProgramOptions.OutputDirectory(args);
-Directory.CreateDirectory(output);
+ExampleOutputDirectory.Reset(output);
 const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
 if (ExampleProgramOptions.TryHandle(args, output, DemoPngOutputScale)) return;
 void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(chart, output, name, DemoPngOutputScale);

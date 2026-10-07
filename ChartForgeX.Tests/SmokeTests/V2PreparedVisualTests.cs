@@ -10,6 +10,17 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects the public compile-once boundary and shared frame behavior.</summary>
 public sealed class V2PreparedVisualTests {
     [Fact]
+    public void HidingFrameHeadingRetainsModelNameAndExplicitAccessibleOverride() {
+        var chart = Chart.Create().WithTitle("Revenue").AddLine("Samples", Points(1, 2));
+        var context = new VisualRenderContext(frame: new VisualFrame(title: "", subtitle: ""));
+        var prepared = chart.Prepare(context);
+        Assert.Equal("Revenue", prepared.Accessibility.Name);
+        Assert.Equal("Revenue", (string?)XDocument.Parse(prepared.ToSvg()).Root!.Attribute("aria-label"));
+        Assert.DoesNotContain("data-cfx-role=\"frame-heading\"", prepared.ToSvg());
+        chart.Accessibility.Name = "Explicit alternative";
+        Assert.Equal("Explicit alternative", chart.Prepare(context).Accessibility.Name);
+    }
+    [Fact]
     public void PreparedExportsDetachFromModelThemeFontAndAccessibilityMutation() {
         var chart = Chart.Create().WithTitle("Stable title").AddLine("Samples", Points(1, 3, 2));
         var light = VisualDesignTokens.FromJson(CanonicalJson(), VisualThemeMode.Light);

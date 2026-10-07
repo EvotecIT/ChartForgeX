@@ -13,12 +13,12 @@ internal static partial class VisualSceneRasterRenderer {
         if (scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
         if (supersampling <= 0) throw new ArgumentOutOfRangeException(nameof(supersampling));
         if (pixelBudget <= 0) throw new ArgumentOutOfRangeException(nameof(pixelBudget));
-        var width = Dimension(scene.Size.Width); var height = Dimension(scene.Size.Height);
-        var allocation = RasterAllocationGuard.Calculate(width, height, supersampling, scale);
+        var width = Dimension(scene.Size.Width * scale); var height = Dimension(scene.Size.Height * scale);
+        var allocation = RasterAllocationGuard.Calculate(width, height, supersampling, 1);
         if ((long)allocation.PixelWidth * allocation.PixelHeight > pixelBudget)
             throw new ArgumentOutOfRangeException(nameof(pixelBudget), "Prepared visual exceeds the configured raster pixel budget, including supersampling.");
         // Fonts are already retained by each text run. Do not resolve a canvas default font at export.
-        var canvas = new RgbaCanvas(width, height, supersampling, null, scale, useDefaultOutlineFont: false);
+        var canvas = new RgbaCanvas(scene.Size.Width, scene.Size.Height, supersampling, null, scale, useDefaultOutlineFont: false);
         var groups = new Stack<IDisposable?>();
         var transforms = new Stack<VisualSceneTransform>();
         var transform = VisualSceneTransform.Identity;
@@ -40,7 +40,7 @@ internal static partial class VisualSceneRasterRenderer {
                     // Only an un-clipped first opaque viewport paint can replace contour blending.
                     if (nodeIndex == 0 && !rect.Stroke.HasValue && rect.Radius == 0 &&
                         rect.Fill.HasValue && rect.Fill.Value.A == 255 && b.X == 0 && b.Y == 0 &&
-                        scene.Size.Width == width && scene.Size.Height == height && b.Width == width && b.Height == height) {
+                        scene.Size.Width == canvas.Width && scene.Size.Height == canvas.Height && b.Width == canvas.Width && b.Height == canvas.Height) {
                         canvas.Clear(rect.Fill.Value);
                         continue;
                     }

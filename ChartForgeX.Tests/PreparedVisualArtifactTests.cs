@@ -109,6 +109,7 @@ public sealed class PreparedVisualArtifactTests {
         var (prepared, semantics) = CreateDiagram(topology);
         string original = semantics.ToJson();
         var artifact = prepared.ToArtifact(semantics.Id, semantics.Kind, semantics);
+        Assert.True(artifact.SupportsExport(VisualArtifactExportFormat.Json));
         Assert.Equal(original, artifact.ToInterchangeJson());
         foreach (var node in semantics.Nodes) Assert.Contains(artifact.Regions, region => region.Id == node.Id);
 

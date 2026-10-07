@@ -435,7 +435,7 @@
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
-    return root.querySelector('.cfx-series-muted,[data-cfx-muted="true"]') !== null;
+    return root.querySelector('.cfx-selected,.cfx-series-muted,[data-cfx-muted="true"]') !== null;
   };
   const syncResetControl = (root) => {
     const reset = root.querySelector('[data-cfx-reset]');
@@ -682,6 +682,7 @@
     if (!hasFeature(root, 'Selection')) return;
     const selected = !node.classList.contains('cfx-selected');
     setNodeSelected(node, selected);
+    syncResetControl(root);
     const target = targetIdentity(node);
     emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
     emitSync(root, { action: 'selection', label: text(node), selected, target });
@@ -995,6 +996,7 @@
     root.querySelectorAll(targetSelector).forEach((node) => {
       if (text(node) === label) setNodeSelected(node, selected);
     });
+    syncResetControl(root);
   };
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
@@ -1020,6 +1022,7 @@
       matched = true;
       setNodeSelected(node, selected);
     });
+    syncResetControl(root);
     return matched;
   };
   const clearSelections = (root) => {
@@ -1027,6 +1030,7 @@
       node.classList.remove('cfx-selected');
       node.removeAttribute('aria-selected');
     });
+    syncResetControl(root);
   };
   const applySelectionSetByTargets = (root, targets, replace) => {
     if (replace !== false) clearSelections(root);
@@ -1054,6 +1058,7 @@
       setNodeSelected(node, true);
       targets.push(targetIdentity(node));
     });
+    syncResetControl(root);
     return targets;
   };
   const applySync = (root, detail) => {

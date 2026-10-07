@@ -23,7 +23,7 @@
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
-    return root.querySelector('.cfx-series-muted,[data-cfx-muted="true"]') !== null;
+    return root.querySelector('.cfx-selected,.cfx-series-muted,[data-cfx-muted="true"]') !== null;
   };
   const syncResetControl = (root) => {
     const reset = root.querySelector('[data-cfx-reset]');

@@ -19,8 +19,8 @@ internal sealed partial class RgbaCanvas {
 
     public int Width { get; }
     public int Height { get; }
-    public int OutputWidth => Width * _outputScale;
-    public int OutputHeight => Height * _outputScale;
+    public int OutputWidth => _pixelWidth / _supersamplingScale;
+    public int OutputHeight => _pixelHeight / _supersamplingScale;
     public byte[] Pixels { get; }
 
     public RgbaCanvas(int width, int height) : this(width, height, DefaultScale, null) { }
@@ -43,6 +43,30 @@ internal sealed partial class RgbaCanvas {
         _pixelWidth = allocation.PixelWidth;
         _pixelHeight = allocation.PixelHeight;
         Pixels = new byte[allocation.ByteCount];
+    }
+
+    /// <summary>Allocates a fractional logical viewport, rounding only after output density is applied.</summary>
+    internal RgbaCanvas(double width, double height, int scale, TrueTypeFont? outlineFont, int outputScale, bool useDefaultOutlineFont) {
+        var outputWidth = ScaledDimension(width, outputScale);
+        var outputHeight = ScaledDimension(height, outputScale);
+        var allocation = RasterAllocationGuard.Calculate(outputWidth, outputHeight, scale, 1);
+        Width = ScaledDimension(width, 1);
+        Height = ScaledDimension(height, 1);
+        _supersamplingScale = scale;
+        _outputScale = outputScale;
+        FontStrikeScale = outputScale;
+        _scale = checked(scale * outputScale);
+        _outlineFont = outlineFont ?? (useDefaultOutlineFont ? DefaultOutlineFont : null);
+        _pixelWidth = allocation.PixelWidth;
+        _pixelHeight = allocation.PixelHeight;
+        Pixels = new byte[allocation.ByteCount];
+    }
+
+    private static int ScaledDimension(double value, int scale) {
+        var scaled = value * scale;
+        if (value <= 0 || scale <= 0 || double.IsNaN(scaled) || double.IsInfinity(scaled) || scaled > int.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(value), "Raster dimensions must be finite and positive after scaling.");
+        return (int)Math.Ceiling(scaled);
     }
 
     public void Clear(ChartColor color) {
