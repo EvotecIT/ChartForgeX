@@ -11,7 +11,7 @@ internal static partial class TopologyDenseRoutePlanner {
     // A different search can leave a tight corridor whose lane pass cannot separate every route. Repair only that
     // observed residual, keeping the complete before/after geometry so a local reroute cannot worsen another pair.
     private static void RepairLaneOverlaps(Scene scene, List<Request> requests, List<PlannedRoute> routes,
-        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse) {
+        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, GridBuffers buffers) {
         var attempts = 0;
         foreach (var route in routes.OrderByDescending(item => ResidualOverlap(item, routes, fixedRoutes)).ThenBy(item => item.Request.Order)) {
             if (attempts >= 8) break;
@@ -20,7 +20,7 @@ internal static partial class TopologyDenseRoutePlanner {
             var originals = routes.Select(item => new List<ChartPoint>(item.Points)).ToList();
             var before = TotalInteraction(routes, fixedRoutes);
             var occupied = fixedRoutes.Concat(routes.Where(item => !ReferenceEquals(item, route)).Select(item => item.Points)).ToList();
-            var grid = Grid.Create(scene, requests, occupied);
+            var grid = Grid.Create(scene, requests, occupied, buffers);
             if (grid == null) continue;
             foreach (var points in occupied) grid.Record(points, 1);
             var candidate = Search(grid, route.Request, sideUse, sharedRunCost: 4);

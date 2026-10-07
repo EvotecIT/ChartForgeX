@@ -125,7 +125,9 @@ internal static partial class TopologyDenseRoutePlanner {
         // Without a grid (more lines than the search can hold) only facing neighbours are joined; every other edge falls
         // back to the corridor candidates.
         var fixedRoutes = FixedRoutes(chart, nodes);
-        var grid = Grid.Create(scene, requests, fixedRoutes);
+        // One set of large per-point arrays serves the plan's grid and every repair grid built after it.
+        var buffers = new GridBuffers();
+        var grid = Grid.Create(scene, requests, fixedRoutes, buffers);
         if (grid != null) foreach (var points in fixedRoutes) grid.Record(points, 1);
 
         // Short routes are searched first: they have the fewest alternatives, and long routes can go around them.
@@ -142,7 +144,7 @@ internal static partial class TopologyDenseRoutePlanner {
 
         ImproveCrossings(scene, grid, planned, fixedRoutes, sideUse);
         SeparateLanes(scene, planned, fixedRoutes);
-        RepairLaneOverlaps(scene, requests, planned, fixedRoutes, sideUse);
+        RepairLaneOverlaps(scene, requests, planned, fixedRoutes, sideUse, buffers);
         if (chart.RenderOptions!.ShareIncomingTrunks) JoinIncomingTrunks(chart, scene, planned, fixedRoutes, paintRoutes, trunkOwners);
         foreach (var route in planned) routes[route.Request.Edge] = route.Points;
         return routes;
