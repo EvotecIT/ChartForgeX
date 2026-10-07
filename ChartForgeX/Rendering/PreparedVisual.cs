@@ -66,11 +66,13 @@ public sealed class PreparedVisual {
     private readonly VisualAccessibility _accessibility;
     private readonly Lazy<string> _svgIdPrefix;
     private readonly string? _semanticInterchange;
-    internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null) {
+    private readonly VisualSvgOptions? _defaultSvgOptions;
+    internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null, VisualSvgOptions? svgOptions = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
         _semanticInterchange = semanticInterchange?.ToJson();
-        _svgIdPrefix = new Lazy<string>(() => VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
-            _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative));
+        _defaultSvgOptions = svgOptions;
+        _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
+            _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
     internal VisualArtifactInterchangeEnvelope? SemanticInterchange => _semanticInterchange == null ? null : VisualArtifactInterchangeEnvelope.FromJson(_semanticInterchange);
     internal VisualScene Scene => _scene;
@@ -88,13 +90,19 @@ public sealed class PreparedVisual {
     /// <param name="idPrefix">A unique host prefix beginning with an ASCII letter and containing only letters, digits, hyphens, underscores and periods.</param>
     /// <remarks>DOM IDs are scoped; source identities in semantic data attributes and regions remain unchanged.</remarks>
     public string ToSvg(string idPrefix) => ExportSvg(VisualSceneSvgRenderer.ValidatePrefix(idPrefix));
+    /// <summary>Exports SVG using detached host namespace, color and safe link policies.</summary>
+    public string ToSvg(VisualSvgOptions options) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        return VisualSceneSvgRenderer.Render(_scene, _accessibility.Name, _accessibility.Description,
+            _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options);
+    }
     private string ExportSvg(string idPrefix) => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
-        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix);
+        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions);
     /// <summary>Exports an owning artifact's metadata without altering the prepared snapshot.</summary>
     internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null) {
         if (accessibility == null) throw new ArgumentNullException(nameof(accessibility));
         return VisualSceneSvgRenderer.Render(_scene, accessibility.Name, accessibility.Description,
-            accessibility.Language, accessibility.IsDecorative, idPrefix);
+            accessibility.Language, accessibility.IsDecorative, idPrefix ?? _defaultSvgOptions?.IdPrefix, _defaultSvgOptions);
     }
     /// <summary>Exports native RGBA pixels without repeating layout or parsing SVG.</summary>
     public RgbaImage ToRgba(VisualRenderOptions? options = null) {

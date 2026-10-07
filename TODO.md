@@ -12,7 +12,8 @@ Scope and later phases are defined in [the architecture](docs/v2/architecture.md
 - [x] Implement shared prepared scene, frame/theme/text and selected Cartesian/donut compilers; pass focused contract tests.
 - [x] Prove tiny topology/sequence and generic static/semantic artifact handoff in focused tests; AOT/runtime qualification remains below.
 - [x] Close runtime gallery qualification: 56 proof cases, final SVG/native PNG inspection, 14 executed browser cases, compact/wide layout and pinned regular/bold font evidence.
-- [x] Pass focused/full quality, framework/package and AOT checks: 2,491 tests, 42 Mermaid conformance fixtures, 317 healthy visual pairs, six packages and isolated package consumption. Opaque viewport clearing preserves ordinary contour pixels across clipping, alpha, fractional sizes and raster density.
+- [x] Pass focused/full quality, framework/package and AOT checks: 2,503 tests, 42 Mermaid conformance fixtures, 317 healthy visual pairs, six packages and isolated package consumption. Opaque viewport clearing preserves ordinary contour pixels across clipping, alpha, fractional sizes and raster density.
+- [x] Validate the consolidated review fixes: fractional raster allocation, semantic JSON export discovery, accessible model names with hidden headings, selection-only Reset visibility, fresh example output and exact-version package selection. Execute seven browser cases and the native AOT smoke.
 - [x] Confirm representative performance against the frozen baseline: 30 paired workloads within 10% elapsed/allocation, 756 retained samples and no failures. All 18 prepared-scene comparisons are faster; 12 unchanged-output comparisons preserve exact SVG/PNG bytes. Record the larger redesigned output payloads separately from timing gains.
 - [ ] Reassess Phases 0–1, settle one PR and clean task-owned disposable output.
 
