@@ -5,21 +5,21 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSceneSvgRenderer {
-    private static void WriteGradientDefinition(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index) {
+    private static void WriteGradientDefinition(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index, VisualSvgOptions? options) {
         writer.StartElement("linearGradient").Attribute("id", GradientId(prefix, index)).Attribute("gradientUnits", "userSpaceOnUse")
             .Attribute("x1", gradient.Start.X).Attribute("y1", gradient.Start.Y).Attribute("x2", gradient.End.X).Attribute("y2", gradient.End.Y).EndStartElement();
-        foreach (var stop in gradient.Stops) writer.StartElement("stop").Attribute("offset", stop.Offset).Attribute("stop-color", stop.Color.ToCss()).EndEmptyElement();
+        foreach (var stop in gradient.Stops) writer.StartElement("stop").Attribute("offset", stop.Offset).Attribute("stop-color", ResolvePaint(stop.Color, stop.Paint, options)).EndEmptyElement();
         writer.EndElement();
     }
 
-    private static void WriteGradientShape(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index) {
+    private static void WriteGradientShape(SvgMarkupWriter writer, VisualSceneGradient gradient, string prefix, int index, VisualSvgOptions? options) {
         var shape = gradient.Shape;
         if (shape is VisualSceneRectangle rect) writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
             .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
         else if (shape is VisualScenePath path) writer.StartElement("path").Attribute("d", PathData(path));
         else if (shape is VisualSceneSlice slice) writer.StartElement("path").Attribute("d", ChartSlicePathGeometry.BuildPath(slice.Cx, slice.Cy, slice.Outer, slice.Inner, slice.Start, slice.Start + slice.Sweep));
         else throw new System.NotSupportedException("Unsupported gradient shape.");
-        Paint(writer, shape, prefix, index, "url(#" + GradientId(prefix, index) + ")");
+        Paint(writer, shape, prefix, index, "url(#" + GradientId(prefix, index) + ")", options);
         writer.EndEmptyElement();
     }
 
@@ -37,7 +37,7 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static void WriteGradientIdentity(BinaryWriter writer, VisualSceneGradient gradient) {
         var shape = gradient.Shape;
-        Color(writer, shape.Fill); Color(writer, shape.Stroke); writer.Write(shape.StrokeWidth);
+        Color(writer, shape.Fill); Color(writer, shape.Stroke); writer.Write(shape.StrokeWidth); PaintIdentity(writer, shape.Paint);
         if (shape is VisualSceneRectangle rect) { writer.Write(1); Rectangle(writer, rect.Bounds); writer.Write(rect.Radius); }
         else if (shape is VisualScenePath path) { writer.Write(2); WritePathIdentity(writer, path); }
         else if (shape is VisualSceneSlice slice) {
@@ -45,6 +45,6 @@ internal static partial class VisualSceneSvgRenderer {
             writer.Write(slice.Inner); writer.Write(slice.Start); writer.Write(slice.Sweep);
         } else throw new System.NotSupportedException("Unsupported gradient shape.");
         Point(writer, gradient.Start); Point(writer, gradient.End); writer.Write(gradient.Stops.Count);
-        foreach (var stop in gradient.Stops) { writer.Write(stop.Offset); Color(writer, stop.Color); }
+        foreach (var stop in gradient.Stops) { writer.Write(stop.Offset); Color(writer, stop.Color); Text(writer, stop.Paint?.Value); }
     }
 }

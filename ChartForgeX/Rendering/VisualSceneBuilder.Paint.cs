@@ -52,21 +52,21 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void RectGradient(ChartRect bounds, ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, double radius = 0, string? role = null, string? id = null) {
-        Rect(bounds, null, stroke, strokeWidth, radius, role, id);
+        ChartColor? stroke = null, double strokeWidth = 1, double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
+        Rect(bounds, null, stroke, strokeWidth, radius, role, id, paint);
         ReplaceWithGradient(start, end, stops);
     }
 
     internal void PathGradient(ChartPath path, ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, bool close = true) {
-        Path(path, stroke: stroke, strokeWidth: strokeWidth, role: role, id: id, close: close);
+        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, bool close = true, VisualScenePaintBinding? paint = null) {
+        Path(path, stroke: stroke, strokeWidth: strokeWidth, role: role, id: id, close: close, paint: paint);
         ReplaceWithGradient(start, end, stops);
     }
 
     internal void SliceGradient(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double sweep,
         ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null) {
-        Slice(cx, cy, outerRadius, innerRadius, startAngle, sweep, ChartColor.Transparent, stroke, strokeWidth, role, id);
+        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
+        Slice(cx, cy, outerRadius, innerRadius, startAngle, sweep, ChartColor.Transparent, stroke,strokeWidth, role, id, paint);
         ReplaceWithGradient(start, end, stops);
     }
 

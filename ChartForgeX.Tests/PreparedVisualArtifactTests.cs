@@ -11,6 +11,25 @@ namespace ChartForgeX.Tests;
 
 public sealed class PreparedVisualArtifactTests {
     [Fact]
+    public void PreparedSemanticSnapshotAutomaticallyTransfersToIndependentHostArtifacts() {
+        var source = CreateChart().Prepare(Context());
+        var semantics = source.ToArtifact("source", VisualArtifactKind.Chart).ToInterchangeEnvelope();
+        semantics.Extensions["source-note"] = "Captured";
+        var prepared = new PreparedVisual(source.Scene, source.Accessibility, semantics);
+        semantics.Extensions["source-note"] = "Changed caller";
+        var first = prepared.ToArtifact("host-first", VisualArtifactKind.Chart);
+        var second = prepared.ToArtifact("host-second", VisualArtifactKind.Chart);
+        Assert.True(first.SupportsExport(VisualArtifactExportFormat.Json));
+        Assert.Equal("host-first", first.ToInterchangeEnvelope().Id);
+        Assert.Equal("host-second", second.ToInterchangeEnvelope().Id);
+        Assert.Equal("Captured", first.ToInterchangeEnvelope().Extensions["source-note"]);
+        first.Metadata["source-note"] = "Changed host";
+        Assert.Equal("Captured", second.ToInterchangeEnvelope().Extensions["source-note"]);
+        Assert.Equal("source", prepared.SemanticInterchange!.Id);
+        Assert.Equal(source.ToPng(), prepared.ToPng());
+        Assert.Throws<ArgumentException>(() => prepared.ToArtifact("host-invalid", VisualArtifactKind.Topology));
+    }
+    [Fact]
     public void StaticArtifactUsesPreparedOutputAndKeepsPortableHostMetadata() {
         var prepared = CreateChart().Prepare(Context());
         var artifact = prepared.ToArtifact("cpu-load", VisualArtifactKind.Chart, title: "CPU load");

@@ -120,8 +120,11 @@ public sealed class V2ApiConventionTests {
             Assert.Contains(method.ReturnType, new[] { typeof(string), typeof(byte[]), typeof(RgbaImage) });
             Assert.All(method.GetParameters(), parameter => {
                 if (method.Name == nameof(PreparedVisual.ToSvg)) {
-                    Assert.Equal("idPrefix", parameter.Name);
-                    Assert.Equal(typeof(string), parameter.ParameterType);
+                    if (parameter.ParameterType == typeof(VisualSvgOptions)) Assert.Equal("options", parameter.Name);
+                    else {
+                        Assert.Equal("idPrefix", parameter.Name);
+                        Assert.Equal(typeof(string), parameter.ParameterType);
+                    }
                 } else Assert.Equal(typeof(VisualRenderOptions), parameter.ParameterType);
             });
         }

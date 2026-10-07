@@ -5,15 +5,16 @@ using System.Security.Cryptography;
 using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
 /// <summary>Serializes native scene decisions; it never lays out or parses a rendered visual.</summary>
 internal static partial class VisualSceneSvgRenderer {
     internal static string Render(VisualScene scene, string? title = null, string? description = null,
-        string? language = null, bool decorative = false, string? idPrefix = null) {
+        string? language = null, bool decorative = false, string? idPrefix = null, VisualSvgOptions? options = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
-        var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative) : ValidatePrefix(idPrefix);
+        var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg")
             .Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
@@ -27,13 +28,17 @@ internal static partial class VisualSceneSvgRenderer {
         writer.EndStartElement();
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
-        WriteClips(writer, scene, prefix);
+        WriteClips(writer, scene, prefix, options);
         for (var i = 0; i < scene.Nodes.Count; i++) {
             var node = scene.Nodes[i];
             if (node is VisualSceneGroup group) {
                 writer.StartElement(group.Href == null ? "g" : "a"); Semantics(writer, group, prefix, i);
-                if (group.Href != null) writer.Attribute("href", group.Href).Attribute("tabindex", 0);
+                if (group.Href != null) {
+                    writer.Attribute("href", group.Href).Attribute("tabindex", 0);
+                    if (options?.LinkTarget == VisualSvgLinkTarget.NewContext) writer.Attribute("target", "_blank").Attribute("rel", "noopener noreferrer");
+                }
                 foreach (var item in group.Metadata) writer.Attribute(item.Key, item.Value);
+                if (group.Metadata.TryGetValue("data-cfx-pin-state-colors", out var pin) && pin == "true") writer.Attribute("style", "forced-color-adjust:none");
                 if (group.Clip.HasValue) writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture) + ")");
                 if (group.PathClip != null) writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture) + ")");
                 if (group.Rotation.HasValue || group.Translation.HasValue) {
@@ -55,13 +60,13 @@ internal static partial class VisualSceneSvgRenderer {
             else if (node is VisualSceneRectangle rect) {
                 writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
                     .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
-                Paint(writer, rect, prefix, i); writer.EndEmptyElement();
+                Paint(writer, rect, prefix, i, options: options); writer.EndEmptyElement();
             } else if (node is VisualSceneEllipse ellipse) {
                 writer.StartElement("ellipse").Attribute("cx", ellipse.Cx).Attribute("cy", ellipse.Cy).Attribute("rx", ellipse.Rx).Attribute("ry", ellipse.Ry);
-                Paint(writer, ellipse, prefix, i); writer.EndEmptyElement();
+                Paint(writer, ellipse, prefix, i, options: options); writer.EndEmptyElement();
             } else if (node is VisualSceneLine line) {
                 writer.StartElement("line").Attribute("x1", line.Start.X).Attribute("y1", line.Start.Y).Attribute("x2", line.End.X).Attribute("y2", line.End.Y);
-                Paint(writer, line, prefix, i);
+                Paint(writer, line, prefix, i, options: options);
                 if (line.Dash != null) {
                     var dash = new StringBuilder();
                     foreach (var length in line.Dash) { if (dash.Length > 0) dash.Append(' '); dash.Append(N(length)); }
@@ -69,30 +74,30 @@ internal static partial class VisualSceneSvgRenderer {
                 }
                 writer.EndEmptyElement();
             } else if (node is VisualScenePath path) {
-                writer.StartElement("path").Attribute("d", PathData(path)); Paint(writer, path, prefix, i); writer.EndEmptyElement();
+                writer.StartElement("path").Attribute("d", PathData(path)); Paint(writer, path, prefix, i, options: options); writer.EndEmptyElement();
             } else if (node is VisualSceneSlice slice) {
                 if (slice.Outer <= 0 || slice.Sweep <= 0) continue;
                 writer.StartElement("path").Attribute("d", ChartSlicePathGeometry.BuildPath(slice.Cx, slice.Cy, slice.Outer,
                     slice.Inner, slice.Start, slice.Start + slice.Sweep));
-                Paint(writer, slice, prefix, i); writer.EndEmptyElement();
+                Paint(writer, slice, prefix, i, options: options); writer.EndEmptyElement();
             } else if (node is VisualSceneImage image) {
                 writer.StartElement("image").Attribute("x", image.Bounds.X).Attribute("y", image.Bounds.Y)
                     .Attribute("width", image.Bounds.Width).Attribute("height", image.Bounds.Height)
                     .Attribute("preserveAspectRatio", "none").Attribute("href", image.DataUri);
                 Semantics(writer, image, prefix, i); writer.EndEmptyElement();
-            } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i);
-            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i);
+            } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i, options);
+            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, options);
         }
         writer.EndElement(); return writer.Build();
     }
 
-    private static void WriteClips(SvgMarkupWriter writer, VisualScene scene, string prefix) {
+    private static void WriteClips(SvgMarkupWriter writer, VisualScene scene, string prefix, VisualSvgOptions? options) {
         var opened = false;
         for (var i = 0; i < scene.Nodes.Count; i++) {
             var node = scene.Nodes[i];
             if (node is VisualSceneGradient gradient) {
                 if (!opened) { writer.StartElement("defs").EndStartElement(); opened = true; }
-                WriteGradientDefinition(writer, gradient, prefix, i);
+                WriteGradientDefinition(writer, gradient, prefix, i, options);
                 continue;
             }
             if (!(node is VisualSceneGroup group) || !group.Clip.HasValue && group.PathClip == null) continue;
@@ -108,10 +113,10 @@ internal static partial class VisualSceneSvgRenderer {
         if (opened) writer.EndElement();
     }
 
-    private static void Paint(SvgMarkupWriter writer, VisualSceneMark mark, string prefix, int index, string? fillOverride = null) {
+    private static void Paint(SvgMarkupWriter writer, VisualSceneMark mark, string prefix, int index, string? fillOverride = null, VisualSvgOptions? options = null) {
         Semantics(writer, mark, prefix, index);
-        writer.Attribute("fill", fillOverride ?? mark.Fill?.ToCss() ?? "none").Attribute("fill-rule", "evenodd")
-            .Attribute("stroke", mark.Stroke?.ToCss() ?? "none").Attribute("stroke-width", mark.StrokeWidth)
+        writer.Attribute("fill", fillOverride ?? ResolvePaint(mark.Fill, mark.Paint?.Fill, options)).Attribute("fill-rule", "evenodd")
+            .Attribute("stroke", ResolvePaint(mark.Stroke, mark.Paint?.Stroke, options)).Attribute("stroke-width", mark.StrokeWidth)
             .Attribute("stroke-linecap", mark is VisualScenePath path ? path.Cap.ToString().ToLowerInvariant() : "round")
             .Attribute("stroke-linejoin", mark is VisualScenePath joined ? joined.Join.ToString().ToLowerInvariant() : "round");
         if (mark is VisualScenePath dashed && dashed.Dash != null) writer.Attribute("stroke-dasharray", string.Join(" ", System.Linq.Enumerable.Select(dashed.Dash, N)));
@@ -126,14 +131,14 @@ internal static partial class VisualSceneSvgRenderer {
         writer.Attribute("data-cfx-role", node.Role);
     }
 
-    private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index) {
+    private static void WriteText(SvgMarkupWriter writer, VisualSceneText node, string prefix, int index, VisualSvgOptions? options) {
         var prepared = node.Text; var style = prepared.Style;
         writer.StartElement("g"); Semantics(writer, node, prefix, index); writer.EndStartElement();
         for (var i = 0; i < prepared.Lines.Count; i++) {
             var line = prepared.Lines[i];
             writer.StartElement("text").Attribute("x", node.LineLeft(line)).Attribute("y", node.Baseline + i * prepared.Metrics.LineHeight)
                 .Attribute("font-family", style.Font.Family).Attribute("font-size", prepared.Size).Attribute("font-weight", style.Font.Weight)
-                .Attribute("font-style", style.Font.Italic ? "italic" : "normal").Attribute("fill", node.Color.ToCss())
+                .Attribute("font-style", style.Font.Italic ? "italic" : "normal").Attribute("fill", ResolvePaint(node.Color, node.Paint, options))
                 .Attribute("xml:space", "preserve");
             var css = "white-space:pre";
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
@@ -160,7 +165,7 @@ internal static partial class VisualSceneSvgRenderer {
     private static string N(double value) => SvgMarkupWriter.FormatNumber(value);
 
     /// <summary>Hashes detached typed content for prepared exports without SVG intermediates or random identities.</summary>
-    internal static string Identity(VisualScene scene, string? title, string? description, string? language, bool decorative) {
+    internal static string Identity(VisualScene scene, string? title, string? description, string? language, bool decorative, VisualSvgOptions? options = null) {
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         // Batch primitive writes without changing the identity byte stream. Dense scenes otherwise
@@ -178,7 +183,7 @@ internal static partial class VisualSceneSvgRenderer {
                     _ => throw new NotSupportedException("Unknown native scene command.")
                 });
                 Text(writer, node.Id); Text(writer, node.Role);
-                if (node is VisualSceneMark mark) { Color(writer, mark.Fill); Color(writer, mark.Stroke); writer.Write(mark.StrokeWidth); }
+                if (node is VisualSceneMark mark) { Color(writer, mark.Fill); Color(writer, mark.Stroke); writer.Write(mark.StrokeWidth); PaintIdentity(writer, mark.Paint); }
                 if (node is VisualSceneGroup group) {
                     writer.Write(group.Clip.HasValue);
                     if (group.Clip.HasValue) Rectangle(writer, group.Clip.Value);
@@ -214,7 +219,7 @@ internal static partial class VisualSceneSvgRenderer {
                 } else if (node is VisualSceneGradient gradient) {
                     WriteGradientIdentity(writer, gradient);
                 } else if (node is VisualSceneText text) {
-                    writer.Write(text.X); writer.Write(text.Baseline); writer.Write((int)text.Alignment); Color(writer, text.Color);
+                    writer.Write(text.X); writer.Write(text.Baseline); writer.Write((int)text.Alignment); Color(writer, text.Color); Text(writer, text.Paint?.Value);
                     var prepared = text.Text; var style = prepared.Style; var font = style.Font;
                     writer.Write(prepared.Size); writer.Write(prepared.Ascent); writer.Write(prepared.Metrics.Width);
                     writer.Write(prepared.Metrics.Height); writer.Write(prepared.Metrics.LineHeight);
@@ -233,7 +238,7 @@ internal static partial class VisualSceneSvgRenderer {
         stream.FlushFinalBlock();
         var result = new StringBuilder("cfx-v2-");
         foreach (var value in hash.Hash!) result.Append(value.ToString("x2", CultureInfo.InvariantCulture));
-        return result.ToString();
+        return ExportIdentity(scene, result.ToString(), options);
     }
 
     internal static string ValidatePrefix(string idPrefix) {

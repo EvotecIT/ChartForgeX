@@ -5,6 +5,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -85,13 +86,14 @@ internal sealed class VisualSceneTextLine {
 
 internal sealed class VisualSceneText : VisualSceneNode {
     internal VisualSceneText(VisualScenePreparedText text, double x, double baseline, ChartColor color,
-        TextAlignment alignment, string? role, string? id) : base(role, id) {
-        Text = text; X = x; Baseline = baseline; Color = color; Alignment = alignment;
+        TextAlignment alignment, string? role, string? id, SvgPaint? paint = null) : base(role, id) {
+        Text = text; X = x; Baseline = baseline; Color = color; Alignment = alignment; Paint = paint;
     }
     internal VisualScenePreparedText Text { get; }
     internal double X { get; }
     internal double Baseline { get; }
     internal ChartColor Color { get; }
+    internal SvgPaint? Paint { get; }
     internal TextAlignment Alignment { get; }
     internal double LineLeft(VisualSceneTextLine line) => X - (Alignment == TextAlignment.Center ? line.Width / 2 : Alignment == TextAlignment.Right ? line.Width : 0);
 }

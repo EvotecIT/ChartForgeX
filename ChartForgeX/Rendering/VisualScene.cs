@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -57,16 +58,17 @@ internal sealed class VisualSceneEndGroup : VisualSceneNode {
 }
 
 internal abstract class VisualSceneMark : VisualSceneNode {
-    protected VisualSceneMark(ChartColor? fill, ChartColor? stroke, double strokeWidth, string? role, string? id)
-        : base(role, id) { Fill = fill; Stroke = stroke; StrokeWidth = strokeWidth; }
+    protected VisualSceneMark(ChartColor? fill, ChartColor? stroke, double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint = null)
+        : base(role, id) { Fill = fill; Stroke = stroke; StrokeWidth = strokeWidth; Paint = paint; }
     internal ChartColor? Fill { get; }
     internal ChartColor? Stroke { get; }
     internal double StrokeWidth { get; }
+    internal VisualScenePaintBinding? Paint { get; }
 }
 
 internal sealed class VisualSceneRectangle : VisualSceneMark {
     internal VisualSceneRectangle(ChartRect bounds, double radius, ChartColor? fill, ChartColor? stroke,
-        double strokeWidth, string? role, string? id) : base(fill, stroke, strokeWidth, role, id) {
+        double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint = null) : base(fill, stroke, strokeWidth, role, id, paint) {
         Bounds = bounds; Radius = radius;
     }
     internal ChartRect Bounds { get; }
@@ -75,7 +77,7 @@ internal sealed class VisualSceneRectangle : VisualSceneMark {
 
 internal sealed class VisualSceneEllipse : VisualSceneMark {
     internal VisualSceneEllipse(double cx, double cy, double rx, double ry, ChartColor? fill, ChartColor? stroke,
-        double strokeWidth, string? role, string? id) : base(fill, stroke, strokeWidth, role, id) {
+        double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint = null) : base(fill, stroke, strokeWidth, role, id, paint) {
         Cx = cx; Cy = cy; Rx = rx; Ry = ry;
     }
     internal double Cx { get; }
@@ -86,7 +88,7 @@ internal sealed class VisualSceneEllipse : VisualSceneMark {
 
 internal sealed class VisualSceneLine : VisualSceneMark {
     internal VisualSceneLine(ChartPoint start, ChartPoint end, ChartColor color, double width,
-        string? role, string? id, double[]? dash) : base(null, color, width, role, id) {
+        string? role, string? id, double[]? dash, VisualScenePaintBinding? paint = null) : base(null, color, width, role, id, paint) {
         Start = start; End = end;
         Dash = dash == null ? null : Array.AsReadOnly((double[])dash.Clone());
     }
@@ -98,7 +100,8 @@ internal sealed class VisualSceneLine : VisualSceneMark {
 internal sealed class VisualScenePath : VisualSceneMark {
     internal VisualScenePath(ChartPath path, bool close, ChartColor? fill, ChartColor? stroke,
         double strokeWidth, string? role, string? id, double[]? dash = null,
-        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round) : base(fill, stroke, strokeWidth, role, id) {
+        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round,
+        VisualScenePaintBinding? paint = null) : base(fill, stroke, strokeWidth, role, id, paint) {
         var copy = new ChartPathCommand[path.Commands.Count];
         for (var i = 0; i < copy.Length; i++) copy[i] = path.Commands[i];
         Commands = Array.AsReadOnly(copy); Close = close;
@@ -113,8 +116,8 @@ internal sealed class VisualScenePath : VisualSceneMark {
 
 internal sealed class VisualSceneSlice : VisualSceneMark {
     internal VisualSceneSlice(double cx, double cy, double outer, double inner, double start, double sweep,
-        ChartColor fill, ChartColor? stroke, double strokeWidth, string? role, string? id)
-        : base(fill, stroke, strokeWidth, role, id) {
+        ChartColor fill, ChartColor? stroke, double strokeWidth, string? role, string? id, VisualScenePaintBinding? paint = null)
+        : base(fill, stroke, strokeWidth, role, id, paint) {
         Cx = cx; Cy = cy; Outer = outer; Inner = inner; Start = start; Sweep = sweep;
     }
     internal double Cx { get; }

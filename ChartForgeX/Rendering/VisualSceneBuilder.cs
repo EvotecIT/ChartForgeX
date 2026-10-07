@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -24,31 +25,31 @@ internal sealed partial class VisualSceneBuilder {
     internal VisualSize Size => _size;
 
     internal void Rect(ChartRect bounds, ChartColor? fill, ChartColor? stroke = null, double strokeWidth = 1,
-        double radius = 0, string? role = null, string? id = null) {
+        double radius = 0, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
         ValidateRect(bounds); NonNegative(radius, nameof(radius)); NonNegative(strokeWidth, nameof(strokeWidth));
-        _nodes.Add(new VisualSceneRectangle(bounds, Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2), fill, stroke, strokeWidth, role, id));
+        _nodes.Add(new VisualSceneRectangle(bounds, Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2), fill, stroke, strokeWidth, role, id, paint));
     }
 
     internal void Line(double x1, double y1, double x2, double y2, ChartColor color, double width = 1,
-        string? role = null, string? id = null, double[]? dash = null) {
+        string? role = null, string? id = null, double[]? dash = null, VisualScenePaintBinding? paint = null) {
         NonNegative(width, nameof(width));
         if (dash != null) foreach (var length in dash) {
             ChartGuards.Finite(length, nameof(dash));
             if (length <= 0) throw new ArgumentOutOfRangeException(nameof(dash), "Dash lengths must be positive.");
         }
-        _nodes.Add(new VisualSceneLine(new ChartPoint(x1, y1), new ChartPoint(x2, y2), color, width, role, id, dash));
+        _nodes.Add(new VisualSceneLine(new ChartPoint(x1, y1), new ChartPoint(x2, y2), color, width, role, id, dash, paint));
     }
 
     internal void Ellipse(double cx, double cy, double rx, double ry, ChartColor? fill, ChartColor? stroke = null,
-        double strokeWidth = 1, string? role = null, string? id = null) {
+        double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
         ChartGuards.Finite(cx, nameof(cx)); ChartGuards.Finite(cy, nameof(cy));
         NonNegative(rx, nameof(rx)); NonNegative(ry, nameof(ry)); NonNegative(strokeWidth, nameof(strokeWidth));
-        _nodes.Add(new VisualSceneEllipse(cx, cy, rx, ry, fill, stroke, strokeWidth, role, id));
+        _nodes.Add(new VisualSceneEllipse(cx, cy, rx, ry, fill, stroke, strokeWidth, role, id, paint));
     }
 
     internal void Path(ChartPath path, ChartColor? fill = null, ChartColor? stroke = null, double strokeWidth = 1,
         string? role = null, string? id = null, bool close = false, double[]? dash = null,
-        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round) {
+        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round, VisualScenePaintBinding? paint = null) {
         if (path == null) throw new ArgumentNullException(nameof(path));
         NonNegative(strokeWidth, nameof(strokeWidth));
         if (!Enum.IsDefined(typeof(VisualStrokeCap), cap)) throw new ArgumentOutOfRangeException(nameof(cap));
@@ -60,18 +61,18 @@ internal sealed partial class VisualSceneBuilder {
             ChartGuards.Finite(command.Control1X, nameof(path)); ChartGuards.Finite(command.Control1Y, nameof(path));
             ChartGuards.Finite(command.Control2X, nameof(path)); ChartGuards.Finite(command.Control2Y, nameof(path));
         }
-        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join));
+        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join, paint));
     }
 
     /// <summary>Adds a clockwise slice in radians, including a full-ring case without a radial seam.</summary>
     internal void Slice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
-        ChartColor fill, ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null) {
+        ChartColor fill, ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
         ChartGuards.Finite(cx, nameof(cx)); ChartGuards.Finite(cy, nameof(cy)); ChartGuards.Finite(start, nameof(start));
         NonNegative(outerRadius, nameof(outerRadius)); NonNegative(innerRadius, nameof(innerRadius));
         NonNegative(sweep, nameof(sweep)); NonNegative(strokeWidth, nameof(strokeWidth));
         if (innerRadius > outerRadius) throw new ArgumentOutOfRangeException(nameof(innerRadius));
         if (sweep > Math.PI * 2 + 0.000001) throw new ArgumentOutOfRangeException(nameof(sweep));
-        _nodes.Add(new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, Math.Min(sweep, Math.PI * 2), fill, stroke, strokeWidth, role, id));
+        _nodes.Add(new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, Math.Min(sweep, Math.PI * 2), fill, stroke, strokeWidth, role, id, paint));
     }
 
     internal TextMetrics MeasureText(string text, double size, int weight = 400) => Face(weight).Prepare(text, size).Metrics;
@@ -83,19 +84,19 @@ internal sealed partial class VisualSceneBuilder {
     internal void AddRegion(VisualSemanticRegion region) => _regions.Add(region ?? throw new ArgumentNullException(nameof(region)));
 
     internal void Text(string text, double x, double baseline, double size, ChartColor color, int weight = 400,
-        string? role = null, string? id = null, TextAlignment alignment = TextAlignment.Left) {
+        string? role = null, string? id = null, TextAlignment alignment = TextAlignment.Left, SvgPaint? paint = null) {
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
         if (!Enum.IsDefined(typeof(TextAlignment), alignment)) throw new ArgumentOutOfRangeException(nameof(alignment));
-        _nodes.Add(new VisualSceneText(Face(weight).Prepare(text, size), x, baseline, color, alignment, role, id));
+        _nodes.Add(new VisualSceneText(Face(weight).Prepare(text, size), x, baseline, color, alignment, role, id, paint));
     }
 
-    internal void Text(string text, double x, double baseline, TextStyle style, string? role = null, string? id = null) {
+    internal void Text(string text, double x, double baseline, TextStyle style, string? role = null, string? id = null, SvgPaint? paint = null) {
         if (style == null) throw new ArgumentNullException(nameof(style));
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
         var prepared = new VisualSceneTextFace(style).Prepare(text, style.EffectiveFontSize);
         baseline += style.Baseline == TextBaseline.Superscript ? -style.FontSize * 0.35
             : style.Baseline == TextBaseline.Subscript ? style.FontSize * 0.22 : 0;
-        _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id));
+        _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id, paint));
         AddTextDecorations(prepared, x, baseline, style);
     }
 
