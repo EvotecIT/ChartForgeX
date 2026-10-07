@@ -64,7 +64,7 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct ComparisonAsset {
-        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth, bool htmlRequired) {
+        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth, bool htmlRequired, LayoutProvenance layout) {
             Name = name;
             SvgDimensions = svgDimensions;
             PngDimensions = pngDimensions;
@@ -74,9 +74,12 @@ public static partial class GalleryWriter {
             PngHealth = pngHealth;
             HtmlHealth = htmlHealth;
             HtmlRequired = htmlRequired;
+            Layout = layout;
         }
 
         public string Name { get; }
+
+        public LayoutProvenance Layout { get; }
 
         public AssetDimensions SvgDimensions { get; }
 

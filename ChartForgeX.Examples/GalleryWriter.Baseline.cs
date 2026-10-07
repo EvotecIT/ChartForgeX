@@ -35,13 +35,14 @@ public static partial class GalleryWriter {
                 var minDistinctColors = pngBaseline.GetProperty("minDistinctColors").GetInt32();
                 var outputScale = ReadBaselineInt32(pngBaseline, "outputScale", actual.PngScale);
                 var maxEdgeInkPixels = ReadBaselineInt64(pngBaseline, "maxEdgeInkPixels", long.MaxValue);
+                var naturalHeight = AllowsNaturalHeight(baselineChart, actual.Layout);
                 if (actual.SvgDimensions.Width == width &&
-                    actual.SvgDimensions.Height == height &&
+                    (naturalHeight || actual.SvgDimensions.Height == height) &&
                     actual.SvgDimensions.LogicalWidth == logicalWidth &&
-                    actual.SvgDimensions.LogicalHeight == logicalHeight &&
+                    (naturalHeight || actual.SvgDimensions.LogicalHeight == logicalHeight) &&
                     actual.PngScale == outputScale &&
-                    actual.PngDimensions.Width == Math.Ceiling(logicalWidth * outputScale) &&
-                    actual.PngDimensions.Height == Math.Ceiling(logicalHeight * outputScale) &&
+                    actual.PngDimensions.Width == Math.Ceiling(actual.SvgDimensions.LogicalWidth * outputScale) &&
+                    actual.PngDimensions.Height == Math.Ceiling(actual.SvgDimensions.LogicalHeight * outputScale) &&
                     actual.SvgHealth.VisualNodes >= minVisualNodes &&
                     actual.SvgHealth.ClippedTextNodes <= maxClippedTextNodes &&
                     actual.SvgHealth.NearEdgeTextNodes <= maxNearEdgeTextNodes &&

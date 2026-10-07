@@ -201,7 +201,8 @@ public static partial class GalleryWriter {
             ReadSvgHealth(svgFileName),
             ReadPngHealth(pngFileName),
             ReadHtmlHealth(Path.Combine(output, name + ".html")),
-            !File.Exists(Path.Combine(output, name + ".static-only")));
+            !File.Exists(Path.Combine(output, name + ".static-only")),
+            ReadLayoutProvenance(name, svgFileName));
     }
 
     private static void WriteComparisonManifest(string output, ComparisonAsset[] pairs, int matchingPairs, BaselineSummary baseline) {
@@ -240,6 +241,7 @@ public static partial class GalleryWriter {
             comparisonModes = new[] { "side-by-side", "center-wipe", "preset-wipe" },
             charts = pairs.Select(pair => new {
                 name = pair.Name,
+                layout = new { heightMode = pair.Layout.HeightMode, frameFontRequest = pair.Layout.FrameFontRequest, frameFontFingerprint = pair.Layout.FrameFontFingerprint },
                 dimensionsMatch = pair.HasMatchingDimensions,
                 warnings = pair.Warnings,
                 svg = new {

@@ -73,6 +73,8 @@ The target adapter flow is typed model → common renderable → immutable prepa
 
 Sequence `ToSvg()` and `ToPng()` use the shared native scene. Their default request uses the model's width and height as minimum dimensions, retains its padding, and expands the measured content to fit. Use `sequence.Prepare(context)` for an exact fixed viewport or a custom theme/font; insufficient space fails explicitly. Export both formats from that prepared result to reuse one layout.
 
+Compact topology dot symbols retain their standard 8-pixel logical text size when a wider resolved font cannot fit the complete symbol. A fitting text-element prefix is drawn, `topology.label-truncated` reports the loss, and the complete `Symbol` remains in semantic interchange. Use a larger authored dot when the full symbol must be visible. Explicitly smaller dots retain their proportional typography.
+
 `sequence.ToVisualArtifact()` remains a lazy source envelope with authored dimensions and source semantics. It does not calculate preview geometry or validate a render layout. For a detached display and semantic snapshot, use `sequence.Prepare(context).ToArtifact(id, VisualArtifactKind.Sequence)`. Its envelope dimensions, node bounds, message routes and label bounds describe the prepared viewport; `chartforgex.source.width` and `chartforgex.source.height` retain the authored dimensions. Source-only envelopes do not provide preview regions until a display is prepared.
 
 The owner fixtures exercise these adapter-shaped boundaries:

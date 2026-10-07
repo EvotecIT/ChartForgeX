@@ -175,6 +175,8 @@ Example cards link HTML, SVG, PNG, and C# snippets when a checked source sample 
 
 The release quality loop compares every generated SVG/PNG pair, including the full topology catalog, against the shared numeric visual baseline. It also renders real host-sized fixtures at high PNG density: a 1920x1080 desktop wallpaper, 1200x630 social preview, compact email grid, report strip, and transparent overlay. Dimension, readability, renderer-health, and alpha regressions fail the build.
 
+Fixed canvases retain exact baseline dimensions on every platform. Reviewed content-sized gallery exports record their outer frame's resolved font bytes and face selection. Their natural height may differ when the same font request resolves to different fonts; widths, PNG scale and allocation, readability, clipping, visibility and edge-ink checks remain enforced. Missing font provenance keeps the height comparison strict.
+
 For explicit 1k, 5k, and 10k browser scale fixtures, run:
 
 ```powershell
