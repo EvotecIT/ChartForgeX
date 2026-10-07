@@ -32,6 +32,7 @@
       }
       node.classList.toggle('cfx-series-muted', muted);
     });
+    syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
@@ -53,6 +54,7 @@
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
+    syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
     if (!hasFeature(root, 'LegendToggles')) return;
@@ -103,24 +105,41 @@
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
+    root.removeAttribute('data-cfx-hover-mode');
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
-    root.querySelectorAll('.cfx-hovered,.cfx-hover-related').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related'));
+    root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
-  const applyHoverByTarget = (root, target) => {
+  // Pie-like legends name points, so their emphasis unit is one point rather than the containing series.
+  const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
+    .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
+  const inHoverUnit = (node, target, pointUnits) => {
+    if (target.series === undefined && !target.seriesKey) return false;
+    const data = node.dataset || {};
+    const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
+    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point));
+  };
+  // 'series' keeps the pointed series at full strength while other series recede;
+  // 'shared' (crosshair over the plot background) keeps every series at full strength.
+  const applyHoverByTarget = (root, target, mode) => {
     if (!target) return false;
+    const hoverMode = mode === 'shared' ? 'shared' : 'series';
+    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, target);
     let matched = false;
     root.querySelectorAll(targetSelector).forEach((node) => {
       const hovered = matchesTargetIdentity(node, target);
       const related = !hovered && targetRelated(node, target);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
+      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits));
+      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
     });
     if (matched) {
       root.dataset.cfxHovering = 'true';
+      root.dataset.cfxHoverMode = hoverMode;
       root.dataset.cfxHoverLabel = target.label || target.role || target.id || '';
     }
     return matched;
@@ -266,10 +285,10 @@
     });
     return revealNodes(root, nodes, emit, sync, source);
   };
-  const setHover = (root, node, emit, sync) => {
+  const setHover = (root, node, emit, sync, mode) => {
     const target = targetIdentity(node);
     clearHover(root, false, false);
-    applyHoverByTarget(root, target);
+    applyHoverByTarget(root, target, mode);
     root.dataset.cfxHoverKey = targetKey(target);
     recordFocusTrail(root, target, emit, sync);
     revealNodes(root, [node], emit, sync, 'hover');
@@ -313,11 +332,22 @@
     root.dataset.cfxCrosshair = targetKey(target);
     if (emit !== false) {
       emitHostEvent(root, 'cfxcrosshair', { label: text(point.node), target, x: event.clientX, y: event.clientY });
-      emitSync(root, { action: 'crosshair', label: text(point.node), target });
+      emitSync(root, { action: 'crosshair', label: text(point.node), target, mode: root.dataset.cfxHoverMode || 'shared' });
     }
+  };
+  // A pointer resting on a mark of the nearest point's series emphasizes that series; anywhere else on the
+  // plot the crosshair is a shared readout and no series recedes.
+  const crosshairHoverMode = (event, node) => {
+    const hit = event && event.target instanceof Element ? event.target.closest('[data-cfx-series]') : null;
+    return hit && (hit.dataset || {}).cfxSeries === (node.dataset || {}).cfxSeries ? 'series' : 'shared';
   };
   const updateNearestPoint = (root, crosshair, tip, event) => {
     if (!hasFeature(root, 'Crosshair')) return;
+    if (event.target instanceof Element && event.target.closest('[data-cfx-role="legend-item"]')) {
+      // Legend items own their hover summary; the crosshair must not replace it.
+      hideCrosshair(root, crosshair);
+      return;
+    }
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);
@@ -326,8 +356,9 @@
     }
     const target = targetIdentity(point.node);
     const key = targetKey(target);
-    if (root.dataset.cfxHoverKey !== key) {
-      setHover(root, point.node, true, true);
+    const mode = crosshairHoverMode(event, point.node);
+    if (root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode) {
+      setHover(root, point.node, true, true, mode);
       showCrosshair(root, crosshair, point, event, true);
       showTip(root, tip, point.node, event);
     } else {
@@ -425,7 +456,10 @@
   const applySync = (root, detail) => {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
-    else if (detail.action === 'brush') root.dataset.cfxBrush = detail.bounds || '';
+    else if (detail.action === 'brush') {
+      root.dataset.cfxBrush = detail.bounds || '';
+      syncResetControl(root);
+    }
     else if (detail.action === 'selection') {
       if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
       renderCompare(root);
@@ -443,7 +477,7 @@
     } else if (detail.action === 'hover-clear') clearHover(root, false, false);
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {
       clearHover(root, false, false);
-      applyHoverByTarget(root, detail.target);
+      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
       revealTargets(root, [detail.target], false, false, detail.action);
     }
     else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);

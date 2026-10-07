@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Themes;
 
@@ -18,8 +19,8 @@ public sealed partial class VisualDesignTokens {
     /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
     /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>Ramp</c>; accents <c>Any</c>), so a renderer
     /// that writes a colour for a role names the same token in every theme. Text matched by value never takes a surface
-    /// token, so contrast text that happens to have a surface colour stays literal; text on filled heatmap cells and
-    /// state marks is written for the surface or text role and takes those tokens.
+    /// token. Graphite adds paired <c>series.*.ink</c>, ramp ink and state ink variables so filled-mark labels retain
+    /// readable contrast when a host switches themes. Named effect themes retain their existing surface/text mapping.
     /// </summary>
     /// <param name="variableName">
     /// Returns the custom property name for a token path, or null to leave that token literal. Null names every token
@@ -50,6 +51,9 @@ public sealed partial class VisualDesignTokens {
         Add("surface.line", Border);
         Add("text.primary", Foreground);
         Add("text.secondary", MutedForeground);
+        if (Muted.HasValue) Add("text.muted", Muted.Value);
+        if (Grid.HasValue) Add("guide.grid", Grid.Value);
+        if (Axis.HasValue) Add("guide.axis", Axis.Value);
         AddList("series", _palette);
         AddPair("severity.critical", Status.Critical);
         AddPair("severity.high", Status.High);
@@ -64,6 +68,12 @@ public sealed partial class VisualDesignTokens {
         Add("status.warning", Warning);
         Add("status.negative", Negative);
         Add("status.disabled", Disabled);
+        if (Info.HasValue) Add("status.info", Info.Value);
+        if (Quiet.HasValue) Add("status.quiet", Quiet.Value);
+        if (QuietLine.HasValue) Add("status.quietLine", QuietLine.Value);
+        if (Neutral.HasValue) Add("status.neutral", Neutral.Value);
+        if (Neutral2.HasValue) Add("surface.neutral2", Neutral2.Value);
+        if (Neutral3.HasValue) Add("surface.neutral3", Neutral3.Value);
         Add("accent.base", Accent);
         Add("chrome.accent", SecondaryAccent);
         if (_sequentialRamp != null) AddList("ramps.sequential", _sequentialRamp);
@@ -71,6 +81,23 @@ public sealed partial class VisualDesignTokens {
             AddList("ramps.diverging.negative", ToArray(DivergingRamp.Negative));
             Add("ramps.diverging.neutral", DivergingRamp.Neutral);
             AddList("ramps.diverging.positive", ToArray(DivergingRamp.Positive));
+        }
+
+        if (UseGraphiteLayout) {
+            void Ink(string path, ChartColor color, SvgColorRole role) {
+                var variable = name(path + ".ink");
+                if (variable != null) variables.AddInk(variable, color, ChartColorMath.AccessibleTextOnBackground(color), role);
+            }
+            for (var i = 0; i < _palette.Length; i++) Ink("series." + (i + 1).ToString(CultureInfo.InvariantCulture), _palette[i], SvgColorRole.Series);
+            if (_sequentialRamp != null)
+                for (var i = 0; i < _sequentialRamp.Length; i++) Ink("ramps.sequential." + (i + 1).ToString(CultureInfo.InvariantCulture), _sequentialRamp[i], SvgColorRole.Ramp);
+            if (Neutral3.HasValue) Ink("surface.neutral3", Neutral3.Value, SvgColorRole.Surface);
+            Ink("mark.danger", Negative, SvgColorRole.Status);
+            Ink("mark.warning", Warning, SvgColorRole.Status);
+            Ink("mark.success", Positive, SvgColorRole.Status);
+            if (Info.HasValue) Ink("mark.info", Info.Value, SvgColorRole.Status);
+            if (Quiet.HasValue) Ink("mark.quiet", Quiet.Value, SvgColorRole.Status);
+            if (Neutral.HasValue) Ink("mark.neutral", Neutral.Value, SvgColorRole.Status);
         }
 
         return variables;
@@ -81,6 +108,8 @@ public sealed partial class VisualDesignTokens {
         if (path.StartsWith("surface.", StringComparison.Ordinal)) return SvgColorRole.Surface;
         if (path.StartsWith("text.", StringComparison.Ordinal)) return SvgColorRole.Text;
         if (path.StartsWith("series.", StringComparison.Ordinal)) return SvgColorRole.Series;
+        if (path == "guide.grid") return SvgColorRole.Grid;
+        if (path == "guide.axis") return SvgColorRole.Axis;
         if (path.StartsWith("ramps.", StringComparison.Ordinal)) return SvgColorRole.Ramp;
         if (path.StartsWith("severity.", StringComparison.Ordinal) || path.StartsWith("outcome.", StringComparison.Ordinal) || path.StartsWith("state.", StringComparison.Ordinal) || path.StartsWith("status.", StringComparison.Ordinal)) return SvgColorRole.Status;
         return SvgColorRole.Any;

@@ -26,7 +26,7 @@ public sealed partial class PngChartRenderer {
         var radius = Math.Min(ChartVisualPrimitives.SankeyNodeCornerRadiusMax, model.NodeWidth / 2);
         c.FillRoundedRectVerticalGradient(node.X, node.Y, model.NodeWidth, node.Height, radius, SankeyNodeGradientTop(color), SankeyNodeGradientBottom(color));
         c.StrokeRoundedRect(node.X, node.Y, model.NodeWidth, node.Height, radius, ApplyOpacity(theme.CardBackground, ChartVisualPrimitives.SankeyNodeBorderOpacity), ChartVisualPrimitives.SankeyNodeBorderStrokeWidth);
-        if (!showDataLabels) return;
+        if (!showDataLabels || c.SuppressText) return;
         var dataStyle = DataLabelStyle(chart, series);
         var preferredFontSize = PngStyleFontSize(dataStyle, theme.TickLabelFontSize);
         var labelMaxWidth = Math.Max(64, plot.Width / Math.Max(2, model.MaxLayer + 1) * 0.62);

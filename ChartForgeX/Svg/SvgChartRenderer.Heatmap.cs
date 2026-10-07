@@ -35,11 +35,11 @@ public sealed partial class SvgChartRenderer {
         var plot = ApplyHeatmapLabelReserve(chart, basePlot, rows, columns, categorical, legendHeight);
         var rowLayout = ChartHeatmapRowLayout.Build(chart, rows, plot.Height);
         var rowsHeight = Math.Max(1, plot.Height - rowLayout.HeadersHeight);
-        var autoGap = Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, rowsHeight / rows.Length) * 0.05));
+        var autoGap = t.UseGraphiteLayout ? 2 : Math.Min(6, Math.Max(2, Math.Min(plot.Width / columns.Length, rowsHeight / rows.Length) * 0.05));
         var gap = VisualBlockRendering.EffectiveHeatmapGap(plot.Width, rowsHeight, columns.Length, rows.Length, chart.Options.HeatmapCellGap ?? autoGap);
         var cellWidth = Math.Max(1, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
         var cellHeight = rowLayout.CellHeight(plot.Height, gap, rows.Length);
-        var autoRadius = Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
+        var autoRadius = t.UseGraphiteLayout ? 2 : Math.Min(8, Math.Min(cellWidth, cellHeight) * 0.16);
         var radius = Math.Min(chart.Options.HeatmapCellRadius ?? autoRadius, Math.Min(cellWidth, cellHeight) / 2);
 
         var hatchId = id + "-heatmapHatch";
@@ -84,13 +84,13 @@ public sealed partial class SvgChartRenderer {
                 int? level = category == null && status == null ? ChartHeatmapSurface.Level(ratio) : null;
                 ChartStateMark? mark = category == null ? null : ChartStateMark.For(chart, category);
                 var cellBlend = ChartHeatmapSurface.CellBlend(chart, series.Color, value, min, max);
-                var cellText = mark.HasValue ? ChartMarkText.OnStateMark(chart, mark.Value) : ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max);
-                var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? FormatValue(chart, value));
+                var cellText = mark.HasValue ? ChartMarkText.OnStateMark(chart, mark.Value).Paint : ChartMarkText.OnHeatmapCell(chart, series.Color, value, min, max).Paint;
+                var summary = series.Name + ", " + FormatX(chart, column) + ": " + (category?.Label ?? (t.UseGraphiteLayout ? value.ToString("R", System.Globalization.CultureInfo.InvariantCulture) : FormatValue(chart, value)));
                 if (category == null && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) summary += ", " + status;
                 // The accessible name and the hover text always say which cell this is; a caller's tooltip is appended.
                 var tooltip = cell?.Tooltip;
                 var name = string.IsNullOrWhiteSpace(tooltip) || string.Equals(tooltip, summary, StringComparison.Ordinal) ? summary : summary + ". " + tooltip;
-                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, cellBlend.Paint, cell?.Href, category?.Label, level, mark);
+                WriteHeatmapCell(body, chart, rowIndex, columnIndex, status, name, x, y, cellWidth, cellHeight, radius, cellBlend.Paint, cell?.Href, category?.Label, level, mark, value);
                 if (mark.HasValue) AppendSvg(body, writer => WriteStateMarkLines(writer, hatchId, mark.Value, x, y, cellWidth, cellHeight, radius, "heatmap-cell-hatch"));
                 var label = FormatDataLabel(chart, series, pointIndex, value);
                 var dataStyle = DataLabelStyle(chart, series, pointIndex);
@@ -113,7 +113,7 @@ public sealed partial class SvgChartRenderer {
                     body.Append("<g pointer-events=\"none\">");
                     var placement = cell.HasValue ? ChartDataLabelPlacement.Center : DataLabelPlacement(chart, series);
                     if (placement == ChartDataLabelPlacement.Auto || placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
-                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, cellText.Paint, fittedCellFontSize, cellWidth - 6, "750", style: dataStyle);
+                        DrawSvgTextCenteredX(body, chart, "data-label", label, x + cellWidth / 2, y + cellHeight / 2, cellText, fittedCellFontSize, cellWidth - 6, t.UseGraphiteLayout ? "700" : "750", style: dataStyle);
                     } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right || placement == ChartDataLabelPlacement.Outside) {
                         var labelX = placement == ChartDataLabelPlacement.Left ? x - 8 : x + cellWidth + 8;
                         var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
@@ -201,7 +201,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, "650"));
+            .Attribute("font-weight", StyleWeight(style, chart.Options.Theme.UseGraphiteLayout ? "400" : "650"));
         WriteSvgTextStyleAttributes(writer, style);
         WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
@@ -213,7 +213,7 @@ public sealed partial class SvgChartRenderer {
     /// Writes one heatmap cell. <paramref name="summary"/> is both the accessible name and the hover <c>title</c>, so
     /// static SVG and the interactive adapter (which shows the accessible name) say the same.
     /// </summary>
-    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, SvgPaint fill, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null) {
+    private static void WriteHeatmapCell(StringBuilder sb, Chart chart, int rowIndex, int columnIndex, string? status, string summary, double x, double y, double width, double height, double radius, SvgPaint fill, string? href = null, string? stateLabel = null, int? level = null, ChartStateMark? mark = null, double? value = null) {
         var t = chart.Options.Theme;
         var writer = new SvgMarkupWriter(768);
         // Static cells carry accessible names but are not tab stops (the interactive HTML adapter adds focus); a
@@ -229,6 +229,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-row", rowIndex)
             .Attribute("data-cfx-column", columnIndex)
             .Attribute("data-cfx-status", status)
+            .OptionalAttribute("data-cfx-value", value)
             .Attribute("role", "img")
             .Attribute("aria-label", summary)
             .Attribute("x", x)
@@ -276,7 +277,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
             .Attribute("font-size", fontSize)
-            .Attribute("font-weight", StyleWeight(style, "650"));
+            .Attribute("font-weight", StyleWeight(style, chart.Options.Theme.UseGraphiteLayout ? "400" : "650"));
         WriteSvgTextStyleAttributes(writer, style);
         WriteSvgStyledTextContent(writer, style, label)
             .EndElement()
@@ -365,6 +366,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static void DrawHeatmapScale(StringBuilder sb, Chart chart, ChartRect plot, double min, double max, ChartColor? highColor, double top) {
+        if (chart.Options.Theme.UseGraphiteLayout) { DrawGraphiteHeatmapScale(sb, chart, plot, min, max, top); return; }
         var t = chart.Options.Theme;
         var style = chart.Options.TickLabelStyle;
         var preferredFontSize = StyleFontSize(style, t.TickLabelFontSize);

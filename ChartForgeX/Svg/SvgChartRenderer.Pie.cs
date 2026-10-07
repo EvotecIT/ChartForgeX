@@ -10,6 +10,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawPieLike(StringBuilder sb, Chart chart, ChartRect plot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout && !chart.Options.HasExplicitLegendPosition && !chart.Options.HasExplicitLegendBudget && DataLabelPlacement(chart, chart.Series[0]) == ChartDataLabelPlacement.Auto && chart.Series[0].PointSliceOffsets.Count == 0) { DrawGraphitePie(sb, chart, plot); return; }
         var series = chart.Series[0];
         var values = series.Points
             .Select((point, index) => new IndexedPieValue(point, index))
@@ -23,7 +24,7 @@ public sealed partial class SvgChartRenderer {
         var t = chart.Options.Theme;
         var total = values.Sum(item => item.Point.Y);
         var chartPlot = PieChartPlot(chart, plot, legendValues);
-        var hasHorizontalLegendLane = chart.Options.ShowLegend
+        var hasHorizontalLegendLane = ChartLegendVisibility.ForEntries(chart, legendValues.Length)
             && IsTopOrBottomLegend(chart.Options.LegendPosition)
             && SliceLegendReserve(chart, legendValues, plot) > 0;
         var radiusFactor = hasHorizontalLegendLane ? 0.40 : 0.44;
@@ -54,6 +55,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-label", label)
                 .Attribute("data-cfx-value", point.Y)
                 .Attribute("data-cfx-percent", percent);
+            writer.Attribute("data-cfx-pie-center-x", cx).Attribute("data-cfx-pie-center-y", cy).Attribute("data-cfx-pie-radius", radius);
             if (series.Kind == ChartSeriesKind.Donut) writer.Attribute("data-cfx-inner-radius-ratio", chart.Options.DonutInnerRadiusRatio);
             if (offset > 0) writer.Attribute("data-cfx-slice-offset", PieSliceOffset(series, pointIndex));
             writer
@@ -90,7 +92,7 @@ public sealed partial class SvgChartRenderer {
                             .Attribute("y", y)
                             .Attribute("text-anchor", "middle")
                             .Attribute("fill", StyleColor(style, t.CardBackground).ToCss())
-                            .Attribute("font-family", SvgFontFamily(StyleFontFamily(chart, style)))
+                            .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
                             .Attribute("font-size", fontSize)
                             .Attribute("font-weight", StyleWeight(style, "750"));
                         WriteSvgTextStyleAttributes(writer, style);
@@ -119,19 +121,30 @@ public sealed partial class SvgChartRenderer {
             var centerLabelWidth = Math.Max(24, inner * 1.55);
             var centerValue = chart.Options.DonutCenterValue ?? FormatValue(chart, total);
             var centerLabel = chart.Options.DonutCenterLabel ?? series.Name;
-            var valueFontSize = StyleFontSize(dataStyle, Math.Max(14, Math.Min(26, inner * 0.45)));
-            var labelFontSize = StyleFontSize(dataStyle, Math.Max(9, Math.Min(t.TickLabelFontSize, inner * 0.22)));
-            var centerLineGap = Math.Max(4, Math.Min(8, inner * 0.08));
-            var centerGroupHeight = valueFontSize + centerLineGap + labelFontSize;
-            var valueY = cy - centerGroupHeight / 2.0 + valueFontSize / 2.0;
-            var labelY = valueY + valueFontSize / 2.0 + centerLineGap + labelFontSize / 2.0;
+            // Both lines share the hole's vertical budget before script scaling is applied.
+            var valueFontSize = Math.Min(dataStyle.FontSize ?? Math.Max(14, Math.Min(26, inner * 0.45)), inner * 0.48);
+            var labelFontSize = Math.Min(dataStyle.FontSize ?? Math.Max(9, Math.Min(t.TickLabelFontSize, inner * 0.22)), inner * 0.38);
+            var centerLineGap = Math.Max(2, Math.Min(6, inner * 0.08));
+            var scriptScale = dataStyle.Baseline is Typography.TextBaseline.Superscript or Typography.TextBaseline.Subscript ? 0.65 : 1;
+            valueFontSize *= scriptScale; labelFontSize *= scriptScale; centerLineGap = Math.Max(3, centerLineGap * scriptScale);
+            var family = StyleFontFamily(chart, dataStyle);
+            var valueFont = new Typography.FontSpec { Family = family, Weight = dataStyle.ResolveFontWeight(850) };
+            var labelFont = new Typography.FontSpec { Family = family, Weight = dataStyle.ResolveFontWeight(650) };
+            var valueHeight = ChartLabelScene.MeasureText(centerValue, new Typography.TextStyle { Font = valueFont, FontSize = valueFontSize, LineHeight = 1 }).Height;
+            var labelHeight = ChartLabelScene.MeasureText(centerLabel, new Typography.TextStyle { Font = labelFont, FontSize = labelFontSize, LineHeight = 1 }).Height;
+            var centerGroupHeight = valueHeight + centerLineGap + labelHeight;
+            var valueAscent = Typography.TypographyFontResolver.ResolveFace(valueFont).Font?.Ascent(valueFontSize) ?? valueFontSize * 0.82;
+            var labelAscent = Typography.TypographyFontResolver.ResolveFace(labelFont).Font?.Ascent(labelFontSize) ?? labelFontSize * 0.82;
+            var scriptShift = dataStyle.Baseline == Typography.TextBaseline.Superscript ? -0.35 : dataStyle.Baseline == Typography.TextBaseline.Subscript ? 0.22 : 0;
+            var valueY = cy - centerGroupHeight / 2.0 + valueAscent - valueFontSize * scriptShift;
+            var labelY = cy - centerGroupHeight / 2.0 + valueHeight + centerLineGap + labelAscent - labelFontSize * scriptShift;
             var centerWriter = new SvgMarkupWriter(512);
-            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850", style: dataStyle);
-            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650", style: dataStyle);
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-total-label", centerValue, cx, valueY, t.Text, valueFontSize, centerLabelWidth, "850", middleBaseline: false, style: dataStyle);
+            DrawSvgTextCenteredX(centerWriter, chart, "donut-title", centerLabel, cx, labelY, t.MutedText, labelFontSize, centerLabelWidth, "650", middleBaseline: false, style: dataStyle);
             sb.Append(centerWriter.Build());
         }
 
-        if (chart.Options.ShowLegend) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
+        if (ChartLegendVisibility.ForEntries(chart, legendValues.Length)) DrawSliceLegend(sb, chart, series, legendValues, plot, total);
     }
 
     private static void DrawSliceLegend(StringBuilder sb, Chart chart, ChartSeries series, IReadOnlyList<IndexedPieValue> values, ChartRect plot, double total) {
@@ -160,6 +173,8 @@ public sealed partial class SvgChartRenderer {
                 var itemX = x + item.X;
                 var labelFontSize = item.LabelFontSize;
                 var label = item.Label;
+                writer.StartElement("g").Attribute("data-cfx-role", "slice-legend-item")
+                    .Attribute("data-cfx-point", item.PointIndex).EndStartElement().Line();
                 if (item.IsZero) {
                     writer
                         .StartElement("rect")
@@ -213,9 +228,9 @@ public sealed partial class SvgChartRenderer {
                     .StartElement("text")
                     .Attribute("data-cfx-role", "slice-legend-percent")
                     .Attribute("data-cfx-point", item.PointIndex)
-                    .Attribute("x", itemX + item.Width - 10)
+                    .Attribute("x", itemX + ChartVisualPrimitives.SliceLegendSwatchSize + 6 + MeasureSvgStyledTextWidth(chart, label, labelFontSize, style.WithDefaultFontWeight(650), emphasized: true) + 8)
                     .Attribute("y", y)
-                    .Attribute("text-anchor", "end")
+                    .Attribute("text-anchor", "start")
                     .Attribute("fill", StyleColor(style, t.MutedText).ToCss())
                     .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style)))
                     .Attribute("font-size", fontSize)
@@ -224,6 +239,7 @@ public sealed partial class SvgChartRenderer {
                 WriteSvgStyledTextContent(writer, style, item.Percent)
                     .EndElement()
                     .Line();
+                writer.EndElement().Line();
             }
 
             y += SliceLegendRowHeight(chart);
@@ -234,7 +250,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static ChartRect PieChartPlot(Chart chart, ChartRect plot, IReadOnlyList<IndexedPieValue> values) {
-        if (!chart.Options.ShowLegend || values.Count == 0) return plot;
+        if (!ChartLegendVisibility.ForEntries(chart, values.Count)) return plot;
         var reserve = SliceLegendReserve(chart, values, plot);
         if (IsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         if (IsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
@@ -407,7 +423,8 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string PieSliceFill(Chart chart, ChartSeries series, int pointIndex, string id) =>
-        ChartMarkSurface.SliceHasPointColor(series, pointIndex)
+        chart.Options.Theme.FlatMarks ? PieSliceColor(chart, series, pointIndex).ToCss()
+            : ChartMarkSurface.SliceHasPointColor(series, pointIndex)
             ? series.PointColors[pointIndex]!.Value.ToCss()
             : $"url(#{id}-sliceFill{pointIndex % chart.Options.Theme.Palette.Length})";
 

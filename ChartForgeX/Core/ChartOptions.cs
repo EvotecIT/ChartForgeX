@@ -11,9 +11,11 @@ namespace ChartForgeX.Core;
 public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
     private ChartPadding _padding = new(76, 78, 36, 74);
-    private ChartTheme _theme = ChartTheme.Light();
+    private ChartTheme _theme = ChartTheme.GraphiteLight();
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
-    private ChartLegendPosition _legendPosition = ChartLegendPosition.Bottom;
+    private ChartLegendPosition _legendPosition = ChartLegendPosition.TopLeft;
+    private bool? _showPlotBackground;
+    private bool _showLegend = true;
     private ChartPictorialShape _pictorialShape = ChartPictorialShape.Circle;
     private int _pictorialColumns = 12;
     private double? _pictorialMaximum;
@@ -38,7 +40,7 @@ public sealed partial class ChartOptions {
     private Typography.TextHinting _pngTextHinting;
     private int _pngOutputScale = 1;
     private double? _ganttToday;
-    private double _donutInnerRadiusRatio = 0.58;
+    private double _donutInnerRadiusRatio = 0.62;
     private string? _donutCenterValue;
     private string? _donutCenterLabel;
     private double _circleRadiusScale = 1.0;
@@ -62,7 +64,8 @@ public sealed partial class ChartOptions {
     /// heatmap with the default padding lays itself out over the chart area instead, and honours padding that is set.
     /// </summary>
     public ChartPadding Padding {
-        get => _padding;
+        get => HostOwnsFrame ? new ChartPadding(0, 0, 0, 0)
+            : !HasExplicitPadding && Theme.UseGraphiteLayout ? new ChartPadding(18, 16, 18, 12) : _padding;
         set {
             ChartGuards.Finite(value.Left, nameof(value));
             ChartGuards.Finite(value.Top, nameof(value));
@@ -164,9 +167,19 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the legend is rendered.
+    /// Gets or sets whether the legend is enabled. A default legend with one entry is hidden;
+    /// explicitly assigning true also displays a single entry.
     /// </summary>
-    public bool ShowLegend { get; set; } = true;
+    public bool ShowLegend {
+        get => _showLegend;
+        set { _showLegend = value; HasExplicitLegend = true; }
+    }
+
+    internal bool HasExplicitLegend { get; private set; }
+
+    /// <summary>Gets or sets whether Cartesian series geometry is clipped to the plot rectangle.</summary>
+    /// <remarks>Markers with centers inside the rectangle may extend beyond it by their radius. Disable this for intentional overflow.</remarks>
+    public bool ClipMarksToPlot { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether capable legends should list individual points instead of series.
@@ -177,10 +190,11 @@ public sealed partial class ChartOptions {
     /// Gets or sets where the legend is placed relative to the plot area.
     /// </summary>
     public ChartLegendPosition LegendPosition {
-        get => _legendPosition;
+        get => HasExplicitLegendPosition || Theme.UseGraphiteLayout ? _legendPosition : ChartLegendPosition.Bottom;
         set {
             if (!Enum.IsDefined(typeof(ChartLegendPosition), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown legend position.");
             _legendPosition = value;
+            HasExplicitLegendPosition = true;
         }
     }
 
@@ -197,7 +211,10 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets a value indicating whether the plot background surface is rendered.
     /// </summary>
-    public bool ShowPlotBackground { get; set; } = true;
+    public bool ShowPlotBackground { get => _showPlotBackground ?? !Theme.FlatMarks; set => _showPlotBackground = value; }
+
+    internal bool HasExplicitLegendPosition { get; private set; }
+    internal void SetDefaultLegendPosition(ChartLegendPosition position) { if (!HasExplicitLegendPosition) _legendPosition = position; }
 
     /// <summary>
     /// Gets or sets a value indicating whether grid lines are rendered.

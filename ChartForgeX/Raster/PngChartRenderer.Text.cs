@@ -46,6 +46,7 @@ public sealed partial class PngChartRenderer {
     private static bool IsPointCalloutSeries(ChartSeries series) => series.SemanticRole == "point-callout";
 
     private static void DrawPngPointCalloutLabel(RgbaCanvas c, Chart chart, ChartRect plot, double x, double y, string label, ChartDataLabelPlacement placement, double preferredFontSize, TextStyleOverride style) {
+        if (c.SuppressText) return;
         var fontSize = Math.Max(preferredFontSize, 15);
         label = TrimReadablePngLabelToWidth(label, fontSize, Math.Max(72, plot.Width * 0.42), style);
         if (label.Length == 0) return;
@@ -178,10 +179,8 @@ public sealed partial class PngChartRenderer {
         return style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript ? size * 0.65 : size;
     }
     private static TrueTypeFont? PngStyleFont(TextStyleOverride style) => PngStyleFace(style, false).Font;
-    private static ResolvedTypeface PngStyleFace(TextStyleOverride style, bool emphasized) => TypographyFontResolver.WithColorPalette(TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(CurrentOutlineFontIsExplicit
-        ? new ResolvedTypeface(CurrentOutlineFont, PngStyleEmphasized(style, emphasized), style.Italic)
-        : TypographyFontResolver.ResolveFace(style.FontFamily ?? CurrentFontFamily, style.ResolveFontWeight(emphasized ? 700 : 400), style.Italic), style.OpenTypeLanguageTag), style.Variations), style.ColorPaletteIndex);
-    private static bool PngStyleEmphasized(TextStyleOverride style, bool fallback) => style.ResolveFontWeight(fallback ? 700 : 400) >= 600;
+    private static ResolvedTypeface PngStyleFace(TextStyleOverride style, bool emphasized) =>
+        ChartTextFace.Resolve(CurrentFontFamily, style, emphasized ? 700 : 400, CurrentOutlineFontIsExplicit ? CurrentOutlineFont : null);
     private static TextStyleOverride SeriesDataLabelStyle(Chart chart, ChartSeries? series) => DataLabelStyle(chart, series);
 
     private static TextStyleOverride DataLabelStyle(Chart chart, ChartSeries? series, int pointIndex = -1) {

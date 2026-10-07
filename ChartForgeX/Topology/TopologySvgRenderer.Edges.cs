@@ -12,7 +12,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologySvgRenderer {
-    private static void AddEdges(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string svgId, TopologyHighlightState highlight) {
+    private static void AddEdges(SvgElement root, TopologyChart chart, string prefix, TopologyTheme theme, TopologyRenderOptions options, string svgId, TopologyHighlightState highlight, bool includeRouteDiagnostics = true) {
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var layer = new SvgElement("g")
             .Class(prefix + "__edges")
@@ -32,7 +32,6 @@ public sealed partial class TopologySvgRenderer {
             var dash = EffectiveEdgeDash(edge);
             var highlighted = highlight.IsEdgeHighlighted(edge);
             var selected = IsSelected(options.SelectedEdgeIds, edge.Id);
-            var diagnostics = EdgeRouteDiagnostics(chart, edge, nodes);
             var isGeographicCurve = IsGeographicCurve(chart, edge, nodes);
             var curveControl = isGeographicCurve ? GeographicCurveControlPoint(chart, edge, nodes, points) : new ChartPoint(0, 0);
             var parent = AddOptionalLink(layer, edge.Href, prefix, options);
@@ -69,15 +68,6 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-target-label", edge.TargetLabel)
                     .Attribute("data-edge-render-order", renderOrder)
                     .Attribute("data-edge-layout-inference", EdgeLayoutInferenceToken(edge.LayoutInference))
-                    .Attribute("data-route-strategy", diagnostics.Strategy)
-                    .Attribute("data-route-corridor", diagnostics.Corridor)
-                    .Attribute("data-route-candidate-count", diagnostics.CandidateCount)
-                    .Attribute("data-route-fallback-reason", diagnostics.FallbackReason)
-                    .Attribute("data-route-segment-count", diagnostics.SegmentCount)
-                    .Attribute("data-route-obstacle-count", diagnostics.ObstacleCount)
-                    .Attribute("data-route-obstacle-hits", diagnostics.ObstacleHits)
-                    .Attribute("data-route-label-obstacle-hits", diagnostics.LabelObstacleHits)
-                    .Attribute("data-route-overlap-score", diagnostics.RouteOverlapScore)
                     .Attribute("data-route-offset", routeOffset)
                     .Attribute("data-route-start-x", points[0].X)
                     .Attribute("data-route-start-y", points[0].Y)
@@ -92,6 +82,14 @@ public sealed partial class TopologySvgRenderer {
                     .Attribute("data-label-offset-x", edge.LabelOffsetX)
                     .Attribute("data-label-offset-y", edge.LabelOffsetY)
                     .Attribute("data-waypoint-count", edge.Waypoints.Count);
+                if (includeRouteDiagnostics) {
+                    var diagnostics = EdgeRouteDiagnostics(chart, edge, nodes);
+                    group.Attribute("data-route-strategy", diagnostics.Strategy).Attribute("data-route-corridor", diagnostics.Corridor)
+                        .Attribute("data-route-candidate-count", diagnostics.CandidateCount).Attribute("data-route-fallback-reason", diagnostics.FallbackReason)
+                        .Attribute("data-route-segment-count", diagnostics.SegmentCount).Attribute("data-route-obstacle-count", diagnostics.ObstacleCount)
+                        .Attribute("data-route-obstacle-hits", diagnostics.ObstacleHits).Attribute("data-route-label-obstacle-hits", diagnostics.LabelObstacleHits)
+                        .Attribute("data-route-overlap-score", diagnostics.RouteOverlapScore);
+                }
                 AddScenarioDataAttributes(group, chart, TopologyScenarioStepKind.Edge, edge.Id);
                 if (isGeographicCurve) {
                     group

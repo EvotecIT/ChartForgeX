@@ -18,7 +18,7 @@ public sealed class LegendDensityTests {
     [InlineData("radial", ChartLegendPosition.Bottom)]
     [InlineData("radial", ChartLegendPosition.Right)]
     public void DenseLegendsDiscloseOverflowAndRetainAllData(string kind, ChartLegendPosition position) {
-        var chart = Chart.Create().WithSize(900, 560).WithTitle("Dense legend").WithLegendPosition(position).WithLegendBudget(maximumRows: 3);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).WithTitle("Dense legend").WithLegendPosition(position).WithLegendBudget(maximumRows: 3);
         var points = Enumerable.Range(0, 100).Select(i => new ChartPoint(i, i + 1)).ToArray();
         if (kind == "pie") chart.AddPie("Values", points);
         else if (kind == "radial") chart.AddRadialBar("Values", points);
@@ -52,7 +52,7 @@ public sealed class LegendDensityTests {
     [InlineData("pie", 240, 0.35)]
     [InlineData("radial", 240, 0.35)]
     public void SideLegendBudgetUsesDrawableHeightAndKeepsOverflowVisible(string kind, int height, double maximumHeightFraction) {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(900, height)
             .WithTitle("Bounded side legend")
             .WithLegendPosition(ChartLegendPosition.Right)
@@ -78,7 +78,7 @@ public sealed class LegendDensityTests {
     [InlineData(ChartLegendPosition.Top, 300, 600)]
     [InlineData(ChartLegendPosition.TopRight, 680, 860)]
     public void HorizontalOverflowSummaryHonorsLegendAlignment(ChartLegendPosition position, double minimumX, double maximumX) {
-        var chart = Chart.Create().WithSize(900, 560).WithLegendPosition(position).WithLegendBudget(maximumRows: 2);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).WithLegendPosition(position).WithLegendBudget(maximumRows: 2);
         for (var index = 0; index < 40; index++) {
             chart.AddLine("Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
         }
@@ -93,7 +93,7 @@ public sealed class LegendDensityTests {
     [Fact]
     public void OmittedWideSideLabelDoesNotShrinkThePlot() {
         static Chart Create(string finalLabel) {
-            var chart = Chart.Create().WithSize(700, 400).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(maximumRows: 3);
+            var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(700, 400).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(maximumRows: 3);
             for (var index = 0; index < 8; index++) {
                 chart.AddLine(index == 7 ? finalLabel : "Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
             }
@@ -120,7 +120,7 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void HorizontalLegendReserveHonorsHeightBudgetIncludingPlotGap() {
-        var chart = Chart.Create().WithSize(900, 480).WithLegendBudget(0.35);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 480).WithLegendBudget(0.35);
         for (var index = 0; index < 100; index++) chart.AddLine("Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
 
         var rows = Rendering.LegendRowBudget.MaximumRows(chart);
@@ -138,7 +138,7 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void LegendRowsReservePortableFontHeight() {
-        var chart = Chart.Create().WithLegendStyle(style => style.WithFontSize(18).WithFontFamily(ChartFontStacks.SystemSans));
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLegendStyle(style => style.WithFontSize(18).WithFontFamily(ChartFontStacks.SystemSans));
         var measuredHeight = 42.0;
 
         Assert.Equal(48, Rendering.LegendRowBudget.RowHeight(chart, measuredHeight));
@@ -155,7 +155,7 @@ public sealed class LegendDensityTests {
     [InlineData("pie")]
     [InlineData("radial")]
     public void FullHeightHorizontalLegendBudgetStaysInsideTheDrawableViewport(string kind) {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(900, 560)
             .WithTitle("Bounded horizontal legend")
             .WithLegendPosition(ChartLegendPosition.Top)
@@ -176,7 +176,7 @@ public sealed class LegendDensityTests {
     [InlineData("pie", "slice-legend-label", "slice-legend-percent")]
     [InlineData("radial", "radial-bar-legend-label", "radial-bar-legend-value")]
     public void HorizontalSpecializedLegendLabelsFitBeforeTheirValues(string kind, string labelRole, string valueRole) {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(900, 560)
             .WithLegendPosition(ChartLegendPosition.Top)
             .WithLegendStyle(style => style.WithFontFamily("monospace").WithFontSize(18));
@@ -189,7 +189,8 @@ public sealed class LegendDensityTests {
         var label = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == labelRole);
         var value = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == valueRole && (string?)element.Attribute("data-cfx-point") == (string?)label.Attribute("data-cfx-point"));
         var fontSize = (double)label.Attribute("font-size")!;
-        var measuredWidth = new TextMeasurementContext((string)label.Attribute("font-family")!).Measure(label.Value, fontSize, true);
+        var face = TypographyFontResolver.ResolveFace((string)label.Attribute("font-family")!, (int)label.Attribute("font-weight")!, false);
+        var measuredWidth = TextLayoutEngine.MeasureWidth(label.Value, new TextStyle { FontSize = fontSize }, face);
 
         Assert.True((double)label.Attribute("x")! + measuredWidth <= (double)value.Attribute("x")! - 4);
         Assert.NotEmpty(new PngChartRenderer().Render(chart));
@@ -197,7 +198,7 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void OverflowSummaryUsesLegendTextCaseInSvg() {
-        var chart = Chart.Create().WithSize(900, 560).WithLegendBudget(maximumRows: 2)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).WithLegendBudget(maximumRows: 2)
             .WithLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
         for (var index = 0; index < 40; index++) chart.AddLine("Service " + index, new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
 
@@ -221,7 +222,7 @@ public sealed class LegendDensityTests {
             Assert.True(radius - layout.StrokeWidth / 2 >= layout.CenterRadius + 2 - 0.000001);
         }
 
-        var chart = Chart.Create().WithSize(900, 560).WithLegend(false);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).WithLegend(false);
         chart.AddRadialBar("Dense radial", Enumerable.Range(0, count).Select(index => new ChartPoint(index, 35 + index % 61)));
         var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
         Assert.Equal(count, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-track"));
@@ -260,7 +261,7 @@ public sealed class LegendDensityTests {
         Assert.True(layout.StrokeWidth > 0);
         Assert.True(layout.RadiusAt(39) - layout.StrokeWidth / 2 >= layout.CenterRadius + 2 - 0.000001);
 
-        var chart = Chart.Create().WithSize(900, 560).WithLegend(false).WithPngOutputScale(2)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).WithLegend(false).WithPngOutputScale(2)
             .AddRadialBar(new string('W', 100), Enumerable.Range(0, 500).Select(index => new ChartPoint(index, 35 + index % 61)));
         var svg = XDocument.Parse(new SvgChartRenderer().Render(chart));
         var firstRing = svg.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "radial-bar-ring");
@@ -270,7 +271,7 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void RadialCenterGeometryIgnoresPngFontSelection() {
-        var chart = Chart.Create().WithSize(420, 280)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280)
             .AddRadialBar("Moderately long portable center label", new[] { new ChartPoint(0, 73), new ChartPoint(1, 41) });
         var series = chart.Series[0];
         const double outerRadius = 72;
@@ -296,7 +297,7 @@ public sealed class LegendDensityTests {
     [InlineData("gauge")]
     public void ImpossibleSideLegendBudgetDoesNotReserveAPlotLane(string kind) {
         static Chart Create(string chartKind, bool showLegend) {
-            var chart = Chart.Create().WithSize(900, 560).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(0.01).WithLegend(showLegend);
+            var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(0.01).WithLegend(showLegend);
             var points = Enumerable.Range(0, 40).Select(index => new ChartPoint(index, 35 + index % 61)).ToArray();
             if (chartKind == "gauge") chart.AddGauge("Value", 73);
             else if (chartKind == "pie") chart.AddPie("Values", points);
@@ -329,7 +330,7 @@ public sealed class LegendDensityTests {
     [InlineData(ChartLegendPosition.Top)]
     [InlineData(ChartLegendPosition.Bottom)]
     public void ImpossibleHorizontalPieLegendBudgetPreservesPieGeometry(ChartLegendPosition position) {
-        static Chart Create(ChartLegendPosition legendPosition, bool showLegend) => Chart.Create()
+        static Chart Create(ChartLegendPosition legendPosition, bool showLegend) => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(900, 560)
             .WithLegendPosition(legendPosition)
             .WithLegendBudget(0.01)
@@ -352,7 +353,7 @@ public sealed class LegendDensityTests {
     [InlineData(ChartLegendPosition.Top)]
     [InlineData(ChartLegendPosition.Bottom)]
     public void ImpossibleHorizontalWaterfallLegendBudgetPreservesPngGeometry(ChartLegendPosition position) {
-        static Chart Create(ChartLegendPosition legendPosition, bool showLegend) => Chart.Create()
+        static Chart Create(ChartLegendPosition legendPosition, bool showLegend) => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(900, 560)
             .WithLegendPosition(legendPosition)
             .WithLegendBudget(0.01)
@@ -366,7 +367,7 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void SmallLegendsStayCompleteAndInvalidBudgetIsAtomic() {
-        var chart = Chart.Create().WithSize(900, 560).AddLine("Value", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 560).AddLine("Value", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         Assert.DoesNotContain("legend-overflow", new SvgChartRenderer().Render(chart));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithLegendBudget(0.5, 0));
         Assert.Equal(0.35, chart.Options.LegendMaximumHeightFraction);

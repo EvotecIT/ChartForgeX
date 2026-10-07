@@ -4,11 +4,14 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
+using System.Xml.Linq;
 
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawFunnel(StringBuilder sb, Chart chart, ChartRect basePlot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout) { DrawGraphiteFunnel(sb, chart, basePlot); return; }
         ChartSeries? series = null;
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i].Kind != ChartSeriesKind.Funnel) continue;
@@ -91,16 +94,16 @@ public sealed partial class SvgChartRenderer {
             labelFontSize = TextFontSizeForSvgWidth(chart, label, labelWidth, labelFontSize, dataStyle, emphasized: true);
             valueFontSize = TextFontSizeForSvgWidth(chart, value, labelWidth, valueFontSize, dataStyle, emphasized: true);
             var rowGap = Math.Max(2, Math.Min(6, segmentDrawHeight * 0.08));
-            var availableTextHeight = Math.Max(8, (values[i].Y <= 0 ? segmentHeight : segmentDrawHeight) - 6);
+            var availableTextHeight = Math.Max(8, (values[i].Y <= 0 ? segmentHeight : segmentDrawHeight) - 2);
             while (labelFontSize > 8 || valueFontSize > 8) {
-                var requiredHeight = EstimateSvgStyledTextHeight(labelFontSize, dataStyle) + rowGap + EstimateSvgStyledTextHeight(valueFontSize, dataStyle);
+                var requiredHeight = FunnelTextHeight(chart, label, labelFontSize, dataStyle, 800, true) + rowGap + FunnelTextHeight(chart, value, valueFontSize, dataStyle, 750, true);
                 if (requiredHeight <= availableTextHeight) break;
                 if (labelFontSize >= valueFontSize && labelFontSize > 8) labelFontSize -= 0.5;
                 else if (valueFontSize > 8) valueFontSize -= 0.5;
                 else break;
             }
-            var labelHeight = EstimateSvgStyledTextHeight(labelFontSize, dataStyle);
-            var valueHeight = EstimateSvgStyledTextHeight(valueFontSize, dataStyle);
+            var labelHeight = FunnelTextHeight(chart, label, labelFontSize, dataStyle, 800, true);
+            var valueHeight = FunnelTextHeight(chart, value, valueFontSize, dataStyle, 750, true);
             var textTop = centerY - (labelHeight + rowGap + valueHeight) / 2.0;
             var labelCenterY = textTop + labelHeight / 2.0;
             var valueCenterY = textTop + labelHeight + rowGap + valueHeight / 2.0;
@@ -111,10 +114,10 @@ public sealed partial class SvgChartRenderer {
                     var zeroLabelMaxWidth = Math.Max(44, Math.Min(metricsX - zeroLabelX - 12, plot.Right - zeroLabelX));
                     DrawSvgTextLeft(labelWriter, chart, "funnel-zero-label", label + ": " + value, zeroLabelX, centerY + 4, t.MutedText, Math.Min(12.5, labelFontSize), zeroLabelMaxWidth, "750", dataStyle);
                 } else {
-                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, labelCenterY, labelColor, labelFontSize, labelWidth, "800", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth, style: dataStyle);
-                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, valueCenterY, labelColor, valueFontSize, labelWidth, "750", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth, style: dataStyle);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-label", label, centerX, FunnelTextY(chart, label, labelCenterY, labelFontSize, dataStyle, 800, true), labelColor, labelFontSize, labelWidth, "800", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth, style: dataStyle);
+                    DrawSvgTextCenteredX(labelWriter, chart, "funnel-value", value, centerX, FunnelTextY(chart, value, valueCenterY, valueFontSize, dataStyle, 750, true), labelColor, valueFontSize, labelWidth, "750", labelStroke, ChartVisualPrimitives.FunnelLabelHaloStrokeWidth, style: dataStyle);
                 }
-                writer.Raw(labelWriter.ToString());
+                WriteFunnelLabels(writer, labelWriter, i);
             }
             if (showLabels && i > 0) {
                 var hasPreviousBaseline = values[i - 1].Y > 0;
@@ -142,18 +145,18 @@ public sealed partial class SvgChartRenderer {
                 var dropOffFontSize = TextFontSizeForSvgWidth(chart, dropOffLabel, metricMaxWidth, StyleFontSize(dataStyle, t.TickLabelFontSize), dataStyle, emphasized: true);
                 var metricGap = Math.Max(2, Math.Min(5, segmentDrawHeight * 0.07));
                 while (hasPreviousBaseline && (retentionFontSize > 8 || dropOffFontSize > 8)) {
-                    var requiredHeight = EstimateSvgStyledTextHeight(retentionFontSize, dataStyle) + metricGap + EstimateSvgStyledTextHeight(dropOffFontSize, dataStyle);
+                    var requiredHeight = FunnelTextHeight(chart, retentionLabel, retentionFontSize, dataStyle, 700, false) + metricGap + FunnelTextHeight(chart, dropOffLabel, dropOffFontSize, dataStyle, 650, false);
                     if (requiredHeight <= Math.Max(8, segmentHeight - 6)) break;
                     if (retentionFontSize >= dropOffFontSize && retentionFontSize > 8) retentionFontSize -= 0.5;
                     else if (dropOffFontSize > 8) dropOffFontSize -= 0.5;
                     else break;
                 }
-                var retentionHeight = EstimateSvgStyledTextHeight(retentionFontSize, dataStyle);
-                var dropOffHeight = hasPreviousBaseline ? EstimateSvgStyledTextHeight(dropOffFontSize, dataStyle) : 0;
+                var retentionHeight = FunnelTextHeight(chart, retentionLabel, retentionFontSize, dataStyle, 700, false);
+                var dropOffHeight = hasPreviousBaseline ? FunnelTextHeight(chart, dropOffLabel, dropOffFontSize, dataStyle, 650, false) : 0;
                 var metricTop = centerY - (retentionHeight + (hasPreviousBaseline ? metricGap + dropOffHeight : 0)) / 2.0;
-                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, metricTop + retentionHeight / 2.0, t.MutedText, retentionFontSize, metricMaxWidth, "700", dataStyle);
-                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, metricTop + retentionHeight + metricGap + dropOffHeight / 2.0, t.Negative, dropOffFontSize, metricMaxWidth, "650", dataStyle);
-                writer.Raw(metricsWriter.ToString());
+                DrawSvgTextLeft(metricsWriter, chart, "funnel-retention", retentionLabel, metricsX, FunnelTextY(chart, retentionLabel, metricTop + retentionHeight / 2.0, retentionFontSize, dataStyle, 700, false), t.MutedText, retentionFontSize, metricMaxWidth, "700", dataStyle);
+                if (hasPreviousBaseline) DrawSvgTextLeft(metricsWriter, chart, "funnel-dropoff", dropOffLabel, metricsX, FunnelTextY(chart, dropOffLabel, metricTop + retentionHeight + metricGap + dropOffHeight / 2.0, dropOffFontSize, dataStyle, 650, false), t.Negative, dropOffFontSize, metricMaxWidth, "650", dataStyle);
+                WriteFunnelLabels(writer, metricsWriter, i);
             }
 
             y += segmentHeight + gap;
@@ -161,6 +164,24 @@ public sealed partial class SvgChartRenderer {
 
         writer.EndElement().Line();
         sb.Append(writer.Build());
+    }
+
+    private static void WriteFunnelLabels(SvgMarkupWriter writer, StringBuilder markup, int pointIndex) {
+        var group = XElement.Parse("<g>" + markup + "</g>");
+        foreach (var text in group.Elements()) {
+            text.SetAttributeValue("data-cfx-point", pointIndex);
+            writer.Raw(text.ToString(SaveOptions.DisableFormatting)).Line();
+        }
+    }
+
+    private static double FunnelTextHeight(Chart chart, string text, double size, TextStyleOverride style, int weight, bool halo) =>
+        ChartLabelScene.MeasureText(StyleText(style, text), ChartLabelScene.ResolveTextStyle(size, style.WithDefaultFontFamily(chart.Options.Theme.FontFamily), weight)).Height
+        + (halo ? ChartVisualPrimitives.FunnelLabelHaloStrokeWidth : 0);
+
+    private static double FunnelTextY(Chart chart, string text, double center, double size, TextStyleOverride style, int weight, bool middle) {
+        var resolved = ChartLabelScene.ResolveTextStyle(size, style.WithDefaultFontFamily(chart.Options.Theme.FontFamily), weight);
+        var ascent = TypographyFontResolver.ResolveFace(resolved.Font).Font?.Ascent(size) ?? size * 0.82;
+        return center + ascent - ChartLabelScene.MeasureText(StyleText(style, text), resolved).Height / 2 - (middle ? size * 0.32 : 0) - SvgBaselineOffset(style, size);
     }
 
     private static double[] FunnelSegmentHeights(ChartPoint[] values, double plotHeight, double gap) {

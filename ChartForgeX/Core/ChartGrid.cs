@@ -15,7 +15,7 @@ public sealed partial class ChartGrid {
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
     private int _columns = 2;
-    private int _gap = 18;
+    private int _gap = 16;
     private int _padding = 24;
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;

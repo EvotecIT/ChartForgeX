@@ -12,7 +12,7 @@ internal static class ChartTicks {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, false) ?? new NumericTimeTicks(Generate(min, max, axis.TickCount));
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, false);
-        if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return Generate(min, max, axis.TickCount);
+        if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return axis.Minimum.HasValue || axis.Maximum.HasValue ? GenerateInside(min, max, axis.TickCount) : Generate(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, false);
     }
 
@@ -29,7 +29,9 @@ internal static class ChartTicks {
         if (!TryNormalize(ref min, ref max, out var scale, out var normalizedMin, out var normalizedMax)) return new[] { 0d, 1d };
         if (min == max) return ExpandEqualValue(min);
 
-        var normalizedStep = NiceNumber((normalizedMax - normalizedMin) / (desiredCount - 1), true);
+        var normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (desiredCount - 1), true);
+        if ((normalizedMax - normalizedMin) / normalizedStep >= MaximumGeneratedTicks - 1)
+            normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (MaximumGeneratedTicks - 1));
         var step = normalizedStep * scale;
         if (!IsPositiveFinite(normalizedStep) || !IsPositiveFinite(step)) return DistinctEndpoints(min, max);
 
@@ -61,35 +63,20 @@ internal static class ChartTicks {
         if (!TryNormalize(ref min, ref max, out var scale, out var normalizedMin, out var normalizedMax)) return new[] { 0d, 1d };
         if (min == max) return new[] { min };
 
-        var range = max - min;
-        if (IsPositiveFinite(range) && IsCloseToInteger(min) && IsCloseToInteger(max) && range <= Math.Max(6, desiredCount * 2)) {
-            var integerTicks = new List<double>();
-            var integerMin = Math.Ceiling(min);
-            var integerMax = Math.Floor(max);
-            for (var index = 0; index < MaximumGeneratedTicks; index++) {
-                var value = integerMin + index;
-                if (value > integerMax) break;
-                AddFiniteDistinct(integerTicks, value);
-                if (value >= integerMax) break;
-            }
-            PreserveUpperEndpoint(integerTicks, max);
-            return integerTicks.Count > 0 ? integerTicks : DistinctEndpoints(min, max);
-        }
-
-        var normalizedStep = NiceNumber((normalizedMax - normalizedMin) / (desiredCount - 1), true);
+        var normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (desiredCount - 1), true);
+        if ((normalizedMax - normalizedMin) / normalizedStep >= MaximumGeneratedTicks - 1)
+            normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (MaximumGeneratedTicks - 1));
         var step = normalizedStep * scale;
         if (!IsPositiveFinite(normalizedStep) || !IsPositiveFinite(step)) return DistinctEndpoints(min, max);
 
         var start = Math.Ceiling(normalizedMin / normalizedStep) * normalizedStep;
         var ticks = new List<double>();
-        if (Math.Abs(start - normalizedMin) > normalizedStep * 0.2) ticks.Add(min);
         for (var index = 0; index < MaximumGeneratedTicks; index++) {
             var normalizedValue = start + normalizedStep * index;
             if (normalizedValue > normalizedMax + normalizedStep * 0.001) break;
             AddFiniteDistinct(ticks, Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
         }
 
-        if (ticks.Count == 0 || Math.Abs(ticks[ticks.Count - 1] - max) > step * 0.2) PreserveUpperEndpoint(ticks, max);
         return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
     }
 
@@ -141,9 +128,8 @@ internal static class ChartTicks {
 
     private static double Denormalize(double value, double scale, double min, double max, double normalizedMin, double normalizedMax) {
         if (scale == 1) return value;
-        if (value <= normalizedMin) return min;
-        if (value >= normalizedMax) return max;
-        return value * scale;
+        var result = value * scale;
+        return IsFinite(result) ? result : value < normalizedMin ? min : max;
     }
 
     private static IReadOnlyList<double> ExpandEqualValue(double value) {
@@ -183,30 +169,6 @@ internal static class ChartTicks {
 
     private static double NormalizeZero(double value, double step) => Math.Abs(value) < step / 1_000_000 ? 0 : value;
 
-    private static double NiceNumber(double value, bool round) {
-        if (!IsPositiveFinite(value)) return double.NaN;
-        var exponent = Math.Floor(Math.Log10(value));
-        var power = Math.Pow(10, exponent);
-        if (!IsPositiveFinite(power)) return double.NaN;
-        var fraction = value / power;
-        double niceFraction;
-
-        if (round) {
-            if (fraction < 1.5) niceFraction = 1;
-            else if (fraction < 3) niceFraction = 2;
-            else if (fraction < 7) niceFraction = 5;
-            else niceFraction = 10;
-        } else {
-            if (fraction <= 1) niceFraction = 1;
-            else if (fraction <= 2) niceFraction = 2;
-            else if (fraction <= 5) niceFraction = 5;
-            else niceFraction = 10;
-        }
-
-        return niceFraction * power;
-    }
-
-    private static bool IsCloseToInteger(double value) => Math.Abs(value - Math.Round(value)) < 0.000001;
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 

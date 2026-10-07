@@ -108,7 +108,9 @@ public sealed class ChartAxis {
     public bool Visible { get; set; } = true;
 
     /// <summary>Gets or sets a value indicating whether the axis rule is visible.</summary>
-    public bool ShowLine { get; set; } = true;
+    public bool ShowLine { get => _showLine; set { _showLine = value; HasExplicitLine = true; } }
+    private bool _showLine = true;
+    internal bool HasExplicitLine { get; private set; }
 
     /// <summary>Gets or sets a formatter for generated labels.</summary>
     public Func<double, string>? LabelFormatter { get; set; }

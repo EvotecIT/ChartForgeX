@@ -25,6 +25,18 @@ AssertContains(chart.ToSvg(), "<svg", "SVG render failed.");
 AssertContains(chart.ToHtmlPage(), "<html", "HTML page render failed.");
 AssertPng(chart.ToPng(), "PNG render failed.");
 
+foreach (var theme in new[] { ChartTheme.GraphiteLight(), ChartTheme.GraphiteDark() }) {
+    var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme).WithTitle("Graphite AOT")
+        .AddLinearGauge("Readiness", 87).WithGauge(options => { options.Target = 90; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
+    AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-value-marker\"", "Graphite gauge SVG failed.");
+    AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
+    var graphiteHeatmap = Chart.Create().WithTheme(theme).WithXLabels("A", "B", "C")
+        .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
+    AssertContains(graphiteHeatmap.WithSvgColorVariables((theme.Text.Equals(ChartTheme.GraphiteLight().Text)
+        ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark()).ToSvgColorVariables()).ToSvg(), "ramps-sequential", "Graphite token mapping failed.");
+    AssertPng(graphiteHeatmap.ToPng(), "Graphite heatmap PNG failed.");
+}
+
 var grid = ChartGrid.Create()
     .WithTitle("AOT grid")
     .WithPanelSize(260, 180)

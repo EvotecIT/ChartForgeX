@@ -69,7 +69,7 @@ public sealed class HtmlVisualGridRenderer {
         var transparentBackground = chart.Options.TransparentBackground;
         try {
             chart.Options.TransparentBackground = true;
-            return _chartRenderer.Render(chart, childScope);
+            return _chartRenderer.Render(chart.Options.Theme.UseGraphiteLayout ? chart.PanelView() : chart, childScope);
         }
         finally {
             chart.Options.TransparentBackground = transparentBackground;
@@ -78,12 +78,15 @@ public sealed class HtmlVisualGridRenderer {
 
     private string RenderChildBlock(IVisualBlock block, string childScope) {
         var transparentBackground = block.Options.TransparentBackground;
+        var originalTheme = block.Options.Theme;
         try {
             block.Options.TransparentBackground = true;
+            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
             return _blockRenderer.Render(block, childScope);
         }
         finally {
             block.Options.TransparentBackground = transparentBackground;
+            block.Options.Theme = originalTheme;
         }
     }
 
@@ -98,7 +101,7 @@ public sealed class HtmlVisualGridRenderer {
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(grid, background, theme.Text.ToCss(), theme.MutedText.ToCss(), theme.CardBorder.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(grid, background, theme.Text.ToCss(), theme.MutedText.ToCss(), theme.CardBorder.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize, theme.UseGraphiteLayout));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(grid, "html-page")).Line()
@@ -107,8 +110,8 @@ public sealed class HtmlVisualGridRenderer {
         return writer.Build();
     }
 
-    private static string BuildCss(VisualGrid grid, ChartColor background, string text, string mutedText, string border, string fontFamily, double titleFontSize, double subtitleFontSize) {
-        var css = HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "0") + ".chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid.has-frame{border:1px solid " + border + ";border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:800}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,var(--cfx-visual-grid-panel-width)));justify-content:center}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%}.chartforgex-visual-grid.has-fixed-panels.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body,.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0!important}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
+    private static string BuildCss(VisualGrid grid, ChartColor background, string text, string mutedText, string border, string fontFamily, double titleFontSize, double subtitleFontSize, bool graphite) {
+        var css = HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "0", graphite) + ".chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid.has-frame{border:1px solid " + border + ";border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:" + (graphite ? "700" : "800") + "}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,var(--cfx-visual-grid-panel-width)));justify-content:center}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%}.chartforgex-visual-grid.has-fixed-panels.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body,.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0!important}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
         if (grid.Motion != null) css += VisualMotionCss.Build(".chartforgex-visual-grid", grid.Motion, "cfx-visual-grid");
         return css;
     }
@@ -122,7 +125,7 @@ public sealed class HtmlVisualGridRenderer {
         var value = "chartforgex-visual-grid";
         if (grid.PanelSize.HasValue) value += " has-fixed-panels";
         if (grid.PanelSize.HasValue && grid.PanelFit == VisualPanelFit.Stretch) value += " fit-stretch";
-        if (grid.FrameVisible) value += " has-frame";
+        if (grid.FrameVisible && !(grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0])).FlatMarks) value += " has-frame";
         return value;
     }
 

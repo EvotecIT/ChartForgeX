@@ -30,7 +30,9 @@ public sealed partial class PngChartRenderer {
         if (Math.Abs(angle) < 0.001) {
             var unrotatedWidth = EstimatePngStyledTextWidth(label, fontSize, style, emphasized: false);
             var unrotatedHeight = EstimatePngStyledTextHeight(fontSize, style);
-            DrawPngTextStyled(c, Clamp(x - unrotatedWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - unrotatedWidth - ChartVisualPrimitives.DataLabelPlotInset), plot.Bottom + PngXAxisLabelOffset(chart, axisLabels) - unrotatedHeight + 1, label, style, color, fontSize, emphasized: false);
+            var centered = chart.Options.XAxis.Scale == ChartScaleKind.Linear && chart.Options.XAxisLabels.Count == 0 && ChartSeriesKindTraits.UsesCartesianXAxis(chart);
+            var left = centered ? x - unrotatedWidth / 2.0 : Clamp(x - unrotatedWidth / 2.0, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - unrotatedWidth - ChartVisualPrimitives.DataLabelPlotInset);
+            DrawPngTextStyled(c, left, plot.Bottom + PngXAxisLabelOffset(chart, axisLabels) - unrotatedHeight + 1, label, style, color, fontSize, emphasized: false);
             return;
         }
 
@@ -301,24 +303,6 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void ApplyHorizontalValueBounds(Chart chart, ChartRange range, IReadOnlyList<double> xTicks) {
-        var min = xTicks[0];
-        var max = xTicks[xTicks.Count - 1];
-        if (HasHorizontalBarDataLabels(chart) || (chart.Options.BarMode == ChartBarMode.Stacked && chart.Options.ShowStackTotals)) {
-            var span = Math.Max(1, max - min);
-            var hasPositive = false;
-            var hasNegative = false;
-            foreach (var series in chart.Series) {
-                if (series.Kind != ChartSeriesKind.HorizontalBar) continue;
-                foreach (var point in series.Points) {
-                    if (point.Y > 0) hasPositive = true;
-                    if (point.Y < 0) hasNegative = true;
-                }
-            }
-
-            if (hasPositive) max += span * 0.08;
-            if (hasNegative) min -= span * 0.08;
-        }
-
-        range.SetXBounds(min, max);
+        range.SetXBounds(chart.Options.XAxis.Minimum ?? xTicks[0], chart.Options.XAxis.Maximum ?? xTicks[xTicks.Count - 1]);
     }
 }

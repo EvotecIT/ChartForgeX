@@ -57,7 +57,7 @@ public sealed partial class PngChartRenderer {
             c.DrawCircle(x, y, haloRadius, ApplyOpacity(color, 0.18));
             c.DrawCircle(x, y, radius, color);
             c.DrawCircleOutline(x, y, radius, t.CardBackground, Math.Max(1, dot * 0.55));
-            if (ShouldDrawDataLabels(chart, series)) {
+            if (ShouldDrawDataLabels(chart, series) && !c.SuppressText) {
                 var label = DottedMapDisplayLabel(chart, series, i);
                 DrawDottedMapPngDataLabel(c, chart, series, label, i, x, y, Math.Max(dot, radius), map, reservedLabels);
             }
@@ -136,7 +136,7 @@ public sealed partial class PngChartRenderer {
                 c.FillPolygon(DottedMapConnectorArrowPoints(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, dot), ApplyOpacity(connector.Color ?? series.Color ?? t.Warning, 0.78));
             }
 
-            if (ShouldDrawDataLabels(chart, series)) {
+            if (ShouldDrawDataLabels(chart, series) && !c.SuppressText) {
                 var labelPoint = connector.RoutePoints.Length > 0 ? DottedMapPolylinePoint(DottedMapSmoothRoute(routePoints), 0.36) : DottedMapConnectorPoint(renderedFrom.X, renderedFrom.Y, control.X, control.Y, renderedTo.X, renderedTo.Y, 0.36);
                 var label = CompactDottedMapConnectorLabel(connector.Label);
                 var textWidth = c.MeasureTextEmphasizedWidth(label, 12);
@@ -410,6 +410,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawDottedMapPngDataLabel(RgbaCanvas c, Chart chart, ChartSeries series, string label, int pointIndex, double x, double y, double dot, ChartRect map, List<ChartLabelBounds> reservedLabels) {
+        if (c.SuppressText) return;
         var style = DataLabelStyle(chart, series, pointIndex);
         var fontSize = PngDataLabelFontSize(chart, series, pointIndex);
         label = TrimReadablePngLabelToWidth(label, fontSize, Math.Min(132, Math.Max(8, map.Width - ChartVisualPrimitives.DataLabelPlotInset * 2)), style);

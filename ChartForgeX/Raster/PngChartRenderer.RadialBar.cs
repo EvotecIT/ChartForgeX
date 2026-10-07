@@ -69,7 +69,7 @@ public sealed partial class PngChartRenderer {
             DrawPngTextStyledCenteredX(c, cx, groupTop, centerLabel, dataStyle, theme.Text, valueFontSize, labelWidth, emphasized: true);
             DrawPngTextStyledCenteredX(c, cx, groupTop + valueHeight + lineGap, series.Name, dataStyle, theme.MutedText, nameFontSize, labelWidth, emphasized: true);
         }
-        if (chart.Options.ShowLegend) DrawRadialBarLegend(c, chart, plot, series);
+        if (ChartLegendVisibility.ForEntries(chart, series.Points.Count)) DrawRadialBarLegend(c, chart, plot, series);
     }
 
     private static void DrawRadialBarLegend(RgbaCanvas c, Chart chart, ChartRect plot, ChartSeries series) {
@@ -102,7 +102,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect PngRadialBarPlot(Chart chart, ChartRect plot, ChartSeries series) {
-        if (!chart.Options.ShowLegend) return plot;
+        if (!ChartLegendVisibility.ForEntries(chart, series.Points.Count)) return plot;
         var reserve = PngRadialBarLegendReserve(chart, series, plot);
         if (PngIsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         if (PngIsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);

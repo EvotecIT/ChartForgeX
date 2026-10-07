@@ -25,5 +25,9 @@ public enum SvgColorRole {
     Status,
 
     /// <summary>A step of a sequential or diverging ramp.</summary>
-    Ramp
+    Ramp,
+    /// <summary>A horizontal plot guide, distinct from neutral fills and ramp colours.</summary>
+    Grid,
+    /// <summary>A baseline or crosshair colour.</summary>
+    Axis
 }

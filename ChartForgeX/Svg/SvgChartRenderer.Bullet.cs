@@ -9,6 +9,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawBullet(StringBuilder sb, Chart chart, ChartRect basePlot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout) { DrawGraphiteBullet(sb, chart, basePlot); return; }
         var rows = chart.Series
             .Select((series, index) => new { series, index })
             .Where(item => item.series.Kind == ChartSeriesKind.Bullet && item.series.Points.Count >= 2)
@@ -16,20 +17,10 @@ public sealed partial class SvgChartRenderer {
         if (rows.Length == 0) return;
 
         var t = chart.Options.Theme;
-        var labeledRows = rows.Where(row => row.series.ShowDataLabels != false).ToArray();
-        var labelReserve = labeledRows.Length == 0 ? 10 : Math.Min(240, Math.Max(128, labeledRows.Max(row => {
-            var style = DataLabelStyle(chart, row.series, 0);
-            return EstimateTextWidth(StyleText(style, row.series.Name), StyleFontSize(style, t.LegendFontSize));
-        }) + 34));
-        var valueReserve = labeledRows.Length == 0 ? 12 : Math.Min(142, Math.Max(84, labeledRows.Max(row => {
-            var style = DataLabelStyle(chart, row.series, 0);
-            return EstimateTextWidth(StyleText(style, FormatValue(chart, BulletValue(row.series))), StyleFontSize(style, t.DataLabelFontSize));
-        }) + 38));
-        var content = BulletContentBounds(basePlot);
-        FitBulletReserves(content.Width, ref labelReserve, ref valueReserve);
-        var plot = new ChartRect(content.X + labelReserve, content.Y + 18, Math.Max(1, content.Width - labelReserve - valueReserve), Math.Max(1, content.Height - 54));
-        var rowHeight = Math.Min(64, plot.Height / Math.Max(1, rows.Length));
-        var barHeight = Math.Max(16, Math.Min(26, rowHeight * 0.38));
+        var layout = ChartBulletLayout.Create(chart, basePlot);
+        var labelReserve = layout.LabelReserve; var valueReserve = layout.ValueReserve;
+        var content = layout.Content; var plot = layout.Plot;
+        var rowHeight = layout.RowHeight; var barHeight = layout.BarHeight;
 
         var writer = new SvgMarkupWriter(4096);
         writer
@@ -135,23 +126,6 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static ChartRect BulletContentBounds(ChartRect basePlot) =>
-        new(
-            basePlot.X + ChartVisualPrimitives.BulletContentInset,
-            basePlot.Y + ChartVisualPrimitives.BulletContentInset,
-            Math.Max(1, basePlot.Width - ChartVisualPrimitives.BulletContentInset * 2),
-            Math.Max(1, basePlot.Height - ChartVisualPrimitives.BulletContentInset * 2));
-
-    private static void FitBulletReserves(double contentWidth, ref double labelReserve, ref double valueReserve) {
-        var minimumPlotWidth = Math.Min(80, Math.Max(1, contentWidth * 0.25));
-        var reserveBudget = Math.Max(0, contentWidth - minimumPlotWidth);
-        var totalReserve = labelReserve + valueReserve;
-        if (totalReserve <= reserveBudget || totalReserve <= 0) return;
-        var ratio = reserveBudget / totalReserve;
-        labelReserve *= ratio;
-        valueReserve *= ratio;
-    }
-
     private static void DrawBulletTargetLabel(SvgMarkupWriter writer, Chart chart, ChartSeries series, string label, double x, double y, ChartRect plot) {
         var t = chart.Options.Theme;
         var style = DataLabelStyle(chart, series, 1);
@@ -166,7 +140,7 @@ public sealed partial class SvgChartRenderer {
         var safeX = Clamp(x, plot.Left + width / 2 + 4, plot.Right - width / 2 - 4);
         if (anchor == "start") safeX = Clamp(x, plot.Left + 4, plot.Right - width - 4);
         if (anchor == "end") safeX = Clamp(x, plot.Left + width + 4, plot.Right - 4);
-        var safeY = Clamp(y, plot.Top + fontSize, plot.Bottom - 4);
+        var safeY = Clamp(y, fontSize + 4, chart.Options.Size.Height - 4);
         writer
             .StartElement("text")
             .Attribute("data-cfx-role", "bullet-target-label")

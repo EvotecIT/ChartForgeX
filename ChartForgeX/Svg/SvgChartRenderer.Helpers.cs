@@ -36,7 +36,7 @@ public sealed partial class SvgChartRenderer {
         var anchor = EdgeAwareAnchor(label, x, plot, fontSize);
         var safeX = EdgeAwareTextX(label, x, plot, fontSize);
         var writer = new SvgMarkupWriter(512);
-        WriteSvgDataLabelText(writer, chart, style, role, label, safeX, safeY, anchor, t.Text, t.CardBackground, fontSize);
+        WriteSvgDataLabelText(writer, chart, style, role, label, safeX, safeY, anchor, t.Text, t.CardBackground, fontSize, series, pointIndex);
         sb.Append(writer.Build());
     }
 
@@ -79,33 +79,8 @@ public sealed partial class SvgChartRenderer {
 
         var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
         var writer = new SvgMarkupWriter(512);
-        WriteSvgDataLabelText(writer, chart, style, "data-label", label, safeX, safeY, effectiveAnchor, t.Text, t.CardBackground, fontSize);
+        WriteSvgDataLabelText(writer, chart, style, "data-label", label, safeX, safeY, effectiveAnchor, t.Text, t.CardBackground, fontSize, series, pointIndex);
         sb.Append(writer.Build());
-    }
-
-    private static bool ReserveSvgHorizontalLabel(string label, double x, double y, string anchor, Chart chart, ChartRect plot, List<ChartLabelBounds> reserved, ChartSeries? series = null, int pointIndex = -1) {
-        if (!TryFitSvgDataLabel(label, chart, plot, series, pointIndex, out var style, out label, out var fontSize)) return false;
-
-        var width = EstimateTextWidth(label, fontSize) + 8;
-        var height = EstimateSvgStyledTextHeight(fontSize, style) + 6;
-        var effectiveAnchor = anchor == "end" ? "end" : "start";
-        var safeX = effectiveAnchor == "end"
-            ? Clamp(x, plot.Left + width + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - ChartVisualPrimitives.DataLabelPlotInset)
-            : Clamp(x, plot.Left + ChartVisualPrimitives.DataLabelPlotInset, plot.Right - width - ChartVisualPrimitives.DataLabelPlotInset);
-        if (safeX < plot.Left + ChartVisualPrimitives.DataLabelPlotInset) {
-            effectiveAnchor = "start";
-            safeX = plot.Left + ChartVisualPrimitives.DataLabelPlotInset;
-        } else if (safeX > plot.Right - ChartVisualPrimitives.DataLabelPlotInset) {
-            effectiveAnchor = "end";
-            safeX = plot.Right - ChartVisualPrimitives.DataLabelPlotInset;
-        }
-
-        var left = effectiveAnchor == "end" ? safeX - width : safeX;
-        var safeY = Clamp(y, plot.Top + ChartVisualPrimitives.DataLabelPlotInset + height / 2.0, plot.Bottom - ChartVisualPrimitives.DataLabelPlotInset - height / 2.0);
-        var bounds = new ChartLabelBounds(left, safeY - height / 2, width, height);
-        foreach (var item in reserved) if (bounds.Intersects(item)) return false;
-        reserved.Add(bounds);
-        return true;
     }
 
     private static LabelPillPlacement PlaceLabelPill(double x, double width, string anchor, ChartRect plot) {
@@ -177,9 +152,7 @@ public sealed partial class SvgChartRenderer {
         Math.Max(8, plot.Width - ChartVisualPrimitives.DataLabelPlotInset * 2);
 
     private static double EstimateTextWidth(string text, double fontSize) {
-        var width = 0.0;
-        foreach (var ch in text) width += char.IsWhiteSpace(ch) ? fontSize * 0.34 : char.IsUpper(ch) ? fontSize * 0.62 : fontSize * 0.54;
-        return width;
+        return ChartLabelScene.MeasureText(text, fontSize);
     }
 
     private static string TrimSvgLabelToWidth(string value, double fontSize, double maxWidth) {
@@ -217,7 +190,7 @@ public sealed partial class SvgChartRenderer {
 
     private static string StyleFontFamily(Chart chart, TextStyleOverride? style) => style?.FontFamily ?? chart.Options.Theme.FontFamily;
 
-    private static ChartColor Color(Chart chart, int index) => chart.Series[index].Color ?? chart.Options.Theme.Palette[index % chart.Options.Theme.Palette.Length];
+    private static ChartColor Color(Chart chart, int index) => ChartSeriesColours.Resolve(chart, index);
 
     private static ChartColor PointColor(Chart chart, ChartSeries series, int seriesIndex, int pointIndex) =>
         pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
@@ -299,7 +272,7 @@ public sealed partial class SvgChartRenderer {
 
     private static bool ShowXAxisLine(Chart chart) => ShowXAxis(chart) && chart.Options.XAxis.ShowLine;
 
-    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine;
+    private static bool ShowYAxisLine(Chart chart) => ShowYAxis(chart) && chart.Options.YAxis.ShowLine && (!chart.Options.Theme.UseGraphiteLayout || chart.Options.YAxis.HasExplicitLine);
 
     private static bool ShowSecondaryYAxis(Chart chart) => !IsMapChart(chart) && chart.Options.ShowAxes && chart.Options.SecondaryYAxis.Visible;
 
@@ -328,11 +301,7 @@ public sealed partial class SvgChartRenderer {
 
     private static string FormatNumber(double v) => ChartNumericFormatter.FormatCompact(v);
 
-    private static string FormatValue(Chart chart, double value) {
-        var formatter = chart.Options.ValueFormatter;
-        if (formatter == null) return FormatNumber(value);
-        return formatter(value) ?? string.Empty;
-    }
+    private static string FormatValue(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
     private static string FormatYAxisValue(Chart chart, double value, IReadOnlyList<double>? ticks = null) {
         return ChartAxisValueFormatter.Format(chart.Options.YAxis, value, chart.Options.ValueFormatter, ticks);
@@ -351,8 +320,6 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static string FormatPercent(double v) => v.ToString("0.#%", CultureInfo.InvariantCulture);
-
-    private static string SvgFontFamily(string value) => Escape(string.IsNullOrWhiteSpace(value) ? "system-ui, sans-serif" : value);
 
     // The markup writer's escaping also replaces characters that are not allowed in markup (and the noncharacters of paint tokens).
     private static string Escape(string value) => SvgMarkupWriter.EscapeAttribute(value);

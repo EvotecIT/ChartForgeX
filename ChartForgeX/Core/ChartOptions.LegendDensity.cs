@@ -13,6 +13,7 @@ public sealed partial class ChartOptions {
         set {
             if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Legend height fraction must be greater than zero and at most one.");
             _legendMaximumHeightFraction = value;
+            HasExplicitLegendBudget = true;
         }
     }
 
@@ -22,6 +23,8 @@ public sealed partial class ChartOptions {
         set {
             if (value.HasValue && value.Value < 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Legend row limit must be greater than zero.");
             _legendMaximumRows = value;
+            HasExplicitLegendBudget = true;
         }
     }
+    internal bool HasExplicitLegendBudget { get; private set; }
 }

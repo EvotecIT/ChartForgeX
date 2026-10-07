@@ -6,6 +6,7 @@ namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
     private static void DrawLegend(RgbaCanvas c, Chart chart) {
+        if (c.SuppressText) return; // The positioned legend scene owns its symbols and text together.
         if (!ShouldDrawLegend(chart)) return;
         var theme = chart.Options.Theme;
         var fontSize = PngLegendFontSize(chart);
@@ -71,7 +72,7 @@ public sealed partial class PngChartRenderer {
         if (!chart.Options.ShowPointLegend || chart.Series.Count != 1 || !chart.Series[0].ShowInLegend || !CanUsePointLegend(chart.Series[0])) {
             var entries = new System.Collections.Generic.List<PngLegendEntry>();
             for (var i = 0; i < chart.Series.Count; i++) {
-                if (chart.Series[i].ShowInLegend) entries.Add(new PngLegendEntry(i, -1, chart.Series[i].Name, PngLegendLabel(chart, i), SeriesColor(chart, i)));
+                if (chart.Series[i].ShowInLegend) entries.Add(new PngLegendEntry(i, -1, chart.Series[i].Name, PngLegendLabel(chart, i), chart.Series[i].Kind == ChartSeriesKind.Gauge ? ChartGaugeColor.Resolve(chart, chart.Series[i]) : SeriesColor(chart, i)));
             }
 
             return entries;
@@ -129,12 +130,7 @@ public sealed partial class PngChartRenderer {
         return plot;
     }
 
-    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && PngHasLegendEntries(chart) && !IsMapChart(chart);
-
-    private static bool PngHasLegendEntries(Chart chart) {
-        for (var i = 0; i < chart.Series.Count; i++) if (chart.Series[i].ShowInLegend) return true;
-        return false;
-    }
+    private static bool ShouldDrawLegend(Chart chart) => ChartLegendVisibility.ForSeries(chart) && !IsMapChart(chart);
 
     private static double PngLegendLabelMaxWidth(Chart chart) {
         var width = PngIsVerticalLegend(chart.Options.LegendPosition) ? 240 : chart.Options.Size.Width - 80;

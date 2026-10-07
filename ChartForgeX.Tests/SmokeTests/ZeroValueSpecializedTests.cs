@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void ZeroValueSpecializedChartsPreservePointIndexes() {
-        var pie = Chart.Create()
+        var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .WithXLabels("Zero", "Live", "Tail")
             .AddPie("Slices", Points(0, 60, 40));
@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
         Assert(pieSvg.Contains("fill=\"#E11D48\"", StringComparison.Ordinal) && pieSvg.Contains("data-cfx-slice-offset=\"0.12\"", StringComparison.Ordinal), "Pie point colors and offsets should not shift when earlier slices are zero.");
         Assert(pie.ToPng().Length > 64, "Pie point colors after zero values should render PNG output.");
 
-        var polarArea = Chart.Create()
+        var polarArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .WithXLabels("Zero", "Live", "Tail")
             .AddPolarArea("Segments", Points(0, 60, 40));
@@ -35,7 +35,7 @@ internal static partial class SmokeTests {
         Assert(polarAreaSvg.Contains("data-cfx-point=\"2\"", StringComparison.Ordinal) && polarAreaSvg.Contains(" A ", StringComparison.Ordinal), "Polar-area positive segments should keep original angular slots when earlier segments are zero.");
         Assert(polarArea.ToPng().Length > 64, "Polar-area point colors after zero values should render PNG output.");
 
-        var funnel = Chart.Create()
+        var funnel = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(920, 560)
             .WithXLabels("Opened", "Deferred", "Closed")
             .AddFunnel("Pipeline", Points(120, 0, 32));

@@ -12,13 +12,13 @@ public sealed class TopologyMeasuredTypographyTests {
     [Fact]
     public void PortableLayoutDoesNotDependOnTheRequestedHostFont() {
         const string text = "Wide WWW and narrow iii";
-        double sans = new TextMeasurementContext("Arial, sans-serif").Measure(text, 14, true);
-        double mono = new TextMeasurementContext("monospace").Measure(text, 14, true);
-        double missing = new TextMeasurementContext("not-an-installed-font").Measure(text, 14, true);
+        double sans = new TextMeasurementContext("Arial, sans-serif", TextMeasurementMode.PortableEstimate).Measure(text, 14, true);
+        double mono = new TextMeasurementContext("monospace", TextMeasurementMode.PortableEstimate).Measure(text, 14, true);
+        double missing = new TextMeasurementContext("not-an-installed-font", TextMeasurementMode.PortableEstimate).Measure(text, 14, true);
         Assert.Equal(sans, mono);
         Assert.Equal(sans, missing);
         var options = new TopologyRenderOptions();
-        Assert.Equal(TextMeasurementMode.PortableEstimate, options.TextMeasurementMode);
+        Assert.Equal(TextMeasurementMode.InstalledFonts, options.TextMeasurementMode);
         options.TextMeasurementMode = TextMeasurementMode.InstalledFonts;
         Assert.Equal(options.TextMeasurementMode, options.Clone().TextMeasurementMode);
     }

@@ -13,7 +13,6 @@ public sealed partial class SvgChartRenderer {
         var boxCount = Math.Max(1, series.Points.Count / 5);
         var boxWidth = Math.Max(14, Math.Min(46, plot.Width / Math.Max(1, boxCount * 5.0)));
         var capWidth = boxWidth * 0.74;
-        var reservedLabels = new List<ChartLabelBounds>();
 
         for (var pointIndex = 0; pointIndex + 4 < series.Points.Count; pointIndex += 5) {
             var minimum = series.Points[pointIndex];
@@ -40,14 +39,14 @@ public sealed partial class SvgChartRenderer {
                 if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
                     var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
                     var labelX = placement == ChartDataLabelPlacement.Left ? x - boxWidth / 2 - 8 : x + boxWidth / 2 + 8;
-                    if (ReserveSvgHorizontalLabel(label, labelX, yMedian, anchor, chart, plot, reservedLabels, series, item)) DrawHorizontalValueLabel(sb, chart, label, labelX, yMedian, anchor, plot, series, item);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, yMedian, anchor, plot, series, item);
                 } else {
                     var labelY = placement == ChartDataLabelPlacement.Below
                         ? Math.Max(yQ1, yQ3) + 11
                         : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                             ? yMedian
                             : Math.Min(yQ1, yQ3) - 11;
-                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, item)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
                 }
             }
         }

@@ -29,7 +29,7 @@ internal static class LegendRowBudget {
         var rowHeight = RowHeight(chart);
         if (height < rowHeight) return 0;
         var fixedSpacing = IsHorizontal(position ?? chart.Options.LegendPosition)
-            ? Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
+            ? Math.Min(chart.Options.Theme.UseGraphiteLayout ? 6 : 18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
             : Math.Min(18, Math.Max(0, height - rowHeight));
         var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - fixedSpacing) / rowHeight));
         if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);

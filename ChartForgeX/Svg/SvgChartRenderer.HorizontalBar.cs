@@ -14,7 +14,6 @@ public sealed partial class SvgChartRenderer {
         var s = chart.Series[index];
         var layout = HorizontalBarLayout(chart, plot, index);
         var zeroX = map.XBaseline();
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
             var p = s.Points[pointIndex];
             var baseValue = chart.Options.BarMode == ChartBarMode.Stacked ? StackHorizontalBaseValue(chart, index, p) : 0;
@@ -29,7 +28,8 @@ public sealed partial class SvgChartRenderer {
             } else {
                 var flat = chart.Options.BarVisualStyle.Kind == ChartBarStyle.Flat;
                 var color = PointColor(chart, s, index, pointIndex);
-                WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, flat ? SvgPaint.Of(color, SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)), color, flat ? null : ChartVisualPrimitives.BarFillOpacity);
+                if (flat && chart.Options.Theme.UseGraphiteLayout) AppendSvg(sb, writer => writer.StartElement("path").Attribute("data-cfx-role", "horizontal-bar").Attribute("data-cfx-series", index).Attribute("data-cfx-point", pointIndex).Attribute("data-cfx-category", p.X).Attribute("data-cfx-value", p.Y).Attribute("data-cfx-base", baseValue).Paint("data-cfx-color", DataColor(color)).Attribute("x", left).Attribute("y", y).Attribute("width", width).Attribute("height", layout.BarHeight).Attribute("d", GraphiteBarPath(left, y, width, layout.BarHeight, 2, p.Y >= 0, true)).Paint("fill", SvgPaint.Of(color, s.StateRole == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status)).Attribute("stroke", chart.Options.BarMode == ChartBarMode.Stacked ? chart.Options.Theme.CardBackground.ToCss() : null).OptionalAttribute("stroke-width", chart.Options.BarMode == ChartBarMode.Stacked ? 1 : null).EndEmptyElement().Line());
+                else WriteHorizontalBar(sb, index, pointIndex, p.X, p.Y, baseValue, left, y, width, layout.BarHeight, radius, flat ? SvgPaint.Of(color, SvgColorRole.Series) : SvgPaint.Plain(BarFill(chart, s, index, pointIndex, id)), color, flat ? null : ChartVisualPrimitives.BarFillOpacity);
                 DrawSvgFillPatternOverlay(sb, s, index, pointIndex, id, left, y, width, layout.BarHeight, radius, "horizontal-bar-pattern");
                 if (!flat) DrawSvgBarHighlight(sb, left, y, width, layout.BarHeight);
             }
@@ -40,16 +40,16 @@ public sealed partial class SvgChartRenderer {
                 if (inside) {
                     var dataStyle = DataLabelStyle(chart, s, pointIndex);
                     if (width < EstimateTextWidth(StyleText(dataStyle, label), StyleFontSize(dataStyle, chart.Options.Theme.DataLabelFontSize)) + 8) continue;
-                    if (!ReserveSvgLabel(label, left + width / 2, y + layout.BarHeight / 2, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawDataLabel(sb, chart, label, left + width / 2, y + layout.BarHeight / 2, plot, series: s, pointIndex: pointIndex);
                 } else if (placement == ChartDataLabelPlacement.Above || placement == ChartDataLabelPlacement.Below) {
                     var labelY = placement == ChartDataLabelPlacement.Above ? y - 8 : y + layout.BarHeight + 12;
-                    if (!ReserveSvgLabel(label, left + width / 2, labelY, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawDataLabel(sb, chart, label, left + width / 2, labelY, plot, series: s, pointIndex: pointIndex);
                 } else {
                     var labelX = placement == ChartDataLabelPlacement.Right ? left + width + 8 : placement == ChartDataLabelPlacement.Left ? left - 8 : p.Y >= 0 ? left + width + 8 : left - 8;
                     var anchor = labelX >= left + width / 2 ? "start" : "end";
-                    if (!ReserveSvgHorizontalLabel(label, labelX, y + layout.BarHeight / 2, anchor, chart, plot, reservedLabels, s, pointIndex)) continue;
+                    if (string.IsNullOrWhiteSpace(label)) continue;
                     DrawHorizontalValueLabel(sb, chart, label, labelX, y + layout.BarHeight / 2, anchor, plot, s, pointIndex);
                 }
             }
@@ -124,8 +124,8 @@ public sealed partial class SvgChartRenderer {
 
         var categoryCount = Math.Max(1, categoryValues.Count);
         var slotHeight = plot.Height / categoryCount;
-        var groupHeight = slotHeight * (groupCount == 1 ? 0.56 : 0.76);
-        var gap = groupCount == 1 ? 0 : Math.Min(4, groupHeight * 0.08);
+        var groupHeight = slotHeight * (chart.Options.Theme.UseGraphiteLayout ? .68 : groupCount == 1 ? 0.56 : 0.76);
+        var gap = groupCount == 1 ? 0 : chart.Options.Theme.UseGraphiteLayout ? 2 : Math.Min(4, groupHeight * 0.08);
         var barHeight = Math.Max(3, Math.Min(30, (groupHeight - gap * (groupCount - 1)) / groupCount));
         var offset = (groupPosition - (groupCount - 1) / 2.0) * (barHeight + gap);
         return new HorizontalBarLayoutInfo(barHeight, offset);
@@ -153,19 +153,17 @@ public sealed partial class SvgChartRenderer {
             if (series.Kind != ChartSeriesKind.HorizontalBar) continue;
             foreach (var point in series.Points) AddStackTotal(point.Y >= 0 ? positiveTotals : negativeTotals, point.X, point.Y);
         }
-
-        var reservedLabels = new List<ChartLabelBounds>();
-        DrawHorizontalStackTotalSet(sb, chart, positiveTotals, plot, map, 8, "start", reservedLabels);
-        DrawHorizontalStackTotalSet(sb, chart, negativeTotals, plot, map, -8, "end", reservedLabels);
+        DrawHorizontalStackTotalSet(sb, chart, positiveTotals, plot, map, 8, "start");
+        DrawHorizontalStackTotalSet(sb, chart, negativeTotals, plot, map, -8, "end");
     }
 
-    private static void DrawHorizontalStackTotalSet(StringBuilder sb, Chart chart, Dictionary<double, double> totals, ChartRect plot, ChartMapper map, double offset, string anchor, List<ChartLabelBounds> reservedLabels) {
+    private static void DrawHorizontalStackTotalSet(StringBuilder sb, Chart chart, Dictionary<double, double> totals, ChartRect plot, ChartMapper map, double offset, string anchor) {
         foreach (var item in totals.OrderBy(item => item.Key)) {
             if (Math.Abs(item.Value) < 0.000001) continue;
             var label = FormatValue(chart, item.Value);
             var x = map.X(item.Value) + offset;
             var y = map.Y(item.Key);
-            if (!ReserveSvgHorizontalLabel(label, x, y, anchor, chart, plot, reservedLabels)) continue;
+            if (string.IsNullOrWhiteSpace(label)) continue;
             DrawHorizontalValueLabel(sb, chart, label, x, y, anchor, plot);
         }
     }

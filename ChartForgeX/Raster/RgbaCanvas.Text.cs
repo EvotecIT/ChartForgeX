@@ -7,6 +7,8 @@ namespace ChartForgeX.Raster;
 internal sealed partial class RgbaCanvas {
     /// <summary>How text drawn on this canvas is fitted to the output pixel grid; buffers it draws text through inherit it.</summary>
     internal TextHinting TextHinting { get; set; }
+    /// <summary>Native marks may defer their text to the shared positioned label layer.</summary>
+    internal bool SuppressText { get; set; }
 
     /// <summary>Output pixels per canvas unit, the grid text is fitted to.</summary>
     internal int OutputScale => _outputScale;
@@ -21,6 +23,7 @@ internal sealed partial class RgbaCanvas {
     }
 
     internal void DrawTextTiny(double x, double y, string text, ChartColor color, int scale, bool italic, double boldOffset = 0) {
+        if (SuppressText) return;
         var font = _outlineFont;
         if (font != null && font.Draw(this, x, y, text, color, OutlineFontSize(scale), italic, boldOffset)) return;
 
@@ -41,6 +44,7 @@ internal sealed partial class RgbaCanvas {
     }
 
     internal void DrawText(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font, bool italic) {
+        if (SuppressText) return;
         if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize), italic)) return;
         DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize), italic);
     }
@@ -62,6 +66,7 @@ internal sealed partial class RgbaCanvas {
     }
 
     private void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth, bool emphasized, TrueTypeFont? font) {
+        if (SuppressText) return;
         if (string.IsNullOrEmpty(text) || color.A == 0 || maximumWidth <= 0) return;
         var naturalWidth = emphasized ? MeasureTextEmphasizedWidthWithFont(text, fontSize, font, italic: false) : MeasureTextWidthWithFont(text, fontSize, font);
         if (naturalWidth <= maximumWidth) {
@@ -99,6 +104,7 @@ internal sealed partial class RgbaCanvas {
     }
 
     internal void DrawTextEmphasized(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font, bool italic) {
+        if (SuppressText) return;
         if (string.IsNullOrEmpty(text) || color.A == 0) return;
         var bold = EmphasisFace(font);
         if (bold != null) {

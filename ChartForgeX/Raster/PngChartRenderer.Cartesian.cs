@@ -9,6 +9,7 @@ namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
     private static void DrawSeries(RgbaCanvas c, Chart chart, ChartBarCoordinateMap barCoordinateMap, int index, ChartRect plot, ChartMapper map) {
+        using var plotClip = chart.Options.ClipMarksToPlot ? c.PushClipBounds(plot) : null;
         var s = chart.Series[index]; var color = SeriesColor(chart, index);
         if (s.Kind == ChartSeriesKind.HorizontalBar) {
             var layout = HorizontalBarLayout(chart, plot, index);
@@ -263,7 +264,10 @@ public sealed partial class PngChartRenderer {
             var markerRadius = s.Kind == ChartSeriesKind.Scatter ? Math.Max(ChartVisualPrimitives.ScatterMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ScatterMarkerRadiusExtra) : optionalMarkerRadius;
             for (var pointIndex = 0; pointIndex < s.Points.Count; pointIndex++) {
                 var p = s.Points[pointIndex];
-                DrawMarker(c, chart, map.X(p.X), map.Y(p.Y), markerRadius, PointColor(chart, s, index, pointIndex));
+                var x = map.X(p.X); var y = map.Y(p.Y);
+                if (chart.Options.ClipMarksToPlot && !ChartPlotClip.Contains(plot, x, y)) continue;
+                using var markerClip = chart.Options.ClipMarksToPlot ? c.PushClipBounds(ChartPlotClip.Expand(plot, markerRadius), intersect: false) : null;
+                DrawMarker(c, chart, x, y, markerRadius, PointColor(chart, s, index, pointIndex));
             }
         }
         if (ShouldDrawDataLabels(chart, s)) {

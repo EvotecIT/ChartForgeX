@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void SvgSurfaceAndGuideStrokesStayPremiumAtAnyScale() {
-        var svg = Chart.Create()
+        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
             .WithTitle("Premium scale")
             .WithSubtitle("Crisp at small and large sizes")
@@ -32,7 +32,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"plot-inner-highlight\"", StringComparison.Ordinal), "SVG plot surfaces should render a subtle inner highlight.");
         Assert(svg.Contains("x1=\"76.5\"", StringComparison.Ordinal) || svg.Contains("y1=\"", StringComparison.Ordinal) && svg.Contains(".5\"", StringComparison.Ordinal), "SVG guide strokes should snap thin horizontal or vertical guides to half-pixel centers.");
 
-        var html = Chart.Create()
+        var html = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
             .WithTitle("Premium HTML")
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
@@ -43,7 +43,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StaticHtmlShellsSharePremiumPreviewPolish() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartTheme.Light())
             .WithSize(360, 220)
             .WithTitle("Shell chart")
             .AddSmoothLine("Values", Points(12, 22, 18), ChartColor.FromRgb(37, 99, 235));

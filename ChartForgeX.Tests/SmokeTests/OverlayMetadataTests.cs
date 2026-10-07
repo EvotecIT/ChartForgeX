@@ -5,7 +5,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void OverlaySvgElementsExposeDataMetadata() {
-        var annotations = Chart.Create()
+        var annotations = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .AddLine("Values", Points(42, 84, 126))
             .AddHorizontalLine(100, "target")
@@ -16,7 +16,7 @@ internal static partial class SmokeTests {
         Assert(annotations.Contains("data-cfx-role=\"annotation-label\" data-cfx-label=\"target\"", System.StringComparison.Ordinal), "Annotation label pills should expose label metadata.");
         Assert(annotations.Contains("data-cfx-role=\"annotation-label-text\" data-cfx-label=\"window\"", System.StringComparison.Ordinal), "Annotation label text should expose label metadata.");
 
-        var secondary = Chart.Create()
+        var secondary = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithSecondaryYAxisBounds(0, 100)
@@ -26,7 +26,7 @@ internal static partial class SmokeTests {
         Assert(secondarySvg.Contains("data-cfx-role=\"secondary-y-axis-tick\" data-cfx-value=\"100\"", System.StringComparison.Ordinal), "Secondary axis ticks should expose raw numeric values.");
         Assert(secondarySvg.Contains("data-cfx-role=\"secondary-y-axis-title\" data-cfx-label=\"Rate\"", System.StringComparison.Ordinal), "Secondary axis titles should expose the full configured label.");
 
-        var legend = Chart.Create()
+        var legend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .AddBar("Logged", Points(12, 18))
             .AddLine("Trend", Points(10, 20))
             .ToSvg();

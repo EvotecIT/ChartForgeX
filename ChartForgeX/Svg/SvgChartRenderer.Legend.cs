@@ -10,10 +10,11 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static void DrawLegend(StringBuilder sb, Chart chart, int w, int h) {
+    private static void DrawLegend(StringBuilder sb, Chart chart, int w, int h, ChartRect? plot = null) {
         if (!ShouldDrawLegend(chart)) return;
         var t = chart.Options.Theme;
         var area = LegendArea(chart, w, h);
+        if (t.UseGraphiteLayout && plot.HasValue && IsTopLegend(chart.Options.LegendPosition)) area = new ChartRect(plot.Value.X, area.Y, plot.Value.Width, area.Height);
         var rows = BuildLegendRows(chart, area.Width, area.Height);
         var y = LegendStartY(chart, area, rows.Count);
         var writer = new SvgMarkupWriter(4096);
@@ -35,11 +36,13 @@ public sealed partial class SvgChartRenderer {
                     .Attribute("data-cfx-series-name", series.Name)
                     .Attribute("data-cfx-series-key", SeriesInteractionKey(series));
                 if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
-                writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).EndStartElement().Line();
-                DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
+                writer.Attribute("data-cfx-kind", series.Kind.ToString()).Attribute("data-cfx-label", item.Label).Attribute("data-cfx-state", series.StateRole.ToString().ToLowerInvariant()).EndStartElement().Line();
+                if (t.UseGraphiteLayout) DrawGraphiteLegendSymbol(writer, series.Kind, item.X, -4, item.Color);
+                else DrawLegendSymbol(writer, series.Kind, item.X, -4, item.Color, t.CardBackground, (series.MarkerRadius ?? chart.Options.Theme.MarkerRadius) > 0);
                 var style = chart.Options.LegendStyle;
-                var labelMaxWidth = Math.Max(8, item.Width - 30);
-                var labelFontSize = TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
+                var labelOffset = t.UseGraphiteLayout ? (IsLineLikeLegend(series.Kind) ? 20 : 16) : 26;
+                var labelMaxWidth = Math.Max(8, item.Width - labelOffset - (t.UseGraphiteLayout ? 16 : 4));
+                var labelFontSize = t.UseGraphiteLayout ? TextFontSizeForSvgWidth(chart, item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize), style) : TextFontSizeForSvgWidth(item.Label, labelMaxWidth, StyleFontSize(style, t.LegendFontSize));
                 var label = TrimSvgLabelToWidth(item.Label, labelFontSize, labelMaxWidth);
                 if (label.Length > 0) {
                     writer.StartElement("text")
@@ -48,7 +51,7 @@ public sealed partial class SvgChartRenderer {
                         .Attribute("data-cfx-series-name", series.Name)
                         .Attribute("data-cfx-series-key", SeriesInteractionKey(series));
                     if (item.PointIndex >= 0) writer.Attribute("data-cfx-point", item.PointIndex);
-                    writer.Attribute("x", item.X + 26).Attribute("y", "0").Attribute("fill", StyleColor(style, t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", labelFontSize).Attribute("font-weight", StyleWeight(style, "600"));
+                    writer.Attribute("x", item.X + labelOffset).Attribute("y", "0").Attribute("fill", StyleColor(style, t.UseGraphiteLayout ? t.Text2 : t.MutedText).ToCss()).Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, style))).Attribute("font-size", labelFontSize).Attribute("font-weight", StyleWeight(style, t.UseGraphiteLayout ? "400" : "600"));
                     WriteSvgTextStyleAttributes(writer, style);
                     WriteSvgStyledTextContent(writer, style, label).EndElement().Line();
                 }
@@ -79,7 +82,9 @@ public sealed partial class SvgChartRenderer {
             var label = TrimSvgLabelToWidth(transformedLabel, preferredFontSize, labelWidthLimit);
             var itemWidth = vertical
                 ? Math.Min(maxX, 34 + EstimateTextWidth(label, preferredFontSize) + 18)
-                : LegendRowBudget.HorizontalItemWidth(transformedLabel, preferredFontSize, maxX, 52);
+                : chart.Options.Theme.UseGraphiteLayout
+                    ? Math.Min(maxX, (IsLineLikeLegend(chart.Series[entry.SeriesIndex].Kind) ? 36 : 32) + EstimateSvgStyledTextWidth(chart, transformedLabel, preferredFontSize, style))
+                    : LegendRowBudget.HorizontalItemWidth(transformedLabel, preferredFontSize, maxX, 52);
             if (row.Items.Count > 0 && (vertical || x + itemWidth > maxX)) {
                 row = new LegendRow();
                 rows.Add(row);
@@ -100,6 +105,7 @@ public sealed partial class SvgChartRenderer {
         for (var index = 0; index < chart.Series.Count; index++) {
             writer.Attribute("data-cfx-series-key-" + index.ToString(CultureInfo.InvariantCulture), SeriesInteractionKey(chart.Series[index]));
             writer.Attribute("data-cfx-series-name-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].Name);
+            writer.Attribute("data-cfx-series-state-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].StateRole.ToString().ToLowerInvariant());
             writer.Attribute("data-cfx-series-source-points-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].SourcePointCount);
             writer.Attribute("data-cfx-series-rendered-points-" + index.ToString(CultureInfo.InvariantCulture), chart.Series[index].Points.Count);
             if (chart.Series[index].DecimationMode.HasValue) {
@@ -116,7 +122,7 @@ public sealed partial class SvgChartRenderer {
             return chart.Series
                 .Select((series, index) => new { series, index })
                 .Where(item => item.series.ShowInLegend)
-                .Select(item => new LegendEntry(item.index, -1, SvgLegendLabel(chart, item.index, width), Color(chart, item.index)))
+                .Select(item => new LegendEntry(item.index, -1, SvgLegendLabel(chart, item.index, width), item.series.Kind == ChartSeriesKind.Gauge ? ChartGaugeColor.Resolve(chart, item.series) : Color(chart, item.index)))
                 .ToList();
         }
 
@@ -150,6 +156,7 @@ public sealed partial class SvgChartRenderer {
     private static ChartRect LegendArea(Chart chart, int w, int h) {
         var padding = 32.0;
         var position = chart.Options.LegendPosition;
+        if (chart.Options.Theme.UseGraphiteLayout && IsTopLegend(position)) return new ChartRect(chart.Options.Padding.Left, ChartLayout.HeaderBottom(chart) + 4, Math.Max(1, w - chart.Options.Padding.Left - chart.Options.Padding.Right), LegendBottomReserve(chart));
         if (IsLeftLegend(position)) return new ChartRect(padding, chart.Options.ShowHeader ? 100 : 48, LegendSideReserve(chart), Math.Max(1, h - (chart.Options.ShowHeader ? 130 : 78)));
         if (IsRightLegend(position)) {
             var width = LegendSideReserve(chart);
@@ -182,10 +189,15 @@ public sealed partial class SvgChartRenderer {
     private static double LegendBottomReserve(Chart chart) {
         var availableHeight = LegendRowBudget.HorizontalAvailableHeight(chart);
         var rows = BuildLegendRows(chart, Math.Max(1, chart.Options.Size.Width - 80), availableHeight).Count;
-        return LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
+        return chart.Options.Theme.UseGraphiteLayout ? Math.Min(availableHeight, rows * LegendRowHeight(chart) + 6) : LegendRowBudget.HorizontalReserve(chart, rows, availableHeight);
     }
 
-    private static bool ShouldDrawLegend(Chart chart) => chart.Options.ShowLegend && chart.Series.Any(series => series.ShowInLegend) && !IsMapChart(chart);
+    private static bool ShouldDrawLegend(Chart chart) => ChartLegendVisibility.ForSeries(chart) && !IsMapChart(chart) && (!chart.Options.Theme.UseGraphiteLayout || !(IsGaugeChart(chart) || IsBulletChart(chart) || IsFunnelChart(chart) || IsSankeyChart(chart) || IsHeatmapChart(chart)));
+
+    private static void DrawGraphiteLegendSymbol(SvgMarkupWriter writer, ChartSeriesKind kind, double x, double y, ChartColor color) {
+        if (IsLineLikeLegend(kind)) writer.StartElement("line").Attribute("x1", x).Attribute("y1", y).Attribute("x2", x + 14).Attribute("y2", y).Attribute("stroke", color.ToCss()).Attribute("stroke-width", 2).EndEmptyElement().Line();
+        else writer.StartElement("rect").Attribute("x", x).Attribute("y", y - 5).Attribute("width", 10).Attribute("height", 10).Attribute("rx", 2).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
+    }
 
     private static double LegendSideReserve(Chart chart) {
         if (chart.Series.Count == 0) return 0;

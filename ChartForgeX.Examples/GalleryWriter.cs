@@ -287,6 +287,7 @@ public static partial class GalleryWriter {
                     hasViewport = pair.HtmlHealth.HasViewport,
                     hasInlineSvg = pair.HtmlHealth.HasInlineSvg,
                     hasSurfaceGradient = pair.HtmlHealth.HasSurfaceGradient,
+                    hasFlatSurface = pair.HtmlHealth.HasFlatSurface,
                     hasTextPolish = pair.HtmlHealth.HasTextPolish,
                     hasExpectedOverflow = pair.HtmlHealth.HasExpectedOverflow,
                     hasPrintCss = pair.HtmlHealth.HasPrintCss,
@@ -592,6 +593,8 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var png = File.ReadAllBytes(Path.GetFullPath(fileName));
             var dimensions = ReadPngDimensions(fileName);
             if (dimensions.Width <= 0 || dimensions.Height <= 0) return default;
+            var frameAllowance = ReadPngFrameAllowance(fileName, dimensions);
+            var hostAllowance = ReadPngHostAllowance(fileName, dimensions);
             var idat = new List<byte>();
             var offset = 8;
             while (offset + 8 <= png.Length) {
@@ -635,7 +638,10 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
                     var key = PngColorKey(r, g, b, a);
                     pixelColors[y * dimensions.Width + x / 4] = key;
                     if (colors.Count < 4096) colors.Add(key);
-                    TrackPngEdgeSamples(dimensions, x / 4, y, edgeBand, key, cornerColors, edgeColors);
+                    var edgeSample = frameAllowance?.Includes(x / 4, y, key) == true ? frameAllowance.Fill : key;
+                    if ((x / 4 < edgeBand || y < edgeBand || x / 4 >= dimensions.Width - edgeBand || y >= dimensions.Height - edgeBand) &&
+                        hostAllowance?.Includes(x / 4, y, key) == true) edgeSample = 0;
+                    TrackPngEdgeSamples(dimensions, x / 4, y, edgeBand, edgeSample, cornerColors, edgeColors);
                 }
 
                 var swap = previous;
@@ -646,7 +652,9 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var edgeBackground = DominantPngCornerColor(cornerColors);
             var visualBackground = DominantPngVisibleColor(pixelColors, edgeBackground);
             var foreground = CountPngForeground(pixelColors, dimensions, visualBackground, out var contentBounds);
-            var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 : CountPngEdgeInk(edgeColors, edgeBackground);
+            var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 :
+                hostAllowance != null ? edgeColors.LongCount(color => (color & 255) > PngEdgeInkTolerance) :
+                CountPngEdgeInk(edgeColors, edgeBackground);
             var transparentPixels = (long)dimensions.Width * dimensions.Height - visiblePixels;
             return new PngHealth(visiblePixels, transparentPixels, foreground, contentBounds, colors.Count, edgeInkPixels, edgeColors.Count);
         } catch (IOException) {

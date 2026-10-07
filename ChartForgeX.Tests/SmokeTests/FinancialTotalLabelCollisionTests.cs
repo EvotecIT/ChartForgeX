@@ -62,7 +62,8 @@ internal static partial class SmokeTests {
     }
 
     private static void AssertUsefulStackTotalSubset(string svg, int itemCount, string message) {
-        var labelCount = CountOccurrences(svg, "data-cfx-role=\"stack-total-label\"");
-        Assert(labelCount > 0 && labelCount < itemCount, message);
+        var labelCount = System.Xml.Linq.XDocument.Parse(svg).Descendants().Count(e => (string?)e.Attribute("data-cfx-role") == "stack-total-label" && !e.AncestorsAndSelf().Any(a => (string?)a.Attribute("display") == "none"));
+        Assert(labelCount > 0 && labelCount <= itemCount, message);
+        Assert(Rendering.ChartLabelScene.Inspect(svg, Typography.FontSpec.SystemSans()).LabelLabel == 0, message);
     }
 }

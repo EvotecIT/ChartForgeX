@@ -235,7 +235,7 @@ The canonical font reader applies `avar` version 1 mapping, TrueType `gvar` cont
 
 SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its computed `font-family` stack, `font-weight` (numbers from 1 to 1000, `normal`, `bold`, and `bolder`/`lighter` relative to the parent), and `font-style` (`italic` or `oblique`), whether they come from attributes, `style="..."`, a stylesheet, an ancestor `<g>`, or a `<tspan>`. Text without a `font-family` uses the sans-serif fallback. Each run is placed so its face's own baseline sits on the `y` coordinate, as a browser places it.
 
-`VisualCanvas` uses `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.PortableEstimate` by default. Registered fonts provide exact fitting and line metrics; other families use portable estimates so fitting, wrapping, ellipsis, column widths, and row heights do not depend on the generating host's installed fonts. Register the application's font files to combine deterministic layout with accurate measurement. Set `TextMeasurementMode.InstalledFonts` explicitly when layout should use fonts installed on the current host.
+`VisualCanvas` uses `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.InstalledFonts` by default. Its fitting and line metrics use the same font resolution and shaping as raster text. Register the application's font files when layout must remain identical across generating hosts. Set `TextMeasurementMode.PortableEstimate` explicitly for legacy host-independent estimated layout; unresolved fonts also retain the portable fallback.
 
 `VisualCanvasTheme.FontFamily` (set directly or through `VisualDesignTokens`), a key/value block's `FontFamilyName`, and `MonospaceFontFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. PNG draws the matching registered or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas.Theme)` to measure a key/value block with the canvas's measurement mode.
 
@@ -276,7 +276,7 @@ Text drawn at 12 output pixels or smaller is lightly hinted, independently of th
 
 On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship `.ttf` files with the application and register them.
 
-`FontRegistry` registers font files once, process-wide and thread-safely, and every raster path then finds them by family name: chart, grid, topology, and visual block themes, VisualCanvas themes and design tokens, `FontSpec.FromFamily`, and SVG `font-family`:
+`FontRegistry` registers font faces once, process-wide and thread-safely, and every raster path then finds them by family name: chart, grid, topology, and visual block themes, VisualCanvas themes and design tokens, `FontSpec.FromFamily`, and SVG `font-family`:
 
 ```csharp
 FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Regular.ttf"));
@@ -286,6 +286,16 @@ FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); /
 
 var chart = Chart.Create().WithTheme(ChartTheme.ReportDark().WithFontFamily("Inter, sans-serif"));
 ```
+
+Hosts without filesystem font assets can register the same faces from bytes or embedded resource streams:
+
+```csharp
+FontRegistry.Register("Inter", fontBytes);
+using var stream = typeof(Program).Assembly.GetManifestResourceStream("MyApp.Inter-Bold.ttf");
+FontRegistry.Register("Inter", stream!, weight: 700);
+```
+
+The byte overload retains a copy, so later edits to `fontBytes` do not change the face. The stream overload reads from the current position to the end, supports non-seekable streams, and leaves the stream open. Both accept the same weight, italic flag and collection index as file registration. Memory faces take part in measurement, drawing and fallback without temporary font files; their resolved file path is null. Browser SVG still needs the matching font through CSS or `FontFace` for the browser to draw its text.
 
 A registered family is matched before an installed family of the same name, with the same weight and slant rules, and only its registered faces are considered, so register each weight you use; a missing bold is synthesized. `RegisterFile` and `RegisterDirectory` read the family, weight, and italic flag from each file's own tables. Missing or invalid font files can be retried after they become available. The file cache detects changes to file size or modification time and retains at most 128 files and 64 MiB of font payloads. `FontRegistry.Clear()` removes every registration and clears the file cache; use it before re-registering a replacement that retains its original size and timestamp.
 

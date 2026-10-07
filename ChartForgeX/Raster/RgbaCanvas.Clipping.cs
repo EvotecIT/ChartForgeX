@@ -12,6 +12,35 @@ internal sealed partial class RgbaCanvas {
     private int _clipBottom;
     private List<PolygonClip>? _polygonClips;
 
+    /// <summary>Temporarily applies a rectangular clip and restores the preceding clip on disposal.</summary>
+    internal IDisposable PushClipBounds(ChartRect bounds, bool intersect = true) {
+        var scope = new RectangleClipScope(this);
+        var hadClip = _hasClip;
+        var left = _clipLeft; var top = _clipTop; var right = _clipRight; var bottom = _clipBottom;
+        SetClipBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+        if (intersect && hadClip) {
+            _clipLeft = Math.Max(_clipLeft, left); _clipTop = Math.Max(_clipTop, top);
+            _clipRight = Math.Min(_clipRight, right); _clipBottom = Math.Min(_clipBottom, bottom);
+        }
+        return scope;
+    }
+
+    private sealed class RectangleClipScope : IDisposable {
+        private RgbaCanvas? _canvas;
+        private readonly bool _hadClip;
+        private readonly int _left, _top, _right, _bottom;
+        internal RectangleClipScope(RgbaCanvas canvas) {
+            _canvas = canvas; _hadClip = canvas._hasClip;
+            _left = canvas._clipLeft; _top = canvas._clipTop; _right = canvas._clipRight; _bottom = canvas._clipBottom;
+        }
+        public void Dispose() {
+            if (_canvas == null) return;
+            _canvas._hasClip = _hadClip;
+            _canvas._clipLeft = _left; _canvas._clipTop = _top; _canvas._clipRight = _right; _canvas._clipBottom = _bottom;
+            _canvas = null;
+        }
+    }
+
     /// <summary>
     /// Restricts subsequent paint operations to pixels whose centers fall inside the supplied logical bounds.
     /// </summary>

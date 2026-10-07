@@ -193,7 +193,7 @@ public enum VisualCanvasInfoTileMiniChartKind {
 /// Theme colors for reusable visual canvas layers.
 /// </summary>
 public sealed class VisualCanvasTheme {
-    private TextMeasurementMode _textMeasurementMode = TextMeasurementMode.PortableEstimate;
+    private TextMeasurementMode _textMeasurementMode = TextMeasurementMode.InstalledFonts;
     /// <summary>Controls canvas fitting and wrapping. Portable estimates and registered faces are independent of installed fonts; InstalledFonts opts into host-dependent exact metrics.</summary>
     public TextMeasurementMode TextMeasurementMode {
         get => _textMeasurementMode;

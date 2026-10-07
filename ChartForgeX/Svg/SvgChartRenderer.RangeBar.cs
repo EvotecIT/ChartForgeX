@@ -12,7 +12,6 @@ public sealed partial class SvgChartRenderer {
         var series = chart.Series[index];
         var intervalCount = Math.Max(1, series.Points.Count / 2);
         var barWidth = Math.Max(8, Math.Min(28, plot.Width / Math.Max(1, intervalCount * 4.0)));
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex + 1 < series.Points.Count; pointIndex += 2) {
             var start = series.Points[pointIndex];
             var end = series.Points[pointIndex + 1];
@@ -27,7 +26,7 @@ public sealed partial class SvgChartRenderer {
             var label = FormatRangeBarLabel(chart, series, intervalIndex, start.Y, end.Y);
 
             WriteRangeBarInterval(sb, chart, series, index, intervalIndex, id, start.X, start.Y, end.Y, summary, color, x, y1, y2, top, height, barWidth);
-            if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, reservedLabels, label, x, y1, y2, top, height, barWidth);
+            if (ShouldDrawDataLabels(chart, series)) DrawRangeBarLabel(sb, chart, series, intervalIndex, plot, label, x, y1, y2, top, height, barWidth);
         }
     }
 
@@ -57,7 +56,7 @@ public sealed partial class SvgChartRenderer {
         var colorCss = color.ToCss();
         var style = chart.Options.BarVisualStyle;
         var writer = new SvgMarkupWriter(768);
-        var radius = style.Kind == ChartBarStyle.SegmentedCapsule ? ChartSegmentedBarGeometry.RangeCap(style, x, y1, barWidth).Radius : Math.Min(7, barWidth / 2);
+        var radius = style.Kind == ChartBarStyle.SegmentedCapsule ? ChartSegmentedBarGeometry.RangeCap(style, x, y1, barWidth).Radius : Math.Min(style.Kind == ChartBarStyle.Flat ? 2 : 7, barWidth / 2);
         var opacity = style.Kind == ChartBarStyle.SegmentedCapsule ? style.BodyOpacity : style.Kind == ChartBarStyle.Flat ? 1 : ChartVisualPrimitives.RangeBarFillOpacity;
         writer.StartElement("rect")
             .Attribute("data-cfx-role", "range-bar")
@@ -124,12 +123,12 @@ public sealed partial class SvgChartRenderer {
         writer.Line();
     }
 
-    private static void DrawRangeBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y1, double y2, double top, double height, double barWidth) {
+    private static void DrawRangeBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, string label, double x, double y1, double y2, double top, double height, double barWidth) {
         var placement = DataLabelPlacement(chart, series);
         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
             var labelX = placement == ChartDataLabelPlacement.Left ? x - barWidth * 0.9 - 6 : x + barWidth * 0.9 + 6;
-            if (ReserveSvgHorizontalLabel(label, labelX, top + height / 2, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(sb, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
+            if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, top + height / 2, anchor, plot, series, pointIndex);
             return;
         }
 
@@ -139,6 +138,6 @@ public sealed partial class SvgChartRenderer {
             : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                 ? top + height / 2
                 : top - 10;
-        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
+        if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
     }
 }

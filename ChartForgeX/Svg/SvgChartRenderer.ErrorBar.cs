@@ -13,7 +13,6 @@ public sealed partial class SvgChartRenderer {
         var itemCount = Math.Max(1, series.Points.Count / 3);
         var capWidth = Math.Max(9, Math.Min(24, plot.Width / Math.Max(1, itemCount * 8.0)));
         var radius = Math.Max(ChartVisualPrimitives.ErrorBarMarkerMinRadius, chart.Options.Theme.MarkerRadius + ChartVisualPrimitives.ErrorBarMarkerRadiusExtra);
-        var reservedLabels = new List<ChartLabelBounds>();
 
         for (var pointIndex = 0; pointIndex + 2 < series.Points.Count; pointIndex += 3) {
             var center = series.Points[pointIndex];
@@ -29,7 +28,7 @@ public sealed partial class SvgChartRenderer {
 
             WriteErrorBarSummary(sb, chart, index, item, center.X, center.Y, lower.Y, upper.Y, summary, color, x, y, yLower, yUpper, radius, capWidth);
             var label = FormatValue(chart, center.Y);
-            if (ShouldDrawDataLabels(chart, series)) DrawErrorBarLabel(sb, chart, series, item, plot, reservedLabels, label, x, y, yLower, yUpper, radius, capWidth);
+            if (ShouldDrawDataLabels(chart, series)) DrawErrorBarLabel(sb, chart, series, item, plot, label, x, y, yLower, yUpper, radius, capWidth);
         }
     }
 
@@ -126,12 +125,12 @@ public sealed partial class SvgChartRenderer {
             .Line();
     }
 
-    private static void DrawErrorBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y, double yLower, double yUpper, double radius, double capWidth) {
+    private static void DrawErrorBarLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, string label, double x, double y, double yLower, double yUpper, double radius, double capWidth) {
         var placement = DataLabelPlacement(chart, series);
         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
             var labelX = placement == ChartDataLabelPlacement.Left ? x - capWidth / 2 - 8 : x + capWidth / 2 + 8;
-            if (ReserveSvgHorizontalLabel(label, labelX, y, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(sb, chart, label, labelX, y, anchor, plot, series, pointIndex);
+            if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, y, anchor, plot, series, pointIndex);
             return;
         }
 
@@ -142,6 +141,6 @@ public sealed partial class SvgChartRenderer {
             : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                 ? y
                 : top - radius - 9;
-        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
+        if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
     }
 }

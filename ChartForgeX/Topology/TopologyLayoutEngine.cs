@@ -11,7 +11,7 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var copy = Clone(chart);
-        copy.TextMeasurement = new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
+        copy.TextMeasurement = new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.InstalledFonts);
         if (options != null) options.TextMeasurement = copy.TextMeasurement;
         copy.RenderOptions = options;
         ApplyNamedPortSides(copy);
@@ -651,7 +651,8 @@ internal static partial class TopologyLayoutEngine {
             var row = i >= columns ? 1 : 0;
             var col = i % columns;
             var stagger = row == 1 && columns > 1 ? cellW / 2 : 0;
-            node.X = Math.Min(group.X + group.Width - 18 - node.Width, innerX + col * cellW + stagger + (cellW - node.Width) / 2);
+            var captionOverhang = Math.Max(0, (TopologyNodeFootprint.Width(chart, node) - node.Width) / 2);
+            node.X = Math.Max(innerX + captionOverhang, Math.Min(group.X + group.Width - 18 - node.Width - captionOverhang, innerX + col * cellW + stagger + (cellW - node.Width) / 2));
             node.Y = innerY + row * (maxNodeHeight + 44);
         }
     }

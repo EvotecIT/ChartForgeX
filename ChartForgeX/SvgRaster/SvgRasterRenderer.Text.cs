@@ -350,7 +350,9 @@ internal static partial class SvgRasterRenderer {
     // drawn through ImageComposition or VisualCanvas pick the same installed or registered face.
     // Without a font-family the stack is plain sans-serif, the face unstyled SVG text always used.
     private static ResolvedTypeface SvgTextFace(SvgRasterStyle style) =>
-        TypographyFontResolver.WithPaletteContext(TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, IsItalic(style.FontStyle)), style.OpenTypeLanguageTag), style.Variations), style.PaletteContext);
+        TypographyFontResolver.WithPaletteContext(TypographyFontResolver.WithVariations(TypographyFontResolver.WithLanguage(LabelLayerFont == null
+            ? TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, IsItalic(style.FontStyle))
+            : new ResolvedTypeface(LabelLayerFont, style.FontWeight >= 600, IsItalic(style.FontStyle)), style.OpenTypeLanguageTag), style.Variations), style.PaletteContext);
 
     private static bool IsItalic(string value) =>
         value.IndexOf("italic", StringComparison.OrdinalIgnoreCase) >= 0 || value.IndexOf("oblique", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -370,8 +372,8 @@ internal static partial class SvgRasterRenderer {
     }
 
     private static double BaselineShiftOffset(SvgRasterStyle style) {
-        if (string.Equals(style.BaselineShift, "super", StringComparison.OrdinalIgnoreCase)) return -style.FontSize * 0.45;
-        if (string.Equals(style.BaselineShift, "sub", StringComparison.OrdinalIgnoreCase)) return style.FontSize * 0.25;
+        if (string.Equals(style.BaselineShift, "super", StringComparison.OrdinalIgnoreCase)) return -style.FontSize * 0.35;
+        if (string.Equals(style.BaselineShift, "sub", StringComparison.OrdinalIgnoreCase)) return style.FontSize * 0.22;
         return 0;
     }
 

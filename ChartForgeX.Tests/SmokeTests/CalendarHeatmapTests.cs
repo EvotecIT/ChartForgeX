@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void CalendarHeatmapRendersContributionGrid() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(760, 360)
             .WithTitle("Consistency Journey")
             .AddCalendarHeatmap("Commits", new[] {
@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
         Assert(lessLabelX < noDataX, "Calendar heatmap no-data scale swatches should not overlap the Less label.");
         Assert(noDataX + noDataWidth < scaleX, "Calendar heatmap no-data scale swatches should not overlap the value scale start.");
         Assert(chart.ToPng().Length > 64, "Calendar heatmaps should render PNG output.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("Empty", Array.Empty<ChartCalendarHeatmapItem>()), "Calendar heatmaps should reject empty inputs.");
+        AssertThrows<ArgumentException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddCalendarHeatmap("Empty", Array.Empty<ChartCalendarHeatmapItem>()), "Calendar heatmaps should reject empty inputs.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), -1), "Calendar heatmap values should reject negatives.");
     }
 

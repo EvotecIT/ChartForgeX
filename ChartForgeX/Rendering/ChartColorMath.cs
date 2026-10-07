@@ -24,6 +24,10 @@ internal static class ChartColorMath {
     public static ChartColor TextOnBackground(ChartColor background, double lightThreshold = 0.54) =>
         RelativeLuminance(background) > lightThreshold ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
 
+    /// <summary>Chooses opaque black or white by WCAG contrast, guaranteeing at least 4.5:1 on an opaque fill.</summary>
+    public static ChartColor AccessibleTextOnBackground(ChartColor background) =>
+        ContrastRatio(ChartColor.Black, background) >= ContrastRatio(ChartColor.White, background) ? ChartColor.Black : ChartColor.White;
+
     /// <summary>Returns the WCAG 2 contrast ratio (1 to 21) of two opaque colours; alpha is ignored.</summary>
     public static double ContrastRatio(ChartColor first, ChartColor second) {
         var a = WcagLuminance(first);

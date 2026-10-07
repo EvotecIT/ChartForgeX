@@ -11,6 +11,7 @@ namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
     private static void DrawSankey(StringBuilder sb, Chart chart, ChartRect plot, string id) {
+        if (chart.Options.Theme.UseGraphiteLayout) { DrawGraphiteSankey(sb, chart, plot); return; }
         var model = BuildSankeyModel(chart, plot);
         if (model.Nodes.Count == 0 || model.Links.Count == 0) return;
         var series = chart.Series.First(item => item.Kind == ChartSeriesKind.Sankey);
@@ -92,6 +93,7 @@ public sealed partial class SvgChartRenderer {
                 writer
                     .StartElement("text")
                     .Attribute("data-cfx-role", "sankey-node-label")
+                    .Attribute("data-cfx-node", node.Index)
                     .Attribute("x", labelX)
                     .Attribute("y", labelY)
                     .Attribute("text-anchor", anchor)
@@ -144,7 +146,7 @@ public sealed partial class SvgChartRenderer {
     private static void DrawSankeyLink(SvgMarkupWriter writer, Chart chart, SankeyModel model, SankeyLink link) {
         var source = model.Nodes[link.Source];
         var target = model.Nodes[link.Target];
-        var color = chart.Options.Theme.Palette[source.Index % chart.Options.Theme.Palette.Length];
+        var color = chart.Options.Theme.UseGraphiteLayout ? SankeyColour(chart, source.Index) : chart.Options.Theme.Palette[source.Index % chart.Options.Theme.Palette.Length];
         var x0 = source.X + model.NodeWidth;
         var x1 = target.X;
         var midX = x0 + (x1 - x0) * 0.55;
@@ -166,9 +168,9 @@ public sealed partial class SvgChartRenderer {
             .Attribute("aria-label", summary)
             .Attribute("d", path)
             .Attribute("fill", color.ToCss())
-            .Attribute("fill-opacity", ChartVisualPrimitives.SankeyLinkFillOpacity)
+            .Attribute("fill-opacity", chart.Options.Theme.FlatMarks ? .35 : ChartVisualPrimitives.SankeyLinkFillOpacity)
             .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-opacity", ChartVisualPrimitives.SankeyLinkStrokeOpacity)
+            .Attribute("stroke-opacity", chart.Options.Theme.FlatMarks ? 0 : ChartVisualPrimitives.SankeyLinkStrokeOpacity)
             .Attribute("stroke-width", ChartVisualPrimitives.SankeyLinkStrokeWidth)
             .EndEmptyElement()
             .Line();
@@ -199,7 +201,7 @@ public sealed partial class SvgChartRenderer {
         }
 
         ApplySankeyLayers(nodes, links);
-        LayoutSankeyNodes(nodes, links, plot, out var nodeWidth, out var scale, out var maxLayer);
+        LayoutSankeyNodes(nodes, links, plot, chart.Options.Theme.UseGraphiteLayout, out var nodeWidth, out var scale, out var maxLayer);
         LayoutSankeyLinks(nodes, links, scale);
         return new SankeyModel(nodes, links, nodeWidth, maxLayer);
     }
@@ -213,9 +215,10 @@ public sealed partial class SvgChartRenderer {
         foreach (var node in nodes) if (node.Outgoing <= 0 && node.Incoming > 0) node.Layer = maxLayer;
     }
 
-    private static void LayoutSankeyNodes(List<SankeyNode> nodes, List<SankeyLink> links, ChartRect plot, out double nodeWidth, out double scale, out int maxLayer) {
+    private static void LayoutSankeyNodes(List<SankeyNode> nodes, List<SankeyLink> links, ChartRect plot, bool graphite, out double nodeWidth, out double scale, out int maxLayer) {
         maxLayer = Math.Max(1, nodes.Max(node => node.Layer));
-        nodeWidth = Math.Max(ChartVisualPrimitives.SankeyNodeMinWidth, Math.Min(ChartVisualPrimitives.SankeyNodeMaxWidth, plot.Width / (maxLayer + 1) * ChartVisualPrimitives.SankeyNodeWidthFactor));
+        nodeWidth = graphite ? 10 : Math.Max(ChartVisualPrimitives.SankeyNodeMinWidth, Math.Min(ChartVisualPrimitives.SankeyNodeMaxWidth, plot.Width / (maxLayer + 1) * ChartVisualPrimitives.SankeyNodeWidthFactor));
+        if (graphite) OrderSankeyNodes(nodes, links, maxLayer);
         scale = double.PositiveInfinity;
         for (var layer = 0; layer <= maxLayer; layer++) {
             var layerNodes = nodes.Where(node => node.Layer == layer).ToArray();
@@ -227,7 +230,7 @@ public sealed partial class SvgChartRenderer {
         if (double.IsInfinity(scale) || scale <= 0) scale = 1;
         var effectiveScale = scale;
         for (var layer = 0; layer <= maxLayer; layer++) {
-            var layerNodes = nodes.Where(node => node.Layer == layer).OrderBy(node => node.Index).ToArray();
+            var layerNodes = nodes.Where(node => node.Layer == layer).OrderBy(node => graphite ? node.Order : node.Index).ToArray();
             var totalHeight = layerNodes.Sum(node => Math.Max(ChartVisualPrimitives.SankeyNodeMinHeight, node.Value * effectiveScale)) + Math.Max(0, layerNodes.Length - 1) * ChartVisualPrimitives.SankeyNodeGap;
             var y = plot.Top + Math.Max(0, (plot.Height - totalHeight) / 2);
             foreach (var node in layerNodes) {
@@ -242,7 +245,7 @@ public sealed partial class SvgChartRenderer {
     private static void LayoutSankeyLinks(List<SankeyNode> nodes, List<SankeyLink> links, double scale) {
         var outgoingOffset = new double[nodes.Count];
         var incomingOffset = new double[nodes.Count];
-        foreach (var link in links.OrderBy(link => nodes[link.Source].Layer).ThenBy(link => link.Target)) {
+        foreach (var link in links.OrderBy(link => nodes[link.Source].Layer).ThenBy(link => nodes[link.Source].Y).ThenBy(link => nodes[link.Target].Y)) {
             link.Width = Math.Max(2, link.Value * scale);
             link.SourceY = nodes[link.Source].Y + outgoingOffset[link.Source] + link.Width / 2;
             link.TargetY = nodes[link.Target].Y + incomingOffset[link.Target] + link.Width / 2;
@@ -266,6 +269,7 @@ public sealed partial class SvgChartRenderer {
         public double Outgoing { get; set; }
         public double Value => Math.Max(Incoming, Outgoing);
         public int Layer { get; set; }
+        public double Order { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         public double Height { get; set; }

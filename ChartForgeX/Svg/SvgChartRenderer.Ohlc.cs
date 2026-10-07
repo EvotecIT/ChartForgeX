@@ -12,7 +12,6 @@ public sealed partial class SvgChartRenderer {
         var series = chart.Series[index];
         var itemCount = Math.Max(1, series.Points.Count / 4);
         var tickWidth = Math.Max(7, Math.Min(18, plot.Width / Math.Max(1, itemCount * 6.0)));
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex + 3 < series.Points.Count; pointIndex += 4) {
             var open = series.Points[pointIndex];
             var high = series.Points[pointIndex + 1];
@@ -38,14 +37,14 @@ public sealed partial class SvgChartRenderer {
                     var left = placement == ChartDataLabelPlacement.Left;
                     var anchor = left ? "end" : "start";
                     var labelX = left ? x - tickWidth - ChartVisualPrimitives.OhlcLabelOffset : x + tickWidth + ChartVisualPrimitives.OhlcLabelOffset;
-                    if (ReserveSvgHorizontalLabel(label, labelX, yClose, anchor, chart, plot, reservedLabels, series, item)) DrawHorizontalValueLabel(sb, chart, label, labelX, yClose, anchor, plot, series, item);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, yClose, anchor, plot, series, item);
                 } else {
                     var labelY = placement == ChartDataLabelPlacement.Below
                         ? yClose + 11
                         : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                             ? yClose
                             : yClose - 11;
-                    if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, item)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
+                    if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: item);
                 }
             }
         }

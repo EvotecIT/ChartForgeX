@@ -10,17 +10,7 @@ public sealed partial class SvgChartRenderer {
     }
 
     private static double MeasureSvgStyledTextWidth(Chart chart, string text, double fontSize, TextStyleOverride style, bool emphasized = false) {
-        var resolved = new TextStyle {
-            Font = FontSpec.FromFamily(StyleFontFamily(chart, style)),
-            FontSize = fontSize,
-            OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag
-        };
-        resolved.Font.Italic = style.Italic;
-        resolved.Font.Variations = style.Variations ?? FontVariationSettings.Default;
-        resolved.Font.ColorPaletteIndex = style.ColorPaletteIndex ?? 0;
-        var weight = style.ResolveFontWeight(emphasized ? 700 : 400);
-        resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(weight);
-        return TextLayoutEngine.Measure(text, resolved).Width;
+        return Rendering.ChartLabelScene.MeasureText(text, fontSize, style, emphasized ? 700 : 400, chart.Options.Theme.FontFamily);
     }
 
     private static string TrimSvgLabelToWidth(Chart chart, string value, double fontSize, double maxWidth, TextStyleOverride style, bool emphasized = false) {

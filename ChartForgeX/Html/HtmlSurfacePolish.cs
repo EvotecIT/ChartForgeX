@@ -7,11 +7,11 @@ internal static class HtmlSurfacePolish {
     private const string BaseBodyCss = "body{margin:0;min-height:100vh;min-height:100svh;";
     private const string BrowserTextPolishCss = "-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision";
 
-    internal static string CenteredBodyCss(ChartColor background, string fontFamily) =>
-        BaseBodyCss + "display:grid;place-items:center;background:" + ChartSurfacePolish.CssGradient(background) + ";font-family:" + fontFamily + ";padding:clamp(16px,4vmin,52px);box-sizing:border-box;" + BrowserTextPolishCss + "}";
+    internal static string CenteredBodyCss(ChartColor background, string fontFamily, bool flat = false) =>
+        BaseBodyCss + "display:grid;place-items:center;background:" + (flat ? background.ToCss() : ChartSurfacePolish.CssGradient(background)) + ";font-family:" + fontFamily + ";padding:clamp(16px,4vmin,52px);box-sizing:border-box;" + BrowserTextPolishCss + "}";
 
-    internal static string ReportBodyCss(ChartColor background, string fontFamily, string padding) =>
-        BaseBodyCss + "background:" + ChartSurfacePolish.CssGradient(background) + ";font-family:" + fontFamily + ";padding:" + padding + ";box-sizing:border-box;" + BrowserTextPolishCss + "}";
+    internal static string ReportBodyCss(ChartColor background, string fontFamily, string padding, bool flat = false) =>
+        BaseBodyCss + "background:" + (flat ? background.ToCss() : ChartSurfacePolish.CssGradient(background)) + ";font-family:" + fontFamily + ";padding:" + padding + ";box-sizing:border-box;" + BrowserTextPolishCss + "}";
 
     internal static string ReportBodyCss(string backgroundCss, string fontFamily, string padding) =>
         BaseBodyCss + "background:" + CssBackground(backgroundCss) + ";font-family:" + fontFamily + ";padding:" + padding + ";box-sizing:border-box;" + BrowserTextPolishCss + "}";

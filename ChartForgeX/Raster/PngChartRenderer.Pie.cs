@@ -7,7 +7,7 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Raster;
 
 public sealed partial class PngChartRenderer {
-    private static void DrawPieLike(RgbaCanvas c, Chart chart, ChartRect plot) {
+    private static void DrawPieLike(RgbaCanvas c, Chart chart, ChartRect plot, ChartRect? measuredBounds = null) {
         var series = chart.Series[0];
         var values = new List<PngIndexedPieValue>();
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
@@ -21,13 +21,17 @@ public sealed partial class PngChartRenderer {
         var total = 0d;
         foreach (var value in values) total += value.Point.Y;
         var chartPlot = PngPieChartPlot(chart, plot, legendValues);
-        var hasHorizontalLegendLane = chart.Options.ShowLegend
+        var hasHorizontalLegendLane = ChartLegendVisibility.ForEntries(chart, legendValues.Count)
             && PngIsTopOrBottomLegend(chart.Options.LegendPosition)
             && PngSliceLegendReserve(chart, legendValues, plot) > 0;
         var radiusFactor = hasHorizontalLegendLane ? 0.40 : 0.44;
         var radius = Math.Max(1, Math.Min(chartPlot.Width, chartPlot.Height) * radiusFactor);
         var cx = chartPlot.Left + chartPlot.Width / 2;
         var cy = chartPlot.Top + chartPlot.Height / 2;
+        if (measuredBounds.HasValue) {
+            radius = measuredBounds.Value.Width / 2;
+            cx = measuredBounds.Value.Left + radius; cy = measuredBounds.Value.Top + radius;
+        }
         var inner = series.Kind == ChartSeriesKind.Donut ? radius * chart.Options.DonutInnerRadiusRatio : 0;
         var start = -Math.PI / 2;
         var separator = chart.Options.Theme.CardBackground;
@@ -112,7 +116,7 @@ public sealed partial class PngChartRenderer {
             DrawPngTextStyledCenteredX(c, cx, groupTop + totalHeight + centerLineGap, nameLabel, dataStyle, chart.Options.Theme.MutedText, nameFontSize, centerLabelWidth, emphasized: true);
         }
 
-        if (chart.Options.ShowLegend) DrawSliceLegend(c, chart, series, legendValues, plot, total);
+        if (ChartLegendVisibility.ForEntries(chart, legendValues.Count)) DrawSliceLegend(c, chart, series, legendValues, plot, total);
     }
 
     private static double PieLabelRadius(double inner, double radius, ChartDataLabelPlacement placement) {
@@ -148,6 +152,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static void DrawPieOutsideLabels(RgbaCanvas c, Chart chart, ChartSeries series, List<PieLabelCandidate> labels, double cx, double cy, double radius, ChartRect plot) {
+        if (c.SuppressText) return;
         if (labels.Count == 0) return;
         ArrangePieLabelLane(labels.FindAll(static label => label.IsLeftSide), chart, plot);
         ArrangePieLabelLane(labels.FindAll(static label => !label.IsLeftSide), chart, plot);
@@ -271,7 +276,7 @@ public sealed partial class PngChartRenderer {
 
     private static void DrawSliceLegend(RgbaCanvas c, Chart chart, ChartSeries series, IReadOnlyList<PngIndexedPieValue> values, ChartRect plot, double total) {
         var fontSize = PngLegendFontSize(chart);
-        var style = chart.Options.LegendStyle.WithDefaultFontWeight(600);
+        var style = chart.Options.LegendStyle.WithDefaultFontWeight(650);
         const double swatchSize = ChartVisualPrimitives.SliceLegendSwatchSize;
         var area = PngSliceLegendArea(chart, plot, values);
         var rows = BuildPngSliceLegendRows(chart, series, values, total, area.Width, area.Height);
@@ -297,8 +302,9 @@ public sealed partial class PngChartRenderer {
                     c.FillRoundedRect(itemX, y - swatchSize + 1, swatchSize, swatchSize, ChartVisualPrimitives.SliceLegendSwatchRadius, item.Color);
                 }
                 var labelColor = item.IsZero ? chart.Options.Theme.MutedText : chart.Options.Theme.Text;
-                if (label.Length > 0) DrawPngTextStyled(c, itemX + swatchSize + 8, y - EstimatePngStyledTextHeight(labelFontSize, style) + 3, label, style, labelColor, labelFontSize, emphasized: true);
-                DrawPngTextStyled(c, itemX + item.Width - EstimatePngStyledTextWidth(item.Percent, fontSize, style, emphasized: false) - 10, y - EstimatePngStyledTextHeight(fontSize, style) + 3, item.Percent, style, chart.Options.Theme.MutedText, fontSize, emphasized: false);
+                if (label.Length > 0) DrawPngTextStyled(c, itemX + swatchSize + 6, y - EstimatePngStyledTextHeight(labelFontSize, style) + 3, label, style, labelColor, labelFontSize, emphasized: true);
+                var valueStyle = chart.Options.LegendStyle.WithDefaultFontWeight(400);
+                DrawPngTextStyled(c, itemX + swatchSize + 6 + EstimatePngStyledTextWidth(label, labelFontSize, style, emphasized: true) + 8, y - EstimatePngStyledTextHeight(fontSize, valueStyle) + 3, item.Percent, valueStyle, chart.Options.Theme.MutedText, fontSize, emphasized: false);
             }
 
             y += PngSliceLegendRowHeight(chart);
@@ -306,7 +312,7 @@ public sealed partial class PngChartRenderer {
     }
 
     private static ChartRect PngPieChartPlot(Chart chart, ChartRect plot, IReadOnlyList<PngIndexedPieValue> values) {
-        if (!chart.Options.ShowLegend || values.Count == 0) return plot;
+        if (!ChartLegendVisibility.ForEntries(chart, values.Count)) return plot;
         var reserve = PngSliceLegendReserve(chart, values, plot);
         if (PngIsLeftLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X + reserve, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);
         if (PngIsRightLegend(chart.Options.LegendPosition)) return new ChartRect(plot.X, plot.Y, Math.Max(1, plot.Width - reserve), plot.Height);

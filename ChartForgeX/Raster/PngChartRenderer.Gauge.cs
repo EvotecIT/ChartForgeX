@@ -23,7 +23,7 @@ public sealed partial class PngChartRenderer {
         var ratio = Clamp((value - min) / (max - min), 0, 1);
         var status = GaugeStatus(ratio);
         var statusColor = GaugeStatusColor(chart, status);
-        var color = gauge.Color ?? statusColor;
+        var color = ChartGaugeColor.Resolve(chart, gauge);
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height * ChartVisualPrimitives.GaugeCenterYFactor;
         var radius = Math.Max(ChartVisualPrimitives.GaugeMinRadius, Math.Min(plot.Width * ChartVisualPrimitives.GaugeRadiusWidthFactor, plot.Height * ChartVisualPrimitives.GaugeRadiusHeightFactor));
@@ -39,7 +39,7 @@ public sealed partial class PngChartRenderer {
         var tickFontSize = PngTickFontSize(chart);
         var statusLabel = status.Replace("-", " ");
         var labelWidth = Math.Max(48, Math.Min(plot.Width - 24, radius * 1.8));
-        if (gauge.ShowDataLabels != false) {
+        if (gauge.ShowDataLabels != false && !c.SuppressText) {
             var valueFit = FitPngStyledText(label, dataStyle, valueFontSize, labelWidth, emphasized: true);
             var nameFit = FitPngStyledText(gauge.Name, dataStyle, nameFontSize, labelWidth, emphasized: true);
             DrawPngFittedTextStyledCenteredX(c, cx, cy - radius * ChartVisualPrimitives.GaugeValueOffsetFactor - valueFit.Height / 2.0, valueFit, dataStyle, theme.Text, emphasized: true);

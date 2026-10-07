@@ -43,7 +43,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("aria-label", summary)
             .EndStartElement()
             .Line();
-        WriteRangeAreaPath(writer, "range-area", index, lower.Count, BuildClosedPolygonPath(upperPath, lowerPath), $"url(#{id}-area{index})", null, null, null);
+        WriteRangeAreaPath(writer, "range-area", index, lower.Count, BuildClosedPolygonPath(upperPath, lowerPath), chart.Options.Theme.FlatMarks ? (chart.Series.Count == 1 ? color.ToCss() : "none") : $"url(#{id}-area{index})", null, null, chart.Options.Theme.FlatMarks ? .12 : null);
         WriteRangeAreaPath(writer, "range-area-midline", index, middle.Count, middleLine, "none", SvgPaint.Plain(color), ChartVisualPrimitives.RangeAreaMidlineStrokeWidth, ChartVisualPrimitives.RangeAreaMidlineOpacity, true);
         foreach (var layer in ChartLineVisualLayers.Build(color, series.StrokeWidth, style)) {
             if (!layer.IsVisible) continue;
@@ -57,7 +57,6 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
 
         if (!ShouldDrawDataLabels(chart, series)) return;
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex + 1 < series.Points.Count; pointIndex += 2) {
             var low = series.Points[pointIndex];
             var high = series.Points[pointIndex + 1];
@@ -66,7 +65,7 @@ public sealed partial class SvgChartRenderer {
             var yLow = map.Y(low.Y);
             var yHigh = map.Y(high.Y);
             var label = FormatValue(chart, low.Y) + "-" + FormatValue(chart, high.Y);
-            DrawRangeIntervalLabel(sb, chart, series, item, plot, reservedLabels, label, x, yLow, yHigh);
+            DrawRangeIntervalLabel(sb, chart, series, item, plot, label, x, yLow, yHigh);
         }
     }
 

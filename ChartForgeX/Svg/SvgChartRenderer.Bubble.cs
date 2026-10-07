@@ -11,7 +11,6 @@ public sealed partial class SvgChartRenderer {
     private static void DrawBubbles(StringBuilder sb, Chart chart, int index, ChartRect plot, ChartMapper map) {
         var series = chart.Series[index];
         var range = BubbleSizeRange(series);
-        var reservedLabels = new List<ChartLabelBounds>();
         for (var pointIndex = 0; pointIndex + 1 < series.Points.Count; pointIndex += 2) {
             var center = series.Points[pointIndex];
             var size = series.Points[pointIndex + 1].Y;
@@ -24,7 +23,7 @@ public sealed partial class SvgChartRenderer {
 
             WriteBubbleMarker(sb, chart, index, item, center.X, center.Y, size, x, y, radius, color, summary);
             var label = FormatValue(chart, size);
-            if (ShouldDrawDataLabels(chart, series)) DrawBubbleLabel(sb, chart, series, item, plot, reservedLabels, label, x, y, radius);
+            if (ShouldDrawDataLabels(chart, series)) DrawBubbleLabel(sb, chart, series, item, plot, label, x, y, radius);
         }
     }
 
@@ -42,15 +41,15 @@ public sealed partial class SvgChartRenderer {
             .Attribute("cy", y)
             .Attribute("r", radius)
             .Attribute("fill", color.ToCss())
-            .Attribute("fill-opacity", ChartVisualPrimitives.BubbleFillOpacity)
-            .Attribute("stroke", color.ToCss())
-            .Attribute("stroke-opacity", ChartVisualPrimitives.BubbleStrokeOpacity)
-            .Attribute("stroke-width", ChartVisualPrimitives.BubbleStrokeWidth)
+            .Attribute("fill-opacity", chart.Options.Theme.FlatMarks ? .7 : ChartVisualPrimitives.BubbleFillOpacity)
+            .Attribute("stroke", chart.Options.Theme.FlatMarks ? chart.Options.Theme.CardBackground.ToCss() : color.ToCss())
+            .Attribute("stroke-opacity", chart.Options.Theme.FlatMarks ? 1 : ChartVisualPrimitives.BubbleStrokeOpacity)
+            .Attribute("stroke-width", chart.Options.Theme.FlatMarks ? 1 : ChartVisualPrimitives.BubbleStrokeWidth)
             .Attribute("role", "img")
             .Attribute("aria-label", summary)
             .EndEmptyElement()
-            .Line()
-            .StartElement("circle")
+            .Line();
+        if (!chart.Options.Theme.FlatMarks) writer.StartElement("circle")
             .Attribute("data-cfx-role", "bubble-highlight")
             .Attribute("data-cfx-series", seriesIndex)
             .Attribute("data-cfx-point", pointIndex)
@@ -65,12 +64,12 @@ public sealed partial class SvgChartRenderer {
         sb.Append(writer.Build());
     }
 
-    private static void DrawBubbleLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, List<ChartLabelBounds> reservedLabels, string label, double x, double y, double radius) {
+    private static void DrawBubbleLabel(StringBuilder sb, Chart chart, ChartSeries series, int pointIndex, ChartRect plot, string label, double x, double y, double radius) {
         var placement = DataLabelPlacement(chart, series);
         if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var anchor = placement == ChartDataLabelPlacement.Left ? "end" : "start";
             var labelX = placement == ChartDataLabelPlacement.Left ? x - radius - 8 : x + radius + 8;
-            if (ReserveSvgHorizontalLabel(label, labelX, y, anchor, chart, plot, reservedLabels, series, pointIndex)) DrawHorizontalValueLabel(sb, chart, label, labelX, y, anchor, plot, series, pointIndex);
+            if (!string.IsNullOrWhiteSpace(label)) DrawHorizontalValueLabel(sb, chart, label, labelX, y, anchor, plot, series, pointIndex);
             return;
         }
 
@@ -81,7 +80,7 @@ public sealed partial class SvgChartRenderer {
             : placement == ChartDataLabelPlacement.Center || placement == ChartDataLabelPlacement.Inside
                 ? y
                 : aboveY < plot.Top + 2 ? belowY : aboveY;
-        if (ReserveSvgLabel(label, x, labelY, chart, plot, reservedLabels, series, pointIndex)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
+        if (!string.IsNullOrWhiteSpace(label)) DrawDataLabel(sb, chart, label, x, labelY, plot, series: series, pointIndex: pointIndex);
     }
 
     private static (double min, double max) BubbleSizeRange(ChartSeries series) {

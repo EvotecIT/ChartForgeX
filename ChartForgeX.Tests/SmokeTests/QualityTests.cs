@@ -192,7 +192,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngRendersReportChrome() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(360, 220)
             .WithTitle("Chrome")
             .WithSubtitle("Subtitle")
@@ -212,7 +212,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngOutlineFontsUseEmSizedText() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(360, 150)
             .WithTitle("ChartForgeX")
             .AddLine("Hidden", Points(1, 1), ChartColor.Transparent);
@@ -454,7 +454,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngSurfacesUseRoundedCorners() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(160, 100)
             .AddLine("Invisible", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }, ChartColor.Transparent);
         chart.Options.ShowAxes = false;
@@ -474,6 +474,9 @@ internal static partial class SmokeTests {
             .WithPadding(20, 20, 20, 24)
             .AddLine("Hidden", new[] { new ChartPoint(1, 0), new ChartPoint(3, 20) }, ChartColor.Transparent)
             .AddHorizontalLine(10, "target", ChartColor.FromRgb(251, 191, 36));
+        // Fix the coordinate domain: automatic nice domains may expand beyond the data.
+        chart.Options.YAxis.Minimum = 0;
+        chart.Options.YAxis.Maximum = 20;
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
@@ -528,7 +531,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngReadableLabelsFitInsidePlotBounds() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(180, 120)
             .WithPadding(24, 16, 18, 24)
             .WithDataLabels()
@@ -550,7 +553,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngHeatmapsRenderCellValueLabels() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(720, 420)
             .WithPadding(70, 44, 52, 72)
             .WithDataLabels()
@@ -606,14 +609,14 @@ internal static partial class SmokeTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var alpha = Chart.Create().WithSize(320, 180).WithTitle("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
+            var alpha = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 180).WithTitle("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "alpha.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "alpha 2.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha 2.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha 2.png"), alpha.ToPng());
-            var zeta = Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3));
+            var zeta = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "zeta.html"), zeta.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "zeta.svg"), zeta.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "zeta.png"), zeta.ToPng());
@@ -623,7 +626,7 @@ internal static partial class SmokeTests {
             File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "travel-dotted-map-dark.html"), "<!doctype html><title>Travel Dotted Map</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "report.html"), "<!doctype html><title>Report</title><svg></svg>");
-            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTitle(\"Alpha & Beta\");");
+            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitle(\"Alpha & Beta\");");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}},{\"name\":\"zeta\",\"width\":640,\"height\":360,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
 
             GalleryWriter.Write(output);
@@ -711,7 +714,7 @@ internal static partial class SmokeTests {
             Assert(comparison.Contains(".wipe-frame>.wipe-25:checked~.media", StringComparison.Ordinal), "Comparison page should avoid flex-stretching wipe labels at wide viewport sizes.");
             Assert(comparison.Contains("SVG 25%", StringComparison.Ordinal) && comparison.Contains("SVG 75%", StringComparison.Ordinal), "Comparison page should offer fixed wipe positions without requiring JavaScript.");
             Assert(comparison.Contains("clip-path:inset(0 calc(100% - var(--wipe)) 0 0)", StringComparison.Ordinal), "Comparison page should keep SVG and PNG framed together while moving the wipe split.");
-            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
+            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
             Assert(comparison.Contains(".pair{display:grid;grid-template-columns:repeat(2", StringComparison.Ordinal), "Comparison page should avoid squeezing SVG, PNG, and wipe panes into three narrow columns.");
             Assert(comparison.Contains("href=\"catalog.html\"", StringComparison.Ordinal), "Comparison page should link the grouped catalog page.");
             Assert(comparison.Contains("href=\"quality-dashboard.html\"", StringComparison.Ordinal), "Comparison page should link the artifact quality dashboard.");

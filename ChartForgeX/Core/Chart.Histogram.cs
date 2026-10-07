@@ -8,7 +8,7 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>
-    /// Adds a histogram series by binning raw numeric values.
+    /// Adds a histogram series in equal-width bins aligned to a nice decimal step that covers the data.
     /// </summary>
     /// <param name="name">The series name.</param>
     /// <param name="values">The raw numeric values to bin.</param>

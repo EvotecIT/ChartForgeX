@@ -74,6 +74,47 @@ body {
   background: rgba(15, 23, 42, .58);
 }
 
+.cfx-frame {
+  position: relative;
+  min-width: 0;
+}
+
+.cfx-interactive-chart[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Contextual reset: a small ghost button in the frame corner, shown only after the view changes. */
+.cfx-reset {
+  position: absolute;
+  z-index: 13;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(148, 163, 184, .45);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, .78);
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cfx-reset[hidden] {
+  display: none;
+}
+
+.cfx-reset:hover,
+.cfx-reset:focus-visible {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
 .cfx-scenarios {
   display: flex;
   flex-wrap: wrap;
@@ -280,6 +321,20 @@ body {
 
 .cfx-tooltip__title {
   font-weight: 800;
+}
+
+.cfx-tooltip__title--series {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cfx-tooltip__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 2px;
 }
 
 .cfx-tooltip__meta {
@@ -508,12 +563,12 @@ body {
   stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
 }
 
-.cfx-interactive-chart .cfx-hover-related {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related {
   opacity: .82 !important;
   filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
 }
 
-.cfx-interactive-chart[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
+.cfx-interactive-chart:not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
   opacity: .38;
 }
 
@@ -639,3 +694,43 @@ body {
     transition: none !important;
   }
 }
+
+/* Graphite keeps host controls separate from the chart's single frame. */
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
+/* The frame hugs the chart card so the reset control sits in the card corner, not the page corner. */
+.cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
+  font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
+.cfx-dashboard { gap: 16px; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip {
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
+  box-shadow: var(--cfx-tooltip-shadow); padding: 8px 12px;
+  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--cfx-tooltip-line); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title--series:last-child { padding-bottom: 0; border-bottom: 0; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta { grid-template-columns: 1fr auto; gap: 6px 24px; color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dt { display: flex; align-items: center; gap: 6px; color: inherit; font-weight: 400; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dd { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__swatch { width: 10px; height: 10px; flex: 0 0 10px; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line { background: none; box-shadow: none; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__label { display: none; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered { filter: none; }
+/* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
+.cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hovered,
+.cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hover-column { r: 4px; opacity: 1 !important; stroke: var(--cfx-tooltip-surface); stroke-width: 2px !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }

@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void ComboHelpersRenderMixedSeries() {
-        var areaCombo = Chart.Create()
+        var areaCombo = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithXLabels("Q1", "Q2", "Q3")
             .AddColumnAreaCombo(
@@ -25,7 +25,7 @@ internal static partial class SmokeTests {
         Assert(areaSvg.Contains("data-cfx-role=\"area\"", StringComparison.Ordinal), "Column-area combos should render an area path.");
         Assert(areaCombo.ToPng().Length > 64, "Column-area combos should render PNG output.");
 
-        var scatterCombo = Chart.Create()
+        var scatterCombo = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .AddScatterLineCombo(
                 "Observed",

@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void LegendsAndDataLabelsKeepGuardGaps() {
-        var topLegend = Chart.Create()
+        var topLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Top)
             .AddLine("First long legend item", Points(12, 18, 26))
@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
         Assert(topPlotY - topLegendRowY >= 12, "Top legends should reserve a visible gap before the plot guard.");
         Assert(topLegend.ToPng().Length > 64, "Top legend guard gaps should render PNG output.");
 
-        var bottomLegend = Chart.Create()
+        var bottomLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Bottom)
             .AddLine("First long legend item", Points(12, 18, 26))
@@ -30,7 +30,7 @@ internal static partial class SmokeTests {
         Assert(bottomLegendRowY <= 320 - 24, "Bottom legends should stay inside the card guard instead of sitting on the canvas edge.");
         Assert(bottomLegend.ToPng().Length > 64, "Bottom legend guard gaps should render PNG output.");
 
-        var radialLegend = Chart.Create()
+        var radialLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Bottom)
             .WithRadialBarCenterLabel(false)
@@ -40,7 +40,7 @@ internal static partial class SmokeTests {
         Assert(radialLegendY <= 320 - 24, "Bottom radial-bar legends should stay inside the card guard instead of sitting on the canvas edge.");
         Assert(radialLegend.ToPng().Length > 64, "Bottom radial-bar legend guard gaps should render PNG output.");
 
-        var edgeLabels = Chart.Create()
+        var edgeLabels = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)
             .WithDataLabels()
             .WithYAxisBounds(0, 100)

@@ -67,7 +67,9 @@ internal static partial class SmokeTests {
     }
 
     private static void AssertUsefulSubset(string svg, int itemCount, string message) {
-        var labelCount = CountOccurrences(svg, "data-cfx-role=\"data-label\"");
-        Assert(labelCount > 0 && labelCount < itemCount, message);
+        var labelCount = CountVisibleDataLabels(svg);
+        Assert(labelCount > 0 && labelCount <= itemCount, message);
+        var overlap = Rendering.ChartLabelScene.Inspect(svg, Typography.FontSpec.SystemSans());
+        Assert(overlap.LabelLabel == 0, message + " Measured label boxes must remain disjoint.");
     }
 }

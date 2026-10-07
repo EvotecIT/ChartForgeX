@@ -22,13 +22,13 @@ public sealed partial class SvgChartRenderer {
             .Attribute("data-cfx-role", "tree-chart")
             .EndStartElement()
             .Line();
-        DrawTreeNodeGradients(writer, chart, id);
+        if (!t.FlatMarks) DrawTreeNodeGradients(writer, chart, id);
         foreach (var link in model.Links) DrawTreeLink(writer, chart, model, link);
         foreach (var node in model.Nodes) {
             var fillIndex = node.Depth % Math.Max(1, t.Palette.Length);
             var summary = node.Label + ": level " + node.Depth.ToString(CultureInfo.InvariantCulture);
             var radius = Math.Min(ChartVisualPrimitives.TreeNodeCornerRadiusMax, model.NodeHeight / 2);
-            var labelColor = ChartColorMath.TextOnBackground(t.Palette[fillIndex]);
+            var labelColor = ChartColorMath.AccessibleTextOnBackground(t.Palette[fillIndex]);
             var borderStroke = ChartVisualPrimitives.TreeNodeBorderStrokeWidth;
             var borderInset = borderStroke / 2.0;
             writer
@@ -44,7 +44,7 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("width", model.NodeWidth)
                 .Attribute("height", model.NodeHeight)
                 .Attribute("rx", radius)
-                .Attribute("fill", $"url(#{id}-treeFill{fillIndex})")
+                .Attribute("fill", t.FlatMarks ? t.Palette[fillIndex].ToCss() : $"url(#{id}-treeFill{fillIndex})")
                 .EndEmptyElement()
                 .Line();
             writer
@@ -155,7 +155,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("y", y)
             .Attribute("text-anchor", "middle")
             .Attribute("dominant-baseline", "middle")
-            .Attribute("fill", StyleColor(dataStyle, labelColor).ToCss())
+            .Paint("fill", chart.Options.Theme.UseGraphiteLayout && !dataStyle.Color.HasValue ? SvgPaint.Contrast(nodeColor, SvgColorRole.Series) : SvgPaint.Plain(StyleColor(dataStyle, labelColor)))
             .Attribute("stroke", nodeColor.ToCss())
             .Attribute("stroke-opacity", ChartVisualPrimitives.TreeLabelHaloOpacity)
             .Attribute("stroke-width", ChartVisualPrimitives.TreeLabelHaloStrokeWidth)
@@ -163,7 +163,7 @@ public sealed partial class SvgChartRenderer {
             .Attribute("stroke-linejoin", "round")
             .Attribute("font-family", SvgFontFamilyAttributeValue(StyleFontFamily(chart, dataStyle)))
             .Attribute("font-size", fittedFontSize)
-            .Attribute("font-weight", StyleWeight(dataStyle, "800"));
+            .Attribute("font-weight", StyleWeight(dataStyle, chart.Options.Theme.UseGraphiteLayout ? "700" : "800"));
         WriteSvgTextStyleAttributes(writer, dataStyle);
         WriteSvgStyledTextContent(writer, dataStyle, fittedText)
             .EndElement()

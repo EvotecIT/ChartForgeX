@@ -7,16 +7,19 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Svg;
 
 public sealed partial class SvgChartRenderer {
-    private static void DrawOptionalLineMarkers(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, IReadOnlyList<ChartPoint> mapped, double markerRadius, bool includeInteractionTargets) {
+    private static void DrawOptionalLineMarkers(StringBuilder sb, Chart chart, ChartSeries series, int seriesIndex, IReadOnlyList<ChartPoint> mapped, double markerRadius, bool includeInteractionTargets, ChartRect plot) {
         if (!ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind)) return;
         if (chart.Options.IsSparkline && !series.PreserveInteractionTargetsWhenMarkersHidden) return;
         if (markerRadius <= 0 && (!series.PreserveInteractionTargetsWhenMarkersHidden || !includeInteractionTargets)) return;
+        var mode = chart.Options.LineMarkerMode ?? (chart.Options.Theme.UseGraphiteLayout ? ChartLineMarkerMode.Last : ChartLineMarkerMode.All);
 
         for (var pointIndex = 0; pointIndex < mapped.Count; pointIndex++) {
             var point = mapped[pointIndex];
+            if (chart.Options.ClipMarksToPlot && !ChartPlotClip.Contains(plot, point.X, point.Y)) continue;
             var raw = series.Points[pointIndex];
             var markerColor = PointColor(chart, series, seriesIndex, pointIndex);
-            var hiddenInteractionTarget = markerRadius <= 0;
+            var hiddenInteractionTarget = markerRadius <= 0 || mode == ChartLineMarkerMode.None || mode == ChartLineMarkerMode.Last && pointIndex != mapped.Count - 1;
+            if (hiddenInteractionTarget && !includeInteractionTargets) continue;
             AppendSvg(sb, writer => writer.StartElement("circle")
                 .Attribute("class", hiddenInteractionTarget ? "cfx-point-interaction-target" : null)
                 .Attribute("data-cfx-role", hiddenInteractionTarget ? "line-point-target" : "line-marker")
@@ -24,6 +27,10 @@ public sealed partial class SvgChartRenderer {
                 .Attribute("data-cfx-point", pointIndex)
                 .Attribute("data-cfx-x", raw.X)
                 .Attribute("data-cfx-y", raw.Y)
+                .Attribute("data-cfx-x-label", FormatX(chart, raw.X))
+                .Attribute("data-cfx-state", series.StateRole.ToString().ToLowerInvariant())
+                .Attribute("role", chart.Accessibility.IsDecorative ? null : "img")
+                .Attribute("aria-label", chart.Accessibility.IsDecorative ? null : series.Name + ", " + FormatX(chart, raw.X) + ": " + raw.Y.ToString("G17", System.Globalization.CultureInfo.InvariantCulture))
                 .Attribute("cx", point.X)
                 .Attribute("cy", point.Y)
                 .Attribute("r", hiddenInteractionTarget ? ChartVisualPrimitives.HiddenMarkerInteractionRadius : markerRadius)

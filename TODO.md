@@ -4,6 +4,11 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 
 ## Rendering Pipeline
 
+- Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
+- Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
+
+SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
+
 - Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
@@ -13,7 +18,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Colour-font extensions: apply non-default COLR v1 paint variation when applications need it. Extend embedded bitmap decoding beyond PNG, JPEG, uncompressed RGB TIFF and horizontal raw EBDT images only with a concrete reference-font case; component EBDT images and scaled EBSC strikes retain outline fallback.
 - Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
 - Static SVG and PNG charts are drawn in one time zone (UTC or `ChartAxis.TimeZone`) and cannot follow the reader's zone; hosts with a local/UTC switch label them as fixed. Following the reader needs a browser-side redraw of time-axis ticks, labels, and tooltips (for example from the `data-cfx-start`/`data-cfx-end` instants) in `ChartForgeX.Interactivity.Html`.
-- Colour roles for SVG variables cover lines, bars, histograms, calendars, matrix and hexbin heatmaps with their cell text, state marks and Gantt lane labels, and topology tints, contrast white, and arrow and endpoint markers (keyed by status, muted, or explicit colour order). Still written as literal derived colours: the gradients of funnel, Sankey, tree, treemap, timeline, and Gantt task marks, and the card and plot surface gradients (whose blend depends on the surface luminance, so a drawn card differs between light and dark). The interactive graph explorer (`ChartForgeX.Interactivity.Html`) still names its arrow markers after the edge colour.
+- Graphite colour roles cover flat marks, surfaces, guides, ramps and readable ink across light/dark SVG switching. Continue extending variable mapping for the derived gradients in named effect themes; their surface blends can still require regeneration when switching themes. The interactive graph explorer (`ChartForgeX.Interactivity.Html`) still names its arrow markers after the edge colour.
 
 ## Interactivity
 

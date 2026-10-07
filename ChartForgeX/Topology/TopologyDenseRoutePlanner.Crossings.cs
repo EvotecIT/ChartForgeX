@@ -11,7 +11,7 @@ internal static partial class TopologyDenseRoutePlanner {
     // A different search can leave a tight corridor whose lane pass cannot separate every route. Repair only that
     // observed residual, keeping the complete before/after geometry so a local reroute cannot worsen another pair.
     private static void RepairLaneOverlaps(Scene scene, List<Request> requests, List<PlannedRoute> routes,
-        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse) {
+        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, GridBuffers buffers) {
         var attempts = 0;
         foreach (var route in routes.OrderByDescending(item => ResidualOverlap(item, routes, fixedRoutes)).ThenBy(item => item.Request.Order)) {
             if (attempts >= 8) break;
@@ -20,7 +20,7 @@ internal static partial class TopologyDenseRoutePlanner {
             var originals = routes.Select(item => new List<ChartPoint>(item.Points)).ToList();
             var before = TotalInteraction(routes, fixedRoutes);
             var occupied = fixedRoutes.Concat(routes.Where(item => !ReferenceEquals(item, route)).Select(item => item.Points)).ToList();
-            var grid = Grid.Create(scene, requests, occupied);
+            var grid = Grid.Create(scene, requests, occupied, buffers);
             if (grid == null) continue;
             foreach (var points in occupied) grid.Record(points, 1);
             var candidate = Search(grid, route.Request, sideUse, sharedRunCost: 4);
@@ -126,6 +126,9 @@ internal static partial class TopologyDenseRoutePlanner {
     }
 
     private static (int Crossings, double Shared) Interaction(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+        // Routes whose boxes are more than the 2 px sharing tolerance apart can neither cross nor share a corridor, and the
+        // pairwise loop below would add nothing but zeros; most pairs of a dense plan are like that.
+        if (Apart(first, second)) return (0, 0.0);
         HashSet<(long X, long Y)>? crossings = null;
         var shared = 0.0;
         for (var i = 0; i + 1 < first.Count; i++) {
@@ -150,6 +153,26 @@ internal static partial class TopologyDenseRoutePlanner {
             }
         }
         return (crossings?.Count ?? 0, shared);
+    }
+
+    private static bool Apart(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+        if (first.Count < 2 || second.Count < 2) return true;
+        Bounds(first, out var left, out var top, out var right, out var bottom);
+        Bounds(second, out var otherLeft, out var otherTop, out var otherRight, out var otherBottom);
+        const double Margin = 4;
+        return otherLeft > right + Margin || otherRight < left - Margin || otherTop > bottom + Margin || otherBottom < top - Margin;
+    }
+
+    private static void Bounds(IReadOnlyList<ChartPoint> points, out double left, out double top, out double right, out double bottom) {
+        left = top = double.PositiveInfinity;
+        right = bottom = double.NegativeInfinity;
+        for (var i = 0; i < points.Count; i++) {
+            var point = points[i];
+            if (point.X < left) left = point.X;
+            if (point.X > right) right = point.X;
+            if (point.Y < top) top = point.Y;
+            if (point.Y > bottom) bottom = point.Y;
+        }
     }
 
     private static bool AtEnd(ChartPoint point, IReadOnlyList<ChartPoint> route) =>
