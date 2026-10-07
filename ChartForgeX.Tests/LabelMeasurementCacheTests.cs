@@ -36,6 +36,31 @@ public sealed class LabelMeasurementCacheTests {
     }
 
     [Fact]
+    public void Measure_StylesDifferingOnlyInUnderline_DoNotShareACachedValue() {
+        var plain = new TextStyle { Font = FontSpec.SystemSans(), FontSize = 12, LineHeight = 1 };
+        var underlined = new TextStyle { Font = FontSpec.SystemSans(), FontSize = 12, LineHeight = 1, UnderlineStyle = TextDecorationStyle.Double };
+        var expectedPlain = new LabelPlacementService().Measure("Underline", plain);
+        var expectedUnderlined = new LabelPlacementService().Measure("Underline", underlined);
+        var shared = new LabelPlacementService();
+        Assert.Equal(expectedPlain, shared.Measure("Underline", plain));
+        Assert.Equal(expectedUnderlined, shared.Measure("Underline", underlined));
+        var reversed = new LabelPlacementService();
+        Assert.Equal(expectedUnderlined, reversed.Measure("Underline", underlined));
+        Assert.Equal(expectedPlain, reversed.Measure("Underline", plain));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("  Segoe UI  ")]
+    [InlineData("Arial")]
+    public void MeasureText_DefaultFamily_MeasuresAsTheStyleWithThatDefaultFamily(string family) {
+        var style = new TextStyleOverride { FontWeight = "600" };
+        var expected = ChartLabelScene.MeasureText("Default family", 13, style.WithDefaultFontFamily(family), 400);
+        Assert.Equal(expected, ChartLabelScene.MeasureText("Default family", 13, style, 400, family));
+    }
+
+    [Fact]
     public void Measure_ConcurrentlyWithEvictionInEveryShard_ReturnsTheSequentialMetrics() {
         var style = new TextStyle { Font = FontSpec.SystemSans(), FontSize = 13, LineHeight = 1.1 };
         // More distinct texts than both generations of all shards hold, measured twice in a scrambled order.

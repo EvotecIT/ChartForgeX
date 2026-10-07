@@ -177,6 +177,9 @@ public sealed class TextStyleOverride {
         return copy;
     }
 
+    /// <summary>The family <see cref="FontFamily"/> would hold after assigning <paramref name="family"/>: trimmed, or null when blank.</summary>
+    internal static string? NormalizeFontFamily(string? family) => OptionalText(family);
+
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
     private static int ResolveWeight(string value, int fallback) {

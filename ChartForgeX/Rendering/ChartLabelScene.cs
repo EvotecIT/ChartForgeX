@@ -100,7 +100,7 @@ internal sealed partial class ChartLabelScene {
     internal static double MeasureText(string text, double size, TextStyleOverride style, int weight) => Measurements.Measure(text, ResolveTextStyle(size, style, weight)).Width;
     /// <summary>Measures as <c>MeasureText(text, size, style.WithDefaultFontFamily(defaultFamily), weight)</c>, without copying the style.</summary>
     internal static double MeasureText(string text, double size, TextStyleOverride style, int weight, string? defaultFamily) =>
-        Measurements.Measure(text, ResolveTextStyle(size, style, weight, style.FontFamily ?? defaultFamily)).Width;
+        Measurements.Measure(text, ResolveTextStyle(size, style, weight, style.FontFamily ?? TextStyleOverride.NormalizeFontFamily(defaultFamily))).Width;
     internal static TextStyle ResolveTextStyle(double size, TextStyleOverride style, int weight) => ResolveTextStyle(size, style, weight, style.FontFamily);
     private static TextStyle ResolveTextStyle(double size, TextStyleOverride style, int weight, string? family) {
         var font = (CurrentFont ?? FontSpec.SystemSans()).Clone();
