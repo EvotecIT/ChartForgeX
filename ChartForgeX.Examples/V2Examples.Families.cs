@@ -47,7 +47,7 @@ public static partial class V2Examples {
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
         // Sequence steps retain their full logical viewport; the host scales this SVG into the uniform tile.
         var thumbnail = model.Prepare(GalleryContext(family == "sequence" ? width : 640, family == "sequence" ? height : 400, mode, "", "", legend));
-        var thumbnailSvg = thumbnail.ToSvg(id + "-thumbnail");
+        var thumbnailSvg = thumbnail.ToSvg(new VisualSvgOptions(idPrefix: id + "-thumbnail", responsive: false));
         if (family == "sequence") {
             var document = XDocument.Parse(thumbnailSvg, LoadOptions.PreserveWhitespace);
             var root = document.Root ?? throw new InvalidOperationException("The sequence thumbnail requires an SVG root.");
