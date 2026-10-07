@@ -149,7 +149,8 @@ public sealed class TopologyChartPresentationTests {
 
     private static string[] NodeCaption(string svg, string nodeId) {
         var node = XDocument.Parse(svg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "topology-node" && (string?)element.Attribute("data-node-id") == nodeId);
-        return node.Descendants().Where(element => element.Name.LocalName == "text" && (string?)element.Attribute("font-size") == "11")
+        return node.Descendants().Where(element => element.Name.LocalName == "text" &&
+                (string?)(element.Attribute("font-size") ?? element.Parent?.Attribute("font-size")) == "11")
             .SelectMany(text => text.Elements().Any(child => child.Name.LocalName == "tspan") ? text.Elements().Where(child => child.Name.LocalName == "tspan").Select(child => child.Value) : new[] { text.Value })
             .ToArray();
     }

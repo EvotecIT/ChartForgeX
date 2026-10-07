@@ -30,12 +30,12 @@ internal static partial class SmokeTests {
     }
 
     private static void SvgSpecializedLayoutsReserveTransformedText() {
-        var regularBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("mmmmmmmmmmmmmmmm", 82, 90).ToSvg();
-        var uppercaseBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddBullet("mmmmmmmmmmmmmmmm", 82, 90).ToSvg();
+        var regularBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("nnnnnnnnnnnn", 82, 90).ToSvg();
+        var uppercaseBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddBullet("nnnnnnnnnnnn", 82, 90).ToSvg();
         Assert(GetAttribute(uppercaseBullet, "data-cfx-role=\"bullet-value\"", "x") > GetAttribute(regularBullet, "data-cfx-role=\"bullet-value\"", "x"), "Bullet layout should reserve the transformed series label width before placing the bar.");
 
-        var regularHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("mmmmmmmm", "short").AddHorizontalBar("Values", Points(12, 20)).ToSvg();
-        var uppercaseHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("mmmmmmmm", "short").WithTickLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddHorizontalBar("Values", Points(12, 20)).ToSvg();
+        var regularHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("nnnnnnnn", "short").AddHorizontalBar("Values", Points(12, 20)).ToSvg();
+        var uppercaseHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("nnnnnnnn", "short").WithTickLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddHorizontalBar("Values", Points(12, 20)).ToSvg();
         Assert(GetAttribute(uppercaseHorizontal, "data-cfx-role=\"horizontal-bar\"", "x") > GetAttribute(regularHorizontal, "data-cfx-role=\"horizontal-bar\"", "x"), "Horizontal charts should reserve transformed category labels before placing their plot.");
 
         var closePoints = new[] {
@@ -73,10 +73,13 @@ internal static partial class SmokeTests {
         var funnelDocument = XDocument.Parse(funnel.ToSvg());
         var funnelLabel = funnelDocument.Descendants(ns + "text").First(element => (string?)element.Attribute("data-cfx-role") == "funnel-label");
         var funnelValue = funnelDocument.Descendants(ns + "text").First(element => (string?)element.Attribute("data-cfx-role") == "funnel-value");
-        var labelY = double.Parse(funnelLabel.Attribute("y")!.Value, CultureInfo.InvariantCulture);
-        var valueY = double.Parse(funnelValue.Attribute("y")!.Value, CultureInfo.InvariantCulture);
+        var labelTop = double.Parse(funnelLabel.Attribute("data-cfx-label-y")!.Value, CultureInfo.InvariantCulture);
+        var labelHeight = double.Parse(funnelLabel.Attribute("data-cfx-label-height")!.Value, CultureInfo.InvariantCulture);
+        var valueTop = double.Parse(funnelValue.Attribute("data-cfx-label-y")!.Value, CultureInfo.InvariantCulture);
         var labelFontSize = double.Parse(funnelLabel.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
         var valueFontSize = double.Parse(funnelValue.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
-        Assert(valueY - labelY >= (labelFontSize + valueFontSize) * 0.6, "SVG funnel label rows should be spaced from their fitted heights instead of fixed offsets.");
+        Assert((string?)funnelLabel.Attribute("data-cfx-label-status") == "placed" && (string?)funnelValue.Attribute("data-cfx-label-status") == "placed", "Both fitted funnel rows should remain visible.");
+        Assert(labelFontSize < 42 && valueFontSize < 42, "Funnel rows should reduce the requested font size to fit their stage.");
+        Assert(valueTop >= labelTop + labelHeight, "SVG funnel label rows should have disjoint measured bounds after fitting.");
     }
 }

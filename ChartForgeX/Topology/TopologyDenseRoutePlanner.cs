@@ -147,8 +147,7 @@ internal static partial class TopologyDenseRoutePlanner {
         }
 
         ImproveCrossings(scene, grid, planned, fixedRoutes, sideUse);
-        SeparateLanes(scene, planned, fixedRoutes);
-        RepairLaneOverlaps(scene, requests, planned, fixedRoutes, sideUse, buffers);
+        ArrangeLanes(scene, requests, planned, fixedRoutes, sideUse, buffers);
         if (chart.RenderOptions!.ShareIncomingTrunks) JoinIncomingTrunks(chart, scene, planned, fixedRoutes, paintRoutes, trunkOwners);
         foreach (var route in planned) routes[route.Request.Edge] = route.Points;
         StoreCachedPlan(new CachedPlan(key, edges, routes, paintRoutes, trunkOwners));

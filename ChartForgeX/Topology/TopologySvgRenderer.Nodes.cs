@@ -266,15 +266,25 @@ public sealed partial class TopologySvgRenderer {
     }
 
     private static void AddNodeTextLines(SvgElement body, IReadOnlyList<string> lines, double x, double y, string color, double fontSize, string? fontWeight, string? textAnchor, double lineHeight) {
+        // A wrapped caption is one label. Placing its lines independently can move the second line away from the first
+        // when the resolved font leaves less than the label service's inter-label gap between adjacent baselines.
+        var grouped = lines.Count > 1;
+        if (grouped) {
+            var group = new SvgElement("g").Attribute("data-cfx-role", "topology-node-label")
+                .Attribute("font-size", fontSize).Attribute("fill", color);
+            if (!string.IsNullOrWhiteSpace(fontWeight)) group.Attribute("font-weight", fontWeight);
+            if (!string.IsNullOrWhiteSpace(textAnchor)) group.Attribute("text-anchor", textAnchor);
+            body.AddElement(group);
+            body = group;
+        }
         for (var i = 0; i < lines.Count; i++) {
             body.Element("text", text => {
-                text
-                    .Attribute("x", x)
-                    .Attribute("y", y + i * lineHeight)
-                    .Attribute("fill", color)
-                    .Attribute("font-size", fontSize);
-                if (!string.IsNullOrWhiteSpace(fontWeight)) text.Attribute("font-weight", fontWeight);
-                if (!string.IsNullOrWhiteSpace(textAnchor)) text.Attribute("text-anchor", textAnchor);
+                text.Attribute("x", x).Attribute("y", y + i * lineHeight);
+                if (!grouped) {
+                    text.Attribute("fill", color).Attribute("font-size", fontSize);
+                    if (!string.IsNullOrWhiteSpace(fontWeight)) text.Attribute("font-weight", fontWeight);
+                    if (!string.IsNullOrWhiteSpace(textAnchor)) text.Attribute("text-anchor", textAnchor);
+                }
                 text.Text(lines[i]);
             });
         }
