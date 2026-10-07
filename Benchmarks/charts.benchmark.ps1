@@ -18,9 +18,9 @@ New-BenchmarkSuite 'chartforgex-charts' {
     Set-BenchmarkPolicy -Warmup 2 -Iterations 9 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
     Set-BenchmarkProfile Current -Cleanup KeepOnFailure
     Add-BenchmarkCases {
-        foreach ($lane in 'Baseline', 'Candidate') {
-            foreach ($fixture in $fixtureNames) {
-                foreach ($format in 'Svg', 'Png') {
+        foreach ($fixture in $fixtureNames) {
+            foreach ($format in 'Svg', 'Png') {
+                foreach ($lane in 'Baseline', 'Candidate') {
                     Add-BenchmarkCase "$lane-$fixture-$format" @{ Lane = $lane; Fixture = $fixture; Format = $format }
                 }
             }

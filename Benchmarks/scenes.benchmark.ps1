@@ -20,13 +20,16 @@ New-BenchmarkSuite 'chartforgex-direct-scenes' {
     Set-BenchmarkPolicy -Warmup 2 -Iterations 9 -Order Rotated -MemoryCleanup BeforeIteration -OutlierMode None
     Set-BenchmarkProfile Current -Cleanup KeepOnFailure
     Add-BenchmarkCases {
-        foreach ($lane in 'Baseline', 'Candidate') {
-            foreach ($fixture in $fixtureNames) {
-                $operations = @('Svg', 'Rgba', 'Png')
-                if ($lane -eq 'Candidate') { $operations += 'Compile', 'PreparedSvg', 'PreparedRgba', 'PreparedPng' }
-                foreach ($format in $operations) {
+        foreach ($fixture in $fixtureNames) {
+            foreach ($format in 'Svg', 'Rgba', 'Png') {
+                foreach ($lane in 'Baseline', 'Candidate') {
                     Add-BenchmarkCase "$lane-$fixture-$format" @{ Lane = $lane; Fixture = $fixture; Format = $format }
                 }
+            }
+        }
+        foreach ($fixture in $fixtureNames) {
+            foreach ($format in 'Compile', 'PreparedSvg', 'PreparedRgba', 'PreparedPng') {
+                Add-BenchmarkCase "Candidate-$fixture-$format" @{ Lane = 'Candidate'; Fixture = $fixture; Format = $format }
             }
         }
     }
