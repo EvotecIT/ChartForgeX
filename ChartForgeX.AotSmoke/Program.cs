@@ -42,7 +42,9 @@ var grid = ChartGrid.Create()
     .WithPanelSize(260, 180)
     .Add(chart)
     .Add(Chart.Create().WithSize(260, 180).WithXLabels("Ready", "Risk").AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) }));
-AssertContains(grid.ToSvg("aot-grid"), "data-cfx-role=\"grid-panel\"", "Grid SVG render failed.");
+var gridSvg = grid.ToSvg("aot-grid");
+AssertContains(gridSvg, "data-cfx-role=\"panel\"", "Grid SVG render failed.");
+AssertContains(gridSvg, "data-cfx-source-id=\"panel-1\"", "Grid SVG lost its second prepared panel.");
 AssertPng(grid.ToPng(), "Grid PNG render failed.");
 
 var metric = MetricCard.Create()

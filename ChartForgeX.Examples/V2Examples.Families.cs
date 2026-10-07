@@ -10,7 +10,7 @@ public static partial class V2Examples {
         ChartSeriesKind.RadialBar, ChartSeriesKind.Tree, ChartSeriesKind.Sunburst, ChartSeriesKind.GanttLane, ChartSeriesKind.Pictorial
     };
     private static readonly ChartSeriesKind[] SparseFamilies = {
-        ChartSeriesKind.Line, ChartSeriesKind.Area, ChartSeriesKind.Scatter, ChartSeriesKind.RangeArea, ChartSeriesKind.Heatmap, ChartSeriesKind.Radar, ChartSeriesKind.CalendarHeatmap
+        ChartSeriesKind.Line, ChartSeriesKind.Area, ChartSeriesKind.Scatter, ChartSeriesKind.RangeArea, ChartSeriesKind.Heatmap, ChartSeriesKind.CalendarHeatmap
     };
     private static readonly ChartSeriesKind[] OptionFamilies = {
         ChartSeriesKind.Bar, ChartSeriesKind.Area, ChartSeriesKind.HorizontalBar, ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Gauge,
