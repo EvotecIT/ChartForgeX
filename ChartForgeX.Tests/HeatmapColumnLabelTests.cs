@@ -97,6 +97,40 @@ public sealed class HeatmapColumnLabelTests {
         Assert.True(pitch * Math.Sin(Math.PI / 6) >= chart.Options.Theme.TickLabelFontSize * 0.9, "Neighbouring rotated labels keep a line of text between them.");
     }
 
+    [Theory]
+    [InlineData(5)] [InlineData(-5)]
+    [InlineData(45)] [InlineData(-45)]
+    [InlineData(80)] [InlineData(-80)]
+    public void ToSvg_LongRotatedLabels_PreserveReadableCellsAndFitBothCanvasDimensions(double angle) {
+        var longLabel = new string('W', 100);
+        var chart = Chart.Create().WithSize(520, 380).WithXAxisLabelAngle(angle)
+            .WithTickLabelStyle(style => style.WithWeight("700"))
+            .WithXLabels(longLabel, longLabel, longLabel)
+            .AddHeatmapRow("Row", new[] { 1d, 2d, 3d });
+        var svg = XDocument.Parse(chart.ToSvg());
+        var cells = ByRole(svg, "heatmap-cell");
+        Assert.Equal(3, cells.Length);
+        var plotLeft = cells.Min(cell => Number(cell, "x"));
+        var plotRight = cells.Max(cell => Number(cell, "x") + Number(cell, "width"));
+        Assert.True(plotRight - plotLeft >= chart.Options.Size.Width / 3, "Long column labels must leave a substantial width for the cells.");
+        Assert.All(cells, cell => Assert.True(Number(cell, "height") >= 12));
+
+        var labels = ByRole(svg, "heatmap-column-label");
+        Assert.NotEmpty(labels);
+        var radians = Math.Abs(angle) * Math.PI / 180;
+        var scaleTop = ByRole(svg, "heatmap-scale-step").Min(step => Number(step, "y"));
+        Assert.All(labels, label => {
+            var style = new TextStyle { Font = new FontSpec { Family = (string)label.Attribute("font-family")!, Weight = 700 }, FontSize = Number(label, "font-size") };
+            var metrics = TextLayoutEngine.Measure(label.Value, style);
+            Assert.True(TextLayoutEngine.Measure(longLabel, style).Width > chart.Options.Size.Width, "The fixture must require shortening.");
+            var sideways = metrics.Width * Math.Cos(radians) + metrics.Height / 2 * Math.Sin(radians);
+            var x = Number(label, "x");
+            Assert.True(angle < 0 ? x - sideways >= -1 : x + sideways <= chart.Options.Size.Width + 1, "Measured rotated text must remain inside the horizontal canvas bounds.");
+            var bottom = Number(label, "y") + metrics.Width * Math.Sin(radians) + metrics.Height / 2 * Math.Cos(radians);
+            Assert.True(bottom <= scaleTop + 1, "Measured rotated text must remain above the numeric scale.");
+        });
+    }
+
     private static Chart Matrix() {
         var chart = Chart.Create().WithSize(520, 380).WithLegendPosition(ChartLegendPosition.Bottom)
             .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("fail", "Failed", ChartColor.FromHex("#d4302f")))

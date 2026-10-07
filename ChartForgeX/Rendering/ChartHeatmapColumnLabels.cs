@@ -9,12 +9,16 @@ namespace ChartForgeX.Rendering;
 /// do, and the plot reserves the height they take. Shared by the SVG and PNG renderers so both reserve the same band.
 /// </summary>
 internal static class ChartHeatmapColumnLabels {
-    /// <summary>Limits the rotated label band to a portion of the available canvas height, retaining room for cells.</summary>
+    /// <summary>Limits both rotated reaches to portions of the padded canvas, retaining room for cells at shallow angles.</summary>
     internal static double MaximumRotatedLength(Chart chart, double textHeight) {
         var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
+        var sine = Math.Sin(radians);
+        var cosine = Math.Cos(radians);
         var height = Math.Max(0, chart.Options.Size.Height - chart.Options.Padding.Top - chart.Options.Padding.Bottom);
-        var band = height * 0.4 - RotatedOffset - 8 - Math.Cos(radians) * textHeight;
-        return Math.Max(0, band / Math.Max(0.000001, Math.Sin(radians)));
+        var width = Math.Max(0, chart.Options.Size.Width - chart.Options.Padding.Left - chart.Options.Padding.Right);
+        var verticalRoom = height * 0.4 - RotatedOffset - 8 - cosine * textHeight;
+        var horizontalRoom = width * 0.4 - EdgeInset - sine * textHeight / 2;
+        return Math.Max(0, Math.Min(verticalRoom / Math.Max(0.000001, sine), horizontalRoom / Math.Max(0.000001, cosine)));
     }
 
     /// <summary>Baseline offset of unrotated labels below the plot.</summary>
