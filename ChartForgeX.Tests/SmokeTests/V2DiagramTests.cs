@@ -10,6 +10,36 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Native diagram producers share the fixed scene contract while rejecting unmigrated presentation.</summary>
 public sealed class V2DiagramTests {
+    [Theory]
+    [InlineData("#FF000080", .5, 64)]
+    [InlineData("#FF000080", 1, 128)]
+    [InlineData("#FF0000", .5, 128)]
+    public void PreparedTopologyMultipliesSourceAlphaByExplicitEdgeOpacity(string color, double opacity, byte expectedAlpha) {
+        var topology = Topology();
+        topology.Edges[0].Color = color;
+        topology.Edges[0].Opacity = opacity;
+        topology.Edges[0].Label = null;
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
+            frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true));
+        var prepared = topology.Prepare(context);
+        var edge = Find(XDocument.Parse(prepared.ToSvg()), "topology-edge");
+        var css = ChartColor.FromRgba(255, 0, 0, expectedAlpha).ToCss();
+        var lines = edge.Descendants().Where(element => element.Name.LocalName == "line").ToArray();
+        Assert.NotEmpty(lines);
+        Assert.All(lines, line => Assert.Equal(css, line.Attribute("stroke")?.Value));
+        Assert.Equal(css, edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-arrow").Attribute("fill")?.Value);
+        var image = prepared.ToRgba();
+        double Coordinate(string name) => double.Parse(lines[0].Attribute(name)!.Value, System.Globalization.CultureInfo.InvariantCulture);
+        var x = (int)Math.Round((Coordinate("x1") + Coordinate("x2")) / 2);
+        var y = (int)Math.Round((Coordinate("y1") + Coordinate("y2")) / 2);
+        // Sample the shaft away from the marker/endpoint overlap; those overlaps legitimately composite twice.
+        var shaftAlpha = Enumerable.Range(y - 1, 3).SelectMany(row => Enumerable.Range(x - 1, 3)
+            .Select(column => image.Pixels[(row * image.Width + column) * 4 + 3])).Max();
+        Assert.InRange(shaftAlpha, expectedAlpha - 1, expectedAlpha);
+        Assert.Equal(color, topology.Edges[0].Color);
+        Assert.Equal(opacity, topology.Edges[0].Opacity);
+    }
+
     [Fact]
     public void HiddenDiagramHeadingsPreserveSourceTitlesAsAccessibleNames() {
         var topology = Topology(); topology.Title = "Source network";

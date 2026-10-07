@@ -83,6 +83,49 @@ public sealed class V2RadialTests {
         Assert.Equal(Math.PI * 2, light.Nodes.OfType<VisualSceneSlice>().Sum(slice => slice.Sweep), 10);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AggregatedSliceOffset_LeavesSurvivingGeometryAndVerticalLabelsUnchanged(bool donut) {
+        var chart = (donut ? Donut(9, 3, 1) : Chart.Create().AddPie("Total", Points(9, 3, 1)))
+            .WithXLabels("A", "B", "C").WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label)
+            .WithDonutCenterLabel(false);
+        chart.Options.MaximumPieSlices = 2;
+        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Above;
+        // Retain a real exploded slice; only the smaller slices become Other.
+        chart.Series[0].WithPointSliceOffset(0, .1);
+        var baseline = Compile(chart);
+        chart.Series[0].WithPointSliceOffset(2, .35); // The largest supported source offset is discarded into Other.
+        var aggregatedOffset = Compile(chart);
+
+        Assert.Contains(aggregatedOffset.Diagnostics, diagnostic => diagnostic.Code == "radial.aggregate-offsets");
+        Assert.Equal(.35, chart.Series[0].PointSliceOffsets[2]);
+        var slices = aggregatedOffset.Nodes.OfType<VisualSceneSlice>().ToArray();
+        Assert.Equal(2, slices.Length);
+        var other = Assert.Single(slices, slice => slice.Id == "series-0-point-other");
+        Assert.Equal(210, other.Cx); Assert.Equal(160, other.Cy);
+        var retained = Assert.Single(slices, slice => slice.Id == "series-0-point-0");
+        Assert.Equal(retained.Outer * .1, Math.Sqrt(Math.Pow(retained.Cx - other.Cx, 2) + Math.Pow(retained.Cy - other.Cy, 2)), 10);
+        Assert.Contains(aggregatedOffset.Nodes.OfType<VisualSceneGroup>(), group =>
+            group.Metadata.TryGetValue("data-cfx-source-points", out var sources) && sources == "1,2");
+        Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idPrefix: "offset-proof"),
+            VisualSceneSvgRenderer.Render(aggregatedOffset, idPrefix: "offset-proof"));
+        Assert.Equal(VisualSceneRasterRenderer.Render(baseline).Pixels, VisualSceneRasterRenderer.Render(aggregatedOffset).Pixels);
+    }
+
+    [Fact]
+    public void ZeroValueSliceOffset_DoesNotShrinkPositiveSlices() {
+        var chart = Donut(9, 0, 3).WithDonutCenterLabel(false);
+        chart.Series[0].WithPointSliceOffset(0, .1);
+        var baseline = Compile(chart);
+        chart.Series[0].WithPointSliceOffset(1, .35);
+        var zeroOffset = Compile(chart);
+        Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idPrefix: "zero-offset-proof"),
+            VisualSceneSvgRenderer.Render(zeroOffset, idPrefix: "zero-offset-proof"));
+        Assert.Equal(VisualSceneRasterRenderer.Render(baseline).Pixels, VisualSceneRasterRenderer.Render(zeroOffset).Pixels);
+        Assert.Equal(3, VisualRadialCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light)).Count);
+    }
+
     [Fact]
     public void Formatter_ReceivesRealAggregateValuesAndSourceSentinel() {
         var contexts = new List<ChartPieSliceLabelContext>();

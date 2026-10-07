@@ -55,12 +55,14 @@ internal sealed partial class ChartLabelScene {
         return new ChartRect(left, top, points.Max(p => p.X) - left, points.Max(p => p.Y) - top);
     }
 
-    private static bool CanMove(string role) => !role.Contains("axis") && !role.Contains("tick") && !role.Contains("column-label") && !role.Contains("row-label") && !role.Contains("legend")
+    private static bool IsAxisLabel(string role) => role.Contains("axis") || role.Contains("tick") || role.Contains("column-label") || role.Contains("row-label")
+        || role is "calendar-heatmap-weekday-label" or "calendar-heatmap-month-label" or "calendar-heatmap-scale-label";
+    private static bool CanMove(string role) => !IsAxisLabel(role) && !role.Contains("legend")
         && !role.Contains("header") && role != "chart-title" && role != "chart-subtitle" && role != "donut-total-label" && role != "donut-title";
     private static string LabelRole(SvgMarkupElement element) => Role(element).Length != 0 ? Role(element)
         : element.Ancestors().Select(Role).FirstOrDefault(role => role.Length != 0) ?? "";
     private static int Priority(string role) => role is "chart-title" or "chart-subtitle" || role.Contains("header") ? 1000
-        : role.Contains("legend") ? 900 : role.Contains("axis") || role.Contains("tick") || role.Contains("column-label") || role.Contains("row-label") ? 800
+        : role.Contains("legend") ? 900 : IsAxisLabel(role) ? 800
         : role.Contains("gauge-label") || role.Contains("annotation") || role.Contains("callout") ? 700
         : role.Contains("node") ? 600 : role.Contains("connector-label") || role.Contains("route-label") ? 300 : 500;
 
