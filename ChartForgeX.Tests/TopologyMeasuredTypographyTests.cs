@@ -18,9 +18,24 @@ public sealed class TopologyMeasuredTypographyTests {
         Assert.Equal(sans, mono);
         Assert.Equal(sans, missing);
         var options = new TopologyRenderOptions();
-        Assert.Equal(TextMeasurementMode.InstalledFonts, options.TextMeasurementMode);
+        Assert.Equal(TextMeasurementMode.PortableEstimate, options.TextMeasurementMode);
         options.TextMeasurementMode = TextMeasurementMode.InstalledFonts;
         Assert.Equal(options.TextMeasurementMode, options.Clone().TextMeasurementMode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DefaultTopologyLayoutUsesPortableMetricsWithOrWithoutOptions(bool supplyOptions) {
+        const string text = "iiiiiiiiiiiiiiii";
+        const double size = 20;
+        var theme = TopologyTheme.Light(); theme.FontFamily = "Georgia";
+        var chart = TopologyChart.Create().WithTheme(theme).AddAutoNode("a", text);
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: supplyOptions ? new TopologyRenderOptions() : null);
+        var expected = text.Length * size * 0.56;
+        Assert.Equal(expected, prepared.TextMeasurement!.Measure(text, size, false));
+        Assert.Equal(expected, new TextMeasurementContext(theme.FontFamily).Measure(text, size, false));
+        Assert.Equal(expected, new TextMeasurementContext(FontSpec.FromFamily(theme.FontFamily)).Measure(text, size, false));
     }
 
     [Fact]

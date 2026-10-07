@@ -11,10 +11,10 @@ internal sealed class TextMeasurementContext {
     private readonly TextMeasurementMode _mode;
     private static readonly LabelPlacementService Service = new();
 
-    internal TextMeasurementContext(string family, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts)
+    internal TextMeasurementContext(string family, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate)
         : this(new FontSpec { Family = family }, mode) { }
 
-    internal TextMeasurementContext(FontSpec font, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts) {
+    internal TextMeasurementContext(FontSpec font, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         if (mode != TextMeasurementMode.PortableEstimate && mode != TextMeasurementMode.InstalledFonts)
             throw new ArgumentOutOfRangeException(nameof(mode));
         _font = (font ?? throw new ArgumentNullException(nameof(font))).Clone();

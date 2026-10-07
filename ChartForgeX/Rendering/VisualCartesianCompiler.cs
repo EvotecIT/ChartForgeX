@@ -84,6 +84,8 @@ internal static partial class VisualCartesianCompiler {
                 && series.YAxis == ChartAxisSide.Secondary) throw Unsupported("secondary-axis stacks");
             if (series.Kind == ChartSeriesKind.StackedArea && chart.Options.YAxis.Scale == ChartScaleKind.Logarithmic && series.Points.Any(point => point.Y <= 0))
                 throw new InvalidOperationException("Logarithmic stacked areas require positive values.");
+            if (series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.Scatter && series.Points.Count > 0 && chart.Options.HasPreparedLineVisualStyle)
+                throw Unsupported("explicit line visual styles");
         }
         if (chart.Options.XAxis.LabelAngle != 0 || chart.Options.YAxis.LabelAngle != 0 || chart.Options.SecondaryYAxis.LabelAngle != 0)
             throw Unsupported("rotated axis labels");

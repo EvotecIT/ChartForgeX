@@ -82,13 +82,15 @@ public sealed class FontRegistryTests : IDisposable {
     [Fact]
     public void PortableCanvasMetricsIgnoreInstalledFamiliesAndUseRegisteredFaces() {
         const string text = "Wide canvas title WWW";
-        var portable = VisualCanvasTextFace.Resolve("Georgia", 400, TextMeasurementMode.PortableEstimate);
-        var absent = VisualCanvasTextFace.Resolve("No Such Family", 400, TextMeasurementMode.PortableEstimate);
+        var defaultMode = new VisualCanvasTheme().TextMeasurementMode;
+        Assert.Equal(TextMeasurementMode.PortableEstimate, defaultMode);
+        var portable = VisualCanvasTextFace.Resolve("Georgia", 400, defaultMode);
+        var absent = VisualCanvasTextFace.Resolve("No Such Family", 400, defaultMode);
         Assert.Equal(absent.Measure(text, 20), portable.Measure(text, 20));
         Assert.Equal(absent.LineHeight(20), portable.LineHeight(20));
         if (!TryGetGeorgia(out var path, out _)) return;
         FontRegistry.Register(Family, path);
-        var registered = VisualCanvasTextFace.Resolve(Family, 400, TextMeasurementMode.PortableEstimate);
+        var registered = VisualCanvasTextFace.Resolve(Family, 400, defaultMode);
         Assert.Equal(TrueTypeFont.TryLoadFromPath(path)!.Measure(text, 20), registered.Measure(text, 20));
     }
 

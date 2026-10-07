@@ -105,7 +105,7 @@ internal static class VisualCanvasInfoTileTextLayout {
     }
 
     /// <summary>The icon text size both renderers use: the preferred size, reduced until the text fits inside the icon box.</summary>
-    public static double IconFontSize(string icon, double iconBox, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts) {
+    public static double IconFontSize(string icon, double iconBox, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         var size = Math.Min(25, iconBox * (icon.Length > 3 ? 0.34 : 0.42));
         var width = VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.Emphasized, mode).Measure(icon, size);
         var available = Math.Max(4, iconBox - 8);
@@ -113,7 +113,7 @@ internal static class VisualCanvasInfoTileTextLayout {
     }
 
     /// <summary>Lays out the tile text measured with <paramref name="fontFamily"/> at the weights each role draws with.</summary>
-    public static VisualCanvasInfoTileTextLayoutResult BuildResult(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.InstalledFonts) {
+    public static VisualCanvasInfoTileTextLayoutResult BuildResult(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
         var faces = new TileFaces(fontFamily, mode);
         var policy = tile.TextFitPolicy == VisualCanvasTextFitPolicy.Auto ? VisualCanvasTextFitPolicy.WrapThenShrink : tile.TextFitPolicy;
