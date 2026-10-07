@@ -30,7 +30,7 @@ internal static partial class VisualCartesianCompiler {
     private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport, bool measureAxes) {
         Validate(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
-        if (!chart.Series.Any(series => series.Points.Count > 0)) {
+        if (!chart.Series.Any(series => series.Points.Count > 0) && chart.Annotations.Count == 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center);
@@ -58,6 +58,7 @@ internal static partial class VisualCartesianCompiler {
                 var seriesMap = series.YAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
                 using (builder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
+                    ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
                     ["aria-label"] = series.Name
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, builder, plot, coordinates, seriesMap, index, colors, labels, obstacles);
@@ -111,6 +112,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
+            ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         });
     }
@@ -121,14 +123,29 @@ internal static partial class VisualCartesianCompiler {
             var horizontal = annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand;
             var position = horizontal ? map.Y(annotation.Value) : map.X(annotation.Value);
             var color = annotation.Color;
+            var id = "annotation-" + Number(index);
+            var kind = annotation.Kind.ToString();
+            var description = kind + ": " + Number(annotation.Value)
+                + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
+                + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);
+            var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
             if (annotation.EndValue.HasValue) {
                 var end = horizontal ? map.Y(annotation.EndValue.Value) : map.X(annotation.EndValue.Value);
-                builder.Rect(horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
-                    : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height), color.WithAlpha((byte)Math.Round(color.A * annotation.Opacity)), role: "annotation-band");
-            } else if (horizontal) builder.Line(plot.Left, position, plot.Right, position, color, context.Theme.AxisStrokeWidth, role: "annotation-line");
-            else builder.Line(position, plot.Top, position, plot.Bottom, color, context.Theme.AxisStrokeWidth, role: "annotation-line");
-            if (!string.IsNullOrEmpty(annotation.Label)) builder.Text(annotation.Label, horizontal ? plot.Left + context.Theme.Spacing : position + context.Theme.Spacing,
-                horizontal ? position - context.Theme.Spacing : plot.Top + context.Theme.Typography.AxisSize, context.Theme.Typography.AxisSize, colors.MutedForeground, role: "annotation-label");
+                bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
+                    : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height);
+            }
+            builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
+            using (builder.PushGroup(id, "annotation", new Dictionary<string, string> {
+                ["data-cfx-kind"] = kind, ["data-cfx-value"] = Number(annotation.Value),
+                ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
+                ["data-cfx-label"] = annotation.Label, ["aria-label"] = description
+            })) {
+                if (annotation.EndValue.HasValue) builder.Rect(bounds, color.WithAlpha((byte)Math.Round(color.A * annotation.Opacity)), role: "annotation-band");
+                else if (horizontal) builder.Line(plot.Left, position, plot.Right, position, color, context.Theme.AxisStrokeWidth, role: "annotation-line");
+                else builder.Line(position, plot.Top, position, plot.Bottom, color, context.Theme.AxisStrokeWidth, role: "annotation-line");
+                if (!string.IsNullOrEmpty(annotation.Label)) builder.Text(annotation.Label, horizontal ? plot.Left + context.Theme.Spacing : position + context.Theme.Spacing,
+                    horizontal ? position - context.Theme.Spacing : plot.Top + context.Theme.Typography.AxisSize, context.Theme.Typography.AxisSize, colors.MutedForeground, role: "annotation-label");
+            }
         }
     }
 }

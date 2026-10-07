@@ -64,7 +64,7 @@ public sealed partial class TopologyChart : IVisualRenderable {
         var regionBounds = new ChartRect(bounds.X - margin, bounds.Y - margin, bounds.Width + margin * 2, bounds.Height + margin * 2);
         VisualDiagramPrimitives.RequireInside(regionBounds, plot, edge.Id);
         var color = string.IsNullOrWhiteSpace(edge.Color) ? edge.IsMuted ? colors.Border : PreparedStatus(edge.Status, colors) : ChartColor.Parse(edge.Color!);
-        if (edge.Opacity.HasValue) color = color.WithOpacity(edge.Opacity.Value);
+        if (edge.Opacity.HasValue) color = ChartColorMath.WithOpacity(color, edge.Opacity.Value);
         var lineStyle = TopologyRenderPrimitives.EdgePngDash(edge);
         var dash = lineStyle.Dashed ? new[] { lineStyle.Dash, lineStyle.Gap } : null;
         using (builder.PushGroup(edge.Id, "topology-edge", new Dictionary<string, string> { ["data-source"] = edge.SourceNodeId, ["data-target"] = edge.TargetNodeId, ["data-direction"] = edge.Direction.ToString() })) {
