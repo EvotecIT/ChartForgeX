@@ -19,8 +19,32 @@ internal static class SvgRenderedIdentity {
 
     public static string CreateFinalId(string svg, string finalPrefix, string idScope, string separator = "-") {
         // Ids hash the markup as it reads without colour variables, so typed paint tokens do not change them.
-        var canonicalSvg = Themes.SvgPaint.Resolve(svg, null).Replace("\r\n", "\n");
-        return finalPrefix + separator + StableHash(idScope ?? string.Empty, canonicalSvg);
+        var resolved = Themes.SvgPaint.Resolve(svg, null);
+        return finalPrefix + separator + CanonicalHash(idScope ?? string.Empty, resolved);
+    }
+
+    // StableHash(idScope, markup.Replace("\r\n", "\n")) without building the replaced copy of the markup.
+    private static string CanonicalHash(string idScope, string markup) {
+        unchecked {
+            var hash = 2166136261u;
+            Add(ref hash, idScope);
+            var lineEnds = 0;
+            for (var i = 0; i + 1 < markup.Length; i++) {
+                if (markup[i] == '\r' && markup[i + 1] == '\n') lineEnds++;
+            }
+
+            AddRaw(ref hash, (markup.Length - lineEnds).ToString(CultureInfo.InvariantCulture));
+            AddRaw(ref hash, ":");
+            for (var i = 0; i < markup.Length; i++) {
+                var ch = markup[i];
+                if (ch == '\r' && i + 1 < markup.Length && markup[i + 1] == '\n') continue;
+                hash ^= ch;
+                hash *= 16777619u;
+            }
+
+            AddRaw(ref hash, "|");
+            return hash.ToString("x8", CultureInfo.InvariantCulture);
+        }
     }
 
     public static string RebindGeneratedId(string svg, string oldId, string newId) {
