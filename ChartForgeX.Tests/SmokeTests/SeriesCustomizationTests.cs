@@ -209,7 +209,11 @@ internal static partial class SmokeTests {
         chart.Series[0].WithPointColor(1, "#F97316");
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Bar points should still render when point colors are configured.");
-        Assert(svg.Contains("seriesFill0-point1", StringComparison.Ordinal) && svg.Contains("data-cfx-color=\"#F97316\"", StringComparison.Ordinal), "Bar points should honor point-specific fill colors in SVG.");
+        Assert(CartesianPoint(svg, 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "bar" && element.Attribute("fill") != null),
+            "The authored bar point should retain a native filled mark.");
+        var nativeBar = PreparedFamily(chart).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(mark => mark.Role == "bar").ElementAt(1);
+        Assert(nativeBar.Fill!.Value.Equals(ChartColor.FromHex("#F97316")),
+            "The orange point override should determine that native flat bar rather than the teal series color.");
         Assert(chart.ToPng().Length > 64, "Bar point colors should render PNG output.");
 
         var horizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -218,7 +222,11 @@ internal static partial class SmokeTests {
             .AddHorizontalBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         horizontal.Series[0].WithPointColor(2, ChartColor.FromHex("#8B5CF6"));
         var horizontalSvg = horizontal.ToSvg();
-        Assert(horizontalSvg.Contains("seriesFill0-point2", StringComparison.Ordinal) && horizontalSvg.Contains("data-cfx-color=\"#8B5CF6\"", StringComparison.Ordinal), "Horizontal bar points should honor point-specific fill colors in SVG.");
+        Assert(CartesianPoint(horizontalSvg, 0, 2).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "horizontal-bar" && element.Attribute("fill") != null),
+            "The authored horizontal bar point should retain a native filled mark.");
+        var nativeHorizontalBar = PreparedFamily(horizontal).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(mark => mark.Role == "horizontal-bar").ElementAt(2);
+        Assert(nativeHorizontalBar.Fill!.Value.Equals(ChartColor.FromHex("#8B5CF6")),
+            "The purple horizontal point override should determine that native flat observation.");
         Assert(horizontal.ToPng().Length > 64, "Horizontal bar point colors should render PNG output.");
 
         var funnel = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -347,7 +355,9 @@ internal static partial class SmokeTests {
             .AddBar("Severity", Points(8, 32, 84), ChartColor.FromHex("#2563EB"));
         pointLegend.Series[0].WithPointColor(1, "#F97316");
         var pointLegendSvg = pointLegend.ToSvg();
-        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Severity\" data-cfx-series-key=\"Severity\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Point legends should expose item-level and semantic series metadata.");
+        Assert(System.Xml.Linq.XDocument.Parse(pointLegendSvg).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "legend-entry"
+            && (string?)element.Attribute("data-cfx-series-key") == "Severity" && (string?)element.Attribute("data-cfx-source-id") == "legend-series-0-point-1"),
+            "Point legends should retain the exact observation identity and semantic series key.");
         Assert(pointLegendSvg.Contains(">High</text>", StringComparison.Ordinal) && pointLegendSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Point legends should use x-axis labels and point colors.");
         Assert(pointLegend.ToPng().Length > 64, "Point legends should render PNG output.");
 

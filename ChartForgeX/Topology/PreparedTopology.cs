@@ -3,6 +3,7 @@ using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.Accessibility;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Topology;
 
@@ -67,8 +68,14 @@ public sealed class PreparedTopology {
     }
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
-    public string ToSvg() => _animation?.Compose(_staticVisual.ToSvg()) ?? _visual.ToSvg();
-    internal string ToSvg(VisualAccessibility accessibility) => _animation?.Compose(_staticVisual.ToSvg(accessibility)) ?? _visual.ToSvg(accessibility);
+    public string ToSvg() => _animation == null ? _visual.ToSvg() : ToSvg(_staticVisual.Accessibility);
+    internal string ToSvg(VisualAccessibility accessibility) => _animation == null ? _visual.ToSvg(accessibility)
+        : _animation.Compose(_staticVisual.ToSvg(accessibility, AnimationPrefix(accessibility)));
+
+    private string AnimationPrefix(VisualAccessibility accessibility) => VisualSvgOptions.NamespaceFromExternalId(_options.IdScope)
+        ?? VisualSceneSvgRenderer.Identity(_staticVisual.Scene, accessibility.Name, accessibility.Description, accessibility.Language,
+            accessibility.IsDecorative, new VisualSvgOptions(colorVariables: _options.SvgColorVariables,
+                linkTarget: _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext)) + "-" + _animation!.PolicyIdentity;
 
     /// <summary>Renders the same prepared geometry through the dependency-free raster renderer.</summary>
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);

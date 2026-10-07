@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
@@ -56,13 +57,12 @@ internal static partial class SmokeTests {
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
             .WithDataLabelStyle(style => style.WithFontSize(42));
         for (var row = 0; row < 8; row++) heatmap.AddHeatmapRow("Row " + row.ToString(CultureInfo.InvariantCulture), Points(1));
-        var heatmapDocument = XDocument.Parse(heatmap.ToSvg());
-        XNamespace ns = heatmapDocument.Root!.Name.Namespace;
-        var heatmapCell = heatmapDocument.Descendants(ns + "rect").First(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell");
-        var heatmapLabel = heatmapDocument.Descendants(ns + "text").First(element => (string?)element.Attribute("data-cfx-role") == "data-label");
-        var cellHeight = double.Parse(heatmapCell.Attribute("height")!.Value, CultureInfo.InvariantCulture);
-        var cellFontSize = double.Parse(heatmapLabel.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
-        Assert(cellFontSize * 1.2 <= cellHeight, "SVG heatmap labels should fit their resolved font height inside the cell instead of fitting width alone. Font size: " + cellFontSize.ToString(CultureInfo.InvariantCulture) + "; cell height: " + cellHeight.ToString(CultureInfo.InvariantCulture) + ".");
+        var matrix = PreparedFamily(heatmap);
+        var heatmapCells = matrix.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-cell-shape").ToArray();
+        var heatmapLabels = FamilyLabels(matrix, "data-label");
+        Assert(heatmapCells.Length == 8 && heatmapLabels.Length == 8, "Always-visible heatmap values should retain every fitted label.");
+        Assert(heatmapLabels.All(label => label.Text.Metrics.Height <= heatmapCells[0].Bounds.Height - 6 + .000001),
+            "Shared heatmap text should fit its measured height inside the cell padding.");
 
         var funnel = Chart.Create()
             .WithSize(560, 300)
@@ -70,16 +70,15 @@ internal static partial class SmokeTests {
             .WithDataLabelStyle(style => style.WithFontSize(42))
             .WithXLabels("Qualified", "Validated", "Closed")
             .AddFunnel("Pipeline", Points(120, 74, 32));
-        var funnelDocument = XDocument.Parse(funnel.ToSvg());
-        var funnelLabel = funnelDocument.Descendants(ns + "text").First(element => (string?)element.Attribute("data-cfx-role") == "funnel-label");
-        var funnelValue = funnelDocument.Descendants(ns + "text").First(element => (string?)element.Attribute("data-cfx-role") == "funnel-value");
-        var labelTop = double.Parse(funnelLabel.Attribute("data-cfx-label-y")!.Value, CultureInfo.InvariantCulture);
-        var labelHeight = double.Parse(funnelLabel.Attribute("data-cfx-label-height")!.Value, CultureInfo.InvariantCulture);
-        var valueTop = double.Parse(funnelValue.Attribute("data-cfx-label-y")!.Value, CultureInfo.InvariantCulture);
-        var labelFontSize = double.Parse(funnelLabel.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
-        var valueFontSize = double.Parse(funnelValue.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
-        Assert((string?)funnelLabel.Attribute("data-cfx-label-status") == "placed" && (string?)funnelValue.Attribute("data-cfx-label-status") == "placed", "Both fitted funnel rows should remain visible.");
-        Assert(labelFontSize < 42 && valueFontSize < 42, "Funnel rows should reduce the requested font size to fit their stage.");
-        Assert(valueTop >= labelTop + labelHeight, "SVG funnel label rows should have disjoint measured bounds after fitting.");
+        var stages = PreparedFamily(funnel);
+        var funnelLabels = FamilyLabels(stages, "funnel-label");
+        Assert(funnelLabels.Length == 3, "Every funnel stage should retain a fitted category and value label.");
+        for (var index = 0; index < funnelLabels.Length; index++) {
+            var label = funnelLabels[index];
+            var region = stages.Regions.Single(region => region.Id == label.Id && region.Role == "funnel-label");
+            Assert(label.Text.Metrics.Height <= region.Bounds.Height + .000001 && label.Text.Metrics.Width <= region.Bounds.Width + .000001,
+                "Funnel labels should fit their complete native measured bounds inside the stage.");
+            Assert(region.Label!.Contains(":" , StringComparison.Ordinal), "Stage semantics should retain both the category and value when text is fitted.");
+        }
     }
 }

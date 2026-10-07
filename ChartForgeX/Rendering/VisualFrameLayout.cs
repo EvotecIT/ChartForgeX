@@ -47,12 +47,7 @@ internal static class VisualFrameLayout {
         var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
         var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(colors.Background, SvgColorRole.Surface));
-        if (context.Frame.ShowCard) {
-            var stroke = Math.Min(context.Theme.AxisStrokeWidth, Math.Min(size.Width, size.Height)); var inset = stroke / 2;
-            builder.Rect(new ChartRect(inset, inset, size.Width - stroke, size.Height - stroke), colors.ElevatedSurface, colors.Border, stroke,
-                radius: context.Theme.BarRadius, role: "frame-card", paint: new VisualScenePaintBinding(
-                    fill: SvgPaint.Of(colors.ElevatedSurface, SvgColorRole.Surface), stroke: SvgPaint.Of(colors.Border, SvgColorRole.Grid)));
-        }
+        if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors);
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             Header(context.Frame.Title, titleStyle);
@@ -73,7 +68,13 @@ internal static class VisualFrameLayout {
             var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
             var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
             var legendGap = Math.Min(gap, Math.Max(0, available - lineHeight));
-            var maximumRows = available < lineHeight ? 0 : (int)Math.Floor((available - legendGap) / lineHeight);
+            var legendTitle = context.Frame.LegendTitle;
+            var legendTitleStyle = legendStyle.Clone(); legendTitleStyle.Font.Weight = 600;
+            var titleLineHeight = Math.Max(legendTitleStyle.EffectiveFontSize * 1.3, builder.MeasureText("Mg", legendTitleStyle).Height);
+            var titleGap = Math.Min(gap, lineHeight * .25);
+            var titleHeight = !string.IsNullOrWhiteSpace(legendTitle) && available >= titleLineHeight + titleGap + lineHeight + legendGap
+                ? titleLineHeight + titleGap : 0;
+            var maximumRows = available - titleHeight < lineHeight ? 0 : (int)Math.Floor((available - titleHeight - legendGap) / lineHeight);
             if (context.Frame.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, context.Frame.LegendMaximumRows.Value);
             var omitted = 0; VisualLegendEntry? overflow = null;
             LegendRowBudget.Apply(rows, maximumRows, row => row.Count, count => {
@@ -84,10 +85,21 @@ internal static class VisualFrameLayout {
             if (maximumRows == 0) omitted = entries.Count;
             var visible = rows.Count;
             if (omitted > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.legend-overflow", "Some legend entries do not fit the resolved frame; all entries remain in descriptive regions."));
-            var height = visible * lineHeight;
+            var height = visible * lineHeight + titleHeight;
             var x = position == ChartLegendPosition.Right ? right - legendWidth : left;
             var y = side || above ? top : bottom - height;
             using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {
+                if (!string.IsNullOrWhiteSpace(legendTitle)) {
+                    var titleBounds = new ChartRect(x, y, titleHeight > 0 ? legendWidth : 0, titleHeight > 0 ? titleLineHeight : 0);
+                    builder.AddRegion(new VisualSemanticRegion("frame-legend-title", "legend-title", titleBounds, legendTitle));
+                    if (titleHeight > 0) {
+                        var anchor = legendTitleStyle.Alignment == TextAlignment.Center ? x + legendWidth / 2
+                            : legendTitleStyle.Alignment == TextAlignment.Right ? x + legendWidth : x;
+                        builder.Text(Fit(OneLine(legendTitle!), legendWidth, legendTitleStyle), anchor,
+                            y + builder.TextAscent(legendTitleStyle), legendTitleStyle, id: "frame-legend-title", role: "legend-title",
+                            paint: VisualChartPaint.Text(legendTitleStyle));
+                    } else builder.AddDiagnostic(new VisualDiagnostic("frame.legend-title-overflow", "The legend title does not fit; its complete value remains in descriptive regions."));
+                }
                 for (var r = 0; r < visible; r++) {
                     var rowWidth = 0d;
                     foreach (var entry in rows[r]) rowWidth += LegendWidth(entry, ReferenceEquals(entry, overflow) ? 0 : 28) + gap;
@@ -98,7 +110,7 @@ internal static class VisualFrameLayout {
                     foreach (var entry in rows[r]) {
                         var isSummary = ReferenceEquals(entry, overflow);
                         var width = LegendWidth(entry, isSummary ? 0 : 28);
-                        var baseline = y + r * lineHeight + builder.TextAscent(legendStyle);
+                        var baseline = y + titleHeight + r * lineHeight + builder.TextAscent(legendStyle);
                         var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, 10, 10);
                         using (builder.PushGroup("legend-" + entry.Id, "legend-entry", new Dictionary<string, string> {
                             ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
@@ -136,7 +148,7 @@ internal static class VisualFrameLayout {
                                 builder.Text(entry.Value!, cursor + width - 4, baseline, valueStyle, role: "legend-value", paint: VisualChartPaint.Text(valueStyle));
                             }
                         }
-                        builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + r * lineHeight, width, lineHeight), entry.Description));
+                        builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + titleHeight + r * lineHeight, width, lineHeight), entry.Description));
                         cursor += width + gap;
                     }
                 }

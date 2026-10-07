@@ -12,9 +12,14 @@ internal static partial class VisualSceneSvgRenderer {
         if (!color.HasValue) return "none";
         // Unbound paints stay literal. A renderer must retain provenance explicitly instead of
         // guessing whether an equal RGB value is a theme token, derived contrast ink or highlight.
-        if (options?.Variables == null || !paint.HasValue || paint.Value.Value == null) return color.Value.ToCss();
-        if (!paint.Value.IsRaw) return options.Variables.TryPaint(color.Value, SvgColorRole.Any, out var mapped) ? mapped : color.Value.ToCss();
-        return SvgPaint.Resolve(paint.Value.Value, options.Variables);
+        if (!paint.HasValue || paint.Value.Value == null) return color.Value.ToCss();
+        if (!paint.Value.IsRaw) {
+            if (SvgPaint.TryCssVariable(paint.Value.Value, color.Value, out var fallback, out var authored) && fallback.Equals(color.Value))
+                return SvgPaint.Resolve(authored.Value!, options?.Variables);
+            return options?.Variables != null && options.Variables.TryPaint(color.Value, SvgColorRole.Any, out var mapped) ? mapped : color.Value.ToCss();
+        }
+        if (options?.Variables == null && !paint.Value.HasCssVariable) return color.Value.ToCss();
+        return SvgPaint.Resolve(paint.Value.Value, options?.Variables);
     }
 
     private static void PaintIdentity(BinaryWriter writer, VisualScenePaintBinding? paint) {

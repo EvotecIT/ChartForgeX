@@ -18,8 +18,8 @@ public sealed class V2SceneTextOutlineTests : IDisposable {
     [Fact]
     public void SvgOutlineUsesTypedPaintAndParticipatesInDetachedIdentity() {
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed());
-        var plain = Builder(); plain.Text("H H", 20, 60, 40, Ink, role: "label");
-        var outlined = Builder(); outlined.Text("H H", 20, 60, 40, Ink, role: "label", stroke: Halo, strokeWidth: 4,
+        var plain = Builder(); plain.Text("HH", 20, 60, 40, Ink, role: "label");
+        var outlined = Builder(); outlined.Text("HH", 20, 60, 40, Ink, role: "label", stroke: Halo, strokeWidth: 4,
             strokePaint: SvgPaint.Of(Halo, SvgColorRole.Surface));
         var scene = outlined.Build();
         var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(scene));
@@ -34,7 +34,7 @@ public sealed class V2SceneTextOutlineTests : IDisposable {
         var bound = VisualSceneSvgRenderer.Render(scene, options: options);
         Assert.Contains("var(--outline,", bound);
         var image = VisualSceneRasterRenderer.Render(scene, supersampling: 1);
-        Assert.Equal(0, image.Pixels[(45 * image.Width + 55) * 4 + 3]); // Between glyphs, inside the label's bounding box.
+        Assert.Equal(0, image.Pixels[(45 * image.Width + 44) * 4 + 3]); // Empty advance between glyphs, inside the label's bounding box.
         Assert.True(Count(image, Halo) > 0 && Count(image, Ink) > 0);
     }
 
@@ -46,7 +46,7 @@ public sealed class V2SceneTextOutlineTests : IDisposable {
         var builder = Builder();
         using (builder.PushClip(new ChartRect(20, 20, 60, 60)))
         using (builder.PushRotation(angle, 60, 50))
-            builder.Text("H H", 20, 60, 40, Ink, stroke: Halo, strokeWidth: 4);
+            builder.Text("HH", 20, 60, 40, Ink, stroke: Halo, strokeWidth: 4);
         var scene = builder.Build();
         var image = VisualSceneRasterRenderer.Render(scene, scale, supersampling: 2);
         Assert.Equal(120 * scale, image.Width);

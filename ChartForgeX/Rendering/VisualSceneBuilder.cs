@@ -100,8 +100,8 @@ internal sealed partial class VisualSceneBuilder {
         ChartGuards.Finite(strokeWidth, nameof(strokeWidth));
         if (strokeWidth < 0) throw new ArgumentOutOfRangeException(nameof(strokeWidth));
         var prepared = new VisualSceneTextFace(style).Prepare(text, style.EffectiveFontSize);
-        baseline += style.Baseline == TextBaseline.Superscript ? -style.FontSize * 0.35
-            : style.Baseline == TextBaseline.Subscript ? style.FontSize * 0.22 : 0;
+        baseline += style.Baseline == TextBaseline.Superscript ? -style.EffectiveFontSize * 0.35
+            : style.Baseline == TextBaseline.Subscript ? style.EffectiveFontSize * 0.22 : 0;
         _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id, paint, stroke, strokeWidth, strokePaint));
         AddTextDecorations(prepared, x, baseline, style, paint);
     }

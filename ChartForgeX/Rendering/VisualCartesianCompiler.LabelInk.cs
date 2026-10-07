@@ -9,6 +9,7 @@ internal static partial class VisualCartesianCompiler {
     // Placement owns the chosen candidate. Ink for a contained alternative is selected only
     // after that choice, so outside labels keep their configured typography and foreground.
     private sealed class CartesianLabels : List<LabelPlacementRequest> {
-        internal readonly Dictionary<LabelPlacementRequest, (int Candidate, ChartRect Bounds, TextStyle Style, SvgPaint? Paint)> ContainedInk = new();
+        internal readonly Dictionary<LabelPlacementRequest, (ChartRect Bounds, TextStyle Style, SvgPaint? Paint)> ContainedInk = new();
+        internal readonly HashSet<LabelPlacementRequest> Outlined = new();
     }
 }

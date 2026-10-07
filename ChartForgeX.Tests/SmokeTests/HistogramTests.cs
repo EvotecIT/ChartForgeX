@@ -89,9 +89,11 @@ internal static partial class SmokeTests {
         var stackedBars = SvgDocument.Parse(stackedSvg).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(stackedBars[2].GetAttribute("data-cfx-base") == "2", "Stacked regular bars should start at the matching histogram count.");
+        Assert(((string?)CartesianPoint(stackedSvg, 1, 0).Attribute("data-cfx-base")) == "2", "Stacked regular bars should start at the matching histogram count.");
         Assert(ChartRange.FromChart(stacked).MaxY >= 5, "Stacked range calculation should include decimal-equivalent histogram and regular bar coordinates together.");
         Assert(CountOccurrences(stackedSvg, "data-cfx-role=\"stack-total-label\"") == 2, "Stack totals should emit one label per decimal-equivalent histogram and regular bar coordinate.");
+        Assert(ChartLabelScene.Inspect(stackedSvg, ChartForgeX.Typography.FontSpec.SystemSans()).LabelMark == 0,
+            "Histogram totals should clear the actual numeric-bin width, including a total moved beside its tallest stack.");
         Assert(stacked.ToPng().Length > 64, "Decimal-equivalent mixed stack totals should preserve PNG rendering parity.");
 
         var narrowLayout = ChartHistogramBinLayout.FromWidth(0, 0.00000002, 0.00000001);
@@ -102,7 +104,7 @@ internal static partial class SmokeTests {
         var narrowBars = SvgDocument.Parse(narrow.ToSvg()).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(narrowBars[2].GetAttribute("data-cfx-base") == "1", "Stacked bars should not match an earlier adjacent histogram bin merely because the bin width is below one millionth.");
+        Assert(((string?)CartesianPoint(narrow.ToSvg(), 1, 0).Attribute("data-cfx-base")) == "1", "Stacked bars should not match an earlier adjacent histogram bin merely because the bin width is below one millionth.");
 
         var center = 1.5;
         var centerBits = BitConverter.DoubleToInt64Bits(center);
@@ -116,7 +118,7 @@ internal static partial class SmokeTests {
         var transitiveBars = SvgDocument.Parse(transitive.ToSvg()).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(transitiveBars[2].GetAttribute("data-cfx-base") == "3", "Stacked bars canonicalized to one histogram center should include every earlier equivalent coordinate.");
+        Assert(((string?)CartesianPoint(transitive.ToSvg(), 2, 0).Attribute("data-cfx-base")) == "3", "Stacked bars canonicalized to one histogram center should include every earlier equivalent coordinate.");
         Assert(transitive.ToPng().Length > 64, "Canonical mixed histogram stack coordinates should preserve PNG rendering parity.");
 
         var countLayout = ChartHistogramBinLayout.FromCount(0, 0.3, 3, roundBounds: false);
@@ -130,7 +132,7 @@ internal static partial class SmokeTests {
         var equivalentBars = SvgDocument.Parse(equivalentSvg).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(equivalentBars[3].GetAttribute("data-cfx-base") == "1", "Equivalent independently-created histogram layouts should stack their matching bins.");
+        Assert(((string?)CartesianPoint(equivalentSvg, 1, 0).Attribute("data-cfx-base")) == "1", "Equivalent independently-created histogram layouts should stack their matching bins.");
         Assert(ChartRange.FromChart(equivalentLayouts).MaxY >= 2, "Equivalent histogram centers should share one range stack key.");
         Assert(CountOccurrences(equivalentSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Equivalent histogram centers should emit one combined stack-total label.");
         Assert(equivalentLayouts.ToPng().Length > 64, "Equivalent histogram layout aggregation should preserve PNG rendering parity.");
@@ -149,7 +151,7 @@ internal static partial class SmokeTests {
         var chainedBars = SvgDocument.Parse(chainedSvg).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(chainedBars[2].GetAttribute("data-cfx-base") == "2", "Transitive coordinate chains should share one stable stacked base.");
+        Assert(((string?)CartesianPoint(chainedSvg, 2, 0).Attribute("data-cfx-base")) == "2", "Transitive coordinate chains should share one stable stacked base.");
         Assert(ChartRange.FromChart(chainedLayouts).MaxY >= 3, "Transitive coordinate chains should share one range stack key.");
         Assert(CountOccurrences(chainedSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Transitive coordinate chains should emit one combined stack-total label.");
         Assert(chainedLayouts.ToPng().Length > 64, "Transitive coordinate chain aggregation should preserve PNG rendering parity.");
@@ -180,8 +182,8 @@ internal static partial class SmokeTests {
         var adjacentBars = SvgDocument.Parse(adjacentSvg).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(adjacentBars[2].GetAttribute("data-cfx-base") == "1", "The first ultra-narrow bin should stack only with its corresponding prior bin.");
-        Assert(adjacentBars[3].GetAttribute("data-cfx-base") == "2", "The second ultra-narrow bin should remain distinct from its adjacent prior bin.");
+        Assert(((string?)CartesianPoint(adjacentSvg, 1, 0).Attribute("data-cfx-base")) == "1", "The first ultra-narrow bin should stack only with its corresponding prior bin.");
+        Assert(((string?)CartesianPoint(adjacentSvg, 1, 1).Attribute("data-cfx-base")) == "2", "The second ultra-narrow bin should remain distinct from its adjacent prior bin.");
         Assert(ChartRange.FromChart(adjacentBins).MaxY >= 6, "Adjacent ultra-narrow bins should preserve their independent range totals.");
         Assert(CountOccurrences(adjacentSvg, "data-cfx-role=\"stack-total-label\"") == 2, "Adjacent ultra-narrow bins should emit independent stack-total labels.");
         Assert(adjacentBins.ToPng().Length > 64, "Adjacent ultra-narrow bins should preserve PNG rendering parity.");
@@ -195,7 +197,7 @@ internal static partial class SmokeTests {
         var mixedBoundaryBars = SvgDocument.Parse(mixedBoundary.ToSvg()).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
-        Assert(mixedBoundaryBars[2].GetAttribute("data-cfx-base") == "1", "An ambiguous regular coordinate should stack with the same ultra-narrow bin used for geometry.");
+        Assert(((string?)CartesianPoint(mixedBoundary.ToSvg(), 1, 0).Attribute("data-cfx-base")) == "1", "An ambiguous regular coordinate should stack with the same ultra-narrow bin used for geometry.");
         Assert(mixedBoundaryBars[2].GetAttribute("x") == mixedBoundaryBars[0].GetAttribute("x") && mixedBoundaryBars[2].GetAttribute("width") == mixedBoundaryBars[0].GetAttribute("width"),
             "Mixed ultra-narrow bar geometry should use the coordinate map's selected histogram slot.");
         Assert(mixedBoundary.ToPng().Length > 64, "Mixed ultra-narrow slot identity should preserve PNG rendering parity.");

@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -16,12 +18,24 @@ internal static partial class SmokeTests {
             .WithSemanticColors(ChartColor.FromRgb(5, 150, 105), ChartColor.FromRgb(245, 158, 11), ChartColor.FromRgb(220, 38, 38))
             .WithSurfaceStyle(ChartSurfaceStyle.Framed);
 
-        var brandedChart = Chart.Create()
-            .WithBrandKit(brandKit)
-            .AddLine("Values", Points(1, 2, 3))
-            .ToSvg();
+        var brandedModel = Chart.Create().WithBrandKit(brandKit).WithLegend().AddLine("Values", Points(1, 2, 3));
+        var brandedPrepared = PreparedFamily(brandedModel);
+        var brandedChart = brandedPrepared.ToSvg();
         Assert(brandedChart.Contains("#123456", StringComparison.Ordinal) && brandedChart.Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "Brand kits should apply palette and font tokens to charts.");
-        Assert(brandedChart.Contains("rx=\"8\"", StringComparison.Ordinal), "Brand kits should apply surface style presets to charts.");
+        var framedCard = brandedPrepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card");
+        Assert(framedCard.Radius == 8 && framedCard.Fill.Equals(brandedModel.Options.Theme.CardBackground),
+            "The Framed brand surface should retain its eight-pixel radius and authored card fill in native geometry.");
+        var legendLabels = FamilyLabels(brandedPrepared, "legend-label");
+        Assert(brandedPrepared.Scene.Nodes.OfType<VisualSceneMark>().Any(mark => mark.Stroke.Equals(ChartColor.FromHex("#123456")))
+            && legendLabels.Length > 0 && legendLabels.All(label => label.Text.Style.Font.Family == ChartFontStacks.Mono),
+            "The native scene should retain the brand's series ink and font rather than substituting default tokens.");
+        var framedPng = brandedPrepared.ToPng();
+        brandedModel.Options.Theme.WithSurfaceStyle(ChartSurfaceStyle.Flat);
+        var flatPrepared = PreparedFamily(brandedModel);
+        Assert(flatPrepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card").Radius == 0,
+            "The Flat brand surface should use square native card geometry.");
+        Assert(framedPng.Length > 64 && !framedPng.SequenceEqual(flatPrepared.ToPng()), "Brand surface geometry should affect native PNG output.");
+        Assert(framedCard.Radius == 8 && framedPng.SequenceEqual(brandedPrepared.ToPng()), "Changing the model's surface style should preserve an already prepared branded output.");
 
         var brandedGrid = ChartGrid.Create()
             .WithTitle("Brand grid")

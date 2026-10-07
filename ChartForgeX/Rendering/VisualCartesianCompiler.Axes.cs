@@ -88,13 +88,13 @@ internal static partial class VisualCartesianCompiler {
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
             foreach (var tick in yTicks) {
                 var y = map.Y(tick);
-                if (grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, colors.Grid.WithOpacity(grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash,
-                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
+                if (grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash,
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), grid.HorizontalOpacity)));
             }
             foreach (var tick in xTicks) {
                 var x = map.X(tick);
-                if (grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, colors.Grid.WithOpacity(grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash,
-                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
+                if (grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash,
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), grid.VerticalOpacity)));
             }
         }
         if (!chart.Options.ShowAxes) return;

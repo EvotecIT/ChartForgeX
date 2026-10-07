@@ -11,11 +11,16 @@ internal sealed partial class VisualTopologyCompiler {
     internal TopologyMotionSvgAdapter SvgAnimation(TopologyMotionOptions motion, TopologyMotionPlan? plan = null) {
         var options = _options.CloneForRendering(); options.Motion = motion.Clone(); options.Motion.Validate();
         plan ??= MotionPlan(options) ?? throw new InvalidOperationException("Topology motion requires a scenario route or explicitly selected edges.");
-        string ColorFor(string? authored, TopologyHealthStatus status) => Color(motion.MarkerColor ?? plan.Color ?? authored, Status(status)).ToCss();
+        string PaintFor(ChartColor color, SvgColorRole role) => _options.SvgColorVariables is SvgColorVariables variables
+            && variables.TryPaint(color, role, out var paint) ? paint : color.ToCss();
+        string ColorFor(string? authored, TopologyHealthStatus status) {
+            var selected = motion.MarkerColor ?? plan.Color ?? authored;
+            return PaintFor(Color(selected, Status(status)), string.IsNullOrWhiteSpace(selected) ? SvgColorRole.Status : SvgColorRole.Any);
+        }
         var nodes = plan.NodeIds.Select(id => _chart.Nodes.FirstOrDefault(node => node.Id == id)).OfType<TopologyNode>()
             .Where(node => TopologyRenderPrimitives.EffectiveNodeDisplayMode(node, _options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => (node.Id, Point(new ChartPoint(node.X + node.Width / 2, node.Y + node.Height / 2)), ColorFor(node.Color, node.Status))).ToArray();
-        return new TopologyMotionSvgAdapter(plan, motion, _colors.Background.ToCss(), edge => ColorFor(edge.Color, edge.Status), nodes, _scale);
+        return new TopologyMotionSvgAdapter(plan, motion, PaintFor(_colors.Background, SvgColorRole.Surface), edge => ColorFor(edge.Color, edge.Status), nodes, _scale);
     }
 
     internal PreparedVisual MotionFrame(PreparedVisual basis, TopologyMotionOptions motion, TopologyMotionPlan? plan = null) {

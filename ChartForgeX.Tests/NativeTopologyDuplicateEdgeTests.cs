@@ -6,6 +6,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.Themes;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -80,6 +81,40 @@ public sealed class NativeTopologyDuplicateEdgeTests {
         });
         Assert.DoesNotContain(xml.Descendants(), element => element.Name.LocalName == "script");
         motion.Loop = !loop; motion.EdgeIds.Clear(); chart.Nodes.Clear(); chart.Edges.Clear();
+        Assert.Equal(svg, prepared.ToSvg());
+    }
+
+    [Fact]
+    public void DifferentAnimationPoliciesHaveDistinctDeterministicDefaultNamespaces() {
+        var chart = Diagram();
+        var looping = TopologyMotionOptions.RoutePulseForEdges("dup");
+        var once = looping.Clone(); once.Loop = false;
+        var first = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, Motion = looping });
+        var second = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, Motion = once });
+        var firstSvg = first.ToSvg(); var secondSvg = second.ToSvg();
+        Assert.Equal(firstSvg, first.ToSvg());
+        Assert.Equal(secondSvg, second.ToSvg());
+        var firstIds = XDocument.Parse(firstSvg).Descendants().Attributes("id").Select(attribute => attribute.Value).ToArray();
+        var secondIds = XDocument.Parse(secondSvg).Descendants().Attributes("id").Select(attribute => attribute.Value).ToArray();
+        Assert.NotEmpty(firstIds);
+        Assert.Empty(firstIds.Intersect(secondIds, StringComparer.Ordinal));
+        Assert.Equal(first.ToInterchangeEnvelope().Edges.SelectMany(edge => edge.ResolvedRoute).Select(point => (point.X, point.Y)),
+            second.ToInterchangeEnvelope().Edges.SelectMany(edge => edge.ResolvedRoute).Select(point => (point.X, point.Y)));
+    }
+
+    [Fact]
+    public void AnimationPaintKeepsStatusAndSurfaceVariablesDetachedFromCallerChanges() {
+        var theme = TopologyTheme.Light();
+        var chart = Diagram().WithTheme(theme);
+        var variables = new SvgColorVariables().Add("--background", ChartColor.Parse(theme.Background), SvgColorRole.Surface)
+            .Add("--neutral", ChartColor.Parse(theme.Unknown), SvgColorRole.Status);
+        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, SvgColorVariables = variables, Motion = TopologyMotionOptions.RoutePulseForEdges("dup") });
+        var svg = prepared.ToSvg(); var xml = XDocument.Parse(svg);
+        var marker = Assert.Single(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker");
+        Assert.StartsWith("var(--neutral,", (string?)marker.Attribute("fill"), StringComparison.Ordinal);
+        Assert.StartsWith("var(--background,", (string?)marker.Attribute("stroke"), StringComparison.Ordinal);
+        variables.Add("--later", ChartColor.Parse(theme.Unknown), SvgColorRole.Status);
+        theme.Unknown = "#FF0000";
         Assert.Equal(svg, prepared.ToSvg());
     }
 

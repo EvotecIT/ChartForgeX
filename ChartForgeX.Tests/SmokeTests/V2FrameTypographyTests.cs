@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 
 public sealed class V2FrameTypographyTests {
     [Theory]
-    [InlineData(TextBaseline.Superscript, -11.2)]
-    [InlineData(TextBaseline.Subscript, 7.04)]
+    [InlineData(TextBaseline.Superscript, -7.28)]
+    [InlineData(TextBaseline.Subscript, 4.576)]
     public void NativeScriptTypographyMaterializesItsSizeAndBaselineExactlyOnce(TextBaseline baseline, double offset) {
         var builder = new VisualSceneBuilder(new VisualSize(200, 100), FontSpec.FromFamily("Missing script fixture font"));
         var style = new TextStyle { FontSize = 32, Baseline = baseline };

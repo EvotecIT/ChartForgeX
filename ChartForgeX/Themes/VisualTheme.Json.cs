@@ -16,6 +16,9 @@ public sealed partial class VisualTheme {
     /// Version 1 requires light/dark palettes and complete typography/geometry objects. Unknown members are ignored
     /// within bounded input limits; duplicate keys and unsupported versions are rejected. Optional per-mode
     /// <c>roles</c> preserve independent semantic and annotation colors without selecting a legacy renderer path.
+    /// Optional <c>geometry.cardRadius</c> defaults to 3 logical units and controls the outer frame independently of marks.
+    /// Optional <c>effects.cardShadowOpacity</c> and <c>effects.cardShadowColor</c> retain native card shadows;
+    /// omitted effects keep the default flat frame. Shadows use available authored padding without moving content.
     /// </remarks>
     /// <param name="json">The case-sensitive versioned theme document, at most one MiB of characters.</param>
     /// <returns>An immutable theme snapshot.</returns>
@@ -27,6 +30,7 @@ public sealed partial class VisualTheme {
         if (Number(root, "schemaVersion", "theme") != 1) throw new ArgumentException("Only theme schemaVersion 1 is supported.", nameof(json));
         var typography = Object(root, "typography", "theme");
         var geometry = Object(root, "geometry", "theme");
+        var effects = root.TryGetValue("effects", out var effectValue) ? effectValue.AsObject("effects") : new Dictionary<string, GeoJsonValue>();
         var light = ReadThemeColors(json, root, "light", VisualThemeMode.Light);
         var dark = ReadThemeColors(json, root, "dark", VisualThemeMode.Dark);
         return new VisualTheme(light, dark,
@@ -35,7 +39,10 @@ public sealed partial class VisualTheme {
                 Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography")),
             Number(geometry, "spacing", "geometry"), Number(geometry, "seriesStrokeWidth", "geometry"), Number(geometry, "markerRadius", "geometry"),
             Number(geometry, "areaOpacity", "geometry"), Number(geometry, "barRadius", "geometry"),
-            Number(geometry, "gridStrokeWidth", "geometry"), Number(geometry, "axisStrokeWidth", "geometry"));
+            Number(geometry, "gridStrokeWidth", "geometry"), Number(geometry, "axisStrokeWidth", "geometry"),
+            geometry.TryGetValue("cardRadius", out var cardRadius) ? cardRadius.AsNumber("geometry.cardRadius") : DefaultCardRadius,
+            effects.TryGetValue("cardShadowOpacity", out var opacity) ? opacity.AsNumber("effects.cardShadowOpacity") : 0,
+            effects.TryGetValue("cardShadowColor", out var shadow) ? Hex(shadow.AsString("effects.cardShadowColor"), "cardShadowColor") : null);
     }
 
     /// <summary>Exports the complete paired color, typography and geometry theme using schemaVersion 1.</summary>
@@ -56,6 +63,10 @@ public sealed partial class VisualTheme {
         WriteNumber(writer, "spacing", Spacing); WriteNumber(writer, "seriesStrokeWidth", SeriesStrokeWidth); WriteNumber(writer, "markerRadius", MarkerRadius);
         WriteNumber(writer, "areaOpacity", AreaOpacity); WriteNumber(writer, "barRadius", BarRadius);
         WriteNumber(writer, "gridStrokeWidth", GridStrokeWidth); WriteNumber(writer, "axisStrokeWidth", AxisStrokeWidth);
+        WriteNumber(writer, "cardRadius", CardRadius);
+        writer.EndObject();
+        writer.Property("effects"); writer.StartObject();
+        WriteNumber(writer, "cardShadowOpacity", CardShadowOpacity); WriteColor(writer, "cardShadowColor", CardShadowColor);
         writer.EndObject(); writer.EndObject();
         string json = writer.ToString();
         if (json.Length > MaximumThemeJsonCharacters) throw new ArgumentException("Theme JSON exceeds the maximum supported size.");

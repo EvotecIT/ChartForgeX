@@ -73,7 +73,8 @@ internal static partial class SmokeTests {
         Assert(string.Join(" ", headings.Select(element => element.Value)).Contains("STYLED GRID HEADER", StringComparison.Ordinal),
             "Shared header measurement and painting should materialize title casing.");
         var html = grid.ToHtmlFragment();
-        Assert(html.Contains(svg, StringComparison.Ordinal), "Static HTML should retain the exact prepared typography and layout.");
+        var inlineSvg = prepared.ToSvg(new VisualSvgOptions(colorVariables: grid.SvgColorVariables, responsive: true));
+        Assert(html.Contains(inlineSvg, StringComparison.Ordinal), "Static HTML should retain the exact prepared typography and layout with responsive export policy.");
         Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render native PNG output.");
         var panel = Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3));
         var regularRaster = ChartGrid.Create().WithTitle("Italic Grid Header").WithSubtitle("Italic Grid Subtitle").WithPanelSize(260, 160).Add(panel).ToPng();

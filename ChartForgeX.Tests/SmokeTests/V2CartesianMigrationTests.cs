@@ -219,7 +219,7 @@ public sealed class V2CartesianMigrationTests {
         var firstBar = scene.Nodes.Select((node, index) => (node, index)).First(item => item.node.Role == "bar").index;
         Assert.All(bands, band => Assert.True(band.index < firstBar));
         var lastBar = scene.Nodes.Select((node, index) => (node, index)).Last(item => item.node.Role == "bar").index;
-        Assert.Contains(scene.Nodes.Select((node, index) => (node, index)), item => item.node is VisualSceneLine && item.node.Role == "annotation-line" && item.index > lastBar);
+        Assert.Contains(scene.Nodes.Select((node, index) => (node, index)), item => item.node is VisualScenePath && item.node.Role == "annotation-line" && item.index > lastBar);
         Assert.Contains(scene.Regions, region => region.Label == "Full selected interval description");
         Assert.Contains(scene.Regions, region => region.Label == "Complete target description");
     }

@@ -28,7 +28,7 @@ public sealed partial class ChartGrid : IVisualRenderable {
             frame.ShowSurface, frame.TransparentBackground,
             Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground),
             Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground), frame.LegendStyle,
-            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, showCard: frame.ShowCard);
+            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, showCard: frame.ShowCard, legendTitle: frame.LegendTitle);
         var resolved = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var content = VisualFrameLayout.Build(builder, resolved, Array.Empty<VisualLegendEntry>());
@@ -63,7 +63,7 @@ public sealed partial class ChartGrid : IVisualRenderable {
                     frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
                     legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
                     legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),
-                    showCard: frame.ShowCard && options.ShowCard && options.Theme.UseCard && modelFrame);
+                    showCard: frame.ShowCard && options.ShowCard && options.Theme.UseCard && modelFrame, legendTitle: frame.LegendTitle);
                 var padding = options.HostOwnsFrame ? ChartPadding.All(0) : options.Padding;
                 var panelPadding = new ChartPadding(Math.Min(padding.Left, width / 4), Math.Min(padding.Top, height / 4),
                     Math.Min(padding.Right, width / 4), Math.Min(padding.Bottom, height / 4));

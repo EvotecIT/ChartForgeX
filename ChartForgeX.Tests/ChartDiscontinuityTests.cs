@@ -24,7 +24,7 @@ public sealed class ChartDiscontinuityTests {
         Assert.NotEmpty(paths);
         Assert.All(paths, element => {
             Assert.Equal(3, ((string)element.Attribute("d")!).Count(character => character == 'L'));
-            Assert.Equal("round", (string?)element.Attribute("stroke-linecap"));
+            Assert.Equal("round", element.AncestorsAndSelf().Attributes("stroke-linecap").FirstOrDefault()?.Value);
         });
         var image = PngReader.Decode(chart.ToPng());
         var red = 0;

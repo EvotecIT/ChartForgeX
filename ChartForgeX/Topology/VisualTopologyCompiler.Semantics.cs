@@ -7,7 +7,7 @@ internal sealed partial class VisualTopologyCompiler {
     private VisualArtifactInterchangeEnvelope SemanticSnapshot(ChartForgeX.Accessibility.VisualAccessibility accessibility) {
         var snapshot = TopologyLayoutEngine.Clone(_chart);
         snapshot.Legend = _legend;
-        snapshot.Title = HeadingOrSource(_context.Frame.Title, _source.Title); snapshot.Subtitle = HeadingOrSource(_context.Frame.Subtitle, _source.Subtitle);
+        snapshot.Title = HeadingOrSource(_context.Frame.Title, SourceTitle); snapshot.Subtitle = HeadingOrSource(_context.Frame.Subtitle, SourceSubtitle);
         snapshot.Viewport = new TopologyViewport { Width = _context.Layout.Size.Width, Height = _context.Layout.Size.Height, Padding = _context.Layout.Padding };
         foreach (var group in snapshot.Groups) {
             var b = Bounds(group.X, group.Y, group.Width, group.Height);

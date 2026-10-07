@@ -7,19 +7,25 @@ namespace ChartForgeX.Themes;
 
 /// <summary>A paired immutable theme shared by charts, diagrams and future composition packages.</summary>
 public sealed partial class VisualTheme {
+    private const double DefaultCardRadius = 3;
     private static readonly Lazy<VisualTheme> Default = new(CreateGraphite);
     private readonly VisualThemeColors _light;
     private readonly VisualThemeColors _dark;
     /// <summary>Creates a paired theme from independent token snapshots and geometry settings.</summary>
     public VisualTheme(VisualDesignTokens light, VisualDesignTokens dark, VisualTypography? typography = null,
         double spacing = 12, double seriesStrokeWidth = 2, double markerRadius = 3,
-        double areaOpacity = 0.18, double barRadius = 3, double gridStrokeWidth = 1, double axisStrokeWidth = 1) {
+        double areaOpacity = 0.18, double barRadius = 3, double gridStrokeWidth = 1, double axisStrokeWidth = 1,
+        double cardRadius = DefaultCardRadius, double cardShadowOpacity = 0, ChartColor? cardShadowColor = null) {
         _light = new VisualThemeColors(light ?? throw new ArgumentNullException(nameof(light)));
         _dark = new VisualThemeColors(dark ?? throw new ArgumentNullException(nameof(dark)));
         Typography = typography ?? new VisualTypography();
         Spacing = NonNegative(spacing, nameof(spacing)); SeriesStrokeWidth = NonNegative(seriesStrokeWidth, nameof(seriesStrokeWidth));
         MarkerRadius = NonNegative(markerRadius, nameof(markerRadius)); BarRadius = NonNegative(barRadius, nameof(barRadius));
         GridStrokeWidth = NonNegative(gridStrokeWidth, nameof(gridStrokeWidth)); AxisStrokeWidth = NonNegative(axisStrokeWidth, nameof(axisStrokeWidth));
+        CardRadius = NonNegative(cardRadius, nameof(cardRadius));
+        if (double.IsNaN(cardShadowOpacity) || cardShadowOpacity < 0 || cardShadowOpacity > 1) throw new ArgumentOutOfRangeException(nameof(cardShadowOpacity));
+        CardShadowOpacity = cardShadowOpacity;
+        CardShadowColor = cardShadowColor ?? ChartColor.FromRgb(15, 23, 42);
         if (double.IsNaN(areaOpacity) || areaOpacity < 0 || areaOpacity > 1) throw new ArgumentOutOfRangeException(nameof(areaOpacity));
         AreaOpacity = areaOpacity;
     }
@@ -35,6 +41,12 @@ public sealed partial class VisualTheme {
     public double AreaOpacity { get; }
     /// <summary>Gets the bar corner radius.</summary>
     public double BarRadius { get; }
+    /// <summary>Gets the shared outer card corner radius, independent of plot and data mark radii.</summary>
+    public double CardRadius { get; }
+    /// <summary>Gets the shared card shadow opacity. Zero keeps the default flat surface.</summary>
+    public double CardShadowOpacity { get; }
+    /// <summary>Gets the shared card shadow color, including its authored alpha.</summary>
+    public ChartColor CardShadowColor { get; }
     /// <summary>Gets the guide width.</summary>
     public double GridStrokeWidth { get; }
     /// <summary>Gets the axis width.</summary>

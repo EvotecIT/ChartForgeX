@@ -26,7 +26,11 @@ internal sealed partial class VisualExportRequest {
             options.ShowPlotBackground && !options.HostOwnsFrame, options.TransparentBackground || options.HostOwnsFrame,
             legendMaximumRows: options.LegendMaximumRows, legendMaximumHeightFraction: options.LegendMaximumHeightFraction,
             showCard: options.ShowCard && options.Theme.UseCard && !options.HostOwnsFrame);
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(options.Size.Width, options.Size.Height), options.Padding),
+        var padding = options.Padding;
+        if (!options.HasExplicitPadding && (padding.Left + padding.Right >= options.Size.Width || padding.Top + padding.Bottom >= options.Size.Height))
+            padding = new ChartPadding(Math.Min(padding.Left, options.Size.Width / 4), Math.Min(padding.Top, options.Size.Height / 4),
+                Math.Min(padding.Right, options.Size.Width / 4), Math.Min(padding.Bottom, options.Size.Height / 4));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(options.Size.Width, options.Size.Height), padding),
             theme, frame: frame, font: new FontSpec {
                 Family = options.Theme.FontFamily, FilePath = options.PngFontPath,
                 FaceName = options.PngFontFaceName, CollectionIndex = options.PngFontCollectionIndex
@@ -83,7 +87,8 @@ internal sealed partial class VisualExportRequest {
         tokens.Status.Critical = Pair(source.Negative, tokens.Status.Critical);
         return new VisualTheme(tokens, tokens, new VisualTypography(source.FontFamily, source.TitleFontSize,
             source.SubtitleFontSize, source.TickLabelFontSize, source.LegendFontSize, source.DataLabelFontSize),
-            seriesStrokeWidth: source.StrokeWidth, markerRadius: source.MarkerRadius, barRadius: source.PlotCornerRadius);
+            seriesStrokeWidth: source.StrokeWidth, markerRadius: source.MarkerRadius, barRadius: source.PlotCornerRadius,
+            cardRadius: source.CornerRadius, cardShadowOpacity: source.ShadowOpacity, cardShadowColor: source.ShadowColor);
     }
 
     private static VisualTokenColor Pair(ChartColor fill, VisualTokenColor canonical) => fill.Equals(canonical.Fill)

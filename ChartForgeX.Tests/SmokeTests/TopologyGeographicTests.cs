@@ -43,7 +43,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"topology-map-land\"", StringComparison.Ordinal), "Geographic topology should render a land-dot background layer.");
         Assert(svg.Contains("data-route-curve=\"geographic\"", StringComparison.Ordinal), "Geographic curved topology links should expose map-arc route diagnostics.");
         Assert(svg.Contains("data-route-control-x=", StringComparison.Ordinal) && svg.Contains("data-route-control-y=", StringComparison.Ordinal), "Geographic curved topology links should expose their map-arc control point.");
-        Assert(svg.Contains(" Q ", StringComparison.Ordinal), "Geographic curved topology links should render as quadratic map arcs in SVG.");
+        var arc = chart.Prepare(options).ToInterchangeEnvelope().Edges.Single(edge => edge.Id == "nyc-lon").ResolvedRoute;
+        var start = arc.First(); var end = arc.Last();
+        Assert(arc.Count > 3 && arc.Skip(1).Take(arc.Count - 2).Any(point => Math.Abs((end.X - start.X) * (point.Y - start.Y) - (end.Y - start.Y) * (point.X - start.X)) > 1), "Geographic links should retain a sampled curved map arc shared by SVG, PNG and semantic interchange.");
         Assert(SvgHasAttributes(svg, "data-node-id=\"nyc\" data-node-kind=\"Location\" data-node-display-mode=\"Tile\" data-cfx-status=\"Healthy\" data-cfx-selected=\"false\" data-node-longitude=\"-74.006\" data-node-latitude=\"40.713\" data-node-geo-visible=\"true\""), "Geographic topology should expose projected node coordinates.");
         Assert(svg.Contains("data-node-id=\"south\"", StringComparison.Ordinal) && svg.Contains("data-node-geo-visible=\"false\"", StringComparison.Ordinal), "Geographic topology should mark clamped out-of-viewport coordinates.");
         Assert(SvgHasAttributes(svg, "data-group-id=\"amer\" data-group-layout-policy=\"Auto\" data-group-applied-layout-policy=\"Auto\" data-cfx-status=\"Healthy\" data-cfx-selected=\"false\" data-group-longitude=\"-98.58\" data-group-latitude=\"39.828\" data-group-geo-visible=\"true\""), "Geographic topology should expose group coordinates.");

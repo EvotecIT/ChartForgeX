@@ -9,6 +9,7 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public sealed class TopologyRenderOptions {
     internal TextMeasurementContext? TextMeasurement { get; set; }
+    internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
     /// <summary>Gets or sets the text-width policy. Installed fonts measure the same faces used by PNG; portable estimates remain available as an explicit compatibility option.</summary>
     public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.InstalledFonts;
     private ChartLineVisualStyle? _edgeVisualStyle;

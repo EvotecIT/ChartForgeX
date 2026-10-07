@@ -19,14 +19,15 @@ namespace ChartForgeX.Themes;
 /// <remarks>
 /// Typed paints travel through the markup as tokens made of the Unicode noncharacters U+FDD0 and U+FDD1, which the SVG
 /// writers replace in any escaped text, so no chart content can forge one. Every renderer resolves them before it
-/// returns markup (<see cref="Resolve"/>); without variables they become the same literal colours as before.
+/// returns markup (<see cref="Resolve"/>); without host variables role paints become literal colours. Authored CSS
+/// variable paints retain their validated expression and the same concrete fallback as native raster rendering.
 /// </remarks>
 internal readonly partial struct SvgPaint {
     private const char Start = '\uFDD0';
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -134,8 +135,9 @@ internal readonly partial struct SvgPaint {
                 return RoleDigit(text, ref i, false) && Hex(text, ref i, 8) && Close(text, i) ? i + 1 - index : 0;
             case 'I':
                 return RoleDigit(text, ref i, false) && Hex(text, ref i, 16) && Close(text, i) ? i + 1 - index : 0;
+            case 'V':
             case 'C': {
-                if (!Hex(text, ref i, 16)) return 0;
+                if (!Hex(text, ref i, text[index + 1] == 'C' ? 16 : 8)) return 0;
                 var source = 0;
                 while (source <= 1024 && i + source < text.Length && IsBase64(text[i + source])) source++;
                 i += source;
@@ -207,6 +209,7 @@ internal readonly partial struct SvgPaint {
                 return keepLiterals ? Literal(ink).Value! : ink.ToCss();
             }
             case 'C': return ResolveContrastSource(body, variables, keepLiterals);
+            case 'V': return ResolveCssVariable(body);
             case 'O': {
                 var result = Color(body, 0);
                 var separator = body.IndexOf(':', 8);
@@ -215,7 +218,8 @@ internal readonly partial struct SvgPaint {
                 catch (FormatException) { return keepLiterals ? Literal(result).Value! : result.ToCss(); }
                 if (!double.TryParse(body.Substring(separator + 1), NumberStyles.Float, CultureInfo.InvariantCulture, out var opacity)) opacity = 0;
                 var paint = Resolve(source, variables);
-                if (variables == null || paint.IndexOf("var(", StringComparison.Ordinal) < 0)
+                if (source.Length == 0 || source[0] != Start || TokenLength(source, 0) != source.Length ||
+                    paint.IndexOf("var(", StringComparison.Ordinal) < 0)
                     return keepLiterals ? Literal(result).Value! : result.ToCss();
                 if (opacity >= 1) return paint;
                 return "color-mix(in srgb, " + paint + " " + (Clamp(opacity) * 100).ToString("0.##", CultureInfo.InvariantCulture) + "%, transparent)";

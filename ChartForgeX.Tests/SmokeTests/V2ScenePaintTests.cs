@@ -103,6 +103,21 @@ public sealed class V2ScenePaintTests {
     }
 
     [Fact]
+    public void CompoundGradientFillKeepsItsEvenOddHoleInSvgAndNativePixels() {
+        var builder = Builder();
+        var path = new ChartPath(Rectangle(5, 5, 30, 30).Concat(Rectangle(12, 12, 16, 16)).ToArray());
+        builder.PathGradient(path, new ChartPoint(5, 5), new ChartPoint(35, 5),
+            new[] { new VisualGradientStop(0, ChartColor.Black), new VisualGradientStop(1, ChartColor.White) }, role: "compound-gradient");
+        var scene = builder.Build();
+        var element = XDocument.Parse(VisualSceneSvgRenderer.Render(scene)).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "compound-gradient");
+        Assert.StartsWith("url(#", element.Attribute("fill")!.Value);
+        Assert.Equal("evenodd", element.Attribute("fill-rule")!.Value);
+        var image = VisualSceneRasterRenderer.Render(scene, supersampling: 1);
+        Assert.Equal(255, Pixel(image, 8, 8)[3]);
+        Assert.Equal(0, Pixel(image, 20, 20)[3]);
+    }
+
+    [Fact]
     public void NestedRotationsTransformClipsMarksAndRestoreParentCoordinates() {
         var builder = Builder();
         using (builder.PushRotation(90, 20, 20)) {

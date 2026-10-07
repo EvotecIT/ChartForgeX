@@ -3,6 +3,7 @@ using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -55,9 +56,14 @@ internal static partial class SmokeTests {
             .AddHorizontalBar("Change", Points(-40, 40));
         horizontalRules.Options.XAxis.ShowLine = false;
         horizontalRules.Options.YAxis.ShowLine = true;
-        var horizontalRulePixels = ReadPngRgba(horizontalRules.ToPng(), out var horizontalRuleWidth, out _);
-        var horizontalRuleBounds = FindNearColorBounds(horizontalRulePixels, horizontalRuleWidth, 255, 0, 255, 4);
-        Assert(!horizontalRuleBounds.IsEmpty && horizontalRuleBounds.Right - horizontalRuleBounds.Left > 80, "PNG horizontal zero lines should follow the visible y-axis even when x-axis labels are hidden.");
+        var horizontalPrepared = horizontalRules.Prepare(VisualExportRequest.ForChart(horizontalRules).Context);
+        var categoryRule = horizontalPrepared.Scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
+        Assert(categoryRule.Start.X == categoryRule.End.X && categoryRule.End.Y - categoryRule.Start.Y > 80,
+            "The visible category y-axis should retain its vertical rule when horizontal value-axis labels are hidden.");
+        Assert(!horizontalPrepared.Scene.Nodes.Any(node => node.Role == "axis-x"), "The independently hidden value-axis rule should remain absent.");
+        var horizontalRulePng = horizontalRules.ToPng();
+        horizontalRules.Options.YAxis.ShowLine = false;
+        Assert(!horizontalRulePng.AsSpan().SequenceEqual(horizontalRules.ToPng()), "The retained category-axis rule should paint native PNG pixels.");
 
         var hiddenSecondaryTheme = ChartTheme.ReportLight();
         hiddenSecondaryTheme.Axis = ChartColor.FromHex("#FF00FF");

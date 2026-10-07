@@ -25,7 +25,7 @@ internal sealed partial class ChartLabelScene {
     private static bool IsMark(string role) => role is "bar" or "horizontal-bar" or "scatter-point" or "line-marker" or "line" or "area"
         or "range-band" or "range-area" or "funnel-segment" or "gauge-value" or "bullet-value" or "bullet-target" or "pie-slice" or "donut-slice"
         or "sankey-node" or "sankey-link" or "dotted-map-point" or "dotted-map-connector" or "region-map-region" or "tile-map-region"
-        or "topology-node-body" or "topology-edge-path" or "annotation-line" or "annotation-band";
+        or "topology-node-body" or "topology-node-surface" or "topology-edge-path" or "topology-edge-line" or "annotation-line" or "annotation-band";
 
     private static LabelMarkShape? Shape(SvgMarkupElement element, SvgRasterMatrix matrix, SvgRasterStyle? style) {
         var rings = new List<List<ChartPoint>>();
@@ -83,7 +83,7 @@ internal sealed partial class ChartLabelScene {
         }
         if (labelRole.StartsWith("topology-edge", StringComparison.Ordinal)) {
             var edgeId = entry.Element.AncestorsAndSelf().Select(e => e.Attribute("data-edge-id")).FirstOrDefault(id => id != null);
-            if (edgeId != null) return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "topology-edge-path"
+            if (edgeId != null) return _marks.FirstOrDefault(mark => mark.SvgRoot == svg && (mark.Kind is "topology-edge-path" or "topology-edge-line")
                 && mark.Element.AncestorsAndSelf().Any(e => e.Attribute("data-edge-id") == edgeId));
         }
         if (labelRole == "sankey-node-label") {
@@ -109,7 +109,7 @@ internal sealed partial class ChartLabelScene {
         }
         var nodeId = entry.Element.AncestorsAndSelf().Select(e => e.Attribute("data-node-id")).FirstOrDefault(id => id != null);
         if (nodeId != null) {
-            var own = _marks.FirstOrDefault(mark => mark.SvgRoot == svg && mark.Kind == "topology-node-body" && mark.NodeId == nodeId);
+            var own = _marks.FirstOrDefault(mark => mark.SvgRoot == svg && (mark.Kind is "topology-node-body" or "topology-node-surface") && mark.NodeId == nodeId);
             if (own != null) return own;
         }
         // Explicit point/node identities take precedence over geometric proximity.

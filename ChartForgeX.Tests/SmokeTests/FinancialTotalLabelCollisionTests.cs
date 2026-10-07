@@ -57,7 +57,7 @@ internal static partial class SmokeTests {
             .WithValueFormatter(value => "Total " + value.ToString("0", CultureInfo.InvariantCulture))
             .AddHorizontalBar("Passed", Points(10, 12, 11, 13, 12, 11, 10, 12, 11, 13, 12, 11, 10, 12, 11, 13))
             .AddHorizontalBar("Warnings", Points(2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3));
-        AssertUsefulSubset(horizontalStacked.ToSvg(), 16, "Dense horizontal stack total labels should avoid collisions.");
+        AssertUsefulStackTotalSubset(horizontalStacked.ToSvg(), 16, "Dense horizontal stack total labels should avoid collisions.");
         Assert(horizontalStacked.ToPng().Length > 64, "PNG horizontal stack total label collision avoidance should render valid output.");
     }
 

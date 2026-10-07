@@ -1,4 +1,5 @@
 using System.Linq;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
@@ -9,7 +10,7 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private void BuildGlyphSurface(TopologyNode node, TopologyIconShape shape, double x, double y,
         ChartColor accent, double scale, SvgColorRole role) {
-        var tint = Color(StatusFill(accent.ToCss(), _colors.Background.ToCss(), .10), _colors.Surface);
+        var tint = Color(StatusFill(accent.ToHexRgba(), _colors.Background.ToHexRgba(), .10), _colors.Surface);
         var paint = new VisualScenePaintBinding(SvgPaint.Mix(tint, _colors.Background, SvgColorRole.Surface, accent, role, .10), SvgPaint.Of(accent, role));
         var center = Point(new ChartPoint(x, y));
         var s = scale * _scale;

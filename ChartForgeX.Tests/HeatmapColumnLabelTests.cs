@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
@@ -117,18 +118,29 @@ public sealed class HeatmapColumnLabelTests {
 
         var labels = ByRole(svg, "heatmap-column-label");
         Assert.NotEmpty(labels);
-        var radians = Math.Abs(angle) * Math.PI / 180;
         var scaleTop = ByRole(svg, "heatmap-scale-step").Min(step => Number(step, "y"));
-        Assert.All(labels, label => {
-            var style = new TextStyle { Font = new FontSpec { Family = (string)label.Attribute("font-family")!, Weight = 700 }, FontSize = Number(label, "font-size") };
-            var metrics = TextLayoutEngine.Measure(label.Value, style);
-            Assert.True(TextLayoutEngine.Measure(longLabel, style).Width > chart.Options.Size.Width, "The fixture must require shortening.");
-            var sideways = metrics.Width * Math.Cos(radians) + metrics.Height / 2 * Math.Sin(radians);
-            var x = Number(label, "x");
-            Assert.True(angle < 0 ? x - sideways >= -1 : x + sideways <= chart.Options.Size.Width + 1, "Measured rotated text must remain inside the horizontal canvas bounds.");
-            var bottom = Number(label, "y") + metrics.Width * Math.Sin(radians) + metrics.Height / 2 * Math.Cos(radians);
-            Assert.True(bottom <= scaleTop + 1, "Measured rotated text must remain above the numeric scale.");
-        });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(3, prepared.Regions.Count(region => region.Role == "heatmap-column-label" && region.Label == longLabel));
+        var transforms = new System.Collections.Generic.Stack<VisualSceneTransform>();
+        var transform = VisualSceneTransform.Identity;
+        foreach (var node in prepared.Scene.Nodes) {
+            if (node is VisualSceneGroup group) {
+                transforms.Push(transform);
+                if (group.Rotation.HasValue) transform = transform.Rotate(group.Rotation.Value);
+                if (group.Translation.HasValue) transform = transform.Translate(group.Translation.Value);
+            } else if (node is VisualSceneEndGroup) transform = transforms.Pop();
+            else if (node is VisualSceneText text && text.Role == "heatmap-column-label") {
+                Assert.All(text.Text.Lines, line => {
+                    Assert.True(line.Text.Length < longLabel.Length, "The fixture must require shortening.");
+                    var left = text.LineLeft(line); var top = text.Baseline - text.Text.Ascent;
+                    var corners = new[] { new ChartPoint(left, top), new ChartPoint(left + line.Width, top),
+                        new ChartPoint(left, top + text.Text.Metrics.Height), new ChartPoint(left + line.Width, top + text.Text.Metrics.Height) }
+                        .Select(transform.Apply).ToArray();
+                    Assert.All(corners, corner => Assert.InRange(corner.X, -.001, prepared.Size.Width + .001));
+                    Assert.All(corners, corner => Assert.True(corner.Y <= scaleTop + 1, "Measured rotated text must remain above the numeric scale."));
+                });
+            }
+        }
     }
 
     private static Chart Matrix() {

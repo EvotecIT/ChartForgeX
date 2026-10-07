@@ -72,6 +72,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(observation),
             ["data-cfx-x"] = Number(series.Points[rawStart].X), ["data-cfx-y"] = Number(series.Points[rawStart].Y),
             ["data-cfx-label"] = label.DisplayedText, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-fill-pattern"] = ObservationPattern(series, observation).ToString(),
             ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-source-count"] = Number(rawCount)
         };
         for (var member = 0; member < rawCount; member++) {

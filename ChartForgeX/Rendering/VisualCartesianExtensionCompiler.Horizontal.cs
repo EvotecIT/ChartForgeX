@@ -12,13 +12,8 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawPreparedHorizontalBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index]; var grouped = chart.Options.BarMode == ChartBarMode.Grouped;
-        var centers = chart.Series.SelectMany(s => s.Points.Select(point => map.Y(point.X))).Distinct().OrderBy(value => value).ToArray();
-        var spacing = plot.Height;
-        for (var i = 1; i < centers.Length; i++) spacing = Math.Min(spacing, centers[i] - centers[i - 1]);
-        var count = grouped ? chart.Series.Count : 1; var occupied = spacing * .68;
-        var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
-        var height = Math.Max(.1, Math.Min(30, (occupied - gap * (count - 1)) / count));
-        var offset = grouped ? (index - (count - 1) / 2d) * (height + gap) : 0;
+        var layout = ResolveHorizontalBarLayout(chart, context, plot, map, index);
+        var height = layout.Height; var offset = layout.Offset;
         for (var item = 0; item < series.Points.Count; item++) {
             var point = series.Points[item]; var baseValue = 0d;
             if (!grouped) for (var previous = 0; previous < index; previous++) foreach (var candidate in chart.Series[previous].Points) {
@@ -33,6 +28,18 @@ internal static partial class VisualCartesianCompiler {
             obstacles.Add(new LabelObstacle(PointId(index, item), bounds));
             AddHorizontalLabel(chart, context, series, index, item, new ChartPoint(endX, y), bounds, point.Y, label, labels);
         }
+    }
+
+    private static (double Height, double Offset) ResolveHorizontalBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {
+        var grouped = chart.Options.BarMode == ChartBarMode.Grouped;
+        var centers = chart.Series.SelectMany(s => s.Points.Select(point => map.Y(point.X))).Distinct().OrderBy(value => value).ToArray();
+        var spacing = plot.Height;
+        for (var i = 1; i < centers.Length; i++) spacing = Math.Min(spacing, centers[i] - centers[i - 1]);
+        var count = grouped ? chart.Series.Count : 1; var occupied = spacing * .68;
+        var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
+        var height = Math.Max(.1, Math.Min(30, (occupied - gap * (count - 1)) / count));
+        var offset = grouped ? (index - (count - 1) / 2d) * (height + gap) : 0;
+        return (height, offset);
     }
 
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
@@ -56,6 +63,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void AddHorizontalTotals(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, VisualThemeColors colors, List<LabelPlacementRequest> labels) {
+        var rowOffset = ResolveHorizontalBarLayout(chart, context, plot, map, 0).Height / 2 + context.Theme.Spacing;
         foreach (var category in chart.Series.SelectMany(series => series.Points.Select(point => point.X)).Distinct().OrderBy(value => value)) {
             foreach (var positive in new[] { true, false }) {
                 var total = chart.Series.SelectMany(series => series.Points).Where(point => ChartMath.SameCoordinate(point.X, category) && (point.Y >= 0) == positive).Sum(point => point.Y);
@@ -65,8 +73,8 @@ internal static partial class VisualCartesianCompiler {
                 var point = new ChartPoint(map.X(total), map.Y(category));
                 builder.AddRegion(new VisualSemanticRegion(id, "stack-total", new ChartRect(point.X, point.Y, 0, 0), text + " category=" + Number(category) + " value=" + Number(total)));
                 labels.Add(new LabelPlacementRequest(text, point, style, positive
-                    ? new[] { new LabelCandidate(context.Theme.Spacing, 0, 0, .5), new LabelCandidate(0, -context.Theme.Spacing, .5, 1) }
-                    : new[] { new LabelCandidate(-context.Theme.Spacing, 0, 1, .5), new LabelCandidate(0, context.Theme.Spacing, .5, 0) }, priority: 1) { AssociatedMarkId = id });
+                    ? new[] { new LabelCandidate(context.Theme.Spacing, 0, 0, .5), new LabelCandidate(0, -rowOffset, 1, 1), new LabelCandidate(0, rowOffset, 1, 0) }
+                    : new[] { new LabelCandidate(-context.Theme.Spacing, 0, 1, .5), new LabelCandidate(0, rowOffset, 0, 0), new LabelCandidate(0, -rowOffset, 0, 1) }, priority: 1) { AssociatedMarkId = id });
             }
         }
     }
@@ -113,11 +121,11 @@ internal static partial class VisualCartesianCompiler {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
             if (grid.ShowVerticalLines) foreach (var tick in xTicks) builder.Line(map.X(tick), plot.Top, map.X(tick), plot.Bottom,
-                colors.Grid.WithOpacity(grid.VerticalOpacity), width, role: "grid-x", dash: dash,
-                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
+                ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), width, role: "grid-x", dash: dash,
+                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), grid.VerticalOpacity)));
             if (grid.ShowHorizontalLines) foreach (var category in categories) builder.Line(plot.Left, map.Y(category), plot.Right, map.Y(category),
-                colors.Grid.WithOpacity(grid.HorizontalOpacity), width, role: "grid-y", dash: dash,
-                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
+                ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), width, role: "grid-y", dash: dash,
+                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }
         if (!chart.Options.ShowAxes) return;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });

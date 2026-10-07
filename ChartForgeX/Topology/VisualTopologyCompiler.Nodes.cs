@@ -25,7 +25,7 @@ internal sealed partial class VisualTopologyCompiler {
         var accentRole = AccentRole(authoredAccent);
         var baseAccent = Color(authoredAccent, Status(node.Status));
         var accent = Highlight(baseAccent, active);
-        var fill = Highlight(Color(NodeFill(node, Theme(), baseAccent.ToCss(), _options), _colors.Surface), active);
+        var fill = Highlight(Color(NodeFill(node, Theme(), baseAccent.ToHexRgba(), _options), _colors.Surface), active);
         var surfacePaint = new VisualScenePaintBinding(NodeFillPaint(node, fill, baseAccent, accentRole), SvgPaint.Of(accent, accentRole));
         var strokeWidth = (_options.SelectedNodeIds.Contains(node.Id) ? 2.8 : _context.Theme.AxisStrokeWidth) * _scale;
         using (Host(node.Href, node.Tooltip, node.Id, "topology-node-host"))
@@ -171,15 +171,23 @@ internal sealed partial class VisualTopologyCompiler {
         var resolved = new TopologyNode { Kind = kind, IconId = node.IconId };
         var shape = EffectiveIconShape(resolved, _options);
         BuildGlyphSurface(node, shape, x, y, color, glyphScale, glyphRole);
-        if (string.IsNullOrWhiteSpace(node.Symbol) && (shape == TopologyIconShape.Cloud || shape == TopologyIconShape.Database || kind == TopologyNodeKind.Database)) return;
-        var marks = string.IsNullOrWhiteSpace(node.Symbol) ? TopologyInfrastructureGlyphs.Build(shape, kind, x, y) : null;
+        if (shape == TopologyIconShape.Cloud || shape == TopologyIconShape.Database || kind == TopologyNodeKind.Database) return;
+        var marks = TopologyInfrastructureGlyphs.Build(shape, kind, x, y);
         if (marks == null) { Text(NodeGlyph(node, _options), Bounds(x - 12 * glyphScale, y - 10 * glyphScale, 24 * glyphScale, 22 * glyphScale), _context.Theme.Typography.DataLabelSize * glyphScale, color, 600, "topology-node-icon", centered: true, paint: SvgPaint.Of(color, glyphRole)); return; }
         foreach (var mark in marks) {
             if (mark.PathData != null) {
                 // Decode canonical authored glyph geometry, never an exported chart or SVG document.
-                foreach (var contour in ChartMapPathParser.ParseSubpaths(mark.PathData, 2)) {
-                    var commands = contour.Points.Select((point, index) => index == 0 ? ChartPathCommand.MoveTo(point.X, point.Y) : ChartPathCommand.LineTo(point.X, point.Y)).ToArray();
-                    _builder.Path(Transform(new ChartPath(commands), Project), mark.FillNone ? null : color, mark.Filled ? null : color, mark.StrokeWidth * _scale * glyphScale, role: "topology-node-icon", close: contour.IsClosed, paint: Paint(color, glyphRole, color, glyphRole));
+                // A canonical glyph mark may contain disconnected contours with the same paint.
+                // Keep them in one native path per closure policy instead of repeating SVG paint
+                // and role attributes for every tiny line. MoveTo preserves the separation.
+                foreach (var contours in ChartMapPathParser.ParseSubpaths(mark.PathData, 2).GroupBy(contour => contour.IsClosed)) {
+                    var commands = contours.SelectMany(contour => contour.Points.Select((point, index) => index == 0
+                        ? ChartPathCommand.MoveTo(point.X, point.Y) : ChartPathCommand.LineTo(point.X, point.Y))).ToArray();
+                    _builder.Path(Transform(new ChartPath(commands), Project), mark.FillNone ? null : color, mark.Filled ? null : color,
+                        mark.StrokeWidth * _scale * glyphScale, role: "topology-node-icon", close: contours.Key,
+                        cap: mark.RoundCap ? VisualStrokeCap.Round : VisualStrokeCap.Butt,
+                        join: mark.RoundJoin ? VisualStrokeJoin.Round : VisualStrokeJoin.Miter,
+                        paint: Paint(color, glyphRole, color, glyphRole));
                 }
             } else { var p = Project(new ChartPoint(mark.Cx, mark.Cy)); _builder.Ellipse(p.X, p.Y, mark.Rx * _scale * glyphScale, mark.Ry * _scale * glyphScale, mark.Filled ? color : null, mark.Filled ? null : color, mark.StrokeWidth * _scale * glyphScale, "topology-node-icon", paint: Paint(color, glyphRole, color, glyphRole)); }
         }

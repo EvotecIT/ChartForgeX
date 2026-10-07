@@ -14,9 +14,12 @@ internal static partial class SmokeTests {
             .AddHorizontalLine(100, "target")
             .AddVerticalBand(1.5, 2.5, "window", opacity: 0.1)
             .ToSvg();
-        var overlays = XDocument.Parse(annotations).Descendants().Where(element => element.Name.LocalName == "g" && element.Attribute("data-cfx-kind") != null).ToArray();
+        var overlays = XDocument.Parse(annotations).Descendants().Where(element => element.Name.LocalName == "g"
+            && ((string?)element.Attribute("data-cfx-source-id"))?.StartsWith("annotation-", System.StringComparison.Ordinal) == true).ToArray();
         CartesianMetadata(overlays.Single(element => (string?)element.Attribute("data-cfx-kind") == "HorizontalLine"), ("value", "100"), ("label", "target"));
-        CartesianMetadata(overlays.Single(element => (string?)element.Attribute("data-cfx-kind") == "VerticalBand"), ("value", "1.5"), ("end", "2.5"), ("label", "window"));
+        var band = overlays.Single(element => (string?)element.Attribute("data-cfx-kind") == "VerticalBand");
+        CartesianMetadata(band, ("value", "1.5"), ("label", "window"));
+        Assert((string?)(band.Attribute("data-cfx-end-value") ?? band.Attribute("data-cfx-end")) == "2.5", "The annotation group should retain its full end coordinate.");
         Assert(overlays.All(element => element.Descendants().Any(child => (string?)child.Attribute("data-cfx-role") == "annotation-label")), "Visible annotation labels should remain associated with their source annotation group.");
 
         var secondary = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())

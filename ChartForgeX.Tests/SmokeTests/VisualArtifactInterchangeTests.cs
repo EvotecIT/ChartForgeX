@@ -367,14 +367,14 @@ internal static partial class SmokeTests {
             "Flow interchange should project current model identity after wrapper creation.");
         Assert(flowRoundTrip.Nodes.Count == 3 && flowRoundTrip.Edges.Count == 2,
             "Flow interchange should expose current entity counts directly through typed collections.");
-        TopologyChart preparedFlow = TopologyLayoutEngine.Prepare(flow.ToTopologyChart(), options: new TopologyRenderOptions { IncludeLegend = false });
+        var preparedFlow = flow.ToTopologyChart().Prepare(new TopologyRenderOptions { IncludeLegend = false });
         Assert(flowRoundTrip.Groups.Single().Role == VisualArtifactInterchangeGroupRole.FlowLane, "Flow interchange should preserve typed lane semantics.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "approve").Flow!.Kind == FlowArtifactStepKind.Decision, "Flow interchange should preserve typed step kinds.");
         Assert(flowRoundTrip.Nodes.Single(node => node.Id == "submit").Extensions["owner"] == "requester", "Flow interchange should preserve step extensions.");
         Assert(flowRoundTrip.Edges.Single(edge => edge.Label == "Review").SourceId == "submit", "Flow interchange should preserve connector labels.");
         Assert(flowRoundTrip.Extensions["scope"] == "artifact" && flowRoundTrip.Extensions["model-only"] == "preserved",
             "Explicit artifact extensions should override same-key flow metadata while retaining model-only values.");
-        Assert(flowRoundTrip.Width == preparedFlow.Viewport.Width && flowRoundTrip.Height == preparedFlow.Viewport.Height,
+        Assert(flowRoundTrip.Width == preparedFlow.Width && flowRoundTrip.Height == preparedFlow.Height,
             "Flow interchange should publish the prepared topology viewport instead of its unprepared configured canvas.");
 
         string longFlowMetadataKey = new string('z', 600);
@@ -501,6 +501,7 @@ internal static partial class SmokeTests {
         var wideSequence = SequenceArtifact.Create("wide").WithTitle("Initial").WithSize(320, 240).AddParticipant("participant-0", "Participant 0");
         var wideArtifact = wideSequence.ToVisualArtifact();
         VisualArtifactSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
+        var initialPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
         wideSequence.Id = "wide-current";
         wideSequence.Title = "Current";
         for (var index = 1; index < 10; index++) wideSequence.AddParticipant("participant-" + index, "Participant " + index);
@@ -508,12 +509,15 @@ internal static partial class SmokeTests {
         wideSequence.Notes[0].StepIndex = 20;
         var wideEnvelope = wideArtifact.ToInterchangeEnvelope();
         VisualArtifactSize currentNaturalSize = wideSequence.ToVisualArtifact().NaturalSize.GetValueOrDefault();
-        Assert(currentNaturalSize.Width > initialNaturalSize.Width && currentNaturalSize.Height > initialNaturalSize.Height,
-            "The sequence fixture should grow in both dimensions after wrapper creation.");
+        var currentPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
+        Assert(currentPreparedSize.Width > initialPreparedSize.Width && currentPreparedSize.Height > initialPreparedSize.Height,
+            "Native default sequence preparation should grow in both dimensions when participants and late annotations are added.");
+        Assert(currentNaturalSize.Width == initialNaturalSize.Width && currentNaturalSize.Height == initialNaturalSize.Height,
+            "Lazy source artifacts should retain authored dimensions without performing native layout.");
         Assert(wideEnvelope.Id == "wide-current" && wideEnvelope.Title == "Current",
             "Sequence interchange should project current model identity after wrapper creation.");
         Assert(wideEnvelope.Width == currentNaturalSize.Width && wideEnvelope.Height == currentNaturalSize.Height,
-            "Sequence interchange should recalculate natural dimensions from the current model.");
+            "Source sequence interchange should retain the current authored dimensions.");
         Assert(wideEnvelope.Nodes.Count == 10 && wideEnvelope.Annotations.Count(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceNote) == 1,
             "Sequence interchange should expose current typed entities after wrapper creation.");
 
@@ -522,8 +526,12 @@ internal static partial class SmokeTests {
         annotationSizedSequence.AddBlock(SequenceArtifactBlockKind.Opt, "Late block", 95, 99);
         annotationSizedSequence.AddBranch(SequenceArtifactBlockKind.Alt, "Else", "Late branch", 90, 98);
         VisualArtifactInterchangeEnvelope annotationSizedEnvelope = annotationSizedSequence.ToVisualArtifact().ToInterchangeEnvelope();
-        Assert(annotationSizedEnvelope.Height > 6000 && annotationSizedEnvelope.Annotations.Max(annotation => annotation.EndIndex ?? 0) == 100,
-            "Sequence natural sizing should include activation, block, and branch annotation indices beyond the message timeline.");
+        var annotationPrepared = SequencePreparedCompiler.PrepareDefault(annotationSizedSequence);
+        var lateActivation = annotationPrepared.Regions.Single(region => region.Role == "sequence-activation");
+        Assert(annotationSizedEnvelope.Height == annotationSizedSequence.Height && annotationSizedEnvelope.Annotations.Max(annotation => annotation.EndIndex ?? 0) == 100,
+            "Source sequence interchange should preserve authored dimensions and late annotation indices without layout.");
+        Assert(lateActivation.Bounds.Top > annotationSizedSequence.Height && lateActivation.Bounds.Bottom <= annotationPrepared.Size.Height,
+            "Default native sequence sizing should place late activations in an expanded, bounded timeline.");
     }
 
     private static void VisualArtifactInterchangeRejectsInvalidContracts() {

@@ -4,6 +4,7 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -334,8 +335,12 @@ internal static partial class SmokeTests {
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
-        Assert(CountAlphaInRect(pixels, width, 15, 15, 1, 1) == 0, "PNG card corners should stay transparent outside the rounded radius.");
-        Assert(CountAlphaInRect(pixels, width, 32, 15, 1, 1) > 0, "PNG card top edge should still render after applying rounded corners.");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var card = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card");
+        Assert(card.Radius > 0, "The common frame should retain the theme's rounded card geometry.");
+        Assert(CountAlphaInRect(pixels, width, 0, 0, 1, 1) == 0, "PNG card corners should stay transparent outside the rounded radius.");
+        Assert(CountAlphaInRect(pixels, width, width / 2, (int)Math.Ceiling(card.Bounds.Top + 1), 1, 1) > 0,
+            "PNG card top edge should paint at its declared native bounds after applying rounded corners and shadow room.");
     }
 
     private static void PngAnnotationsUseReadableRasterStyling() {
@@ -357,11 +362,16 @@ internal static partial class SmokeTests {
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
         var dashedSamples = CountTransparentSamplesOnRow(pixels, width, 88, 20, 220);
         var lineSamples = 220 - dashedSamples;
-        var pillAlpha = CountAlphaInRect(pixels, width, 172, 68, 68, 24);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var plate = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "annotation-label-backplate");
+        var label = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "annotation-label");
+        var pillAlpha = CountAlphaInRect(pixels, width, (int)Math.Ceiling(plate.Bounds.Left), (int)Math.Ceiling(plate.Bounds.Top),
+            Math.Max(1, (int)Math.Floor(plate.Bounds.Width) - 1), Math.Max(1, (int)Math.Floor(plate.Bounds.Height) - 1));
 
         Assert(lineSamples > 20, "PNG annotation line should render visible dash segments.");
         Assert(dashedSamples > 20, "PNG annotation line should preserve transparent gaps between dash segments.");
         Assert(pillAlpha > 300, "PNG annotation labels should render with a readable filled pill.");
+        Assert(ChartColorMath.ContrastRatio(plate.Fill!.Value, label.Color) >= 4.5, "Annotation text should contrast with its actual tinted backplate.");
     }
 
     private static void PngPieLikeChartsUseReadableDetails() {
@@ -395,8 +405,13 @@ internal static partial class SmokeTests {
         chart.Options.ShowLegend = false;
         chart.Options.ShowPlotBackground = false;
 
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
+        Assert(labels.Length > 0 && labels.All(label => label.Stroke.HasValue && label.Stroke.Value.A > 0 && label.StrokeWidth > 0),
+            "Visible line data labels should retain opaque native glyph outlines.");
         var pixels = ReadPngRgba(chart.ToPng(), out _, out _);
-        var haloPixels = CountNearColor(pixels, 255, 255, 255, 16);
+        var stroke = labels[0].Stroke!.Value;
+        var haloPixels = CountNearColor(pixels, stroke.R, stroke.G, stroke.B, 32);
         Assert(haloPixels > 20, $"PNG data labels should render a light halo so labels stay readable over plotted marks. Actual halo pixels: {haloPixels}.");
     }
 
@@ -415,8 +430,25 @@ internal static partial class SmokeTests {
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
-        var labelPixels = CountNearColor(pixels, 15, 23, 42, 32);
-        var rightEdgeLabelPixels = CountNearColorInRect(pixels, width, width - 4, 0, 4, height, 15, 23, 42, 32);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var label = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "data-label");
+        chart.WithDataLabels(false);
+        var plain = ReadPngRgba(chart.ToPng(), out _, out _);
+        var labelPixels = 0;
+        var rightEdgeLabelPixels = 0;
+        var measured = label.Text.Metrics;
+        for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) {
+            var offset = (y * width + x) * 4;
+            if (pixels.AsSpan(offset, 4).SequenceEqual(plain.AsSpan(offset, 4))) continue;
+            labelPixels++;
+            if (x >= width - 4) rightEdgeLabelPixels++;
+            Assert(x >= Math.Floor(label.X) - 1 && x <= Math.Ceiling(label.X + measured.Width) + 1
+                && y >= Math.Floor(label.Baseline - label.Text.Ascent) - 1 && y <= Math.Ceiling(label.Baseline - label.Text.Ascent + measured.Height) + 1,
+                "Native fitted text ink should stay within the prepared label bounds.");
+        }
+        Assert(label.Text.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)), "Long formatter text should be visibly shortened.");
+        Assert(prepared.Regions.Any(region => region.Role == "point" && region.Label?.Contains("Extremely long remediation status label that must fit", StringComparison.Ordinal) == true),
+            "Fitting should preserve the complete source text in detached point semantics.");
 
         Assert(labelPixels > 8, "PNG readable labels should remain visible after fitting long formatter output.");
         Assert(rightEdgeLabelPixels == 0, $"PNG readable labels should fit before clamping instead of being clipped at the canvas edge. Actual right-edge label pixels: {rightEdgeLabelPixels}.");
@@ -437,15 +469,51 @@ internal static partial class SmokeTests {
         chart.Options.ShowLegend = false;
         chart.Options.ShowPlotBackground = false;
 
-        var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
-        var darkTextPixels = CountNearColor(pixels, 15, 23, 42, 24);
-        var lightTextPixels = CountNearColor(pixels, 255, 255, 255, 80);
-        var scaleNegativePixels = CountNearColorInRect(pixels, width, width - 230, height - 160, 210, 130, 239, 68, 68, 24);
-        var scalePositivePixels = CountNearColorInRect(pixels, width, width - 230, height - 160, 210, 130, 16, 185, 129, 44);
-
-        Assert(darkTextPixels > 20, "PNG heatmap labels should render dark text on light cells.");
-        Assert(lightTextPixels > 20, "PNG heatmap labels should render light text on dark cells.");
-        Assert(scaleNegativePixels > 8 && scalePositivePixels > 8, "PNG heatmaps should render the heat scale legend.");
+        chart.Options.ShowAxes = false;
+        var prepared = PreparedFamily(chart);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
+        var cells = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-cell-shape").ToArray();
+        Assert(labels.Length == 6 && cells.Length == 6, "Enabled heatmap values should produce one native label per cell.");
+        var pixels = ReadPngRgba(prepared.ToPng(), out var pixelWidth, out var pixelHeight);
+        for (var index = 0; index < labels.Length; index++) {
+            var label = labels[index]; var ink = label.Color; var fill = cells[index].Fill!.Value;
+            Assert(ChartColorMath.ContrastRatio(ink, fill) >= 4.5, "Heatmap ink should meet the common accessible contrast policy.");
+            var line = label.Text.Lines.Single();
+            var left = Math.Max(0, (int)Math.Floor(label.LineLeft(line)));
+            var right = Math.Min(pixelWidth, (int)Math.Ceiling(label.LineLeft(line) + line.Width));
+            var top = Math.Max(0, (int)Math.Floor(label.Baseline - label.Text.Ascent));
+            var bottom = Math.Min(pixelHeight, (int)Math.Ceiling(label.Baseline - label.Text.Ascent + label.Text.Metrics.Height));
+            var dr = ink.R - fill.R; var dg = ink.G - fill.G; var db = ink.B - fill.B;
+            var distance = dr * dr + dg * dg + db * db;
+            var inkPixels = 0;
+            for (var y = top; y < bottom; y++) for (var x = left; x < right; x++) {
+                var offset = (y * pixelWidth + x) * 4;
+                if (pixels[offset + 3] == 0) continue;
+                // Supersampling blends edge pixels with the cell. Verify visible coverage of the
+                // actual resolved ink in this label's geometry, without requiring solid glyph cores.
+                var coverage = ((pixels[offset] - fill.R) * dr + (pixels[offset + 1] - fill.G) * dg + (pixels[offset + 2] - fill.B) * db) / (double)distance;
+                if (coverage < .25 || coverage > 1.01) continue;
+                if (Math.Abs(pixels[offset] - (fill.R + coverage * dr)) <= 6 &&
+                    Math.Abs(pixels[offset + 1] - (fill.G + coverage * dg)) <= 6 &&
+                    Math.Abs(pixels[offset + 2] - (fill.B + coverage * db)) <= 6) inkPixels++;
+            }
+            Assert(inkPixels >= 8, $"Heatmap label {index} should have visible resolved ink within its measured native bounds. Actual pixels: {inkPixels}.");
+        }
+        Assert(!prepared.Scene.Nodes.Any(node => node.Role == "heatmap-scale-step"), "Explicit legend suppression should hide the continuous heatmap scale.");
+        chart.Options.ShowLegend = true;
+        var withScale = PreparedFamily(chart);
+        var scaleRegions = withScale.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
+        var scale = scaleRegions.Select(region => withScale.Scene.Nodes.OfType<VisualSceneRectangle>()
+            .Single(node => node.Bounds.Equals(region.Bounds))).ToArray();
+        Assert(scale.Length == 5 && scale.Select(node => node.Fill!.Value).Distinct().Count() >= 2,
+            "The enabled semantic scale should retain visibly distinct range paints.");
+        var scalePixels = ReadPngRgba(withScale.ToPng(), out var width, out _);
+        foreach (var swatch in scale) {
+            var fill = swatch.Fill!.Value;
+            Assert(CountNearColorInRect(scalePixels, width, (int)Math.Floor(swatch.Bounds.Left), (int)Math.Floor(swatch.Bounds.Top),
+                (int)Math.Ceiling(swatch.Bounds.Width), (int)Math.Ceiling(swatch.Bounds.Height), fill.R, fill.G, fill.B, 12) > 8,
+                "Each retained semantic scale paint should appear at its native PNG swatch bounds.");
+        }
     }
 
     private static void PngTimelinesRenderReadableRasterDetails() {
@@ -615,7 +683,11 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"svgMinimumStrokeWidth\": 0.75", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG stroke threshold.");
             Assert(manifest.Contains("\"svgMinimumMarkerRadius\": 3", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG marker threshold.");
             Assert(manifest.Contains("\"pngDistinctColors\": 8", StringComparison.Ordinal) && manifest.Contains("\"pngEdgeInkPixels\": 0", StringComparison.Ordinal), "Comparison manifest should describe PNG health thresholds.");
-            Assert(manifest.Contains("\"htmlRequiresSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"htmlRequiresPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should describe HTML polish health thresholds.");
+            Assert(manifest.Contains("\"htmlRequiresSurfaceGradient\": false", StringComparison.Ordinal)
+                && manifest.Contains("\"htmlRequiresSurfaceTreatment\": true", StringComparison.Ordinal)
+                && manifest.Contains("\"htmlAllowsFlatSurface\": true", StringComparison.Ordinal)
+                && manifest.Contains("\"htmlRequiresPrintCss\": true", StringComparison.Ordinal),
+                "Comparison manifest should require a styled HTML surface and print CSS while accepting native flat surfaces.");
             Assert(manifest.Contains("\"htmlMayBeExplicitlyOmitted\": true", StringComparison.Ordinal) && manifest.Contains("\"required\": false", StringComparison.Ordinal), "Comparison manifests should allow explicitly marked standalone SVG/PNG artifacts without weakening HTML checks for normal chart outputs.");
             Assert(manifest.Contains("\"center-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe available parity review modes.");
             Assert(manifest.Contains("\"preset-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe script-free preset wipe review.");
@@ -633,7 +705,8 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"visiblePixels\":", StringComparison.Ordinal) && manifest.Contains("\"foregroundPixels\":", StringComparison.Ordinal) && manifest.Contains("\"edgeInkPixels\":", StringComparison.Ordinal), "Comparison manifest should include PNG visibility, foreground, and edge statistics.");
             Assert(manifest.Contains("\"contentBounds\":", StringComparison.Ordinal), "Comparison manifest should include PNG content bounds.");
             Assert(manifest.Contains("\"distinctColors\":", StringComparison.Ordinal), "Comparison manifest should include PNG color diversity statistics.");
-            Assert(manifest.Contains("\"html\":", StringComparison.Ordinal) && manifest.Contains("\"hasSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"hasPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should include HTML polish statistics.");
+            Assert(manifest.Contains("\"html\":", StringComparison.Ordinal) && manifest.Contains("\"hasSurfaceGradient\": true", StringComparison.Ordinal)
+                && manifest.Contains("\"hasPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should report the Light theme's gradient HTML surface and print statistics.");
             Assert(manifest.Contains("\"healthy\": true", StringComparison.Ordinal), "Comparison manifest should flag healthy PNG artifacts.");
         } finally {
             Directory.Delete(output, true);

@@ -69,7 +69,7 @@ public sealed class V2PreparedFamilyPaintTests {
     public void MapScalesRetainStateBlendOperandsAndExplicitPointColors(ChartSeriesKind kind, string role) {
         var chart = V2GalleryModels.Create(kind); chart.Series[0].StateRole = ChartSeriesState.Danger;
         chart.Series[0].WithPointColor(0, Shared);
-        var prepared = chart.Prepare(Context());
+        var prepared = chart.Prepare(Context(showLegend: true));
         var document = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: Variables())));
         string PointFill(string point) => document.Descendants().Single(element =>
             (string?)element.Attribute("data-cfx-point") == point && (string?)element.Attribute("data-cfx-empty") == "false")
@@ -81,12 +81,12 @@ public sealed class V2PreparedFamilyPaintTests {
         Assert.All(Paints(prepared, Variables(), "map-scale-no-data", "fill"), paint => Assert.Contains("var(--surface,", paint));
     }
 
-    private static VisualRenderContext Context() {
+    private static VisualRenderContext Context(bool showLegend = false) {
         var tokens = new VisualDesignTokens { Background = Shared, Surface = Shared, Foreground = Shared, MutedForeground = Shared, Border = Shared, Palette = new[] { Shared } };
         tokens.Status.Critical = new VisualTokenColor(Shared, ChartColor.White);
         tokens.Status.Medium = new VisualTokenColor(Shared, ChartColor.White);
         tokens.Status.Pass = new VisualTokenColor(Shared, ChartColor.White);
-        return new VisualRenderContext(layout: new(new(800, 520)), theme: new VisualTheme(tokens, tokens), frame: new(showLegend: false));
+        return new VisualRenderContext(layout: new(new(800, 520)), theme: new VisualTheme(tokens, tokens), frame: new(showLegend: showLegend));
     }
 
     private static SvgColorVariables Variables() => new SvgColorVariables().Add("--surface", Shared, SvgColorRole.Surface)

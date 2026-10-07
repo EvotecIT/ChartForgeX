@@ -9,11 +9,10 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void BuildIconCaption(TopologyNode node, ChartColor accent, bool active) {
-        var text = IconLabelText(node, _chart.TextMeasurement);
-        var size = _context.Theme.Typography.DataLabelSize * (10.5 / 11);
-        var metrics = _builder.MeasureText(text, size * _scale, 700);
-        var width = Math.Max(IconLabelPlateWidth(node, _chart.TextMeasurement) * _scale, metrics.Width + 12 * _scale);
-        var height = Math.Max(15 * _scale, metrics.LineHeight);
+        var size = _options.ResolvedIconLabelFontSize;
+        var text = IconLabelText(node, _chart.TextMeasurement, size);
+        var width = IconLabelPlateWidth(node, _chart.TextMeasurement, size) * _scale;
+        var height = IconLabelPlateHeight(_chart.TextMeasurement, size) * _scale;
         var origin = Point(new ChartPoint(node.X + node.Width / 2, IconLabelPlateY(node)));
         var bounds = new ChartRect(origin.X - width / 2, origin.Y, width, height);
         _builder.Rect(bounds, Highlight(_colors.Surface, active), accent.WithOpacity(.4), _context.Theme.AxisStrokeWidth * _scale,

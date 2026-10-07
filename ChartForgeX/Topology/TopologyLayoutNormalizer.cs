@@ -217,10 +217,10 @@ internal static class TopologyLayoutNormalizer {
         if (!options.IncludeNodeLabels) return bounds;
         if (displayMode == TopologyNodeDisplayMode.Icon) {
             if (options.IncludeIconLabels) {
-                var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement);
+                var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
                 var labelCenter = CenterX(node);
                 var labelY = IconLabelPlateY(node);
-                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + 15);
+                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + IconLabelPlateHeight(options.TextMeasurement, options.ResolvedIconLabelFontSize));
             }
 
             return bounds;

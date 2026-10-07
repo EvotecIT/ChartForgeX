@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-source-marker=\"Circle\"", StringComparison.Ordinal) && svg.Contains("data-target-marker=\"Diamond\"", StringComparison.Ordinal), "SVG should preserve explicit endpoint markers.");
         Assert(svg.Contains("data-source-port-id=\"grpc\"", StringComparison.Ordinal) && svg.Contains("data-target-port-id=\"writer\"", StringComparison.Ordinal), "SVG should preserve named edge ports.");
         Assert(svg.Contains("data-cfx-role=\"topology-edge-endpoint-label\"", StringComparison.Ordinal), "SVG should render endpoint labels.");
-        Assert(svg.Contains("data-cfx-role=\"topology-node-detail-value\"", StringComparison.Ordinal), "SVG should render typed node details.");
+        Assert(TopologyRoleTexts(svg, "topology-node-detail").Any(text => text.Value.Contains("Region", StringComparison.Ordinal) && text.Value.Contains("EU", StringComparison.Ordinal)), "SVG should render the typed node detail key and value together.");
         Assert(svg.Contains("data-cfx-role=\"topology-layout-diagnostics\"", StringComparison.Ordinal), "SVG should render the optional layout diagnostic overlay.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50, "Advanced edge styling should preserve PNG output.");
         Assert(edge.Points.Count >= 2 && edge.Strategy.Length > 0, "Machine-readable diagnostics should expose prepared routes and router strategy.");

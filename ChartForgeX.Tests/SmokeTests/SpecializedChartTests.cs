@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -365,8 +366,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("fill=\"#10B981\"", StringComparison.Ordinal), "Semantic heatmap high values should use the positive theme color.");
         Assert(svg.Contains("fill=\"#F59E0B\"", StringComparison.Ordinal), "Semantic heatmap warning values should use the warning theme color.");
         Assert(svg.Contains("fill=\"#EF4444\"", StringComparison.Ordinal), "Semantic heatmap low values should use the negative theme color.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Primary, SPF: 100%, positive\"", StringComparison.Ordinal), "Semantic heatmap cells should expose accessible summaries.");
-        Assert(svg.Contains("<title>Primary, SPF: 100%, positive</title>", StringComparison.Ordinal), "Heatmap cells should expose native SVG hover titles.");
+        var primary = FamilyMetadata(svg, "heatmap-cell", ("series", "0"), ("point", "0"), ("value", "100"), ("status", "positive"));
+        Assert((string?)primary.Attribute("aria-label") == "Primary, SPF: 100%" && primary.Tooltip() == "Primary, SPF: 100%",
+            "Semantic heatmap cells should expose consistent accessible and hover summaries alongside their status metadata.");
         Assert(svg.Contains(">Primary</text>", StringComparison.Ordinal), "Heatmaps should render row labels.");
         Assert(svg.Contains(">DMARC</text>", StringComparison.Ordinal), "Heatmaps should render column labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Heatmaps should render optional data labels.");
@@ -375,8 +377,9 @@ internal static partial class SmokeTests {
             .WithXLabels("Very long first control", "Middle", "Very long final control")
             .AddHeatmapRow("Domains", Points(100, 60, 0))
             .ToSvg();
-        Assert(edgeSvg.Contains("data-cfx-role=\"heatmap-column-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"start\"", StringComparison.Ordinal), "Left-edge heatmap column labels should start-align.");
-        Assert(edgeSvg.Contains("data-cfx-role=\"heatmap-column-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge heatmap column labels should end-align.");
+        var edgeLabels = System.Xml.Linq.XDocument.Parse(edgeSvg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-column-label").ToArray();
+        Assert(edgeLabels.Length == 3 && edgeLabels.All(label => double.Parse((string)label.RenderedAttribute("x")!, CultureInfo.InvariantCulture) >= 0),
+            "Fitted edge column labels should remain visible inside the canvas.");
     }
 
 
@@ -396,9 +399,11 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"gantt-progress\"") == 2, "Gantt charts should render progress fills.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"gantt-dependency\"") == 2, "Gantt charts should render dependency connectors.");
         Assert(svg.Contains("data-cfx-role=\"gantt-milestone\"", StringComparison.Ordinal), "Gantt charts should render milestones.");
-        Assert(svg.Contains("data-cfx-role=\"gantt-today\"", StringComparison.Ordinal), "Gantt charts should render today markers.");
+        Assert(svg.Contains("data-cfx-role=\"gantt-now\"", StringComparison.Ordinal), "Gantt charts should render the shared current-time marker.");
         Assert(svg.Contains("data-cfx-progress=\"0.75\"", StringComparison.Ordinal), "Gantt task bars should expose progress metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Inventory scope: Jan 5 to Jan 24, 75% complete\"", StringComparison.Ordinal), "Gantt tasks should expose accessible summaries.");
+        var task = FamilyMetadata(svg, "gantt-task", ("series", "0"), ("progress", "0.75"));
+        Assert(task.Tooltip().Contains("Inventory scope", StringComparison.Ordinal) && task.Tooltip().Contains("75%", StringComparison.Ordinal),
+            "Gantt tasks should expose their name and completion in hover summaries.");
         Assert(svg.Contains(">75%</text>", StringComparison.Ordinal), "Gantt charts should render progress labels when enabled.");
         Assert(chart.ToPng().Length > 64, "Gantt charts should render PNG output.");
     }
@@ -473,7 +478,7 @@ internal static partial class SmokeTests {
             .WithXDateLabels(new[] { new DateTime(2026, 1, 1), new DateTime(2026, 1, 15) }, longLabel)
             .AddTimelineItem(longLabel, new DateTime(2026, 1, 1), new DateTime(2026, 1, 15))
             .ToSvg();
-        Assert(timeline.Contains("data-cfx-role=\"timeline-row-label\"", StringComparison.Ordinal), "Timelines should mark fitted row labels.");
+        Assert(timeline.Contains("data-cfx-role=\"schedule-row-label\"", StringComparison.Ordinal), "Timelines should use the shared fitted schedule row labels.");
         Assert(timeline.Contains("...</text>", StringComparison.Ordinal), "Timeline row and tick labels should shorten when their reserved regions are constrained.");
     }
 
@@ -516,13 +521,17 @@ internal static partial class SmokeTests {
             .ToSvg();
         Assert(svg.Contains("data-cfx-role=\"timeline\"", StringComparison.Ordinal), "Timelines should expose a role marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"timeline-item\"") == 2, "Two timeline items should render two ranges.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"timeline-row-label\"") == 2, "Timelines should mark row labels for layout regression checks.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Certificate renewal: Jan 1 to Feb 1, duration 31d\"", StringComparison.Ordinal), "Timeline items should expose accessible summaries.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"schedule-row-label\"") == 2, "Timelines should mark shared row labels for layout regression checks.");
+        var first = FamilyMetadata(svg, "timeline-item", ("series", "0"), ("duration", "31d"));
+        Assert(first.Tooltip().Contains("Certificate renewal", StringComparison.Ordinal) && first.Tooltip().Contains("31d", StringComparison.Ordinal),
+            "Timeline items should expose their source name and duration in accessible summaries.");
         Assert(svg.Contains("data-cfx-duration=\"31d\"", StringComparison.Ordinal), "Timeline items should expose duration metadata.");
-        Assert(svg.Contains("data-cfx-role=\"timeline-x-axis-title\"", StringComparison.Ordinal), "Timelines should mark the x-axis title.");
-        Assert(svg.Contains("data-cfx-role=\"timeline-y-axis-title\"", StringComparison.Ordinal), "Timelines should mark the y-axis title.");
-        Assert(GetAttribute(svg, "data-cfx-role=\"timeline-row-label\"", "x") > 100, "Timeline row labels should reserve enough left-side space.");
-        Assert(GetAttribute(svg, "data-cfx-role=\"timeline-tick-label\"", "x") >= GetAttribute(svg, "data-cfx-role=\"timeline-row-label\"", "x") + 14, "Timeline tick labels should stay inside the plotted timeline area.");
+        Assert(svg.Contains("data-cfx-role=\"schedule-x-axis-title\"", StringComparison.Ordinal), "Timelines should mark the shared x-axis title.");
+        Assert(svg.Contains("data-cfx-role=\"schedule-y-axis-title\"", StringComparison.Ordinal), "Timelines should mark the shared y-axis title.");
+        var rows = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-row-label").ToArray();
+        var itemLeft = double.Parse((string)first.RenderedAttribute("x")!, CultureInfo.InvariantCulture);
+        Assert(rows.All(row => double.Parse((string)row.RenderedAttribute("x")!, CultureInfo.InvariantCulture) < itemLeft),
+            "Timeline row labels should occupy a separate column before the range marks.");
         Assert(svg.Contains(">Certificate renewal</text>", StringComparison.Ordinal), "Timelines should render row labels.");
         Assert(svg.Contains(">31d</text>", StringComparison.Ordinal), "Timelines should render optional duration labels.");
 
@@ -538,8 +547,8 @@ internal static partial class SmokeTests {
             .WithXAxisValueFormatter(value => "W" + value.ToString("0", CultureInfo.InvariantCulture))
             .AddGanttTask("Numeric task", 1, 4, 0.5)
             .ToSvg();
-        Assert(numericTimeline.Contains("Numeric rollout: W1 to W4, duration 3w", StringComparison.Ordinal), "Numeric timelines should use custom x-axis and duration formatters in summaries.");
-        Assert(numericGantt.Contains("Numeric task: W1 to W4, 50% complete", StringComparison.Ordinal), "Numeric Gantt tasks should use custom x-axis formatters in summaries.");
+        Assert(FamilyMetadata(numericTimeline, "timeline-item", ("series", "0")).Tooltip() == "Numeric rollout: W1 – W4, 3w", "Numeric timelines should use custom x-axis and duration formatters in summaries.");
+        Assert(FamilyMetadata(numericGantt, "gantt-task", ("series", "0")).Tooltip() == "Numeric task: W1 – W4, 50%", "Numeric Gantt tasks should use custom x-axis formatters in summaries.");
     }
 
     private static void MultipleBarSeriesCanRenderAsStackedBars() {

@@ -126,7 +126,13 @@ public sealed class PreparedVisualArtifactTests {
     [InlineData(true)]
     public void NativeDiagramSemanticsSurviveCallerAndReaderMutation(bool topology) {
         var (prepared, semantics) = CreateDiagram(topology);
+        semantics.Nodes[0].Metrics.Add(new VisualArtifactInterchangeMetric { Name = "capacity", Value = "1" });
+        if (semantics.Edges[0].ResolvedRoute.Count == 0) {
+            semantics.Edges[0].ResolvedRoute.Add(new VisualArtifactInterchangePoint { X = 20, Y = 30 });
+            semantics.Edges[0].ResolvedRoute.Add(new VisualArtifactInterchangePoint { X = 80, Y = 30 });
+        }
         string original = semantics.ToJson();
+        var captured = new PreparedVisual(prepared.Scene, prepared.Accessibility, semantics);
         var artifact = prepared.ToArtifact(semantics.Id, semantics.Kind, semantics);
         Assert.True(artifact.SupportsExport(VisualArtifactExportFormat.Json));
         Assert.Equal(original, artifact.ToInterchangeJson());
@@ -135,10 +141,13 @@ public sealed class PreparedVisualArtifactTests {
         semantics.Nodes[0].Label = "Changed source label";
         semantics.Nodes[0].Extensions["source-note"] = "Changed source metadata";
         semantics.Edges[0].Label = "Changed source message";
+        semantics.Nodes[0].Metrics[0].Value = "Changed metric";
+        semantics.Edges[0].ResolvedRoute[0].X = 999;
         var firstRead = artifact.ToInterchangeEnvelope();
         firstRead.Nodes[0].Extensions["reader-note"] = "Changed reader metadata";
         firstRead.Edges.Clear();
         Assert.Equal(original, artifact.ToInterchangeJson());
+        Assert.Equal(original, captured.SemanticInterchange!.ToJson());
 
         artifact.Metadata["owner"] = "reviewed-host";
         var portable = VisualArtifactInterchangeEnvelope.FromUtf8Json(artifact.ToInterchangeUtf8Json());
@@ -146,6 +155,17 @@ public sealed class PreparedVisualArtifactTests {
         Assert.Equal(2, portable.Nodes.Count);
         Assert.Single(portable.Edges);
         Assert.Equal(topology ? VisualArtifactInterchangeFamily.Topology : VisualArtifactInterchangeFamily.Sequence, portable.Family);
+    }
+
+    [Fact]
+    public void StaticPreparedOutputDoesNotApplyPortableMetricBudgetsDuringDefensiveCapture() {
+        var (prepared, semantics) = CreateDiagram(topology: true);
+        for (var index = 0; index < 1025; index++)
+            semantics.Nodes[0].Metrics.Add(new VisualArtifactInterchangeMetric { Name = "metric-" + index, Value = "1" });
+        var captured = new PreparedVisual(prepared.Scene, prepared.Accessibility, semantics);
+        Assert.Equal(prepared.ToSvg(), captured.ToSvg());
+        Assert.Equal(prepared.ToPng(), captured.ToPng());
+        Assert.Throws<ArgumentOutOfRangeException>(() => captured.SemanticInterchange);
     }
 
     private static (PreparedVisual Prepared, VisualArtifactInterchangeEnvelope Semantics) CreateDiagram(bool topology) {

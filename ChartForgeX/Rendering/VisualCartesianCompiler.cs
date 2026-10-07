@@ -152,6 +152,8 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
             ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-fill-pattern"] = (pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
+                ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern).ToString(),
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
         if (baseValue.HasValue) metadata["data-cfx-base"] = Number(baseValue.Value);
@@ -186,16 +188,27 @@ internal static partial class VisualCartesianCompiler {
             }
             builder.AddRegion(new VisualSemanticRegion(id, bands ? "annotation-band" : "annotation-line", bounds, annotation.Label));
             if (!string.IsNullOrEmpty(annotation.Label)) {
-                var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = bands ? colors.MutedForeground : color };
+                var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, SvgColorRole.Axis, .12);
+                var backplate = plate.Color;
+                var ink = ChartColorBlend.Contrast(plate);
+                var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = ink.Color };
                 var anchor = new ChartPoint(horizontal ? plot.Left + context.Theme.Spacing : position,
                     horizontal ? position : plot.Top + context.Theme.Spacing);
                 var candidates = horizontal
                     ? new[] { new LabelCandidate(0, bands ? context.Theme.Spacing : -context.Theme.Spacing, 0, bands ? 0 : 1), new LabelCandidate(0, context.Theme.Spacing, 0, 0) }
                     : new[] { new LabelCandidate(context.Theme.Spacing, 0), new LabelCandidate(-context.Theme.Spacing, 0, 1, 0) };
-                var request = new LabelPlacementRequest(annotation.Label, anchor, style, candidates);
+                const double labelPadding = 4;
+                var request = new LabelPlacementRequest(annotation.Label, anchor, style, candidates) { Padding = labelPadding };
                 var label = new LabelPlacementService().Place(new[] { request }, plot, null, 0, builder.MeasureText)[0];
                 if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("cartesian.annotation-label-overflow", "An annotation label was shortened or omitted within the plot."));
-                if (!label.IsDropped) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(style), style, role: "annotation-label", paint: VisualChartPaint.Text(style));
+                if (!label.IsDropped) {
+                    builder.Rect(label.Bounds, backplate, ChartColorMath.WithOpacity(color, .36), radius: Math.Min(4, context.Theme.BarRadius),
+                        role: "annotation-label-backplate", paint: new VisualScenePaintBinding(
+                            fill: plate.Paint,
+                            stroke: SvgPaint.Of(color, SvgColorRole.Axis).WithOpacity(ChartColorMath.WithOpacity(color, .36), .36)));
+                    builder.Text(label.Text, label.Bounds.Left + labelPadding, label.Bounds.Top + labelPadding + builder.TextAscent(style), style,
+                        role: "annotation-label", paint: ink.Paint);
+                }
             }
             }
         }

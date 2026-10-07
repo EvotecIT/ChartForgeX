@@ -53,7 +53,7 @@ public sealed class VisualFrame {
     public VisualFrame(string? title = null, string? subtitle = null, bool showLegend = true,
         ChartLegendPosition legendPosition = ChartLegendPosition.Bottom, bool showSurface = false, bool transparentBackground = false,
         TextStyle? titleStyle = null, TextStyle? subtitleStyle = null, TextStyle? legendStyle = null,
-        int? legendMaximumRows = null, double legendMaximumHeightFraction = 0.35, bool showCard = false) {
+        int? legendMaximumRows = null, double legendMaximumHeightFraction = 0.35, bool showCard = false, string? legendTitle = null) {
         if (!Enum.IsDefined(typeof(ChartLegendPosition), legendPosition)) throw new ArgumentOutOfRangeException(nameof(legendPosition));
         if (legendMaximumRows.HasValue && legendMaximumRows.Value < 1) throw new ArgumentOutOfRangeException(nameof(legendMaximumRows));
         if (double.IsNaN(legendMaximumHeightFraction) || double.IsInfinity(legendMaximumHeightFraction) || legendMaximumHeightFraction <= 0 || legendMaximumHeightFraction > 1)
@@ -62,6 +62,7 @@ public sealed class VisualFrame {
         _titleStyle = titleStyle?.Clone(); _subtitleStyle = subtitleStyle?.Clone(); _legendStyle = legendStyle?.Clone();
         LegendMaximumRows = legendMaximumRows; LegendMaximumHeightFraction = legendMaximumHeightFraction;
         ShowCard = showCard;
+        LegendTitle = legendTitle;
     }
     /// <summary>Gets the title.</summary>
     public string? Title { get; }
@@ -69,6 +70,8 @@ public sealed class VisualFrame {
     public string? Subtitle { get; }
     /// <summary>Gets whether the legend is shown.</summary>
     public bool ShowLegend { get; }
+    /// <summary>Gets an optional measured heading above the legend entries. Null uses the producer's source title.</summary>
+    public string? LegendTitle { get; }
     /// <summary>Gets the legend placement.</summary>
     public ChartLegendPosition LegendPosition { get; }
     /// <summary>Gets whether the content surface is filled.</summary>
@@ -88,7 +91,9 @@ public sealed class VisualFrame {
     /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
     public double LegendMaximumHeightFraction { get; }
     internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, ShowLegend, LegendPosition,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle);
+    internal VisualFrame WithLegendTitle(string? legendTitle) => new(Title, Subtitle, ShowLegend, LegendPosition,
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle);
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>

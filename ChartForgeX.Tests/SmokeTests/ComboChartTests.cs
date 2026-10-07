@@ -39,7 +39,10 @@ internal static partial class SmokeTests {
         Assert(scatterCombo.Series.Count == 2, "Scatter-line combos should add exactly two series.");
         Assert(scatterCombo.Series[0].Kind == ChartSeriesKind.Scatter, "Scatter-line combos should add scatter points first.");
         Assert(scatterCombo.Series[1].Kind == ChartSeriesKind.Line, "Scatter-line combos should add a line overlay.");
-        Assert(CountOccurrences(scatterSvg, "data-cfx-role=\"scatter-point\"") == 3, "Scatter-line combos should render one marker per scatter point.");
+        var scatterMarks = System.Xml.Linq.XDocument.Parse(scatterSvg).Descendants()
+            .Where(element => element.Name.LocalName == "ellipse" && (string?)element.Attribute("data-cfx-role") == "marker"
+                && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-series") == "0")).ToArray();
+        Assert(scatterMarks.Length == 3, "Scatter-line combos should render one native marker for each scatter observation.");
         Assert(CountOccurrences(scatterSvg, "data-cfx-role=\"line\"") == 1, "Scatter-line combos should render one line overlay.");
         Assert(scatterCombo.ToPng().Length > 64, "Scatter-line combos should render PNG output.");
     }

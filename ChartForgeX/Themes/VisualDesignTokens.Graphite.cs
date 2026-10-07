@@ -34,7 +34,7 @@ public sealed partial class VisualDesignTokens {
         var tokens = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).ToTokens();
         tokens.UseGraphiteLayout = true;
         tokens.FontFamily = VisualTheme.Graphite().Typography.Family;
-        tokens.CornerRadius = VisualTheme.Graphite().BarRadius;
+        tokens.CornerRadius = VisualTheme.Graphite().CardRadius;
         tokens.StrokeWidth = VisualTheme.Graphite().SeriesStrokeWidth;
         return tokens;
     }

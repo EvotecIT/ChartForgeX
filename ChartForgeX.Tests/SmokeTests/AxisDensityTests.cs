@@ -42,15 +42,20 @@ internal static partial class SmokeTests {
     }
 
     private static void HorizontalCategoryLabelsWrapInSvg() {
-        var svg = Chart.Create()
+        var chart = Chart.Create()
             .WithSize(360, 260)
             .WithXLabels("Mail auth enforcement", "DNSSEC")
-            .AddHorizontalBar("Coverage", Points(82, 74))
-            .ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"horizontal-category-label\" data-cfx-line=\"0\"", System.StringComparison.Ordinal), "Horizontal category labels should expose stable SVG role markers.");
-        Assert(svg.Contains(">Mail auth</text>", System.StringComparison.Ordinal), "Long horizontal category labels should wrap onto a first readable SVG line.");
-        Assert(svg.Contains(">enforcement</text>", System.StringComparison.Ordinal), "Long horizontal category labels should wrap onto a second readable SVG line.");
+            .AddHorizontalBar("Coverage", Points(82, 74));
+        var prepared = PreparedFamily(chart);
+        var svg = chart.ToSvg();
+        var labels = FamilyLabels(prepared, "axis-y-label");
+        Assert(labels.Length == 2, "Horizontal categories should retain two readable labels in their bounded axis strip.");
+        Assert(prepared.Regions.Any(region => region.Role == "axis-y-label" && region.Label!.StartsWith("Mail auth enforcement", System.StringComparison.Ordinal)),
+            "Fitting should preserve the complete source category in descriptive semantics.");
+        Assert(labels.All(label => label.Text.Lines.All(line => label.LineLeft(line) >= 0 && label.LineLeft(line) + line.Width <= prepared.Size.Width)),
+            "Measured horizontal category labels should remain inside the exported canvas.");
         Assert(svg.Contains(">DNSSEC</text>", System.StringComparison.Ordinal), "Short horizontal category labels should remain a single SVG line.");
+        Assert(chart.ToPng().Length > 64, "The same fitted category scene should render native PNG.");
     }
 
     private static void NumericYAxisTicksThinWhenCrowded() {

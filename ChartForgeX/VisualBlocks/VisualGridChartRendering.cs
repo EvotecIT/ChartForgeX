@@ -25,7 +25,7 @@ internal static class VisualGridChartRendering {
         var embedded = new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition,
             frame.ShowSurface, transparentBackground: true, titleStyle: frame.TitleStyle, subtitleStyle: frame.SubtitleStyle,
             legendStyle: frame.LegendStyle, legendMaximumRows: frame.LegendMaximumRows,
-            legendMaximumHeightFraction: frame.LegendMaximumHeightFraction, showCard: frame.ShowCard);
+            legendMaximumHeightFraction: frame.LegendMaximumHeightFraction, showCard: frame.ShowCard, legendTitle: frame.LegendTitle);
         raster = request.RasterOptions;
         return chart.Prepare(new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, embedded, context.Font));
     }

@@ -184,8 +184,14 @@ internal static partial class VisualCartesianCompiler {
         if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
             anchor = new ChartPoint(mark.X + mark.Width / 2, mark.Y + mark.Height / 2);
             candidates.Add(new LabelCandidate(0, 0, .5, .5));
-        } else if (placement == ChartDataLabelPlacement.Left) candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
-        else if (placement == ChartDataLabelPlacement.Right) candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+        } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
+            var left = placement == ChartDataLabelPlacement.Left;
+            candidates.Add(new LabelCandidate(left ? leftOffset : rightOffset, 0, left ? 1 : 0, .5));
+            if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) {
+                candidates.Add(new LabelCandidate(left ? leftOffset : rightOffset, mark.Top - anchor.Y - spacing, left ? 1 : 0, 1));
+                candidates.Add(new LabelCandidate(left ? leftOffset : rightOffset, mark.Bottom - anchor.Y + spacing, left ? 1 : 0, 0));
+            }
+        }
         else if (placement == ChartDataLabelPlacement.Below || placement == ChartDataLabelPlacement.Above) {
             var above = placement == ChartDataLabelPlacement.Above;
             foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -spacing : spacing, alignment, above ? 1 : 0));
@@ -194,10 +200,34 @@ internal static partial class VisualCartesianCompiler {
             candidates.Add(new LabelCandidate(0, value >= 0 ? -spacing : spacing, .5, value >= 0 ? 1 : 0));
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+            // A label beside the value edge can fit above a sloping envelope even when a
+            // centered side label would intersect it and the top lane lacks a full gap.
+            candidates.Add(new LabelCandidate(rightOffset, 0, 0, value >= 0 ? 1 : 0));
+            candidates.Add(new LabelCandidate(leftOffset, 0, 1, value >= 0 ? 1 : 0));
+            candidates.Add(new LabelCandidate(rightOffset, value >= 0 ? -spacing : spacing, 0, value >= 0 ? 1 : 0));
+            candidates.Add(new LabelCandidate(leftOffset, value >= 0 ? -spacing : spacing, 1, value >= 0 ? 1 : 0));
+            // Local extrema can have strokes on both sides of the first candidate. Try a
+            // second lane before shortening the label, then the opposite vertical side.
+            candidates.Add(new LabelCandidate(0, value >= 0 ? -spacing * 2 : spacing * 2, .5, value >= 0 ? 1 : 0));
+            candidates.Add(new LabelCandidate(0, value >= 0 ? spacing : -spacing, .5, value >= 0 ? 0 : 1));
+            foreach (var alignment in new[] { .5, 0, 1 }) {
+                candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, alignment, 1));
+                candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, alignment, 0));
+            }
+        }
+        if (series.SemanticRole == "point-callout" && placement != ChartDataLabelPlacement.Auto
+            && placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) {
+            // Callouts commonly mark a first/last extremum. Preserve the requested side
+            // first, then keep the full caption beside its point when that side is outside.
+            foreach (var alignment in new[] { .5, 0, 1 }) {
+                candidates.Add(new LabelCandidate(0, spacing, alignment, 0));
+                candidates.Add(new LabelCandidate(0, -spacing, alignment, 1));
+            }
+            candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+            candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
         }
         var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center;
         var autoInside = placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar;
-        var insideCandidate = candidates.Count;
         if (autoInside) candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
         var style = resolvedLabel.Style;
         var insideStyle = style;
@@ -222,7 +252,9 @@ internal static partial class VisualCartesianCompiler {
             AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint
         };
         if (inside) request.Bounds = mark;
-        if (autoInside) ((CartesianLabels)labels).ContainedInk.Add(request, (insideCandidate, mark, insideStyle, insidePaint));
+        if (autoInside) ((CartesianLabels)labels).ContainedInk.Add(request, (mark, insideStyle, insidePaint));
+        if (series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.Scatter)
+            ((CartesianLabels)labels).Outlined.Add(request);
         labels.Add(request);
     }
 
@@ -235,12 +267,15 @@ internal static partial class VisualCartesianCompiler {
         foreach (var label in placed) {
             if (label.IsDropped) continue;
             var ink = ((CartesianLabels)labels).ContainedInk;
-            var contained = ink.TryGetValue(label.Request, out var insideInk) && label.CandidateIndex == insideInk.Candidate
-                && LabelPlacementService.Contains(insideInk.Bounds, label.Bounds);
+            var contained = ink.TryGetValue(label.Request, out var insideInk) && LabelPlacementService.Contains(insideInk.Bounds, label.Bounds);
             var displayedStyle = DisplayedStyle(contained ? insideInk.Style : label.Request.Style);
+            var outlined = ((CartesianLabels)labels).Outlined.Contains(label.Request);
+            var surface = context.Theme.Resolve(context.ThemeMode).Surface;
             builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
                 role: label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true ? "stack-total-label" : "data-label",
-                id: label.Request.AssociatedMarkId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle));
+                id: label.Request.AssociatedMarkId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
+                stroke: outlined ? surface : null, strokeWidth: outlined ? ChartTextHalo.SvgStrokeWidth(displayedStyle.EffectiveFontSize, displayedStyle.Font.Weight >= 700) : 0,
+                strokePaint: outlined ? SvgPaint.Of(surface, SvgColorRole.Surface) : null);
         }
     }
 

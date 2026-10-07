@@ -229,7 +229,9 @@ public static partial class GalleryWriter {
                 htmlRequiresDocumentShell = true,
                 htmlRequiresViewport = true,
                 htmlRequiresInlineSvg = true,
-                htmlRequiresSurfaceGradient = true,
+                htmlRequiresSurfaceGradient = false,
+                htmlRequiresSurfaceTreatment = true,
+                htmlAllowsFlatSurface = true,
                 htmlRequiresTextPolish = true,
                 htmlRequiresExpectedOverflow = true,
                 htmlRequiresPrintCss = true,
@@ -654,7 +656,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var foreground = CountPngForeground(pixelColors, dimensions, visualBackground, out var contentBounds);
             var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 :
                 hostAllowance != null ? edgeColors.LongCount(color => (color & 255) > PngEdgeInkTolerance) :
-                CountPngEdgeInk(edgeColors, edgeBackground);
+                CountPngEdgeInk(edgeColors, edgeBackground, HasDeclaredTransparentPngPerimeter(fileName, dimensions));
             var transparentPixels = (long)dimensions.Width * dimensions.Height - visiblePixels;
             return new PngHealth(visiblePixels, transparentPixels, foreground, contentBounds, colors.Count, edgeInkPixels, edgeColors.Count);
         } catch (IOException) {

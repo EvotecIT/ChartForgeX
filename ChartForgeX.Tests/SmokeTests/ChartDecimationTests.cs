@@ -44,10 +44,13 @@ internal static partial class SmokeTests {
         Assert(series.DecimationMode == ChartDecimationMode.MinMax && series.SourcePointIndices.Count == series.Points.Count, "Decimated series should expose its algorithm and source-index mapping.");
 
         var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-series-source-points-0=\"120\"", StringComparison.Ordinal), "SVG should expose the source point count.");
-        Assert(svg.Contains("data-cfx-series-rendered-points-0=\"", StringComparison.Ordinal), "SVG should expose the rendered point count.");
-        Assert(svg.Contains("data-cfx-series-decimation-0=\"MinMax\"", StringComparison.Ordinal), "SVG should expose the selected decimation algorithm.");
-        Assert(svg.Contains("data-cfx-series-source-indices-0=\"0,", StringComparison.Ordinal), "SVG should expose source-index provenance for rendered points.");
+        var sourceGroup = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "series");
+        Assert((string?)sourceGroup.Attribute("data-cfx-source-points") == "120", "SVG should expose the source point count.");
+        Assert((int?)sourceGroup.Attribute("data-cfx-rendered-points") == series.Points.Count, "SVG should expose the rendered point count.");
+        Assert((string?)sourceGroup.Attribute("data-cfx-decimation") == "MinMax", "SVG should expose the selected decimation algorithm.");
+        var retained = sourceGroup.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "point")
+            .Select(element => (int)element.Attribute("data-cfx-source-point")!);
+        Assert(series.SourcePointIndices.SequenceEqual(retained), "Each rendered point should retain its original source identity.");
 
         var html = chart.ToInteractiveHtmlFragment();
         Assert(html.Contains("const sourcePointIndex = (node)", StringComparison.Ordinal), "Interactive HTML should resolve retained points back to source identities.");
@@ -72,11 +75,13 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "Dense adaptive trends should avoid thousands of visible SVG marker nodes.");
         Assert(!svg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Static adaptive SVG should stay lean by omitting interaction-only point targets.");
         var interactiveHtml = chart.ToInteractiveHtmlFragment();
-        Assert(interactiveHtml.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal) && interactiveHtml.Contains("class=\"cfx-point-interaction-target\"", StringComparison.Ordinal), "Interactive adaptive trends should retain invisible point targets for tooltips, scenarios, and keyboard interaction.");
+        Assert(PreparedPointTargetCount(interactiveHtml) == series.Points.Count,
+            "Interactive adaptive trends should retain every source observation's completed target bounds for tooltips, scenarios and keyboard interaction.");
         var sparklineSvg = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToSvg();
         Assert(!sparklineSvg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Static adaptive sparklines should omit interaction-only point targets.");
         var sparklineHtml = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToInteractiveHtmlFragment();
-        Assert(sparklineHtml.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Interactive adaptive sparklines should preserve invisible point targets even though sparkline chrome and visible markers stay suppressed.");
+        Assert(PreparedPointTargetCount(sparklineHtml) == series.Points.Count,
+            "Interactive adaptive sparklines should preserve observation target bounds even when static chrome and visible markers stay suppressed.");
 
         var compact = Chart.Create().AddAdaptiveArea("Compact", points.Take(32), 320);
         Assert(!compact.Series[0].IsDecimated && compact.Series[0].Points.Count == 32, "Adaptive series should preserve sources already inside the resolved budget.");
@@ -88,5 +93,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => bounded.PointsPerPixel = 0, "Adaptive resolution policy should reject non-positive density.");
         AssertThrows<ArgumentOutOfRangeException>(() => bounded.MaximumMarkerCount = -1, "Adaptive resolution policy should reject negative marker thresholds.");
         AssertThrows<ArgumentOutOfRangeException>(() => bounded.ResolvePointBudget(-1), "Adaptive resolution policy should reject negative viewport widths.");
+    }
+
+    private static int PreparedPointTargetCount(string html) {
+        var attribute = System.Text.RegularExpressions.Regex.Match(html, "data-cfx-prepared-chart=\"([^\"]+)\"");
+        Assert(attribute.Success, "Interactive charts should expose the completed native source layout to their browser adapter.");
+        using var metadata = System.Text.Json.JsonDocument.Parse(System.Net.WebUtility.HtmlDecode(attribute.Groups[1].Value));
+        return metadata.RootElement.GetProperty("regions").EnumerateArray().Count(region => region.GetProperty("role").GetString() == "point"
+            && double.IsFinite(region.GetProperty("x").GetDouble()) && double.IsFinite(region.GetProperty("y").GetDouble()));
     }
 }

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.VisualArtifacts;
@@ -28,6 +31,24 @@ internal sealed class TopologyMotionSvgAdapter {
         _radius = motion.MarkerRadius * scale; _nodes = nodes.ToArray();
         _routes = plan.Entries.Select(entry => new Route(entry.Edge.Id, Path(entry.Points), edgeColor(entry.Edge))).ToArray();
         _markerColor = _routes[0].Color;
+        PolicyIdentity = Digest();
+    }
+
+    internal string PolicyIdentity { get; }
+
+    private string Digest() {
+        using var hash = SHA256.Create();
+        using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
+            writer.Write("cfx-topology-motion-1"); writer.Write(_source); writer.Write(_background);
+            writer.Write(_radius); writer.Write(_scale); writer.Write(_motion.DurationSeconds); writer.Write(_motion.Loop);
+            writer.Write(_routes.Length);
+            foreach (var route in _routes) { writer.Write(route.Id); writer.Write(route.Path); writer.Write(route.Color); }
+            writer.Write(_nodes.Length);
+            foreach (var node in _nodes) { writer.Write(node.Id); writer.Write(node.Center.X); writer.Write(node.Center.Y); writer.Write(node.Color); }
+        }
+        stream.FlushFinalBlock();
+        return string.Concat(hash.Hash!.Select(value => value.ToString("x2", CultureInfo.InvariantCulture)));
     }
 
     internal string Compose(string nativeSvg) {

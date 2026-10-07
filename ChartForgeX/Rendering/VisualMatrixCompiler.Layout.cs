@@ -37,10 +37,17 @@ internal static partial class VisualMatrixCompiler {
             var angle = ChartHeatmapColumnLabels.Angle(chart);
             var width = columns.Select(value => builder.MeasureText(ChartAxisValueFormatter.Format(chart.Options.XAxis, value, null, columns), style).Width).DefaultIfEmpty(0).Max();
             var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, cellWidth + gap, builder.MeasureText("Mg", style).Height, width);
-            for (var index = 0; index < columns.Length; index += step) {
+            for (var index = 0; index < columns.Length; index++) {
                 var text = ChartAxisValueFormatter.Format(chart.Options.XAxis, columns[index], null, columns);
                 var x = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (index + .5) * plot.Width / (columns.Length + .5)
                     : plot.Left + index * (cellWidth + gap) + cellWidth / 2;
+                if (index % step != 0) {
+                    // Density limits only visible labels. Retain the omitted column's complete caption
+                    // and descriptive slot just as fitted visible labels retain their full source text.
+                    builder.AddRegion(new VisualSemanticRegion("matrix-column-" + index, "heatmap-column-label",
+                        new ChartRect(x - cellWidth / 2, plot.Bottom, cellWidth, layout.LabelHeight), text));
+                    continue;
+                }
                 if (Math.Abs(angle) < .001) {
                     VisualStateSceneTools.Text(builder, text, new ChartRect(x - cellWidth / 2, plot.Bottom, cellWidth, layout.LabelHeight), style,
                         "heatmap-column-label", "matrix-column-" + index, TextAlignment.Center);
@@ -49,6 +56,10 @@ internal static partial class VisualMatrixCompiler {
                     var height = builder.MeasureText(text, style).Height;
                     var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength(chart, height),
                         (layout.LabelHeight - height * Math.Cos(radians) - 8) / Math.Max(.001, Math.Sin(radians))));
+                    var horizontal = angle < 0 ? x - viewport.Left : viewport.Right - x;
+                    // The height projects towards the opposite side of the anchor; only the text width
+                    // reaches this edge. Subtracting both needlessly shortens the outermost caption.
+                    maxWidth = Math.Min(maxWidth, Math.Max(0, horizontal / Math.Cos(radians)));
                     var textWidth = Math.Min(maxWidth, builder.MeasureText(text, style).Width);
                     var left = angle < 0 ? x - textWidth : x;
                     using (builder.PushClip(viewport))

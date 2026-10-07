@@ -91,7 +91,7 @@ public sealed class TopologySvgIdScopeTests {
             .AddNode("emea-hub", "EMEA Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "EMEA", width: 56, height: 44, symbol: "H")
             .WithNodeCoordinates("emea-hub", 0.1276, 51.5072);
         var callouts = map.ToSvg("panel-b", new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGeographicCallouts = true });
-        Assert.Contains("data-cfx-role=\"topology-geographic-callout\"", callouts, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", callouts, StringComparison.Ordinal);
         Assert.Contains("data-group-id=\"EMEA\"", callouts, StringComparison.Ordinal);
         AssertScopedAndResolved(callouts, "panel-b-");
     }

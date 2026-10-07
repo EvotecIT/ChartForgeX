@@ -3,6 +3,7 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -27,14 +28,14 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .AddGanttTask("Visible", 1, 5, 0.5);
         ganttVisible.Series[0].WithDataLabels();
-        Assert(ganttVisible.ToSvg().Contains("data-cfx-role=\"gantt-progress-label\"", System.StringComparison.Ordinal), "Gantt series overrides should enable progress labels.");
+        Assert(ganttVisible.ToSvg().Contains("data-cfx-role=\"data-label\"", System.StringComparison.Ordinal), "Gantt series overrides should enable progress labels.");
 
         var ganttHidden = Chart.Create()
             .WithSize(640, 360)
             .WithDataLabels()
             .AddGanttTask("Hidden", 1, 5, 0.5);
         ganttHidden.Series[0].WithDataLabels(false);
-        Assert(!ganttHidden.ToSvg().Contains("data-cfx-role=\"gantt-progress-label\"", System.StringComparison.Ordinal), "Gantt series overrides should hide progress labels even when chart-level labels are enabled.");
+        Assert(!ganttHidden.ToSvg().Contains("data-cfx-role=\"data-label\"", System.StringComparison.Ordinal), "Gantt series overrides should hide progress labels even when chart-level labels are enabled.");
         Assert(timelineVisible.ToPng().Length > 64 && ganttVisible.ToPng().Length > 64, "Timeline and Gantt label overrides should render valid PNG output.");
     }
 
@@ -72,7 +73,7 @@ internal static partial class SmokeTests {
 
         var radial = Chart.Create().WithLegend(false).AddRadialBar("Coverage", Points(90, 75, 66));
         radial.Series[0].WithDataLabels(false);
-        Assert(!radial.ToSvg().Contains("data-cfx-role=\"radial-bar-total\"", System.StringComparison.Ordinal), "Radial bar series overrides should hide center labels.");
+        Assert(!radial.ToSvg().Contains("data-cfx-role=\"radial-bar-value\"", System.StringComparison.Ordinal), "Radial bar series overrides should hide center labels.");
 
         var funnel = Chart.Create().AddFunnel("Pipeline", Points(100, 74, 51));
         funnel.Series[0].WithDataLabels(false);
@@ -144,7 +145,13 @@ internal static partial class SmokeTests {
 
         var labelsSvg = labels.ToSvg();
         Assert(CountOccurrences(labelsSvg, "data-cfx-role=\"data-label\"") == 2, "Horizontal bar series overrides should enable value labels.");
-        Assert(GetAttribute(labelsSvg, "<clipPath", "width") < GetAttribute(noLabelsSvg, "<clipPath", "width"), "Horizontal bar label overrides should reserve right-side label space.");
+        var context = VisualExportRequest.ForChart(labels).Context;
+        var preparedLabels = labels.Prepare(context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
+        Assert(preparedLabels.Length == 2 && preparedLabels.All(label => label.X >= 0
+            && label.X + label.Text.Metrics.Width <= context.Layout.Size.Width
+            && label.Baseline - label.Text.Ascent >= 0 && label.Baseline - label.Text.Ascent + label.Text.Metrics.Height <= context.Layout.Size.Height),
+            "Per-series horizontal labels should fit within the shared frame after measuring their available lanes.");
+        Assert(!noLabelsSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "The series override should leave chart-default hidden labels disabled in the comparison output.");
         Assert(labels.ToPng().Length > 64, "Horizontal bar label override layout should render valid PNG output.");
     }
 
@@ -172,7 +179,7 @@ internal static partial class SmokeTests {
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartSankeyLink("Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddGauge("Score", 87), "gauge-label", "gauge"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddCircle("Progress", 72), "circle-label", "circle"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)), "radial-bar-total", "radial bar"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)), "radial-bar-value", "radial bar"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartTreemapItem("Spoofing", 42), new ChartTreemapItem("Policy", 28) }), "treemap-label", "treemap"),
@@ -181,7 +188,7 @@ internal static partial class SmokeTests {
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("Control", 82, 90), "bullet-row-label", "bullet"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithDataLabels().AddTimelineRange("Migration", 1, 5), "data-label", "timeline"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithDataLabels().AddGanttTask("Migration", 1, 5, 0.5), "gantt-progress-label", "Gantt")
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithDataLabels().AddGanttTask("Migration", 1, 5, 0.5), "data-label", "Gantt")
         };
 
         foreach (var item in cases) {
@@ -190,7 +197,12 @@ internal static partial class SmokeTests {
             styled.Series[0].WithDataLabelStyle(style => style.WithColor("#c026d3").WithFontFamily("monospace").WithWeight("750").WithItalic().WithUnderline().WithFontSize(14));
             var svg = styled.ToSvg();
             Assert(svg.Contains("data-cfx-role=\"" + item.Role + "\"", StringComparison.Ordinal), item.Name + " data labels should render when enabled.");
-            Assert(svg.Contains("fill=\"#C026D3\"", StringComparison.Ordinal) && svg.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && svg.Contains("font-weight=\"750\"", StringComparison.Ordinal) && svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), item.Name + " SVG and HTML labels should honor the complete data-label typography style.");
+            var prepared = PreparedFamily(styled);
+            var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == item.Role).ToArray();
+            Assert(labels.Length > 0 && labels.All(node => node.Color.ToHex() == "#C026D3" && node.Text.Style.Font.Family == "monospace"
+                && node.Text.Style.Font.Weight == 750 && node.Text.Style.Font.Italic && node.Text.Style.Underline),
+                item.Name + " labels should retain authored ink, family, weight, italic and underline in the shared scene.");
+            Assert(prepared.Scene.Nodes.Any(node => node.Role == "text-decoration"), item.Name + " underline should materialize as shared native geometry.");
             Assert(!regular.ToPng().SequenceEqual(styled.ToPng()), item.Name + " raster labels should honor the same data-label typography style.");
         }
     }
@@ -203,7 +215,7 @@ internal static partial class SmokeTests {
             "donut");
         AssertCenterDataLabelSpacing(
             () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)),
-            "radial-bar-total",
+            "radial-bar-value",
             "radial-bar-title",
             "radial bar");
         AssertCenterDataLabelSpacing(
@@ -216,21 +228,23 @@ internal static partial class SmokeTests {
     private static void AssertCenterDataLabelSpacing(Func<Chart> create, string valueRole, string titleRole, string name) {
         var compact = create();
         compact.Series[0].WithDataLabelStyle(style => style.WithFontSize(10));
-        var compactSvg = compact.ToSvg();
-        var compactGap = GetAttribute(compactSvg, "data-cfx-role=\"" + titleRole + "\"", "y") - GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "y");
-
+        var compactPrepared = PreparedFamily(compact);
         var large = create();
         large.Series[0].WithDataLabelStyle(style => style.WithFontSize(24));
-        var largeSvg = large.ToSvg();
-        var largeGap = GetAttribute(largeSvg, "data-cfx-role=\"" + titleRole + "\"", "y") - GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "y");
-        var compactFontSize = GetAttribute(compactSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
-        var largeFontSize = GetAttribute(largeSvg, "data-cfx-role=\"" + valueRole + "\"", "font-size");
-
-        Assert(largeFontSize >= compactFontSize, name + " center labels should respect the requested size up to the available hole budget.");
-        if (largeFontSize > compactFontSize) {
-            Assert(largeGap > compactGap, name + " center-label spacing should expand with measured font metrics.");
-            Assert(!compact.ToPng().SequenceEqual(large.ToPng()), name + " PNG center-label layout should respond to the resolved data-label font size.");
+        var largePrepared = PreparedFamily(large);
+        var compactValue = FamilyLabels(compactPrepared, valueRole).Single();
+        var largeValue = FamilyLabels(largePrepared, valueRole).Single();
+        Assert(largeValue.Text.Style.FontSize >= compactValue.Text.Style.FontSize && largeValue.Text.Style.FontSize <= 24,
+            name + " center labels should respect the requested size up to the available hole budget.");
+        foreach (var prepared in new[] { compactPrepared, largePrepared }) {
+            var value = FamilyLabels(prepared, valueRole).Single();
+            var caption = FamilyLabels(prepared, titleRole).Single();
+            var valueBottom = value.Baseline - value.Text.Ascent + value.Text.Metrics.Height;
+            var captionTop = caption.Baseline - caption.Text.Ascent;
+            Assert(valueBottom <= captionTop + .000001, name + " fitted center value and caption must have disjoint measured extents.");
+            Assert(FamilyContent(value).Length > 0 && FamilyContent(caption).Length > 0, name + " must retain both visible center lines.");
         }
-        Assert(Rendering.ChartLabelScene.Inspect(largeSvg, Typography.FontSpec.SystemSans()).LabelLabel == 0, name + " fitted center labels must not collide.");
+        if (largeValue.Text.Style.FontSize > compactValue.Text.Style.FontSize)
+            Assert(!compactPrepared.ToPng().SequenceEqual(largePrepared.ToPng()), name + " PNG center-label layout should respond to the resolved font size.");
     }
 }

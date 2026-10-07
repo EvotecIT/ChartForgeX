@@ -73,8 +73,9 @@ public sealed class PreparedVisual {
     internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null, VisualSvgOptions? svgOptions = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
         // Portable-envelope budgets apply when semantics cross that boundary, not to static rendering.
-        // Producers supply a private detached envelope; serialize it only if a host requests interchange.
-        _semanticInterchange = semanticInterchange == null ? null : new Lazy<string>(semanticInterchange.ToJson);
+        // Capture all mutable DTO collections now; serialize only if a host requests interchange.
+        var semanticSnapshot = semanticInterchange == null ? null : VisualArtifactInterchangeSnapshot.Capture(semanticInterchange);
+        _semanticInterchange = semanticSnapshot == null ? null : new Lazy<string>(semanticSnapshot.ToJson);
         _defaultSvgOptions = svgOptions;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));

@@ -17,7 +17,8 @@ public sealed class VisualThemeJsonTests {
         light.Grid = ChartColor.FromHex("#55667788");
         dark.Status.Info = new VisualTokenColor(ChartColor.FromHex("#12345678"), ChartColor.FromHex("#ABCDEF12"));
         var typography = new VisualTypography("Example \"Family\", C:\\Fonts\tΩ", 27.25, 14.5, 10.75, 12.25, 11.5);
-        var original = new VisualTheme(light, dark, typography, 13.5, 2.75, 4.25, 0.375, 5.5, 0.5, 1.25);
+        var original = new VisualTheme(light, dark, typography, 13.5, 2.75, 4.25, 0.375, 5.5, 0.5, 1.25, cardRadius: 17,
+            cardShadowOpacity: .22, cardShadowColor: ChartColor.FromHex("#7C3AED80"));
         string json = original.ToThemeJson();
         var imported = VisualTheme.FromThemeJson(json);
         Assert.Equal(json, imported.ToThemeJson());
@@ -36,6 +37,9 @@ public sealed class VisualThemeJsonTests {
         Assert.Equal(typography.Family, imported.Typography.Family);
         Assert.Equal(new[] { 27.25, 14.5, 10.75, 12.25, 11.5 }, new[] { imported.Typography.TitleSize, imported.Typography.SubtitleSize, imported.Typography.AxisSize, imported.Typography.LegendSize, imported.Typography.DataLabelSize });
         Assert.Equal(new[] { 13.5, 2.75, 4.25, 0.375, 5.5, 0.5, 1.25 }, new[] { imported.Spacing, imported.SeriesStrokeWidth, imported.MarkerRadius, imported.AreaOpacity, imported.BarRadius, imported.GridStrokeWidth, imported.AxisStrokeWidth });
+        Assert.Equal(17, imported.CardRadius);
+        Assert.Equal(.22, imported.CardShadowOpacity);
+        Assert.Equal(ChartColor.FromHex("#7C3AED80"), imported.CardShadowColor);
         var document = JsonNode.Parse(json)!;
         Assert.Equal(1, document["schemaVersion"]!.GetValue<int>());
         Assert.Equal("#11223344", document["light"]!["surface"]!["page"]!.GetValue<string>());
@@ -83,6 +87,7 @@ public sealed class VisualThemeJsonTests {
     [InlineData("areaOpacity", 1.1)]
     [InlineData("spacing", -1)]
     [InlineData("seriesStrokeWidth", -1)]
+    [InlineData("cardRadius", -1)]
     public void InvalidGeometryIsRejectedAtTheThemeBoundary(string property, double value) {
         var document = JsonNode.Parse(VisualTheme.Graphite().ToThemeJson())!;
         document["geometry"]![property] = value;

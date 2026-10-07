@@ -1,6 +1,6 @@
 # ChartForgeX v2 consumer migration
 
-This guide records the breaking-release target and the observed consumer contracts. Charts, grids and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps the inspected calls to their destination, migration recipe and acceptance fixture. A row marked `planned` remains open until its executable fixture and final API example exist. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
+This guide records the breaking-release target and the observed consumer contracts. Charts, grids, topology, flow and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps inspected calls to their destination, migration recipe and acceptance fixture. Its `owner_implementation` and `owner_evidence` columns distinguish available source and owner fixtures from downstream qualification. A row with `status=planned` still requires consumer migration or qualification; an implemented owner path does not close that gate. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
 
 Consumer repositories remain unchanged. Revalidate their intended branch before migrating: a primary checkout, cached remote source, local project reference and installed NuGet package are different evidence boundaries.
 
@@ -13,6 +13,12 @@ Consumer repositories remain unchanged. Revalidate their intended branch before 
 | Private reporting consumer | Read-only source inspection | Restore a reproducible dependency closure before claiming consumer build proof. |
 
 Paths in this guide and the CSV are repository-relative. Resolve the repository root through `EVOTEC_GITHUB_ROOT`, with the platform default described in `AGENTS.md` when unset. Source findings are not consumer builds, installed-module tests or package publication proof.
+
+## Static HTML embedding
+
+`chart.ToHtmlFragment()` and `grid.ToHtmlFragment()` embed a responsive prepared SVG. The inline SVG shrinks to the host's width and preserves its aspect ratio without a page stylesheet. Its logical `width`, `height` and `viewBox` remain the prepared viewport; proportional scaling does not perform a new compact layout.
+
+Hosts embedding a detached artifact can request the same policy explicitly: `prepared.ToSvg(new VisualSvgOptions(idPrefix: "capacity-left", colorVariables: hostVariables, responsive: true))`. Supply the host namespace and colour mapping when replacing an export policy. Standalone `prepared.ToSvg()` retains exact viewport sizing.
 
 ## Package selection
 
@@ -33,9 +39,28 @@ Do not move genuine diagrams solely because their current names end in `Block`. 
 
 Use `Prepare(context)` when a host supplies an exact viewport, paired theme, frame and font. The context owns those presentation values; model data, axis configuration and explicit text overrides remain inputs to preparation. `VisualLayoutOptions` accepts uniform padding or `ChartPadding` with independent edges. `VisualFrame` carries measured legend row and height budgets, and omitted legend entries retain their full semantic descriptions.
 
+Preserve the distinction between the outer card and the plot when migrating theme or host settings:
+
+| Existing model theme/input | Shared prepared contract |
+| --- | --- |
+| `ChartTheme.CornerRadius` | `VisualTheme.CardRadius` for the outer frame card |
+| `ChartTheme.PlotCornerRadius` | `VisualTheme.BarRadius` for the prepared plot/mark default; it does not reshape the card |
+| `ChartTheme.ShadowOpacity` / `ShadowColor` | `VisualTheme.CardShadowOpacity` / `CardShadowColor`, including authored color alpha |
+| `ShowCard` with `Theme.UseCard` | `VisualFrame.ShowCard`; convenience exports also respect `HostOwnsFrame` |
+| `ShowPlotBackground` | `VisualFrame.ShowSurface`, independently of the card |
+
+Convenience exports perform these mappings. Explicit contexts set the frame and theme directly. Card shadows are shared native layers constrained by outer padding; zero opacity remains flat, and exhausted padding omits the shadow with a diagnostic. They do not enlarge the output or move plot coordinates. Transparent canvas settings suppress the canvas background while an explicitly enabled card remains visible.
+
+For a categorical legend heading, pass `legendTitle` to `VisualFrame`. Null permits a producer title, such as a topology legend title; an empty string suppresses it. The common frame measures it within the legend height budget and retains its full semantic text when it cannot fit. Chart and grid frame copies preserve the title, styles and row/height budgets, so hosts do not need a separate heading layer.
+
 `VisualTheme.Graphite()` and the mutable Graphite theme factories share the canonical paired color document. Custom model themes are copied into a detached request, so editing a theme after preparation cannot change the retained output. Explicit SVG color mappings retain paint roles; equal RGB values do not merge series, status, surface and text roles. Raster output uses the resolved static fallback colors.
 
 Raster scale, supersampling and optional hinting are export settings in `VisualRenderOptions`; changing them does not repeat layout or change logical dimensions. Text decoration and superscript/subscript positioning are prepared numeric geometry shared by SVG and PNG, so old renderer-specific CSS selectors are not a stable integration contract.
+
+When a host switches one exported SVG between themes, obtain its binding collection with `selectedThemeTokens.ToSvgColorVariables().GetVariablesForSvg(exportedSvg)`. The returned collection includes the base roles and only the derived contrast inks referenced by that SVG. Evaluate it separately for each theme using the same SVG. This preserves continuous heatmap colours and readable labels without a second layout pass. `Variables` alone contains the base roles and cannot supply every scene-dependent ink.
+
+DateTime timeline and Gantt builders select a time axis by default. An explicitly configured scale, formatter, time zone or bounds remains in effect; numeric overloads retain linear axes. Heatmap, calendar and map scales require both their model visibility settings and the host frame's legend permission even though they have no categorical legend entries. Observed zero and missing data remain separate states.
+
 ## Shared static handoff
 
 The target adapter flow is typed model → common renderable → immutable prepared output → SVG/PNG or semantic artifact. Compile once when producing both backends. Keep IDs, alternative text, semantic regions and family data with the artifact; the display scene and its SVG cannot replace native topology/flow/sequence data.
@@ -44,7 +69,7 @@ Sequence `ToSvg()` and `ToPng()` use the shared native scene. Their default requ
 
 `sequence.ToVisualArtifact()` remains a lazy source envelope with authored dimensions and source semantics. It does not calculate preview geometry or validate a render layout. For a detached display and semantic snapshot, use `sequence.Prepare(context).ToArtifact(id, VisualArtifactKind.Sequence)`. Its envelope dimensions, node bounds, message routes and label bounds describe the prepared viewport; `chartforgex.source.width` and `chartforgex.source.height` retain the authored dimensions. Source-only envelopes do not provide preview regions until a display is prepared.
 
-Phase 1 must supply an executable example for each of these adapter-shaped boundaries before its gate closes:
+The owner fixtures exercise these adapter-shaped boundaries:
 
 - A transparent chart with no card/header, explicit size, localized value formatting and an accessible name, exported to SVG and RGBA/PNG from one prepared result.
 - A donut using the same frame/theme/size contract, including zero/missing data and a meaningful center value.
@@ -52,7 +77,7 @@ Phase 1 must supply an executable example for each of these adapter-shaped bound
 - An artifact carrying SVG bytes, identity/title, alternative text and versioned interchange JSON without a Visuals or Stories concrete-type reference.
 - Canonical light/dark token intake, explicit model overrides and an immutable theme snapshot.
 
-These are Phase 1 owner fixtures. Running actual Word/Excel/PowerPoint/PDF/Visio consumers, packaging PowerShell modules and rendering full wallpapers are later qualification gates. Cross-family renderer consistency remains unproven until those families migrate and their outputs are inspected.
+These are owner fixtures. All chart-family producers are implemented; the Phase 2–3 integration, visual inspection and performance gates qualify their combined behavior separately. Running actual Word/Excel/PowerPoint/PDF/Visio consumers, packaging PowerShell modules and rendering full wallpapers remain consumer qualification gates. Fixture source alone does not establish that those gates passed.
 
 The source handoff `chart.ToVisualArtifact("cpu-load")` stores the mutable chart and prepares it on demand when rendering. The detached route stores completed layout: call `chart.Prepare(context)`, then `prepared.ToArtifact(...)`, and retain the existing portable SVG/JSON handoff. Use the detached route to export several formats without repeating preparation. This example is also exercised by `PreparedVisualArtifactTests.StaticArtifactUsesPreparedOutputAndKeepsPortableHostMetadata`:
 
@@ -82,9 +107,13 @@ string html = artifact.ToHtmlPage();
 
 The artifact copies prepared region bounds and accessibility, and declares the prepared viewport as its natural size. Its title/accessibility/metadata remain editable host-envelope fields. Artifact SVG/HTML exports apply current host text alternatives, language and decorative state, with generated SVG IDs scoped to the artifact identity. These overrides leave the immutable prepared SVG snapshot, geometry and pixels unchanged. To change visual content or dimensions, prepare again. Replacing `NaturalSize` with dimensions different from the prepared viewport is rejected during rendering/interchange export.
 
-For native diagram handoff, pass the source model's versioned semantic envelope as the third argument to `prepared.ToArtifact(id, kind, semanticInterchange)`. The factory snapshots it through the existing versioned writer/reader, requires matching ID/kind and any supplied dimensions, and returns an independent semantic envelope on each read. The producer remains responsible for supplying semantics corresponding to its visual. No nodes, edges, routes or sequence messages are inferred from the display scene. A chart with no supplied diagram semantics emits family `None` and no fabricated native diagram data.
+Prepared topology, flow and sequence producers carry their typed semantic snapshot. Calling `prepared.ToArtifact(id, kind)` retains that snapshot automatically, with the requested artifact ID and prepared dimensions. Node/group bounds, resolved routes and label bounds describe the displayed diagram; authored options and source metadata remain available through the versioned interchange. No diagram data is inferred from scene commands.
 
-`PreparedVisualArtifactTests.NativeDiagramSemanticsSurviveCallerAndReaderMutation` exercises actual topology and sequence producers, round-trips their complete source semantic JSON and checks independent caller/reader mutation. The Phase 1 feasibility renderers place their content inside the common frame; copied topology source coordinates retain the original model layout and are not exact prepared-region coordinates. The supplied semantic envelope preserves editable source data, while prepared regions describe the displayed bounds. Exact native Office placement matching the prepared diagram remains a later diagram/consumer qualification gate.
+The typed snapshot is copied during preparation, before lazy JSON serialization. Mutating an original semantic DTO or its nested collections after `Prepare` cannot change a later artifact or interchange export. Portable JSON size/depth/collection limits apply when that interchange is requested, including `ToArtifact(...)`; they do not prevent static SVG/PNG rendering of the prepared scene. A consumer that requires native editable semantics must qualify that portable boundary separately from picture export.
+
+When a host supplies its own envelope, pass it as the third argument to `prepared.ToArtifact(id, kind, semanticInterchange)`. The factory snapshots it through the versioned writer/reader, requires matching ID/kind and any supplied dimensions, and returns an independent envelope on each read. The host is responsible for matching those semantics to its visual. An ordinary chart without supplied diagram semantics emits family `None` rather than fabricated diagram nodes or edges.
+
+`PreparedVisualArtifactTests.NativeDiagramSemanticsSurviveCallerAndReaderMutation` exercises explicit envelope capture and independent caller/reader mutation. `PreparedTopologyTests`, `PreparedSequenceTests` and the native diagram fixtures cover producer-owned prepared geometry and semantics. Use the automatically retained envelope when Office placement needs the prepared coordinate system; explicitly supplying an authored source envelope preserves the coordinates in that envelope. Native Office projections still require consumer qualification against the retained bounds, routes, groups and fidelity diagnostics.
 
 ## PowerBGInfo: preserve the wallpaper engine
 
@@ -96,6 +125,10 @@ Keep PowerBGInfo's hero template, left/center/right lane policy, synthetic machi
 
 Map all consumed chart families: bar/horizontal bar; line/area/sparkline; gauge/circle/radial bar/bullet; pie/donut; progress; pictorial. Preserve formatter and font-role overrides, legend/point-legend/data-label settings, min/max/target/ranges, center/status labels, palette, smoothing, thickness/radius/columns and supersampling. Dense trends retain `ChartResolutionPolicy.Trend()` and provenance; categorical and short series remain exact.
 
+These specialized models have native producers. Keep the caller's declared gauge/circle bounds and raw values; clamping the visible progress does not replace source values or formatted text. Bullet rows share one displayed domain while retaining their declared row bounds, targets and ranges. An explicit `WithValueFormat(...)` or value formatter governs values, targets and generated numeric ticks unless an axis-specific formatter overrides those ticks; the default still uses grouped value labels and compact ticks. Pie/donut aggregation uses `MaximumPieSlices` independently of theme and retains contributing indexes for `Other`. Zero pie values remain legend categories; zero polar-area values retain their angular slot. Donut center text, progress handles and pictorial partial fills remain explicit options. Custom pictorial paths become numeric geometry rendered by both backends; the legacy PNG fallback shape does not replace an accepted custom contour.
+
+Check the remaining plot dimensions before preparing a nested chart. `BgInfoChartRenderer.Render` currently clamps the space after host padding and title/value text to one pixel, then supplies eight pixels of chart padding on every edge. A fixed `VisualLayoutOptions` request requires a positive interior; widths or heights of sixteen pixels or less cannot retain that padding. Keep the requested outer wallpaper dimensions and choose an explicit consumer policy: skip an exhausted plot, or reduce its internal padding to fit. Do not silently enlarge the chart to satisfy the layout constraint. Include a short tile with a tall title in consumer qualification.
+
 Topology overlays remain fixed-size transparent outputs, with viewport fit, groups, labels/status badges and chosen layout/style. The 560×310 bottom-right example with offset 34 must composite without silent content-size growth. Required wallpaper qualification includes 2560×1080 and 4K, detailed/light/dark backgrounds, direct RGBA composition and final JPEG flattening.
 
 No menu, selection-checkbox, navigation-arrow or action-button use was observed in these wallpaper routes. Progress handles are currently explicit configurable marks and default on: retain or deliberately migrate that style option rather than deleting it as dashboard chrome.
@@ -105,6 +138,8 @@ No menu, selection-checkbox, navigation-arrow or action-button use was observed 
 The ChartForgeX integration belongs primarily to `ImagePlayground.PowerShell`; the base imaging library need not gain ChartForgeX references. Assign chart/diagram cmdlets to core, canvas/blocks/watermarks to Visuals and story/motion/animated-topology operations to Stories. Keep optional TreeSitter tokenization outside ChartForgeX: `ImagePlayground.Syntax.TreeSitter` follows the story tokenizer contract into Stories.
 
 `New-ImageStory` produces VisualStory; `New-ImageVisualStory` currently produces VisualGrid plus VisualMotionTimeline. Preserve both operator workflows while sharing timing/export ownership. `New-ImageConsoleStory` retains terminal tabs, commands, output, tables, pauses, playback and transcript. Route `New-ImageTopology` GIF/APNG output through Stories; static topology and actual HTML controls retain their own owners.
+
+Topology SVG motion currently uses the explicit `TopologyMotionSvgAdapter` over native prepared routes and node positions. It adds animation to the exported SVG without changing the static prepared scene; raster motion selects a sample from the same route plan. `NativeDiagramExportTests.TopologyMotionSamplesNativeResolvedRouteWithoutChangingBaseSceneOrSourceOptions` is the owner fixture for this boundary. This source is implemented; its current integration execution remains pending. Phase 4 moves the adapter and GIF/APNG animation policy into Stories, then qualifies the ImagePlayground animated workflows against the extracted package. The native SVG adapter alone does not qualify GIF/APNG exports or complete that package move.
 
 Package moves affect compiled parameter/output types, enums, type accelerators, assembly load context, binary bundling, namespace imports, generated help and examples. Update explicit-source, sibling-source and NuGet modes coherently. Qualify installed module imports and moved-type parameter binding in Windows PowerShell 5.1 and PowerShell 7, with no neighboring source projects available.
 
@@ -153,7 +188,8 @@ Phase 1 color intake does not establish universal status-treatment rendering. Ha
 - [x] Compile and inspect the Phase 1 shared-frame/theme/direct-scene and adapter-shaped owner fixtures. The [executable gallery producer](../../ChartForgeX.Examples/V2Examples.cs), [diagram fixtures](../../ChartForgeX.Examples/V2Examples.Diagrams.cs), [review gallery](../../Website/static/examples/generated-v2/index.html) and [artifact handoff tests](../../ChartForgeX.Tests/PreparedVisualArtifactTests.cs) provide the implemented examples. This qualifies the owner proof, not downstream consumers.
 - [x] Close the [integrated public type/member ledger](api-ledger.md): 773 public types and 7,678 records across the six existing runtime assemblies. Its planned API fates guide later removals and package extraction; they do not claim those migrations are implemented.
 - [x] Complete the Phase 1 representative performance comparison: all 30 paired workloads remain within 10% elapsed/allocation, with 756 retained samples and no failures. Earlier flags were investigated before qualifying the stable runtime. Larger redesigned SVG/PNG payloads remain an explicit cost in the [reassessment](architecture.md#phase-1-reassessment).
-- [ ] Migrate remaining core families and qualify the core-focused private HTML adapter and OfficeIMO candidates, preserving artifact/interchange contracts.
+- [ ] Complete integrated Phase 2–3 validation and visual/performance qualification of the implemented core family producers.
+- [ ] Qualify the core-focused private HTML adapter and OfficeIMO candidates, preserving artifact/interchange contracts.
 - [ ] Extract Visuals and qualify PowerBGInfo plus static ImagePlayground; extract Stories and qualify animated workflows.
 - [ ] Restore the private reporting consumer's reproducible dependency closure and qualify representative reports.
 - [ ] Pack all target assets into a clean feed; record hashes/dependency graphs and run package-only consumer proof without project-reference fallbacks.

@@ -40,6 +40,7 @@ internal sealed partial class VisualTopologyCompiler {
         _source = source;
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
+        _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
         if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
         _builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         _colors = context.Theme.Resolve(context.ThemeMode);
@@ -54,10 +55,16 @@ internal sealed partial class VisualTopologyCompiler {
         var input = TopologyLayoutEngine.Clone(_source);
         var legend = _options.IncludeLegend ? TopologyLegend.Resolve(input, _options.LegendMode) : null;
         _legend = _context.Frame.ShowLegend ? legend : null;
+        var frame = _context.Frame;
+        if (frame.LegendTitle == null && _legend?.Title != null) {
+            _context = new VisualRenderContext(_context.Layout, _context.Theme, _context.ThemeMode,
+                frame.WithLegendTitle(_legend.Title), _context.Font);
+        }
         var entries = legend?.Items.Select((item, index) => new VisualLegendEntry(item.Label,
             Color(item.Color, item.Status.HasValue ? Status(item.Status.Value) : _colors.Accent), index.ToString(CultureInfo.InvariantCulture),
             marker: (builder, bounds) => BuildLegendMarker(item, bounds))).ToArray() ?? Array.Empty<VisualLegendEntry>();
         _plot = VisualFrameLayout.Build(_builder, _context, entries);
+        if (_plot.Height <= 0) ReserveNaturalFrame(entries);
         if (_plot.Width <= 0 || _plot.Height <= 0) throw new InvalidOperationException("The common frame leaves no topology viewport.");
         input.Title = null; input.Subtitle = null; input.Legend = null;
         // Canonical topology coordinates already contain their padding. Give the layout that
@@ -76,7 +83,7 @@ internal sealed partial class VisualTopologyCompiler {
         _options.TextMeasurement = _chart.TextMeasurement;
         // The common frame has already reserved the legend. Legacy geometry helpers must not
         // reserve a second legend inside the detached content viewport.
-        _chart.Legend = null;
+        _chart.Title = null; _chart.Subtitle = null; _chart.Legend = null;
         ResolveNaturalSize(entries);
         DiagnoseExportOptions();
         _highlight = TopologyHighlightState.From(_chart, _options);
@@ -105,9 +112,9 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeLayoutDiagnosticOverlay) BuildDiagnostics();
         }
         var accessibility = _source.Accessibility.Clone();
-        accessibility.Name ??= HeadingOrSource(_context.Frame.Title, _source.Title) ?? _source.Labels.UntitledTopology;
-        accessibility.Description ??= HeadingOrSource(_context.Frame.Subtitle, _source.Subtitle)
-            ?? VisualArtifactInterchangeMapping.BoundedGeneratedText(_source.Labels.Describe(HeadingOrSource(_context.Frame.Title, _source.Title), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count), string.Empty);
+        accessibility.Name ??= HeadingOrSource(_context.Frame.Title, SourceTitle) ?? _source.Labels.UntitledTopology;
+        accessibility.Description ??= HeadingOrSource(_context.Frame.Subtitle, SourceSubtitle)
+            ?? VisualArtifactInterchangeMapping.BoundedGeneratedText(_source.Labels.Describe(HeadingOrSource(_context.Frame.Title, SourceTitle), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count), string.Empty);
         var semantics = SemanticSnapshot(accessibility);
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
         var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,
@@ -122,7 +129,9 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private static VisualRenderContext ResolveFrame(VisualRenderContext context, TopologyChart source, TopologyRenderOptions options) {
-        var resolved = VisualDiagramPrimitives.WithFrame(context, options.IncludeTitle ? source.Title : null, options.IncludeTitle ? source.Subtitle : null);
+        var resolved = VisualDiagramPrimitives.WithFrame(context,
+            options.IncludeTitle ? HeadingOrSource(options.View?.Title, source.Title) : null,
+            options.IncludeTitle ? HeadingOrSource(options.View?.Subtitle, source.Subtitle) : null);
         if (options.HeaderStyle != TopologyHeaderStyle.CenterBanner) return resolved;
         var frame = resolved.Frame; var colors = resolved.Theme.Resolve(resolved.ThemeMode);
         TextStyle Center(double size, int weight, ChartColor color) {
@@ -133,7 +142,7 @@ internal sealed partial class VisualTopologyCompiler {
             new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition, frame.ShowSurface, frame.TransparentBackground,
                 frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 600, colors.Foreground),
                 frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle,
-                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard), resolved.Font);
+                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard, legendTitle: frame.LegendTitle), resolved.Font);
     }
 
     private ChartPoint Point(ChartPoint p) => new(_offsetX + p.X * _scale, _offsetY + p.Y * _scale);
@@ -144,12 +153,15 @@ internal sealed partial class VisualTopologyCompiler {
         TopologyHealthStatus.Critical => _colors.Status.Critical.Fill, TopologyHealthStatus.Disabled => _colors.Status.Maintenance.Fill,
         _ => _colors.Status.Neutral.Fill
     };
-    private static ChartColor Color(string? value, ChartColor fallback) => string.IsNullOrWhiteSpace(value) ? fallback : ChartColor.Parse(value!);
+    private static ChartColor Color(string? value, ChartColor fallback) => string.IsNullOrWhiteSpace(value) ? fallback
+        : ChartForgeX.SvgRaster.SvgRasterColor.TryParse(value, out var parsed) ? parsed
+        : SvgPaint.TryCssVariable(value, fallback, out var resolved, out _) ? resolved : ChartColor.Parse(value!);
     private ChartColor Highlight(ChartColor color, bool highlighted) => color.WithOpacity(color.A / 255d * (highlighted || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity));
+    private static string ThemeToken(ChartColor color) => color.A == 255 ? color.ToHex() : color.ToHexRgba();
     private TopologyTheme Theme() => new() {
-        Background = _colors.Background.ToCss(), Foreground = _colors.Foreground.ToCss(), MutedForeground = _colors.MutedForeground.ToCss(),
-        Card = _colors.Surface.ToCss(), Surface = _colors.Surface.ToCss(), Border = _colors.Border.ToCss(), Accent = _colors.Accent.ToCss(),
-        Healthy = _colors.Status.Pass.Fill.ToCss(), Warning = _colors.Status.Medium.Fill.ToCss(), Critical = _colors.Status.Critical.Fill.ToCss(),
-        Unknown = _colors.Status.Neutral.Fill.ToCss(), Disabled = _colors.Status.Maintenance.Fill.ToCss(), FontFamily = _context.Font.Family
+        Background = ThemeToken(_colors.Background), Foreground = ThemeToken(_colors.Foreground), MutedForeground = ThemeToken(_colors.MutedForeground),
+        Card = ThemeToken(_colors.Surface), Surface = ThemeToken(_colors.Surface), Border = ThemeToken(_colors.Border), Accent = ThemeToken(_colors.Accent),
+        Healthy = ThemeToken(_colors.Status.Pass.Fill), Warning = ThemeToken(_colors.Status.Medium.Fill), Critical = ThemeToken(_colors.Status.Critical.Fill),
+        Unknown = ThemeToken(_colors.Status.Neutral.Fill), Disabled = ThemeToken(_colors.Status.Maintenance.Fill), FontFamily = _context.Font.Family
     };
 }

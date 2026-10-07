@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Primitives;
+using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
 
 public static partial class GalleryWriter {
@@ -28,7 +29,7 @@ public static partial class GalleryWriter {
                     var width = Number(element, "stroke-width");
                     if (width <= 0 || width > 2 || Math.Abs(y1 - y2) > .01 && Math.Abs(x1 - x2) > .01 ||
                         Math.Min(x1, x2) < 0 || Math.Max(x1, x2) > svg.Width || Math.Min(y1, y2) < 0 || Math.Max(y1, y2) > svg.Height ||
-                        !ChartColor.TryParse((string?)element.Attribute("stroke") ?? "", out var color)) continue;
+                        !SvgRasterColor.TryParse((string?)element.Attribute("stroke") ?? "", out var color)) continue;
                     regions.Add(new PngHostRegion((Math.Min(x1, x2) - width / 2) * scale, (Math.Min(y1, y2) - width / 2) * scale,
                         (Math.Abs(x2 - x1) + width) * scale, (Math.Abs(y2 - y1) + width) * scale, color, true));
                 } else if (element.Name.LocalName == "text" &&
@@ -43,7 +44,7 @@ public static partial class GalleryWriter {
                     var x = Number(element, "x"); var y = Number(element, "y") - ascent;
                     var width = metrics.Width; var height = metrics.Height;
                     if (x < -.01 || y < -.01 || width <= 0 || height <= 0 || x + width > svg.Width + .01 || y + height > svg.Height + .01 ||
-                        !ChartColor.TryParse((string?)element.Attribute("fill") ?? "", out var color)) continue;
+                        !SvgRasterColor.TryParse((string?)element.Attribute("fill") ?? "", out var color)) continue;
                     regions.Add(new PngHostRegion(x * scale, y * scale, width * scale, height * scale, color));
                 }
             }

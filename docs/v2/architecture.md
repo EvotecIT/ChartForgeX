@@ -2,7 +2,7 @@
 
 ChartForgeX prepares typed chart and diagram models into a detached scene. The scene contains final geometry, positioned text, source identities, descriptive regions and diagnostics. SVG serialization and native raster painting consume those decisions; neither backend performs family layout or parses the other backend's output.
 
-The Phase 1 entry point is `IVisualRenderable.Prepare(VisualRenderContext)`. Existing exporters remain available while families migrate. This is an intentional staged replacement: the prepared route rejects unsupported options rather than silently returning a different chart. Phase 1 proves the ownership and rendering boundary, not completion of the v2 catalog.
+The entry point is `IVisualRenderable.Prepare(VisualRenderContext)`. Charts, grids and diagram exporters use the shared preparation route. Invalid family combinations and unsupported configurations fail explicitly. Phase 1 established this ownership boundary; Phases 2–3 implement the family producers and their shared presentation contracts. Package extraction and consumer qualification remain separate phases.
 
 ## Package ownership
 
@@ -22,12 +22,12 @@ Keep product data collection, dashboard shells, filters, inspectors, wallpaper t
 
 ## Contracts
 
-| Contract | Phase 1 behavior |
+| Contract | Behavior |
 | --- | --- |
 | `VisualSize` | Finite positive logical width/height; raster density is separate |
 | `VisualLayoutOptions` | Resolved fixed viewport and validated outer padding |
-| `VisualFrame` | Common title, subtitle, legend position/visibility, optional content surface and transparent canvas |
-| `VisualTheme` | Immutable light/dark color snapshots, typography scale and mark/layout settings |
+| `VisualFrame` | Common title, subtitle, measured legend title/entries and density budgets; independent card/content surfaces and transparent canvas |
+| `VisualTheme` | Immutable light/dark color snapshots, typography scale, independent card/mark radii and bounded card-shadow settings |
 | `VisualRenderContext` | Explicit size, frame, theme mode and cloned font request |
 | `PreparedVisual` | Detached scene, immutable diagnostics/regions, cloned accessibility metadata; reusable SVG, RGBA and PNG export |
 | `VisualRenderOptions` | Bounded integer output scale, supersampling and working-pixel budget |
@@ -42,15 +42,19 @@ typed model + resolved viewport + immutable theme + font request
     → SVG serializer | native raster painter → raster encoder
 ```
 
-The initial command set covers groups, rectangular clips, rectangles, ellipses, paths, numeric pie/ring slices and positioned shaped text. Arbitrary transforms, gradients, image nodes and outlined text are later scene work. Their absence does not remove the corresponding existing composition capabilities; those migrate with their owner and acceptance fixtures.
+The shared command set covers groups, rectangular and path clips, rectangles, ellipses, paths, numeric pie/ring slices, image nodes, linear gradients and positioned shaped text. Rigid transforms and glyph outlines preserve diagram and chart requirements in both SVG and native raster output. Scene commands remain internal; the public boundary is the typed model and immutable prepared output. Composition capabilities migrate with their owner and acceptance fixtures.
 
 ## Size, frame and overflow
 
-Logical bounds are exact. Raster dimensions round each positive logical dimension upward, then multiply by output scale. Supersampling affects working coverage and allocation, not text positions or the logical scene. The pixel budget includes supersampled working pixels and is checked before allocation; the existing raster allocation guard supplies its independent byte ceiling.
+Logical bounds are exact. Raster dimensions round each positive logical dimension multiplied by output scale upward. Supersampling affects working coverage and allocation, not text positions or the logical scene. The pixel budget includes supersampled working pixels and is checked before allocation; the existing raster allocation guard supplies its independent byte ceiling.
 
 Phase 1 accepts a resolved viewport. A host can measure its container and prepare again at a compact size; scaling an SVG `viewBox` preserves proportions but does not reflow its layout. Natural-content sizing, constrained aspect selection and a complete Fixed/Fit/Content policy remain later work. Do not advertise those modes as implemented by a placeholder enum.
 
 The common frame measures headings and legend before handing a content rectangle to the family. Headings have a bounded two-line budget. Legend entries wrap into rows or a side strip; insufficient space produces diagnostics. Truncated display text retains its full source label in semantic metadata. Factual content is not turned into a chart series to obtain a frame.
+
+`VisualFrame.LegendTitle` is an optional measured heading above categorical legend entries. It shares the legend's height budget, and its complete text remains in a descriptive region if it cannot fit. A null value permits a producer-supplied title; an empty string suppresses it. Chart and grid frame copies preserve the title, styles and density budgets.
+
+`ShowCard` controls the complete elevated frame independently of `ShowSurface`, which controls the content surface. `VisualTheme.CardRadius` shapes the outer card; `BarRadius` and family plot/mark settings remain independent. `CardShadowOpacity` and `CardShadowColor` produce shared rounded native layers for both SVG and PNG. Shadow spread stays within available outer padding and the authored viewport, without moving content. Zero opacity keeps a flat card. If padding leaves no room, the shadow is omitted with `frame.card-shadow-no-room`; the fixed viewport never grows.
 
 Cartesian axes reserve measured strips within that content rectangle. Side legends and axis text therefore cannot claim the same space. Root titles are distinct from axis titles, donut center values and future VisualCanvas hero text. All use shared typography roles while keeping their own meaning.
 
@@ -60,7 +64,7 @@ HtmlForgeX owns Evotec color values. The embedded chart export is copied from re
 
 The generated palette has `light` and `dark` objects and no numeric schema-version field. `VisualTheme.FromJson` imports this existing palette shape through the bounded shared parser. It supplies six series colors, surfaces, foregrounds, fill/ink status pairs and sequential/diverging ramps. It is not a full typography/layout schema.
 
-The full ChartForgeX theme contract uses schema version 1, keeping the palette fields and adding `typography` and `geometry`. `FromThemeJson` and `ToThemeJson` are distinct from palette intake. Unknown full-theme versions fail explicitly. Schema versions describe portable contracts, independently of the NuGet package version.
+The full ChartForgeX theme contract uses schema version 1, keeping the palette fields and adding `typography`, `geometry` and `effects`. `geometry.cardRadius` is independent of `geometry.barRadius`; `effects.cardShadowOpacity` and `effects.cardShadowColor` retain the chosen shadow, including color alpha. Older version-1 documents without these optional fields use radius 3 and zero shadow opacity. `FromThemeJson` and `ToThemeJson` are distinct from palette intake. Unknown full-theme versions fail explicitly. Schema versions describe portable contracts, independently of the NuGet package version.
 
 The Graphite preset uses canonical HtmlForgeX colors and the chart look specification's layout/type scale. Renderers read presentation values from the theme or explicit model overrides. They do not select a different geometry implementation because of a palette. Existing `UseGraphiteLayout` branches are removed as their families migrate; Phase 1 does not claim those legacy branches have all gone.
 
@@ -79,6 +83,8 @@ The review gallery and benchmarks use explicitly registered Carlito regular/bold
 ## Semantic artifacts and consumer handoff
 
 Prepared pixels are separate from native editable diagram data. `PreparedVisual.ToArtifact` captures an optional existing semantic interchange envelope through its versioned bounded writer/reader. IDs, kind and supplied dimensions must match. The factory preserves logical dimensions, alternative text and descriptive regions, and keeps the source semantics beside the static scene.
+
+Preparation first takes a defensive typed copy of producer semantics, including nested collections and presentation values. JSON serialization is lazy over that private copy; later edits to the model or its original envelope cannot alter the retained payload. Portable JSON budgets apply when interchange is requested, including conversion to an artifact, rather than limiting static preparation or SVG/PNG export. Reading retained interchange returns an independent envelope.
 
 A host can edit artifact titles, metadata and accessibility without mutating prepared pixels. Changing its natural size does not resize the scene; prepare again. Scene nodes are not serialized as Office interchange, and formatter delegates never become portable payloads.
 

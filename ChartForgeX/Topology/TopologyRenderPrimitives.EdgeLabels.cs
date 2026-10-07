@@ -94,14 +94,14 @@ internal static partial class TopologyRenderPrimitives {
 
     private static LabelBox EdgeLabelNodeObstacle(TopologyNode node, TopologyRenderOptions options, double padding) {
         if (EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Icon || !options.IncludeNodeLabels || !options.IncludeIconLabels) return LabelBox.FromNode(node, padding);
-        var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement);
+        var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
         var labelY = IconLabelPlateY(node);
         var centerX = CenterX(node);
         return LabelBox.FromBounds(
             Math.Min(node.X - padding, centerX - labelWidth / 2 - padding),
             Math.Min(node.Y - padding, labelY - padding),
             Math.Max(node.X + node.Width + padding, centerX + labelWidth / 2 + padding),
-            Math.Max(node.Y + node.Height + padding, labelY + 15 + padding));
+            Math.Max(node.Y + node.Height + padding, labelY + IconLabelPlateHeight(options.TextMeasurement, options.ResolvedIconLabelFontSize) + padding));
     }
 
     private static ChartPoint PlaceLabel(TopologyEdge edge, double baseX, double baseY, double width, double height, TopologyChart chart, TopologyRenderOptions options, IReadOnlyList<LabelBox> nodeBoxes, IReadOnlyList<LabelBox> placedLabels, IReadOnlyList<EdgeSegment> edgeSegments, IReadOnlyDictionary<TopologyEdge, int> edgeRenderOrders, int currentRenderOrder, bool avoidOwnRoute, bool monitoringStyle, LabelBox? preferredGroup) {

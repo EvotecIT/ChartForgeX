@@ -83,12 +83,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-group-id=\"main\"", StringComparison.Ordinal) && svg.Contains("cfx-topology--highlighted", StringComparison.Ordinal), "Static active scenarios should keep groups that contain route nodes highlighted.");
         Assert(svg.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal) && svg.Contains("cfx-topology--highlighted", StringComparison.Ordinal), "Static active scenarios should highlight route edges.");
         Assert(svg.Contains("data-edge-id=\"b-c\"", StringComparison.Ordinal) && svg.Contains("cfx-topology--dimmed", StringComparison.Ordinal), "Static active scenarios should not highlight unrelated connected edges.");
-        Assert(!ExtractElement(svg, "data-node-id=\"c\"").Contains("opacity=\"0.28\"", StringComparison.Ordinal), "Default static scenarios should preserve unrelated context rather than dimming it.");
+        Assert(TopologyEntity(svg, "node", "c").Descendants().Single(mark => (string?)mark.Attribute("data-cfx-role") == "topology-node-surface").RenderedColor("stroke").A == 255, "Default static scenarios should preserve unrelated context rather than dimming it.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "route" }).Length > 64, "Static active scenario highlighting should render as PNG.");
 
         chart.Scenarios[0].WithSpotlight();
         var spotlightSvg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "route" });
-        Assert(ExtractElement(spotlightSvg, "data-node-id=\"c\"").Contains("opacity=\"0.28\"", StringComparison.Ordinal), "Explicit spotlight scenarios should dim nodes outside the route in static output.");
+        Assert(TopologyEntity(spotlightSvg, "node", "c").Descendants().Single(mark => (string?)mark.Attribute("data-cfx-role") == "topology-node-surface").RenderedColor("stroke").A == (byte)Math.Round(255 * .28), "Explicit spotlight scenarios should dim nodes outside the route in static output.");
 
         var missing = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "missing" });
         Assert(!missing.Contains("data-cfx-active-scenario=\"missing\"", StringComparison.Ordinal), "Unknown active scenario ids should not be emitted as resolved static scenario state.");
@@ -255,7 +255,12 @@ internal static partial class SmokeTests {
             .AddEdge("curve", "a", "b", routing: TopologyEdgeRouting.Curved);
         var curvedSvg = curvedChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }
             .WithMotion(TopologyMotionOptions.RoutePulseForEdges("curve")));
-        Assert(ExtractElement(curvedSvg, "id=\"motion-curved-motion-tour-explicit-edges\"").Contains(" C ", StringComparison.Ordinal), "SVG motion marker tour paths should match curved edge rendering instead of flattening routes to straight segments.");
+        var curvedXml = System.Xml.Linq.XDocument.Parse(curvedSvg);
+        var curvedTour = curvedXml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-tour-path");
+        var curvePoints = ChartForgeX.Core.ChartMapPathParser.ParseSubpaths((string)curvedTour.Attribute("d")!, 1).Single().Points;
+        var nativeCurve = curvedChart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).ToInterchangeEnvelope().Edges.Single().ResolvedRoute;
+        Assert(curvePoints.Count > 2 && curvePoints.Any(point => Math.Abs(point.Y - curvePoints[0].Y) > 1), "SVG motion should follow the curved route rather than the straight endpoint chord.");
+        Assert(curvePoints.Select(point => (Math.Round(point.X, 3), Math.Round(point.Y, 3))).SequenceEqual(nativeCurve.Select(point => (Math.Round(point.X, 3), Math.Round(point.Y, 3)))), "SVG motion should follow the same resolved geometry as native SVG and PNG.");
 
         var orderedNodeChart = TopologyChart.Create()
             .WithId("motion-node-order")

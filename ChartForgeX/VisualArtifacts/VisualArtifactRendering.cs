@@ -155,7 +155,9 @@ public static partial class VisualArtifactRendering {
 
     internal static TopologyRenderOptions? TopologyOptions(VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions) {
         var topologyOptions = (renderOptions?.Topology ?? (artifact.Model as TopologyChart)?.DefaultRenderOptions)?.CloneForRendering();
-        if (!artifact.PreserveNaturalSize) return topologyOptions;
+        // A discovered size is an output observation. Preserve the authored preparation policy,
+        // then fit that completed geometry to the output canvas only if it is too large.
+        if (!artifact.PreserveNaturalSize || UsesPreparedNaturalSize(artifact)) return topologyOptions;
         if (topologyOptions == null) return new TopologyRenderOptions { FitContentToViewport = true };
         topologyOptions.FitContentToViewport = true;
         return topologyOptions;

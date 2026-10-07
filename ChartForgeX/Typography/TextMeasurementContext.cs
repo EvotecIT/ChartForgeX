@@ -29,4 +29,7 @@ internal sealed class TextMeasurementContext {
         var font = _font.Clone(); font.Weight = bold ? 700 : 400;
         return Service.Measure(value, new TextStyle { Font = font, FontSize = size }).Width;
     }
+
+    internal double MeasureLineHeight(double size, bool bold) => _mode == TextMeasurementMode.PortableEstimate
+        ? size * 1.5 : new VisualSceneTextFace(_font, bold ? 700 : 400).Prepare("Ag", size).Metrics.LineHeight;
 }

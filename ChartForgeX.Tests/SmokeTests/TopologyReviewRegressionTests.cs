@@ -232,7 +232,14 @@ internal static partial class SmokeTests {
         var visibleIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = true, IncludeIconLabels = true }).Single();
 
         Assert(Math.Abs(hiddenIconLabel.CenterY - 150) < 0.01, "Hidden icon labels should not reserve edge-label obstacles.");
-        Assert(Math.Abs(visibleIconLabel.CenterY - 150) > 0.01, "Rendered icon-label plates should reserve edge-label obstacles.");
+        var owner = chart.Nodes.Single(node => node.Id == "owner");
+        var plateWidth = TopologyRenderPrimitives.IconLabelPlateWidth(owner);
+        var plateTop = TopologyRenderPrimitives.IconLabelPlateY(owner);
+        var plateHeight = TopologyRenderPrimitives.IconLabelPlateHeight();
+        Assert(visibleIconLabel.CenterX + visibleIconLabel.Width / 2 <= owner.X + owner.Width / 2 - plateWidth / 2 ||
+            visibleIconLabel.CenterX - visibleIconLabel.Width / 2 >= owner.X + owner.Width / 2 + plateWidth / 2 ||
+            visibleIconLabel.CenterY + visibleIconLabel.Height / 2 <= plateTop || visibleIconLabel.CenterY - visibleIconLabel.Height / 2 >= plateTop + plateHeight,
+            "Rendered icon-label plates should reserve edge-label obstacles on both axes.");
     }
 
     private static void TopologyHiddenNodesDoNotAffectViewportFitOrEdgeLabels() {

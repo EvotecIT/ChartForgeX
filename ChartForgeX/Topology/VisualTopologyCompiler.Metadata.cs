@@ -9,9 +9,14 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private Dictionary<string, string> RootMetadata() => new(StringComparer.Ordinal) {
         ["class"] = CssPrefix,
-        ["data-chart-id"] = _source.Id ?? "topology", ["data-layout-mode"] = _chart.LayoutMode.ToString(),
+        ["data-chart-id"] = _chart.Id ?? "topology", ["data-layout-mode"] = _chart.LayoutMode.ToString(),
         ["data-layout-direction"] = _chart.LayoutDirection.ToString(), ["data-visual-style"] = _options.VisualStyle.ToString(),
         ["data-header-style"] = _options.HeaderStyle.ToString(),
+        ["data-canvas-surface-style"] = _options.CanvasSurfaceStyle.ToString(),
+        ["data-node-surface-style"] = EffectiveNodeSurfaceStyle(_options).ToString(),
+        ["data-fit-content-to-viewport"] = _options.FitContentToViewport ? "true" : "false",
+        ["data-cfx-projection"] = _chart.LayoutMode == TopologyLayoutMode.Geographic ? TopologyMapProjection.ProjectionName : string.Empty,
+        ["data-cfx-viewport"] = _chart.LayoutMode == TopologyLayoutMode.Geographic ? _chart.MapViewport.Name : string.Empty,
         ["data-cfx-map-background-style"] = UseSoftMapBackground(_options) ? "SoftSilhouette" : "Dots",
         ["data-cfx-scenario-count"] = _chart.Scenarios.Count.ToString(CultureInfo.InvariantCulture),
         ["data-cfx-scenarios"] = TopologyScenarioJson.Summaries(_chart) ?? "[]", ["data-cfx-scenario-ids"] = TopologyScenarioJson.ScenarioIds(_chart) ?? string.Empty,
@@ -56,7 +61,8 @@ internal sealed partial class VisualTopologyCompiler {
     private Dictionary<string, string> EdgeMetadata(TopologyEdge edge) {
         if (_edgeMetadata.TryGetValue(edge, out var cached)) return cached;
         var data = CommonMetadata(edge.Id, "edge", edge.Status, TopologyScenarioStepKind.Edge, edge.Metadata, edge.Metrics);
-        data["class"] = CssPrefix + "__edge" + CustomCssClasses(edge.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsEdgeHighlighted(edge));
+        data["class"] = CssPrefix + "__edge" + (edge.IsMuted ? " " + CssPrefix + "__edge--muted" : string.Empty)
+            + CustomCssClasses(edge.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsEdgeHighlighted(edge));
         data["data-source-node-id"] = edge.SourceNodeId; data["data-target-node-id"] = edge.TargetNodeId;
         data["data-source-group-id"] = _nodesById[edge.SourceNodeId].GroupId ?? string.Empty;
         data["data-target-group-id"] = _nodesById[edge.TargetNodeId].GroupId ?? string.Empty;
@@ -64,7 +70,10 @@ internal sealed partial class VisualTopologyCompiler {
         data["data-edge-tertiary-label"] = edge.TertiaryLabel ?? string.Empty; data["data-edge-kind"] = edge.Kind.ToString();
         data["data-edge-line-style"] = edge.LineStyle.ToString(); data["data-edge-muted"] = edge.IsMuted ? "true" : "false";
         data["data-direction"] = edge.Direction.ToString();
-        data["data-edge-emphasis"] = edge.Emphasis.ToString(); data["data-edge-layout-inference"] = edge.LayoutInference.ToString();
+        data["data-edge-emphasis"] = edge.Emphasis.ToString();
+        data["data-edge-layout-inference"] = edge.LayoutInference == TopologyEdgeLayoutInference.None ? "none"
+            : string.Join(" ", new[] { (TopologyEdgeLayoutInference.SourcePort, "source-port"), (TopologyEdgeLayoutInference.TargetPort, "target-port"), (TopologyEdgeLayoutInference.RouteLane, "route-lane") }
+                .Where(entry => (edge.LayoutInference & entry.Item1) != 0).Select(entry => entry.Item2));
         data["data-edge-color"] = edge.Color ?? string.Empty;
         if (edge.StrokeWidth.HasValue) data["data-edge-stroke-width"] = Number(edge.StrokeWidth.Value * _scale);
         if (edge.Opacity.HasValue) data["data-edge-opacity"] = Number(edge.Opacity.Value);
@@ -136,7 +145,7 @@ internal sealed partial class VisualTopologyCompiler {
         return data;
     }
 
-    private static string DataToken(string value) => new(value.Select(character => char.IsLetterOrDigit(character) || character == '-' || character == '_' ? character : '-').ToArray());
+    private static string DataToken(string value) => new(value.Select(character => char.IsLetterOrDigit(character) || character == '-' || character == '_' ? char.ToLowerInvariant(character) : '-').ToArray());
     private string CssPrefix => NormalizeCssClassPrefix(_options.CssClassPrefix, "cfx-topology");
     private static string Number(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static string ArtworkKind(TopologyIconArtwork artwork) => artwork.HasSvgBody || artwork.HasSvgPath ? "svg" : artwork.HasImageHref || artwork.HasPreviewPath ? "image" : "empty";

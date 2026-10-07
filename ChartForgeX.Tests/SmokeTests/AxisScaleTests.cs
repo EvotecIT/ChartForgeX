@@ -56,19 +56,13 @@ internal static partial class SmokeTests {
             .WithSize(560, 340)
             .WithYAxisScale(ChartScaleKind.Logarithmic)
             .AddRadar("Magnitude", new[] { new ChartPoint(0, 1), new ChartPoint(1, 10), new ChartPoint(2, 1000) });
-        var radarRoot = SvgDocument.Parse(radar.ToSvg()).Root;
-        var spoke = radarRoot.FindByTag("line").First(element => element.GetAttribute("data-cfx-role") == "radar-spoke");
-        var centerX = double.Parse(spoke.GetAttribute("x1")!, CultureInfo.InvariantCulture);
-        var centerY = double.Parse(spoke.GetAttribute("y1")!, CultureInfo.InvariantCulture);
-        var radarRadii = radarRoot.FindByTag("circle")
-            .Where(element => element.GetAttribute("data-cfx-role") == "radar-point")
-            .Select(element => {
-                var dx = double.Parse(element.GetAttribute("cx")!, CultureInfo.InvariantCulture) - centerX;
-                var dy = double.Parse(element.GetAttribute("cy")!, CultureInfo.InvariantCulture) - centerY;
-                return Math.Sqrt(dx * dx + dy * dy);
-            })
-            .ToArray();
+        var radarPrepared = PreparedFamily(radar);
+        var spoke = radarPrepared.Scene.Nodes.OfType<VisualSceneLine>().First(line => line.Role == "radar-spoke");
+        var radarRadii = radarPrepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "radar-point")
+            .Select(mark => Math.Sqrt(Math.Pow(mark.Cx - spoke.Start.X, 2) + Math.Pow(mark.Cy - spoke.Start.Y, 2))).ToArray();
         Assert(radarRadii.Length == 3 && radarRadii[1] > radarRadii[0] * 1.5 && radarRadii[1] < radarRadii[2] * 0.75, "Radar geometry should space values through the configured logarithmic Y-axis transform.");
+        Assert(Math.Abs(radarRadii[0] / radarRadii[2] - .25) < .000001 && Math.Abs(radarRadii[1] / radarRadii[2] - .5) < .000001,
+            "Radar distances should follow log10(value) across the automatic 0.1 through 1000 domain.");
         Assert(radar.ToPng().Length > 200, "Radar value scales should preserve SVG and PNG rendering parity.");
     }
 
@@ -130,7 +124,9 @@ internal static partial class SmokeTests {
             .WithYAxisScale(ChartScaleKind.Logarithmic)
             .AddStackedArea("Base", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
             .AddStackedArea("Top", new[] { new ChartPoint(1, 30), new ChartPoint(2, 40) });
-        Assert(CountOccurrences(stackedAreas.ToSvg(), "data-cfx-role=\"stacked-area\"") == 2, "Stacked logarithmic areas should map their first zero base to the shared positive baseline.");
+        var stackedAreaMarks = PreparedFamily(stackedAreas).Scene.Nodes.OfType<VisualScenePath>().Where(mark => mark.Role == "area").ToArray();
+        Assert(stackedAreaMarks.Length == 2 && stackedAreaMarks.All(mark => mark.Commands.All(command => double.IsFinite(command.X) && double.IsFinite(command.Y))),
+            "Stacked logarithmic areas should produce two finite bands above the shared positive baseline.");
         Assert(stackedAreas.ToPng().Length > 200, "Stacked logarithmic areas should preserve SVG and PNG rendering parity.");
 
         var mixedMarks = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())

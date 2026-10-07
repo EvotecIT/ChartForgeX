@@ -11,6 +11,21 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologySizingTests {
     [Fact]
+    public void NaturalCanvasRemeasuresHeadingAfterItsContentExpandsAnInitiallyNarrowFrame() {
+        var chart = TopologyChart.Create().WithId("narrow-frame").WithTitle("Narrow").WithViewport(120, 180, 80)
+            .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 64, height: 42);
+        var prepared = chart.Prepare(new TopologyRenderOptions { HeaderStyle = TopologyHeaderStyle.CenterBanner, IncludeLegend = false });
+        var svg = XDocument.Parse(prepared.ToSvg());
+        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "frame-heading");
+        var node = Assert.Single(prepared.ToInterchangeEnvelope().Nodes);
+        Assert.True(node.X >= 0 && node.Y >= 0 && node.X + node.Width <= prepared.Width && node.Y + node.Height <= prepared.Height);
+        Assert.True(prepared.Width > 120 && prepared.Height >= 180);
+        Assert.Equal(120, chart.Viewport.Width); Assert.Equal(180, chart.Viewport.Height); Assert.Equal(80, chart.Viewport.Padding);
+        Assert.Equal(0, chart.Nodes[0].X); Assert.Equal(0, chart.Nodes[0].Y);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
     public void ConvenienceExportReservesPaddingOnceAndKeepsAuthoredCanvasWhenContentFits() {
         var chart = Diagram(640, 360, 480);
         var prepared = chart.Prepare();

@@ -19,6 +19,7 @@ internal static partial class VisualSceneSvgRenderer {
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg")
             .Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
             .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height))
+            .Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round")
             .Attribute("lang", language).Attribute("xml:lang", language);
         if (options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
         if (decorative) writer.Attribute("aria-hidden", true).Attribute("focusable", false);
@@ -118,10 +119,12 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static void Paint(SvgMarkupWriter writer, VisualSceneMark mark, string prefix, int index, string? fillOverride = null, VisualSvgOptions? options = null) {
         Semantics(writer, mark, prefix, index);
-        writer.Attribute("fill", fillOverride ?? ResolvePaint(mark.Fill, mark.Paint?.Fill, options)).Attribute("fill-rule", "evenodd")
-            .Attribute("stroke", ResolvePaint(mark.Stroke, mark.Paint?.Stroke, options)).Attribute("stroke-width", mark.StrokeWidth)
-            .Attribute("stroke-linecap", mark is VisualScenePath path ? path.Cap.ToString().ToLowerInvariant() : "round")
-            .Attribute("stroke-linejoin", mark is VisualScenePath joined ? joined.Join.ToString().ToLowerInvariant() : "round");
+        var fill = fillOverride ?? ResolvePaint(mark.Fill, mark.Paint?.Fill, options);
+        writer.Attribute("fill", fill)
+            .Attribute("stroke", ResolvePaint(mark.Stroke, mark.Paint?.Stroke, options)).Attribute("stroke-width", mark.StrokeWidth);
+        if ((mark is VisualScenePath || mark is VisualSceneSlice) && fill != "none") writer.Attribute("fill-rule", "evenodd");
+        if (mark is VisualScenePath path && path.Cap != VisualStrokeCap.Round) writer.Attribute("stroke-linecap", path.Cap.ToString().ToLowerInvariant());
+        if (mark is VisualScenePath joined && joined.Join != VisualStrokeJoin.Round) writer.Attribute("stroke-linejoin", joined.Join.ToString().ToLowerInvariant());
         if (mark is VisualScenePath dashed && dashed.Dash != null) writer.Attribute("stroke-dasharray", string.Join(" ", System.Linq.Enumerable.Select(dashed.Dash, N)));
     }
 

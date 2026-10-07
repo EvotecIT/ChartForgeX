@@ -34,7 +34,11 @@ public sealed class TopologyRoutingMilestoneTests {
         Assert.Equal((int)Math.Ceiling(size.Width), png.Width);
         Assert.Equal((int)Math.Ceiling(size.Height), png.Height);
         var layoutInput = explicitSize ? DenseRouteFixture.Mesh(12, 24, 20).WithViewport(size.Width, size.Height).WithLayout(mode) : chart;
-        var expected = layoutInput.Prepare(view).ToInterchangeEnvelope();
+        var expectedOptions = view.Clone();
+        // Explicit output replacement is a fixed viewport. Compare the same fit policy that
+        // exports must use to keep its full geometry inside that caller-selected canvas.
+        expectedOptions.FitContentToViewport = explicitSize;
+        var expected = layoutInput.Prepare(expectedOptions).ToInterchangeEnvelope();
         Assert.Equal(expected.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)),
             envelope.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)));
         Assert.Equal(2, envelope.Nodes.Count);
@@ -137,8 +141,9 @@ public sealed class TopologyRoutingMilestoneTests {
         var size = artifact.NaturalSize!.Value;
         artifact.NaturalSize = size;
         artifact.PreserveNaturalSize = true;
+        var fit = Options(); fit.FitContentToViewport = true;
         var expected = DenseRouteFixture.Mesh(12, 24, 20).WithViewport(size.Width, size.Height)
-            .WithLayout(TopologyLayoutMode.Matrix).WithRenderOptions(Options()).Prepare().ToInterchangeEnvelope();
+            .WithLayout(TopologyLayoutMode.Matrix).WithRenderOptions(fit).Prepare().ToInterchangeEnvelope();
         var actual = artifact.ToInterchangeEnvelope();
         Assert.Equal(expected.Nodes.Select(node => (node.X, node.Y)), actual.Nodes.Select(node => (node.X, node.Y)));
     }

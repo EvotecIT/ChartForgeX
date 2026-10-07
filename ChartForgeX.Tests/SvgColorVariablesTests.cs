@@ -23,6 +23,7 @@ public sealed class SvgColorVariablesTests {
         Assert.Contains("fill=\"var(--cfx-surface-card, #FFFFFF)\"", themed, StringComparison.Ordinal);
         Assert.Contains("color-mix(in srgb, var(--cfx-surface-line, #E2E4E7)", themed, StringComparison.Ordinal);
         Assert.Contains("fill=\"var(--cfx-text-secondary, #4D525B)\"", themed, StringComparison.Ordinal);
+        Assert.Contains("stroke=\"" + Lines().Options.Theme.Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
         Assert.Equal(NormalizeIdentity(literal), NormalizeIdentity(Strip(themed)));
         Assert.Equal(Lines().ToPng(), Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToPng());
     }
@@ -172,6 +173,7 @@ public sealed class SvgColorVariablesTests {
     // Undoes the variables: var(--x, #hex) becomes #hex, color-mix(... N%, transparent) becomes rgba(r,g,b,N/100), and a
     // color-mix of two colours becomes their blend, rounded as the renderers blend.
     private static string Strip(string svg) {
+        svg = Regex.Replace(svg, @"var\(--[\w-]+, (#[0-9A-Fa-f]{6})\)", "$1");
         const string Operand = @"(?:var\(--[\w-]+, )?#([0-9A-Fa-f]{6})\)?";
         svg = Regex.Replace(svg, @"color-mix\(in srgb, " + Operand + @", " + Operand + @" ([0-9.]+)%\)", match => {
             var from = ChartColor.FromHex(match.Groups[1].Value);
@@ -180,12 +182,20 @@ public sealed class SvgColorVariablesTests {
             byte Channel(byte a, byte b) => (byte)Math.Round(a + (b - a) * amount);
             return ChartColor.FromRgb(Channel(from.R, to.R), Channel(from.G, to.G), Channel(from.B, to.B)).ToHex();
         });
-        var plain = Regex.Replace(svg, @"color-mix\(in srgb, var\(--[\w-]+, #([0-9A-Fa-f]{6})\) ([0-9.]+)%, transparent\)", match => {
-            var hex = match.Groups[1].Value;
-            var alpha = double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) / 100;
-            return string.Format(CultureInfo.InvariantCulture, "rgba({0},{1},{2},{3:0.###})", Convert.ToInt32(hex.Substring(0, 2), 16), Convert.ToInt32(hex.Substring(2, 2), 16), Convert.ToInt32(hex.Substring(4, 2), 16), alpha);
-        });
-        return Regex.Replace(plain, @"var\(--[\w-]+, (#[0-9A-Fa-f]{6})\)", "$1");
+        // Resolve innermost opacity mixes first: token alpha and mark opacity can both apply.
+        // Quantize each result through the same RGBA byte boundary as static/raster paint.
+        string previous;
+        do {
+            previous = svg;
+            svg = Regex.Replace(svg, @"color-mix\(in srgb, (?:(?:#([0-9A-Fa-f]{6}))|rgba\(([0-9]+),([0-9]+),([0-9]+),([0-9.]+)\)) ([0-9.]+)%, transparent\)", match => {
+                var color = match.Groups[1].Success ? ChartColor.FromHex(match.Groups[1].Value)
+                    : ChartColor.FromRgba(byte.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture), byte.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture),
+                        byte.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture), (byte)Math.Round(double.Parse(match.Groups[5].Value, CultureInfo.InvariantCulture) * 255));
+                var multiplier = double.Parse(match.Groups[6].Value, CultureInfo.InvariantCulture) / 100;
+                return color.WithAlpha((byte)Math.Round(color.A * multiplier)).ToCss();
+            });
+        } while (svg != previous);
+        return svg;
     }
 
     private static string FixturePath(params string[] parts) {

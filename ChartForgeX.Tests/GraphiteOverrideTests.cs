@@ -71,7 +71,7 @@ public sealed class GraphiteOverrideTests {
         var svg=XDocument.Parse(chart.ToSvg());
         var rule=Assert.Single(svg.Descendants(),e=>(string?)e.Attribute("data-cfx-role")=="axis-y");
         Assert.Equal((string?)rule.Attribute("x1"),(string?)rule.Attribute("x2"));
-        Assert.Equal(ChartForgeX.Rendering.VisualExportRequest.ForChart(chart).Context.Theme.Resolve(ChartForgeX.Themes.VisualThemeMode.Light).Border.ToCss(),(string?)rule.Attribute("stroke"));
+        Assert.Equal(ChartForgeX.Rendering.VisualExportRequest.ForChart(chart).Context.Theme.Resolve(ChartForgeX.Themes.VisualThemeMode.Light).Axis.ToCss(),(string?)rule.Attribute("stroke"));
         Assert.Throws<ArgumentOutOfRangeException>(()=>chart.Series[0].StateRole=(ChartSeriesState)100);
     }
 }

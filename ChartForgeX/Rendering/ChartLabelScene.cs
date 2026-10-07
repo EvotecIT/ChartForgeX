@@ -131,14 +131,22 @@ internal sealed partial class ChartLabelScene {
         var isLegendItem = role is "legend-item" or "slice-legend-item";
         var isGroup = isLegendItem || role is "topology-edge-label" or "topology-node-label";
         if (element.LocalName == "text" || isGroup) {
-            var textElements = isGroup ? element.Elements().Where(e => e.LocalName == "text").ToArray() : new[] { element };
+            var textElements = isGroup ? element.DescendantsAndSelf().Where(e => e.LocalName == "text").ToArray() : new[] { element };
             if (textElements.Length != 0) {
                 var box = default(ChartRect);
                 var first = true;
                 foreach (var textElement in textElements) {
-                    var textRaster = isGroup ? SvgRasterParser.ReadStyleElement(textElement) : raster;
-                    var textStyle = isGroup ? SvgRasterStyle.Resolve(style, textRaster, _definitions.StyleSheet, ancestors) : style;
-                    var textBox = TextBox(textElement, textStyle, matrix);
+                    var textStyle = style; var textMatrix = matrix;
+                    if (isGroup) {
+                        var textAncestors = new List<SvgRasterElement>(ancestors) { raster };
+                        foreach (var child in textElement.AncestorsAndSelf().TakeWhile(e => e != element).Reverse()) {
+                            var childRaster = SvgRasterParser.ReadStyleElement(child);
+                            textStyle = SvgRasterStyle.Resolve(textStyle, childRaster, _definitions.StyleSheet, textAncestors);
+                            textMatrix = textMatrix.Multiply(SvgRasterMatrix.ParseTransform(childRaster.Get("transform")));
+                            textAncestors.Add(childRaster);
+                        }
+                    }
+                    var textBox = TextBox(textElement, textStyle, textMatrix);
                     box = first ? textBox : Union(box, textBox); first = false;
                 }
                 var contentBox = box;

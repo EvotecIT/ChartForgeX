@@ -22,6 +22,7 @@ internal sealed partial class VisualTopologyCompiler {
         var mapChart = TopologyLayoutEngine.Clone(_chart); mapChart.Legend = null;
         var map = TopologyMapProjection.MapRect(mapChart);
         var soft = UseSoftMapBackground(_options);
+        BuildGeographicFrame(map, soft);
         if (!soft) {
             foreach (var land in TopologyMapProjection.LandDots(_chart.MapViewport)) {
                 if (!TopologyMapProjection.IsVisible(_chart.MapViewport, land.X, land.Y)) continue;
@@ -35,7 +36,8 @@ internal sealed partial class VisualTopologyCompiler {
             var points = boundary.Select(p => TopologyMapProjection.Project(map, _chart.MapViewport, p.X, p.Y)).Select(p => Point(new ChartPoint(p.X, p.Y))).ToArray();
             if (points.Length < 2) continue;
             var commands = points.Select((p, i) => i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)).ToArray();
-            _builder.Path(new ChartPath(commands), soft && TopologyMapProjection.CanFillBoundary(boundary) ? _colors.Border.WithOpacity(.15) : null, _colors.Border.WithOpacity(.45), .7 * _scale, "topology-map-boundary", close: soft, paint: Paint(_colors.Border.WithOpacity(.15), SvgColorRole.Surface, _colors.Border.WithOpacity(.45), SvgColorRole.Surface));
+            var closed = soft && TopologyMapProjection.CanFillBoundary(boundary);
+            _builder.Path(new ChartPath(commands), closed ? _colors.Border.WithOpacity(.15) : null, _colors.Border.WithOpacity(.45), .7 * _scale, "topology-map-boundary", close: closed, paint: Paint(_colors.Border.WithOpacity(.15), SvgColorRole.Surface, _colors.Border.WithOpacity(.45), SvgColorRole.Surface));
         }
     }
 
@@ -98,7 +100,15 @@ internal sealed partial class VisualTopologyCompiler {
             _builder.Ellipse(anchor.X, anchor.Y, TopologyGeographicCalloutPrimitives.AnchorRadius * _scale,
                 TopologyGeographicCalloutPrimitives.AnchorRadius * _scale, accent, role: "topology-geographic-callout-anchor", paint: Paint(accent, accentRole));
             var leader = TopologyGeographicCalloutPrimitives.LeaderPoints(callout).Select(Point).ToArray();
-            for (var i = 1; i < leader.Length; i++) _builder.Line(leader[i - 1].X, leader[i - 1].Y, leader[i].X, leader[i].Y, accent.WithOpacity(.6), _context.Theme.AxisStrokeWidth * _scale, "topology-callout-leader", paint: Paint(stroke: accent.WithOpacity(.6), strokeRole: accentRole));
+            var leaderPath = new ChartPath(leader.Select((point, index) => index == 0 ? ChartPathCommand.MoveTo(point.X, point.Y) : ChartPathCommand.LineTo(point.X, point.Y)).ToArray());
+            var leaderStyle = ChartRouteVisualStyles.TopologyGeographicCalloutLeader();
+            var leaderHalo = ChartColorMath.WithOpacity(_colors.Background, leaderStyle.HaloOpacity);
+            var leaderInk = ChartColorMath.WithOpacity(accent, leaderStyle.StrokeOpacity);
+            _builder.Path(leaderPath, stroke: leaderHalo, strokeWidth: leaderStyle.HaloStrokeWidth * _scale,
+                role: "topology-geographic-callout-leader-halo", paint: Paint(stroke: leaderHalo, strokeRole: SvgColorRole.Surface));
+            _builder.Path(leaderPath, stroke: leaderInk, strokeWidth: leaderStyle.StrokeWidth * _scale,
+                role: "topology-geographic-callout-leader", dash: new[] { leaderStyle.Dash * _scale, leaderStyle.Gap * _scale },
+                paint: Paint(stroke: leaderInk, strokeRole: accentRole));
             _builder.Rect(bounds, _colors.Surface, accent, _context.Theme.AxisStrokeWidth * _scale, _context.Theme.BarRadius * _scale, "topology-callout", paint: Paint(_colors.Surface, SvgColorRole.Surface, accent, accentRole));
             BuildCalloutPreview(callout, accent, accentRole);
             Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), _context.Theme.Typography.DataLabelSize, _colors.Foreground, 600, "topology-callout-title");

@@ -57,7 +57,10 @@ internal static partial class VisualCartesianCompiler {
                     DrawPattern(builder, EllipsePath(lower[item].X, lower[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
                 }
             }
-            AddLabel(chart, context, series, index, item, upper[item], bounds, label, labels, high.Y);
+            var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+            var anchor = placement == ChartDataLabelPlacement.Below ? lower[item]
+                : placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right ? middle[item] : upper[item];
+            AddLabel(chart, context, series, index, item, anchor, bounds, label, labels, high.Y);
         }
     }
 
