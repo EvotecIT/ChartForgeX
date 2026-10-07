@@ -83,11 +83,13 @@ internal static partial class VisualCartesianCompiler {
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
             foreach (var tick in yTicks) {
                 var y = map.Y(tick);
-                if (grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, colors.Border.WithOpacity(grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash);
+                if (grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, colors.Border.WithOpacity(grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash,
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(colors.Border.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
             }
             foreach (var tick in xTicks) {
                 var x = map.X(tick);
-                if (grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, colors.Border.WithOpacity(grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash);
+                if (grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, colors.Border.WithOpacity(grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash,
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(colors.Border.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
             }
         }
         if (!chart.Options.ShowAxes) return;
@@ -96,7 +98,7 @@ internal static partial class VisualCartesianCompiler {
         });
         var spacing = context.Theme.Spacing;
         if (chart.Options.XAxis.Visible) {
-            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-x");
+            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var tickHeight = TickMetrics(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, null, labels).Height;
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
@@ -109,7 +111,7 @@ internal static partial class VisualCartesianCompiler {
                 colors, TextAlignment.Center, "axis-x-title");
         }
         if (chart.Options.YAxis.Visible) {
-            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-y");
+            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var bounds = new ChartRect(viewport.Left, plot.Top, Math.Max(0, plot.Left - viewport.Left - spacing), plot.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, style, spacing, chart.Options.ValueFormatter, labels);
             if (!string.IsNullOrEmpty(chart.YAxisTitle)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
@@ -118,7 +120,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (secondaryMap != null && secondaryRange != null && chart.Options.SecondaryYAxis.Visible) {
             var ticks = AxisTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            if (chart.Options.SecondaryYAxis.ShowLine) builder.Line(plot.Right, plot.Top, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-secondary-y");
+            if (chart.Options.SecondaryYAxis.ShowLine) builder.Line(plot.Right, plot.Top, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-secondary-y", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var bounds = new ChartRect(plot.Right + spacing, plot.Top, Math.Max(0, viewport.Right - plot.Right - spacing), plot.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, style, spacing, chart.Options.ValueFormatter, labels);
             if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle)) {
@@ -169,13 +171,13 @@ internal static partial class VisualCartesianCompiler {
             if (label.IsDropped) continue;
             var displayedStyle = DisplayedStyle(label.Request.Style);
             displayedStyle.Alignment = TextAlignment.Left;
-            if (axis.LabelAngle == 0) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle, role: role);
+            if (axis.LabelAngle == 0) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle, role: role, paint: VisualChartPaint.Text(displayedStyle));
             else {
                 var metrics = builder.MeasureText(label.Text, displayedStyle);
                 var cx = label.Bounds.Left + label.Bounds.Width / 2;
                 var cy = label.Bounds.Top + label.Bounds.Height / 2;
                 using (builder.PushRotation(axis.LabelAngle, cx, cy))
-                    builder.Text(label.Text, cx - metrics.Width / 2, cy - metrics.Height / 2 + builder.TextAscent(displayedStyle), displayedStyle, role: role);
+                    builder.Text(label.Text, cx - metrics.Width / 2, cy - metrics.Height / 2 + builder.TextAscent(displayedStyle), displayedStyle, role: role, paint: VisualChartPaint.Text(displayedStyle));
             }
         }
     }
@@ -191,7 +193,7 @@ internal static partial class VisualCartesianCompiler {
         if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-title-overflow", "An axis title was shortened or omitted within its measured frame."));
         if (label.IsDropped) return;
         var displayed = DisplayedStyle(style); displayed.Alignment = TextAlignment.Left;
-        builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayed), displayed, role: role);
+        builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayed), displayed, role: role, paint: VisualChartPaint.Text(displayed));
     }
 
     private static TextMetrics RotatedMetrics(TextMetrics metrics, double angle) {

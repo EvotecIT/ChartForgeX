@@ -97,7 +97,7 @@ internal sealed partial class VisualSceneBuilder {
         baseline += style.Baseline == TextBaseline.Superscript ? -style.FontSize * 0.35
             : style.Baseline == TextBaseline.Subscript ? style.FontSize * 0.22 : 0;
         _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id, paint));
-        AddTextDecorations(prepared, x, baseline, style);
+        AddTextDecorations(prepared, x, baseline, style, paint);
     }
 
     internal IDisposable PushClip(ChartRect bounds) {
@@ -135,22 +135,23 @@ internal sealed partial class VisualSceneBuilder {
         var scope = new GroupScope(this); _nodes.Add(group); _groups.Push(scope); return scope;
     }
 
-    private void AddTextDecorations(VisualScenePreparedText text, double x, double baseline, TextStyle style) {
+    private void AddTextDecorations(VisualScenePreparedText text, double x, double baseline, TextStyle style, SvgPaint? paint) {
         var thickness = Math.Max(1, text.Size / 13);
         for (var i = 0; i < text.Lines.Count; i++) {
             var line = text.Lines[i];
             var left = x - (style.Alignment == TextAlignment.Center ? line.Width / 2 : style.Alignment == TextAlignment.Right ? line.Width : 0);
             var y = baseline + i * text.Metrics.LineHeight;
-            AddDecoration(left, left + line.Width, y + Math.Max(2, text.Size * 0.12), thickness, style.UnderlineStyle, style.Color);
-            AddDecoration(left, left + line.Width, y - text.Size * 0.3, thickness, style.StrikethroughStyle, style.Color);
+            AddDecoration(left, left + line.Width, y + Math.Max(2, text.Size * 0.12), thickness, style.UnderlineStyle, style.Color, paint);
+            AddDecoration(left, left + line.Width, y - text.Size * 0.3, thickness, style.StrikethroughStyle, style.Color, paint);
         }
     }
 
-    private void AddDecoration(double left, double right, double y, double thickness, TextDecorationStyle style, ChartColor color) {
+    private void AddDecoration(double left, double right, double y, double thickness, TextDecorationStyle style, ChartColor color, SvgPaint? paint) {
         if (style == TextDecorationStyle.None || right <= left) return;
+        VisualScenePaintBinding? binding = paint.HasValue ? new VisualScenePaintBinding(stroke: paint) : null;
         if (style == TextDecorationStyle.Double) {
-            Line(left, y - thickness, right, y - thickness, color, thickness, role: "text-decoration");
-            Line(left, y + thickness, right, y + thickness, color, thickness, role: "text-decoration");
+            Line(left, y - thickness, right, y - thickness, color, thickness, role: "text-decoration", paint: binding);
+            Line(left, y + thickness, right, y + thickness, color, thickness, role: "text-decoration", paint: binding);
         } else if (style == TextDecorationStyle.Wavy) {
             var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(left, y) };
             var step = Math.Max(2, thickness * 2.2); var index = 1;
@@ -158,11 +159,11 @@ internal sealed partial class VisualSceneBuilder {
                 commands.Add(ChartPathCommand.LineTo(x, y + (index++ % 2 == 0 ? -1 : 1) * Math.Max(1, thickness * 1.4)));
                 if (x >= right) break;
             }
-            Path(new ChartPath(commands), stroke: color, strokeWidth: thickness, role: "text-decoration");
+            Path(new ChartPath(commands), stroke: color, strokeWidth: thickness, role: "text-decoration", paint: binding);
         } else {
             var dash = style == TextDecorationStyle.Dotted ? new[] { Math.Max(1, thickness), Math.Max(1, thickness * 1.8) }
                 : style == TextDecorationStyle.Dashed ? new[] { Math.Max(2, thickness * 4), Math.Max(1, thickness * 2.5) } : null;
-            Line(left, y, right, y, color, thickness, role: "text-decoration", dash: dash);
+            Line(left, y, right, y, color, thickness, role: "text-decoration", dash: dash, paint: binding);
         }
     }
 

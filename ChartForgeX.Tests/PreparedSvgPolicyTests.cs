@@ -72,6 +72,9 @@ public sealed class PreparedSvgPolicyTests {
         Assert.Throws<ArgumentException>(() => new VisualSvgOptions("bad prefix"));
         Assert.Throws<ArgumentOutOfRangeException>(() => new VisualSvgOptions(linkTarget: (VisualSvgLinkTarget)42));
         Assert.Throws<ArgumentException>(() => builder.PushLink("javascript:alert(1)"));
+        var decorative = new PreparedVisual(builder.Build(), new ChartForgeX.Accessibility.VisualAccessibility { IsDecorative = true });
+        var decorativeSvg = XDocument.Parse(decorative.ToSvg());
+        Assert.Equal("-1", decorativeSvg.Descendants().Single(element => element.Name.LocalName == "a").Attribute("tabindex")!.Value);
     }
 
     [Fact]

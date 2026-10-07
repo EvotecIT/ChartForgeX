@@ -14,7 +14,8 @@ internal static partial class VisualRadialCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
         chart.Series[0].ShowInLegend
             ? GetSlices(chart, colors).Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice),
-                chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey)).ToArray()
+                chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey,
+                VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex))).ToArray()
             : Array.Empty<VisualLegendEntry>();
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -30,7 +31,7 @@ internal static partial class VisualRadialCompiler {
         if (total <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("radial.no-data", "Pie and donut charts need at least one positive value."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
-                context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center);
+                context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
             return;
         }
 
@@ -65,7 +66,8 @@ internal static partial class VisualRadialCompiler {
                 var formattedValue = ChartNumericFormatter.FormatValue(chart.Options, slice.Value);
                 var resolvedLabel = (series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? FormatLabel(chart, slice, total, formattedValue) : null;
                 using (builder.PushGroup(null, "radial-point", Metadata(slice, percent, resolvedLabel))) {
-                    builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice));
+                    builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice),
+                        paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, slice.Color, slice.PointIndex), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     if (slice.Pattern != ChartFillPattern.None)
                         builder.PatternSlice(sliceX, sliceY, radius, inner, start, sweep, slice.Pattern,
                             ChartColorMath.AccessibleTextOnBackground(slice.Color).WithAlpha(110), role: "radial-fill-pattern");

@@ -4,6 +4,7 @@ using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Typography;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -38,7 +39,9 @@ internal static partial class VisualRadialCompiler {
         if (builder.MeasureText(fitted, style).Width > angularWidth) return;
         if (fitted.Length == 0) return;
         style.Alignment = TextAlignment.Center;
-        builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label");
+        builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label",
+            paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex) ? VisualChartPaint.Text(style)
+                : SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[0], slice.PointIndex)));
     }
 
     private static void DrawVerticalLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -86,7 +89,7 @@ internal static partial class VisualRadialCompiler {
             displayed.TextCase = TextCaseTransform.None;
             displayed.Alignment = TextAlignment.Left;
             builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(displayed), displayed,
-                "data-label", SliceId(label.Slice) + "-label");
+                "data-label", SliceId(label.Slice) + "-label", paint: VisualChartPaint.Text(displayed));
         }
         if (overflow)
             builder.AddDiagnostic(new VisualDiagnostic("radial.label-overflow", "Some radial labels were shortened or omitted to fit their measured text and external leaders within the fixed canvas."));
@@ -134,7 +137,7 @@ internal static partial class VisualRadialCompiler {
         commands.Add(ChartPathCommand.LineTo(endX, endY));
         var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? label.Slice.Color, chart.Options.DataLabelConnectorOpacity);
         builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth,
-            role: "data-label-connector", id: SliceId(label.Slice) + "-connector");
+            role: "data-label-connector", id: SliceId(label.Slice) + "-connector", paint: ConnectorPaint(chart, label.Slice, color));
         return true;
     }
 
@@ -169,7 +172,7 @@ internal static partial class VisualRadialCompiler {
                 Connector(chart, builder, label.Slice, label.Angle, label.SliceX, label.SliceY, radius, label.X, label.Y, true);
                 label.Style.Alignment = left ? TextAlignment.Right : TextAlignment.Left;
                 builder.Text(text, label.X, label.Y - builder.MeasureText(text, label.Style).Height / 2 + builder.TextAscent(label.Style),
-                    label.Style, "data-label");
+                    label.Style, "data-label", paint: VisualChartPaint.Text(label.Style));
             }
         }
     }
@@ -190,7 +193,13 @@ internal static partial class VisualRadialCompiler {
             commands.Add(ChartPathCommand.LineTo(endX, y));
         } else commands.Add(ChartPathCommand.LineTo(endX, y));
         var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? slice.Color, chart.Options.DataLabelConnectorOpacity);
-        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth, role: "data-label-connector");
+        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth, role: "data-label-connector", paint: ConnectorPaint(chart, slice, color));
+    }
+
+    private static VisualScenePaintBinding ConnectorPaint(Chart chart, RadialSlice slice, ChartColor actual) {
+        var source = chart.Options.DataLabelConnectorColor.HasValue ? SvgPaint.Of(chart.Options.DataLabelConnectorColor.Value, SvgColorRole.Series)
+            : VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex);
+        return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabelConnectorOpacity));
     }
 
     private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double total) {
@@ -216,8 +225,8 @@ internal static partial class VisualRadialCompiler {
         using (builder.PushGroup("series-0-center", "donut-center", new Dictionary<string, string> {
             ["data-cfx-center-value"] = value, ["data-cfx-center-caption"] = label, ["aria-label"] = value + "\n" + label
         })) {
-            builder.Text(fittedValue, cx, top + builder.TextAscent(valueStyle), valueStyle, "donut-total-label");
-            builder.Text(fittedLabel, cx, top + valueHeight + gap + builder.TextAscent(labelStyle), labelStyle, "donut-title");
+            builder.Text(fittedValue, cx, top + builder.TextAscent(valueStyle), valueStyle, "donut-total-label", paint: VisualChartPaint.Text(valueStyle));
+            builder.Text(fittedLabel, cx, top + valueHeight + gap + builder.TextAscent(labelStyle), labelStyle, "donut-title", paint: VisualChartPaint.Text(labelStyle));
         }
     }
 

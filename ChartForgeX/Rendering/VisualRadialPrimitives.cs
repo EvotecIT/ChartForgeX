@@ -19,12 +19,13 @@ internal static class VisualRadialPrimitives {
         ChartSeriesColours.Point(series, index, index, colors);
 
     internal static void Arc(VisualSceneBuilder builder, double cx, double cy, double radius, double width,
-        double start, double sweep, ChartColor color, string role, string? id = null, bool round = false) {
+        double start, double sweep, ChartColor color, string role, string? id = null, bool round = false, SvgPaint? paint = null) {
         if (radius <= 0 || width <= 0 || sweep <= 0) return;
-        builder.Slice(cx, cy, radius + width / 2, Math.Max(0, radius - width / 2), start, Math.Min(Math.PI * 2, sweep), color, role: role, id: id);
+        builder.Slice(cx, cy, radius + width / 2, Math.Max(0, radius - width / 2), start, Math.Min(Math.PI * 2, sweep), color, role: role, id: id,
+            paint: paint.HasValue ? VisualChartPaint.Fill(paint.Value) : null);
         if (!round || sweep >= Math.PI * 2 - .000001) return;
-        builder.Ellipse(cx + Math.Cos(start) * radius, cy + Math.Sin(start) * radius, width / 2, width / 2, color, role: role + "-cap");
-        builder.Ellipse(cx + Math.Cos(start + sweep) * radius, cy + Math.Sin(start + sweep) * radius, width / 2, width / 2, color, role: role + "-cap");
+        builder.Ellipse(cx + Math.Cos(start) * radius, cy + Math.Sin(start) * radius, width / 2, width / 2, color, role: role + "-cap", paint: paint.HasValue ? VisualChartPaint.Fill(paint.Value) : null);
+        builder.Ellipse(cx + Math.Cos(start + sweep) * radius, cy + Math.Sin(start + sweep) * radius, width / 2, width / 2, color, role: role + "-cap", paint: paint.HasValue ? VisualChartPaint.Fill(paint.Value) : null);
     }
 
     internal static TextStyle Style(Chart chart, VisualRenderContext context, ChartColor color, double size, int weight = 400, int point = -1, bool ticks = false) {
@@ -37,7 +38,7 @@ internal static class VisualRadialPrimitives {
         return style;
     }
 
-    internal static void Text(VisualSceneBuilder builder, string full, ChartRect area, TextStyle style, string role, string id) {
+    internal static void Text(VisualSceneBuilder builder, string full, ChartRect area, TextStyle style, string role, string id, SvgPaint? paint = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, area, full));
         using (builder.PushGroup(id + "-source", role + "-source", new Dictionary<string, string> { ["aria-label"] = full, ["data-cfx-label"] = full })) {
             var fitted = ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => builder.MeasureText(text, style).Width);
@@ -51,7 +52,7 @@ internal static class VisualRadialPrimitives {
             style = style.Clone(); style.Alignment = TextAlignment.Center;
             var shift = style.Baseline == TextBaseline.Superscript ? -style.FontSize * .35 : style.Baseline == TextBaseline.Subscript ? style.FontSize * .22 : 0;
             var baseline = area.Top + (area.Height - metrics.Height) / 2 + builder.TextAscent(style);
-            builder.Text(fitted, area.Left + area.Width / 2, baseline - shift, style, role, id);
+            builder.Text(fitted, area.Left + area.Width / 2, baseline - shift, style, role, id, paint: paint ?? VisualChartPaint.Text(style));
         }
     }
 

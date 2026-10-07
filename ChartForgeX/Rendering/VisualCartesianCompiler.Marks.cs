@@ -36,7 +36,7 @@ internal static partial class VisualCartesianCompiler {
                         for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
                         var area = new ChartPath(commands);
                         var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
-                        builder.Path(area, fill, role: "area", close: true);
+                        builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
                         DrawPattern(builder, area, series.FillPattern, fill, colors.Surface, "area-pattern");
                     }
                     offset += segment.Count;
@@ -44,7 +44,8 @@ internal static partial class VisualCartesianCompiler {
             }
             var linePath = ChartPathBuilder.FromPoints(points, series.Kind, series.Smooth);
             foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
-                if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix);
+                if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
+                    paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
             if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)) {
                 var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
                 obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
@@ -59,7 +60,8 @@ internal static partial class VisualCartesianCompiler {
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
                 if (visible) {
-                    builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors), role: "marker");
+                    builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors), role: "marker",
+                        paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, PointColor(series, index, pointIndex, colors), pointIndex)));
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
                     DrawPattern(builder, EllipsePath(point.X, point.Y, radius, radius), pattern, PointColor(series, index, pointIndex, colors), colors.Surface, "marker-pattern");
@@ -199,7 +201,7 @@ internal static partial class VisualCartesianCompiler {
             var displayedStyle = DisplayedStyle(label.Request.Style);
             builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
                 role: label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true ? "stack-total-label" : "data-label",
-                id: label.Request.AssociatedMarkId + "-label");
+                id: label.Request.AssociatedMarkId + "-label", paint: VisualChartPaint.Text(displayedStyle));
         }
     }
 
