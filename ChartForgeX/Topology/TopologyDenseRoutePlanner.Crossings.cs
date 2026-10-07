@@ -126,6 +126,9 @@ internal static partial class TopologyDenseRoutePlanner {
     }
 
     private static (int Crossings, double Shared) Interaction(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+        // Routes whose boxes are more than the 2 px sharing tolerance apart can neither cross nor share a corridor, and the
+        // pairwise loop below would add nothing but zeros; most pairs of a dense plan are like that.
+        if (Apart(first, second)) return (0, 0.0);
         HashSet<(long X, long Y)>? crossings = null;
         var shared = 0.0;
         for (var i = 0; i + 1 < first.Count; i++) {
@@ -150,6 +153,26 @@ internal static partial class TopologyDenseRoutePlanner {
             }
         }
         return (crossings?.Count ?? 0, shared);
+    }
+
+    private static bool Apart(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+        if (first.Count < 2 || second.Count < 2) return true;
+        Bounds(first, out var left, out var top, out var right, out var bottom);
+        Bounds(second, out var otherLeft, out var otherTop, out var otherRight, out var otherBottom);
+        const double Margin = 4;
+        return otherLeft > right + Margin || otherRight < left - Margin || otherTop > bottom + Margin || otherBottom < top - Margin;
+    }
+
+    private static void Bounds(IReadOnlyList<ChartPoint> points, out double left, out double top, out double right, out double bottom) {
+        left = top = double.PositiveInfinity;
+        right = bottom = double.NegativeInfinity;
+        for (var i = 0; i < points.Count; i++) {
+            var point = points[i];
+            if (point.X < left) left = point.X;
+            if (point.X > right) right = point.X;
+            if (point.Y < top) top = point.Y;
+            if (point.Y > bottom) bottom = point.Y;
+        }
     }
 
     private static bool AtEnd(ChartPoint point, IReadOnlyList<ChartPoint> route) =>
