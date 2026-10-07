@@ -73,6 +73,10 @@ internal static partial class VisualSceneRasterRenderer {
 
     private static void PaintContours(RgbaCanvas canvas, List<List<ChartPoint>> contours, VisualSceneMark mark) {
         if (mark.Fill.HasValue) canvas.FillContours(contours, mark.Fill.Value, RasterFillRule.EvenOdd);
+        StrokeContours(canvas, contours, mark);
+    }
+
+    private static void StrokeContours(RgbaCanvas canvas, List<List<ChartPoint>> contours, VisualSceneMark mark) {
         if (mark.Stroke.HasValue && mark.StrokeWidth > 0) {
             var lines = new List<IReadOnlyList<ChartPoint>>(contours.Count);
             foreach (var contour in contours) lines.Add(contour);
