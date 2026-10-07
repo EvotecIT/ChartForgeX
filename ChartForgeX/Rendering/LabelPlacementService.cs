@@ -11,7 +11,8 @@ namespace ChartForgeX.Rendering;
 /// <remarks>For the same fonts and input order, placement is deterministic. Unresolvable fonts use portable measurements.
 /// Intersections with other labels and marks are rejected. Intentional containment in an associated mark is allowed.</remarks>
 public sealed class LabelPlacementService {
-    private readonly Dictionary<MeasurementKey, TextMetrics> _measurements = new();
+    private Dictionary<MeasurementKey, TextMetrics> _measurements = new();
+    private Dictionary<MeasurementKey, TextMetrics> _previousMeasurements = new();
     private readonly object _gate = new();
     private const int CacheCapacity = 4096;
     private int _fontVersion = -1;
@@ -23,27 +24,47 @@ public sealed class LabelPlacementService {
         return MeasureDisplayed(TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture), style);
     }
 
+    // Measurement is a pure function of the text, the style and the registered fonts, so it runs outside the cache lock
+    // (the font resolver and shaper guard their own caches); concurrent renders only serialize on the cache itself. The
+    // cache keeps two generations, so a full cache keeps the recently used half instead of starting empty.
     private TextMetrics MeasureDisplayed(string text, TextStyle style) {
         var key = new MeasurementKey(text, style);
+        int version;
         lock (_gate) {
-            var version = TypographyFontResolver.CacheVersion;
-            if (version != _fontVersion) { _measurements.Clear(); _fontVersion = version; }
+            version = TypographyFontResolver.CacheVersion;
+            if (version != _fontVersion) { _measurements.Clear(); _previousMeasurements.Clear(); _fontVersion = version; }
             if (_measurements.TryGetValue(key, out var cached)) return cached;
-            var face = TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.Font), style.OpenTypeLanguageTag);
-            var lineHeight = face.Font == null ? style.EffectiveFontSize * style.LineHeight : TextLayoutEngine.ResolveLineHeight(style, face.Font);
-            var width = 0d;
-            var lines = 0;
-            foreach (var line in TextLineScanner.Enumerate(text)) {
-                var value = line.Read(text);
-                width = Math.Max(width, face.Font == null ? value.Length * style.EffectiveFontSize * (style.Font.Weight >= 600 ? 0.62 : 0.56)
-                    : TextLayoutEngine.MeasureWidth(value, style, face));
-                lines++;
+            if (_previousMeasurements.TryGetValue(key, out cached)) {
+                Store(key, cached);
+                return cached;
             }
-            var measured = new TextMetrics(width, Math.Max(1, lines) * lineHeight, lineHeight);
-            if (_measurements.Count >= CacheCapacity) _measurements.Clear();
-            _measurements[key] = measured;
-            return measured;
         }
+
+        var face = TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.Font), style.OpenTypeLanguageTag);
+        var lineHeight = face.Font == null ? style.EffectiveFontSize * style.LineHeight : TextLayoutEngine.ResolveLineHeight(style, face.Font);
+        var width = 0d;
+        var lines = 0;
+        foreach (var line in TextLineScanner.Enumerate(text)) {
+            var value = line.Read(text);
+            width = Math.Max(width, face.Font == null ? value.Length * style.EffectiveFontSize * (style.Font.Weight >= 600 ? 0.62 : 0.56)
+                : TextLayoutEngine.MeasureWidth(value, style, face));
+            lines++;
+        }
+        var measured = new TextMetrics(width, Math.Max(1, lines) * lineHeight, lineHeight);
+        lock (_gate) {
+            if (_fontVersion == version && TypographyFontResolver.CacheVersion == version) Store(key, measured);
+        }
+
+        return measured;
+    }
+
+    private void Store(MeasurementKey key, TextMetrics measured) {
+        if (_measurements.Count >= CacheCapacity) {
+            (_previousMeasurements, _measurements) = (_measurements, _previousMeasurements);
+            _measurements.Clear();
+        }
+
+        _measurements[key] = measured;
     }
 
     /// <summary>Places a complete scene, returning results in the original request order.</summary>
