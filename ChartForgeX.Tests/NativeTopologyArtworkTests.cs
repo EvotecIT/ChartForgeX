@@ -93,6 +93,32 @@ public sealed class NativeTopologyArtworkTests {
     }
 
     [Fact]
+    public void EmbeddedAndHostedLegendArtworkPrepareBeforeTopologyStateAndKeepExplicitLegendOpacity() {
+        var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("legend-art", "Legend Artwork")
+            .AddIcon(new TopologyIconDefinition("legend-art", "bitmap", "Bitmap", TopologyNodeKind.Server) { Artwork = Bitmap() })
+            .AddIcon(new TopologyIconDefinition("legend-art", "hosted", "Hosted", TopologyNodeKind.Server) { Artwork = TopologyIconArtwork.Image("/assets/legend-server.png") }));
+        var chart = TopologyChart.Create().WithViewport(600, 360, 20)
+            .WithLegend(TopologyLegend.Create("Artwork legend")
+                .AddNodeKind("Embedded", TopologyNodeKind.Server, iconId: "legend-art:bitmap")
+                .AddNodeKind("Hosted", TopologyNodeKind.Server, iconId: "legend-art:hosted"))
+            .AddNode("source", "Source", 60, 60, width: 100, height: 60);
+        var options = Options(); options.IncludeLegend = true; options.IconCatalog = catalog;
+        options.HighlightNodeIds.Add("source"); options.DimmedOpacity = .15;
+        var prepared = chart.Prepare(options);
+        var bitmap = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneImage>());
+        var resource = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.ImageResource != null).ImageResource!;
+        Assert.Equal(1, bitmap.Opacity); Assert.Equal(1, resource.Opacity);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(2, svg.Descendants().Count(element => element.Name.LocalName == "image"));
+        Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "image" && (string?)element.Attribute("href") == resource.Href);
+        Assert.Contains(prepared.Visual.Diagnostics, diagnostic => diagnostic.Code == "topology.artwork-external-raster-fallback");
+        var raster = VisualSceneRasterRenderer.Render(prepared.Visual.Scene, supersampling: 1);
+        var center = ((int)(bitmap.Bounds.Y + bitmap.Bounds.Height / 2) * raster.Width + (int)(bitmap.Bounds.X + bitmap.Bounds.Width / 2)) * 4;
+        Assert.Equal(new byte[] { 220, 30, 40, 255 }, raster.Pixels.Skip(center).Take(4));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
     public void CatalogImageGlyphsAndHostedArtworkRetainDetachedResourcesWithNetworkFreeNativeFallback() {
         var icon = new TopologyIconDefinition("custom", "bitmap", "Bitmap", TopologyNodeKind.Server) { Artwork = Bitmap(), DisplayMode = TopologyNodeDisplayMode.Card };
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("custom", "Custom").AddIcon(icon));

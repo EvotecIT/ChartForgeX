@@ -12,7 +12,9 @@ internal sealed partial class VisualTopologyCompiler {
     private bool BuildArtwork(TopologyNode node, ChartRect bounds, bool selectedOutline = true, double? opacity = null, ChartColor? fallbackColor = null) {
         var artwork = ResolveRenderableNodeArtwork(node, _options);
         if (artwork == null) return false;
-        var active = !_nodesById.ContainsKey(node.Id) || _highlight.IsNodeHighlighted(node);
+        // Frame legend markers are compiled before the topology layout and highlight state exist.
+        // Synthetic glyph callers supply their parent's opacity; only real node artwork resolves state here.
+        var active = opacity.HasValue || _highlight.IsNodeHighlighted(node);
         var imageOpacity = opacity ?? (active || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity);
         if (artwork.ImageHref is string href) {
             if (href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {

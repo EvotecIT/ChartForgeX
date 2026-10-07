@@ -163,7 +163,8 @@ public sealed class PreparedVisualArtifactTests {
         for (var index = 0; index < 1025; index++)
             semantics.Nodes[0].Metrics.Add(new VisualArtifactInterchangeMetric { Name = "metric-" + index, Value = "1" });
         var captured = new PreparedVisual(prepared.Scene, prepared.Accessibility, semantics);
-        Assert.Equal(prepared.ToSvg(), captured.ToSvg());
+        var exportOptions = new VisualSvgOptions();
+        Assert.Equal(prepared.ToSvg(exportOptions), captured.ToSvg(exportOptions));
         Assert.Equal(prepared.ToPng(), captured.ToPng());
         Assert.Throws<ArgumentOutOfRangeException>(() => captured.SemanticInterchange);
     }
