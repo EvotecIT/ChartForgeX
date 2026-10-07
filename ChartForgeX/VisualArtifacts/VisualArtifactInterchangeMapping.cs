@@ -23,15 +23,11 @@ public static partial class VisualArtifactInterchangeMapping {
         var envelope = Common(artifact, out var artifactMetadataKeys);
         switch (artifact.Model) {
             case TopologyChart topology:
-                MapTopology(
-                    envelope,
-                    artifact,
+                return FromMutablePreparedArtifact(artifact, VisualArtifactRendering.PrepareTopologyArtifact(artifact,
                     VisualArtifactRendering.TopologyModel(artifact, topology),
-                    VisualArtifactRendering.TopologyOptions(artifact, renderOptions));
-                break;
+                    VisualArtifactRendering.TopologyOptions(artifact, renderOptions)).Visual);
             case FlowArtifact flow:
-                MapFlow(envelope, flow, artifactMetadataKeys);
-                break;
+                return FromMutablePreparedArtifact(artifact, flow.Prepare(ChartForgeX.Rendering.VisualExportRequest.ForFlow(flow).Context), flow.Metadata);
             case SequenceArtifact sequence:
                 MapSequence(envelope, sequence, artifactMetadataKeys);
                 break;
@@ -67,16 +63,6 @@ public static partial class VisualArtifactInterchangeMapping {
         return envelope;
     }
 
-    private static void MapTopology(
-        VisualArtifactInterchangeEnvelope envelope,
-        VisualArtifact artifact,
-        TopologyChart topology,
-        TopologyRenderOptions? renderOptions) {
-        var options = topology.ResolveRenderOptions(renderOptions).CloneForRendering();
-        var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
-        MapPreparedTopology(envelope, artifact, prepared, options);
-    }
-
     internal static VisualArtifactInterchangeEnvelope FromPreparedTopology(TopologyChart prepared, TopologyRenderOptions options) {
         var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!, VisualArtifactKind.Topology, prepared);
         artifact.Accessibility.Name = prepared.Accessibility.Name;
@@ -85,7 +71,6 @@ public static partial class VisualArtifactInterchangeMapping {
         artifact.Accessibility.IsDecorative = prepared.Accessibility.IsDecorative;
         var envelope = Common(artifact, out _);
         MapPreparedTopology(envelope, artifact, prepared, options);
-        envelope.Validate();
         return envelope;
     }
 
@@ -157,89 +142,6 @@ public static partial class VisualArtifactInterchangeMapping {
             if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
         }
         if (projectedSourceIds.Count > 0) AddProjectedSourceIds(envelope, projectedSourceIds);
-    }
-
-    private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
-        envelope.Id = BoundedGeneratedId(flow.Id, "flow");
-        envelope.Title = flow.Title;
-        envelope.Subtitle = flow.Subtitle;
-        envelope.Flow = new VisualArtifactInterchangeFlowArtifact {
-            LayoutMode = flow.LayoutMode,
-            LayoutDirection = flow.Direction
-        };
-        envelope.Family = VisualArtifactInterchangeFamily.Flow;
-        CopyMissing(flow.Metadata, envelope.Extensions, artifactMetadataKeys);
-
-        var flowTopology = flow.ToTopologyChart();
-        var prepared = PrepareValidatedTopology(flowTopology, new TopologyRenderOptions { IncludeLegend = false }, detachOmittedSourceGroups: false);
-        envelope.Width = prepared.Viewport.Width;
-        envelope.Height = prepared.Viewport.Height;
-        var preparedGroups = GroupsById(prepared.Groups);
-        var preparedNodes = NodesById(prepared.Nodes);
-        var ids = new InterchangeIdScope();
-        foreach (var lane in flow.Lanes) ids.AddGroup(lane.Id);
-        foreach (var step in flow.Steps) ids.AddNode(step.Id);
-        foreach (var connector in flow.Connectors) ids.AddEdge(connector.Id);
-
-        foreach (var lane in flow.Lanes) {
-            preparedGroups.TryGetValue(lane.Id, out var preparedGroup);
-            var group = new VisualArtifactInterchangeGroup {
-                Id = ids.Group(lane.Id),
-                Role = VisualArtifactInterchangeGroupRole.FlowLane,
-                Kind = "FlowLane",
-                Label = lane.Label,
-                Status = lane.Status.ToString(),
-                Color = lane.Color,
-                X = preparedGroup?.X,
-                Y = preparedGroup?.Y,
-                Width = preparedGroup?.Width,
-                Height = preparedGroup?.Height
-            };
-            Copy(lane.Metadata, group.Extensions);
-            envelope.Groups.Add(group);
-        }
-
-        foreach (var step in flow.Steps) {
-            preparedNodes.TryGetValue(step.Id, out var preparedNode);
-            var node = new VisualArtifactInterchangeNode {
-                Id = ids.Node(step.Id),
-                Role = VisualArtifactInterchangeNodeRole.FlowStep,
-                Kind = step.Kind.ToString(),
-                Label = step.Label,
-                Subtitle = step.Subtitle,
-                GroupId = ids.OptionalGroup(step.LaneId),
-                Status = step.Status.ToString(),
-                IconId = step.Icon,
-                Symbol = step.Symbol,
-                Badge = step.Badge,
-                Color = step.Color,
-                X = preparedNode?.X,
-                Y = preparedNode?.Y,
-                Width = preparedNode?.Width ?? step.Width,
-                Height = preparedNode?.Height ?? step.Height,
-                Flow = new VisualArtifactInterchangeFlowNode { Kind = step.Kind }
-            };
-            Copy(step.Metadata, node.Extensions);
-            envelope.Nodes.Add(node);
-        }
-
-        for (var index = 0; index < flow.Connectors.Count; index++) {
-            var connector = flow.Connectors[index];
-            var edge = new VisualArtifactInterchangeEdge {
-                Id = ids.Edge(connector.Id),
-                Role = VisualArtifactInterchangeEdgeRole.FlowConnector,
-                Kind = connector.Kind.ToString(),
-                SourceId = ids.Node(connector.SourceId),
-                TargetId = ids.Node(connector.TargetId),
-                Label = connector.Label,
-                Status = connector.Status.ToString(),
-                Color = connector.Color,
-                Order = index,
-                Flow = new VisualArtifactInterchangeFlowEdge { Kind = connector.Kind, Direction = connector.Direction }
-            };
-            Copy(connector.Metadata, edge.Extensions);
-            envelope.Edges.Add(edge);
-        }
     }
 
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualArtifactSize? preparedSize = null) {
@@ -396,18 +298,6 @@ public static partial class VisualArtifactInterchangeMapping {
         return mapped;
     }
 
-    private static TopologyChart PrepareValidatedTopology(TopologyChart topology, TopologyRenderOptions options, bool detachOmittedSourceGroups) {
-        var validator = new TopologyChartValidator();
-        var sourceValidation = validator.ValidateScenarioReferences(topology);
-        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
-
-        var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
-        if (detachOmittedSourceGroups) TopologyLayoutEngine.DetachOmittedSourceGroups(topology, prepared);
-        var preparedValidation = validator.Validate(prepared, validateScenarioReferences: false, options);
-        if (!preparedValidation.IsValid) throw new TopologyValidationException(preparedValidation);
-        return prepared;
-    }
-
     private static VisualArtifactInterchangeNode MapNode(
         TopologyNode node,
         string id,
@@ -537,18 +427,6 @@ public static partial class VisualArtifactInterchangeMapping {
         var parts = new List<string>();
         foreach (var point in edge.Waypoints) parts.Add(InvariantNumber(point.X) + "," + InvariantNumber(point.Y));
         return string.Join(";", parts);
-    }
-
-    private static Dictionary<string, TopologyGroup> GroupsById(IEnumerable<TopologyGroup> groups) {
-        var result = new Dictionary<string, TopologyGroup>(StringComparer.Ordinal);
-        foreach (var group in groups) result[group.Id] = group;
-        return result;
-    }
-
-    private static Dictionary<string, TopologyNode> NodesById(IEnumerable<TopologyNode> nodes) {
-        var result = new Dictionary<string, TopologyNode>(StringComparer.Ordinal);
-        foreach (var node in nodes) result[node.Id] = node;
-        return result;
     }
 
     private static Dictionary<string, string> Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {

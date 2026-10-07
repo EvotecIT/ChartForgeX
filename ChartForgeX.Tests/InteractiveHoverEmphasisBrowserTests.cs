@@ -5,7 +5,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveHoverEmphasisBrowserTests {
-    private const string Lines = "[data-cfx-role=\"line\"]";
+    private const string Lines = "[data-cfx-role=\"series\"]";
     private const string Legends = "[data-cfx-role=\"legend-item\"]";
 
     [Theory]
@@ -19,7 +19,7 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         await MoveToAsync(page, Point(1, 3));
         Assert.Equal(new[] { "0.3", "1", "0.3" }, await OpacitiesAsync(page, Lines));
         Assert.Equal(new[] { "0.3", "1", "0.3" }, await OpacitiesAsync(page, Legends));
-        var marker = await page.Locator(Point(1, 3)).EvaluateAsync<string[]>("node => { const s = getComputedStyle(node); return [s.opacity, s.r, s.strokeWidth]; }");
+        var marker = await page.Locator(Point(1, 3) + " > .cfx-prepared-point-marker").EvaluateAsync<string[]>("node => { const s = getComputedStyle(node); return [s.opacity, s.r, s.strokeWidth]; }");
         Assert.Equal(new[] { "1", "4px", "2px" }, marker);
         Assert.StartsWith("Thu", await TooltipTextAsync(page), StringComparison.Ordinal);
 
@@ -30,7 +30,7 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         Assert.Equal("shared", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-mode"));
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, Lines));
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, Legends));
-        Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, "circle.cfx-hover-column"));
+        Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, "[data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker"));
         var tooltip = await TooltipTextAsync(page);
         Assert.Matches("^Thu\\s+Failed\\s+31\\s+Warnings\\s+112\\s+Passed\\s+1,?041$", tooltip);
 

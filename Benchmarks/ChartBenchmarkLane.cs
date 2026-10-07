@@ -71,6 +71,7 @@ public sealed class SceneBenchmarkLane {
     private readonly Func<object, object> _prepare;
     private readonly Func<object, string, object> _execute;
     private readonly Func<object, string, string, long> _validate;
+    private readonly Func<object, string> _outputDigest;
     private readonly string _fixture;
     private readonly System.Collections.Generic.Dictionary<string, string> _digests = new();
     private object _model;
@@ -89,6 +90,7 @@ public sealed class SceneBenchmarkLane {
         _prepare = (Func<object, object>)type.GetMethod("Prepare")!.CreateDelegate(typeof(Func<object, object>));
         _execute = (Func<object, string, object>)type.GetMethod("Execute")!.CreateDelegate(typeof(Func<object, string, object>));
         _validate = (Func<object, string, string, long>)type.GetMethod("Validate")!.CreateDelegate(typeof(Func<object, string, string, long>));
+        _outputDigest = (Func<object, string>)type.GetMethod("OutputDigest")!.CreateDelegate(typeof(Func<object, string>));
         _fixture = fixture;
         _model = _create(_fixture);
         SourceDigest = (string)type.GetMethod("SourceDigest")!.Invoke(null, new object[] { fixture })!;
@@ -110,13 +112,10 @@ public sealed class SceneBenchmarkLane {
         if (_result == null) throw new InvalidOperationException("Nothing was rendered.");
         _outputLength = _validate(_result, _operation, _fixture);
         // Byte identity is required within an unchanged lane, while approved v2 layout differs from legacy output.
-        if (_result is string || _result is byte[]) {
-            var bytes = _result is byte[] image ? image : System.Text.Encoding.UTF8.GetBytes((string)_result);
-            var digest = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes));
-            if (_digests.TryGetValue(_operation, out var expected) && expected != digest)
-                throw new InvalidOperationException("Non-deterministic " + _operation + " output.");
-            _digests[_operation] = digest;
-        }
+        var digest = _outputDigest(_result);
+        if (_digests.TryGetValue(_operation, out var expected) && expected != digest)
+            throw new InvalidOperationException("Non-deterministic " + _operation + " output.");
+        _digests[_operation] = digest;
     }
 
     /// <summary>Gets output bytes, SVG characters or compiled semantic-region count, as named by each operation.</summary>

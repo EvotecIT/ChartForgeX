@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
@@ -32,8 +33,8 @@ internal static partial class VisualPolarCompiler {
             var r = geometry.Radius * scale.Normalize(tick);
             if (chart.Options.ShowGrid) {
                 if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartSeriesKind.Line, false),
-                    stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true);
-                else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring");
+                    stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             }
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !scale.IsMaximum(tick)) {
                 var text = ChartAxisValueFormatter.Format(chart.Options.YAxis, tick, chart.Options.ValueFormatter, scale.Ticks);
@@ -45,7 +46,7 @@ internal static partial class VisualPolarCompiler {
         for (var index = 0; index < categories.Length; index++) {
             var angle = radar ? RadarAngle(index, categories.Length) : -categories[index];
             var end = On(geometry, angle, geometry.Radius);
-            if (chart.Options.ShowGrid) builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, colors.Border, context.Theme.GridStrokeWidth, radar ? "radar-spoke" : "polar-spoke");
+            if (chart.Options.ShowGrid) builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, colors.Border, context.Theme.GridStrokeWidth, radar ? "radar-spoke" : "polar-spoke", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var target = On(geometry, angle, geometry.Radius + context.Theme.Spacing);
             var horizontal = Math.Cos(angle) > .3 ? 0d : Math.Cos(angle) < -.3 ? 1d : .5;
@@ -90,7 +91,7 @@ internal static partial class VisualPolarCompiler {
                 if (result.IsDropped) continue;
                 var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
                 style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
-                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style, label.Role, label.Id);
+                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style, label.Role, label.Id, paint: VisualChartPaint.Text(style));
             }
         }
     }

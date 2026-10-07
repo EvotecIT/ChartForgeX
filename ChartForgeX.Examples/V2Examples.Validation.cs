@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Xml.Linq;
+using System.Globalization;
 using ChartForgeX.Core;
 
 public static partial class V2Examples {
@@ -28,6 +29,10 @@ public static partial class V2Examples {
             if ((double?)thumbnail.Attribute("width") != artifact.GetProperty("thumbnailWidth").GetInt32() ||
                 (double?)thumbnail.Attribute("height") != artifact.GetProperty("thumbnailHeight").GetInt32())
                 throw new InvalidOperationException("Thumbnail dimensions differ from the uniform viewport: " + id);
+            if (artifact.GetProperty("family").GetString() == "sequence" && artifact.GetProperty("variant").GetString() == "expanded" &&
+                ((string?)thumbnail.Attribute("viewBox") != "0 0 " + width.ToString(CultureInfo.InvariantCulture) + " " + height.ToString(CultureInfo.InvariantCulture) ||
+                    (string?)thumbnail.Attribute("preserveAspectRatio") != "xMidYMid meet"))
+                throw new InvalidOperationException("The sequence thumbnail must retain its full logical viewport: " + id);
             var svg = File.ReadAllText(Path.Combine(output, artifact.GetProperty("svg").GetString()!));
             var root = XDocument.Parse(svg).Root ?? throw new InvalidOperationException("Missing SVG root: " + id);
             if ((double?)root.Attribute("width") != width || (double?)root.Attribute("height") != height)

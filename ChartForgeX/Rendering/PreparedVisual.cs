@@ -46,11 +46,12 @@ public sealed class VisualSemanticRegion {
 /// <summary>Bounded raster export configuration; logical layout remains unchanged.</summary>
 public sealed class VisualRenderOptions {
     /// <summary>Creates raster options. Pixel budget includes supersampled working pixels.</summary>
-    public VisualRenderOptions(int scale = 1, int supersampling = 2, long pixelBudget = 64000000) {
+    public VisualRenderOptions(int scale = 1, int supersampling = 2, long pixelBudget = 64000000, ChartForgeX.Typography.TextHinting? textHinting = null) {
         if (scale < 1 || scale > 16) throw new ArgumentOutOfRangeException(nameof(scale));
         if (supersampling < 1 || supersampling > 8) throw new ArgumentOutOfRangeException(nameof(supersampling));
         if (pixelBudget < 1 || pixelBudget > 128000000) throw new ArgumentOutOfRangeException(nameof(pixelBudget));
-        Scale = scale; Supersampling = supersampling; PixelBudget = pixelBudget;
+        if (textHinting.HasValue && !Enum.IsDefined(typeof(ChartForgeX.Typography.TextHinting), textHinting.Value)) throw new ArgumentOutOfRangeException(nameof(textHinting));
+        Scale = scale; Supersampling = supersampling; PixelBudget = pixelBudget; TextHinting = textHinting;
     }
     /// <summary>Gets the output pixels per logical unit.</summary>
     public int Scale { get; }
@@ -58,6 +59,8 @@ public sealed class VisualRenderOptions {
     public int Supersampling { get; }
     /// <summary>Gets the maximum working pixel count.</summary>
     public long PixelBudget { get; }
+    /// <summary>Gets an optional raster hinting override. Null retains each prepared text style's choice.</summary>
+    public ChartForgeX.Typography.TextHinting? TextHinting { get; }
 }
 
 /// <summary>A detached immutable scene. SVG and native raster export consume the same prepared decisions.</summary>
@@ -65,16 +68,25 @@ public sealed class PreparedVisual {
     private readonly VisualScene _scene;
     private readonly VisualAccessibility _accessibility;
     private readonly Lazy<string> _svgIdPrefix;
-    private readonly string? _semanticInterchange;
+    private readonly Lazy<string>? _semanticInterchange;
     private readonly VisualSvgOptions? _defaultSvgOptions;
     internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null, VisualSvgOptions? svgOptions = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
-        _semanticInterchange = semanticInterchange?.ToJson();
+        // Portable-envelope budgets apply when semantics cross that boundary, not to static rendering.
+        // Producers supply a private detached envelope; serialize it only if a host requests interchange.
+        _semanticInterchange = semanticInterchange == null ? null : new Lazy<string>(semanticInterchange.ToJson);
         _defaultSvgOptions = svgOptions;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
-    internal VisualArtifactInterchangeEnvelope? SemanticInterchange => _semanticInterchange == null ? null : VisualArtifactInterchangeEnvelope.FromJson(_semanticInterchange);
+    internal VisualArtifactInterchangeEnvelope? SemanticInterchange => _semanticInterchange == null ? null : VisualArtifactInterchangeEnvelope.FromJson(_semanticInterchange.Value);
+    private PreparedVisual(VisualScene scene, PreparedVisual basis, VisualSvgOptions? svgOptions) {
+        _scene = scene; _accessibility = basis._accessibility.Clone();
+        _semanticInterchange = basis._semanticInterchange; _defaultSvgOptions = svgOptions;
+        _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
+            _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
+    }
+    internal PreparedVisual WithScene(VisualScene scene, VisualSvgOptions? svgOptions) => new PreparedVisual(scene, this, svgOptions);
     internal VisualScene Scene => _scene;
     /// <summary>Gets the logical viewport.</summary>
     public VisualSize Size => _scene.Size;
@@ -107,7 +119,7 @@ public sealed class PreparedVisual {
     /// <summary>Exports native RGBA pixels without repeating layout or parsing SVG.</summary>
     public RgbaImage ToRgba(VisualRenderOptions? options = null) {
         options ??= new VisualRenderOptions();
-        return VisualSceneRasterRenderer.Render(_scene, options.Scale, options.Supersampling, options.PixelBudget);
+        return VisualSceneRasterRenderer.Render(_scene, options.Scale, options.Supersampling, options.PixelBudget, options.TextHinting);
     }
     /// <summary>Exports PNG from the native raster backend.</summary>
     public byte[] ToPng(VisualRenderOptions? options = null) => PngWriter.WriteRgba(ToRgba(options));

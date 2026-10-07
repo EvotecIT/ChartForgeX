@@ -296,7 +296,7 @@ public sealed partial class ChartGrid {
         var primaryCompatible = new List<Chart>();
         var secondaryCompatible = new List<Chart>();
         foreach (var chart in _charts) {
-            ChartGuards.RenderCompatibility(chart);
+            ChartGuards.RenderCompatibility(chart, preparing: true);
             if (UsesPrimaryCartesianYAxis(chart)) {
                 var range = ChartRange.FromChart(chart, false);
                 if (range.MinY < primaryMinimum) primaryMinimum = range.MinY;
@@ -338,7 +338,7 @@ public sealed partial class ChartGrid {
         var maximum = double.NegativeInfinity;
         var compatible = new List<Chart>();
         foreach (var chart in _charts) {
-            ChartGuards.RenderCompatibility(chart);
+            ChartGuards.RenderCompatibility(chart, preparing: true);
             if (!ChartSeriesKindTraits.UsesCartesianXAxis(chart)) continue;
             var range = ChartRange.FromChart(chart, false);
             if (range.MinX < minimum) minimum = range.MinX;

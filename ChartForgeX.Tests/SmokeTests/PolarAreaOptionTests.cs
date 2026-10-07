@@ -1,5 +1,7 @@
 using ChartForgeX;
 using ChartForgeX.Core;
+using System.Linq;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -17,7 +19,10 @@ internal static partial class SmokeTests {
         Assert(PolarAreaSample().WithGrid(false).ToPng().Length > 64, "Compact polar-area options should render valid PNG output.");
         var positionedLegend = PolarAreaSample().WithLegendPosition(ChartLegendPosition.BottomRight);
         var positionedSvg = positionedLegend.ToSvg();
-        Assert(positionedSvg.Contains("data-cfx-role=\"slice-legend\" data-cfx-position=\"BottomRight\"", System.StringComparison.Ordinal), "Polar-area slice legends should honor configured legend placement.");
+        var prepared = PreparedFamily(positionedLegend);
+        Assert(prepared.Regions.Count(region => region.Role == "legend") == 4, "Polar-area legends should retain all four categories.");
+        Assert(prepared.Regions.Where(region => region.Role == "legend").Min(region => region.Bounds.Top) > prepared.Scene.Nodes.OfType<VisualSceneSlice>().First().Cy,
+            "Polar-area legends configured at the bottom should occupy the lower frame.");
         Assert(positionedLegend.ToPng().Length > 64, "Polar-area positioned legends should render valid PNG output.");
     }
 

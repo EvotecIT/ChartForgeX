@@ -2,6 +2,7 @@ using System;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
+using System.Linq;
 
 namespace ChartForgeX.Tests;
 
@@ -20,10 +21,11 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"sunburst-chart\"", StringComparison.Ordinal), "Sunburst charts should expose a chart role marker.");
+        var prepared = PreparedFamily(chart);
+        Assert(FamilyGroups(prepared, "hierarchy-series").Length == 1, "Sunbursts should retain their hierarchy series identity.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"sunburst-segment\"") == 7, "Sunburst charts should render one segment per hierarchy node.");
         Assert(svg.Contains("data-cfx-depth=\"2\"", StringComparison.Ordinal), "Sunburst segments should expose depth metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Mail authentication:", StringComparison.Ordinal), "Sunburst segments should expose accessible summaries.");
+        Assert(prepared.Regions.Any(region => region.Role == "sunburst-segment" && region.Label!.StartsWith("Mail authentication:", StringComparison.Ordinal)), "Sunburst segments should expose complete descriptive summaries.");
         Assert(svg.Contains("data-cfx-role=\"sunburst-label\"", StringComparison.Ordinal), "Sunburst charts should render readable labels.");
         Assert(chart.ToPng().Length > 64, "Sunburst charts should render PNG output.");
     }

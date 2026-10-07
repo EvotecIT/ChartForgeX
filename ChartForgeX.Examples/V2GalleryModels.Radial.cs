@@ -13,7 +13,7 @@ public static partial class V2GalleryModels {
                 chart.AddGauge("Capacity", 76).WithGauge(options => {
                     options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
                     options.Target = 85; options.Caption = "Available capacity";
-                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Critical));
+                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
                     options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
                     options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
                 }); break;

@@ -51,7 +51,7 @@ internal static partial class VisualSceneRasterRenderer {
         }
     }
 
-    private static void PaintTransformedText(RgbaCanvas canvas, VisualSceneText node, VisualSceneTransform transform) {
+    private static void PaintTransformedText(RgbaCanvas canvas, VisualSceneText node, VisualSceneTransform transform, Typography.TextHinting? textHinting = null) {
         var text = node.Text;
         // Retain shaped glyphs and faces. Only their ink is buffered for rigid rotation; no font lookup or reshaping occurs.
         var margin = Math.Max(4, text.Size);
@@ -63,7 +63,7 @@ internal static partial class VisualSceneRasterRenderer {
         var height = Dimension(text.Metrics.Height + margin * 2);
         var density = Math.Max(1, canvas.PixelsPerUnit);
         var buffer = new RgbaCanvas(width, height, 1, null, density, useDefaultOutlineFont: false);
-        PaintText(buffer, new VisualSceneText(text, node.X - left, node.Baseline - top, node.Color, node.Alignment, null, null));
+        PaintText(buffer, new VisualSceneText(text, node.X - left, node.Baseline - top, node.Color, node.Alignment, null, null), textHinting);
         var image = buffer.ToImage();
         var origin = transform.Apply(new ChartPoint(left, top));
         canvas.DrawImageTransformed(image.Width, image.Height, image.Pixels,

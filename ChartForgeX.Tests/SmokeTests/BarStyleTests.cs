@@ -33,8 +33,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).Options.BarStyle = (ChartBarStyle)999, "Bar style should reject invalid enum values instead of silently falling back to solid bars.");
         var segmentedGeometry = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Rendering", "ChartSegmentedBarGeometry.cs"));
         Assert(segmentedGeometry.Contains("Vertical(", StringComparison.Ordinal) && segmentedGeometry.Contains("Horizontal(", StringComparison.Ordinal) && segmentedGeometry.Contains("RangeCap(", StringComparison.Ordinal), "Segmented capsule geometry should stay shared across vertical, horizontal, and range bars.");
-        var segmentedSvg = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Svg", "SvgChartRenderer.SegmentedBars.cs"));
-        Assert(segmentedSvg.Contains("WriteSvgSegmentedCapLayers", StringComparison.Ordinal) && segmentedSvg.Contains("rolePrefix + \"-cap-highlight\"", StringComparison.Ordinal), "Segmented capsule SVG cap layers should stay centralized across bar renderers.");
         Assert(!chart.Options.ShowCard && !chart.Options.ShowPlotBackground && !chart.Options.ShowAxisLines, "Dashboard bar style should remove default chart chrome without hiding axes or legends.");
         Assert(svg.Contains("fill=\"#8B5CF6\"", StringComparison.Ordinal), "Charts should render reusable x-axis label highlights from theme palette tokens.");
         Assert(svg.Contains("fill=\"#FBBF24\"", StringComparison.Ordinal) && svg.Contains("fill=\"#8B5CF6\"", StringComparison.Ordinal), "Dashboard bar styles should compose with reusable palette tokens instead of one-off mark colors.");
@@ -161,12 +159,7 @@ internal static partial class SmokeTests {
         var transparentTrendSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddTrendLine("Hidden trend", Points(10, 20, 30), transparentStroke).ToSvg();
         var transparentRangeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddRangeArea("Hidden band", new[] { new ChartRangeBand(1, 10, 24), new ChartRangeBand(2, 18, 38) }, transparentStroke).ToSvg();
         Assert(!transparentLineSvg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && !transparentTrendSvg.Contains("data-cfx-role=\"trend-line-highlight\"", StringComparison.Ordinal) && !transparentRangeSvg.Contains("data-cfx-role=\"range-area-upper-highlight\"", StringComparison.Ordinal), "Premium SVG highlight layers should stay hidden when the source series stroke is transparent.");
-        var pngCartesian = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
-        Assert(!pngCartesian.Contains("Math.Max(24", StringComparison.Ordinal) && !pngCartesian.Contains("Math.Max(10", StringComparison.Ordinal), "PNG premium line halos should honor low opacity style tokens without renderer-specific alpha floors.");
         var sharedLineLayers = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Rendering", "ChartLineVisualLayers.cs"));
-        Assert(sharedLineLayers.Contains("HighlightOpacity(color, style)", StringComparison.Ordinal) && pngCartesian.Contains("ChartLineVisualLayers.Build", StringComparison.Ordinal), "PNG premium line highlights should derive opacity from the shared source-stroke-aware line layer model.");
-        var pngRenderer = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Raster", "PngChartRenderer.cs"));
-        Assert(pngRenderer.Contains("HorizontalValueGridOpacity", StringComparison.Ordinal) && pngRenderer.Contains("HorizontalCategoryGridOpacity", StringComparison.Ordinal), "PNG horizontal-bar grids should preserve tuned default value/category guide emphasis.");
         var compactSegmentedSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(220, 140)
             .WithYAxisBounds(0, 100000)

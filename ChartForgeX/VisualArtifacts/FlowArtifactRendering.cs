@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using ChartForgeX.Topology;
+using ChartForgeX.Rendering;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.VisualArtifacts;
@@ -70,21 +71,24 @@ public static class FlowArtifactRendering {
     /// </summary>
     /// <param name="flow">The flow artifact.</param>
     /// <returns>SVG markup.</returns>
-    public static string ToSvg(this FlowArtifact flow) => flow.ToTopologyChart().ToSvg();
+    public static string ToSvg(this FlowArtifact flow) => flow.Prepare(VisualExportRequest.ForFlow(flow).Context).ToSvg();
 
     /// <summary>
     /// Renders a flow artifact static preview to a standalone HTML page.
     /// </summary>
     /// <param name="flow">The flow artifact.</param>
     /// <returns>HTML markup.</returns>
-    public static string ToHtmlPage(this FlowArtifact flow) => flow.ToTopologyChart().ToHtmlPage();
+    public static string ToHtmlPage(this FlowArtifact flow) => flow.Prepare(VisualExportRequest.ForFlow(flow).Context).ToArtifact(flow.Id, VisualArtifactKind.Flow).ToHtmlPage();
 
     /// <summary>
     /// Renders a flow artifact static preview to PNG.
     /// </summary>
     /// <param name="flow">The flow artifact.</param>
     /// <returns>PNG bytes.</returns>
-    public static byte[] ToPng(this FlowArtifact flow) => flow.ToTopologyChart().ToPng();
+    public static byte[] ToPng(this FlowArtifact flow) {
+        var request = VisualExportRequest.ForFlow(flow);
+        return flow.Prepare(request.Context).ToPng(request.RasterOptions);
+    }
 
     private static TopologyLayoutMode ToTopologyLayout(FlowArtifactLayoutMode mode) {
         switch (mode) {

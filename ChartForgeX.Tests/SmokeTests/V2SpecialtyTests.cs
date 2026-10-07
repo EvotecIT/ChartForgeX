@@ -71,7 +71,10 @@ public sealed class V2SpecialtyTests {
         chart.Series[0].Points[0] = new ChartPoint(1, 1_000_000);
         var compact = Compile(chart, new ChartRect(0, 0, 100, 40));
         Assert.Contains(compact.Diagnostics, diagnostic => diagnostic.Code == "pictorial.overflow");
-        Assert.Contains(compact.Regions, region => region.Role == "pictorial-item" && region.Label?.Contains("1000000") == true);
+        Assert.Contains(compact.Regions, region => region.Role == "pictorial-item" && region.Label == "A: 1M");
+        var source = Assert.Single(compact.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "pictorial-item");
+        Assert.Equal("1000000", source.Metadata["data-cfx-value"]);
+        Assert.Equal("0", source.Metadata["data-cfx-point"]);
         Assert.True(compact.Nodes.Count(node => node.Role == "pictorial-symbol") <= 20);
     }
 

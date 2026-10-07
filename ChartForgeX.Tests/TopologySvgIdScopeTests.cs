@@ -17,12 +17,11 @@ public sealed class TopologySvgIdScopeTests {
 
         var firstIds = Ids(first);
         var secondIds = Ids(second);
-        Assert.Contains(firstIds, id => id.EndsWith("-shadow", StringComparison.Ordinal));
-        Assert.Contains(firstIds, id => id.Contains("-arrow-", StringComparison.Ordinal));
-        Assert.Contains(firstIds, id => id.Contains("-circle-", StringComparison.Ordinal));
-        Assert.Contains(firstIds, id => id.Contains("-node-", StringComparison.Ordinal));
-        Assert.Contains(firstIds, id => id.Contains("-group-", StringComparison.Ordinal));
-        Assert.Contains(firstIds, id => id.Contains("-edge-", StringComparison.Ordinal));
+        var elements = XDocument.Parse(first).Descendants().ToArray();
+        Assert.Contains(elements, element => (string?)element.Attribute("data-cfx-role") == "topology-marker");
+        Assert.Contains(elements, element => (string?)element.Attribute("data-node-id") == "dc1");
+        Assert.Contains(elements, element => (string?)element.Attribute("data-group-id") == "north");
+        Assert.Contains(elements, element => (string?)element.Attribute("data-edge-id") == "a");
         Assert.Empty(firstIds.Intersect(secondIds));
         Assert.All(firstIds, id => Assert.StartsWith("panel-a-", id, StringComparison.Ordinal));
 
@@ -35,12 +34,13 @@ public sealed class TopologySvgIdScopeTests {
     }
 
     [Fact]
-    public void WithoutAScope_IdsStayBasedOnTheChartId() {
+    public void WithoutAScope_IdsAreDeterministicAndSourceIdentityIsRetained() {
         var chart = Chart();
         var svg = chart.ToSvg();
         Assert.Equal(svg, chart.ToSvg(new TopologyRenderOptions { IdScope = "  " }));
-        Assert.Contains("id=\"sites-node-dc1\"", svg, StringComparison.Ordinal);
-        Assert.Contains("url(#sites-shadow)", svg, StringComparison.Ordinal);
+        Assert.Contains("data-chart-id=\"sites\"", svg, StringComparison.Ordinal);
+        Assert.Contains("data-node-id=\"dc1\"", svg, StringComparison.Ordinal);
+        Assert.All(References(svg), reference => Assert.Contains(reference, Ids(svg)));
         Assert.Equal(chart.ToSvg(new TopologyRenderOptions { IdScope = "panel-a" }), chart.ToSvg("panel-a"));
     }
 
@@ -51,12 +51,14 @@ public sealed class TopologySvgIdScopeTests {
         var svg = chart.ToSvg("panel-a");
         Assert.Contains("class=\"site-map", svg, StringComparison.Ordinal);
         Assert.Null(carried.IdScope);
-        Assert.Contains("id=\"panel-a-sites-node-dc1\"", chart.ToHtmlFragment(new TopologyRenderOptions { IdScope = "panel-a" }), StringComparison.Ordinal);
+        var html = chart.ToHtmlFragment(new TopologyRenderOptions { IdScope = "panel-a" });
+        Assert.Contains("data-node-id=\"dc1\"", html, StringComparison.Ordinal);
+        Assert.Contains("id=\"panel-a-", html, StringComparison.Ordinal);
         Assert.Throws<ArgumentException>(() => chart.ToSvg(" "));
     }
 
     [Fact]
-    public void ImportedIconArtworkIds_AreScopedWithTheirReferences() {
+    public void ImportedIconArtworkIsIsolatedFromTheHostIdNamespace() {
         // The SVG pack importer rewrites artwork ids to cfxi-<pack>-<icon>-<id>; this body has that shape.
         var artwork = TopologyIconArtwork.InlineSvg("<defs><linearGradient id=\"cfxi-vendor-service-fill\"><stop offset=\"0\" stop-color=\"#2a78d6\"/></linearGradient></defs><rect width=\"24\" height=\"24\" fill=\"url(#cfxi-vendor-service-fill)\"/>", "0 0 24 24");
         var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor")
@@ -65,20 +67,19 @@ public sealed class TopologySvgIdScopeTests {
         var options = new TopologyRenderOptions { IconCatalog = catalog };
 
         var plain = chart.ToSvg(options);
-        Assert.Contains("id=\"cfxi-vendor-service-fill\"", plain, StringComparison.Ordinal);
         var scoped = chart.ToSvg("panel-a", options);
-        Assert.Contains("id=\"panel-a-cfxi-vendor-service-fill\"", scoped, StringComparison.Ordinal);
-        Assert.Contains("url(#panel-a-cfxi-vendor-service-fill)", scoped, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"cfxi-", scoped, StringComparison.Ordinal);
-        Assert.DoesNotContain("#cfxi-", scoped, StringComparison.Ordinal);
+        var plainImage = XDocument.Parse(plain).Descendants().Single(element => element.Name.LocalName == "image");
+        var scopedImage = XDocument.Parse(scoped).Descendants().Single(element => element.Name.LocalName == "image");
+        Assert.Equal((string?)plainImage.Attribute("href"), (string?)scopedImage.Attribute("href"));
+        Assert.StartsWith("data:image/png;base64,", (string?)scopedImage.Attribute("href"), StringComparison.Ordinal);
+        Assert.DoesNotContain("cfxi-vendor-service-fill", scoped, StringComparison.Ordinal);
         Assert.All(References(scoped), reference => Assert.Contains(reference, Ids(scoped)));
     }
 
     [Fact]
     public void MotionPathsAndGeographicCallouts_AreScoped() {
         var motion = Chart().ToSvg("panel-a", new TopologyRenderOptions { Motion = TopologyMotionOptions.RoutePulseForEdges("a", "b") });
-        Assert.Contains("id=\"panel-a-sites-motion-tour-", motion, StringComparison.Ordinal);
-        Assert.Contains("href=\"#panel-a-sites-motion-tour-", motion, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-role=\"topology-motion-marker\"", motion, StringComparison.Ordinal);
         AssertScopedAndResolved(motion, "panel-a-");
 
         var map = TopologyChart.Create()
@@ -90,7 +91,8 @@ public sealed class TopologySvgIdScopeTests {
             .AddNode("emea-hub", "EMEA Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "EMEA", width: 56, height: 44, symbol: "H")
             .WithNodeCoordinates("emea-hub", 0.1276, 51.5072);
         var callouts = map.ToSvg("panel-b", new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGeographicCallouts = true });
-        Assert.Contains("id=\"panel-b-map-geo-callout-EMEA\"", callouts, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-role=\"topology-geographic-callout\"", callouts, StringComparison.Ordinal);
+        Assert.Contains("data-group-id=\"EMEA\"", callouts, StringComparison.Ordinal);
         AssertScopedAndResolved(callouts, "panel-b-");
     }
 
@@ -105,8 +107,7 @@ public sealed class TopologySvgIdScopeTests {
 
         Assert.Contains("data-node-id=\"cfxi-x\"", svg, StringComparison.Ordinal);
         Assert.Contains("See #cfxi-notes", svg, StringComparison.Ordinal);
-        Assert.Contains("id=\"cfxi-cfxi-vendor-service-fill\"", svg, StringComparison.Ordinal);
-        Assert.DoesNotContain("cfxi-cfxi-cfxi-", svg, StringComparison.Ordinal);
+        Assert.DoesNotContain("cfxi-vendor-service-fill", svg, StringComparison.Ordinal);
         AssertScopedAndResolved(svg, "cfxi-");
     }
 

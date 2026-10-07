@@ -63,7 +63,7 @@ public sealed class PreparedHierarchySankeyTests {
         Assert.Equal(new[] { "1", "0", "3" }, tiles.Select(e => (string?)e.Attribute("data-cfx-point")).ToArray());
         var small = prepared.Regions.Single(r => r.Id == "series-0-point-0"); var large = prepared.Regions.Single(r => r.Id == "series-0-point-1");
         Assert.InRange(large.Bounds.Width * large.Bounds.Height / (small.Bounds.Width * small.Bounds.Height), 2.8, 3.2);
-        var zero = Assert.Single(prepared.Regions.Where(r => r.Role == "treemap-zero-value")); Assert.Equal(0, zero.Bounds.Width); Assert.Equal("Zero: 0", zero.Label);
+        var zero = Assert.Single(prepared.Regions, r => r.Role == "treemap-zero-value"); Assert.Equal(0, zero.Bounds.Width); Assert.Equal("Zero: 0", zero.Label);
     }
 
     [Theory]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
@@ -65,9 +66,11 @@ internal static partial class VisualMatrixCompiler {
     }
 
     private static void CellLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
-        ChartRect cellBounds, ChartRect viewport, ChartColor fill, ChartHeatmapCell? cell, string id) {
-        var text = cell?.Text ?? VisualStateSceneTools.Value(chart, series, index, series.Points[index].Y);
-        var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ChartColorMath.AccessibleTextOnBackground(fill));
+        ChartRect cellBounds, ChartRect viewport, ChartColorBlend ink, ChartHeatmapCell? cell, string id) {
+        var text = VisualStateSceneTools.Value(chart, series, index, series.Points[index].Y);
+        if (cell.HasValue && (index >= series.PointLabels.Count || series.PointLabels[index] == null)) text = cell.Value.Text ?? text;
+        var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink.Color);
+        style.FontSize = Math.Max(8, style.FontSize);
         var inner = new ChartRect(cellBounds.Left + 3, cellBounds.Top + 3, Math.Max(0, cellBounds.Width - 6), Math.Max(0, cellBounds.Height - 6));
         var measured = builder.MeasureText(text, style);
         var fits = cell.HasValue ? ChartHeatmapSurface.CategoricalLabelFits(cellBounds.Width, cellBounds.Height, measured.Width, measured.Height)
@@ -78,7 +81,8 @@ internal static partial class VisualMatrixCompiler {
         if (!visible || mode == ChartHeatmapValueTextMode.Hidden) return;
         var placement = cell.HasValue ? ChartDataLabelPlacement.Center : series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         if (placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside) {
-            VisualStateSceneTools.Text(builder, text, inner, style, "data-label", id + "-label", TextAlignment.Center, mode == ChartHeatmapValueTextMode.Always);
+            VisualStateSceneTools.Text(builder, text, inner, style, "data-label", id + "-label", TextAlignment.Center, mode == ChartHeatmapValueTextMode.Always,
+                VisualStateSceneTools.DataPaint(chart, series, index, style, ink.Paint));
             return;
         }
         var gap = context.Theme.Spacing / 2;
@@ -91,7 +95,8 @@ internal static partial class VisualMatrixCompiler {
         if (placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right or ChartDataLabelPlacement.Outside)
             VisualStateSceneTools.Connector(builder, chart.Options, new ChartPoint(cellBounds.Left + cellBounds.Width / 2, cellBounds.Top + cellBounds.Height / 2),
                 new ChartPoint(left + width / 2, top + height / 2), context.Theme.Resolve(context.ThemeMode).MutedForeground);
-        VisualStateSceneTools.Text(builder, text, new ChartRect(left, top, width, height), style, "data-label", id + "-label", TextAlignment.Center, true);
+        VisualStateSceneTools.Text(builder, text, new ChartRect(left, top, width, height), style, "data-label", id + "-label", TextAlignment.Center, true,
+            VisualStateSceneTools.DataPaint(chart, series, index, style, ink.Paint));
     }
 
     private static void NumericScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds, double min, double max, ChartColor? high) {
@@ -102,11 +107,11 @@ internal static partial class VisualMatrixCompiler {
         var floor = chart.Options.HeatmapRelativeScale ? Math.Min(0, min) : min;
         for (var index = 0; index < 5; index++) {
             var value = ChartHeatmapSurface.InterpolateObservedRange(floor, max, index / 4d);
-            var fill = ChartHeatmapSurface.CellColor(chart, colors, high, value, min, max);
+            var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, value, min, max); var fill = blend.Color;
             var box = new ChartRect(left + index * width, bounds.Top, Math.Max(0, width - 2), swatch);
             var label = ChartNumericFormatter.FormatValue(chart.Options, value);
             using (VisualStateSceneTools.Mark(builder, "matrix-scale-" + index, "heatmap-scale-step", box, label,
-                new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value) })) builder.Rect(box, fill, radius: 1);
+                new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value) })) builder.Rect(box, fill, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
         }
         VisualStateSceneTools.Text(builder, chart.Options.Labels.Less, new ChartRect(bounds.Left, bounds.Top + swatch, bounds.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
         VisualStateSceneTools.Text(builder, chart.Options.Labels.More, new ChartRect(bounds.Left + bounds.Width / 2, bounds.Top + swatch, bounds.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);

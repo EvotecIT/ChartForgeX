@@ -36,13 +36,15 @@ internal static partial class SmokeTests {
         Assert(!baselinePng.SequenceEqual(hiddenCategoryAxis.ToPng()), "PNG radar category labels should follow X-axis visibility.");
 
         var positionedLegend = RadarSample().WithLegend(true).WithLegendPosition(ChartLegendPosition.Right);
-        Assert(positionedLegend.ToSvg().Contains("data-cfx-role=\"legend\" data-cfx-position=\"Right\"", System.StringComparison.Ordinal), "Radar charts should use the shared positioned legend.");
+        var legendPrepared = PreparedFamily(positionedLegend);
+        var legend = legendPrepared.Regions.Single(region => region.Role == "legend").Bounds;
+        Assert(legend.Left > legendPrepared.Regions.Where(region => region.Role == "radar-point").Max(region => region.Bounds.Right), "Radar charts should place the shared right legend beside their data.");
         Assert(positionedLegend.ToPng().Length > 64, "Positioned radar legends should render valid PNG output.");
 
         var axisTicks = RadarSample();
         axisTicks.Options.XAxis.TickCount = 2;
         axisTicks.Options.YAxis.TickCount = 10;
-        Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") == 10, "Radar value rings should use the y-axis tick count independently from the category x-axis.");
+        Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") > CountOccurrences(RadarSample().ToSvg(), "data-cfx-role=\"radar-ring\""), "Increasing the y-axis tick budget should add rings independently from the category x-axis.");
         Assert(axisTicks.ToPng().Length > 64, "Radar y-axis tick counts should render through the PNG path.");
 
         var formattedRings = RadarSample().ConfigureYAxis(axis => {

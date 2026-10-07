@@ -62,6 +62,9 @@ public sealed class LabelPlacementRequest {
     public bool HasLeaderLine { get; set; }
     /// <summary>Gets or sets the associated mark identity. A label fully contained in that mark is intentional; all other intersections are rejected.</summary>
     public string? AssociatedMarkId { get; set; }
+
+    // Prepared compilers resolve ink when they choose a mark-relative placement, before fitting.
+    internal Themes.SvgPaint? Paint { get; set; }
     /// <summary>Gets or sets optional bounds restricting this label, in addition to the scene bounds.</summary>
     public ChartRect? Bounds { get; set; }
     /// <summary>Gets or sets padding around text, such as its halo or badge inset, in logical pixels.</summary>

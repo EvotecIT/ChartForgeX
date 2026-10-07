@@ -22,7 +22,8 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-shape=\"Star\"", StringComparison.Ordinal), "Pictorial charts should expose the selected built-in shape.");
         Assert(svg.Contains("data-cfx-columns=\"12\"", StringComparison.Ordinal), "Pictorial charts should expose the configured symbol count.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"pictorial-symbol\"") == 36, "Pictorial charts should render a fixed symbol row per item.");
-        Assert(svg.Contains("data-cfx-role=\"pictorial-value\" data-cfx-point=\"0\" data-cfx-label=\"New users\" data-cfx-value=\"84\"", StringComparison.Ordinal), "Pictorial value labels should expose data metadata.");
+        var source = FamilyGroups(PreparedFamily(chart), "pictorial-item")[0];
+        Assert(source.Metadata["data-cfx-point"] == "0" && source.Metadata["data-cfx-label"] == "New users" && source.Metadata["data-cfx-value"] == "84", "Pictorial rows should retain their label, source identity and raw value.");
         Assert(svg.Contains("data-cfx-role=\"pictorial-label\"", StringComparison.Ordinal), "Pictorial charts should render item labels.");
         Assert(chart.ToPng().Length > 64, "Pictorial charts should render PNG output.");
         var fiveStar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -159,7 +160,8 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-bar-thickness-ratio=\"0.34\"", StringComparison.Ordinal), "Progress-bar charts should expose thickness metadata.");
         Assert(svg.Contains("data-cfx-track-opacity=\"0.18\"", StringComparison.Ordinal), "Progress-bar charts should expose track-opacity metadata.");
         Assert(svg.Contains("data-cfx-role=\"progress-track\"", StringComparison.Ordinal), "Progress-bar charts should render track rows.");
-        Assert(svg.Contains("data-cfx-role=\"progress-fill\" data-cfx-point=\"0\" data-cfx-value=\"40\" data-cfx-ratio=\"0.4\"", StringComparison.Ordinal), "Progress-bar fills should expose value and ratio metadata.");
+        var source = FamilyGroups(PreparedFamily(chart), "progress-row")[0];
+        Assert(source.Metadata["data-cfx-point"] == "0" && source.Metadata["data-cfx-value"] == "40" && source.Metadata["data-cfx-ratio"] == "0.4", "Progress-bar rows should retain value and ratio metadata.");
         Assert(svg.Contains("data-cfx-role=\"progress-handle\"", StringComparison.Ordinal), "Progress-bar charts should render slider handles.");
         Assert(svg.Contains("40%", StringComparison.Ordinal) && svg.Contains("60%", StringComparison.Ordinal), "Progress-bar charts should render formatted value labels.");
         Assert(chart.ToPng().Length > 64, "Progress-bar charts should render PNG output.");

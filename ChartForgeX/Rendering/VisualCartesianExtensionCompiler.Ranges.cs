@@ -32,7 +32,7 @@ internal static partial class VisualCartesianCompiler {
             var polygon = new ChartPath(commands); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
             builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true);
-            DrawPattern(builder, polygon, series.FillPattern, fill, colors.Surface, area ? "range-area-pattern" : "range-band-pattern");
+            DrawPattern(builder, polygon, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), area ? "range-area-pattern" : "range-band-pattern");
             var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : area ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, context.Theme.SeriesStrokeWidth) : ChartVisualPrimitives.RangeBandBoundaryStrokeWidth;
             DrawLayeredPath(chart, builder, highPath, area ? color : ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeBandBoundaryOpacity), stroke, "range-upper");
             DrawLayeredPath(chart, builder, lowPath, ChartColorMath.WithOpacity(color, area ? ChartVisualPrimitives.RangeAreaLowerStrokeOpacity : ChartVisualPrimitives.RangeBandBoundaryOpacity), stroke, "range-lower");
@@ -53,8 +53,8 @@ internal static partial class VisualCartesianCompiler {
                     var r = series.MarkerRadius ?? context.Theme.MarkerRadius; var pointColor = PointColor(series, index, item, colors);
                     builder.Ellipse(upper[item].X, upper[item].Y, r, r, pointColor, role: "range-marker");
                     builder.Ellipse(lower[item].X, lower[item].Y, r, r, pointColor, role: "range-marker");
-                    DrawPattern(builder, EllipsePath(upper[item].X, upper[item].Y, r, r), ObservationPattern(series, item), pointColor, colors.Surface, "range-marker-pattern");
-                    DrawPattern(builder, EllipsePath(lower[item].X, lower[item].Y, r, r), ObservationPattern(series, item), pointColor, colors.Surface, "range-marker-pattern");
+                    DrawPattern(builder, EllipsePath(upper[item].X, upper[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
+                    DrawPattern(builder, EllipsePath(lower[item].X, lower[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
                 }
             }
             AddLabel(chart, context, series, index, item, upper[item], bounds, label, labels, high.Y);

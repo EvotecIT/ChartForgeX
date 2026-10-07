@@ -39,9 +39,11 @@ internal static partial class VisualScalarProgressCompiler {
                 ["data-cfx-point"] = N(index), ["data-cfx-label"] = labels[index], ["data-cfx-value"] = N(raw), ["data-cfx-ratio"] = N(ratio), ["data-cfx-full-label"] = values[index]
             })) {
                 Text(chart, context, builder, series, -1, labels[index], new ChartRect(plot.Left, bounds.Top, Math.Max(0, labelWidth - gap / 2), rowHeight), "progress-label", Id(0, index) + "-label", colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
-                builder.Rect(new ChartRect(left, y - thickness / 2, width, thickness), ChartColorMath.WithOpacity(colors.Border, chart.Options.ProgressTrackOpacity), radius: thickness / 2, role: "progress-track");
-                builder.Rect(new ChartRect(left, y - thickness / 2, width * ratio, thickness), color, radius: Math.Min(thickness / 2, width * ratio / 2), role: "progress-fill");
-                if (chart.Options.ShowProgressHandles) builder.Ellipse(left + width * ratio, y, handleRadius, handleRadius, colors.Surface, color, handleStroke, "progress-handle");
+                builder.Rect(new ChartRect(left, y - thickness / 2, width, thickness), ChartColorMath.WithOpacity(colors.Border, chart.Options.ProgressTrackOpacity), radius: thickness / 2, role: "progress-track",
+                    paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Border, chart.Options.ProgressTrackOpacity), chart.Options.ProgressTrackOpacity)));
+                builder.Rect(new ChartRect(left, y - thickness / 2, width * ratio, thickness), color, radius: Math.Min(thickness / 2, width * ratio / 2), role: "progress-fill", paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                if (chart.Options.ShowProgressHandles) builder.Ellipse(left + width * ratio, y, handleRadius, handleRadius, colors.Surface, color, handleStroke, "progress-handle",
+                    paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), VisualChartPaint.Series(series, color, index)));
                 if (chart.Options.ShowProgressValues) Text(chart, context, builder, series, index, values[index],
                     new ChartRect(left + width + handleClearance, bounds.Top, valueWidth, rowHeight), "progress-value", Id(0, index) + "-value", colors.Foreground, context.Theme.Typography.DataLabelSize, 700);
             }

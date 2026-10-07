@@ -45,8 +45,9 @@ internal static partial class VisualMapCompiler {
                 var swatchWidth = Math.Min(row, area.Width * .2);
                 for (var index = 0; index < 32; index++) {
                     var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, 1 - index / 31d);
+                    var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
                     builder.Rect(new ChartRect(area.Left, top + height * index / 32, swatchWidth, height / 32),
-                        ChartHeatmapSurface.MapColor(chart, colors, null, High(chart.Series[0], colors), value, min, max), role: "map-scale-step");
+                        blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
                 }
                 var textWidth = Math.Max(0, area.Width - swatchWidth - gap);
                 var midpoint = ChartHeatmapSurface.MapRatio(chart, ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), min, max);
@@ -58,9 +59,11 @@ internal static partial class VisualMapCompiler {
             } else {
                 var swatchTop = Math.Min(area.Bottom, area.Top + row); var swatchHeight = Math.Min(row * .7, Math.Max(0, area.Bottom - swatchTop));
                 var swatchWidth = area.Width / steps.Length;
-                for (var index = 0; index < steps.Length; index++) using (builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(steps[index]) }))
+                for (var index = 0; index < steps.Length; index++) using (builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(steps[index]) })) {
+                    var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), steps[index], min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
                     builder.Rect(new ChartRect(area.Left + index * swatchWidth, swatchTop, swatchWidth, swatchHeight),
-                        ChartHeatmapSurface.MapColor(chart, colors, null, High(chart.Series[0], colors), steps[index], min, max), role: "map-scale-step");
+                        blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                }
                 VisualRadialPrimitives.Text(builder, layout.Texts[2], new ChartRect(area.Left, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-low");
                 VisualRadialPrimitives.Text(builder, layout.Texts[0], new ChartRect(area.Left + area.Width / 2, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-high");
                 var next = swatchTop + swatchHeight;
@@ -77,7 +80,8 @@ internal static partial class VisualMapCompiler {
 
     private static void MissingScale(Chart chart, VisualSceneBuilder builder, VisualThemeColors colors, ChartRect area, TextStyle style, double size) {
         var swatch = Math.Min(size * .7, Math.Min(area.Width, area.Height));
-        builder.Rect(new ChartRect(area.Left, area.Top + (area.Height - swatch) / 2, swatch, swatch), ChartHeatmapSurface.MapNoDataColor(chart, colors), role: "map-scale-no-data");
+        var blend = ChartHeatmapSurface.MapNoDataBlend(chart, colors);
+        builder.Rect(new ChartRect(area.Left, area.Top + (area.Height - swatch) / 2, swatch, swatch), blend.Color, role: "map-scale-no-data", paint: VisualChartPaint.Fill(blend.Paint));
         VisualRadialPrimitives.Text(builder, chart.Options.Labels.NoData, new ChartRect(area.Left + swatch, area.Top, Math.Max(0, area.Width - swatch), area.Height), style, "map-scale-no-data-label", "map-scale-no-data-label");
     }
 

@@ -44,7 +44,7 @@ internal static partial class TopologyRenderPrimitives {
             var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 0;
             var height = EdgeLabelHeight(lineCount, options);
-            if (PlacesLabelOnRoute(chart, edge)) {
+            if (PlacesLabelOnRoute(chart, options, edge)) {
                 routeObstacles ??= RouteLabelObstacles(chart, options);
                 if (PlaceLabelOnRoute(chart, options, edge, points, width, height, routeObstacles, placed, edgeSegments) is { } onRoute) {
                     placed.Add(LabelBox.FromCenter(onRoute.X, onRoute.Y, width, height));

@@ -82,7 +82,7 @@ public sealed class PreparedTopologyTests {
         string svg = report.Pages[0].ToSvg();
         icon.Artwork!.SvgBody = "<circle cx='12' cy='12' r='4'/>";
         catalog.RemovePack("vendor");
-        Assert.Contains("M0 0h24v24H0z", svg);
+        Assert.Contains("data:image/png;base64,", svg);
         Assert.Equal(svg, report.Pages[0].ToSvg());
         Assert.NotEmpty(report.Pages[0].ToPng());
         Assert.Throws<TopologyValidationException>(() => chart.PrepareReport(new TopologyReportOptions { RequireResolvedIcons = true }));
@@ -249,6 +249,7 @@ public sealed class PreparedTopologyTests {
         for (int i = 0; i < 1025; i++) chart.Nodes[0].Metrics.Add("metric" + i, "1");
         var report = chart.PrepareReport();
         Assert.Contains("1 objects", report.ToInteractiveHtmlPage());
+        Assert.Throws<ArgumentOutOfRangeException>(() => report.Pages[0].ToInterchangeEnvelope());
     }
 
     [Fact]

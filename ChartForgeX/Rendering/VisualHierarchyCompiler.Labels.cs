@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
@@ -35,7 +36,9 @@ internal static partial class VisualHierarchyCompiler {
         string displayed = string.Join("\n", fitted);
         style.Alignment = center ? TextAlignment.Center : TextAlignment.Left;
         double y = center ? bounds.Y + (bounds.Height - builder.MeasureText(displayed, style).Height) / 2 : bounds.Y + inset;
-        builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role);
+        var paint = VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex) ? VisualChartPaint.Text(style)
+            : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(series, pointIndex));
+        builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
     }
 
     /// <summary>Validates mutable tuple input before recursive canonical hierarchy helpers can observe it.</summary>

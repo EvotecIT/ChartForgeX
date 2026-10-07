@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -15,10 +16,12 @@ internal static partial class SmokeTests {
             });
         chart.Series[0].UseSecondaryYAxis();
 
-        var svg = chart.ToSvg();
-
-        Assert(!svg.Contains("data-cfx-role=\"secondary-y-axis-tick\" data-cfx-value=\"1200\"", StringComparison.Ordinal), "Secondary-axis bubble ticks should not include bubble sizes.");
-        Assert(svg.Contains("data-cfx-role=\"secondary-y-axis-tick\" data-cfx-value=\"40\"", StringComparison.Ordinal) || svg.Contains("data-cfx-role=\"secondary-y-axis-tick\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Secondary-axis bubble ticks should track bubble y values.");
+        var range = ChartRange.FromSecondaryYAxis(chart, ChartRange.FromChart(chart));
+        Assert(range.MaxY >= 34 && range.MaxY < 100, "Secondary-axis bounds must reflect observed Y, independently of bubble sizes.");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var ticks = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-secondary-y-label").ToArray();
+        Assert(ticks.Length > 1, "Secondary-axis bubble charts must draw a readable value scale.");
+        Assert(ticks.All(tick => double.Parse(tick.Text.Lines.Single().Text, System.Globalization.CultureInfo.InvariantCulture) < 100), "Secondary-axis tick labels must not include encoded bubble sizes.");
         Assert(chart.ToPng().Length > 64, "Secondary-axis bubble charts should render PNG output.");
     }
 }

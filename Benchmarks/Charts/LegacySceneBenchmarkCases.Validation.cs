@@ -5,8 +5,19 @@ using System.Text;
 using System.Xml.Linq;
 
 public static partial class LegacySceneBenchmarkCases {
+    /// <summary>Hashes complete output outside timing, including the direct RGBA pixel buffer.</summary>
+    public static string OutputDigest(object result) {
+        var bytes = result switch {
+            string svg => Encoding.UTF8.GetBytes(svg), byte[] png => png,
+            ChartForgeX.Raster.RgbaImage image => image.Pixels,
+            _ => throw new InvalidOperationException("Unknown benchmark output for determinism proof.")
+        };
+        return Convert.ToHexString(SHA256.HashData(bytes));
+    }
+
     /// <summary>Records input values, breaks, series kinds and bar mode independently of renderer output.</summary>
     public static string SourceDigest(string fixture) {
+        if (Phase3Fixtures.Contains(fixture)) return Phase3SourceDigest(fixture);
         var chart = (Chart)Create(fixture);
         var source = new StringBuilder(chart.Options.BarMode.ToString());
         foreach (var series in chart.Series) {

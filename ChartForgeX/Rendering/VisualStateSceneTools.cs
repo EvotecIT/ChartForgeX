@@ -24,6 +24,11 @@ internal static class VisualStateSceneTools {
 
     internal static ChartColor SeriesColor(ChartSeries series, int index, VisualThemeColors colors) => ChartSeriesColours.Resolve(series, index, colors);
 
+    internal static SvgPaint DataPaint(Chart chart, ChartSeries series, int index, TextStyle style, SvgPaint? defaultPaint = null) =>
+        chart.Options.DataLabelStyle.Color.HasValue || series.DataLabelStyle.Color.HasValue
+            || index >= 0 && index < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[index]?.Color != null
+            ? VisualChartPaint.Text(style) : defaultPaint ?? SvgPaint.Literal(style.Color);
+
     internal static string Value(Chart chart, ChartSeries series, int index, double value) =>
         index >= 0 && index < series.PointLabels.Count && series.PointLabels[index] != null
             ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);
@@ -47,13 +52,17 @@ internal static class VisualStateSceneTools {
     }
 
     internal static void StateRect(VisualSceneBuilder builder, ChartRect bounds, ChartStateMark mark, double radius, string role) {
-        builder.Rect(bounds, ChartColorMath.WithOpacity(mark.Color, mark.FillOpacity), radius: radius, role: role);
+        var fill = ChartColorMath.WithOpacity(mark.Color, mark.FillOpacity);
+        builder.Rect(bounds, fill, radius: radius, role: role,
+            paint: VisualChartPaint.Fill(SvgPaint.Of(mark.Color, SvgColorRole.Status).WithOpacity(fill, mark.FillOpacity)));
         // The same clipped numeric contour drives patterns and outline dashes in both backends.
         var path = RoundedRect(bounds, radius);
         if (mark.Outlined) builder.Path(path, stroke: ChartColorMath.WithOpacity(mark.Color, mark.OutlineOpacity), strokeWidth: ChartStateMark.OutlineWidth,
-            role: role + "-outline", close: true, dash: new[] { ChartStateMark.OutlineDash, ChartStateMark.OutlineGap });
+            role: role + "-outline", close: true, dash: new[] { ChartStateMark.OutlineDash, ChartStateMark.OutlineGap },
+            paint: VisualChartPaint.Stroke(SvgPaint.Of(mark.Color, SvgColorRole.Status).WithOpacity(ChartColorMath.WithOpacity(mark.Color, mark.OutlineOpacity), mark.OutlineOpacity)));
         builder.Pattern(path, mark.Lines, ChartColorMath.WithOpacity(mark.LineColor, ChartStateCategoryLegend.HatchOpacity),
-            ChartStateCategoryLegend.HatchSpacing, ChartStateMark.PatternLineWidth, role + "-hatch");
+            ChartStateCategoryLegend.HatchSpacing, ChartStateMark.PatternLineWidth, role + "-hatch",
+            SvgPaint.Of(mark.LineColor, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(mark.LineColor, ChartStateCategoryLegend.HatchOpacity), ChartStateCategoryLegend.HatchOpacity));
     }
 
     internal static Dictionary<string, string> StateMetadata(Chart chart, ChartStateCategory state) {
@@ -61,7 +70,8 @@ internal static class VisualStateSceneTools {
     }
 
     internal static Dictionary<string, string> StateMetadata(bool pinStateColors, ChartStateCategory state) {
-        var result = new Dictionary<string, string> { ["data-cfx-status"] = state.Key, ["data-cfx-state-label"] = state.Label };
+        var result = new Dictionary<string, string> { ["data-cfx-status"] = state.Key, ["data-cfx-state-label"] = state.Label,
+            ["data-cfx-meta-state"] = state.Label };
         if (state.Pattern != ChartStatePattern.Solid) result["data-cfx-pattern"] = state.Pattern == ChartStatePattern.CrossHatched ? "cross-hatched" : state.Pattern.ToString().ToLowerInvariant();
         if (state.Emphasis == ChartStateEmphasis.Quiet) result["data-cfx-emphasis"] = "quiet";
         if (pinStateColors) result["data-cfx-pin-state-colors"] = "true";
@@ -84,7 +94,7 @@ internal static class VisualStateSceneTools {
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - builder.MeasureText(fit, style).Height) / 2 + builder.TextAscent(style);
-        using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint);
+        using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint ?? VisualChartPaint.Text(style));
     }
 
     internal static ChartPath RoundedRect(ChartRect bounds, double radius) {
@@ -103,8 +113,9 @@ internal static class VisualStateSceneTools {
             }
             commands.Add(ChartPathCommand.LineTo(end.X, end.Y));
         }
-        builder.Path(new ChartPath(commands), stroke: ChartColorMath.WithOpacity(options.DataLabelConnectorColor ?? fallback, options.DataLabelConnectorOpacity),
-            strokeWidth: options.DataLabelConnectorStrokeWidth, role: "data-label-connector");
+        var source = options.DataLabelConnectorColor ?? fallback; var color = ChartColorMath.WithOpacity(source, options.DataLabelConnectorOpacity);
+        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: options.DataLabelConnectorStrokeWidth, role: "data-label-connector",
+            paint: VisualChartPaint.Stroke(SvgPaint.Of(source, options.DataLabelConnectorColor.HasValue ? SvgColorRole.Series : SvgColorRole.Text).WithOpacity(color, options.DataLabelConnectorOpacity)));
     }
 
     private sealed class MarkScope : IDisposable {

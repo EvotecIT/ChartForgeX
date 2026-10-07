@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Tests;
@@ -26,13 +27,17 @@ internal static partial class SmokeTests {
             .AddBar("North America adoption is intentionally long", Points(28, 41, 64, 83))
             .AddLine("Europe expansion is also intentionally long", Points(18, 35, 52, 74));
         var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"chart-title\"", StringComparison.Ordinal) && svg.Contains("fill=\"#BE123C\"", StringComparison.Ordinal), "SVG titles should honor text style colors.");
+        var prepared = PrepareForTypography(chart);
+        AssertNativeStyledText(chart, "frame-heading", "STYLED AUDIENCE LIFT", 24 * .65, "#BE123C", "Comic Sans MS, cursive", true);
         Assert(svg.Contains("font-family=\"Comic Sans MS, cursive\"", StringComparison.Ordinal), "SVG text styles should support role-specific font families.");
         Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "SVG text styles should support italic text.");
-        Assert(svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "SVG text styles should support underlined text.");
-        Assert(svg.Contains("text-decoration=\"underline line-through\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"wavy\"", StringComparison.Ordinal), "SVG text styles should preserve combined underline and strikethrough decoration semantics.");
-        Assert(svg.Contains("text-decoration-style=\"double\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"dotted\"", StringComparison.Ordinal), "SVG text roles should preserve double and dotted decoration patterns.");
-        Assert(svg.Contains("baseline-shift=\"super\"", StringComparison.Ordinal) && svg.Contains(">STYLED AUDIENCE LIFT</text>", StringComparison.Ordinal), "SVG text styles should preserve script placement and transformed casing.");
+        Assert(prepared.Scene.Nodes.OfType<VisualScenePath>().Any(node => node.Role == "text-decoration"),
+            "Wavy underline and strike decorations should be materialized as shared path geometry.");
+        Assert(prepared.Scene.Nodes.OfType<VisualSceneLine>().Any(node => node.Role == "text-decoration" && node.Dash != null),
+            "Dotted decorations should be materialized as shared dashed line geometry.");
+        Assert(prepared.Scene.Nodes.OfType<VisualSceneText>().Any(node => node.Text.Style.UnderlineStyle == TextDecorationStyle.Double)
+            && prepared.Scene.Nodes.OfType<VisualSceneText>().Any(node => node.Text.Style.UnderlineStyle == TextDecorationStyle.Dotted),
+            "Resolved text should retain distinct decoration styles for the geometry producer.");
         Assert(svg.Contains(">quarter</text>", StringComparison.Ordinal) && svg.Contains(">FIRST QUARTER</text>", StringComparison.Ordinal) && svg.Contains("fill=\"#2563EB\"", StringComparison.Ordinal), "SVG axis titles and tick labels should apply role-specific casing and colors before fitting.");
         Assert(svg.Contains("font-weight=\"650\"", StringComparison.Ordinal), "SVG axis tick and category labels should honor numeric text weights.");
         Assert(svg.Contains("data-cfx-role=\"legend-label\"", StringComparison.Ordinal) && svg.Contains("fill=\"#15803D\"", StringComparison.Ordinal), "SVG legends should honor role-specific text colors.");
@@ -57,9 +62,9 @@ internal static partial class SmokeTests {
         Assert(!regularVerticalTitle.SequenceEqual(decoratedVerticalTitle), "PNG rotated axis titles should preserve casing, baseline shifts, underline variants, and strikethrough during rotation.");
         var bulletSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithFontSize(15).WithTextCase(TextCaseTransform.Uppercase).WithUnderline(TextDecorationStyle.Dashed).WithStrikethrough(TextDecorationStyle.Dashed).WithSubscript()).AddBullet("control posture", 82, 90).ToSvg();
         Assert(bulletSvg.Contains("CONTROL POSTURE", StringComparison.Ordinal), "Specialized SVG chart paths should apply casing before fitting.");
-        Assert(bulletSvg.Contains("baseline-shift=\"sub\"", StringComparison.Ordinal), "Specialized SVG chart paths should preserve script placement.");
         Assert(bulletSvg.Contains("font-size=\"9.75\"", StringComparison.Ordinal), "Specialized SVG chart paths should apply script scaling exactly once.");
-        Assert(bulletSvg.Contains("text-decoration-style=\"dashed\"", StringComparison.Ordinal), "Specialized SVG chart paths should preserve decoration variants.");
+        Assert(System.Xml.Linq.XDocument.Parse(bulletSvg).Descendants().Any(element => element.Attribute("stroke-dasharray") != null
+            && (string?)element.Attribute("data-cfx-role") == "text-decoration"), "Specialized SVG chart paths should preserve native dashed decoration geometry.");
         AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitleStyle(null!), "Text style callbacks should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");

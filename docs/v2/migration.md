@@ -1,6 +1,6 @@
 # ChartForgeX v2 consumer migration
 
-This guide records the breaking-release target and the observed consumer contracts. Phase 1 proves a small direct-scene path; it does not move the optional packages or authorize upgrading consumers. The [capability ledger](consumer-capabilities.csv) maps the inspected calls to their destination, migration recipe and acceptance fixture. A row marked `planned` remains open until its executable fixture and final API example exist. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
+This guide records the breaking-release target and the observed consumer contracts. Charts, grids and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps the inspected calls to their destination, migration recipe and acceptance fixture. A row marked `planned` remains open until its executable fixture and final API example exist. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
 
 Consumer repositories remain unchanged. Revalidate their intended branch before migrating: a primary checkout, cached remote source, local project reference and installed NuGet package are different evidence boundaries.
 
@@ -27,6 +27,15 @@ Visuals and Stories are peers. Stories consumes common renderable/static inputs;
 
 Do not move genuine diagrams solely because their current names end in `Block`. Wardley, Venn, packet, git graph, fishbone and block-layout diagrams remain core. Plain factual table layout belongs to Visuals; the neutral tabular semantic/interchange contract remains available to core adapters and markup parsers.
 
+## Chart export and presentation changes
+
+`chart.ToSvg()`, `chart.ToPng()` and `chart.ToRgbaImage()` resolve the model's size, padding, theme values, visible frame, font request and raster density into the common rendering contracts. HTML hosts and image composition use the same prepared chart output. `SvgChartRenderer`, `PngChartRenderer`, `SvgChartGridRenderer` and `PngChartGridRenderer` are removed; use the model convenience methods or `Prepare(context)`. There is no separate Graphite family renderer.
+
+Use `Prepare(context)` when a host supplies an exact viewport, paired theme, frame and font. The context owns those presentation values; model data, axis configuration and explicit text overrides remain inputs to preparation. `VisualLayoutOptions` accepts uniform padding or `ChartPadding` with independent edges. `VisualFrame` carries measured legend row and height budgets, and omitted legend entries retain their full semantic descriptions.
+
+`VisualTheme.Graphite()` and the mutable Graphite theme factories share the canonical paired color document. Custom model themes are copied into a detached request, so editing a theme after preparation cannot change the retained output. Explicit SVG color mappings retain paint roles; equal RGB values do not merge series, status, surface and text roles. Raster output uses the resolved static fallback colors.
+
+Raster scale, supersampling and optional hinting are export settings in `VisualRenderOptions`; changing them does not repeat layout or change logical dimensions. Text decoration and superscript/subscript positioning are prepared numeric geometry shared by SVG and PNG, so old renderer-specific CSS selectors are not a stable integration contract.
 ## Shared static handoff
 
 The target adapter flow is typed model → common renderable → immutable prepared output → SVG/PNG or semantic artifact. Compile once when producing both backends. Keep IDs, alternative text, semantic regions and family data with the artifact; the display scene and its SVG cannot replace native topology/flow/sequence data.
@@ -45,7 +54,7 @@ Phase 1 must supply an executable example for each of these adapter-shaped bound
 
 These are Phase 1 owner fixtures. Running actual Word/Excel/PowerPoint/PDF/Visio consumers, packaging PowerShell modules and rendering full wallpapers are later qualification gates. Cross-family renderer consistency remains unproven until those families migrate and their outputs are inspected.
 
-The legacy handoff `chart.ToVisualArtifact("cpu-load")` stores the mutable chart and renders through the legacy exporter on demand. The prepared route stores completed layout: call `chart.Prepare(context)`, then `prepared.ToArtifact(...)`, and retain the existing portable SVG/JSON handoff. Both routes remain available during Phase 1. This example is also exercised by `PreparedVisualArtifactTests.StaticArtifactUsesPreparedOutputAndKeepsPortableHostMetadata`:
+The source handoff `chart.ToVisualArtifact("cpu-load")` stores the mutable chart and prepares it on demand when rendering. The detached route stores completed layout: call `chart.Prepare(context)`, then `prepared.ToArtifact(...)`, and retain the existing portable SVG/JSON handoff. Use the detached route to export several formats without repeating preparation. This example is also exercised by `PreparedVisualArtifactTests.StaticArtifactUsesPreparedOutputAndKeepsPortableHostMetadata`:
 
 ```csharp
 using System.Text;

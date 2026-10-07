@@ -12,7 +12,6 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual grids to self-contained SVG.
 /// </summary>
 public sealed class SvgVisualGridRenderer {
-    private readonly SvgChartRenderer _chartRenderer = new();
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid to SVG markup.</summary>
@@ -118,17 +117,7 @@ public sealed class SvgVisualGridRenderer {
         return writer.Build();
     }
 
-    private string RenderChildChart(Chart chart, string childScope) {
-        chart = chart.PanelView();
-        var transparentBackground = chart.Options.TransparentBackground;
-        try {
-            chart.Options.TransparentBackground = true;
-            return _chartRenderer.Render(chart, childScope);
-        }
-        finally {
-            chart.Options.TransparentBackground = transparentBackground;
-        }
-    }
+    private static string RenderChildChart(Chart chart, string childScope) => VisualGridChartRendering.Svg(chart, childScope);
 
     private string RenderChildBlock(IVisualBlock block, string childScope) {
         var transparentBackground = block.Options.TransparentBackground;

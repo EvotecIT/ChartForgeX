@@ -13,6 +13,9 @@ param(
 
     [string] $BaselineAssemblyPath,
 
+    [ValidateSet('Phase2', 'Phase3', 'All')]
+    [string] $SceneGroup = 'Phase2',
+
     [switch] $Plan,
 
     [switch] $SkipBuild
@@ -20,6 +23,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if ($Suite -ne 'Scenes' -and $SceneGroup -ne 'Phase2') { throw '-SceneGroup is supported only by the Scenes suite.' }
 
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $projectPath = Join-Path $repositoryRoot 'ChartForgeX\ChartForgeX.csproj'
@@ -51,6 +55,7 @@ if ($Suite -in 'Topology', 'Charts', 'Scenes') {
     if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
     $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"
     if ($Suite -eq 'Scenes') {
+        $variables.SceneGroup = $SceneGroup
         $variables.TokenPath = Join-Path $repositoryRoot 'ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json'
         $variables.FontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Regular.ttf'
         $variables.BoldFontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Bold.ttf'

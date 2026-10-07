@@ -25,7 +25,7 @@ public sealed class PreparedSequenceTests {
         var prepared = model.Prepare(Context(480, 320));
         var envelope = prepared.ToArtifact("symbols", VisualArtifactKind.Sequence).ToInterchangeEnvelope();
         var node = Assert.Single(envelope.Nodes);
-        var region = Assert.Single(prepared.Regions.Where(r => r.Role == "sequence-participant"));
+        var region = Assert.Single(prepared.Regions, r => r.Role == "sequence-participant");
         Assert.Equal("source", node.Id);
         Assert.Equal(kind, node.Sequence!.Kind);
         Assert.Equal(region.Bounds.X, node.X); Assert.Equal(region.Bounds.Y, node.Y);
@@ -64,7 +64,7 @@ public sealed class PreparedSequenceTests {
         var labels = xml.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "sequence-message")
             .Select(e => e.Descendants().Single(t => t.Name.LocalName == "text")).ToArray();
         for (int i = 0; i < labels.Length; i++)
-            Assert.Equal(envelope.Edges[i].ResolvedLabelBounds!.Value.X + (i == 0 ? envelope.Edges[i].ResolvedLabelBounds!.Value.Width / 2 : 0),
+            Assert.Equal(envelope.Edges[i].ResolvedLabelBounds!.Value.X,
                 double.Parse((string)labels[i].Attribute("x")!, System.Globalization.CultureInfo.InvariantCulture), 2);
     }
 
@@ -203,8 +203,8 @@ public sealed class PreparedSequenceTests {
             .AddBlock(SequenceArtifactBlockKind.Opt, "No work", 0, 0, isEmpty: true);
         model.Messages[0].Metadata["mermaid.operator"] = "--";
         var prepared = model.Prepare(Context());
-        var block = Assert.Single(prepared.Regions.Where(r => r.Role == "sequence-block"));
-        var message = Assert.Single(prepared.Regions.Where(r => r.Role == "sequence-message"));
+        var block = Assert.Single(prepared.Regions, r => r.Role == "sequence-block");
+        var message = Assert.Single(prepared.Regions, r => r.Role == "sequence-message");
         Assert.True(block.Bounds.Bottom <= message.Bounds.Top);
         var xml = XDocument.Parse(prepared.ToSvg());
         Assert.DoesNotContain(xml.Descendants(), e => ((string?)e.Attribute("data-cfx-role"))?.EndsWith("-arrow", StringComparison.Ordinal) == true);

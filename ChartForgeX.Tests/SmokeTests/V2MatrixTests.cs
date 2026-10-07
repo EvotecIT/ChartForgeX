@@ -9,6 +9,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class V2MatrixTests {
+    [Fact]
+    public void NumericHeatmapKeepsZeroSurfaceGapAndObservedScaleValues() {
+        var chart = Chart.Create().AddHeatmapRow("Count", new[] { 0d, 20, 100 });
+        chart.Options.HeatmapRelativeScale = true;
+        var context = Context(); var prepared = chart.Prepare(context); var document = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal("2", ByRole(document, "heatmap").Single().Attribute("data-cfx-cell-gap")?.Value);
+        var zero = ByRole(document, "heatmap-cell").Single(element => element.Attribute("data-cfx-value")?.Value == "0");
+        Assert.Equal(ChartHeatmapSurface.ZeroBlend(context.Theme.Resolve(context.ThemeMode)).Color.ToCss(),
+            zero.Descendants().Single(element => element.Name.LocalName == "rect").Attribute("fill")?.Value);
+        var steps = ByRole(document, "heatmap-scale-step");
+        Assert.Equal(5, steps.Length);
+        Assert.Equal(new[] { "0", "25", "50", "75", "100" }, steps.Select(element => element.Attribute("data-cfx-value")?.Value));
+        Assert.Contains(prepared.Regions, region => region.Role == "heatmap-scale-step" && region.Label == "100");
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     [Theory]
     [InlineData(false, VisualThemeMode.Light)]
     [InlineData(false, VisualThemeMode.Dark)]
@@ -62,7 +78,7 @@ public sealed class V2MatrixTests {
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var cells = prepared.Regions.Where(region => region.Role == "calendar-cell").ToArray(); Assert.Equal(7, cells.Length);
         Assert.All(cells, cell => Assert.InRange(cell.Bounds.Width, 0, 18));
-        Assert.Contains(cells, cell => cell.Label == "28/09/2026: 0"); Assert.Contains(cells, cell => cell.Label == "29/09/2026: No data");
+        Assert.Contains(cells, cell => cell.Label == "Activity, 28/09/2026: 0"); Assert.Contains(cells, cell => cell.Label == "Activity, 29/09/2026: No data");
         Assert.Equal("1", ByRole(document, "calendar-heatmap").Single().Attribute("data-cfx-zero-count")?.Value);
         Assert.Contains(ByRole(document, "calendar-weekday"), element => element.Value == "Mo");
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
@@ -93,9 +109,9 @@ public sealed class V2MatrixTests {
         var svg = prepared.ToSvg(); chart.Options.Theme = ChartTheme.Light();
         Assert.Equal(svg, prepared.ToSvg());
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var surface = ChartColorMath.Blend(colors.Background, state.Color, .38);
+        var ink = ChartMarkText.OnStateMark(chart, colors, context.Frame, ChartStateMark.For(state, colors.Background));
         var label = ByRole(XDocument.Parse(svg), "data-label").Single();
-        Assert.Equal(ChartColorMath.AccessibleTextOnBackground(surface).ToCss(), label.Attribute("fill")?.Value);
+        Assert.Equal(ink.Color.ToCss(), label.Descendants().Single(element => element.Name.LocalName == "text").Attribute("fill")?.Value);
     }
 
     [Fact]
@@ -111,6 +127,34 @@ public sealed class V2MatrixTests {
         Assert.InRange(Math.Abs(image.Pixels[offset] - expected.R), 0, 1);
         Assert.InRange(Math.Abs(image.Pixels[offset + 1] - expected.G), 0, 1);
         Assert.InRange(Math.Abs(image.Pixels[offset + 2] - expected.B), 0, 1);
+    }
+
+    [Fact]
+    public void MatrixStateAndExplicitPointColorsWithEqualRgbKeepDistinctPaintRoles() {
+        var same = ChartColor.FromHex("#717171");
+        var variables = new SvgColorVariables().Add("--source", same, SvgColorRole.Series).Add("--state", same, SvgColorRole.Status)
+            .Add("--surface", same, SvgColorRole.Surface);
+        var numeric = Chart.Create().AddHeatmapRow("Source", new[] { 12d }); numeric.Series[0].PointColors.Add(same);
+        var state = Chart.Create().WithStateCategories(new ChartStateCategory("known", "Known", same)).AddHeatmapCategoryRow("State", new ChartHeatmapCell("known"));
+        var sourceFill = ByRole(XDocument.Parse(numeric.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: variables))), "heatmap-cell-shape").Single().Attribute("fill")!.Value;
+        var stateFill = ByRole(XDocument.Parse(state.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: variables))), "heatmap-cell-shape").Single().Attribute("fill")!.Value;
+        Assert.Contains("--source", sourceFill); Assert.DoesNotContain("--state", sourceFill);
+        Assert.Contains("--state", stateFill); Assert.DoesNotContain("--source", stateFill);
+    }
+
+    [Fact]
+    public void PreparedMapBlendSharesScaleInterpolationAndRetainsStopOperands() {
+        var low = ChartColor.FromHex("#102030"); var high = ChartColor.FromHex("#90a0b0");
+        var chart = Chart.Create(); chart.Options.MapColorScale = ChartMapColorScale.Sequential(low, high);
+        var colors = Context().Theme.Resolve(VisualThemeMode.Light);
+        var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, null, 25, 0, 100);
+        Assert.Equal(chart.Options.MapColorScale.ColorFor(25, 0, 100), blend.Color);
+        Assert.Equal(low, blend.From); Assert.Equal(high, blend.To); Assert.Equal(.25, blend.Amount);
+        var explicitPoint = ChartHeatmapSurface.MapBlend(chart, colors, high, low, 25, 0, 100);
+        Assert.Equal(high, explicitPoint.Color); Assert.Equal(SvgColorRole.Series, explicitPoint.FromRole);
+        var variables = new SvgColorVariables().Add("--low", low, SvgColorRole.Ramp).Add("--high", high, SvgColorRole.Ramp);
+        Assert.Contains("--low", SvgPaint.Resolve(blend.Paint.Value!, variables));
+        Assert.Contains("--high", SvgPaint.Resolve(blend.Paint.Value!, variables));
     }
 
     private static VisualRenderContext Context(VisualThemeMode mode = VisualThemeMode.Light) =>

@@ -14,7 +14,7 @@ public static class LabelPlacementExamples {
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d })
             .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d })
             .AddBullet("MTA-STS deployment", 63, 85, 0, 100, new[] { 50d, 75d });
-        var funnel = Chart.Create().WithTitle("Remediation funnel").WithSize(640, 420).WithTheme(theme)
+        var funnel = Chart.Create().WithTitle("Remediation funnel").WithSize(640, 420).WithTheme(theme).WithDataLabels()
             .WithXLabels("Discovered", "Verified", "Prioritized", "Remediated", "Monitored")
             .AddFunnel("Domains", Points(420, 318, 174, 96, 72));
         var gauge = Chart.Create().WithTitle("Policy readiness").WithSize(480, 340).WithTheme(theme)

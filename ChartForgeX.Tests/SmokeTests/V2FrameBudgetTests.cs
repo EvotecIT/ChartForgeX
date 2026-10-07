@@ -18,7 +18,8 @@ public sealed class V2FrameBudgetTests {
             frame: new VisualFrame(legendPosition: position, legendMaximumRows: 2, legendMaximumHeightFraction: .5)));
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(2, ByRole(document, "legend-entry").Length);
-        Assert.Contains(ByRole(document, "legend-label"), element => element.Value.Contains("5 more entries"));
+        Assert.Contains(ByRole(document, "legend-label"), element => element.Value.Contains("5 more"));
+        Assert.Contains(prepared.Regions, region => region.Id == "legend-overflow" && region.Label == "+ 5 more entries");
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "legend" && region.Id != "legend-overflow"));
         Assert.Equal(5, ByRole(document, "legend-entry-omitted").Length);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "frame.legend-overflow");
@@ -56,13 +57,33 @@ public sealed class V2FrameBudgetTests {
 
     [Fact]
     public void FrameCopiesAndGridPanelsKeepLegendBudgets() {
-        var frame = new VisualFrame("Title", legendMaximumRows: 1, legendMaximumHeightFraction: .4);
+        var frame = new VisualFrame("Title", legendMaximumRows: 1, legendMaximumHeightFraction: .4, showCard: true);
         var headings = frame.WithHeadings("Other", "Subtitle");
         Assert.Equal(1, headings.LegendMaximumRows); Assert.Equal(.4, headings.LegendMaximumHeightFraction);
+        Assert.True(headings.ShowCard);
         var grid = ChartGrid.Create().WithColumns(1).Add(ManySeries());
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 300), new ChartPadding(10, 20, 30, 40)), frame: frame));
         Assert.Single(ByRole(XDocument.Parse(prepared.ToSvg()), "legend-entry"));
         Assert.Contains(prepared.Regions, region => region.Label != null && region.Label.Contains("6 more entries"));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ExplicitCardAndContentSurfaceRemainIndependentOnTransparentCanvas(bool card, bool surface) {
+        var chart = Chart.Create().AddLine("Value", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 240)),
+            frame: new VisualFrame(showLegend: false, showSurface: surface, transparentBackground: true, showCard: card));
+        var prepared = chart.Prepare(context); var document = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(card ? 1 : 0, ByRole(document, "frame-card").Length);
+        Assert.Equal(surface ? 1 : 0, ByRole(document, "content-surface").Length);
+        Assert.Empty(ByRole(document, "background"));
+        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        Assert.Equal(card ? 255 : 0, image.Pixels[(120 * image.Width + 8) * 4 + 3]);
+        if (card) Assert.Equal(context.Theme.Resolve(context.ThemeMode).ElevatedSurface.ToCss(), ByRole(document, "frame-card").Single().Attribute("fill")?.Value);
+        Assert.False(new VisualFrame().ShowCard);
     }
 
     [Fact]

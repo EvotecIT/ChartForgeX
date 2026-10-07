@@ -6,6 +6,9 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     // The common frame measures and clips this rectangle. No delegate survives preparation.
     private void BuildLegendMarker(TopologyLegendItem item, ChartRect bounds) {
+        using var markerGroup = _builder.PushGroup(null, "topology-legend-item", new System.Collections.Generic.Dictionary<string, string> {
+            ["data-legend-kind"] = item.Kind.ToString().ToLowerInvariant(), ["data-cfx-status"] = item.Status?.ToString() ?? string.Empty
+        });
         var color = Color(item.Color, item.Status.HasValue ? Status(item.Status.Value) : _colors.Accent);
         var colorRole = !string.IsNullOrWhiteSpace(item.Color) ? SvgColorRole.Any : item.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Series;
         var centerX = bounds.X + bounds.Width / 2; var centerY = bounds.Y + bounds.Height / 2;

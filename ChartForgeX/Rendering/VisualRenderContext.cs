@@ -53,7 +53,7 @@ public sealed class VisualFrame {
     public VisualFrame(string? title = null, string? subtitle = null, bool showLegend = true,
         ChartLegendPosition legendPosition = ChartLegendPosition.Bottom, bool showSurface = false, bool transparentBackground = false,
         TextStyle? titleStyle = null, TextStyle? subtitleStyle = null, TextStyle? legendStyle = null,
-        int? legendMaximumRows = null, double legendMaximumHeightFraction = 0.35) {
+        int? legendMaximumRows = null, double legendMaximumHeightFraction = 0.35, bool showCard = false) {
         if (!Enum.IsDefined(typeof(ChartLegendPosition), legendPosition)) throw new ArgumentOutOfRangeException(nameof(legendPosition));
         if (legendMaximumRows.HasValue && legendMaximumRows.Value < 1) throw new ArgumentOutOfRangeException(nameof(legendMaximumRows));
         if (double.IsNaN(legendMaximumHeightFraction) || double.IsInfinity(legendMaximumHeightFraction) || legendMaximumHeightFraction <= 0 || legendMaximumHeightFraction > 1)
@@ -61,6 +61,7 @@ public sealed class VisualFrame {
         Title = title; Subtitle = subtitle; ShowLegend = showLegend; LegendPosition = legendPosition; ShowSurface = showSurface; TransparentBackground = transparentBackground;
         _titleStyle = titleStyle?.Clone(); _subtitleStyle = subtitleStyle?.Clone(); _legendStyle = legendStyle?.Clone();
         LegendMaximumRows = legendMaximumRows; LegendMaximumHeightFraction = legendMaximumHeightFraction;
+        ShowCard = showCard;
     }
     /// <summary>Gets the title.</summary>
     public string? Title { get; }
@@ -72,6 +73,8 @@ public sealed class VisualFrame {
     public ChartLegendPosition LegendPosition { get; }
     /// <summary>Gets whether the content surface is filled.</summary>
     public bool ShowSurface { get; }
+    /// <summary>Gets whether the complete frame has an elevated card, independently of the content surface.</summary>
+    public bool ShowCard { get; }
     /// <summary>Gets whether the outer canvas has no background paint, for overlays and embedding.</summary>
     public bool TransparentBackground { get; }
     /// <summary>Gets a defensive copy of the explicit heading typography.</summary>
@@ -85,7 +88,7 @@ public sealed class VisualFrame {
     /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
     public double LegendMaximumHeightFraction { get; }
     internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, ShowLegend, LegendPosition,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard);
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>

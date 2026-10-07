@@ -11,7 +11,14 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
+  const isInteractiveTarget = (node) => {
+    if ((node.dataset || {}).cfxRole === 'legend-item') return true;
+    if (node.closest('[data-cfx-role="legend-item"]')) return false;
+    // Prepared marks carry their source identity on a containing semantic group.
+    // Bind that group once instead of also binding its labels, decorations and individual shapes.
+    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
+    return !owner;
+  };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
@@ -53,6 +60,7 @@
   };
   const sourcePointIndex = (node) => {
     const data = node.dataset || {};
+    if (data.cfxSourcePoint !== undefined) return data.cfxSourcePoint;
     if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
     const svg = node.closest('svg');
     const sourceIndices = svg ? svg.getAttribute('data-cfx-series-source-indices-' + data.cfxSeries) : '';
@@ -87,6 +95,7 @@
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
   const applyRenderedTargetContract = (root) => {
+    prepareChartTargets(root);
     Array.from(root.querySelectorAll(renderedTargetSelector)).filter(isInteractiveTarget).forEach((node) => {
       if (node.closest('defs')) return;
       const kind = renderedTargetKind(node);
@@ -340,6 +349,73 @@
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+  };
+  // Core exports describe immutable source identity and layout. Browser-only focus and hit areas belong here.
+  const prepareChartTargets = (root) => {
+    const svg = root.querySelector('.cfx-stage svg');
+    if (!svg || !root.dataset.cfxPreparedChart) return;
+    let metadata;
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
+    const series = metadata.series || [];
+    const xLabels = new Map((metadata.xLabels || []).map((item) => [item.value, item.text]));
+    const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
+    series.forEach((item, index) => {
+      svg.setAttribute('data-cfx-series-name-' + index, item.name);
+      svg.setAttribute('data-cfx-series-key-' + index, item.key);
+      svg.setAttribute('data-cfx-series-state-' + index, item.state);
+      svg.setAttribute('data-cfx-series-source-indices-' + index, item.indices.join(','));
+    });
+    svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
+      const data = node.dataset;
+      const source = data.cfxSourceId || '';
+      const match = source.match(/^legend-series-(\d+)(?:-point-(\d+|other))?$/);
+      const index = match ? Number(match[1]) : series.findIndex((item) => item.key === data.cfxSeriesKey);
+      if (index < 0) return;
+      data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
+      const region = regions.get(source);
+      data.cfxLabel = region ? region.label : node.getAttribute('aria-label') || '';
+      if (match && match[2] !== undefined) data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
+    });
+    svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
+      const data = node.dataset;
+      if (data.cfxSeries === undefined) data.cfxSeries = '0';
+      const item = series[Number(data.cfxSeries)];
+      if (!item) return;
+      data.cfxSeriesName = item.name; data.cfxSeriesKey = item.key;
+      data.cfxKind = item.kind;
+      if (data.cfxState === undefined) data.cfxState = item.state;
+      if (data.cfxRole === 'gauge') data.cfxPoint = '0';
+      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined) {
+        const point = Number(data.cfxPoint);
+        data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
+      }
+      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxRole === 'legend-item') return;
+      const region = regions.get(data.cfxSourceId || '');
+      if (!region || data.cfxPoint === undefined) return;
+      const box = node.getBBox();
+      if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        marker.setAttribute('cx', region.x + region.width / 2); marker.setAttribute('cy', region.y + region.height / 2);
+        marker.setAttribute('r', '4'); marker.setAttribute('class', 'cfx-prepared-point-marker');
+        marker.setAttribute('pointer-events', 'none');
+        const owner = node.closest('[data-cfx-role="series"]');
+        const line = owner && owner.querySelector('[data-cfx-role="line"]');
+        marker.setAttribute('fill', line ? getComputedStyle(line).stroke : 'currentColor');
+        node.appendChild(marker);
+      }
+      // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
+      // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
+      if (box.width > 0 && box.height > 0) return;
+      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      const width = Math.max(8, region.width); const height = Math.max(8, region.height);
+      hit.setAttribute('x', region.x + (region.width - width) / 2);
+      hit.setAttribute('y', region.y + (region.height - height) / 2);
+      hit.setAttribute('width', width); hit.setAttribute('height', height);
+      hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+      hit.setAttribute('data-cfx-browser-hit-area', 'true');
+      node.appendChild(hit);
+    });
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
@@ -1452,6 +1528,7 @@
         hideTip(root, tip, false);
       });
       focusNode.addEventListener('click', (event) => {
+        event.stopPropagation();
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
@@ -1462,6 +1539,7 @@
         }
       });
       focusNode.addEventListener('keydown', (event) => {
+        event.stopPropagation();
         if (!hasFeature(root, 'KeyboardNavigation')) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();

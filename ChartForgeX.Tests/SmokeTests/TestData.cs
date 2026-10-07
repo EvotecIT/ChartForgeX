@@ -306,14 +306,26 @@ internal static partial class SmokeTests {
     }
 
     private static double GetAttribute(string text, string marker, string attribute) {
-        var start = text.IndexOf(marker, StringComparison.Ordinal);
-        if (start < 0) throw new InvalidOperationException("Missing marker: " + marker);
-        var attributeMarker = " " + attribute + "=\"";
-        start = text.IndexOf(attributeMarker, start, StringComparison.Ordinal);
-        if (start < 0) throw new InvalidOperationException("Missing attribute: " + attribute);
-        start += attributeMarker.Length;
-        var end = text.IndexOf("\"", start, StringComparison.Ordinal);
-        return double.Parse(text.Substring(start, end - start), CultureInfo.InvariantCulture);
+        return double.Parse(GetStringAttribute(text, marker, attribute), CultureInfo.InvariantCulture);
+    }
+
+    private static string GetStringAttribute(string text, string marker, string attribute) {
+        var document = System.Xml.Linq.XDocument.Parse(text);
+        var selectors = System.Text.RegularExpressions.Regex.Matches(marker, "([\\w:-]+)=\"([^\"]*)\"");
+        var tag = marker.StartsWith("<", StringComparison.Ordinal) ? marker.Substring(1).Split(' ', '>')[0] : null;
+        var selected = document.Descendants().FirstOrDefault(element =>
+            (tag == null || element.Name.LocalName == tag) && selectors.Cast<System.Text.RegularExpressions.Match>().All(selector => {
+                var name = selector.Groups[1].Value; var value = System.Net.WebUtility.HtmlDecode(selector.Groups[2].Value);
+                return name == "data-cfx-role" ? (string?)element.Attribute(name) == value
+                    : element.AncestorsAndSelf().Any(owner => (string?)owner.Attribute(name) == value);
+            }));
+        if (selected == null) throw new InvalidOperationException("Missing marker: " + marker);
+        var result = selected.Attribute(attribute);
+        if (attribute.StartsWith("data-", StringComparison.Ordinal))
+            result ??= selected.Ancestors().Select(owner => owner.Attribute(attribute)).FirstOrDefault(value => value != null);
+        result ??= selected.Descendants().Select(child => child.Attribute(attribute)).FirstOrDefault(value => value != null);
+        result ??= selected.Ancestors().Select(owner => owner.Attribute(attribute)).FirstOrDefault(value => value != null);
+        return result?.Value ?? throw new InvalidOperationException("Missing attribute: " + attribute + " on " + marker);
     }
 
     private static DecodedPng DecodePng(byte[] png) {

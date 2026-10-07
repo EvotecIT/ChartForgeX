@@ -11,13 +11,14 @@ internal static partial class TopologyRenderPrimitives {
     private const double RouteLabelCardMargin = 8;
 
     /// <summary>
-    /// Returns true when the label of an edge is placed on its planned route rather than beside the route midpoint.
+    /// Returns true when an automatic label can use a straight run of its own resolved route.
     /// Labels the caller positioned (an offset, an anchor point, or an anchor node) keep the classic placement.
     /// </summary>
-    private static bool PlacesLabelOnRoute(TopologyChart chart, TopologyEdge edge) =>
+    private static bool PlacesLabelOnRoute(TopologyChart chart, TopologyRenderOptions options, TopologyEdge edge) =>
         Math.Abs(edge.LabelOffsetX) < 0.000001 && Math.Abs(edge.LabelOffsetY) < 0.000001 &&
         !edge.HasLabelAnchorOverride && string.IsNullOrWhiteSpace(edge.LabelAnchorNodeId) &&
-        TopologyDenseRoutePlanner.IsPlanned(chart, edge);
+        (TopologyDenseRoutePlanner.IsPlanned(chart, edge) ||
+            !IsMonitoringDashboardStyle(options) && edge.Waypoints.Count == 0 && edge.Routing != TopologyEdgeRouting.Curved);
 
     /// <summary>The cards, tile captions, and group headers a label on a planned route must not cover.</summary>
     private static List<LabelBox> RouteLabelObstacles(TopologyChart chart, TopologyRenderOptions options) {

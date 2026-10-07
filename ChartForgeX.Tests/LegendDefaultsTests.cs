@@ -30,9 +30,10 @@ public sealed class LegendDefaultsTests {
         var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(480, 340).WithLegend(true).AddGauge("Score", value);
         var svg = XDocument.Parse(chart.ToSvg());
         var arc = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "gauge-value");
-        var item = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-item");
-        var swatch = Assert.Single(item.Elements(), e => e.Name.LocalName == "rect");
-        Assert.Equal((string?)arc.Attribute("stroke"), (string?)swatch.Attribute("fill"));
+        var item = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-entry");
+        var swatch = Assert.Single(item.Descendants(), e => e.Name.LocalName == "rect");
+        var arcPath = arc.DescendantsAndSelf().Single(e => e.Attribute("stroke") != null);
+        Assert.Equal((string?)arcPath.Attribute("stroke"), (string?)swatch.Attribute("fill"));
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -43,19 +44,20 @@ public sealed class LegendDefaultsTests {
         var chart = Chart.Create().WithSize(700, 440).WithXLabels("Completed", "Pending");
         var points = new[] { new ChartPoint(0, 70), new ChartPoint(1, 30) };
         if (donut) chart.AddDonut("Work", points); else chart.AddPie("Work", points);
-        var items = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "slice-legend-item").ToArray();
+        var items = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "legend-entry").ToArray();
         Assert.Equal(2, items.Length);
         foreach (var item in items) {
-            var name = Assert.Single(item.Elements(), e => (string?)e.Attribute("data-cfx-role") == "slice-legend-label");
-            var value = Assert.Single(item.Elements(), e => (string?)e.Attribute("data-cfx-role") == "slice-legend-percent");
-            Assert.Equal("end", (string?)value.Attribute("text-anchor"));
+            var name = Assert.Single(item.Descendants(), e => e.Name.LocalName == "text" && (string?)e.Parent?.Attribute("data-cfx-role") == "legend-label");
+            var value = Assert.Single(item.Descendants(), e => e.Name.LocalName == "text" && (string?)e.Parent?.Attribute("data-cfx-role") == "legend-value");
+            Assert.Contains(name.Value, new[] { "Completed", "Pending" });
+            Assert.Contains(value.Value, new[] { "70%", "30%" });
+            Assert.Contains(name.Value + ": " + value.Value, (string?)item.Attribute("aria-label"));
             Assert.True((double)value.Attribute("x")! > (double)name.Attribute("x")! + 80);
-            Assert.Single(item.Elements(), e => (string?)e.Attribute("data-cfx-role") == "slice-legend-value");
         }
         Assert.NotEmpty(chart.ToPng());
     }
 
-    private static bool IsLegend(XElement e) => (string?)e.Attribute("data-cfx-role") is "legend" or "slice-legend";
+    private static bool IsLegend(XElement e) => (string?)e.Attribute("data-cfx-role") == "legend-entry";
 
     private static Chart Create(string kind) {
         var chart = Chart.Create().WithSize(480, 340);

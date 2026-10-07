@@ -24,8 +24,8 @@ Phases 2–3 build on the qualified Phase 0–1 candidate while its external che
 - [x] Create `feature/v2-charts` from Phase 0–1 candidate `c8e765c39b927b0630de6c123c97a9baba280f43`; coordinate dependent branches centrally.
 - [ ] Complete existing Cartesian options, axis-isolated stacks, explicit styles, labels and semantic state treatments.
 - [ ] Complete pie/donut, gauge, radial-bar and layered-radial options on the shared scene.
-- [ ] Unify numeric formatting and sparse sparkline data, preserving missing observations separately from zero.
-- [ ] Extend shared scene paint, clipping and transformed text for migrated family requirements.
+- [x] Unify numeric formatting and sparse sparkline data, preserving missing observations separately from zero; focused contracts pass.
+- [x] Extend shared scene paint, clipping and transformed text for migrated family requirements; Phase 2 paint-policy suite passes 160 focused cases.
 - [ ] Remove replaced Cartesian/radial export paths after option and visual closure; update migration/API records.
 - [ ] Migrate topology, flow and sequence with native semantics and Mermaid acceptance fixtures.
 - [ ] Migrate remaining chart families in coherent groups, reusing existing layout owners.

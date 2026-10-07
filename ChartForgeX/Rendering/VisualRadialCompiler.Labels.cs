@@ -15,7 +15,9 @@ internal static partial class VisualRadialCompiler {
         var outside = placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var color = outside || vertical ? colors.Foreground : ChartColorMath.AccessibleTextOnBackground(slice.Color);
+        var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
+        var composed = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(slice.Color.R, slice.Color.G, slice.Color.B), slice.Color.A / 255d);
+        var color = outside || vertical ? colors.Foreground : ChartColorMath.AccessibleTextOnBackground(composed);
         var style = Style(chart, context, slice.PointIndex, color, context.Theme.Typography.DataLabelSize);
         if (outside) {
             var left = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(angle) < 0);
@@ -41,7 +43,7 @@ internal static partial class VisualRadialCompiler {
         style.Alignment = TextAlignment.Center;
         builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label",
             paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex) ? VisualChartPaint.Text(style)
-                : SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[0], slice.PointIndex)));
+                : slice.Color.A == 255 ? SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[0], slice.PointIndex)) : SvgPaint.Literal(style.Color));
     }
 
     private static void DrawVerticalLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,

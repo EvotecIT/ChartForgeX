@@ -64,12 +64,14 @@ internal static partial class VisualPolarCompiler {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name
                 })) {
                     if (radar) {
-                        builder.Path(path, ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity), role: "radar-area", close: true);
+                        builder.Path(path, ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity), role: "radar-area", close: true,
+                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity), context.Theme.AreaOpacity)));
                         if (series.FillPattern != ChartFillPattern.None) builder.Pattern(path, series.FillPattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), role: "radar-pattern");
                     }
                     var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
                     foreach (var layer in ChartLineVisualLayers.Build(color, width, chart.Options.LineVisualStyle))
-                        if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: radar);
+                        if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: radar,
+                            paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
                     for (var index = 0; index < mapped.Length; index++) {
                         var source = raw[index]; var value = source >= 0 ? series.Points[source].Y : 0;
                         var angle = radar ? RadarAngle(index, categories.Length) : -series.Points[source].X;
@@ -84,7 +86,8 @@ internal static partial class VisualPolarCompiler {
                             ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(category), ["data-cfx-angle"] = N(radar ? angle : -angle),
                             ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = formatted, ["data-cfx-missing"] = source < 0 ? "true" : "false"
                         })) builder.Ellipse(mapped[index].X, mapped[index].Y, marker, marker,
-                            source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color, colors.Surface, 1, radar ? "radar-point" : "polar-point");
+                            source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color, colors.Surface, 1, radar ? "radar-point" : "polar-point",
+                            paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color, source), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                         if (series.ShowDataLabels ?? chart.Options.ShowDataLabels)
                             AddDataLabel(chart, context, builder, plot, labels, series, source, pointId, formatted, mapped[index], angle, radar, seriesIndex, chart.Series.Count);
                     }

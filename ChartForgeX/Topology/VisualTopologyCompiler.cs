@@ -14,11 +14,18 @@ namespace ChartForgeX.Topology;
 /// <summary>Owns one resolved diagram observation for scene export and native semantic projection.</summary>
 internal sealed partial class VisualTopologyCompiler {
     private readonly TopologyChart _source;
-    private readonly VisualRenderContext _context;
+    private VisualRenderContext _context;
     private readonly TopologyRenderOptions _options;
-    private readonly VisualSceneBuilder _builder;
+    private VisualSceneBuilder _builder;
     private readonly VisualThemeColors _colors;
+    private readonly bool _resolvedLayout;
+    private readonly bool _naturalSize;
     private readonly Dictionary<string, IReadOnlyList<ChartPoint>> _routes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IReadOnlyList<ChartPoint>> _paintRoutes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (string Owner, IReadOnlyList<ChartPoint> Tail)> _trunks = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Dictionary<string, string>> _edgeMetadata = new(StringComparer.Ordinal);
+    private Dictionary<string, TopologyNode> _nodesById = null!;
+    private IReadOnlyDictionary<TopologyEdge, int> _edgeRenderOrders = null!;
     private readonly Dictionary<string, ChartRect> _resolvedLabelBounds = new(StringComparer.Ordinal);
     private TopologyChart _chart = null!;
     private TopologyHighlightState _highlight = null!;
@@ -29,16 +36,18 @@ internal sealed partial class VisualTopologyCompiler {
     private double _offsetX;
     private double _offsetY;
 
-    internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options) {
+    internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options, bool resolvedLayout = false, bool naturalSize = false) {
         _source = source;
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
+        if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
         _builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         _colors = context.Theme.Resolve(context.ThemeMode);
+        _resolvedLayout = resolvedLayout;
+        _naturalSize = naturalSize;
     }
 
     internal PreparedVisual Compile(FlowArtifact? flow = null) {
-        DiagnoseExportOptions();
         var validator = new TopologyChartValidator();
         var references = validator.ValidateScenarioReferences(_source);
         if (!references.IsValid) throw new TopologyValidationException(references);
@@ -51,11 +60,16 @@ internal sealed partial class VisualTopologyCompiler {
         _plot = VisualFrameLayout.Build(_builder, _context, entries);
         if (_plot.Width <= 0 || _plot.Height <= 0) throw new InvalidOperationException("The common frame leaves no topology viewport.");
         input.Title = null; input.Subtitle = null; input.Legend = null;
-        input.Viewport = new TopologyViewport { Width = _plot.Width, Height = _plot.Height, Padding = _context.Theme.Spacing };
+        // Canonical topology coordinates already contain their padding. Give the layout that
+        // domain once, then subtract its origin when placing it in the shared content frame.
+        if (!_resolvedLayout) input.Viewport = new TopologyViewport {
+            Width = _plot.Width + _context.Layout.Padding * 2, Height = _plot.Height + _context.Layout.Padding * 2,
+            Padding = _context.Layout.Padding
+        };
         input.Theme = Theme();
         var layoutOptions = _options.CloneForRendering();
         layoutOptions.IncludeTitle = false; layoutOptions.IncludeLegend = false;
-        _chart = TopologyLayoutEngine.Prepare(input, layoutOptions.View, layoutOptions, new TextMeasurementContext(_context.Font));
+        _chart = _resolvedLayout ? input : TopologyLayoutEngine.Prepare(input, layoutOptions.View, layoutOptions, new TextMeasurementContext(_context.Font, _options.TextMeasurementMode));
         if (layoutOptions.View != null) TopologyLayoutEngine.DetachOmittedSourceGroups(input, _chart);
         var validation = validator.Validate(_chart, validateScenarioReferences: false, layoutOptions);
         if (!validation.IsValid) throw new TopologyValidationException(validation);
@@ -63,16 +77,26 @@ internal sealed partial class VisualTopologyCompiler {
         // The common frame has already reserved the legend. Legacy geometry helpers must not
         // reserve a second legend inside the detached content viewport.
         _chart.Legend = null;
+        ResolveNaturalSize(entries);
+        DiagnoseExportOptions();
         _highlight = TopologyHighlightState.From(_chart, _options);
-        var nodes = _chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = _nodesById = _chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        _edgeRenderOrders = EdgeRenderOrderMap(_chart, _options);
         foreach (var edge in _chart.Edges) {
             var route = EdgePoints(_chart, edge, nodes);
-            IReadOnlyList<ChartPoint> rendered = RenderedEdgeSamplePoints(_chart, edge, nodes, route, 64);
-            if (ShouldRoundEdgeCorners(edge, rendered, _options)) rendered = RoundedOrthogonalRoutePoints(rendered, _options.EdgeCornerRadius);
-            _routes.Add(edge.Id, rendered);
+            _routes.Add(edge.Id, SampleRoute(route));
+            _paintRoutes.Add(edge.Id, SampleRoute(TopologyDenseRoutePlanner.PaintPoints(_chart, edge, route, includeOwner: true)));
+            var trunk = TopologyDenseRoutePlanner.SharedTrunk(_chart, edge);
+            if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge.Id, (trunk.Owner.Id, SampleRoute(trunk.Tail)));
+
+            IReadOnlyList<ChartPoint> SampleRoute(List<ChartPoint> points) {
+                IReadOnlyList<ChartPoint> rendered = RenderedEdgeSamplePoints(_chart, edge, nodes, points, 64);
+                return ShouldRoundEdgeCorners(edge, rendered, _options) ? RoundedOrthogonalRoutePoints(rendered, _options.EdgeCornerRadius) : rendered;
+            }
         }
         _edgeLabels = _options.IncludeEdgeLabels ? EdgeLabelLayouts(_chart, _options) : Array.Empty<TopologyEdgeLabelLayout>();
         ResolveFit();
+        using (_builder.PushGroup(_source.Id, "topology", RootMetadata()))
         using (_builder.PushClip(_plot)) {
             BuildSurface(); BuildGroups();
             foreach (var edge in OrderedEdgesForRendering(_chart, _options)) BuildEdge(edge.Edge);
@@ -81,9 +105,10 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeLayoutDiagnosticOverlay) BuildDiagnostics();
         }
         var accessibility = _source.Accessibility.Clone();
-        accessibility.Name ??= _context.Frame.Title ?? _source.Title ?? _source.Id;
-        accessibility.Description ??= _context.Frame.Subtitle ?? _source.Subtitle;
-        var semantics = SemanticSnapshot();
+        accessibility.Name ??= HeadingOrSource(_context.Frame.Title, _source.Title) ?? _source.Labels.UntitledTopology;
+        accessibility.Description ??= HeadingOrSource(_context.Frame.Subtitle, _source.Subtitle)
+            ?? _source.Labels.Describe(HeadingOrSource(_context.Frame.Title, _source.Title), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count);
+        var semantics = SemanticSnapshot(accessibility);
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
         var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,
             _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext);
@@ -108,22 +133,11 @@ internal sealed partial class VisualTopologyCompiler {
             new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition, frame.ShowSurface, frame.TransparentBackground,
                 frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 600, colors.Foreground),
                 frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle,
-                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction), resolved.Font);
-    }
-
-    private void ResolveFit() {
-        var width = _chart.Viewport.Width; var height = _chart.Viewport.Height;
-        _offsetX = _plot.X; _offsetY = _plot.Y;
-        if (width <= _plot.Width + .001 && height <= _plot.Height + .001) return;
-        if (!_options.FitContentToViewport)
-            throw new NotSupportedException($"Prepared topology exceeds its fixed viewport: requires {width:0.##} x {height:0.##}, available {_plot.Width:0.##} x {_plot.Height:0.##}. Enlarge the common size or enable FitContentToViewport.");
-        _scale = Math.Min(_plot.Width / width, _plot.Height / height);
-        _offsetX += (_plot.Width - width * _scale) / 2;
-        _offsetY += (_plot.Height - height * _scale) / 2;
-        _builder.AddDiagnostic(new VisualDiagnostic("topology.content-fitted", "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport."));
+                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard), resolved.Font);
     }
 
     private ChartPoint Point(ChartPoint p) => new(_offsetX + p.X * _scale, _offsetY + p.Y * _scale);
+    private static string? HeadingOrSource(string? heading, string? source) => string.IsNullOrWhiteSpace(heading) ? source : heading;
     private ChartRect Bounds(double x, double y, double width, double height) => new(_offsetX + x * _scale, _offsetY + y * _scale, width * _scale, height * _scale);
     private ChartColor Status(TopologyHealthStatus status) => status switch {
         TopologyHealthStatus.Healthy => _colors.Status.Pass.Fill, TopologyHealthStatus.Warning => _colors.Status.Medium.Fill,

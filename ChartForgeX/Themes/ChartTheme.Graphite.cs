@@ -23,7 +23,13 @@ public sealed partial class ChartTheme {
     public ChartColor Neutral3 { get; set; } = ChartColor.FromHex("#F1F2F4");
 
     /// <summary>Creates the default flat Graphite light theme.</summary>
-    public static ChartTheme GraphiteLight() => VisualDesignTokens.GraphiteLight().ApplyTo(new ChartTheme());
+    public static ChartTheme GraphiteLight() => Graphite(false);
     /// <summary>Creates the lifted Graphite dark theme with the same semantic roles.</summary>
-    public static ChartTheme GraphiteDark() => VisualDesignTokens.GraphiteDark().ApplyTo(new ChartTheme());
+    public static ChartTheme GraphiteDark() => Graphite(true);
+    private static ChartTheme Graphite(bool dark) {
+        var theme = (dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight()).ApplyTo(new ChartTheme());
+        var scale = VisualTheme.Graphite().Typography;
+        theme.WithTypography(scale.TitleSize, scale.SubtitleSize, scale.AxisSize, scale.AxisSize, scale.LegendSize, scale.DataLabelSize);
+        return theme;
+    }
 }

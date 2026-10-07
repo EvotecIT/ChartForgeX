@@ -108,9 +108,9 @@ internal sealed partial class VisualSceneBuilder {
     internal IDisposable PushGroup(string? id, string? role, IReadOnlyDictionary<string, string>? metadata = null) {
         if (metadata != null) foreach (var item in metadata) {
             // Native semantic attributes are data, never event handlers, style or markup.
-            if (item.Key != "aria-label" && item.Key != "role" && (!item.Key.StartsWith("data-", StringComparison.Ordinal) || item.Key.Length <= 5)
+            if (item.Key != "aria-label" && item.Key != "role" && item.Key != "class" && (!item.Key.StartsWith("data-", StringComparison.Ordinal) || item.Key.Length <= 5)
                 || item.Key == "data-cfx-role")
-                throw new ArgumentException("Scene metadata must use data- attributes, aria-label or role, without overriding the scene role.", nameof(metadata));
+                throw new ArgumentException("Scene metadata must use data- attributes, aria-label, role or class, without overriding the scene role.", nameof(metadata));
             foreach (var c in item.Key) if (!(char.IsLetterOrDigit(c) || c == '-' || c == '_'))
                 throw new ArgumentException("Scene metadata has an invalid attribute name.", nameof(metadata));
         }

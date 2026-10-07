@@ -37,7 +37,8 @@ internal static partial class VisualMatrixCompiler {
         var plot = layout.Plot;
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
-            Math.Min(columns.Length > 1 ? plot.Width / columns.Length * .5 : 0, rows.Length > 1 ? Math.Max(0, plot.Height - rowLayout.HeadersHeight) / rows.Length * .5 : 0)));
+            Math.Min(columns.Length > 1 ? plot.Width / columns.Length * .5 : double.PositiveInfinity,
+                rows.Length > 1 ? Math.Max(0, plot.Height - rowLayout.HeadersHeight) / rows.Length * .5 : double.PositiveInfinity)));
         var cellWidth = Math.Max(0, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
         var cellHeight = Math.Max(0, (plot.Height - rowLayout.HeadersHeight - gap * (rows.Length - 1)) / rows.Length);
         var radius = Math.Min(chart.Options.HeatmapCellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) / 2);
@@ -51,7 +52,7 @@ internal static partial class VisualMatrixCompiler {
         })) {
             foreach (var group in rowLayout.Groups) {
                 var y = rowLayout.GroupTop(plot.Top, group, cellHeight, gap);
-                if (group.BeforeRow > 0) builder.Line(viewport.Left, y, plot.Right, y, colors.Border, context.Theme.GridStrokeWidth, "heatmap-row-group-rule");
+                if (group.BeforeRow > 0) builder.Line(viewport.Left, y, plot.Right, y, colors.Border, context.Theme.GridStrokeWidth, "heatmap-row-group-rule", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 VisualStateSceneTools.Text(builder, group.Name, new ChartRect(viewport.Left, y, plot.Right - viewport.Left, group.Height),
                     VisualStateSceneTools.TickStyle(chart, context), "heatmap-row-group", "heatmap-group-" + group.BeforeRow);
             }
@@ -76,8 +77,10 @@ internal static partial class VisualMatrixCompiler {
                         var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);
                         var state = cell.HasValue ? categories.Resolve(cell.Value.State) : null;
                         var stateMark = state == null ? (ChartStateMark?)null : ChartStateMark.For(state, backdrop);
-                        var fill = stateMark?.Surface ?? (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
-                            ? series.PointColors[pointIndex]!.Value : ChartHeatmapSurface.CellColor(chart, colors, series.Color, point.Y, min, max));
+                        var explicitColor = pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null;
+                        var blend = explicitColor.HasValue ? ChartColorBlend.Solid(explicitColor.Value, SvgColorRole.Series)
+                            : ChartHeatmapSurface.CellBlend(chart, colors, series.Color, point.Y, min, max, VisualChartPaint.SeriesRole(series));
+                        var fill = stateMark?.Surface ?? blend.Color;
                         var column = ChartAxisValueFormatter.Format(chart.Options.XAxis, point.X, null, columns);
                         var label = series.Name + ", " + column + ": " + (state?.Label ?? ChartNumericFormatter.FormatValue(chart.Options, point.Y));
                         if (!string.IsNullOrWhiteSpace(cell?.Tooltip)) label += ". " + cell!.Value.Tooltip;
@@ -96,15 +99,19 @@ internal static partial class VisualMatrixCompiler {
                         var id = VisualStateSceneTools.SourceId(rowIndex, pointIndex);
                         using (VisualStateSceneTools.Mark(builder, id, kind == ChartSeriesKind.Heatmap ? "heatmap-cell" : "hexbin-cell", bounds, label, metadata, cell?.Href)) {
                           using (builder.PushClip(plot)) {
-                            if (hexPath != null) builder.Path(hexPath, fill, role: "hexbin-cell-shape", close: true);
+                            if (hexPath != null) builder.Path(hexPath, fill, role: "hexbin-cell-shape", close: true, paint: VisualChartPaint.Fill(blend.Paint));
                             else if (stateMark.HasValue) VisualStateSceneTools.StateRect(builder, bounds, stateMark.Value, radius, "heatmap-cell-shape");
                             else {
-                                builder.Rect(bounds, fill, radius: radius, role: "heatmap-cell-shape");
+                                builder.Rect(bounds, fill, radius: radius, role: "heatmap-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));
                                 var pattern = pointIndex < series.PointFillPatterns.Count ? series.PointFillPatterns[pointIndex] ?? series.FillPattern : series.FillPattern;
-                                builder.Pattern(VisualStateSceneTools.RoundedRect(bounds, radius), pattern, colors.Surface.WithOpacity(.45));
+                                builder.Pattern(VisualStateSceneTools.RoundedRect(bounds, radius), pattern, colors.Surface.WithOpacity(.45),
+                                    paint: SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(colors.Surface.WithOpacity(.45), .45));
                             }
                           }
-                          CellLabel(chart, context, builder, series, pointIndex, bounds, viewport, fill, cell, id);
+                          CellLabel(chart, context, builder, series, pointIndex, bounds, viewport,
+                              stateMark.HasValue ? ChartMarkText.OnStateMark(chart, colors, context.Frame, stateMark.Value)
+                                  : ChartMarkText.OnHeatmapCell(chart, colors, context.Frame, fill, series.Color, point.Y, min, max,
+                                      blend.FromRole ?? SvgColorRole.Ramp), cell, id);
                         }
                     }
                 }

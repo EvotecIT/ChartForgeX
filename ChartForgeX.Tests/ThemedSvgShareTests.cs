@@ -19,7 +19,7 @@ public sealed class ThemedSvgShareTests {
     private static readonly VisualDesignTokens Light = VisualDesignTokens.FromJson(Json, VisualThemeMode.Light);
     private static readonly VisualDesignTokens Dark = VisualDesignTokens.FromJson(Json, VisualThemeMode.Dark);
     private static readonly Regex Variable = new(@"var\((?<name>--[A-Za-z0-9_-]+), #[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?\)", RegexOptions.CultureInvariant);
-    private static readonly Regex Ids = new(@"\bcfx[0-9a-f]{8}", RegexOptions.CultureInvariant);
+    private static readonly Regex Ids = new(@"\bcfx(?:-v2-[0-9a-f]{64}|[0-9a-f]{8})", RegexOptions.CultureInvariant);
     private static readonly Regex Definition = new(@"<(?<tag>linearGradient|radialGradient|pattern|filter|clipPath|mask|marker)\b[^>]*(?<![\w:-])id=""(?<id>[^""]+)""[^>]*?(?:/>|>.*?</\k<tag>>)", RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
     public static IEnumerable<object[]> Families() => new[] {
@@ -104,9 +104,11 @@ public sealed class ThemedSvgShareTests {
     public void MarkText_IsWrittenByRole_WithVariables() {
         var svg = Build("categorical-text", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         // Solid marks carry the card surface as text, quiet and outlined tints the text colour.
-        Assert.Matches("data-cfx-role=\"data-label\"[^>]*fill=\"var\\(--cfx-surface-card, #FFFFFF\\)\"", svg);
-        Assert.Matches("data-cfx-role=\"data-label\"[^>]*fill=\"var\\(--cfx-text-primary, #16181C\\)\"", svg);
-        Assert.DoesNotMatch("data-cfx-role=\"data-label\"[^>]*fill=\"#", svg);
+        var fills = ByRole(XDocument.Parse(svg), "data-label").SelectMany(label => label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text"))
+            .Select(text => (string)text.Attribute("fill")!).ToArray();
+        Assert.Contains("var(--cfx-surface-card, #FFFFFF)", fills);
+        Assert.Contains("var(--cfx-text-primary, #16181C)", fills);
+        Assert.All(fills, fill => Assert.StartsWith("var(", fill));
     }
 
     [Fact]
@@ -114,15 +116,18 @@ public sealed class ThemedSvgShareTests {
         // Arrows by status, an explicit edge colour, a muted edge, and circle and diamond endpoint markers.
         string Render(VisualDesignTokens tokens) => ArrowDiagram().WithDesignTokens(tokens).ToSvg(new TopologyRenderOptions { IdScope = "themed", SvgColorVariables = tokens.ToSvgColorVariables() });
         var light = Render(Light);
-        Assert.Contains("marker-end=\"url(#themed-sites-arrow-warning)\"", light, StringComparison.Ordinal);
-        Assert.Contains("marker-start=\"url(#themed-sites-circle-color-1)\"", light, StringComparison.Ordinal);
-        Assert.Contains("marker-end=\"url(#themed-sites-diamond-muted)\"", light, StringComparison.Ordinal);
+        var document = XDocument.Parse(light);
+        XElement Edge(string id) => ByRole(document, "topology-edge").Single(edge => (string?)edge.Attribute("data-edge-id") == id);
+        XElement[] Markers(string id) => Edge(id).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").ToArray();
+        Assert.Single(Markers("a"));
+        Assert.Equal(2, Markers("b").Length);
+        Assert.Equal(new[] { "ellipse", "path" }, Markers("c").Select(marker => marker.Name.LocalName).ToArray());
+        Assert.Single(Markers("d"));
         AssertShared(light, Render(Dark));
 
-        // Every marker reference resolves, marker ids stay unique, and PNG arrows are drawn as before.
-        var ids = Regex.Matches(light, "<marker id=\"([^\"]+)\"").Cast<Match>().Select(match => match.Groups[1].Value).ToArray();
-        Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
-        foreach (Match reference in Regex.Matches(light, "marker-(?:start|end)=\"url\\(#([^)]+)\\)\"")) Assert.Contains(reference.Groups[1].Value, ids);
+        // Endpoints are actual native geometry in both SVG and PNG, and all remaining clip references resolve.
+        Assert.All(ByRole(document, "topology-marker"), marker => Assert.True(marker.Name.LocalName == "ellipse" || !string.IsNullOrWhiteSpace((string?)marker.Attribute("d"))));
+        AssertReferencesResolve(document);
         Assert.Equal(ArrowDiagram().WithDesignTokens(Light).ToPng(), ArrowDiagram().WithDesignTokens(Light).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
     }
 
@@ -132,10 +137,10 @@ public sealed class ThemedSvgShareTests {
             tokens.Warning = tokens.Palette[0]; // A shared RGB must still retain its semantic role.
             var svg = ArrowDiagram().WithDesignTokens(tokens).ToSvg(new TopologyRenderOptions { IdScope = "role", SvgColorVariables = tokens.ToSvgColorVariables() });
             var document = XDocument.Parse(svg);
-            var marker = document.Descendants().Single(e => (string?)e.Attribute("id") == "role-sites-arrow-warning");
-            Assert.Contains(marker.Descendants().Attributes("fill"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
-            var edge = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-edge-path" && ((string?)e.Attribute("marker-end"))?.Contains("arrow-warning", StringComparison.Ordinal) == true);
-            Assert.StartsWith("var(--cfx-status-warning,", (string?)edge.Attribute("stroke"));
+            var edge = ByRole(document, "topology-edge").Single(element => (string?)element.Attribute("data-edge-id") == "a");
+            var marker = edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-marker");
+            Assert.StartsWith("var(--cfx-status-warning,", (string?)marker.Attribute("fill"));
+            Assert.StartsWith("var(--cfx-status-warning,", (string?)edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line").Attribute("stroke"));
             var node = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-node" && (string?)e.Attribute("data-node-id") == "dc2");
             Assert.Contains(node.Descendants().Attributes("stroke"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
             var status = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-node-status" && (string?)e.Attribute("data-node-id") == "dc2");
@@ -144,17 +149,19 @@ public sealed class ThemedSvgShareTests {
     }
 
     [Fact]
-    public void Topology_MarkerIds_DoNotDependOnTheEdgeColour() {
-        // The same chart with other status colours (another theme) references the same markers.
+    public void Topology_MarkerGeometry_DoesNotDependOnTheEdgeColour() {
+        // Theme changes alter paint while retaining endpoint shapes and their placement.
         var light = ArrowDiagram().WithDesignTokens(Light).ToSvg();
         var dark = ArrowDiagram().WithDesignTokens(Dark).ToSvg();
-        string References(string svg) => string.Join(",", Regex.Matches(svg, "marker-(?:start|end)=\"url\\(#([^)]+)\\)\"").Cast<Match>().Select(match => match.Groups[1].Value));
-        Assert.Equal(References(light), References(dark));
+        string Geometry(string svg) => string.Join("|", ByRole(XDocument.Parse(svg), "topology-marker").Select(marker => marker.Name.LocalName + ":" +
+            string.Join(",", marker.Attributes().Where(attribute => new[] { "d", "cx", "cy", "rx", "ry" }.Contains(attribute.Name.LocalName)).Select(attribute => attribute.ToString()))));
+        Assert.NotEmpty(Geometry(light));
+        Assert.Equal(Geometry(light), Geometry(dark));
     }
 
     [Fact]
     public void Topology_TintsFollowTheTokensAndContrastWhiteStaysLiteral() {
-        var svg = Diagram().WithDesignTokens(Light).ToSvg(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() });
+        var svg = Diagram().WithDesignTokens(Light).ToSvg(new TopologyRenderOptions { NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, SvgColorVariables = Light.ToSvgColorVariables() });
         Assert.Contains("color-mix(in srgb, var(--cfx-surface-page, #F2F3F4)", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
         Assert.Equal(Diagram().WithDesignTokens(Light).ToPng(), Diagram().WithDesignTokens(Light).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
@@ -164,10 +171,18 @@ public sealed class ThemedSvgShareTests {
     public void DerivedWhite_StaysLiteralWhereTheLightCardIsWhite() {
         // The white sheen of a line equals the light card colour; it must not take the card's property.
         var svg = Build("line", Light).WithLineVisualStyle(ChartLineVisualStyle.Premium()).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
-        Assert.Matches("data-cfx-role=\"line-highlight\"[^>]*stroke=\"#FFFFFF\"", svg);
-        Assert.DoesNotMatch("data-cfx-role=\"line-highlight\"[^>]*stroke=\"var\\(", svg);
+        var highlights = ByRole(XDocument.Parse(svg), "line-highlight");
+        Assert.NotEmpty(highlights);
+        Assert.All(highlights, highlight => {
+            var stroke = (string)highlight.Attribute("stroke")!;
+            Assert.DoesNotContain("var(", stroke, StringComparison.Ordinal);
+            var color = ChartColor.Parse(stroke);
+            Assert.Equal(ChartColor.White, color.WithAlpha(255));
+            Assert.True(color.A > 0);
+        });
         // Applied to finished markup, the variables still match by value.
-        Assert.Matches("data-cfx-role=\"line-highlight\"[^>]*stroke=\"var\\(--cfx-surface-card", Light.ToSvgColorVariables().Apply(Build("line", Light).ToSvg()));
+        var mapped = Light.ToSvgColorVariables().Apply(Build("line", Light).WithLineVisualStyle(ChartLineVisualStyle.Premium()).ToSvg());
+        Assert.All(ByRole(XDocument.Parse(mapped), "line-highlight"), highlight => Assert.Contains("var(--cfx-surface-card", (string)highlight.Attribute("stroke")!, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -189,15 +204,15 @@ public sealed class ThemedSvgShareTests {
     }
 
     [Fact]
-    public void PaintTokens_CannotBeForgedFromChartText_AndIdsIgnoreVariables() {
+    public void PaintTokens_CannotBeForgedFromChartText_AndExportReferencesResolve() {
         var label = "\uFDD0L\uFDD1 and \uFDD0LFFFFFFFF\uFDD1";
         var chart = Build("line", Light).AddHorizontalLine(3, label).WithTitle(label);
         var svg = chart.ToSvg();
         AssertNotResolved(svg);
         var themed = Build("line", Light).AddHorizontalLine(3, label).WithTitle(label).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         AssertNotResolved(themed);
-        string Id(string markup) => Regex.Match(markup, "<g id=\"(cfx[0-9a-f]{8})\"").Groups[1].Value;
-        Assert.Equal(Id(svg), Id(themed));
+        AssertReferencesResolve(XDocument.Parse(svg));
+        AssertReferencesResolve(XDocument.Parse(themed));
 
         var grid = new ChartGrid().Add(Build("line", Light)).WithTitle(Forged).WithSvgColorVariables(Light.ToSvgColorVariables());
         AssertNotResolved(grid.ToSvg());
@@ -221,15 +236,13 @@ public sealed class ThemedSvgShareTests {
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
             LegendMode = TopologyLegendMode.Auto, SvgColorVariables = tokens.ToSvgColorVariables()
         }));
-        foreach (string role in new[] { "topology-node", "topology-group", "topology-legend" }) {
+        foreach (string role in new[] { "topology-node", "topology-group", "topology-legend-item" }) {
             var elements = svg.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == role);
-            var tints = elements.SelectMany(e => e.DescendantsAndSelf().Attributes("fill"))
-                .Where(a => a.Value.StartsWith("color-mix(", StringComparison.Ordinal)).ToArray();
-            Assert.NotEmpty(tints);
-            foreach (var tint in tints) {
-                Assert.Contains("var(--cfx-series-1,", tint.Value, StringComparison.Ordinal);
-                Assert.DoesNotContain("--cfx-status-warning", tint.Value, StringComparison.Ordinal);
-            }
+            if (role == "topology-legend-item") elements = elements.Where(element => (string?)element.Attribute("data-legend-kind") == "node");
+            var accents = elements.SelectMany(e => e.DescendantsAndSelf().Attributes().Where(attribute => attribute.Name.LocalName is "fill" or "stroke"))
+                .Where(attribute => attribute.Value.Contains("var(--cfx-series-1,", StringComparison.Ordinal)).ToArray();
+            Assert.NotEmpty(accents);
+            Assert.All(accents, accent => Assert.DoesNotContain("--cfx-status-warning", accent.Value, StringComparison.Ordinal));
         }
     }
 
@@ -280,18 +293,28 @@ public sealed class ThemedSvgShareTests {
     /// <summary>Pairs every text drawn on a mark with the mark's fill as it appears on <paramref name="backdrop"/>.</summary>
     private static List<(ChartColor Fill, ChartColor Text, string Label)> MarkTexts(string svg, ChartColor backdrop) {
         var result = new List<(ChartColor, ChartColor, string)>();
-        ChartColor? mark = null;
-        foreach (var element in XDocument.Parse(svg).Descendants()) {
-            var role = (string?)element.Attribute("data-cfx-role");
-            if (role != null && MarkRoles.Contains(role)) {
-                var opacity = double.Parse((string?)element.Attribute("fill-opacity") ?? "1", CultureInfo.InvariantCulture);
-                mark = Over(ChartColor.FromHex((string)element.Attribute("fill")!), opacity, backdrop);
-            } else if (mark.HasValue && role is "data-label" or "gantt-lane-item-label") {
-                result.Add((mark.Value, ChartColor.FromHex((string)element.Attribute("fill")!), element.Value));
+        foreach (var mark in XDocument.Parse(svg).Descendants().Where(element => MarkRoles.Contains((string?)element.Attribute("data-cfx-role") ?? ""))) {
+            var geometry = mark.DescendantsAndSelf().First(element => element.Name.LocalName is "rect" or "path" && (string?)element.Attribute("fill") is not (null or "none"));
+            var fill = ChartColor.Parse((string)geometry.Attribute("fill")!);
+            var opacity = double.Parse((string?)geometry.Attribute("fill-opacity") ?? "1", CultureInfo.InvariantCulture) * fill.A / 255d;
+            var shown = Over(fill, opacity, backdrop);
+            foreach (var text in mark.Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") is "data-label" or "gantt-lane-item-label"))) {
+                var ink = ChartColor.Parse((string)text.Attribute("fill")!);
+                result.Add((shown, Over(ink, ink.A / 255d, shown), text.Value));
             }
         }
 
         return result;
+    }
+
+    private static XElement[] ByRole(XDocument document, string role) => document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
+
+    private static void AssertReferencesResolve(XDocument document) {
+        var ids = document.Descendants().Attributes("id").Select(attribute => attribute.Value).ToArray();
+        Assert.NotEmpty(ids);
+        Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
+        foreach (var attribute in document.Descendants().Attributes()) foreach (Match reference in Regex.Matches(attribute.Value, @"url\(#([^)]+)\)"))
+            Assert.Contains(reference.Groups[1].Value, ids);
     }
 
     private static ChartColor Over(ChartColor top, double opacity, ChartColor bottom) => ChartColor.FromRgb(

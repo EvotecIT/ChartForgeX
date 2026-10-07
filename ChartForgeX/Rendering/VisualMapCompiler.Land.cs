@@ -12,29 +12,33 @@ internal static partial class VisualMapCompiler {
         Surface(chart, context, builder, map, colors, "dotted-map-surface");
         if (chart.Options.ShowGrid) {
             for (var index = 1; index < 4; index++) builder.Line(map.Left + map.Width * index / 4, map.Top, map.Left + map.Width * index / 4, map.Bottom,
-                ChartColorMath.WithOpacity(colors.Border, .22), context.Theme.GridStrokeWidth, "dotted-map-graticule");
+                ChartColorMath.WithOpacity(colors.Border, .22), context.Theme.GridStrokeWidth, "dotted-map-graticule", paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Border, .22), .22)));
             for (var index = 1; index < 3; index++) builder.Line(map.Left, map.Top + map.Height * index / 3, map.Right, map.Top + map.Height * index / 3,
-                ChartColorMath.WithOpacity(colors.Border, .18), context.Theme.GridStrokeWidth, "dotted-map-graticule");
+                ChartColorMath.WithOpacity(colors.Border, .18), context.Theme.GridStrokeWidth, "dotted-map-graticule", paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Border, .18), .18)));
         }
         var boundaries = BoundaryLines(viewport); var light = ChartDottedMapSurface.IsLightSurface(colors.Surface);
         var landColor = ChartColorMath.WithOpacity(ChartDottedMapSurface.LandAreaColor(colors.Surface, colors.MutedForeground), ChartDottedMapSurface.LandAreaOpacity(colors.Surface));
         var boundary = ChartColorMath.WithOpacity(ChartDottedMapSurface.BoundaryColor(colors.Surface, colors.MutedForeground), ChartDottedMapSurface.BoundaryOpacity(colors.Surface));
+        var landPaint = ChartDottedMapSurface.LandAreaBlend(colors.Surface, colors.MutedForeground).Paint.WithOpacity(landColor, ChartDottedMapSurface.LandAreaOpacity(colors.Surface));
+        var boundaryPaint = ChartDottedMapSurface.BoundaryBlend(colors.Surface, colors.MutedForeground).Paint.WithOpacity(boundary, ChartDottedMapSurface.BoundaryOpacity(colors.Surface));
         foreach (var line in boundaries) {
             var closed = line.Length >= 4 && Math.Abs(line[0].X - line[line.Length - 1].X) <= .9 && Math.Abs(line[0].Y - line[line.Length - 1].Y) <= .9;
             var geometry = Path(new[] { (IReadOnlyList<ChartPoint>)line.Select(point => Geographic(point, viewport, map)).ToArray() });
-            builder.Path(geometry, closed ? landColor : (ChartColor?)null, boundary, Math.Max(.5, dot * .3), "dotted-map-boundary", close: closed);
+            builder.Path(geometry, closed ? landColor : (ChartColor?)null, boundary, Math.Max(.5, dot * .3), "dotted-map-boundary", close: closed,
+                paint: new VisualScenePaintBinding(closed ? landPaint : (SvgPaint?)null, boundaryPaint));
         }
         if (Same(viewport, ChartMapViewport.Poland())) builder.Path(Path(new[] { (IReadOnlyList<ChartPoint>)WorldMapDots.PolandOutline.Select(point => Geographic(point, viewport, map)).ToArray() }),
-            landColor, boundary, Math.Max(.5, dot * .3), "dotted-map-outline", close: true);
+            landColor, boundary, Math.Max(.5, dot * .3), "dotted-map-outline", close: true, paint: new VisualScenePaintBinding(landPaint, boundaryPaint));
         if (light && (boundaries.Length > 0 || Same(viewport, ChartMapViewport.Poland()))) return;
         var dots = LandDots(viewport); var offsets = Offsets(viewport);
         var fill = ChartColorMath.WithOpacity(ChartDottedMapSurface.LandDotColor(colors.Surface, colors.MutedForeground), ChartDottedMapSurface.LandDotOpacity(colors.Surface));
+        var dotPaint = ChartDottedMapSurface.LandDotBlend(colors.Surface, colors.MutedForeground).Paint.WithOpacity(fill, ChartDottedMapSurface.LandDotOpacity(colors.Surface));
         foreach (var source in dots) foreach (var offset in offsets) {
             var coordinate = new ChartPoint(source.X + offset.X, source.Y + offset.Y);
             if (!Visible(coordinate, viewport) || Same(viewport, ChartMapViewport.Poland()) && !Inside(WorldMapDots.PolandOutline, coordinate)) continue;
             var point = Geographic(coordinate, viewport, map);
             var radius = boundaries.Length == 0 ? dot / 2 : Math.Min(dot / 2, Math.Max(.8, dot * .34));
-            builder.Ellipse(point.X, point.Y, radius, radius, fill, role: "dotted-map-land-dot");
+            builder.Ellipse(point.X, point.Y, radius, radius, fill, role: "dotted-map-land-dot", paint: VisualChartPaint.Fill(dotPaint));
         }
     }
 

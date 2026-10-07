@@ -59,14 +59,4 @@ internal static partial class SmokeTests {
         return double.Parse(parts[4], CultureInfo.InvariantCulture) - double.Parse(parts[1], CultureInfo.InvariantCulture);
     }
 
-    private static string GetStringAttribute(string text, string marker, string attribute) {
-        var start = text.IndexOf(marker, StringComparison.Ordinal);
-        if (start < 0) throw new InvalidOperationException("Missing marker: " + marker);
-        var attributeMarker = " " + attribute + "=\"";
-        start = text.IndexOf(attributeMarker, start, StringComparison.Ordinal);
-        if (start < 0) throw new InvalidOperationException("Missing attribute: " + attribute);
-        start += attributeMarker.Length;
-        var end = text.IndexOf("\"", start, StringComparison.Ordinal);
-        return text.Substring(start, end - start);
-    }
 }

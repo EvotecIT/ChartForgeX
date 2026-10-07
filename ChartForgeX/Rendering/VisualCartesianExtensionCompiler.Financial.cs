@@ -33,7 +33,7 @@ internal static partial class VisualCartesianCompiler {
                     var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotBodyFillOpacity);
                     var radius = Math.Min(ChartVisualPrimitives.BoxPlotBodyRadius, box.Height / 2);
                     builder.Rect(box, fill, color, stroke, radius, role: "boxplot-body");
-                    DrawPattern(builder, RoundedRectanglePath(box, radius), ObservationPattern(series, item), fill, colors.Surface, "boxplot-pattern");
+                    DrawPattern(builder, RoundedRectanglePath(box, radius), ObservationPattern(series, item), fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "boxplot-pattern");
                     builder.Line(box.Left, map.Y(median), box.Right, map.Y(median), color,
                         series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth, role: "boxplot-median");
                 }
@@ -56,7 +56,7 @@ internal static partial class VisualCartesianCompiler {
                         var opacity = rising ? ChartVisualPrimitives.CandlestickRisingFillOpacity : ChartVisualPrimitives.CandlestickFallingFillOpacity;
                         var fill = ChartColorMath.WithOpacity(color, opacity); var radius = Math.Min(ChartVisualPrimitives.CandlestickBodyRadius, height / 2);
                         builder.Rect(body, fill, color, stroke, radius, role: "candlestick-body");
-                        DrawPattern(builder, RoundedRectanglePath(body, radius), ObservationPattern(series, item), fill, colors.Surface, "candlestick-pattern");
+                        DrawPattern(builder, RoundedRectanglePath(body, radius), ObservationPattern(series, item), fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "candlestick-pattern");
                     } else {
                         builder.Line(x - width / 2, openY, x, openY, color, stroke, role: "ohlc-open");
                         builder.Line(x, closeY, x + width / 2, closeY, color, stroke, role: "ohlc-close");

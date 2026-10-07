@@ -4,10 +4,10 @@ using ChartForgeX.VisualArtifacts;
 namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
-    private VisualArtifactInterchangeEnvelope SemanticSnapshot() {
+    private VisualArtifactInterchangeEnvelope SemanticSnapshot(ChartForgeX.Accessibility.VisualAccessibility accessibility) {
         var snapshot = TopologyLayoutEngine.Clone(_chart);
         snapshot.Legend = _legend;
-        snapshot.Title = _context.Frame.Title ?? _source.Title; snapshot.Subtitle = _context.Frame.Subtitle ?? _source.Subtitle;
+        snapshot.Title = HeadingOrSource(_context.Frame.Title, _source.Title); snapshot.Subtitle = HeadingOrSource(_context.Frame.Subtitle, _source.Subtitle);
         snapshot.Viewport = new TopologyViewport { Width = _context.Layout.Size.Width, Height = _context.Layout.Size.Height, Padding = _context.Layout.Padding };
         foreach (var group in snapshot.Groups) {
             var b = Bounds(group.X, group.Y, group.Width, group.Height);
@@ -37,10 +37,9 @@ internal sealed partial class VisualTopologyCompiler {
                 envelope.Edges[i].ResolvedRoute.Add(new VisualArtifactInterchangePoint { X = p.X, Y = p.Y });
             }
         }
-        envelope.AccessibleName = _source.Accessibility.Name ?? _context.Frame.Title ?? _source.Title ?? _source.Id;
-        envelope.AccessibleDescription = _source.Accessibility.Description ?? _context.Frame.Subtitle ?? _source.Subtitle;
+        envelope.AccessibleName = accessibility.Name;
+        envelope.AccessibleDescription = accessibility.Description;
         envelope.Extensions["chartforgex.geometry"] = "prepared-scene";
-        envelope.Validate();
         return envelope;
     }
 

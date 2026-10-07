@@ -29,6 +29,7 @@ internal static partial class VisualSceneSvgRenderer {
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
         WriteClips(writer, scene, prefix, options);
+        WriteFontPalettes(writer, scene);
         for (var i = 0; i < scene.Nodes.Count; i++) {
             var node = scene.Nodes[i];
             if (node is VisualSceneGroup group) {
@@ -142,10 +143,21 @@ internal static partial class VisualSceneSvgRenderer {
                 .Attribute("xml:space", "preserve");
             var css = "white-space:pre";
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
-            if (style.OpenTypeLanguageTag != null) css += ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
+            css += style.OpenTypeLanguageTag == null ? ";font-language-override:normal" : ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
+            css += ";font-palette:" + ChartForgeX.Typography.TypographyPaletteCss.Name(style.Font.ColorPaletteIndex);
             writer.Attribute("style", css).Text(line.Text).EndElement();
         }
         writer.EndElement();
+    }
+
+    private static void WriteFontPalettes(SvgMarkupWriter writer, VisualScene scene) {
+        var styles = new System.Collections.Generic.List<ChartForgeX.Typography.TextStyleOverride>();
+        foreach (var node in scene.Nodes) if (node is VisualSceneText text) {
+            var font = text.Text.Style.Font;
+            styles.Add(new ChartForgeX.Typography.TextStyleOverride { FontFamily = font.Family, ColorPaletteIndex = font.ColorPaletteIndex });
+        }
+        if (styles.Count == 0) return;
+        writer.StartElement("style").Text(ChartForgeX.Typography.TypographyPaletteCss.Rules(string.Empty, styles.ToArray())).EndElement();
     }
 
     private static string PathData(VisualScenePath path) {

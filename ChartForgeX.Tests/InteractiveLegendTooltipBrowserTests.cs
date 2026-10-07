@@ -17,7 +17,7 @@ public sealed class InteractiveLegendTooltipBrowserTests {
 
         await page.Locator(Legend(1)).FocusAsync();
         AssertSummary(await TooltipTextAsync(page), "Warnings", "Latest (Sun)", "72");
-        var colours = await page.EvaluateAsync<string[]>("() => [getComputedStyle(document.querySelector('.cfx-tooltip__swatch')).backgroundColor, getComputedStyle(document.querySelector('[data-cfx-role=\"line\"][data-cfx-series=\"1\"]')).stroke]");
+        var colours = await page.EvaluateAsync<string[]>("() => [getComputedStyle(document.querySelector('.cfx-tooltip__swatch')).backgroundColor, getComputedStyle(document.querySelector('[data-cfx-role=\"series\"][data-cfx-series=\"1\"] [data-cfx-role=\"line\"]')).stroke]");
         Assert.Equal(colours[1], colours[0]);
         await page.Locator(Legend(1)).BlurAsync();
 

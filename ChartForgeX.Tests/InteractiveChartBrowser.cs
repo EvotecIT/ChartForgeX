@@ -13,7 +13,7 @@ internal static class InteractiveChartBrowser {
     /// <summary>Environment switch shared with the other EvotecIT browser suites; browser tests return early unless it is "1".</summary>
     internal const string EnableVariable = "HFX_TEST_ENABLE_PLAYWRIGHT";
 
-    internal const string PointTarget = "circle[data-cfx-role=\"line-point-target\"]";
+    internal const string PointTarget = "g[data-cfx-role=\"point\"]";
 
     internal static bool Enabled => string.Equals(Environment.GetEnvironmentVariable(EnableVariable), "1", StringComparison.Ordinal);
 

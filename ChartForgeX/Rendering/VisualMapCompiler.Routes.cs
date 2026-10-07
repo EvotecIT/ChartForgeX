@@ -22,6 +22,7 @@ internal static partial class VisualMapCompiler {
             var visible = source.All(point => Visible(point, viewport)); var id = "map-route-" + index;
             var route = source.Select(point => Geographic(point, viewport, map)).ToArray();
             var color = connector.Color ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Medium.Fill);
+            var paint = SvgPaint.Of(color, connector.Color.HasValue || series.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status);
             builder.AddRegion(new VisualSemanticRegion(id, "dotted-map-connector", visible ? Intersect(Bounds(route), map) : map,
                 connector.Label + ": " + string.Join(" → ", source.Select(point => N(point.X) + ", " + N(point.Y)))));
             using (builder.PushGroup(id, "dotted-map-connector-source", new Dictionary<string, string> {
@@ -44,8 +45,9 @@ internal static partial class VisualMapCompiler {
                     route[0].X + (control.X - route[0].X) * 2 / 3, route[0].Y + (control.Y - route[0].Y) * 2 / 3,
                     route[1].X + (control.X - route[1].X) * 2 / 3, route[1].Y + (control.Y - route[1].Y) * 2 / 3, route[1].X, route[1].Y) });
                 var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : Math.Max(1.2, dot * .78);
-                builder.Path(geometry, stroke: ChartColorMath.WithOpacity(colors.Surface, .72), strokeWidth: width + dot, role: "dotted-map-connector-halo");
-                builder.Path(geometry, stroke: ChartColorMath.WithOpacity(color, .72), strokeWidth: width, role: "dotted-map-connector");
+                builder.Path(geometry, stroke: ChartColorMath.WithOpacity(colors.Surface, .72), strokeWidth: width + dot, role: "dotted-map-connector-halo",
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .72), .72)));
+                builder.Path(geometry, stroke: ChartColorMath.WithOpacity(color, .72), strokeWidth: width, role: "dotted-map-connector", paint: VisualChartPaint.Stroke(paint.WithOpacity(ChartColorMath.WithOpacity(color, .72), .72)));
                 var samples = geometry.Flatten(3); var tip = Along(samples, .63); var before = Along(samples, .58); var after = Along(samples, .68);
                 var direction = Distance(before, after);
                 if (direction > .000001) {
@@ -54,12 +56,14 @@ internal static partial class VisualMapCompiler {
                     var back = new ChartPoint(tip.X - ux * arrowLength, tip.Y - uy * arrowLength);
                     builder.Path(Path(new[] { (IReadOnlyList<ChartPoint>)new[] { tip, new ChartPoint(back.X - uy * arrowWidth / 2, back.Y + ux * arrowWidth / 2),
                         new ChartPoint(back.X + uy * arrowWidth / 2, back.Y - ux * arrowWidth / 2) } }), ChartColorMath.WithOpacity(color, .78), colors.Surface,
-                        Math.Min(width * .48, arrowWidth / 4), "dotted-map-connector-arrow", close: true);
+                        Math.Min(width * .48, arrowWidth / 4), "dotted-map-connector-arrow", close: true,
+                        paint: new VisualScenePaintBinding(paint.WithOpacity(ChartColorMath.WithOpacity(color, .78), .78), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 }
                 if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) {
                     var style = MapDataStyle(chart, context, -1, color);
                     AddMapLabel(builder, labels, connector.Label, ChartRouteLabelCompaction.Compact(connector.Label), Along(samples, .36), style,
-                        id + "-label", "dotted-map-connector-label", plot, context.Theme.Spacing + dot, 30);
+                        id + "-label", "dotted-map-connector-label", plot, context.Theme.Spacing + dot, 30,
+                        paint: VisualChartPaint.ExplicitDataLabelColor(chart) ? VisualChartPaint.Text(style) : paint);
                 }
             }
         }

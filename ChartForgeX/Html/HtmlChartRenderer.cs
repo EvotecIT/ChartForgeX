@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using ChartForgeX.Core;
-using ChartForgeX.Svg;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Html;
 
@@ -9,8 +9,6 @@ namespace ChartForgeX.Html;
 /// Renders charts as dependency-free HTML with inline SVG.
 /// </summary>
 public sealed class HtmlChartRenderer {
-    private readonly SvgChartRenderer _svg = new();
-
     /// <summary>
     /// Renders a chart as an embeddable HTML fragment.
     /// </summary>
@@ -29,13 +27,17 @@ public sealed class HtmlChartRenderer {
     private string RenderFragment(Chart chart, string idScope, bool constrainMaxWidth) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
+        var request = VisualExportRequest.ForChart(chart);
+        var prepared = chart.Prepare(request.Context);
+        var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
+        var svg = prefix == null ? prepared.ToSvg() : prepared.ToSvg(prefix);
         var style = (constrainMaxWidth ? "width:100%;max-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;" : string.Empty) + "box-sizing:border-box;overflow:visible";
         return new HtmlMarkupWriter()
             .StartElement("div")
             .Attribute("class", "chartforgex-chart")
             .Attribute("style", style)
             .EndStartElement()
-            .RawTrusted(_svg.Render(chart, idScope))
+            .RawTrusted(svg)
             .EndElement()
             .Build();
     }
@@ -69,7 +71,7 @@ public sealed class HtmlChartRenderer {
         if (css != null) writer.StartElement("style").EndStartElement().RawTrusted(css).EndElement().Line();
     }
 
-    private static string CssFontFamily(string value) {
+    internal static string CssFontFamily(string value) {
         if (string.IsNullOrWhiteSpace(value)) return "system-ui, sans-serif";
         return value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
     }

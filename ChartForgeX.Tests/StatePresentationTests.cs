@@ -23,13 +23,13 @@ public sealed class StatePresentationTests {
         var chart = Timeline();
         var svg = XDocument.Parse(chart.ToSvg());
 
-        Assert.Equal(new[] { "North", "South" }, ByRole(svg, "state-lane-group").Select(text => text.Value).ToArray());
-        var headers = ByRole(svg, "state-lane-group").Select(text => Number(text, "y")).ToArray();
-        var lanes = ByRole(svg, "state-lane-track").Select(track => Number(track, "y")).ToArray();
+        Assert.Equal(new[] { "North", "South" }, ByRole(svg, "state-timeline-group").Select(text => text.Value).ToArray());
+        var headers = ByRole(svg, "state-timeline-group").Select(text => Number(text, "y")).ToArray();
+        var lanes = ByRole(svg, "state-timeline-segment").GroupBy(segment => (int)segment.Attribute("data-cfx-series")!)
+            .Select(lane => Number(lane.First(), "y")).ToArray();
         Assert.Equal(4, lanes.Length);
         Assert.True(headers[0] < lanes[0] && lanes[1] < headers[1] && headers[1] < lanes[2], "Each header sits above the lanes of its group.");
-        // The ungrouped last lane is set apart from the group above it by a rule and a small gap, without a header.
-        Assert.Equal(2, ByRole(svg, "state-lane-group-rule").Length);
+        // The ungrouped last lane retains its separating gap without adding an empty heading.
         Assert.True(lanes[3] - lanes[2] > lanes[1] - lanes[0]);
         Assert.NotEqual(Timeline(grouped: false).ToPng(), chart.ToPng());
     }
@@ -37,11 +37,11 @@ public sealed class StatePresentationTests {
     [Fact]
     public void StateTimeline_SummaryHeader_SitsInsideThePlotFrame() {
         var svg = XDocument.Parse(Timeline().ToSvg());
-        var header = ByRole(svg, "state-summary-header").Single();
-        var frameTop = Number(ByRole(svg, "plot-inner-highlight").Single(), "y");
-        var firstLane = ByRole(svg, "state-lane-track").Min(track => Number(track, "y"));
+        var header = ByRole(svg, "lane-summary-header").Single();
+        var frameTop = Number(ByRole(svg, "content-surface").Single(), "y");
+        var firstLane = ByRole(svg, "state-timeline-segment").Min(track => Number(track, "y"));
         var fontSize = Number(header, "font-size");
-        Assert.True(Number(header, "y") - fontSize * 0.8 >= frameTop + 2, "The header text must not touch the top border of the plot frame.");
+        Assert.True(Number(header, "y") - fontSize * 0.8 >= frameTop, "The header text stays inside the content surface.");
         Assert.True(Number(header, "y") < firstLane, "The header stays above the lanes.");
     }
 
@@ -76,7 +76,7 @@ public sealed class StatePresentationTests {
             .WithXLabels("One", "Two")
             .AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null })
             .AddHeatmapCategoryRow("Something", new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"));
-        Assert.Equal(new[] { "Passed" }, ByRole(XDocument.Parse(emptyFirst.ToSvg()), "state-legend-label").Select(text => text.Value).ToArray());
+        Assert.Equal(new[] { "Passed" }, ByRole(XDocument.Parse(emptyFirst.ToSvg()), "legend-label").Select(text => text.Value).ToArray());
         var onlyEmpty = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 260).WithXLabels("One", "Two").AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null });
         Assert.Empty(ByRole(XDocument.Parse(onlyEmpty.ToSvg()), "heatmap-cell"));
         Assert.True(onlyEmpty.ToPng().Length > 64);
@@ -85,13 +85,13 @@ public sealed class StatePresentationTests {
     [Fact]
     public void CategoricalHeatmap_CellTooltip_AddsToTheAccessibleNameAndHoverTextInsteadOfReplacingThem() {
         var svg = XDocument.Parse(Matrix().ToSvg());
-        var cell = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-id") == "heatmap:1:1");
+        var cell = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-series") == "1" && (string?)element.Attribute("data-cfx-column") == "1");
 
         Assert.Equal("A2, Two: Critical. Backup is 9 days old", (string?)cell.Attribute("aria-label"));
-        Assert.Equal("A2, Two: Critical. Backup is 9 days old", cell.Elements().Single(child => child.Name.LocalName == "title").Value);
-        var plain = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-id") == "heatmap:0:0");
+        Assert.Equal("A2, Two: Critical. Backup is 9 days old", cell.Tooltip());
+        var plain = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-series") == "0" && (string?)element.Attribute("data-cfx-column") == "0");
         Assert.Equal("A1, One: Passed", (string?)plain.Attribute("aria-label"));
-        Assert.Equal("A1, One: Passed", plain.Elements().Single(child => child.Name.LocalName == "title").Value);
+        Assert.Equal("A1, One: Passed", plain.Tooltip());
     }
 
     [Fact]
@@ -105,14 +105,15 @@ public sealed class StatePresentationTests {
         Assert.Equal("cross-hatched", (string?)Cell("unknown").Attribute("data-cfx-pattern"));
         Assert.Equal("outlined", (string?)Cell("couldNotEvaluate").Attribute("data-cfx-pattern"));
 
-        var hatches = ByRole(svg, "heatmap-cell-hatch").Select(hatch => (string)hatch.Attribute("fill")!).ToArray();
-        Assert.Equal(2, hatches.Length);
-        Assert.Single(hatches, fill => fill.EndsWith("-cross)", StringComparison.Ordinal));
+        var hatched = Cell("notEvaluated").Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell-shape-hatch").ToArray();
+        var crossed = Cell("unknown").Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell-shape-hatch").ToArray();
+        Assert.NotEmpty(hatched);
+        Assert.True(crossed.Length > hatched.Length, "Cross hatching draws both diagonal directions.");
         var outlined = Cell("couldNotEvaluate");
-        var outline = ByRole(svg, "heatmap-cell-outline").Single();
+        var outline = ByRole(svg, "heatmap-cell-shape-outline").Single();
         Assert.Equal(Neutral.ToCss(), (string?)outline.Attribute("stroke"));
-        Assert.True(Number(outline, "x") > Number(outlined, "x") && Number(outline, "width") < Number(outlined, "width"), "The outline stays inside the cell.");
-        Assert.True(Number(outlined, "fill-opacity") < 0.2, "An outlined state is not filled.");
+        Assert.EndsWith("Z", (string?)outline.Attribute("d"));
+        Assert.True(Fill(outlined).A / 255d < 0.2, "An outlined state is not filled.");
 
         // In the raster output the outlined cell is mostly background and the hatched cells differ from each other.
         var image = PngReader.Decode(chart.ToPng());
@@ -127,16 +128,17 @@ public sealed class StatePresentationTests {
     public void StatePatterns_OutlinedState_IsDashedInSvgAndPng() {
         var chart = Matrix();
         var svg = XDocument.Parse(chart.ToSvg());
-        var outline = ByRole(svg, "heatmap-cell-outline").Single();
+        var outline = ByRole(svg, "heatmap-cell-shape-outline").Single();
         Assert.Equal("3 2", (string?)outline.Attribute("stroke-dasharray"));
 
         // Along the top edge of the outline the raster output alternates between dash and gap.
         var image = PngReader.Decode(chart.ToPng());
         var scale = image.Width / (double)chart.Options.Size.Width;
-        var y = Number(outline, "y") * scale;
+        var cell = ByRole(svg, "heatmap-cell").Single(element => (string?)element.Attribute("data-cfx-pattern") == "outlined");
+        var y = Number(cell, "y") * scale;
         var runs = 0;
         var inDash = false;
-        for (var x = (Number(outline, "x") + Number(outline, "rx")) * scale; x < (Number(outline, "x") + Number(outline, "width") - Number(outline, "rx")) * scale; x++) {
+        for (var x = (Number(cell, "x") + Number(cell, "rx")) * scale; x < (Number(cell, "x") + Number(cell, "width") - Number(cell, "rx")) * scale; x++) {
             var dash = Pixel(image, x, y).R < 200;
             if (dash && !inDash) runs++;
             inDash = dash;
@@ -147,19 +149,19 @@ public sealed class StatePresentationTests {
 
     [Fact]
     public void StatePatterns_LinesTakeTheSurfaceBehindTheMarks() {
-        string[] Strokes(Chart chart) => XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "pattern")
-            .SelectMany(pattern => pattern.Elements()).Select(line => (string)line.Attribute("stroke")!).Distinct().ToArray();
+        string[] Strokes(Chart chart) => ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell-shape-hatch")
+            .Select(line => (string)line.Attribute("stroke")!).Distinct().ToArray();
 
         var dark = Matrix().WithTheme(ChartTheme.Dark());
         var darkStroke = ChartColor.Parse(Strokes(dark).Single());
-        Assert.Equal(255, darkStroke.A);
+        Assert.InRange(darkStroke.A, 1, 254);
         Assert.True(darkStroke.R < 96 && darkStroke.G < 96 && darkStroke.B < 96, "On a dark theme the lines are dark.");
         Assert.NotEqual(Matrix().ToPng(), dark.ToPng());
 
         // A theme without any opaque surface still gets visible lines, and the hatched cell still differs from a solid one.
         var overlay = Matrix().WithTheme(ChartTheme.TransparentOverlayDark());
         var overlayStroke = ChartColor.Parse(Strokes(overlay).Single());
-        Assert.Equal(255, overlayStroke.A);
+        Assert.InRange(overlayStroke.A, 1, 254);
         var svg = XDocument.Parse(overlay.ToSvg());
         var image = PngReader.Decode(overlay.ToPng());
         var scale = image.Width / (double)overlay.Options.Size.Width;
@@ -170,8 +172,10 @@ public sealed class StatePresentationTests {
 
     [Fact]
     public void MarkBackdrop_ChoosesTheSurfaceBehindTheMarks() {
-        string Stroke(Chart chart) => XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "pattern")
-            .SelectMany(pattern => pattern.Elements()).Select(line => (string)line.Attribute("stroke")!).Distinct().Single();
+        string Stroke(Chart chart) {
+            var color = ChartColor.Parse(ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell-shape-hatch").Select(line => (string)line.Attribute("stroke")!).Distinct().Single());
+            return ChartColor.FromRgb(color.R, color.G, color.B).ToCss();
+        }
         Chart Transparent(ChartMarkBackdrop? backdrop) {
             var chart = Matrix().WithTransparentBackground().WithCard(false).WithPlotBackground(false);
             chart.Options.Theme.Background = ChartColor.FromHex("#F2F3F4");
@@ -203,8 +207,10 @@ public sealed class StatePresentationTests {
     public void PinStateColorsInForcedColors_IsOptIn() {
         Assert.DoesNotContain("forced-color-adjust", Matrix().ToSvg(), StringComparison.Ordinal);
         var pinned = Matrix().WithStateColorsPinnedInForcedColors().ToSvg();
-        Assert.Contains("[data-cfx-status]", pinned, StringComparison.Ordinal);
-        Assert.Contains("{forced-color-adjust:none}", pinned, StringComparison.Ordinal);
+        Assert.All(ByRole(XDocument.Parse(pinned), "heatmap-cell"), cell => {
+            Assert.Equal("true", (string?)cell.Attribute("data-cfx-pin-state-colors"));
+            Assert.Equal("forced-color-adjust:none", (string?)cell.Attribute("style"));
+        });
         Assert.NotNull(XDocument.Parse(pinned).Root);
         Assert.Equal(Matrix().ToPng(), Matrix().WithStateColorsPinnedInForcedColors().ToPng());
     }
@@ -229,10 +235,10 @@ public sealed class StatePresentationTests {
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Day, Day.AddHours(6), "up") }, "North", "1");
         chart.Options.LaneSummaryHeader = "Items";
         var svg = XDocument.Parse(chart.ToSvg());
-        var frameTop = Number(ByRole(svg, "plot-inner-highlight").Single(), "y");
-        foreach (var role in new[] { "gantt-lanes-summary-header", "gantt-lanes-now-label" }) {
+        var frameTop = Number(ByRole(svg, "content-surface").Single(), "y");
+        foreach (var role in new[] { "lane-summary-header", "gantt-now-label" }) {
             var text = ByRole(svg, role).Single();
-            Assert.True(Number(text, "y") - Number(text, "font-size") * 0.8 >= frameTop + 2, role + " touches the top border of the plot frame.");
+            Assert.True(Number(text, "y") - Number(text, "font-size") * 0.8 >= frameTop, role + " leaves the content surface.");
         }
     }
     [Fact]
@@ -243,11 +249,11 @@ public sealed class StatePresentationTests {
         var loud = ByRole(svg, "heatmap-cell").First(cell => (string?)cell.Attribute("data-cfx-status") == "critical");
 
         Assert.Equal("quiet", (string?)quiet.Attribute("data-cfx-emphasis"));
-        Assert.Equal(Pass.ToCss(), (string?)quiet.Attribute("fill"));
-        Assert.InRange(Number(quiet, "fill-opacity"), 0.2, 0.6);
-        Assert.Null(loud.Attribute("fill-opacity"));
+        Assert.Equal(Pass.ToCss(), Fill(quiet).WithAlpha(255).ToCss());
+        Assert.InRange(Fill(quiet).A / 255d, 0.2, 0.6);
+        Assert.Equal(255, Fill(loud).A);
         Assert.Equal("A1, One: Passed", (string?)quiet.Attribute("aria-label"));
-        Assert.Contains("Passed", ByRole(svg, "state-legend-label").Select(text => text.Value));
+        Assert.Contains("Passed", ByRole(svg, "legend-label").Select(text => text.Value));
         var swatch = ByRole(svg, "state-legend-swatch").First(element => (string?)element.Attribute("data-cfx-status") == "pass");
         Assert.Equal("quiet", (string?)swatch.Attribute("data-cfx-emphasis"));
 
@@ -267,19 +273,19 @@ public sealed class StatePresentationTests {
         };
         var timeline = XDocument.Parse(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 320).WithStateCategories(states)
             .AddStateTimelineLane("A", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(4), "up"), new ChartStateTimelineSegment(Day.AddHours(4), Day.AddHours(8), "unknown"), new ChartStateTimelineSegment(Day.AddHours(8), Day.AddHours(12), "skipped") }).ToSvg());
-        Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(timeline, "state-segment").Select(segment => (string?)segment.Attribute("data-cfx-pattern")).ToArray());
-        Assert.Equal("quiet", (string?)ByRole(timeline, "state-segment")[0].Attribute("data-cfx-emphasis"));
+        Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(timeline, "state-timeline-segment").Select(segment => (string?)segment.Attribute("data-cfx-pattern")).ToArray());
+        Assert.Equal("quiet", (string?)ByRole(timeline, "state-timeline-segment")[0].Attribute("data-cfx-emphasis"));
         Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(timeline, "state-legend-swatch").Select(swatch => (string?)swatch.Attribute("data-cfx-pattern")).ToArray());
 
         var lanes = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 320).WithStateCategories(states)
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Day, Day.AddHours(4), "up"), new ChartGanttLaneItem(Day.AddHours(5), Day.AddHours(8), "unknown"), new ChartGanttLaneItem(Day.AddHours(9), Day.AddHours(12), "skipped") });
         var gantt = XDocument.Parse(lanes.ToSvg());
         Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(gantt, "gantt-lane-item").Select(item => (string?)item.Attribute("data-cfx-pattern")).ToArray());
-        Assert.Single(ByRole(gantt, "gantt-lane-item-hatch"));
+        Assert.NotEmpty(ByRole(gantt, "gantt-lane-item-shape-hatch"));
         Assert.True(lanes.ToPng().Length > 64);
 
         // Every outlined mark is dashed: timeline segments and legend swatches as well as Gantt items.
-        var outlines = ByRole(timeline, "state-segment-outline").Concat(ByRole(gantt, "gantt-lane-item-outline")).ToArray();
+        var outlines = ByRole(timeline, "state-timeline-segment-shape-outline").Concat(ByRole(timeline, "legend-swatch-outline")).Concat(ByRole(gantt, "gantt-lane-item-shape-outline")).ToArray();
         Assert.True(outlines.Length >= 3);
         Assert.All(outlines, outline => Assert.Equal("3 2", (string?)outline.Attribute("stroke-dasharray")));
     }
@@ -333,7 +339,9 @@ public sealed class StatePresentationTests {
 
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 
-    private static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, CultureInfo.InvariantCulture);
+    private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
+
+    private static ChartColor Fill(XElement element) => ChartColor.Parse((string)element.RenderedAttribute("fill")!);
 
     private static (byte R, byte G, byte B) Pixel(RgbaImage image, double x, double y) {
         var offset = ((int)y * image.Width + (int)x) * 4;

@@ -11,12 +11,14 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles pie and donut data directly into the shared numeric scene.</summary>
 internal static partial class VisualRadialCompiler {
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
-        chart.Series[0].ShowInLegend
-            ? GetSlices(chart, colors).Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice),
+    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+        if (!chart.Series[0].ShowInLegend) return Array.Empty<VisualLegendEntry>();
+        var slices = GetSlices(chart, colors); var total = slices.Sum(slice => slice.Value);
+        return slices.Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice),
                 chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey,
-                VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex))).ToArray()
-            : Array.Empty<VisualLegendEntry>();
+                paint: VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex),
+                value: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture))).ToArray();
+    }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -65,12 +67,13 @@ internal static partial class VisualRadialCompiler {
                 var role = inner > 0 ? "donut-slice" : "pie-slice";
                 var formattedValue = ChartNumericFormatter.FormatValue(chart.Options, slice.Value);
                 var resolvedLabel = (series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? FormatLabel(chart, slice, total, formattedValue) : null;
-                using (builder.PushGroup(null, "radial-point", Metadata(slice, percent, resolvedLabel))) {
+                using (builder.PushGroup(null, "radial-point", Metadata(chart, slice, percent, resolvedLabel))) {
                     builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice),
                         paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, slice.Color, slice.PointIndex), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     if (slice.Pattern != ChartFillPattern.None)
                         builder.PatternSlice(sliceX, sliceY, radius, inner, start, sweep, slice.Pattern,
-                            ChartColorMath.AccessibleTextOnBackground(slice.Color).WithAlpha(110), role: "radial-fill-pattern");
+                            ChartColorMath.AccessibleTextOnBackground(ChartColorMath.Blend(ChartStateMark.Backdrop(chart.Options, colors, context.Frame),
+                                ChartColor.FromRgb(slice.Color.R, slice.Color.G, slice.Color.B), slice.Color.A / 255d)).WithAlpha(110), role: "radial-fill-pattern");
                 }
                 var bounds = new ChartRect(sliceX - radius, sliceY - radius, radius * 2, radius * 2);
                 builder.AddRegion(new VisualSemanticRegion(SliceId(slice), role,
@@ -117,9 +120,10 @@ internal static partial class VisualRadialCompiler {
 
     private static string SliceId(RadialSlice slice) => slice.PointIndex < 0 ? "series-0-point-other" : "series-0-point-" + slice.PointIndex.ToString(CultureInfo.InvariantCulture);
 
-    private static IReadOnlyDictionary<string, string> Metadata(RadialSlice slice, double percent, string? resolvedLabel) {
+    private static IReadOnlyDictionary<string, string> Metadata(Chart chart, RadialSlice slice, double percent, string? resolvedLabel) {
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0",
+            ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
             ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
             ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
             ["data-cfx-label"] = slice.Label,

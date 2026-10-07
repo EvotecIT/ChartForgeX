@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
@@ -17,30 +16,24 @@ public sealed class TopologyForcedColorsTests {
         Assert.False(new TopologyRenderOptions().PinStateColorsInForcedColors);
 
         var pinned = Diagram().ToSvg("report", new TopologyRenderOptions().WithStateColorsPinnedInForcedColors());
-        var rule = Regex.Match(pinned, @"(?<selectors>[^{}]*)\{forced-color-adjust:none\}");
-        Assert.True(rule.Success);
-        var selectors = rule.Groups["selectors"].Value.Split(',').Select(selector => selector.Trim()).ToArray();
-        // Status leaves, edges, status badges, callout chips, and this render's markers; never a whole node or group.
-        Assert.Contains("[id=\"report-sites\"] [data-cfx-status]:not(g):not([class$=\"__geo-region-hull\"])", selectors);
-        Assert.Contains("[id=\"report-sites\"] [data-cfx-role=topology-edge]", selectors);
-        Assert.Contains("[id=\"report-sites\"] [data-cfx-role=topology-node-status]", selectors);
-        Assert.Contains("marker[id^=\"report-sites-arrow-\"]", selectors);
-        Assert.DoesNotContain("[id=\"report-sites\"] [data-cfx-status]", selectors);
-
         var document = XDocument.Parse(pinned);
-        var markers = document.Descendants().Where(element => element.Name.LocalName == "marker").Select(element => (string)element.Attribute("id")!).ToArray();
-        Assert.NotEmpty(markers);
-        Assert.All(markers, id => Assert.Matches("^report-sites-(arrow|circle|diamond)-", id));
-        var statusLeaves = document.Descendants().Where(element => element.Attribute("data-cfx-status") != null && element.Name.LocalName != "g").ToArray();
-        Assert.Contains(statusLeaves, element => element.Parent != null && (string?)element.Parent.Attribute("data-cfx-role") == "topology-legend-item");
+        var groups = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-pin-state-colors") == "true").ToArray();
+        Assert.NotEmpty(groups);
+        Assert.All(groups, group => Assert.Equal("forced-color-adjust:none", (string?)group.Attribute("style")));
+        Assert.Contains(groups, group => group.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-marker"));
+        Assert.Contains(groups, group => group.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-status"));
+        Assert.Contains(groups, group => group.Ancestors().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-legend-item"));
+        // Pin only status ink; card labels and surfaces remain available to forced-color adaptation.
+        Assert.DoesNotContain(groups.SelectMany(group => group.Descendants()), element =>
+            (string?)element.Attribute("data-cfx-role") == "topology-node" || (string?)element.Attribute("data-cfx-role") == "topology-group");
 
         Assert.Equal(Diagram().ToPng(), Diagram().ToPng(new TopologyRenderOptions().WithStateColorsPinnedInForcedColors()));
     }
 
     [Fact]
-    public void PinStateColorsInForcedColors_WritesTheRuleWithoutTheRestOfTheCss() {
+    public void PinStateColorsInForcedColors_UsesBoundedGroupsWithoutStylesheets() {
         var svg = Diagram().ToSvg(new TopologyRenderOptions { IncludeCss = false, PinStateColorsInForcedColors = true });
-        Assert.Contains("{forced-color-adjust:none}", svg, StringComparison.Ordinal);
+        Assert.Contains("style=\"forced-color-adjust:none\"", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("font-synthesis", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("<style", Diagram().ToSvg(new TopologyRenderOptions { IncludeCss = false }), StringComparison.Ordinal);
     }

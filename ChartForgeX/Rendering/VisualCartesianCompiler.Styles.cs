@@ -16,7 +16,7 @@ internal static partial class VisualCartesianCompiler {
         if (style.Kind == ChartBarStyle.SegmentedCapsule) {
             builder.Rect(bounds, ChartColorMath.WithOpacity(color, style.BodyOpacity), radius: radius, role: role,
                 paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, style.BodyOpacity), style.BodyOpacity)));
-            DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), colors.Surface, role + "-pattern");
+            DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), role + "-pattern");
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
             if (!range) {
                 var signedValue = value ?? series.Points[pointIndex].Y;
@@ -39,7 +39,7 @@ internal static partial class VisualCartesianCompiler {
                         paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.WithOpacity(ChartColor.White.WithAlpha(color.A), ChartVisualPrimitives.BarHighlightOpacity))));
                 }
             } else builder.Rect(bounds, color, radius: radius, role: role, paint: VisualChartPaint.Fill(sourcePaint));
-            DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, color, colors.Surface, role + "-pattern");
+            DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, color, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), role + "-pattern");
         }
     }
 

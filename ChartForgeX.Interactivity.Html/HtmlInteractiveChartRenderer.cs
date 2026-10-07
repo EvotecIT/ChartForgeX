@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
-using ChartForgeX.Svg;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -119,6 +119,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (options == null) throw new ArgumentNullException(nameof(options));
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
         var chartId = options.Interaction.ChartId ?? scope;
+        var request = VisualExportRequest.ForChart(chart);
+        var prepared = chart.Prepare(request.Context);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         var writer = new HtmlMarkupWriter();
@@ -129,6 +131,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("aria-label", ChartTitle(chart, titleFallback))
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
+            .Attribute("data-cfx-prepared-chart", PreparedChartMetadata(chart, prepared))
             .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())
             .Attribute("data-cfx-interaction-group", options.Interaction.GroupName)
             .Attribute("data-cfx-scenario-count", options.Interaction.Scenarios.Count)
@@ -154,7 +157,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         writer.StartElement("div").Attribute("class", "cfx-frame").EndStartElement().Line()
             .RawTrusted(BuildResetControl(options))
             .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
-            .RawTrusted(new SvgChartRenderer().RenderForInteraction(chart, scope)).Line()
+            .RawTrusted(prepared.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables))).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
             .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--x").EndStartElement().EndElement()

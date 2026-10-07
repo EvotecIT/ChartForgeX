@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Topology;
 
@@ -106,26 +107,19 @@ public static partial class TopologyChartExtensions {
         var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var motion = (effective.Motion ?? TopologyMotionOptions.RoutePulse()).Clone();
         motion.Validate();
-        effective.Motion = motion;
-        var validator = new TopologyChartValidator();
-        var sourceValidation = validator.ValidateScenarioReferences(chart);
-        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
-
-        var prepared = TopologyLayoutEngine.Prepare(chart, effective.View, effective);
-        var validation = validator.Validate(prepared, validateScenarioReferences: false, effective);
-        if (!validation.IsValid) throw new TopologyValidationException(validation);
-
-        var plan = TopologyMotionPlanner.Build(prepared, effective);
+        effective.Motion = null;
+        var request = VisualExportRequest.ForTopology(chart, effective);
+        var compiler = new VisualTopologyCompiler(chart, request.Context, effective);
+        var prepared = compiler.Compile();
+        var motionOptions = effective.CloneForRendering(); motionOptions.Motion = motion;
+        var plan = compiler.MotionPlan(motionOptions);
         if (plan == null) throw new InvalidOperationException("Topology animated " + formatName + " export requires a motion route. Add scenario edge steps or use TopologyMotionOptions.RoutePulseForEdges(...).");
         var delay = Math.Max(1, (int)Math.Round(100.0 / motion.FramesPerSecond));
         var frameCount = RasterFrameCount(motion, delay);
         var frames = new List<RgbaImage>(frameCount);
-        var renderer = new TopologyPngRenderer();
-        var requestedWidth = (int)Math.Ceiling(chart.Viewport.Width);
-        var requestedHeight = (int)Math.Ceiling(chart.Viewport.Height);
         for (var frame = 0; frame < frameCount; frame++) {
             motion.Progress = RasterFrameProgress(motion, frame, frameCount);
-            frames.Add(renderer.RenderPreparedImage(prepared, effective, requestedWidth, requestedHeight, plan));
+            frames.Add(compiler.MotionFrame(prepared, motion, plan).ToRgba(request.RasterOptions));
         }
 
         return AnimatedRasterFrames.Create(frames, delay, motion.Loop, "topology motion");

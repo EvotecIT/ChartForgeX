@@ -10,26 +10,26 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Kind = VisualArtifactKind.Flow; envelope.Family = VisualArtifactInterchangeFamily.Flow;
         envelope.Topology = null;
         envelope.Flow = new VisualArtifactInterchangeFlowArtifact { LayoutMode = flow.LayoutMode, LayoutDirection = flow.Direction };
-        foreach (var pair in flow.Metadata) envelope.Extensions[pair.Key] = pair.Value;
+        Copy(flow.Metadata, envelope.Extensions);
         for (var i = 0; i < flow.Lanes.Count; i++) {
             var source = flow.Lanes[i]; var group = envelope.Groups[i];
             group.Role = VisualArtifactInterchangeGroupRole.FlowLane; group.Kind = "FlowLane"; group.Topology = null;
             group.Label = source.Label; group.Status = source.Status.ToString(); group.Color = source.Color;
-            foreach (var pair in source.Metadata) group.Extensions[pair.Key] = pair.Value;
+            Copy(source.Metadata, group.Extensions);
         }
         for (var i = 0; i < flow.Steps.Count; i++) {
             var source = flow.Steps[i]; var node = envelope.Nodes[i];
             node.Role = VisualArtifactInterchangeNodeRole.FlowStep; node.Kind = source.Kind.ToString(); node.Topology = null;
             node.Flow = new VisualArtifactInterchangeFlowNode { Kind = source.Kind };
             node.Label = source.Label; node.Subtitle = source.Subtitle; node.Status = source.Status.ToString();
-            foreach (var pair in source.Metadata) node.Extensions[pair.Key] = pair.Value;
+            Copy(source.Metadata, node.Extensions);
         }
         for (var i = 0; i < flow.Connectors.Count; i++) {
             var source = flow.Connectors[i]; var edge = envelope.Edges[i];
             edge.Role = VisualArtifactInterchangeEdgeRole.FlowConnector; edge.Kind = source.Kind.ToString(); edge.Topology = null;
             edge.Flow = new VisualArtifactInterchangeFlowEdge { Kind = source.Kind, Direction = source.Direction };
             edge.Label = source.Label; edge.Status = source.Status.ToString(); edge.Color = source.Color;
-            foreach (var pair in source.Metadata) edge.Extensions[pair.Key] = pair.Value;
+            Copy(source.Metadata, edge.Extensions);
         }
         envelope.Validate();
         return envelope;

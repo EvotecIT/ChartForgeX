@@ -37,7 +37,7 @@ internal static partial class VisualCartesianCompiler {
                         var area = new ChartPath(commands);
                         var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
                         builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
-                        DrawPattern(builder, area, series.FillPattern, fill, colors.Surface, "area-pattern");
+                        DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
                     }
                     offset += segment.Count;
                 }
@@ -64,7 +64,7 @@ internal static partial class VisualCartesianCompiler {
                         paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, PointColor(series, index, pointIndex, colors), pointIndex)));
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
-                    DrawPattern(builder, EllipsePath(point.X, point.Y, radius, radius), pattern, PointColor(series, index, pointIndex, colors), colors.Surface, "marker-pattern");
+                    DrawPattern(builder, EllipsePath(point.X, point.Y, radius, radius), pattern, PointColor(series, index, pointIndex, colors), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "marker-pattern");
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
@@ -93,7 +93,7 @@ internal static partial class VisualCartesianCompiler {
             }
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, baseValue)) {
                 DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
@@ -185,7 +185,25 @@ internal static partial class VisualCartesianCompiler {
             candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
             candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
         }
-        var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, resolvedLabel.Style, candidates) { AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex) };
+        var style = resolvedLabel.Style;
+        Themes.SvgPaint? paint = null;
+        if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center)
+            && !chart.Options.DataLabelStyle.Color.HasValue && !series.DataLabelStyle.Color.HasValue
+            && !(pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex]?.Color != null)) {
+            var colors = context.Theme.Resolve(context.ThemeMode);
+            var fill = PointColor(series, seriesIndex, pointIndex, colors);
+            if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.HorizontalBar || series.Kind == ChartSeriesKind.RangeBar) {
+                var barStyle = chart.Options.ResolvePreparedBarVisualStyle();
+                if (barStyle.Kind == ChartBarStyle.SegmentedCapsule) fill = ChartColorMath.WithOpacity(fill, barStyle.BodyOpacity);
+            }
+            var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
+            var composed = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(fill.R, fill.G, fill.B), fill.A / 255d);
+            style = style.Clone(); style.Color = ChartColorMath.AccessibleTextOnBackground(composed);
+            paint = fill.A == 255 ? Themes.SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(series, pointIndex)) : Themes.SvgPaint.Literal(style.Color);
+        }
+        var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
+            AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint
+        };
         if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) request.Bounds = mark;
         labels.Add(request);
     }
@@ -201,7 +219,7 @@ internal static partial class VisualCartesianCompiler {
             var displayedStyle = DisplayedStyle(label.Request.Style);
             builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
                 role: label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true ? "stack-total-label" : "data-label",
-                id: label.Request.AssociatedMarkId + "-label", paint: VisualChartPaint.Text(displayedStyle));
+                id: label.Request.AssociatedMarkId + "-label", paint: label.Request.Paint ?? VisualChartPaint.Text(displayedStyle));
         }
     }
 

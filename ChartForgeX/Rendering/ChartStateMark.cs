@@ -100,6 +100,7 @@ internal readonly struct ChartStateMark {
         if (options.MarkBackdrop == ChartMarkBackdrop.Card) return Over(colors.ElevatedSurface, opaqueBase);
         if (options.MarkBackdrop == ChartMarkBackdrop.Plot) return Over(colors.Surface, opaqueBase);
         var background = Over(colors.Background, opaqueBase);
+        if (options.MarkBackdrop == ChartMarkBackdrop.Layered && frame.ShowCard) background = Over(colors.ElevatedSurface, background);
         return options.MarkBackdrop == ChartMarkBackdrop.Layered && frame.ShowSurface ? Over(colors.Surface, background) : background;
     }
 

@@ -24,12 +24,12 @@ public sealed class FontRegistryTests : IDisposable {
         FontRegistry.Register(Family, bold, weight: 700);
         var chart = BarChart(Family);
         chart.Options.TitleStyle.FontWeight = "600";
-        byte[] semibold = new PngChartRenderer().Render(chart);
+        byte[] semibold = chart.ToPng();
         Assert.Equal("600", chart.Options.TitleStyle.FontWeight);
         chart.Options.TitleStyle.FontWeight = "700";
-        Assert.NotEqual(semibold, new PngChartRenderer().Render(chart));
+        Assert.NotEqual(semibold, chart.ToPng());
         chart.Options.TitleStyle.FontWeight = null;
-        _ = new PngChartRenderer().Render(chart);
+        _ = chart.ToPng();
         Assert.Null(chart.Options.TitleStyle.FontWeight);
     }
 
@@ -39,9 +39,9 @@ public sealed class FontRegistryTests : IDisposable {
         FontRegistry.Register(Family,regular,weight:600); FontRegistry.Register(Family,bold,weight:700);
         var grid=ChartGrid.Create().WithTitle("Numeric grid title").Add(BarChart(Family));
         grid.TitleStyle.FontWeight="600";
-        byte[] semibold=new PngChartGridRenderer().Render(grid);
+        byte[] semibold=grid.ToPng();
         grid.TitleStyle.FontWeight="700";
-        Assert.NotEqual(semibold,new PngChartGridRenderer().Render(grid));
+        Assert.NotEqual(semibold,grid.ToPng());
         Assert.Null(grid.TitleStyle.FontFamily);
     }
 

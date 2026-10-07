@@ -29,6 +29,7 @@ internal static class VisualGaugeCompiler {
         using (builder.PushGroup("series-0", "gauge", new Dictionary<string, string> {
             ["data-cfx-value"] = N(data.Raw), ["data-cfx-min"] = N(data.Min), ["data-cfx-max"] = N(data.Max),
             ["data-cfx-percent"] = N(data.Ratio), ["data-cfx-status"] = data.State.ToString(),
+            ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors ? "true" : "false",
             ["data-cfx-target"] = options.Target.HasValue ? N(options.Target.Value) : string.Empty, ["aria-label"] = series.Name + ": " + value
         })) {
             if (plot.Width <= 0 || plot.Height <= 0) { builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "No content viewport remains for the gauge.")); return; }

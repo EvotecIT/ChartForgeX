@@ -13,9 +13,9 @@ public sealed class GraphiteOverrideTests {
     public void FullValuesRemainAvailableWhenLabelsAreCompact() {
         const double value=12345.678912345;
         var chart=Chart.Create().WithDataLabels().AddBar("Count",new[]{new ChartPoint(1,value)});
-        var bar=Assert.Single(Roles(chart,"bar"));
-        Assert.Equal(value,double.Parse((string)bar.Attribute("data-cfx-y")!,System.Globalization.CultureInfo.InvariantCulture));
-        Assert.Contains(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),(string)Assert.Single(Roles(chart,"series-data")).Attribute("aria-label")!);
+        var point=Assert.Single(Roles(chart,"point"));
+        Assert.Equal(value,double.Parse((string)point.Attribute("data-cfx-y")!,System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Contains(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),(string)point.Attribute("aria-label")!);
         Assert.DoesNotContain(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),Assert.Single(Roles(chart,"data-label")).Value);
     }
 
@@ -32,13 +32,13 @@ public sealed class GraphiteOverrideTests {
             case "pie": chart.AddPie("alpha",points).WithDataLabels(); break;
             case "gauge": chart.AddGauge("alpha",70); break;
             case "bullet": chart.AddBullet("alpha",70,90); break;
-            case "funnel": chart.AddFunnel("alpha",points); break;
+            case "funnel": chart.AddFunnel("alpha",points).WithDataLabels(); break;
             default: chart.AddSankey("Flow",new[]{new ChartSankeyLink("alpha","beta",70)}); break;
         }
         chart.Series[0].DataLabelStyle.FontSize=16;
         chart.Series[0].DataLabelStyle.Color=ChartColor.FromHex("#7B61E8");
         chart.Series[0].DataLabelStyle.Italic=true;
-        var labels=Roles(chart,role);
+        var labels=Roles(chart,role).SelectMany(element => element.DescendantsAndSelf().Where(node => node.Name.LocalName == "text")).ToArray();
         Assert.NotEmpty(labels);
         Assert.All(labels,e=> { Assert.Equal("#7B61E8",(string?)e.Attribute("fill")); Assert.Equal("italic",(string?)e.Attribute("font-style")); Assert.InRange((double)e.Attribute("font-size")!,12,16); });
         Assert.NotEmpty(chart.ToPng());
@@ -57,7 +57,7 @@ public sealed class GraphiteOverrideTests {
     public void HiddenBulletLabelsReclaimSpaceAndExplicitRangesRetainThresholds() {
         var chart=Chart.Create().AddBullet("Count",70,90,rangeEnds:new[]{40d,80d});
         var x=(double)Assert.Single(Roles(chart,"bullet-value")).Attribute("x")!;
-        Assert.Contains(Roles(chart,"bullet-range"),e=>(string?)e.Attribute("data-cfx-range-end")=="40");
+        Assert.Contains(Roles(chart,"bullet-range-source"),e=>(string?)e.Attribute("data-cfx-max")=="40");
         chart.Series[0].ShowDataLabels=false;
         Assert.Empty(Roles(chart,"bullet-row-label"));
         Assert.True((double)Assert.Single(Roles(chart,"bullet-value")).Attribute("x")!<x);
@@ -69,7 +69,9 @@ public sealed class GraphiteOverrideTests {
         Assert.Contains("linearGradient",chart.ToSvg());
         chart.ConfigureYAxis(axis=>axis.ShowLine=true);
         var svg=XDocument.Parse(chart.ToSvg());
-        Assert.Contains(svg.Descendants("{http://www.w3.org/2000/svg}line"),e=>(string?)e.Attribute("x1")== (string?)e.Attribute("x2") && (string?)e.Attribute("stroke")==chart.Options.Theme.Axis.ToCss());
+        var rule=Assert.Single(svg.Descendants(),e=>(string?)e.Attribute("data-cfx-role")=="axis-y");
+        Assert.Equal((string?)rule.Attribute("x1"),(string?)rule.Attribute("x2"));
+        Assert.Equal(ChartForgeX.Rendering.VisualExportRequest.ForChart(chart).Context.Theme.Resolve(ChartForgeX.Themes.VisualThemeMode.Light).Border.ToCss(),(string?)rule.Attribute("stroke"));
         Assert.Throws<ArgumentOutOfRangeException>(()=>chart.Series[0].StateRole=(ChartSeriesState)100);
     }
 }

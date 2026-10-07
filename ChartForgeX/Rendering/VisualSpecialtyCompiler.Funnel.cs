@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
@@ -44,22 +45,26 @@ internal static partial class VisualSpecialtyCompiler {
             if (drop.HasValue) summary += ", drop-off " + drop.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture);
             using (Point(chart, builder, index, "funnel-stage", bounds, summary, metadata)) {
                 if (raw > 0) {
-                    builder.Path(path, color, colors.Surface, Math.Min(2, height / 8), "funnel-segment", close: true);
+                    builder.Path(path, color, colors.Surface, Math.Min(2, height / 8), "funnel-segment", close: true,
+                        paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, color, index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     Pattern(chart, builder, index, path, color);
                 } else builder.Line(cx - Math.Min(6, width / 20), top + height / 2, cx + Math.Min(6, width / 20), top + height / 2,
-                    colors.Border, role: "funnel-zero");
+                    colors.Border, role: "funnel-zero", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Surface));
                 if (show) {
                     var value = VisualStateSceneTools.Value(chart, series, index, raw);
                     var textColor = raw > 0 ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
                     var labelWidth = raw > 0 ? Math.Max(0, (topWidth + bottomWidth) * .4 - gap) : width;
                     VisualStateSceneTools.Text(builder, Category(chart, index) + ": " + value,
                         new ChartRect(cx - labelWidth / 2, top, labelWidth, height), Style(chart, context, index, textColor),
-                        "funnel-label", Id(index) + "-label", TextAlignment.Center, shrink: true);
+                        "funnel-label", Id(index) + "-label", TextAlignment.Center, shrink: true,
+                        paint: VisualChartPaint.ExplicitDataLabelColor(chart, index) || raw == 0 ? SvgPaint.Of(Style(chart, context, index, textColor).Color, SvgColorRole.Text)
+                            : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(series, index)));
                     if (index > 0 && metricsWidth > 0) {
                         var text = (retention.HasValue ? retention.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
                             + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
                         VisualStateSceneTools.Text(builder, text, new ChartRect(left + width + gap, top, metricsWidth, height),
-                            Style(chart, context, index, colors.MutedForeground), "funnel-ratio", Id(index) + "-ratio", shrink: true);
+                            Style(chart, context, index, colors.MutedForeground), "funnel-ratio", Id(index) + "-ratio", shrink: true,
+                            paint: VisualChartPaint.Text(Style(chart, context, index, colors.MutedForeground)));
                     }
                 }
             }

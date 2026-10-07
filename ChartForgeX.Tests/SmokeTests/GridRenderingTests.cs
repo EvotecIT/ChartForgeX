@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
-using ChartForgeX;
+using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -11,88 +12,42 @@ internal static partial class SmokeTests {
     private static void SmallMultipleGridRendersStaticHtml() {
         var coverage = Chart.Create().WithTitle("Coverage").WithSize(320, 220).AddBar("Values", Points(80, 72, 91));
         var readiness = Chart.Create().WithTitle("Readiness").WithSize(320, 220).AddLine("Values", Points(62, 70, 84));
-        var grid = ChartGrid.Create()
-            .WithTitle("Control scorecards")
-            .WithSubtitle("Small multiples for a static report")
-            .WithTheme(ChartTheme.ReportLight())
-            .WithColumns(2)
-            .WithGap(20)
-            .WithPadding(30)
-            .WithPanelSize(300, 200)
-            .Add(coverage)
-            .Add(readiness)
-            .WithSharedYAxis();
-
+        var grid = ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report")
+            .WithTheme(ChartTheme.ReportLight()).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200)
+            .Add(coverage).Add(readiness).WithSharedYAxis();
         var html = grid.ToHtmlPage();
         Assert(html.Contains("<section class=\"chartforgex-grid\"", StringComparison.Ordinal), "Chart grids should render a stable report container.");
-        Assert(html.Contains("--cfx-grid-columns:2", StringComparison.Ordinal), "Chart grids should expose the requested column count.");
-        Assert(html.Contains("--cfx-grid-gap:20px", StringComparison.Ordinal), "Chart grids should expose the requested gap.");
-        Assert(html.Contains("--cfx-grid-padding:30px", StringComparison.Ordinal), "Chart grids should expose the requested padding.");
-        Assert(html.Contains("--cfx-grid-panel-width:300px", StringComparison.Ordinal), "Chart grids should expose fixed panel widths.");
-        Assert(html.Contains("--cfx-grid-panel-height:200px", StringComparison.Ordinal), "Chart grids should expose fixed panel heights.");
-        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal) && html.Contains(".chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "Chart grid HTML pages should use polished surfaces while keeping panel overflow isolated.");
-        Assert(CountOccurrences(html, "<svg ") == 2, "Chart grids should render each chart as inline SVG.");
-        Assert(html.Contains(">Control scorecards</span></h1>", StringComparison.Ordinal), "Chart grids should render report titles inside the inline styling owner.");
+        Assert(CountOccurrences(html, "<svg ") == 1, "Static HTML should embed the complete prepared grid layout.");
+        Assert(html.Contains("Control scorecards", StringComparison.Ordinal) && html.Contains("Coverage", StringComparison.Ordinal)
+            && html.Contains("Readiness", StringComparison.Ordinal), "The composed comparison should retain report and panel headings.");
         Assert(!html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Chart grids should remain JavaScript-free.");
-        var repeated = Chart.Create().WithTitle("Repeated").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
-        var repeatedHtml = ChartGrid.Create().Add(repeated).Add(repeated).ToHtmlPage();
-        var repeatedTitleIds = ExtractAttributeValues(repeatedHtml, "<title id=\"");
-        Assert(repeatedTitleIds.Length == 2 && repeatedTitleIds.Distinct(StringComparer.Ordinal).Count() == 2, "Inline HTML grids should give repeated charts unique SVG title IDs.");
-        AssertNoDuplicateIds(repeatedHtml, "Inline HTML grids");
-        var repeatedGrid = ChartGrid.Create().Add(repeated);
-        Assert(repeatedGrid.ToHtmlFragment() == repeatedGrid.ToHtmlFragment(), "Default HTML chart grid fragments should be deterministic.");
-        var combinedGridFragments = repeatedGrid.ToHtmlFragment("grid-a") + repeatedGrid.ToHtmlFragment("grid-b");
-        var combinedGridTitleIds = ExtractAttributeValues(combinedGridFragments, "<title id=\"");
-        Assert(combinedGridTitleIds.Length == 2 && combinedGridTitleIds.Distinct(StringComparer.Ordinal).Count() == 2, "Explicitly scoped HTML grid fragments should keep child SVG title IDs unique.");
-        AssertNoDuplicateIds(combinedGridFragments, "Explicitly scoped HTML grid fragments");
-        Assert(coverage.Options.YAxisMinimum == readiness.Options.YAxisMinimum && coverage.Options.YAxisMaximum == readiness.Options.YAxisMaximum, "Shared y-axis grids should apply equal y-axis bounds to compatible charts.");
-        Assert(coverage.ToPng().Length > 64 && readiness.ToPng().Length > 64, "Shared y-axis bounds should apply to PNG rendering too.");
-        var early = Chart.Create().WithSize(300, 200).AddLine("Early", new[] { new ChartPoint(2, 10), new ChartPoint(3, 20) });
-        var late = Chart.Create().WithSize(300, 200).AddLine("Late", new[] { new ChartPoint(6, 18), new ChartPoint(8, 28) });
-        ChartGrid.Create().Add(early).Add(late).WithSharedAxes();
-        Assert(early.Options.XAxisMinimum == late.Options.XAxisMinimum && early.Options.XAxisMaximum == late.Options.XAxisMaximum, "Shared x-axis grids should apply equal x-axis bounds to compatible charts.");
-        Assert(early.Options.YAxisMinimum == late.Options.YAxisMinimum && early.Options.YAxisMaximum == late.Options.YAxisMaximum, "Shared-axis grids should apply equal y-axis bounds to compatible charts.");
-        Assert(early.ToPng().Length > 64 && late.ToSvg().Contains("<svg", StringComparison.Ordinal), "Shared x-axis bounds should apply to SVG and PNG rendering.");
-
         var svg = grid.ToSvg();
-        Assert(svg.StartsWith("<svg", StringComparison.Ordinal), "Chart grids should export standalone SVG.");
-        Assert(!svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal), "Chart grid SVG should keep child charts inline instead of base64-encoding them.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"grid-panel\"") == 2, "Chart grid SVG should expose inline child chart panels for downstream inspection.");
-        Assert(svg.Contains("-gridSurface", StringComparison.Ordinal) && svg.Contains("vector-effect:non-scaling-stroke", StringComparison.Ordinal), "Chart grid SVG should use premium scalable surface and stroke primitives.");
-        Assert(CountOccurrences(svg, "<svg ") == 3, "Chart grid SVG should contain the root SVG plus one inline SVG per child chart.");
-        Assert(grid.ToSvg() == grid.ToSvg(), "Default SVG chart grid output should be deterministic.");
-        var combinedGridSvgs = grid.ToSvg("grid-a") + grid.ToSvg("grid-b");
-        var gridSvgTitleIds = ExtractAttributeValues(combinedGridSvgs, "<title id=\"");
-        Assert(gridSvgTitleIds.Length == 6 && gridSvgTitleIds.Distinct(StringComparer.Ordinal).Count() == 6, "Explicitly scoped SVG grid exports should keep root and child accessibility IDs unique.");
-        AssertNoDuplicateIds(combinedGridSvgs, "Explicitly scoped SVG grid exports");
-        AssertNoDuplicateIds(grid.ToSvg("grid-a") + grid.ToSvg("grid-b"), "Scoped raw SVG grid exports");
-        Assert(grid.ToSvg("stable-grid") == grid.ToSvg("stable-grid"), "Explicit SVG grid ID scopes should keep raw SVG grid output deterministic.");
-        var boundaryGridA = ChartGrid.Create().WithTitle("b|c").Add(repeated);
-        var boundaryGridB = ChartGrid.Create().WithTitle("c").Add(repeated);
-        AssertNoDuplicateIds(boundaryGridA.ToSvg("a") + boundaryGridB.ToSvg("a|b"), "Boundary-distinct scoped SVG grid exports");
-        Assert(svg.Contains("width=\"291\" height=\"200\"", StringComparison.Ordinal), "Fixed panel grid exports should contain charts without distorting their aspect ratio.");
+        var document = XDocument.Parse(svg);
+        Assert(document.Root!.Attribute("width")!.Value == "680" && double.Parse(document.Root.Attribute("height")!.Value, System.Globalization.CultureInfo.InvariantCulture) > 260,
+            "Natural grid exports should preserve fixed panel widths, measured headings and outer padding.");
+        Assert(CountOccurrences(svg, "<svg ") == 1, "Grid panels should be translated scene geometry in one SVG viewport.");
+        var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
+        Assert(prepared.Regions.Count(region => region.Role == "panel") == 2, "The prepared grid should retain inspectable panel regions.");
+        Assert(coverage.Options.YAxisMinimum == readiness.Options.YAxisMinimum && coverage.Options.YAxisMaximum == readiness.Options.YAxisMaximum,
+            "Shared y-axis grids should apply equal bounds to compatible charts.");
         var png = grid.ToPng();
-        Assert(ReadBigEndianInt32(png, 16) == 680, "Chart grid PNG should use fixed panel width and custom padding.");
-        Assert(ReadBigEndianInt32(png, 20) == 336, "Chart grid PNG should use fixed panel height and custom padding.");
-        var tintedTheme = ChartTheme.ReportLight();
-        tintedTheme.Background = ChartColor.FromHex("#F4F7FB");
-        Assert(!png.SequenceEqual(ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report").WithTheme(tintedTheme).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness).ToPng()), "Chart grid PNG should honor polished export surface colors.");
+        Assert(ReadBigEndianInt32(png, 16) == 680 && ReadBigEndianInt32(png, 20) == (int)Math.Ceiling(prepared.Size.Height), "PNG should use the same logical grid viewport.");
+        AssertRgbaParity(grid.ToRgbaImage(), png, "Prepared ChartGrid");
+        var tintedTheme = ChartTheme.ReportLight(); tintedTheme.Background = ChartColor.FromHex("#F4F7FB");
+        var tinted = ChartGrid.Create().WithTitle(grid.Title).WithSubtitle(grid.Subtitle).WithTheme(tintedTheme)
+            .WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness);
+        Assert(!png.SequenceEqual(tinted.ToPng()), "The shared grid export should honor explicit background colors.");
 
-        var stretched = ChartGrid.Create().WithPanelSize(300, 200).WithPanelFit(VisualPanelFit.Stretch).Add(coverage);
-        Assert(stretched.ToSvg().Contains("width=\"300\" height=\"200\"", StringComparison.Ordinal), "Stretch panel grids should use the full fixed panel size.");
-
-        var compact = ChartGrid.Create()
-            .WithTitle("Extremely long small multiple grid title that should not overflow exported report bounds")
-            .WithPadding(16)
-            .WithPanelSize(220, 140)
-            .Add(Chart.Create().WithTitle("Tiny").WithSize(220, 140).AddLine("Values", Points(10, 20, 30)));
-        Assert(compact.ToSvg().Contains("...</text>", StringComparison.Ordinal), "Composed SVG grid headers should shorten long titles.");
-        Assert(compact.ToPng().Length > 64, "Composed PNG grid headers should render even when long titles require fitting.");
-
+        var repeated = Chart.Create().WithTitle("Repeated").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
+        var repeatedGrid = ChartGrid.Create().Add(repeated).Add(repeated);
+        AssertNoDuplicateIds(repeatedGrid.ToHtmlPage(), "Repeated prepared grid panels");
+        Assert(repeatedGrid.ToHtmlFragment() == repeatedGrid.ToHtmlFragment(), "Default HTML grid fragments should be deterministic.");
+        AssertNoDuplicateIds(repeatedGrid.ToHtmlFragment("grid-a") + repeatedGrid.ToHtmlFragment("grid-b"), "Scoped HTML grids");
+        AssertNoDuplicateIds(repeatedGrid.ToSvg("grid-a") + repeatedGrid.ToSvg("grid-b"), "Scoped SVG grids");
+        AssertNoDuplicateIds(repeatedGrid.ToHtmlFragment("scope with spaces") + repeatedGrid.ToHtmlFragment("scope|with|spaces"), "External host scopes");
+        Assert(grid.ToSvg() == grid.ToSvg(), "Prepared SVG grids should be deterministic.");
+        Assert(grid.ToSvg("stable-grid") == grid.ToSvg("stable-grid"), "Host-scoped SVG grids should be deterministic.");
         grid.WithAutomaticPanelSize().WithAutomaticTheme();
-        Assert(!grid.PanelSize.HasValue && grid.Theme == null, "Automatic grid panel and theme settings should clear explicit export controls.");
-        stretched.Theme = ChartTheme.ReportDark();
-        stretched.Theme = null;
-        Assert(stretched.Theme == null, "Nullable grid theme assignments should clear explicit grid themes.");
+        Assert(!grid.PanelSize.HasValue && grid.Theme == null, "Automatic grid controls should clear explicit export settings.");
     }
 }

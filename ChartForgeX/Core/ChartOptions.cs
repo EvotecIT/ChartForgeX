@@ -10,7 +10,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
-    private ChartPadding _padding = new(76, 78, 36, 74);
+    private ChartPadding _padding = new(18, 16, 18, 12);
     private ChartTheme _theme = ChartTheme.GraphiteLight();
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.TopLeft;
@@ -60,12 +60,11 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets the chart padding around the plot area. The default suits cartesian axes and legends; a calendar
-    /// heatmap with the default padding lays itself out over the chart area instead, and honours padding that is set.
+    /// Gets or sets the outer frame padding. Headings, legends and axes reserve their measured space inside it.
+    /// The default is the same for every theme and chart family. Explicit values are preserved by export.
     /// </summary>
     public ChartPadding Padding {
-        get => HostOwnsFrame ? new ChartPadding(0, 0, 0, 0)
-            : !HasExplicitPadding && Theme.UseGraphiteLayout ? new ChartPadding(18, 16, 18, 12) : _padding;
+        get => HostOwnsFrame ? new ChartPadding(0, 0, 0, 0) : _padding;
         set {
             ChartGuards.Finite(value.Left, nameof(value));
             ChartGuards.Finite(value.Top, nameof(value));

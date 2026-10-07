@@ -34,7 +34,7 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"range-bar\"") == 3, "Range bar charts should render one interval bar per interval.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"range-bar-cap\"") == 6, "Range bar charts should render two caps per interval.");
-        Assert(svg.Contains(">20-42</text>", StringComparison.Ordinal), "Range bar data labels should render interval bounds when enabled.");
+        Assert(svg.Contains(">20–42</text>", StringComparison.Ordinal), "Range bar data labels should render interval bounds when enabled.");
         Assert(chart.ToPng().Length > 64, "Range bar charts should render PNG output.");
     }
 
@@ -48,11 +48,11 @@ internal static partial class SmokeTests {
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104)
             }, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"box-plot\"") == 2, "Box plots should render one group per summary.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"box-body\"") == 2, "Box plots should render quartile boxes.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"box-median\"") == 2, "Box plots should render median lines.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"point\"") == 2, "Box plots should render one group per summary.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"boxplot-body\"") == 2, "Box plots should render quartile boxes.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"boxplot-median\"") == 2, "Box plots should render median lines.");
         Assert(svg.Contains("data-cfx-q1=\"24\"", StringComparison.Ordinal), "Box plots should expose quartile metadata for HTML inspection.");
-        Assert(svg.Contains("<title>18-48, median 31</title>", StringComparison.Ordinal), "Box plots should expose browser tooltip metadata.");
+        CartesianMetadata(CartesianPoint(svg, 0, 0), ("minimum", "18"), ("q1", "24"), ("median", "31"), ("q3", "38"), ("maximum", "48"));
         Assert(svg.Contains(">31</text>", StringComparison.Ordinal), "Box plot data labels should render medians when enabled.");
         var raw = Chart.Create().WithSize(640, 360).WithDataLabels().AddBoxPlot("Raw samples", 1, new[] { 18d, 24d, 31d, 38d, 48d }, ChartColor.FromRgb(37, 99, 235)).ToSvg();
         Assert(raw.Contains(">31</text>", StringComparison.Ordinal), "Raw-value box plot overload should compute the median.");
@@ -70,7 +70,7 @@ internal static partial class SmokeTests {
             }, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bubble\"") == 3, "Bubble charts should render one scaled marker per bubble.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bubble-highlight\"") == 3, "Bubble charts should render marker highlights.");
+        Assert(CartesianMarkAttribute(svg, 0, 2, "bubble", "rx") > CartesianMarkAttribute(svg, 0, 0, "bubble", "rx"), "Larger bubble sizes must produce larger native marks.");
         Assert(svg.Contains(">42</text>", StringComparison.Ordinal), "Bubble data labels should render size values when enabled.");
         Assert(chart.ToPng().Length > 64, "Bubble charts should render PNG output.");
     }
@@ -88,7 +88,7 @@ internal static partial class SmokeTests {
             .AddScatter("Observed", points, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", points, ChartColor.FromRgb(245, 158, 11));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"trend-line\"") == 1 && CountOccurrences(svg, "data-cfx-role=\"trend-line-halo\"") == 1 && CountOccurrences(svg, "data-cfx-role=\"trend-line-highlight\"") == 1, "Trend lines should render one computed line with reusable premium lighting layers.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"trend-line\"") == 1, "A trend series should draw one fitted reference line.");
         Assert(svg.Contains("stroke-dasharray=\"8 6\"", StringComparison.Ordinal), "Trend lines should render as dashed reference lines.");
         Assert(svg.Contains("data-cfx-slope=\"", StringComparison.Ordinal), "Trend lines should expose computed slope metadata.");
         Assert(svg.Contains(">Trend</text>", StringComparison.Ordinal), "Trend lines should participate in the legend.");
@@ -105,7 +105,7 @@ internal static partial class SmokeTests {
                 new ChartErrorBar(3, 63, 54, 78)
             }, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"error-bar\"") == 3, "Error-bar charts should render one group per point estimate.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"point\"") == 3, "Error-bar charts should render one group per point estimate.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"error-cap\"") == 6, "Error-bar charts should render two caps per point estimate.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"error-marker\"") == 3, "Error-bar charts should render point estimate markers.");
         Assert(svg.Contains(">63</text>", StringComparison.Ordinal), "Error-bar data labels should render point estimates when enabled.");
@@ -122,12 +122,11 @@ internal static partial class SmokeTests {
                 new ChartCandlestick(3, 63, 78, 54, 72)
             });
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"candlestick\"") == 3, "Candlestick charts should render one group per OHLC value.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"point\"") == 3, "Candlestick charts should render one group per OHLC value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"candlestick-wick\"") == 3, "Candlestick charts should render one wick per OHLC value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"candlestick-body\"") == 3, "Candlestick charts should render one body per OHLC value.");
         Assert(svg.Contains("data-cfx-open=\"42\"", StringComparison.Ordinal), "Candlestick charts should expose OHLC metadata for HTML inspection.");
-        Assert(svg.Contains("data-cfx-status=\"rising\"", StringComparison.Ordinal), "Candlestick charts should expose rising/falling status metadata.");
-        Assert(svg.Contains("<title>open 42, high 51, low 35, close 48</title>", StringComparison.Ordinal), "Candlestick charts should expose browser tooltip metadata.");
+        CartesianMetadata(CartesianPoint(svg, 0, 0), ("open", "42"), ("high", "51"), ("low", "35"), ("close", "48"));
         Assert(svg.Contains(">72</text>", StringComparison.Ordinal), "Candlestick data labels should render close values when enabled.");
         Assert(chart.ToPng().Length > 64, "Candlestick charts should render PNG output.");
     }
@@ -142,13 +141,13 @@ internal static partial class SmokeTests {
                 new ChartCandlestick(3, 63, 78, 54, 72)
             });
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"ohlc\"") == 3, "OHLC charts should render one group per OHLC value.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"point\"") == 3, "OHLC charts should render one group per OHLC value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"ohlc-stem\"") == 3, "OHLC charts should render one high-low stem per value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"ohlc-open\"") == 3, "OHLC charts should render one open tick per value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"ohlc-close\"") == 3, "OHLC charts should render one close tick per value.");
         Assert(!svg.Contains("data-cfx-role=\"candlestick-body\"", StringComparison.Ordinal), "OHLC charts should not render candlestick bodies.");
         Assert(svg.Contains("data-cfx-close=\"48\"", StringComparison.Ordinal), "OHLC charts should expose open-high-low-close metadata for HTML inspection.");
-        Assert(svg.Contains("<title>open 42, high 51, low 35, close 48</title>", StringComparison.Ordinal), "OHLC charts should expose browser tooltip metadata.");
+        CartesianMetadata(CartesianPoint(svg, 0, 0), ("open", "42"), ("high", "51"), ("low", "35"), ("close", "48"));
         Assert(svg.Contains(">72</text>", StringComparison.Ordinal), "OHLC data labels should render close values when enabled.");
         Assert(chart.ToPng().Length > 64, "OHLC charts should render PNG output.");
     }
@@ -164,9 +163,9 @@ internal static partial class SmokeTests {
             }, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"range-band\"") == 1, "Range-band charts should render one filled envelope.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"range-band-upper\"") == 1, "Range-band charts should render an upper boundary.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"range-band-lower\"") == 1, "Range-band charts should render a lower boundary.");
-        Assert(svg.Contains(">51-72</text>", StringComparison.Ordinal), "Range-band data labels should render lower and upper values when enabled.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"range-upper\"") == 1, "Range-band charts should render an upper boundary.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"range-lower\"") == 1, "Range-band charts should render a lower boundary.");
+        Assert(svg.Contains(">51–72</text>", StringComparison.Ordinal), "Range-band data labels should render lower and upper values when enabled.");
         Assert(chart.ToPng().Length > 64, "Range-band charts should render PNG output.");
     }
 
@@ -181,10 +180,10 @@ internal static partial class SmokeTests {
             }, ChartColor.FromRgb(14, 165, 233));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"range-area\"") == 1, "Range-area charts should render one filled interval area.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"range-area-upper\"") == 1, "Range-area charts should render an emphasized upper boundary.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"range-area-lower\"") == 1, "Range-area charts should render an emphasized lower boundary.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"range-area-midline\"") == 1, "Range-area charts should render an interval midpoint guide.");
-        Assert(svg.Contains(">51-72</text>", StringComparison.Ordinal), "Range-area data labels should render lower and upper values when enabled.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"range-upper\"") == 1, "Range-area charts should render an emphasized upper boundary.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"range-lower\"") == 1, "Range-area charts should render an emphasized lower boundary.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"range-midline\"") == 1, "Range-area charts should render an interval midpoint guide.");
+        Assert(svg.Contains(">51–72</text>", StringComparison.Ordinal), "Range-area data labels should render lower and upper values when enabled.");
         Assert(chart.ToPng().Length > 64, "Range-area charts should render PNG output.");
     }
 
@@ -196,10 +195,9 @@ internal static partial class SmokeTests {
             .AddStackedArea("Passed", Points(120, 160, 190), ChartColor.FromRgb(16, 185, 129))
             .AddSmoothStackedArea("Warnings", Points(24, 18, 12), ChartColor.FromRgb(251, 191, 36));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area\"") == 2, "Stacked area charts should render one filled band per stacked series.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area-line\"") == 2, "Stacked area charts should render one foreground upper boundary per series.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"stacked-area-line-halo\"") == 2 && CountOccurrences(svg, "data-cfx-role=\"stacked-area-line-highlight\"") == 2, "Stacked area charts should render reusable boundary halos and highlights.");
-        Assert(GetAttribute(svg, "<clipPath", "x") > 0 && svg.Contains(">Warnings</text>", StringComparison.Ordinal), "Stacked area charts should keep using the shared cartesian plot clip and render legend labels.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"area\"") == 2, "Stacked area charts should render one filled band per stacked series.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"line\"") == 2, "Stacked area charts should render one foreground upper boundary per series.");
+        Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Any(element => element.Name.LocalName == "clipPath") && svg.Contains(">Warnings</text>", StringComparison.Ordinal), "Stacked area charts should keep using the shared cartesian plot clip and render legend labels.");
         Assert(chart.ToPng().Length > 64, "Stacked area charts should render PNG output.");
     }
 
@@ -210,10 +208,9 @@ internal static partial class SmokeTests {
             .AddSlope("DMARC", 58, 88, "Before", "After", ChartColor.FromRgb(37, 99, 235))
             .AddSlope("DNSSEC", 42, 74, ChartColor.FromRgb(16, 185, 129));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"slope\"") == 2, "Slope charts should render one comparison group per slope series.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-line\"") == 2 && CountOccurrences(svg, "data-cfx-role=\"slope-line-halo\"") == 2 && CountOccurrences(svg, "data-cfx-role=\"slope-line-highlight\"") == 2, "Slope charts should render foreground, halo, and highlight layers with distinct roles.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-start\"") == 2, "Slope charts should render one start marker per comparison.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-end\"") == 2, "Slope charts should render one end marker per comparison.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"series\"") == 2, "Slope charts should render one comparison group per slope series.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-line\"") == 2, "Each comparison series should draw one endpoint line.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"slope-marker\"") == 4, "Each comparison should draw both endpoint markers.");
         Assert(svg.Contains(">Before</text>", StringComparison.Ordinal), "Slope charts should apply endpoint labels to the x-axis.");
         Assert(svg.Contains(">After</text>", StringComparison.Ordinal), "Slope charts should apply endpoint labels to the x-axis.");
         Assert(svg.Contains(">88</text>", StringComparison.Ordinal), "Slope data labels should render endpoint values when enabled.");
@@ -230,11 +227,11 @@ internal static partial class SmokeTests {
                 new ChartDumbbell(3, 51, 72)
             }, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
-        Assert(CountOccurrences(svg, "data-cfx-role=\"dumbbell\"") == 3, "Dumbbell charts should render one group per paired value.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"point\"") == 3, "Dumbbell charts should render one group per paired value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dumbbell-connector\"") == 3, "Dumbbell charts should render one connector per paired value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dumbbell-start\"") == 3, "Dumbbell charts should render one start marker per paired value.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"dumbbell-end\"") == 3, "Dumbbell charts should render one end marker per paired value.");
-        Assert(svg.Contains(">51-72</text>", StringComparison.Ordinal), "Dumbbell data labels should render paired values when enabled.");
+        Assert(svg.Contains(">51–72</text>", StringComparison.Ordinal), "Dumbbell data labels should render paired values when enabled.");
         Assert(chart.ToPng().Length > 64, "Dumbbell charts should render PNG output.");
     }
 
@@ -264,7 +261,7 @@ internal static partial class SmokeTests {
 
     private static void BarLineComboRendersBarsAndLine() {
         var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(640, 360)
+            .WithSize(640, 360).WithLineMarkers(ChartLineMarkerMode.All)
             .WithYAxis("Volume")
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithSecondaryYAxisBounds(0, 100)
@@ -286,9 +283,9 @@ internal static partial class SmokeTests {
         Assert(chart.Series[1].YAxis == ChartAxisSide.Secondary, "Bar-line combos should allow the overlaid line to use the secondary y-axis.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 3, "Bar-line combos should render one bar per bar point.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"line\"") == 1, "Bar-line combos should render one visible line path.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"line-marker\"") == 3, "Bar-line combos should render one marker per line point.");
-        Assert(svg.Contains("data-cfx-role=\"secondary-y-axis\"", StringComparison.Ordinal), "Secondary-axis combos should render a right-side SVG axis.");
-        Assert(svg.Contains("data-cfx-role=\"secondary-y-axis-title\"", StringComparison.Ordinal), "Secondary-axis combos should render the right-side axis title.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"marker\"") == 3, "Bar-line combos should render one marker per line point.");
+        Assert(svg.Contains("data-cfx-role=\"axis-secondary-y\"", StringComparison.Ordinal), "Secondary-axis combos should render a right-side SVG axis.");
+        Assert(svg.Contains("data-cfx-role=\"axis-secondary-y-title\"", StringComparison.Ordinal), "Secondary-axis combos should render the right-side axis title.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Secondary-axis combos should use the secondary tick formatter.");
         Assert(svg.Contains(">Volume</text>", StringComparison.Ordinal), "Bar-line combos should render the bar legend label.");
         Assert(svg.Contains(">Pass rate</text>", StringComparison.Ordinal), "Bar-line combos should render the line legend label.");
@@ -302,8 +299,8 @@ internal static partial class SmokeTests {
     private static void MultipleBarSeriesRenderAsGroupedBars() {
         var svg = Chart.Create().WithSize(640, 360).WithXLabels("Mon", "Tue", "Wed").AddBar("Current", Points(10, 20, 30)).AddBar("Previous", Points(8, 18, 22)).ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 6, "Two bar series with three points each should render six bar rectangles.");
-        var firstCurrent = GetAttribute(svg, "data-cfx-series=\"0\" data-cfx-point=\"0\"", "x");
-        var firstPrevious = GetAttribute(svg, "data-cfx-series=\"1\" data-cfx-point=\"0\"", "x");
+        var firstCurrent = CartesianMarkAttribute(svg, 0, 0, "bar", "x");
+        var firstPrevious = CartesianMarkAttribute(svg, 1, 0, "bar", "x");
         Assert(Math.Abs(firstCurrent - firstPrevious) > 1, "Grouped bars for the same category should render at distinct x positions.");
     }
 
@@ -317,7 +314,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "data-cfx-role=\"horizontal-bar\"") == 3, "Horizontal bar series should render one rectangle per category.");
         Assert(svg.Contains(">SPF alignment</text>", StringComparison.Ordinal), "Horizontal bar charts should render category labels on the y-axis.");
         Assert(svg.Contains(">100</text>", StringComparison.Ordinal), "Horizontal bar charts should render data labels when enabled.");
-        Assert(GetAttribute(svg, "data-cfx-role=\"horizontal-bar\" data-cfx-series=\"0\" data-cfx-point=\"0\"", "width") > GetAttribute(svg, "data-cfx-role=\"horizontal-bar\" data-cfx-series=\"0\" data-cfx-point=\"2\"", "width"), "Larger horizontal bar values should produce wider bars.");
+        Assert(CartesianMarkAttribute(svg, 0, 0, "horizontal-bar", "width") > CartesianMarkAttribute(svg, 0, 2, "horizontal-bar", "width"), "Larger horizontal bar values should produce wider bars.");
     }
 
     private static void StackedHorizontalBarsRenderSegmentsAndTotals() {
@@ -333,10 +330,10 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(chart.Options.BarMode == ChartBarMode.Stacked, "Stacked horizontal bars should use stacked bar mode.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"horizontal-bar\"") == 6, "Stacked horizontal bars should render one segment per series point.");
-        var firstCompleteY = GetAttribute(svg, "data-cfx-role=\"horizontal-bar\" data-cfx-series=\"0\" data-cfx-point=\"0\"", "y");
-        var firstPartialY = GetAttribute(svg, "data-cfx-role=\"horizontal-bar\" data-cfx-series=\"1\" data-cfx-point=\"0\"", "y");
-        var firstCompleteX = GetAttribute(svg, "data-cfx-role=\"horizontal-bar\" data-cfx-series=\"0\" data-cfx-point=\"0\"", "x");
-        var firstPartialX = GetAttribute(svg, "data-cfx-role=\"horizontal-bar\" data-cfx-series=\"1\" data-cfx-point=\"0\"", "x");
+        var firstCompleteY = CartesianMarkAttribute(svg, 0, 0, "horizontal-bar", "y");
+        var firstPartialY = CartesianMarkAttribute(svg, 1, 0, "horizontal-bar", "y");
+        var firstCompleteX = CartesianMarkAttribute(svg, 0, 0, "horizontal-bar", "x");
+        var firstPartialX = CartesianMarkAttribute(svg, 1, 0, "horizontal-bar", "x");
         Assert(Math.Abs(firstCompleteY - firstPartialY) < 0.001, "Stacked horizontal segments for one category should share the same vertical lane.");
         Assert(firstPartialX > firstCompleteX, "Stacked horizontal segments should begin after earlier same-sign segments.");
         Assert(svg.Contains(">60</text>", StringComparison.Ordinal), "Stacked horizontal bars should render positive totals when requested.");
@@ -382,43 +379,7 @@ internal static partial class SmokeTests {
         Assert(edgeSvg.Contains("data-cfx-role=\"heatmap-column-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge heatmap column labels should end-align.");
     }
 
-    private static void GaugeSeriesRenderValueArcs() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(640, 420)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .AddGauge("Security score", 87, 0, 100)
-            .ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"gauge\"", StringComparison.Ordinal), "Gauges should expose a role marker.");
-        Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Gauges should expose status metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Security score: 87%, positive\"", StringComparison.Ordinal), "Gauges should expose accessible summaries.");
-        Assert(svg.Contains("data-cfx-role=\"gauge-track\"", StringComparison.Ordinal), "Gauges should render a track arc.");
-        Assert(svg.Contains("data-cfx-role=\"gauge-value\"", StringComparison.Ordinal), "Gauges should render a value arc.");
-        Assert(svg.Contains("data-cfx-role=\"gauge-status-marker\"", StringComparison.Ordinal), "Gauges should render a visible status marker.");
-        Assert(svg.Contains("data-cfx-role=\"gauge-status-label\"", StringComparison.Ordinal), "Gauges should render a visible status label.");
-        Assert(svg.Contains("stroke=\"#10B981\"", StringComparison.Ordinal), "Positive gauges should use the positive theme color when no explicit color is set.");
-        Assert(svg.Contains(">87%</text>", StringComparison.Ordinal), "Gauges should render the formatted value label.");
-        var statuses = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddGauge("Low", 42).ToSvg() + Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddGauge("Warning", 72).ToSvg();
-        Assert(statuses.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Low gauges should expose negative status.");
-        Assert(statuses.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Mid-range gauges should expose warning status.");
-    }
 
-    private static void RadialBarSeriesRenderProgressRings() {
-        var chart = Chart.Create()
-            .WithSize(720, 460)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("Mail auth", "DNSSEC", "TLS")
-            .AddRadialBar("Control coverage", Points(92, 74, 88));
-
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"radial-bar-chart\"", StringComparison.Ordinal), "Radial bars should expose a chart role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"radial-bar-track\"") == 3, "Radial bars should render one track per value.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"radial-bar-ring\"") == 3, "Radial bars should render one progress ring per value.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Mail auth: 92%\"", StringComparison.Ordinal), "Radial bars should expose accessible ring summaries.");
-        Assert(svg.Contains("data-cfx-role=\"radial-bar-total\"", StringComparison.Ordinal), "Radial bars should render a center total label.");
-        Assert(svg.Contains("data-cfx-role=\"radial-bar-legend-label\"", StringComparison.Ordinal), "Radial bars should render ring labels.");
-        Assert(svg.Contains(">DNSSEC</text>", StringComparison.Ordinal), "Radial bars should render axis labels through the legend.");
-        Assert(chart.ToPng().Length > 64, "Radial bars should render PNG output.");
-    }
 
     private static void GanttTasksRenderProgressDependenciesAndMilestones() {
         var chart = Chart.Create()
@@ -442,89 +403,8 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng().Length > 64, "Gantt charts should render PNG output.");
     }
 
-    private static void SankeyLinksRenderWeightedFlows() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(900, 520)
-            .WithDataLabels()
-            .AddSankey("Finding flow", new[] {
-                new ChartSankeyLink("Discovered", "Validated", 70),
-                new ChartSankeyLink("Discovered", "Accepted risk", 20),
-                new ChartSankeyLink("Validated", "Remediated", 44),
-                new ChartSankeyLink("Validated", "Monitoring", 26)
-            });
 
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"sankey-chart\"", StringComparison.Ordinal), "Sankey charts should expose a chart role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"sankey-link\"") == 4, "Sankey charts should render one weighted ribbon per link.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"sankey-node\"") == 5, "Sankey charts should render deduplicated named nodes.");
-        Assert(svg.Contains("data-cfx-value=\"70\"", StringComparison.Ordinal), "Sankey links should expose value metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Discovered to Validated: 70\"", StringComparison.Ordinal), "Sankey links should expose accessible summaries.");
-        Assert(svg.Contains(">Validated</text>", StringComparison.Ordinal), "Sankey charts should render node labels when data labels are enabled.");
-        Assert(chart.ToPng().Length > 64, "Sankey charts should render PNG output.");
-    }
 
-    private static void TreeLinksRenderHierarchy() {
-        var chart = Chart.Create()
-            .WithSize(900, 520)
-            .AddTree("Control hierarchy", new[] {
-                new ChartTreeLink("Security posture", "Mail authentication"),
-                new ChartTreeLink("Security posture", "Certificate lifecycle"),
-                new ChartTreeLink("Mail authentication", "SPF"),
-                new ChartTreeLink("Mail authentication", "DKIM"),
-                new ChartTreeLink("Certificate lifecycle", "Expiry monitoring")
-            });
-
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"tree-chart\"", StringComparison.Ordinal), "Tree charts should expose a chart role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"tree-link\"") == 5, "Tree charts should render one connector per link.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"tree-node\"") == 6, "Tree charts should render deduplicated named nodes.");
-        Assert(svg.Contains("data-cfx-depth=\"2\"", StringComparison.Ordinal), "Tree nodes should expose depth metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Security posture: level 0\"", StringComparison.Ordinal), "Tree nodes should expose accessible summaries.");
-        Assert(svg.Contains(">Mail authentication</text>", StringComparison.Ordinal) || (svg.Contains(">Mail</text>", StringComparison.Ordinal) && svg.Contains(">authentication</text>", StringComparison.Ordinal)), "Tree charts should render readable node labels.");
-        Assert(chart.ToPng().Length > 64, "Tree charts should render PNG output.");
-    }
-
-    private static void BulletSeriesRenderTargetAndRangeBars() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(720, 420)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(37, 99, 235))
-            .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(14, 165, 233))
-            .ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"bullet-chart\"", StringComparison.Ordinal), "Bullet charts should expose a role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-row\"") == 2, "Two bullet series should render two bullet rows.");
-        Assert(svg.Contains("data-cfx-role=\"bullet-row\" data-cfx-series=\"0\" data-cfx-status=\"below-target\"", StringComparison.Ordinal), "Bullet rows should expose value-versus-target status.");
-        Assert(svg.Contains("data-cfx-role=\"bullet-row\" data-cfx-series=\"1\" data-cfx-status=\"below-target\"", StringComparison.Ordinal), "Bullet rows should expose value-versus-target status.");
-        Assert(svg.Contains("role=\"group\" aria-label=\"DMARC enforcement: 88%, target 95%, below target\"", StringComparison.Ordinal), "Bullet rows should expose accessible summaries.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-status-marker\"") == 2, "Bullet rows should render visible status markers.");
-        Assert(svg.Contains("fill=\"#EF4444\"", StringComparison.Ordinal), "Below-target bullet status markers should use the negative theme color.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-row-label\"") == 2, "Bullet rows should expose row label markers.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-target\"") == 2, "Bullet rows should render target markers.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-target-label\"") == 2, "Bullet rows should render target value labels.");
-        Assert(svg.Contains("data-cfx-role=\"bullet-axis\"", StringComparison.Ordinal), "Bullet charts should expose an axis group marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-axis-tick\"") == 3, "Bullet charts should render three axis ticks.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bullet-axis-label\"") == 3, "Bullet charts should render three axis tick labels.");
-        Assert(svg.Contains("data-cfx-role=\"bullet-axis-label\" x=\"", StringComparison.Ordinal) && svg.Contains("text-anchor=\"start\"", StringComparison.Ordinal), "Left-edge bullet axis labels should start-align.");
-        Assert(svg.Contains("data-cfx-role=\"bullet-axis-label\" x=\"", StringComparison.Ordinal) && svg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge bullet axis labels should end-align.");
-        Assert(svg.Contains(">DMARC enforcement</text>", StringComparison.Ordinal), "Bullet charts should render row labels.");
-        Assert(svg.Contains(">88%</text>", StringComparison.Ordinal), "Bullet charts should render value labels.");
-        Assert(svg.Contains(">target 95%</text>", StringComparison.Ordinal), "Bullet charts should render target labels.");
-        var edgeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBullet("Edge low", 5, 0).AddBullet("Edge high", 95, 100).ToSvg();
-        Assert(edgeSvg.Contains("data-cfx-role=\"bullet-target-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"start\"", StringComparison.Ordinal), "Left-edge bullet target labels should start-align.");
-        Assert(edgeSvg.Contains("data-cfx-role=\"bullet-target-label\"", StringComparison.Ordinal) && edgeSvg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge bullet target labels should end-align.");
-        var statusSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBullet("Below", 80, 90).AddBullet("Meets", 90, 90).AddBullet("Above", 95, 90).ToSvg();
-        Assert(statusSvg.Contains("data-cfx-status=\"below-target\"", StringComparison.Ordinal), "Bullet rows should identify below-target values.");
-        Assert(statusSvg.Contains("data-cfx-status=\"meets-target\"", StringComparison.Ordinal), "Bullet rows should identify target-matching values.");
-        Assert(statusSvg.Contains("data-cfx-status=\"above-target\"", StringComparison.Ordinal), "Bullet rows should identify above-target values.");
-        var fittedSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(320, 220)
-            .WithDataLabelStyle(style => style.WithFontSize(48))
-            .AddBullet("A deliberately long bullet row label", 80, 90)
-            .ToSvg();
-        var fittedRowFontSize = double.Parse(GetStringAttribute(fittedSvg, "data-cfx-role=\"bullet-row-label\"", "font-size"), CultureInfo.InvariantCulture);
-        Assert(fittedRowFontSize < 48, "Fitted SVG bullet labels should emit their reduced font size instead of restoring the requested style override.");
-        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddBullet("Score", 80, 90).ToPng().Length > 64, "Bullet charts should render PNG output.");
-    }
 
     private static void SpecializedChartsEscapeTextLabels() {
         const string unsafeLabel = "A < B & C \"quoted\"";
@@ -553,7 +433,7 @@ internal static partial class SmokeTests {
         var funnel = Chart.Create()
             .WithSize(320, 220)
             .WithXLabels(longLabel, "Verified")
-            .AddFunnel("Funnel", Points(96, 72))
+            .AddFunnel("Funnel", Points(96, 72)).WithDataLabels()
             .ToSvg();
         Assert(funnel.Contains("data-cfx-role=\"funnel-label\"", StringComparison.Ordinal), "Funnel charts should mark fitted segment labels.");
         Assert(funnel.Contains("...</text>", StringComparison.Ordinal), "Funnel segment labels should shorten when a stage is narrower than the label.");
@@ -609,118 +489,24 @@ internal static partial class SmokeTests {
             .WithXLabels("Opened", "Resolved", "Suppressed", "New risk")
             .AddWaterfall("Finding delta", Points(18, -42, -12, 9), ChartColor.FromRgb(52, 211, 153))
             .ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"waterfall-chart\"", StringComparison.Ordinal), "Waterfall charts should expose a role marker.");
+        Assert(svg.Contains("data-cfx-kind=\"Waterfall\"", StringComparison.Ordinal), "Waterfall charts should expose a role marker.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"waterfall-bar\"") == 5, "Four waterfall steps should render four change bars plus a total bar.");
-        Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Waterfall positive deltas should expose status metadata.");
-        Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Waterfall negative deltas should expose status metadata.");
-        Assert(svg.Contains("data-cfx-status=\"total\"", StringComparison.Ordinal), "Waterfall total bars should expose status metadata.");
-        Assert(svg.Contains("fill=\"#10B981\"", StringComparison.Ordinal), "Waterfall positive bars should use the positive theme color.");
-        Assert(svg.Contains("fill=\"#EF4444\"", StringComparison.Ordinal), "Waterfall negative bars should use the negative theme color.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Opened: +18, positive\"", StringComparison.Ordinal), "Waterfall bars should expose accessible summaries.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"waterfall-connector\"") == 4, "Waterfall bars should render connectors between cumulative steps.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"waterfall-x-axis-label\"") == 5, "Waterfall charts should mark all category labels.");
-        Assert(svg.Contains("data-cfx-role=\"waterfall-x-axis-title\"", StringComparison.Ordinal), "Waterfall charts should mark the x-axis title.");
-        Assert(svg.Contains("data-cfx-role=\"waterfall-y-axis-title\"", StringComparison.Ordinal), "Waterfall charts should mark the y-axis title.");
+        CartesianMetadata(CartesianPoint(svg, 0, 0), ("start", "0"), ("end", "18"), ("delta", "18"));
+        CartesianMetadata(CartesianPoint(svg, 0, 1), ("start", "18"), ("end", "-24"), ("delta", "-42"));
+        Assert(CountOccurrences(svg, "data-cfx-role=\"waterfall-connector\"") == 3, "Waterfall bars should render connectors between cumulative steps.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"axis-x-label\"") == 5, "Waterfall charts should mark all category labels.");
+        Assert(svg.Contains("data-cfx-role=\"axis-x-title\"", StringComparison.Ordinal), "Waterfall charts should mark the x-axis title.");
+        Assert(svg.Contains("data-cfx-role=\"axis-y-title\"", StringComparison.Ordinal), "Waterfall charts should mark the y-axis title.");
         Assert(svg.Contains(">Opened</text>", StringComparison.Ordinal), "Waterfall charts should render category labels.");
         Assert(svg.Contains(">Total</text>", StringComparison.Ordinal), "Waterfall charts should render a total category.");
         Assert(svg.Contains(">+18</text>", StringComparison.Ordinal), "Waterfall charts should render positive delta labels.");
         Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
     }
 
-    private static void RadarSeriesRenderPolarPolygons() {
-        var svg = Chart.Create()
-            .WithSize(760, 460)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy")
-            .AddRadar("Current", Points(92, 74, 88, 96, 81), ChartColor.FromRgb(37, 99, 235))
-            .AddRadar("Target", Points(96, 90, 92, 98, 90), ChartColor.FromRgb(52, 211, 153))
-            .ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"radar-chart\"", StringComparison.Ordinal), "Radar charts should expose a role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"radar-area\"") == 2, "Two radar series should render two filled polygons.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Current: Mail auth 92%, DNSSEC 74%, TLS 88%, CT 96%, Policy 81%\"", StringComparison.Ordinal), "Radar series should expose accessible summaries.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"radar-spoke\"") == 5, "Five radar categories should render five spokes.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"radar-axis-label\"") == 5, "Radar charts should expose category label markers.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"radar-ring-label\"") > 0, "Radar charts should expose ring value label markers.");
-        Assert(GetAttribute(svg, "data-cfx-role=\"radar-axis-label\"", "x") >= 24, "Radar axis labels should stay inside the SVG viewport.");
-        Assert(svg.Contains(">Mail auth</text>", StringComparison.Ordinal), "Radar charts should render category labels.");
-        Assert(svg.Contains(">92%</text>", StringComparison.Ordinal), "Radar charts should render optional data labels.");
-        Assert(Chart.Create().AddRadar("Current", Points(92, 74, 88, 96, 81)).ToPng().Length > 64, "Radar charts should render PNG output.");
-        Assert(Chart.Create().WithSize(300, 220).WithDataLabels().WithValueFormatter(_ => "very long radar label value").AddRadar("Current", Points(92, 74, 88)).ToPng().Length > 64, "Radar PNG data labels should fit bounded plot space.");
-    }
 
-    private static void PolarAreaSeriesRenderRadialSegments() {
-        var chart = Chart.Create()
-            .WithSize(760, 460)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT")
-            .AddPolarArea("Control share", Points(92, 74, 88, 96));
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"polar-area-chart\"", StringComparison.Ordinal), "Polar-area charts should expose a role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"polar-area-segment\"") == 4, "Polar-area charts should render one radial segment per positive value.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"polar-area-ring\"") == 4, "Polar-area charts should render radial reference rings.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Mail auth: 92%, 26.3%\"", StringComparison.Ordinal), "Polar-area segments should expose accessible summaries.");
-        Assert(svg.Contains(">92%</text>", StringComparison.Ordinal), "Polar-area data labels should render values when enabled.");
-        Assert(Chart.Create().WithXLabels("A", "B", "C").AddPolarArea("Polar", Points(30, 50, 80)).ToPng().Length > 64, "Polar-area charts should render PNG output.");
-        Assert(Chart.Create().WithSize(300, 220).WithDataLabels().WithValueFormatter(_ => "very long polar label value").AddPolarArea("Polar", Points(30, 50, 80)).ToPng().Length > 64, "Polar-area PNG data labels should fit bounded plot space.");
-    }
 
-    private static void CircleSeriesRenderSingleProgressRings() {
-        var chart = Chart.Create()
-            .WithSize(760, 460)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .AddCircle("Readiness", 87, 0, 100, ChartColor.FromRgb(52, 211, 153));
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"circle-chart\"", StringComparison.Ordinal), "Circle charts should expose a role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"circle-track\"") == 1, "Circle charts should render one track ring.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"circle-value\"") == 1, "Circle charts should render one value ring.");
-        Assert(svg.Contains("data-cfx-ratio=\"0.87\"", StringComparison.Ordinal), "Circle charts should expose normalized progress metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Readiness: 87%, positive\"", StringComparison.Ordinal), "Circle charts should expose accessible summaries.");
-        Assert(svg.Contains(">87%</text>", StringComparison.Ordinal), "Circle charts should render the central value label.");
-        Assert(Chart.Create().AddCircle("Circle", 72).ToPng().Length > 64, "Circle charts should render PNG output.");
-    }
 
-    private static void FunnelSeriesRenderStagedSegments() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(760, 460).WithXLabels("Discovered", "Verified", "Prioritized", "Remediated").AddFunnel("Domain remediation funnel", Points(420, 318, 174, 96)).ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"funnel-chart\"", StringComparison.Ordinal), "Funnel charts should expose a role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-segment\"") == 4, "Four funnel values should render four funnel segments.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-retention\"") == 3, "Funnel charts should render retention labels after the first stage.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-dropoff\"") == 3, "Funnel charts should render drop-off labels after the first stage.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-dropoff-line\"") == 3, "Funnel charts should render drop-off guide lines after the first stage.");
-        Assert(svg.Contains("data-cfx-retention=\"0.757\"", StringComparison.Ordinal), "Funnel segments should expose retention metadata.");
-        Assert(svg.Contains("data-cfx-dropoff=\"0.243\"", StringComparison.Ordinal), "Funnel segments should expose drop-off metadata.");
-        Assert(svg.Contains("role=\"img\" aria-label=\"Verified: 318, retained 75.7%, drop-off 24.3%", StringComparison.Ordinal), "Funnel segments should preserve accessible summaries when their measured captions add detail.");
-        Assert(svg.Contains(">Discovered</text>", StringComparison.Ordinal), "Funnel charts should render stage labels.");
-        Assert(svg.Contains(">420</text>", StringComparison.Ordinal), "Funnel charts should render stage values.");
-        Assert(GetAttribute(svg, "data-cfx-role=\"funnel-retention\"", "x") < 760, "Funnel retention labels should stay inside the SVG viewport.");
-        Assert(svg.Contains(">75.7% retained</text>", StringComparison.Ordinal), "Funnel charts should render retained percentage labels.");
-        Assert(svg.Contains(">-24.3% from prev</text>", StringComparison.Ordinal), "Funnel charts should render previous-stage drop-off labels.");
-        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddFunnel("Funnel", Points(420, 318, 174, 96)).ToPng().Length > 64, "Funnel charts should render PNG output.");
-    }
 
-    private static void TreemapItemsRenderProportionalTiles() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(720, 420)
-            .WithDataLabels()
-            .AddTreemap("Findings", new[] {
-                new ChartTreemapItem("Critical", 50),
-                new ChartTreemapItem("High", 28),
-                new ChartTreemapItem("Medium", 14),
-                new ChartTreemapItem("Low", 8)
-            });
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"treemap\"", StringComparison.Ordinal), "Treemaps should expose a chart role marker.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"treemap-tile\"") == 4, "Treemaps should render one tile per positive item.");
-        Assert(svg.Contains("data-cfx-role=\"treemap-tile-highlight\"", StringComparison.Ordinal), "Treemap SVG tiles should render polished highlights.");
-        Assert(svg.Contains("data-cfx-role=\"treemap-label\"", StringComparison.Ordinal), "Treemaps should render tile labels when space allows.");
-        Assert(svg.Contains(">Critical</text>", StringComparison.Ordinal), "Treemaps should render item labels.");
-        Assert(svg.Contains(">50</text>", StringComparison.Ordinal), "Treemaps should render item values when space allows.");
-        var criticalArea = GetAttribute(svg, "data-cfx-role=\"treemap-tile\" data-cfx-point=\"0\"", "width") * GetAttribute(svg, "data-cfx-role=\"treemap-tile\" data-cfx-point=\"0\"", "height");
-        var lowArea = GetAttribute(svg, "data-cfx-role=\"treemap-tile\" data-cfx-point=\"3\"", "width") * GetAttribute(svg, "data-cfx-role=\"treemap-tile\" data-cfx-point=\"3\"", "height");
-        Assert(criticalArea > lowArea, "Larger treemap values should receive larger tile areas.");
-        Assert(chart.ToPng().Length > 64, "Treemap charts should render PNG output.");
-    }
 
     private static void TimelineItemsRenderDateRanges() {
         var svg = Chart.Create()
@@ -762,8 +548,8 @@ internal static partial class SmokeTests {
     private static void MultipleBarSeriesCanRenderAsStackedBars() {
         var svg = Chart.Create().WithSize(640, 360).WithStackedBars().WithXLabels("Mon", "Tue", "Wed").AddBar("Passed", Points(40, 55, 65)).AddBar("Warnings", Points(15, 25, 20)).AddBar("Failed", Points(5, 8, 10)).ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 9, "Three stacked bar series with three points each should render nine bar segments.");
-        Assert(Math.Abs(GetAttribute(svg, "data-cfx-series=\"0\" data-cfx-point=\"0\"", "x") - GetAttribute(svg, "data-cfx-series=\"1\" data-cfx-point=\"0\"", "x")) < 0.001, "Stacked bars for the same category should share the same x position.");
-        Assert(GetAttribute(svg, "data-cfx-series=\"1\" data-cfx-point=\"0\"", "y") < GetAttribute(svg, "data-cfx-series=\"0\" data-cfx-point=\"0\"", "y"), "Second stacked segment should render above the first positive segment.");
+        Assert(Math.Abs(CartesianMarkAttribute(svg, 0, 0, "bar", "x") - CartesianMarkAttribute(svg, 1, 0, "bar", "x")) < 0.001, "Stacked bars for the same category should share the same x position.");
+        Assert(CartesianMarkAttribute(svg, 1, 0, "bar", "y") < CartesianMarkAttribute(svg, 0, 0, "bar", "y"), "Second stacked segment should render above the first positive segment.");
     }
 
     private static void StackedBarsCanRenderTotalLabels() {

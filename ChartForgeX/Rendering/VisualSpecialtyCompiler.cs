@@ -105,7 +105,8 @@ internal static partial class VisualSpecialtyCompiler {
                 new Dictionary<string, string> { ["data-cfx-text"] = term.Text, ["data-cfx-angle"] = N(term.Angle),
                     ["data-cfx-font-size"] = N(style.EffectiveFontSize) }))
             using (builder.PushRotation(term.Angle, term.X, term.Y))
-                builder.Text(term.Text, term.X, term.Y - term.Height / 2 + builder.TextAscent(style) - shift, style, "word-cloud-text");
+                builder.Text(term.Text, term.X, term.Y - term.Height / 2 + builder.TextAscent(style) - shift, style, "word-cloud-text",
+                    paint: VisualChartPaint.ExplicitDataLabelColor(chart, term.PointIndex) ? VisualChartPaint.Text(style) : VisualChartPaint.Series(series, style.Color, term.PointIndex));
         }
     }
 }

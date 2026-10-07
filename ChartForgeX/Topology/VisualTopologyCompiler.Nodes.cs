@@ -29,7 +29,7 @@ internal sealed partial class VisualTopologyCompiler {
         var surfacePaint = new VisualScenePaintBinding(NodeFillPaint(node, fill, baseAccent, accentRole), SvgPaint.Of(accent, accentRole));
         var strokeWidth = (_options.SelectedNodeIds.Contains(node.Id) ? 2.8 : _context.Theme.AxisStrokeWidth) * _scale;
         using (Host(node.Href, node.Tooltip, node.Id, "topology-node-host"))
-        using (_builder.PushGroup(node.Id, "topology-node", new Dictionary<string, string> { ["data-status"] = node.Status.ToString(), ["data-kind"] = node.Kind.ToString(), ["data-display"] = mode.ToString() })) {
+        using (_builder.PushGroup(node.Id, "topology-node", NodeMetadata(node))) {
             var image = mode == TopologyNodeDisplayMode.Artwork && BuildArtwork(node, bounds);
             if (!image) {
                 if (mode == TopologyNodeDisplayMode.Dot) {
@@ -48,11 +48,13 @@ internal sealed partial class VisualTopologyCompiler {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption && mode != TopologyNodeDisplayMode.Pill ? 44 : 10;
                     var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + 6, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - 12));
-                    if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
+                    if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
+                    else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
             }
             if (_options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
+                using var statusGroup = _builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id });
                 using (PinnedState()) _builder.Ellipse(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: Paint(status, SvgColorRole.Status));
             }
             if (!string.IsNullOrWhiteSpace(node.Badge)) {
@@ -68,14 +70,15 @@ internal sealed partial class VisualTopologyCompiler {
         var size = _context.Theme.Typography.DataLabelSize;
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
-        var height = Math.Min(bounds.Height, size * _scale * 1.3 * titleLines);
+        var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
         Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label");
         var y = bounds.Y + height;
         if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
-            var subtitleHeight = size * _scale * 1.2 * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
+            var subtitleHeight = _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
             var subtitle = new ChartRect(bounds.X, y, bounds.Width, Math.Min(Math.Max(0, bounds.Bottom - y), subtitleHeight));
-            if (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) _builder.Rect(subtitle, accent.WithOpacity(.1), radius: _context.Theme.BarRadius * _scale, role: "topology-subtitle-chip", paint: Paint(accent.WithOpacity(.1), AccentRole(node.Color ?? ResolveNodeIcon(node, _options)?.Color)));
-            Text(node.Subtitle!, subtitle, size * .85, Highlight(_colors.MutedForeground, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption);
+            if (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) {
+                BuildSubtitleChip(node, EffectiveNodeDisplayMode(node, _options), node.Y + (EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, _options)), accent, active);
+            } else Text(node.Subtitle!, subtitle, size * .85, Highlight(_colors.MutedForeground, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption);
             y += subtitle.Height;
         }
         foreach (var detail in node.Details) {
@@ -191,7 +194,8 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private IDisposable? Host(string? href, string? tooltip, string id, string role) {
-        if (!string.IsNullOrWhiteSpace(href)) return _builder.PushLink(href!, id + "-host", role, _options.IncludeTooltips ? tooltip : null);
+        var safe = SafeHref(href);
+        if (safe != null) return _builder.PushLink(safe, id + "-host", role, _options.IncludeTooltips ? tooltip : null);
         return _options.IncludeTooltips && !string.IsNullOrWhiteSpace(tooltip) ? _builder.PushTooltip(tooltip!, id + "-host", role) : null;
     }
 

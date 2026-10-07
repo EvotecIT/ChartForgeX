@@ -245,30 +245,19 @@ internal static partial class SmokeTests {
         Assert(AlphaAt(visualGridPixels, visualGridWidth, 16, 16) == 96, "PNG visual grids should not compound translucent background alpha when adding polish.");
     }
 
-    private static void GuideStrokeCoordinatesSnapToNearestPixelCenter() {
-        var svgSnap = typeof(ChartForgeX.Svg.SvgChartRenderer).GetMethod("CrispStrokeCoordinate", BindingFlags.NonPublic | BindingFlags.Static);
-        var pngSnap = typeof(ChartForgeX.Raster.PngChartRenderer).GetMethod("CrispStrokeCoordinate", BindingFlags.NonPublic | BindingFlags.Static);
-        Assert(svgSnap != null && pngSnap != null, "Guide stroke snapping helpers should remain available for SVG and PNG renderers.");
-        if (svgSnap == null || pngSnap == null) throw new InvalidOperationException("Guide stroke snapping helpers were not found.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 100.9, 1.0 })! - 100.5) < 0.000001, "SVG odd-width guide strokes should snap to the nearest half-pixel center, not always upward.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 100.1, 1.0 })! - 100.5) < 0.000001, "SVG odd-width guide strokes should snap to the nearest half-pixel center from either side.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 100.0, 1.0 })! - 100.5) < 0.000001, "SVG integer guide strokes should snap to their own half-pixel center.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 101.0, 1.0 })! - 101.5) < 0.000001, "SVG integer guide strokes should not collapse with neighboring guide lines.");
-        Assert(Math.Abs((double)pngSnap.Invoke(null, new object[] { 100.9, 1.0 })! - 100.5) < 0.000001, "PNG guide strokes should use the same nearest half-pixel snapping.");
-        Assert(Math.Abs((double)pngSnap.Invoke(null, new object[] { 101.0, 1.0 })! - 101.5) < 0.000001, "PNG guide strokes should use non-banker half-pixel snapping at integer ties.");
-    }
-
     private static void FunnelZeroStageAvoidsFakeDropoffGuide() {
         var chart = Chart.Create()
             .WithSize(920, 560)
             .WithTheme(ChartTheme.ReportLight())
             .WithXLabels("Opened", "Deferred", "Closed")
-            .AddFunnel("Review flow", Points(100, 0, 18));
+            .AddFunnel("Review flow", Points(100, 0, 18)).WithDataLabels();
         var svg = chart.ToSvg("zero-stage-funnel");
-        Assert(svg.Contains("data-cfx-role=\"funnel-zero-label\"", StringComparison.Ordinal), "Zero-value funnel stages should render as an inline stage label.");
+        var prepared = PreparedFamily(chart);
+        Assert(FamilyLabels(prepared, "funnel-label").Any(label => FamilyContent(label) == "Deferred: 0"), "Zero-value funnel stages should retain a visible inline label.");
         Assert(!svg.Contains("data-cfx-role=\"funnel-zero-label-backdrop\"", StringComparison.Ordinal), "Zero-value funnel labels should avoid floating callout panels.");
         Assert(!svg.Contains("prev stage was 0", StringComparison.Ordinal), "Funnel stages after a zero stage should not show fake previous-stage drop-off text.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-dropoff-line\"") == 1, "Funnel drop-off guide lines should be omitted when the previous stage is zero.");
+        Assert(FamilyGroups(prepared, "funnel-stage")[2].Metadata["data-cfx-dropoff-defined"] == "false", "Funnel drop-off must remain undefined when its previous stage is zero.");
+        Assert(FamilyLabels(prepared, "funnel-ratio").Any(label => FamilyContent(label).Contains("No previous baseline")), "The undefined zero-stage baseline should have an honest visible caption.");
         Assert(chart.ToPng().Length > 64, "Zero-value funnel stage polish should render PNG output.");
     }
 

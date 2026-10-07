@@ -31,8 +31,9 @@ internal static partial class VisualSankeyCompiler {
                 if (result.IsDropped) continue;
                 var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
                 style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
-                builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop");
-                builder.Text(result.Text, result.Bounds.X, result.Bounds.Y + builder.TextAscent(style), style, "sankey-node-label", Id("node-label", nodes[i].Index));
+                builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop",
+                    paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .92), .92)));
+                builder.Text(result.Text, result.Bounds.X, result.Bounds.Y + builder.TextAscent(style), style, "sankey-node-label", Id("node-label", nodes[i].Index), paint: VisualChartPaint.Text(style));
             }
         }
     }

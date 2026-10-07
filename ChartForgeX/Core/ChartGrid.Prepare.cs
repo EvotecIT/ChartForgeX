@@ -13,6 +13,9 @@ public sealed partial class ChartGrid : IVisualRenderable {
 
     /// <summary>Prepares all panels once in the supplied fixed viewport with a shared theme and frame.</summary>
     /// <remarks>Panel spans, column preservation and shared axis bounds configured on the source grid are retained.
+    /// The common frame permits panel legends, plot surfaces and cards; a false visibility setting hides that feature
+    /// in every panel, while a true setting preserves each chart's own visibility choice. Panel headings, legend
+    /// positions and padding come from each chart. Common legend limits also cap each panel's model limits.
     /// Child scenes are translated and clipped directly; no child SVG is parsed or rasterized.</remarks>
     public PreparedVisual Prepare(VisualRenderContext context) {
         if (context == null) throw new ArgumentNullException(nameof(context));
@@ -25,7 +28,7 @@ public sealed partial class ChartGrid : IVisualRenderable {
             frame.ShowSurface, frame.TransparentBackground,
             Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground),
             Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground), frame.LegendStyle,
-            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction);
+            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, showCard: frame.ShowCard);
         var resolved = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var content = VisualFrameLayout.Build(builder, resolved, Array.Empty<VisualLegendEntry>());
@@ -49,12 +52,21 @@ public sealed partial class ChartGrid : IVisualRenderable {
                 }
                 var x = cell.Left + (cell.Width - width) / 2; var y = cell.Top + (cell.Height - height) / 2;
                 var panelId = "panel-" + i.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                var panelFrame = new VisualFrame(chart.Title, chart.Subtitle, frame.ShowLegend, frame.LegendPosition,
-                    frame.ShowSurface, transparentBackground: true, legendStyle: frame.LegendStyle,
-                    legendMaximumRows: frame.LegendMaximumRows, legendMaximumHeightFraction: frame.LegendMaximumHeightFraction);
-                var padding = context.Layout.PaddingEdges;
-                var panelPadding = new ChartPadding(Math.Min(padding.Left / 2, width / 4), Math.Min(padding.Top / 2, height / 4),
-                    Math.Min(padding.Right / 2, width / 4), Math.Min(padding.Bottom / 2, height / 4));
+                var options = chart.Options;
+                var modelFrame = !options.HostOwnsFrame;
+                var maximumRows = frame.LegendMaximumRows.HasValue && options.LegendMaximumRows.HasValue
+                    ? Math.Min(frame.LegendMaximumRows.Value, options.LegendMaximumRows.Value)
+                    : frame.LegendMaximumRows ?? options.LegendMaximumRows;
+                var panelFrame = new VisualFrame(options.ShowHeader && modelFrame ? chart.Title : string.Empty,
+                    options.ShowHeader && modelFrame ? chart.Subtitle : string.Empty,
+                    frame.ShowLegend && options.ShowLegend && modelFrame, options.LegendPosition,
+                    frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
+                    legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
+                    legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),
+                    showCard: frame.ShowCard && options.ShowCard && options.Theme.UseCard && modelFrame);
+                var padding = options.HostOwnsFrame ? ChartPadding.All(0) : options.Padding;
+                var panelPadding = new ChartPadding(Math.Min(padding.Left, width / 4), Math.Min(padding.Top, height / 4),
+                    Math.Min(padding.Right, width / 4), Math.Min(padding.Bottom, height / 4));
                 var panelContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), panelPadding),
                     context.Theme, context.ThemeMode, panelFrame, context.Font);
                 var child = chart.Prepare(panelContext);
@@ -65,6 +77,7 @@ public sealed partial class ChartGrid : IVisualRenderable {
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= string.IsNullOrWhiteSpace(frame.Title) ? Title : frame.Title;
         accessibility.Description ??= string.IsNullOrWhiteSpace(frame.Subtitle) ? Subtitle : frame.Subtitle;
-        return new PreparedVisual(builder.Build(), accessibility);
+        return new PreparedVisual(builder.Build(), accessibility,
+            svgOptions: new VisualSvgOptions(colorVariables: SvgColorVariables));
     }
 }

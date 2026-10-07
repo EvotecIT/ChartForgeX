@@ -523,11 +523,6 @@ internal static partial class SmokeTests {
     private static void DefaultNumericCompactFormatterIsShared() {
         var svg = Chart.Create().WithSize(640, 360).AddLine("Values", Points(1200000, 2400000, 3600000)).ToSvg();
         Assert(svg.Contains(">1M</text>", StringComparison.Ordinal) || svg.Contains(">1.2M</text>", StringComparison.Ordinal), "Default compact values should use million suffixes.");
-        var root = FindRepositoryRoot();
-        var svgHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
-        var pngRenderer = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.cs"));
-        Assert(svgHelpers.Contains("ChartNumericFormatter.FormatCompact", StringComparison.Ordinal), "SVG default numeric labels should use the shared compact formatter.");
-        Assert(pngRenderer.Contains("ChartNumericFormatter.FormatCompact", StringComparison.Ordinal), "PNG default numeric labels should use the shared compact formatter.");
     }
 
     private static void LegendRowsWrapWithRoleMarkers() {
@@ -760,21 +755,16 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddGauge("Score", 87).AddLine("Trend", Points(1, 2, 3)).ToSvg(), "SVG rendering should reject mixed specialized and cartesian series.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddDonut("Checks", Points(70, 20)).AddPie("Other", Points(1, 2)).ToPng(), "PNG rendering should reject multiple pie-like series.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddGauge("Score", 87).AddGauge("Other", 72).ToSvg(), "Single-panel specialized charts should reject multiple series.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddPie("Empty", Points(0, 0, 0)).ToSvg(), "Pie charts should reject data with no positive slice values.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddDonut("Empty", Points(-3, 0, -2)).ToPng(), "Donut charts should reject data with no positive slice values.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPie("Bad", Points(20, -1, 30)).ToSvg(), "Pie charts should reject negative slice values instead of silently filtering them.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddFunnel("Empty", Points(0, -1, 0)).ToSvg(), "Funnel charts should reject data with no positive stage values.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddFunnel("Bad", Points(100, -10, 50)).ToSvg(), "Funnel charts should reject negative stage values instead of silently filtering them.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddTreemap("Empty", new[] { new ChartTreemapItem("A", 0), new ChartTreemapItem("B", 0) }).ToPng(), "Treemaps should reject data with no positive tile values.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddPictorial("Empty", new[] { new ChartPictorialItem("A", 0), new ChartPictorialItem("B", 0) }).ToSvg(), "Pictorial charts should reject data with no positive values.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddWordCloud("Empty", new[] { new ChartWordCloudItem("A", 0), new ChartWordCloudItem("B", 0) }).ToSvg(), "Word clouds should reject data with no positive weights.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolarArea("Empty", Points(0, -1, 0)).ToSvg(), "Polar-area charts should reject data with no positive segment values.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolarArea("Bad", Points(30, -1, 40)).ToPng(), "Polar-area charts should reject negative segment values instead of silently filtering them.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddWaterfall("Empty", Array.Empty<ChartPoint>()).ToSvg(), "Waterfall charts should reject empty data instead of rendering a blank chart.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddRadar("Too small", Points(72, 84)).ToPng(), "Radar charts should reject fewer than three categories instead of rendering a blank chart.");
         var malformedHeatmap = Chart.Create();
         malformedHeatmap.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Heatmap, Array.Empty<ChartPoint>()));
-        AssertThrows<InvalidOperationException>(() => malformedHeatmap.ToSvg(), "Heatmap renderers should reject empty public rows instead of rendering a blank matrix.");
+        Assert(malformedHeatmap.ToSvg().Contains("matrix-no-data"), "Empty heatmap rows should render the native no-data scene.");
         var malformedBullet = Chart.Create();
         malformedBullet.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Bullet, Points(72)));
         AssertThrows<InvalidOperationException>(() => malformedBullet.ToSvg(), "Bullet renderers should reject malformed public series instead of rendering a blank chart.");

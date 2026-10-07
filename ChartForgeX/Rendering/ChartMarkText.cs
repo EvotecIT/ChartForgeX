@@ -20,13 +20,26 @@ namespace ChartForgeX.Rendering;
 /// under the medium severity fill.
 /// </remarks>
 internal static class ChartMarkText {
+    /// <summary>Resolves prepared numeric matrix ink from canonical frame surfaces and observed scale strength.</summary>
+    internal static ChartColorBlend OnHeatmapCell(Chart chart, VisualThemeColors colors, VisualFrame frame,
+        ChartColor fill, ChartColor? high, double value, double min, double max,
+        SvgColorRole fillRole = SvgColorRole.Ramp) => ChartColorBlend.Contrast(fill, fillRole);
+
+    /// <summary>Resolves prepared state-mark ink against the same composited surface as its fill and pattern.</summary>
+    internal static ChartColorBlend OnStateMark(Chart chart, VisualThemeColors colors, VisualFrame frame, ChartStateMark mark) =>
+        mark.FillOpacity >= .999
+            ? ChartColorBlend.Contrast(mark.Surface, SvgColorRole.Status)
+            : ChartColorMath.ContrastRatio(mark.Surface, Over(colors.Foreground, mark.Surface)) >= MinimumContrast
+                ? ChartColorBlend.Solid(colors.Foreground, SvgColorRole.Text)
+                : ChartColorBlend.Contrast(mark.Surface, SvgColorRole.Status);
+
     /// <summary>
     /// The contrast (WCAG ratio) below which the other colour is used when it contrasts more: 3:1, the WCAG minimum for
     /// large text and graphics. Mid-tone token fills cannot reach the 4.5:1 of small text with either theme colour.
     /// </summary>
     public const double MinimumContrast = 3.0;
 
-    /// <summary>Returns the text colour on a matrix or hexbin heatmap cell drawn by <see cref="ChartHeatmapSurface.CellBlend"/>.</summary>
+    /// <summary>Returns the text colour on a matrix or hexbin heatmap cell drawn by <see cref="ChartHeatmapSurface.CellBlend(Chart, ChartColor?, double, double, double)"/>.</summary>
     public static ChartColorBlend OnHeatmapCell(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var fill = ChartHeatmapSurface.CellBlend(chart, highColor, value, min, max);
         return chart.Options.Theme.UseGraphiteLayout
@@ -43,6 +56,10 @@ internal static class ChartMarkText {
     private static ChartColorBlend For(Chart chart, ChartColor fill, bool strong) {
         var surface = ChartStateMark.Backdrop(chart);
         var text = chart.Options.Theme.Text;
+        return For(surface, text, fill, strong);
+    }
+
+    private static ChartColorBlend For(ChartColor surface, ChartColor text, ChartColor fill, bool strong) {
         // Translucent text is judged as it appears on the fill.
         var shownText = Over(text, fill);
         var preferred = strong ? surface : shownText;

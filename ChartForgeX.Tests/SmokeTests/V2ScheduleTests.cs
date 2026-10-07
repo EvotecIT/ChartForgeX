@@ -93,6 +93,19 @@ public sealed class V2ScheduleTests {
         Assert.Contains("Start", svg); Assert.Contains("Finish", svg); Assert.Contains("TEST", svg); Assert.Contains("Full detail", svg);
     }
 
+    [Fact]
+    public void GanttProgressRetainsExplicitSourceColorWhenItMatchesAStateToken() {
+        var context = Context(); var same = context.Theme.Resolve(context.ThemeMode).Status.Medium.Fill;
+        var chart = Chart.Create().AddGanttTask("Task", 1, 3, .5).WithBarStyle(ChartBarStyle.Flat);
+        chart.Series[0].StateRole = ChartSeriesState.Warning; chart.Series[0].PointColors.Add(same);
+        var variables = new SvgColorVariables().Add("--source", same, SvgColorRole.Series).Add("--state", same, SvgColorRole.Status);
+        var svg = XDocument.Parse(chart.Prepare(context).ToSvg(new VisualSvgOptions(colorVariables: variables)));
+        var progress = ByRole(svg, "gantt-progress").Single().Attribute("fill")!.Value;
+        var track = ByRole(svg, "gantt-task-shape").Single().Attribute("fill")!.Value;
+        Assert.Contains("--source", progress); Assert.DoesNotContain("--state", progress);
+        Assert.Contains("--source", track); Assert.DoesNotContain("--state", track);
+    }
+
     private static Chart Fixture(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Timeline => Chart.Create().AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
         ChartSeriesKind.Gantt => Chart.Create().AddGanttTask("Plan", 1, 3, .5).AddGanttTask("Build", 2, 4, .25, 0),

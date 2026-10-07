@@ -52,11 +52,11 @@ internal static partial class VisualMapCompiler {
 
     private static ChartColor? High(ChartSeries series, VisualThemeColors colors) => series.Color ??
         (series.StateRole == ChartSeriesState.None ? (ChartColor?)null : ChartSeriesColours.State(series.StateRole, colors, colors.Palette[0]));
-    private static ChartColor Fill(Chart chart, VisualThemeColors colors, int? index, double min, double max) {
-        if (!index.HasValue) return ChartHeatmapSurface.MapNoDataColor(chart, colors);
+    private static ChartColorBlend Fill(Chart chart, VisualThemeColors colors, int? index, double min, double max) {
+        if (!index.HasValue) return ChartHeatmapSurface.MapNoDataBlend(chart, colors);
         var series = chart.Series[0]; var point = index.Value;
-        return ChartHeatmapSurface.MapColor(chart, colors,
-            point < series.PointColors.Count ? series.PointColors[point] : null, High(series, colors), series.Points[point].Y, min, max);
+        return ChartHeatmapSurface.MapBlend(chart, colors,
+            point < series.PointColors.Count ? series.PointColors[point] : null, High(series, colors), series.Points[point].Y, min, max, VisualChartPaint.SeriesRole(series));
     }
     private static ChartFillPattern Pattern(ChartSeries series, int? index) => index.HasValue && index.Value < series.PointFillPatterns.Count && series.PointFillPatterns[index.Value].HasValue
         ? series.PointFillPatterns[index.Value]!.Value : series.FillPattern;
@@ -67,7 +67,10 @@ internal static partial class VisualMapCompiler {
     private static void Surface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds, VisualThemeColors colors, string role) {
         if (!chart.Options.ShowMapSurface) return;
         builder.Rect(bounds, ChartColorMath.WithOpacity(ChartColorMath.Blend(colors.Surface, colors.Border, .12), .16),
-            ChartColorMath.WithOpacity(colors.Border, .16), context.Theme.GridStrokeWidth, Math.Min(context.Theme.Spacing, Math.Min(bounds.Width, bounds.Height) / 8), role);
+            ChartColorMath.WithOpacity(colors.Border, .16), context.Theme.GridStrokeWidth, Math.Min(context.Theme.Spacing, Math.Min(bounds.Width, bounds.Height) / 8), role,
+            paint: new VisualScenePaintBinding(SvgPaint.Mix(ChartColorMath.Blend(colors.Surface, colors.Border, .12), colors.Surface, SvgColorRole.Surface, colors.Border, SvgColorRole.Surface, .12)
+                .WithOpacity(ChartColorMath.WithOpacity(ChartColorMath.Blend(colors.Surface, colors.Border, .12), .16), .16),
+                SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Border, .16), .16)));
     }
     private static Dictionary<string, string> Source(Chart chart, string code, string name, int? source, double? value, string full, double min, double max) {
         var metadata = new Dictionary<string, string> {

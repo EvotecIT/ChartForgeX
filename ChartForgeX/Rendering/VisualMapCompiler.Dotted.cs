@@ -56,9 +56,10 @@ internal static partial class VisualMapCompiler {
                     if (!visible) continue;
                     var color = index < series.PointColors.Count && series.PointColors[index].HasValue ? series.PointColors[index]!.Value
                         : series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Pass.Fill);
+                    var paint = SvgPaint.Of(color, series.Color.HasValue || index < series.PointColors.Count && series.PointColors[index].HasValue ? SvgColorRole.Series : SvgColorRole.Status);
                     var halo = Math.Max(dot * 2.45, radius * 1.85);
-                    builder.Ellipse(point.X, point.Y, halo, halo, ChartColorMath.WithOpacity(color, .18), role: "dotted-map-point-halo");
-                    builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point");
+                    builder.Ellipse(point.X, point.Y, halo, halo, ChartColorMath.WithOpacity(color, .18), role: "dotted-map-point-halo", paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, .18), .18)));
+                    builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point", paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     obstacles.Add(new LabelObstacle(id, new ChartRect(point.X - halo, point.Y - halo, halo * 2, halo * 2)));
                     if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) {
                         var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]!

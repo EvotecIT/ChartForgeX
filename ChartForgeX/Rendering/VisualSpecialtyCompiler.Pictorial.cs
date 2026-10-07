@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
@@ -53,7 +54,8 @@ internal static partial class VisualSpecialtyCompiler {
                 ["data-cfx-rendered-symbol-rows"] = N(rows[index]), ["data-cfx-truncated"] = rows[index] < requestedRows[index] ? "true" : "false"
             })) {
                 VisualStateSceneTools.Text(builder, Category(chart, index), new ChartRect(plot.Left, top, labelWidth, itemHeight),
-                    VisualStateSceneTools.TickStyle(chart, context), "pictorial-label", Id(index) + "-label", TextAlignment.Right, shrink: true);
+                    VisualStateSceneTools.TickStyle(chart, context), "pictorial-label", Id(index) + "-label", TextAlignment.Right, shrink: true,
+                    paint: VisualChartPaint.Text(VisualStateSceneTools.TickStyle(chart, context)));
                 for (var row = 0; row < rows[index]; row++) for (var column = 0; column < columns; column++) {
                     var amount = Math.Max(0, Math.Min(1, filled - row * columns - column));
                     var x = startX + column * (slot + gap) + (slot - size) / 2;
@@ -64,10 +66,11 @@ internal static partial class VisualSpecialtyCompiler {
                         ["data-cfx-point"] = N(index), ["data-cfx-row"] = N(row), ["data-cfx-column"] = N(column),
                         ["data-cfx-fill"] = N(amount), ["data-cfx-partial-fill"] = amount > 0 && amount < 1 ? "clip" : "none"
                     })) {
-                        if (amount < 1) builder.Path(path, colors.Border.WithOpacity(options.PictorialEmptyOpacity), role: "pictorial-empty", close: true);
+                        if (amount < 1) builder.Path(path, colors.Border.WithOpacity(options.PictorialEmptyOpacity), role: "pictorial-empty", close: true,
+                            paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(colors.Border.WithOpacity(options.PictorialEmptyOpacity), options.PictorialEmptyOpacity)));
                         if (amount > 0) {
                             using (builder.PushClip(new ChartRect(x, y, size * amount, size))) {
-                                builder.Path(path, color, role: "pictorial-fill", close: true);
+                                builder.Path(path, color, role: "pictorial-fill", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
                                 Pattern(chart, builder, index, path, color);
                             }
                         }
@@ -75,7 +78,7 @@ internal static partial class VisualSpecialtyCompiler {
                 }
                 if (showValues) VisualStateSceneTools.Text(builder, VisualStateSceneTools.Value(chart, series, index, raw),
                     new ChartRect(plot.Right - valueWidth, top, valueWidth, itemHeight), Style(chart, context, index, colors.Foreground),
-                    "pictorial-value", Id(index) + "-value", shrink: true);
+                    "pictorial-value", Id(index) + "-value", shrink: true, paint: VisualChartPaint.Text(Style(chart, context, index, colors.Foreground)));
             }
             rowOffset += rows[index];
         }

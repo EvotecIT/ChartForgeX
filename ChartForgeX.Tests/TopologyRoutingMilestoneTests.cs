@@ -71,7 +71,8 @@ public sealed class TopologyRoutingMilestoneTests {
         chart.WithRenderOptions(options);
         var prepared = chart.Prepare();
         var artifact = chart.ToVisualArtifact();
-        Assert.True(prepared.Height > chart.Viewport.Height);
+        if (fit) Assert.Equal(chart.Viewport.Height, prepared.Height);
+        else Assert.True(prepared.Height > chart.Viewport.Height);
         Assert.Equal(prepared.Width, artifact.NaturalSize!.Value.Width);
         Assert.Equal(prepared.Height, artifact.NaturalSize.Value.Height);
         Assert.Equal(prepared.Height, artifact.ToInterchangeEnvelope().Height);
@@ -201,7 +202,8 @@ public sealed class TopologyRoutingMilestoneTests {
         var svg = XDocument.Parse(prepared.ToSvg());
         var branches = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-shared-trunk-hit").ToList();
         Assert.NotEmpty(branches);
-        Assert.Equal(3 - branches.Count, svg.Descendants().Count(element => element.Attribute("marker-end") != null));
+        Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-shared-trunk-tail");
+        Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-marker");
         Assert.NotEmpty(prepared.ToPng());
         Assert.All(chart.Edges, edge => Assert.Null(edge.TargetMarker));
     }
@@ -226,8 +228,8 @@ public sealed class TopologyRoutingMilestoneTests {
         var prepared = chart.Prepare(options);
         Assert.DoesNotContain(prepared.Analyze().RouteOverlaps, overlap => overlap.IsIntentional);
         var svg = XDocument.Parse(prepared.ToSvg());
-        Assert.Equal(3, svg.Descendants().Count(element => element.Attribute("marker-end") != null));
-        Assert.All(svg.Descendants().Where(element => element.Attribute("marker-end") != null),
+        Assert.Equal(3, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "topology-marker"));
+        Assert.All(svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line"),
             element => Assert.Equal("8 4", (string?)element.Attribute("stroke-dasharray")));
     }
 

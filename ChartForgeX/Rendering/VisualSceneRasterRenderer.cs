@@ -8,7 +8,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Paints compiled scene decisions through the existing dependency-free raster engine.</summary>
 internal static partial class VisualSceneRasterRenderer {
-    internal static RgbaImage Render(VisualScene scene, int scale = 1, int supersampling = 2, long pixelBudget = 64000000) {
+    internal static RgbaImage Render(VisualScene scene, int scale = 1, int supersampling = 2, long pixelBudget = 64000000, TextHinting? textHinting = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         if (scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
         if (supersampling <= 0) throw new ArgumentOutOfRangeException(nameof(supersampling));
@@ -55,8 +55,8 @@ internal static partial class VisualSceneRasterRenderer {
                 } else if (node is VisualScenePath path) PaintContours(canvas, VisualSceneGeometry.Flatten(path, canvas.PixelsPerUnit), path);
                 else if (node is VisualSceneSlice slice) PaintContours(canvas, VisualSceneGeometry.Flatten(slice, canvas.PixelsPerUnit), slice);
                 else if (node is VisualSceneText text) {
-                    if (transform.IsIdentity) PaintText(canvas, text);
-                    else PaintTransformedText(canvas, text, transform);
+                    if (transform.IsIdentity) PaintText(canvas, text, textHinting);
+                    else PaintTransformedText(canvas, text, transform, textHinting);
                 }
             }
         } finally {
@@ -83,9 +83,9 @@ internal static partial class VisualSceneRasterRenderer {
         }
     }
 
-    private static void PaintText(RgbaCanvas canvas, VisualSceneText node) {
+    private static void PaintText(RgbaCanvas canvas, VisualSceneText node, TextHinting? textHinting = null) {
         var prepared = node.Text;
-        var oldHinting = canvas.TextHinting; canvas.TextHinting = prepared.Style.Hinting;
+        var oldHinting = canvas.TextHinting; canvas.TextHinting = textHinting ?? prepared.Style.Hinting;
         try {
             for (var i = 0; i < prepared.Lines.Count; i++) {
                 var line = prepared.Lines[i];

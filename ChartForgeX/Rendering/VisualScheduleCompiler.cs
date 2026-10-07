@@ -14,7 +14,8 @@ internal static partial class VisualScheduleCompiler {
         if (chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane))
             return chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray();
         return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend)
-            .Select(item => new VisualLegendEntry(item.Series.Name, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors), "series-" + item.Index)).ToArray();
+            .Select(item => new VisualLegendEntry(item.Series.Name, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors), "series-" + item.Index,
+                paint: VisualChartPaint.Series(item.Series, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors)))).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
@@ -33,6 +34,7 @@ internal static partial class VisualScheduleCompiler {
         var layout = LaneLayout(chart, context, builder, viewport, model.Lanes.Select(lane => lane.Name), model.Lanes.Select(lane => lane.Summary),
             model.HasSummary, false, model.Ticks, model.FormatTick);
         var plot = layout.Plot;
+        builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("state-timeline", "state-timeline", Window(model.Min, model.Max))) {
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, plot), model.FormatTick);
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible) foreach (var group in model.Groups)
@@ -41,6 +43,7 @@ internal static partial class VisualScheduleCompiler {
             for (var laneIndex = 0; laneIndex < model.Lanes.Count; laneIndex++) {
                 var lane = model.Lanes[laneIndex]; var series = chart.Series[lane.SeriesIndex];
                 var top = model.LaneTop(plot, laneIndex); var band = Math.Max(0, model.LaneBand(plot));
+                builder.AddRegion(new VisualSemanticRegion("schedule-lane-" + lane.SeriesIndex, "schedule-lane", new ChartRect(plot.Left, top, plot.Width, band), lane.Name));
                 LaneText(chart, context, builder, viewport, layout, lane.Name, lane.Summary, top, band, lane.SeriesIndex);
                 foreach (var segment in lane.Segments) {
                     var visible = model.TrySegmentSpan(segment, plot, out var left, out var width);
@@ -49,6 +52,10 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-series"] = lane.SeriesIndex.ToString(); metadata["data-cfx-point"] = segment.PointIndex.ToString();
                     metadata["data-cfx-series-key"] = series.InteractionIdentityKey;
                     metadata["data-cfx-start"] = VisualStateSceneTools.Number(segment.Start); metadata["data-cfx-end"] = VisualStateSceneTools.Number(segment.End);
+                    metadata["data-cfx-label"] = lane.Name + " · " + segment.State.Label;
+                    metadata["data-cfx-meta-start"] = model.FormatInstant(segment.Start); metadata["data-cfx-meta-end"] = model.FormatInstant(segment.End);
+                    metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(segment.End - segment.Start);
+                    if (!string.IsNullOrWhiteSpace(segment.Detail)) metadata["data-cfx-meta-detail"] = segment.Detail!;
                     var sources = Enumerable.Range(0, series.Points.Count).Where(index => series.Points[index].X >= segment.Start && series.Points[index].Y <= segment.End &&
                         series.PointLabels[index] == segment.State.Key).ToArray();
                     metadata["data-cfx-source-points"] = string.Join(",", sources);
@@ -71,6 +78,7 @@ internal static partial class VisualScheduleCompiler {
             model.Rows.Where(row => !row.IsGroup).Select(row => row.Summary), model.HasSummary, model.NowVisible, model.Ticks, model.FormatTick);
         model = model.Repack(layout.Plot.Width);
         var plot = layout.Plot; var tops = model.RowTops(plot); var band = model.Band(plot);
+        builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, plot), model.FormatTick);
             if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, plot), model.Now.Value);
@@ -92,6 +100,10 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-series"] = row.SeriesIndex.ToString(); metadata["data-cfx-point"] = placed.PointIndex.ToString();
                     metadata["data-cfx-series-key"] = series.InteractionIdentityKey;
                     metadata["data-cfx-start"] = VisualStateSceneTools.Number(placed.Item.Start); metadata["data-cfx-end"] = VisualStateSceneTools.Number(placed.End);
+                    metadata["data-cfx-meta-start"] = ChartTimeScale.FormatInstant(chart.Options.XAxis, placed.Item.Start);
+                    metadata["data-cfx-meta-end"] = ChartTimeScale.FormatInstant(chart.Options.XAxis, placed.End);
+                    metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(placed.End - placed.Item.Start);
+                    if (!string.IsNullOrWhiteSpace(placed.Item.Detail)) metadata["data-cfx-meta-detail"] = placed.Item.Detail!;
                     metadata["data-cfx-open"] = placed.Item.IsOpen ? "true" : "false"; metadata["data-cfx-sub-row"] = placed.SubRow.ToString();
                     var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, "gantt-lane-item", bounds, model.ItemSummary(row, placed), metadata)) {
@@ -103,10 +115,12 @@ internal static partial class VisualScheduleCompiler {
                                 var extent = Math.Min(bounds.Height / 3, bounds.Width / 2);
                                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(bounds.Right - extent, bounds.Top + bounds.Height / 2 - extent),
                                     ChartPathCommand.LineTo(bounds.Right, bounds.Top + bounds.Height / 2), ChartPathCommand.LineTo(bounds.Right - extent, bounds.Top + bounds.Height / 2 + extent) }),
-                                    stroke: ChartColorMath.AccessibleTextOnBackground(mark.Surface), strokeWidth: 1.5, role: "gantt-lane-open-end");
+                                    stroke: ChartColorMath.AccessibleTextOnBackground(mark.Surface), strokeWidth: 1.5, role: "gantt-lane-open-end",
+                                    paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.AccessibleTextOnBackground(mark.Surface))));
                             }
                         }
-                        if (!string.IsNullOrWhiteSpace(placed.Item.Label)) DataLabel(chart, context, builder, series, placed.PointIndex, placed.Item.Label!, bounds, plot, colors, mark.Surface);
+                        if (!string.IsNullOrWhiteSpace(placed.Item.Label)) DataLabel(chart, context, builder, series, placed.PointIndex, placed.Item.Label!, bounds, plot, colors, mark.Surface,
+                            ChartMarkText.OnStateMark(chart, colors, context.Frame, mark));
                     }
                 }
             }

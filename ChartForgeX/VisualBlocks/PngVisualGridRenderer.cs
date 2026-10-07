@@ -10,7 +10,6 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual grids to dependency-free PNG images.
 /// </summary>
 public sealed class PngVisualGridRenderer {
-    private readonly PngChartRenderer _chartRenderer = new();
     private readonly PngVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid to PNG bytes.</summary>
@@ -44,23 +43,11 @@ public sealed class PngVisualGridRenderer {
         foreach (var cell in layout.Cells) {
             var size = VisualGridLayout.ItemSize(cell.Item);
             var density = ChartPanelDensity.OutputScale(size, cell.Width, cell.Height, grid.PngOutputScale);
-            var child = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, density) : RenderChildBlock(cell.Item.Block!, density);
-            canvas.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, child.OutputWidth, child.OutputHeight, child.ToOutputPixels());
+            var child = cell.Item.Chart != null ? VisualGridChartRendering.Image(cell.Item.Chart, density) : RenderChildBlock(cell.Item.Block!, density).ToImage();
+            canvas.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, child.Width, child.Height, child.Pixels);
         }
 
         return canvas;
-    }
-
-    private RgbaCanvas RenderChildChart(Chart chart, int density) {
-        chart = chart.PanelView();
-        var transparentBackground = chart.Options.TransparentBackground;
-        try {
-            chart.Options.TransparentBackground = true;
-            return _chartRenderer.RenderCanvas(chart, density);
-        }
-        finally {
-            chart.Options.TransparentBackground = transparentBackground;
-        }
     }
 
     private RgbaCanvas RenderChildBlock(IVisualBlock block, int density) {

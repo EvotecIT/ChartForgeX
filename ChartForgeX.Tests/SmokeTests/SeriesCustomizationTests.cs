@@ -373,7 +373,7 @@ internal static partial class SmokeTests {
             }, ChartColor.FromHex("#14B8A6"));
         dotted.Series[0].WithPointColor(1, "#E11D48");
         var dottedSvg = dotted.ToSvg();
-        Assert(dottedSvg.Contains("data-cfx-role=\"dotted-map-point\" data-cfx-point=\"1\"", StringComparison.Ordinal) && dottedSvg.Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "Dotted map points should honor point-specific colors in SVG.");
+        Assert(MapMarkers(PreparedFamily(dotted))[1].Fill.Equals(ChartColor.FromHex("#E11D48")) && dottedSvg.Contains("#E11D48", StringComparison.Ordinal), "Dotted map points should honor point-specific colors in both prepared paint and SVG.");
         Assert(dotted.ToPng().Length > 64, "Dotted map point colors should render PNG output.");
 
         var calendar = Chart.Create()

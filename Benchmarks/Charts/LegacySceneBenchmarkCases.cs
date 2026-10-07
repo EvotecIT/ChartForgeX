@@ -21,6 +21,8 @@ public static partial class LegacySceneBenchmarkCases {
 
     /// <summary>Builds a deterministic model with the same categories and values used by the scene lane.</summary>
     public static object Create(string fixture) {
+        if (fixture == "topology") return CreateTopology();
+        if (Phase3Fixtures.Contains(fixture)) return CreatePhase3Chart(fixture);
         if (!Fixtures.Contains(fixture)) throw new ArgumentOutOfRangeException(nameof(fixture));
         var tokens = VisualDesignTokens.FromJson(_tokens);
         tokens.UseGraphiteLayout = true;
@@ -59,6 +61,7 @@ public static partial class LegacySceneBenchmarkCases {
 
     /// <summary>Renders through the existing public export surface.</summary>
     public static object Execute(object model, string operation) {
+        if (model is ChartForgeX.Topology.TopologyChart topology) return ExecuteTopology(topology, operation);
         var chart = (Chart)model;
         return operation switch { "Svg" => chart.ToSvg(), "Png" => chart.ToPng(), "Rgba" => chart.ToRgbaImage(), _ => throw new ArgumentOutOfRangeException(nameof(operation)) };
     }
@@ -71,7 +74,8 @@ public static partial class LegacySceneBenchmarkCases {
                 throw new InvalidOperationException("SVG dimensions changed.");
             if (!svg.Contains(Title, StringComparison.Ordinal))
                 throw new InvalidOperationException("SVG content is incomplete.");
-            ValidateMarks(root, (Chart)Create(fixture));
+            if (Phase3Fixtures.Contains(fixture)) ValidatePhase3Marks(root, fixture);
+            else ValidateMarks(root, (Chart)Create(fixture));
             return System.Text.Encoding.UTF8.GetByteCount(svg);
         }
         if (result is byte[] png) {

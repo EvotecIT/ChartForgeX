@@ -164,35 +164,39 @@ public static partial class VisualArtifactRendering {
     private static string RenderTopologySvg(VisualArtifact artifact, TopologyChart topology, VisualArtifactRenderOptions? renderOptions) {
         var model = TopologyModel(artifact, topology);
         var options = TopologyOptions(artifact, renderOptions);
-        TopologyArtifactRendering.RefreshRegions(artifact, model, options);
-        if (UsesPreparedNaturalSize(artifact)) {
-            var size = artifact.NaturalSize!.Value;
-            return model.Prepare(options).WithOutputSize(size.Width, size.Height).ToSvg();
-        }
-        return model.ToSvg(options);
+        var prepared = PrepareTopologyArtifact(artifact, model, options);
+        return TopologyArtifactSvg(artifact, prepared);
     }
 
     private static string RenderTopologyHtml(VisualArtifact artifact, TopologyChart topology, VisualArtifactRenderOptions? renderOptions) {
         var model = TopologyModel(artifact, topology);
         var options = TopologyOptions(artifact, renderOptions);
-        TopologyArtifactRendering.RefreshRegions(artifact, model, options);
-        if (UsesPreparedNaturalSize(artifact)) {
-            var size = artifact.NaturalSize!.Value;
-            var svg = model.Prepare(options).WithOutputSize(size.Width, size.Height).ToSvg();
-            return new TopologyHtmlRenderer().RenderPreparedPage(model, options, svg, size.Width);
-        }
-        return model.ToHtmlPage(options);
+        var prepared = PrepareTopologyArtifact(artifact, model, options);
+        return new TopologyHtmlRenderer().RenderPreparedPage(model, options, TopologyArtifactSvg(artifact, prepared), prepared.Width);
     }
 
     private static byte[] RenderTopologyPng(VisualArtifact artifact, TopologyChart topology, VisualArtifactRenderOptions? renderOptions) {
         var model = TopologyModel(artifact, topology);
         var options = TopologyOptions(artifact, renderOptions);
-        TopologyArtifactRendering.RefreshRegions(artifact, model, options);
+        return PrepareTopologyArtifact(artifact, model, options).ToPng();
+    }
+
+    internal static PreparedTopology PrepareTopologyArtifact(VisualArtifact artifact, TopologyChart model, TopologyRenderOptions? options) {
+        var prepared = model.Prepare(options);
         if (UsesPreparedNaturalSize(artifact)) {
             var size = artifact.NaturalSize!.Value;
-            return model.Prepare(options).WithOutputSize(size.Width, size.Height).ToPng();
+            prepared = prepared.WithOutputSize(size.Width, size.Height);
         }
-        return model.ToPng(options);
+        TopologyArtifactRendering.RefreshRegions(artifact, prepared);
+        return prepared;
+    }
+
+    private static string TopologyArtifactSvg(VisualArtifact artifact, PreparedTopology prepared) {
+        var accessibility = artifact.Accessibility.Clone();
+        accessibility.Name ??= prepared.Visual.Accessibility.Name ?? (artifact.Title.Length == 0 ? artifact.Id : artifact.Title);
+        accessibility.Description ??= prepared.Visual.Accessibility.Description;
+        accessibility.Language ??= prepared.Visual.Accessibility.Language;
+        return prepared.Visual.ToSvg(accessibility);
     }
 
     internal static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {

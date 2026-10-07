@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
@@ -55,10 +56,10 @@ internal static partial class VisualScheduleCompiler {
                         new Dictionary<string, string> { ["data-cfx-source"] = "series-" + previous.Index, ["data-cfx-target"] = "series-" + item.Index })) {
                         builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(elbow, start.Y),
                             ChartPathCommand.LineTo(elbow, end.Y), ChartPathCommand.LineTo(end.X, end.Y) }), stroke: colors.Border,
-                            strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-line");
+                            strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-line", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                         var direction = end.X < elbow ? -1d : 1d; var arrow = Math.Min(5, height / 3);
                         builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(end.X - direction * arrow, end.Y - arrow), ChartPathCommand.LineTo(end.X, end.Y),
-                            ChartPathCommand.LineTo(end.X - direction * arrow, end.Y + arrow) }), stroke: colors.Border, strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-arrow");
+                            ChartPathCommand.LineTo(end.X - direction * arrow, end.Y + arrow) }), stroke: colors.Border, strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-arrow", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                     }
                 }
                 if (now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
@@ -82,29 +83,35 @@ internal static partial class VisualScheduleCompiler {
                 using (VisualStateSceneTools.Mark(builder, id, item.Milestone ? "gantt-milestone" : gantt ? "gantt-task" : "timeline-item", bounds, summary, metadata)) {
                     if (!visible) continue;
                     var fill = series.PointColors.Count > 0 && series.PointColors[0].HasValue ? series.PointColors[0]!.Value : VisualStateSceneTools.SeriesColor(series, item.Index, colors);
+                    var fillRole = VisualChartPaint.SeriesRole(series, 0); var fillPaint = SvgPaint.Of(fill, fillRole);
                     using (builder.PushClip(plot)) {
                         ChartPath shape;
                         if (item.Milestone) {
                             shape = new ChartPath(new[] { ChartPathCommand.MoveTo(left, center - height / 2), ChartPathCommand.LineTo(left + height / 2, center),
                                 ChartPathCommand.LineTo(left, center + height / 2), ChartPathCommand.LineTo(left - height / 2, center) });
-                            builder.Path(shape, fill, role: "gantt-milestone-shape", close: true);
+                            builder.Path(shape, fill, role: "gantt-milestone-shape", close: true, paint: VisualChartPaint.Fill(fillPaint));
                         } else {
                             var radius = Math.Min(context.Theme.BarRadius, height / 2); shape = VisualStateSceneTools.RoundedRect(bounds, radius);
                             var style = chart.Options.ResolvePreparedBarVisualStyle();
                             var bodyColor = gantt ? ChartColorMath.Blend(colors.Surface, fill, .25) : fill;
+                            var bodyPaint = gantt ? SvgPaint.Mix(bodyColor, colors.Surface, SvgColorRole.Surface, fill, fillRole, .25) : fillPaint;
                             if (style.Kind == ChartBarStyle.Solid)
                                 builder.RectGradient(bounds, new ChartPoint(bounds.Left, bounds.Top), new ChartPoint(bounds.Left, bounds.Bottom),
-                                    new[] { new VisualGradientStop(0, ChartMarkSurface.BarGradientTop(bodyColor)), new VisualGradientStop(1, ChartMarkSurface.BarGradientBottom(bodyColor)) },
+                                    new[] { new VisualGradientStop(0, ChartMarkSurface.BarGradientTop(bodyColor),
+                                        gantt ? SvgPaint.Literal(ChartMarkSurface.BarGradientTop(bodyColor)) : VisualChartPaint.BarGradient(fill, fillRole, true, 1)),
+                                        new VisualGradientStop(1, ChartMarkSurface.BarGradientBottom(bodyColor),
+                                        gantt ? SvgPaint.Literal(ChartMarkSurface.BarGradientBottom(bodyColor)) : VisualChartPaint.BarGradient(fill, fillRole, false, 1)) },
                                     radius: radius, role: gantt ? "gantt-task-shape" : "timeline-item-shape");
-                            else builder.Rect(bounds, bodyColor, radius: radius, role: gantt ? "gantt-task-shape" : "timeline-item-shape");
+                            else builder.Rect(bounds, bodyColor, radius: radius, role: gantt ? "gantt-task-shape" : "timeline-item-shape", paint: VisualChartPaint.Fill(bodyPaint));
                             if (gantt && item.Progress > 0) {
                                 var progressEnd = ChartHeatmapSurface.InterpolateObservedRange(item.Start, item.End, item.Progress);
                                 var progressWidth = Math.Max(0, Project(progressEnd) - bounds.Left);
-                                using (builder.PushClip(shape)) builder.Rect(new ChartRect(bounds.Left, bounds.Top, progressWidth, bounds.Height), fill, role: "gantt-progress");
+                                using (builder.PushClip(shape)) builder.Rect(new ChartRect(bounds.Left, bounds.Top, progressWidth, bounds.Height), fill, role: "gantt-progress", paint: VisualChartPaint.Fill(fillPaint));
                             }
                         }
                         var pattern = series.PointFillPatterns.Count > 0 ? series.PointFillPatterns[0] ?? series.FillPattern : series.FillPattern;
-                        builder.Pattern(shape, pattern, colors.Surface.WithOpacity(.45));
+                        builder.Pattern(shape, pattern, colors.Surface.WithOpacity(.45),
+                            paint: SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(colors.Surface.WithOpacity(.45), .45));
                     }
                     var label = series.PointLabels.Count > 0 && series.PointLabels[0] != null ? series.PointLabels[0]! : gantt ? completion : duration;
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);

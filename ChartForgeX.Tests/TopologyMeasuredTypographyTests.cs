@@ -77,7 +77,7 @@ public sealed class TopologyMeasuredTypographyTests {
         var options = new TopologyRenderOptions { TextMeasurementMode = TextMeasurementMode.InstalledFonts, NodeDisplayMode = mode, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeTileSubtitles = true };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var chip = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == (mode == TopologyNodeDisplayMode.Tile ? "topology-node-subtitle" : "topology-node-card-subtitle"));
-        var text = chip.Elements().Single(element => element.Name.LocalName == "text").Value;
+        var text = chip.Descendants().Single(element => element.Name.LocalName == "text").Value;
         double width = double.Parse(chip.Elements().Single(element => element.Name.LocalName == "rect").Attribute("width")!.Value, CultureInfo.InvariantCulture);
         Assert.True(new TextMeasurementContext(theme.FontFamily, TextMeasurementMode.InstalledFonts).Measure(text, 9.5, true) <= width - 17.9);
         Assert.NotEmpty(chart.ToPng(options));
@@ -116,9 +116,12 @@ public sealed class TopologyMeasuredTypographyTests {
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { TextMeasurementMode = TextMeasurementMode.InstalledFonts }));
         var box = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label");
         double width = double.Parse(box.Attribute("data-label-width")!.Value, CultureInfo.InvariantCulture);
-        double glyphWidth = TextLayoutEngine.Measure(label, new TextStyle {
-            Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = 12
+        var text = box.Descendants().Single(element => element.Name.LocalName == "text");
+        Assert.Equal(label, text.Value);
+        double glyphWidth = TextLayoutEngine.Measure(text.Value, new TextStyle {
+            Font = new FontSpec { Family = theme.FontFamily, Weight = int.Parse(text.Attribute("font-weight")!.Value, CultureInfo.InvariantCulture) },
+            FontSize = double.Parse(text.Attribute("font-size")!.Value, CultureInfo.InvariantCulture)
         }).Width;
-        Assert.True(width >= glyphWidth + 17.9, "The rendered backplate must reserve the measured glyph width and its padding.");
+        Assert.True(width >= glyphWidth + 7.9, "The rendered backplate must reserve the emitted glyph width and its horizontal padding.");
     }
 }

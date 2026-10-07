@@ -11,11 +11,13 @@ namespace ChartForgeX.Rendering;
 internal sealed class VisualLegendEntry {
     internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
         ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null,
-        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null) {
+        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null) {
         Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
-        State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint;
+        State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint; Value = value;
     }
     internal string Label { get; }
+    internal string? Value { get; }
+    internal string Description => string.IsNullOrEmpty(Value) ? Label : Label + ": " + Value;
     internal ChartColor Color { get; }
     internal string Id { get; }
     internal ChartSeriesKind? Kind { get; }
@@ -45,6 +47,12 @@ internal static class VisualFrameLayout {
         var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
         var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(colors.Background, SvgColorRole.Surface));
+        if (context.Frame.ShowCard) {
+            var stroke = Math.Min(context.Theme.AxisStrokeWidth, Math.Min(size.Width, size.Height)); var inset = stroke / 2;
+            builder.Rect(new ChartRect(inset, inset, size.Width - stroke, size.Height - stroke), colors.ElevatedSurface, colors.Border, stroke,
+                radius: context.Theme.BarRadius, role: "frame-card", paint: new VisualScenePaintBinding(
+                    fill: SvgPaint.Of(colors.ElevatedSurface, SvgColorRole.Surface), stroke: SvgPaint.Of(colors.Border, SvgColorRole.Grid)));
+        }
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             Header(context.Frame.Title, titleStyle);
@@ -57,7 +65,7 @@ internal static class VisualFrameLayout {
             var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
             var rows = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
             foreach (var entry in entries) {
-                var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), legendStyle).Width + 28);
+                var width = LegendWidth(entry, 28);
                 if (row.Count > 0 && (side || used + gap + width > legendWidth)) { rows.Add(row); row = new(); used = 0; }
                 row.Add(entry); used += (row.Count > 1 ? gap : 0) + width;
             }
@@ -82,18 +90,19 @@ internal static class VisualFrameLayout {
             using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {
                 for (var r = 0; r < visible; r++) {
                     var rowWidth = 0d;
-                    foreach (var entry in rows[r]) rowWidth += Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), legendStyle).Width + 28) + gap;
+                    foreach (var entry in rows[r]) rowWidth += LegendWidth(entry, ReferenceEquals(entry, overflow) ? 0 : 28) + gap;
                     rowWidth = Math.Max(0, rowWidth - gap);
                     var alignRight = position is ChartLegendPosition.TopRight or ChartLegendPosition.BottomRight;
                     var alignCenter = position is ChartLegendPosition.Top or ChartLegendPosition.Bottom;
                     var cursor = x + (alignRight ? legendWidth - rowWidth : alignCenter ? (legendWidth - rowWidth) / 2 : 0);
                     foreach (var entry in rows[r]) {
-                        var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), legendStyle).Width + 28);
+                        var isSummary = ReferenceEquals(entry, overflow);
+                        var width = LegendWidth(entry, isSummary ? 0 : 28);
                         var baseline = y + r * lineHeight + builder.TextAscent(legendStyle);
                         var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, 10, 10);
                         using (builder.PushGroup("legend-" + entry.Id, "legend-entry", new Dictionary<string, string> {
                             ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
-                            ["aria-label"] = entry.Label
+                            ["aria-label"] = entry.Description
                         })) {
                             if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
                             if (entry.Marker != null) entry.Marker(builder, swatch);
@@ -112,11 +121,22 @@ internal static class VisualFrameLayout {
                                     paint: SvgPaint.Of(colors.Surface, SvgColorRole.Surface));
                             }
                             }
-                            var label = Fit(OneLine(entry.Label), Math.Max(0, width - 22), legendStyle);
-                            var anchor = cursor + 18 + (legendStyle.Alignment == TextAlignment.Center ? Math.Max(0, width - 22) / 2 : legendStyle.Alignment == TextAlignment.Right ? Math.Max(0, width - 22) : 0);
+                            var fullLabel = OneLine(entry.Label);
+                            // The summary has no swatch. Use that space for its count, and shorten the wording before
+                            // trimming so a compact side legend still explains that more entries are available.
+                            if (isSummary && builder.MeasureText(fullLabel, legendStyle).Width > width)
+                                fullLabel = "+ " + omitted.ToString(CultureInfo.InvariantCulture) + " more";
+                            var valueWidth = string.IsNullOrEmpty(entry.Value) ? 0 : builder.MeasureText(entry.Value!, legendStyle).Width;
+                            var labelWidth = Math.Max(0, width - (isSummary ? 0 : 22) - (valueWidth > 0 ? valueWidth + 12 : 0));
+                            var label = Fit(fullLabel, labelWidth, legendStyle);
+                            var anchor = cursor + (isSummary ? 0 : 18) + (legendStyle.Alignment == TextAlignment.Center ? labelWidth / 2 : legendStyle.Alignment == TextAlignment.Right ? labelWidth : 0);
                             builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: VisualChartPaint.Text(legendStyle));
+                            if (valueWidth > 0) {
+                                var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
+                                builder.Text(entry.Value!, cursor + width - 4, baseline, valueStyle, role: "legend-value", paint: VisualChartPaint.Text(valueStyle));
+                            }
                         }
-                        builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + r * lineHeight, width, lineHeight), entry.Label));
+                        builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + r * lineHeight, width, lineHeight), entry.Description));
                         cursor += width + gap;
                     }
                 }
@@ -125,15 +145,21 @@ internal static class VisualFrameLayout {
                 var shown = new HashSet<VisualLegendEntry>();
                 foreach (var visibleRow in rows) foreach (var entry in visibleRow) shown.Add(entry);
                 foreach (var entry in entries) if (!shown.Contains(entry)) {
-                    builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(x, y, 0, 0), entry.Label));
+                    builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(x, y, 0, 0), entry.Description));
                     using (builder.PushGroup("legend-" + entry.Id, "legend-entry-omitted", new Dictionary<string, string> {
-                        ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["aria-label"] = entry.Label
+                        ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["aria-label"] = entry.Description
                     })) { }
                 }
             }
             if (height > 0) {
                 if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + legendGap; else right -= legendWidth + legendGap; }
                 else if (above) top += height + legendGap; else bottom -= height + legendGap;
+            }
+            double LegendWidth(VisualLegendEntry entry, double overhead) {
+                var valueWidth = string.IsNullOrEmpty(entry.Value) ? 0 : builder.MeasureText(entry.Value!, legendStyle).Width + 12;
+                var label = OneLine(entry.Label); var availableWidth = Math.Max(0, legendWidth - overhead - valueWidth);
+                var length = ChartTextFitting.PrefixLength(label, availableWidth, text => builder.MeasureText(text, legendStyle).Width);
+                return length == label.Length ? Math.Min(legendWidth, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : legendWidth;
             }
         }
         if (bottom <= top || right <= left) {
@@ -166,17 +192,13 @@ internal static class VisualFrameLayout {
             top += gap;
         }
         string Fit(string text, double width, TextStyle style, bool ellipsis = true) {
-            if (builder.MeasureText(text, style).Width <= width) return text;
-            var elements = StringInfo.ParseCombiningCharacters(text);
-            var count = elements.Length;
-            var length = text.Length;
-            while (count > 0 && builder.MeasureText(text.Substring(0, length) + (ellipsis ? "…" : ""), style).Width > width) {
-                count--; length = count == 0 ? 0 : elements[count];
-            }
+            var fitted = ChartTextFitting.FitEnd(text, width, value => builder.MeasureText(value, style).Width, ellipsis ? "…" : "");
+            if (fitted == text) return text;
             if (ellipsis) {
                 builder.AddDiagnostic(new VisualDiagnostic("frame.text-truncated", "Frame text was shortened; its complete value remains in semantic metadata."));
-                return length == 0 ? "" : text.Substring(0, length) + "…";
+                return fitted;
             }
+            var length = fitted.Length;
             var space = length > 0 ? text.LastIndexOf(' ', length - 1, length) : -1;
             return text.Substring(0, space > 0 ? space : length);
         }

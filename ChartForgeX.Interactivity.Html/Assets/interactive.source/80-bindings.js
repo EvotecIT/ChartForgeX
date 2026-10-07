@@ -40,6 +40,7 @@
         hideTip(root, tip, false);
       });
       focusNode.addEventListener('click', (event) => {
+        event.stopPropagation();
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
@@ -50,6 +51,7 @@
         }
       });
       focusNode.addEventListener('keydown', (event) => {
+        event.stopPropagation();
         if (!hasFeature(root, 'KeyboardNavigation')) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();

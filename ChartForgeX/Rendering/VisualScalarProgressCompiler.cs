@@ -54,17 +54,18 @@ internal static partial class VisualScalarProgressCompiler {
             ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-full-label"] = value,
             ["data-cfx-radius-scale"] = N(chart.Options.CircleRadiusScale), ["data-cfx-stroke-scale"] = N(chart.Options.CircleStrokeScale)
         })) {
-            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2, colors.Border, "circle-track");
-            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2 * ratio, color, "circle-value", round: true);
+            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2, colors.Border, "circle-track", paint: SvgPaint.Of(colors.Border, SvgColorRole.Surface));
+            var valuePaint = SvgPaint.Of(color, series.Color.HasValue || series.PointColors.Count > 0 && series.PointColors[0].HasValue ? SvgColorRole.Series : SvgColorRole.Status);
+            VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2 * ratio, color, "circle-value", round: true, paint: valuePaint);
             var inner = Math.Max(0, radius - stroke * .82);
-            builder.Ellipse(cx, cy, inner, inner, colors.Surface, colors.Border, role: "circle-center");
+            builder.Ellipse(cx, cy, inner, inner, colors.Surface, colors.Border, role: "circle-center", paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
             if (series.ShowDataLabels != false) {
                 Text(chart, context, builder, series, 0, value, new ChartRect(cx - inner * .8, cy - inner * .7, inner * 1.6, inner * .7), "circle-label", Id(0) + "-value", colors.Foreground, context.Theme.Typography.TitleSize, 700);
                 Text(chart, context, builder, series, 0, series.Name, new ChartRect(cx - inner * .8, cy, inner * 1.6, inner * .7), "circle-title", Id(0) + "-title", colors.MutedForeground, context.Theme.Typography.DataLabelSize);
                 if (chart.Options.ShowCircleStatusLabel) {
                     var y = plot.Bottom - statusHeight;
                     var marker = Math.Min(context.Theme.MarkerRadius, statusHeight / 4);
-                    builder.Ellipse(cx - plot.Width * .15, y + statusHeight / 2, marker, marker, ChartSeriesColours.State(state, colors, color), role: "circle-status-marker");
+                    builder.Ellipse(cx - plot.Width * .15, y + statusHeight / 2, marker, marker, ChartSeriesColours.State(state, colors, color), role: "circle-status-marker", paint: VisualChartPaint.Fill(ChartSeriesColours.State(state, colors, color), SvgColorRole.Status));
                     Text(chart, context, builder, series, 0, status, new ChartRect(cx - plot.Width * .1, y, plot.Width * .3, statusHeight), "circle-status-label", Id(0) + "-status", colors.MutedForeground, context.Theme.Typography.DataLabelSize);
                 }
             }

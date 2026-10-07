@@ -138,7 +138,7 @@ public sealed class InteractiveResetControlBrowserTests {
         Assert.InRange(card.X + card.Width - (button.X + button.Width), 6, 10);
         Assert.InRange(button.Y - card.Y, 6, 10);
         var style = await page.Locator("[data-cfx-reset]").EvaluateAsync<string[]>("node => { const s = getComputedStyle(node); return [s.backgroundColor, s.borderTopWidth, s.borderRadius, s.boxShadow]; }");
-        var surface = await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('[data-cfx-role=\"card-surface\"]')).fill");
+        var surface = await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('[data-cfx-role=\"frame-card\"]')).fill");
         Assert.Equal(surface, style[0]);
         Assert.Equal(new[] { "1px", "6px", "none" }, style.Skip(1).ToArray());
     }

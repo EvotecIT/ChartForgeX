@@ -1,6 +1,7 @@
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Xunit;
 
@@ -22,19 +23,22 @@ public sealed class GraphiteFrameTypographyTests {
             .WithSize(640, 360).WithTitle("Shared title").WithSubtitle("Shared subtitle");
         chart.Options.Gauge.Form = form;
         var svg = XDocument.Parse(chart.ToSvg());
-        XElement Role(string role) => Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == role);
-        var title = Role("chart-title");
-        var subtitle = Role("chart-subtitle");
-        var plot = svg.Descendants().First(e => e.Name.LocalName == "clipPath").Elements().Single();
-        Assert.Equal(17, (double)title.Attribute("font-size")!);
-        Assert.Equal("700", (string?)title.Attribute("font-weight"));
-        Assert.Equal(chart.Options.Theme.Text.ToCss(), (string?)title.Attribute("fill"));
-        Assert.Equal(13.5, (double)subtitle.Attribute("font-size")!);
-        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string?)subtitle.Attribute("fill"));
-        Assert.Equal((double)plot.Attribute("x")!, (double)title.Attribute("x")!);
+        var headings = svg.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "frame-heading")
+            .SelectMany(e => e.Descendants().Where(child => child.Name.LocalName == "text")).ToArray();
+        var title = Assert.Single(headings, element => element.Value == "Shared title");
+        var subtitle = Assert.Single(headings, element => element.Value == "Shared subtitle");
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var colors = context.Theme.Resolve(context.ThemeMode);
+        Assert.Equal(context.Theme.Typography.TitleSize, (double)title.Attribute("font-size")!);
+        Assert.Equal("600", (string?)title.Attribute("font-weight"));
+        Assert.Equal(colors.Foreground.ToCss(), (string?)title.Attribute("fill"));
+        Assert.Equal(context.Theme.Typography.SubtitleSize, (double)subtitle.Attribute("font-size")!);
+        Assert.Equal(colors.MutedForeground.ToCss(), (string?)subtitle.Attribute("fill"));
+        Assert.Equal(context.Layout.PaddingEdges.Left, (double)title.Attribute("x")!);
         Assert.Equal((double)title.Attribute("x")!, (double)subtitle.Attribute("x")!);
-        Assert.Null(title.Attribute("text-anchor"));
-        Assert.Null(subtitle.Attribute("text-anchor"));
+        Assert.Contains((string?)title.Attribute("text-anchor"), new string?[] { null, "start" });
+        Assert.Contains((string?)subtitle.Attribute("text-anchor"), new string?[] { null, "start" });
+        Assert.True((double)title.Attribute("y")! + context.Theme.Typography.SubtitleSize < (double)subtitle.Attribute("y")!);
         Assert.NotEqual("none", (string?)title.Attribute("display"));
         Assert.NotEqual("none", (string?)subtitle.Attribute("display"));
     }

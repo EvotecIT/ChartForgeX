@@ -8,6 +8,19 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class V2FrameTypographyTests {
+    [Theory]
+    [InlineData(TextBaseline.Superscript, -11.2)]
+    [InlineData(TextBaseline.Subscript, 7.04)]
+    public void NativeScriptTypographyMaterializesItsSizeAndBaselineExactlyOnce(TextBaseline baseline, double offset) {
+        var builder = new VisualSceneBuilder(new VisualSize(200, 100), FontSpec.FromFamily("Missing script fixture font"));
+        var style = new TextStyle { FontSize = 32, Baseline = baseline };
+        builder.Text("Script", 20, 50, style, role: "script");
+        var text = Assert.Single(builder.Build().Nodes.OfType<VisualSceneText>());
+        Assert.Equal(50 + offset, text.Baseline, 8);
+        Assert.Equal(32 * .65, text.Text.Size, 8);
+        Assert.Equal(TextBaseline.Normal, text.Text.Style.Baseline);
+    }
+
     [Fact]
     public void FrameTypographyIsDetachedAndUsesTheSameMeasuredPlacementAcrossFamilies() {
         var style = new TextStyle { Font = FontSpec.FromFamily("Missing frame test font"), FontSize = 24,

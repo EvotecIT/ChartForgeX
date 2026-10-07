@@ -163,11 +163,12 @@ public sealed class FontPaletteTests {
     }
     [Fact]
     public void SeriesAndPointLabelStylesEmitTheirEffectivePaletteDefinitions() {
-        var chart = Chart.Create().WithDataLabels().AddBar("Observed", new[] { new ChartPoint(1, 5) });
+        var chart = Chart.Create().WithDataLabels().AddBar("Observed", new[] { new ChartPoint(1, 5), new ChartPoint(2, 4) });
         chart.Series[0].WithDataLabelStyle(s => s.WithFontFamily("CFX Series").WithColorPalette(3));
         chart.Series[0].WithPointDataLabelStyle(0, s => s.WithFontFamily("CFX Point").WithColorPalette(4));
-        var svg = new SvgChartRenderer().Render(chart);
+        var svg = chart.ToSvg();
         Assert.Contains("base-palette:3", svg); Assert.Contains("base-palette:4", svg);
+        Assert.Contains("font-palette:--cfx-font-palette-3", svg);
         Assert.Contains("font-palette:--cfx-font-palette-4", svg);
     }
     [Fact]
@@ -215,16 +216,16 @@ public sealed class FontPaletteTests {
     public void ChartGridPaginationAndHtmlExportNativePaletteRules() {
         WithRegisteredFont(_ => {
             var chart = Chart.Create().WithTitle("😀").WithTitleStyle(s => s.WithFontFamily("CFX Palette").WithColorPalette(1));
-            var svg = new SvgChartRenderer().Render(chart);
+            var svg = chart.ToSvg();
             Assert.Contains("@font-palette-values --cfx-font-palette-1", svg);
             Assert.Contains("font-palette:--cfx-font-palette-1", svg);
             var grid = new ChartGrid { Title = "😀", Subtitle = "😀" }; grid.Add(chart);
             grid.TitleStyle.WithFontFamily("CFX Palette").WithColorPalette(2); grid.SubtitleStyle.WithColorPalette(0);
             var page = Assert.Single(grid.Paginate(1)); Assert.Equal(2, page.Grid.TitleStyle.ColorPaletteIndex);
-            var exported = new SvgChartGridRenderer().Render(page.Grid); Assert.Contains("base-palette:2", exported);
+            var exported = page.Grid.ToSvg(); Assert.Contains("base-palette:2", exported);
             Assert.Contains("font-palette:--cfx-font-palette-0", exported);
             Assert.Contains("base-palette:2", new HtmlChartGridRenderer().RenderFragment(page.Grid));
-            Assert.NotEmpty(new PngChartGridRenderer().Render(page.Grid));
+            Assert.NotEmpty(page.Grid.ToPng());
         });
     }
     private static void WithRegisteredFont(Action<string> action) {

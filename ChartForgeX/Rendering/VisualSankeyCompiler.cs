@@ -43,9 +43,10 @@ internal static partial class VisualSankeyCompiler {
                     ["data-cfx-source"] = N(source.Index), ["data-cfx-target"] = N(target.Index), ["data-cfx-value"] = N(link.Value), ["data-cfx-width"] = N(link.Width),
                     ["data-cfx-source-label"] = source.Label, ["data-cfx-target-label"] = target.Label, ["data-cfx-full-label"] = full, ["data-cfx-point"] = N(link.Index * 2)
                 })) {
-                    builder.Path(path, ChartColorMath.WithOpacity(color, .35), role: "sankey-ribbon", close: true);
+                    builder.Path(path, ChartColorMath.WithOpacity(color, .35), role: "sankey-ribbon", close: true,
+                        paint: VisualChartPaint.Fill(Paint(chart, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .35), .35)));
                     var pattern = Pattern(series, link.Index * 2);
-                    if (pattern != ChartFillPattern.None) builder.Pattern(path, pattern, ChartColorMath.WithOpacity(color, .6), role: "sankey-ribbon-pattern");
+                    if (pattern != ChartFillPattern.None) builder.Pattern(path, pattern, ChartColorMath.WithOpacity(color, .6), role: "sankey-ribbon-pattern", paint: Paint(chart, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .6), .6));
                 }
                 builder.AddRegion(new VisualSemanticRegion(Id("link", link.Index), "sankey-link", bounds, full));
             }
@@ -56,7 +57,7 @@ internal static partial class VisualSankeyCompiler {
                     ["data-cfx-value"] = N(node.Value), ["data-cfx-incoming"] = N(node.Incoming), ["data-cfx-outgoing"] = N(node.Outgoing),
                     ["data-cfx-full-label"] = labels[node.Index], ["data-cfx-state"] = chart.Options.SankeyNodeStates.TryGetValue(node.Index, out var state) ? state.ToString() : series.StateRole.ToString()
                 })) {
-                    builder.Rect(bounds, color, radius: Math.Min(context.Theme.BarRadius, node.Height / 2), role: "sankey-node-mark");
+                    builder.Rect(bounds, color, radius: Math.Min(context.Theme.BarRadius, node.Height / 2), role: "sankey-node-mark", paint: VisualChartPaint.Fill(Paint(chart, color, node.Index)));
                     var pattern = Pattern(series, node.Index);
                     if (pattern != ChartFillPattern.None) builder.Pattern(Rectangle(bounds), pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sankey-node-pattern");
                 }
@@ -72,6 +73,12 @@ internal static partial class VisualSankeyCompiler {
         if (series.Color.HasValue) return series.Color.Value;
         var role = chart.Options.SankeyNodeStates.TryGetValue(node, out var state) ? state : series.StateRole;
         return ChartSeriesColours.State(role, colors, colors.Palette[node % colors.Palette.Count]);
+    }
+    private static SvgPaint Paint(Chart chart, ChartColor color, int node) {
+        var series = chart.Series[0];
+        var explicitColor = series.Color.HasValue || node < series.PointColors.Count && series.PointColors[node].HasValue;
+        var state = chart.Options.SankeyNodeStates.TryGetValue(node, out var configured) ? configured : series.StateRole;
+        return SvgPaint.Of(color, explicitColor || state == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status);
     }
     private static TextStyle Style(Chart chart, VisualRenderContext context, int node, ChartColor color) {
         var series = chart.Series[0];

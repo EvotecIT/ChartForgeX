@@ -11,7 +11,14 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
+  const isInteractiveTarget = (node) => {
+    if ((node.dataset || {}).cfxRole === 'legend-item') return true;
+    if (node.closest('[data-cfx-role="legend-item"]')) return false;
+    // Prepared marks carry their source identity on a containing semantic group.
+    // Bind that group once instead of also binding its labels, decorations and individual shapes.
+    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
+    return !owner;
+  };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
@@ -53,6 +60,7 @@
   };
   const sourcePointIndex = (node) => {
     const data = node.dataset || {};
+    if (data.cfxSourcePoint !== undefined) return data.cfxSourcePoint;
     if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
     const svg = node.closest('svg');
     const sourceIndices = svg ? svg.getAttribute('data-cfx-series-source-indices-' + data.cfxSeries) : '';
@@ -87,6 +95,7 @@
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
   const applyRenderedTargetContract = (root) => {
+    prepareChartTargets(root);
     Array.from(root.querySelectorAll(renderedTargetSelector)).filter(isInteractiveTarget).forEach((node) => {
       if (node.closest('defs')) return;
       const kind = renderedTargetKind(node);

@@ -1,194 +1,47 @@
 using System;
 using System.Globalization;
-using System.Text;
 using ChartForgeX.Core;
-using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
-using ChartForgeX.Svg;
 
 namespace ChartForgeX.Html;
 
-/// <summary>
-/// Renders dependency-free small-multiple chart grids as static HTML.
-/// </summary>
+/// <summary>Embeds a prepared chart comparison in dependency-free static HTML.</summary>
 public sealed class HtmlChartGridRenderer {
-    private readonly SvgChartRenderer _svg = new();
-
-    /// <summary>
-    /// Renders a chart grid as an embeddable HTML fragment.
-    /// </summary>
-    /// <param name="grid">The chart grid to render.</param>
-    /// <returns>An HTML fragment containing inline SVG charts.</returns>
+    /// <summary>Renders a chart grid as an embeddable HTML fragment containing its prepared SVG.</summary>
     public string RenderFragment(ChartGrid grid) => RenderFragment(grid, string.Empty);
 
-    /// <summary>Renders a chart grid fragment with a caller-provided deterministic ID scope.</summary>
+    /// <summary>Renders a chart grid fragment with a deterministic host ID scope.</summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
-    /// <returns>An HTML fragment containing inline SVG charts.</returns>
+    /// <returns>An HTML fragment containing the complete prepared chart comparison.</returns>
     public string RenderFragment(ChartGrid grid, string idScope) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
-        if (grid.Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
-        var gridScope = idScope;
-        var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
-
-        var writer = new HtmlMarkupWriter();
-        writer.StartElement("section")
-            .Attribute("class", grid.PanelFit == VisualPanelFit.Stretch ? "chartforgex-grid fit-stretch" : "chartforgex-grid")
-            .Attribute("style", GridStyle(grid))
-            .EndStartElement();
-        var palettes = Typography.TypographyPaletteCss.Rules(theme.FontFamily, grid.TitleStyle, grid.SubtitleStyle);
-        if (palettes.Length > 0) writer.StartElement("style").RawTrusted(palettes).EndElement();
-        if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
-            writer.StartElement("header").Attribute("class", "chartforgex-grid-header").EndStartElement();
-            if (grid.Title.Length > 0) WriteGridHeaderText(writer, "h1", grid.Title, grid.TitleStyle, theme.Text.ToCss(), CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.UseGraphiteLayout ? "700" : "800");
-            if (grid.Subtitle.Length > 0) WriteGridHeaderText(writer, "p", grid.Subtitle, grid.SubtitleStyle, theme.MutedText.ToCss(), CssFontFamily(theme.FontFamily), theme.SubtitleFontSize, "400");
-            writer.EndElement();
-        }
-
-        writer.StartElement("div").Attribute("class", "chartforgex-grid-body").EndStartElement();
-        for (var i = 0; i < grid.Charts.Count; i++) {
-            var chart = grid.Charts[i];
-            var span = i < grid.PanelSpans.Count ? grid.PanelSpans[i] : new ChartGridPanelSpan(1, 1);
-            var columnSpan = Math.Min(span.ColumnSpan, grid.Columns);
-            var rowSpan = span.RowSpan;
-            writer.StartElement("article")
-                .Attribute("class", "chartforgex-grid-panel")
-                .Attribute("aria-label", AttributeTitle(chart))
-                .Attribute("style", PanelSpanStyle(columnSpan, rowSpan, grid.PanelSize.HasValue))
-                .EndStartElement()
-                .RawTrusted(_svg.Render(theme.UseGraphiteLayout ? chart.PanelView() : chart, gridScope + "-cell-" + i.ToString(CultureInfo.InvariantCulture)))
-                .EndElement();
-        }
-
-        writer.EndElement().EndElement();
-        return writer.Build();
+        var request = VisualExportRequest.ForGrid(grid);
+        var prepared = grid.Prepare(request.Context);
+        var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
+        return new HtmlMarkupWriter().StartElement("section").Attribute("class", "chartforgex-grid")
+            .Attribute("style", "width:100%;max-width:" + prepared.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
+            .EndStartElement().RawTrusted(prefix == null ? prepared.ToSvg() : prepared.ToSvg(prefix)).EndElement().Build();
     }
 
-    /// <summary>
-    /// Renders a chart grid as a complete HTML document.
-    /// </summary>
-    /// <param name="grid">The chart grid to render.</param>
-    /// <returns>A complete HTML document.</returns>
+    /// <summary>Renders a complete script-free HTML document with the same grid layout as static exports.</summary>
     public string RenderPage(ChartGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
-        if (grid.Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
+        var request = VisualExportRequest.ForGrid(grid);
+        var colors = request.Context.Theme.Resolve(request.Context.ThemeMode);
         var title = grid.Title.Length == 0 ? "ChartForgeX report" : grid.Title;
-        var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
-        var bg = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
-        var fontFamily = CssFontFamily(theme.FontFamily);
+        var css = HtmlSurfacePolish.CenteredBodyCss(colors.Background,
+            HtmlChartRenderer.CssFontFamily(request.Context.Font.Family), flat: true)
+            + ".chartforgex-grid{margin:0 auto}.chartforgex-grid svg{width:100%;height:auto;display:block}"
+            + HtmlSurfacePolish.ResponsiveCenteredBodyCss
+            + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-grid{max-width:none}");
         var writer = new HtmlMarkupWriter();
-        writer.Doctype().Line()
-            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+        writer.Doctype().Line().StartElement("html").Attribute("lang", grid.Accessibility.Language ?? "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(bg, theme.Text.ToCss(), theme.MutedText.ToCss(), fontFamily, theme.TitleFontSize, theme.SubtitleFontSize, theme.UseGraphiteLayout));
-        writer.EndElement().Line()
-            .StartElement("body").EndStartElement().Line()
-            .RawTrusted(RenderFragment(grid, "html-page")).Line()
-            .EndElement().Line()
-            .EndElement();
+        HtmlChartRenderer.WriteDocumentHead(writer, title, css);
+        writer.EndElement().Line().StartElement("body").EndStartElement().Line()
+            .RawTrusted(RenderFragment(grid, "html-page")).Line().EndElement().Line().EndElement();
         return writer.Build();
     }
-
-    private static string BuildCss(ChartColor background, string text, string mutedText, string fontFamily, double titleFontSize, double subtitleFontSize, bool graphite) {
-        return HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "var(--cfx-grid-padding,24px)", graphite) + ".chartforgex-grid{display:block;width:min(100%,1440px);margin:0 auto}.chartforgex-grid-header{margin:0 0 18px}.chartforgex-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:" + (graphite ? "700" : "800") + "}.chartforgex-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-grid-panel-height,auto);gap:var(--cfx-grid-gap)}.chartforgex-grid-panel{min-width:0;width:100%;min-height:var(--cfx-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-grid.fit-stretch .chartforgex-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){body{padding:16px}.chartforgex-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}.chartforgex-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
-    }
-
-    private static string? PanelSpanStyle(int columnSpan, int rowSpan, bool hasFixedPanelSize) {
-        if (columnSpan == 1 && rowSpan == 1) return null;
-        var sb = new StringBuilder();
-        sb.Append("grid-column:span ");
-        sb.Append(columnSpan.ToString(CultureInfo.InvariantCulture));
-        sb.Append(";grid-row:span ");
-        sb.Append(rowSpan.ToString(CultureInfo.InvariantCulture));
-        if (hasFixedPanelSize && rowSpan > 1) {
-            sb.Append(";min-height:calc((var(--cfx-grid-panel-height) * ");
-            sb.Append(rowSpan.ToString(CultureInfo.InvariantCulture));
-            sb.Append(") + (var(--cfx-grid-gap) * ");
-            sb.Append((rowSpan - 1).ToString(CultureInfo.InvariantCulture));
-            sb.Append("))");
-        }
-
-        return sb.ToString();
-    }
-
-    private static string AttributeTitle(Chart chart) {
-        if (chart.Title.Length > 0) return chart.Title;
-        return chart.Series.Count == 0 ? "Chart" : chart.Series[0].Name;
-    }
-
-    private static string GridStyle(ChartGrid grid) {
-        var sb = new StringBuilder();
-        sb.Append("--cfx-grid-columns:").Append(grid.Columns.ToString(CultureInfo.InvariantCulture));
-        sb.Append(";--cfx-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
-        sb.Append(";--cfx-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
-        if (grid.PanelSize.HasValue) {
-            sb.Append(";--cfx-grid-panel-width:").Append(grid.PanelSize.Value.Width.ToString(CultureInfo.InvariantCulture)).Append("px");
-            sb.Append(";--cfx-grid-panel-height:").Append(grid.PanelSize.Value.Height.ToString(CultureInfo.InvariantCulture)).Append("px");
-        }
-
-        return sb.ToString();
-    }
-
-    private static string CssFontFamily(string value) {
-        if (string.IsNullOrWhiteSpace(value)) return "system-ui, sans-serif";
-        return value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
-    }
-
-    private static string GridTextStyle(TextStyleOverride style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight, bool includeUnderline = true, bool includeStrikethrough = true) {
-        var css = new StringBuilder();
-        css.Append("color:").Append(style.Color?.ToCss() ?? fallbackColor);
-        css.Append(";font-family:").Append(CssFontFamily(style.FontFamily ?? fallbackFontFamily));
-        var fontSize = style.FontSize ?? fallbackFontSize;
-        if (style.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
-        css.Append(";font-size:").Append(fontSize.ToString(CultureInfo.InvariantCulture)).Append("px");
-        css.Append(";font-weight:").Append(CssToken(style.FontWeight ?? fallbackWeight));
-        if (style.Italic) css.Append(";font-style:italic");
-        var fontCss = TypographyCss.Role(style);
-        if (fontCss.Length != 0) css.Append(';').Append(fontCss);
-        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
-        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
-        if (!includeUnderline) underline = TextDecorationStyle.None;
-        if (!includeStrikethrough) strike = TextDecorationStyle.None;
-        if (underline != TextDecorationStyle.None || strike != TextDecorationStyle.None) {
-            css.Append(";text-decoration:");
-            if (underline != TextDecorationStyle.None) css.Append("underline");
-            if (underline != TextDecorationStyle.None && strike != TextDecorationStyle.None) css.Append(' ');
-            if (strike != TextDecorationStyle.None) css.Append("line-through");
-            css.Append(";text-decoration-style:").Append(CssDecorationStyle(underline != TextDecorationStyle.None ? underline : strike));
-        }
-        if (style.Baseline == TextBaseline.Superscript) css.Append(";vertical-align:super");
-        else if (style.Baseline == TextBaseline.Subscript) css.Append(";vertical-align:sub");
-        return css.ToString();
-    }
-
-    private static void WriteGridHeaderText(HtmlMarkupWriter writer, string blockName, string text, TextStyleOverride style, string fallbackColor, string fallbackFontFamily, double fallbackFontSize, string fallbackWeight) {
-        var underline = style.UnderlineStyle ?? (style.Underline ? TextDecorationStyle.Single : TextDecorationStyle.None);
-        var strike = style.StrikethroughStyle ?? (style.Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None);
-        var splitDecorations = underline != TextDecorationStyle.None && strike != TextDecorationStyle.None && underline != strike;
-        writer.StartElement(blockName).EndStartElement()
-            .StartElement("span")
-            .Attribute("style", GridTextStyle(style, fallbackColor, fallbackFontFamily, fallbackFontSize, fallbackWeight, includeUnderline: !splitDecorations))
-            .EndStartElement();
-        if (splitDecorations) {
-            writer.StartElement("span")
-                .Attribute("style", "text-decoration:underline;text-decoration-style:" + CssDecorationStyle(underline))
-                .EndStartElement()
-                .Text(style.TransformText(text, CultureInfo.InvariantCulture))
-                .EndElement();
-        } else {
-            writer.Text(style.TransformText(text, CultureInfo.InvariantCulture));
-        }
-        writer.EndElement().EndElement();
-    }
-
-    private static string CssDecorationStyle(TextDecorationStyle style) => style switch {
-        TextDecorationStyle.Dotted => "dotted",
-        TextDecorationStyle.Dashed => "dashed",
-        TextDecorationStyle.Wavy => "wavy",
-        TextDecorationStyle.Double => "double",
-        _ => "solid"
-    };
-
-    private static string CssToken(string value) => value.Replace(";", " ").Replace("{", " ").Replace("}", " ").Replace("<", " ").Replace(">", " ");
 }

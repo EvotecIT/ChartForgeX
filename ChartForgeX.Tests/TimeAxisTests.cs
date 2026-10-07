@@ -55,7 +55,7 @@ public sealed class TimeAxisTests {
             .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
         chart.Options.XAxis.WithBounds(start, end);
         var svg = XDocument.Parse(chart.ToSvg());
-        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label")
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label")
             .Select(element => element.Value).ToArray();
         Assert.True(labels.Length > 1);
         Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
@@ -88,7 +88,7 @@ public sealed class TimeAxisTests {
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(start, "Start"));
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(end, "End"));
         var labels = XDocument.Parse(chart.ToSvg()).Descendants()
-            .Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label")
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label")
             .Select(element => element.Value).ToArray();
         Assert.Equal(new[] { "Start", "End" }, labels);
         Assert.Equal("End", ChartAxisValueFormatter.Format(chart.Options.XAxis, end));
@@ -108,7 +108,7 @@ public sealed class TimeAxisTests {
         var labels = svg.Descendants().Where(element => element.Name.LocalName == "text" && element.Value.StartsWith("Mar ", StringComparison.Ordinal)).ToArray();
         Assert.NotEmpty(labels);
         Assert.DoesNotContain(svg.Descendants(), element => element.Name.LocalName == "text" && (element.Value == "Feb 28" || element.Value == "Mar 4"));
-        var positions = labels.Select(element => (string?)element.Attribute("x")).ToArray();
+        var positions = labels.Select(element => (string?)element.RenderedAttribute("x")).ToArray();
         Assert.Equal(positions.Length, positions.Distinct().Count());
     }
 
@@ -265,7 +265,7 @@ public sealed class TimeAxisTests {
         var lines = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "line").ToArray();
         Assert.NotEmpty(lines);
         Assert.All(lines, line => Assert.Equal(2, ((string)line.Attribute("d")!).Count(character => character == 'M')));
-        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label").Select(element => element.Value).ToArray();
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label").Select(element => element.Value).ToArray();
         Assert.Contains("06:00", labels);
         Assert.All(labels, label => Assert.True(label.Length == 10 || label.EndsWith(":00", StringComparison.Ordinal), label));
         Assert.Equal(svgText, Create().ToSvg());
@@ -342,7 +342,7 @@ public sealed class TimeAxisTests {
         var localPoints = Enumerable.Range(0, 7).Select(hour => new ChartPoint(Day.AddHours(hour).ToLocalTime(), 10 + hour)).ToArray();
         Assert.Equal(utcPoints.Select(point => point.X), localPoints.Select(point => point.X));
         var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale(zone).AddLine("UTC", utcPoints).AddLine("Local", localPoints);
-        var labels = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label").Select(element => element.Value).ToArray();
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label").Select(element => element.Value).ToArray();
         Assert.Contains("06:00", labels);
         Assert.DoesNotContain(labels, label => label.EndsWith(":30", StringComparison.Ordinal));
     }

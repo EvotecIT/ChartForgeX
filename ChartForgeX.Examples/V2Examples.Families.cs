@@ -2,6 +2,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
+using System.Xml.Linq;
 
 public static partial class V2Examples {
     private static readonly ChartSeriesKind[] CompactFamilies = {
@@ -44,8 +45,17 @@ public static partial class V2Examples {
         var prepared = model.Prepare(context);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
-        var thumbnail = model.Prepare(GalleryContext(640, 400, mode, "", "", legend));
-        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
+        // Sequence steps retain their full logical viewport; the host scales this SVG into the uniform tile.
+        var thumbnail = model.Prepare(GalleryContext(family == "sequence" ? width : 640, family == "sequence" ? height : 400, mode, "", "", legend));
+        var thumbnailSvg = thumbnail.ToSvg(id + "-thumbnail");
+        if (family == "sequence") {
+            var document = XDocument.Parse(thumbnailSvg, LoadOptions.PreserveWhitespace);
+            var root = document.Root ?? throw new InvalidOperationException("The sequence thumbnail requires an SVG root.");
+            root.SetAttributeValue("width", 640); root.SetAttributeValue("height", 400);
+            root.SetAttributeValue("preserveAspectRatio", "xMidYMid meet");
+            thumbnailSvg = document.ToString(SaveOptions.DisableFormatting);
+        }
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnailSvg);
         var artifactKind = family is "topology" or "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), ModelSnippet(expression, title, subtitle, mode, width, height, legend, artifactKind));
         WritePage(output, id, title, mode);

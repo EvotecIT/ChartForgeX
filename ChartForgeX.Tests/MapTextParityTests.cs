@@ -11,9 +11,10 @@ public sealed class MapTextParityTests {
     public void RouteLabelsDeclareTheChartFamilyAndFallbackUsesTheSameNativeFace() {
         const string family = "CFX Missing Family, Arial, sans-serif";
         var chart = Map(family);
-        var route = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "dotted-map-connector-label");
+        var route = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "dotted-map-connector-label")
+            .Descendants().Single(element => element.Name.LocalName == "text");
         Assert.Equal(family, (string?)route.Attribute("font-family"));
-        Assert.Equal("700", (string?)route.Attribute("font-weight"));
+        Assert.Equal("400", (string?)route.Attribute("font-weight"));
         Assert.Equal(Map("Arial, sans-serif").ToRgbaImage().Pixels, chart.ToRgbaImage().Pixels);
     }
 

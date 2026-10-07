@@ -23,7 +23,7 @@ public sealed class GraphiteGalleryTests {
             foreach (var name in new[] { "normal", "edge-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), chart.ToSvg());
                 File.WriteAllText(Path.Combine(output, name + ".html"), chart.ToHtmlPage());
-                var canvas = new PngChartRenderer().RenderCanvas(chart);
+                var canvas = RenderCanvas(chart);
                 if (name == "edge-mark") canvas.FillRect(0, 20 * scale, 3 * scale, 20 * scale, ChartColor.Black);
                 File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(canvas.ToImage()));
             }
@@ -49,7 +49,7 @@ public sealed class GraphiteGalleryTests {
             foreach(var name in new[]{"normal","edge-mark"}) {
                 File.WriteAllText(Path.Combine(output,name+".svg"),chart.ToSvg());
                 File.WriteAllText(Path.Combine(output,name+".html"),chart.ToHtmlPage());
-                var canvas=new PngChartRenderer().RenderCanvas(chart);
+                var canvas=RenderCanvas(chart);
                 if(name=="edge-mark") canvas.FillRect(0,50,3,20,ChartColor.Black);
                 File.WriteAllBytes(Path.Combine(output,name+".png"),PngWriter.WriteRgba(canvas.ToImage()));
             }
@@ -64,5 +64,11 @@ public sealed class GraphiteGalleryTests {
         } finally {
             Directory.Delete(output,recursive:true);
         }
+    }
+    private static RgbaCanvas RenderCanvas(Chart chart) {
+        var image = RasterRenderer.RenderImage(chart);
+        var canvas = new RgbaCanvas(image.Width, image.Height, 1);
+        canvas.DrawImage(0, 0, image.Width, image.Height, image.Pixels);
+        return canvas;
     }
 }

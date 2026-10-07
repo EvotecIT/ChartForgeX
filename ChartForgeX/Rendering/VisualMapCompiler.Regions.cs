@@ -29,16 +29,19 @@ internal static partial class VisualMapCompiler {
                 var geometry = Path(projected); var bounds = Intersect(Bounds(projected.SelectMany(path => path)), map);
                 int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
                 var full = Formatted(chart, index); var id = index.HasValue ? "series-0-point-" + index.Value : "region-map-empty-" + region.Code;
-                var fill = Fill(chart, colors, index, min, max);
+                var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
                 builder.AddRegion(new VisualSemanticRegion(id, "region-map-region", bounds, region.Name + ": " + full));
                 using (builder.PushGroup(id, "region-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max))) {
-                    builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "region-map-region", close: true);
+                    builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "region-map-region", close: true,
+                        paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(chart.Series[0], index);
                     if (index.HasValue && pattern != ChartFillPattern.None) builder.Pattern(geometry, pattern, ChartColorMath.AccessibleTextOnBackground(fill).WithAlpha(90), role: "region-map-pattern");
                     if (chart.Options.ShowMapLabels && bounds.Width > 0 && bounds.Height > 0) {
                         var anchor = region.HasLabel ? Project(region.Label, source, map) : new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
                         var area = Intersect(new ChartRect(anchor.X - bounds.Width / 2, anchor.Y - bounds.Height / 2, bounds.Width, bounds.Height), bounds);
-                        VisualRadialPrimitives.Text(builder, region.Code, area, TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill)), "region-map-label", id + "-label");
+                        var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
+                        VisualRadialPrimitives.Text(builder, region.Code, area, style, "region-map-label", id + "-label",
+                            chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
                     }
                 }
             }
@@ -54,9 +57,12 @@ internal static partial class VisualMapCompiler {
                     var paths = ChartMapPathParser.ParseSubpaths(region.Path, target.Width / source.Width);
                     // One compound fill retains holes. Stroke open paths separately, so an open overlay is never closed accidentally.
                     var closed = paths.Where(path => path.IsClosed).Select(path => (IReadOnlyList<ChartPoint>)path.Points.Select(point => Project(point, source, target)).ToArray()).ToArray();
-                    if (closed.Length > 0) builder.Path(Path(closed), layer.FillColor, layer.StrokeColor, layer.StrokeWidth, layer.Role, close: true);
+                    if (closed.Length > 0) builder.Path(Path(closed), layer.FillColor, layer.StrokeColor, layer.StrokeWidth, layer.Role, close: true,
+                        paint: new VisualScenePaintBinding(layer.FillColor.HasValue ? SvgPaint.Of(layer.FillColor.Value, SvgColorRole.Surface) : (SvgPaint?)null,
+                            layer.StrokeColor.HasValue ? SvgPaint.Of(layer.StrokeColor.Value, SvgColorRole.Surface) : (SvgPaint?)null));
                     foreach (var open in paths.Where(path => !path.IsClosed)) builder.Path(Path(new[] { (IReadOnlyList<ChartPoint>)open.Points.Select(point => Project(point, source, target)).ToArray() }),
-                        stroke: layer.StrokeColor, strokeWidth: layer.StrokeWidth, role: layer.Role);
+                        stroke: layer.StrokeColor, strokeWidth: layer.StrokeWidth, role: layer.Role,
+                        paint: layer.StrokeColor.HasValue ? VisualChartPaint.Stroke(layer.StrokeColor.Value, SvgColorRole.Surface) : (VisualScenePaintBinding?)null);
                 }
             }
         }
@@ -82,14 +88,18 @@ internal static partial class VisualMapCompiler {
                     new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) } });
                 int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
                 var full = Formatted(chart, index); var id = index.HasValue ? "series-0-point-" + index.Value : "tile-map-empty-" + region.Code;
-                var fill = Fill(chart, colors, index, min, max);
+                var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
                 builder.AddRegion(new VisualSemanticRegion(id, "tile-map-region", bounds, region.Name + ": " + full));
                 using (builder.PushGroup(id, "tile-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max))) {
-                    builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "tile-map-region", close: true);
+                    builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "tile-map-region", close: true,
+                        paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(chart.Series[0], index);
                     if (index.HasValue && pattern != ChartFillPattern.None) builder.Pattern(geometry, pattern, ChartColorMath.AccessibleTextOnBackground(fill).WithAlpha(90), role: "tile-map-pattern");
-                    if (chart.Options.ShowMapLabels) VisualRadialPrimitives.Text(builder, region.Code, new ChartRect(x + inset, y, size - inset * 2, size),
-                        TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill)), "tile-map-label", id + "-label");
+                    if (chart.Options.ShowMapLabels) {
+                        var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
+                        VisualRadialPrimitives.Text(builder, region.Code, new ChartRect(x + inset, y, size - inset * 2, size),
+                            style, "tile-map-label", id + "-label", chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
+                    }
                 }
             }
         }

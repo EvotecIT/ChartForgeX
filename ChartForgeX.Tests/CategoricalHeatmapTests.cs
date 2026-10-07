@@ -17,7 +17,7 @@ public sealed class CategoricalHeatmapTests {
         var cells = ByRole(svg, "heatmap-cell");
         Assert.Equal(5, cells.Length);
         Assert.Equal(new[] { "pass", "critical", "notEvaluated", "pass", "critical" }, cells.Select(cell => (string)cell.Attribute("data-cfx-status")!).ToArray());
-        Assert.Equal(new[] { Pass.ToCss(), Critical.ToCss(), Neutral.ToCss() }, cells.Take(3).Select(cell => (string)cell.Attribute("fill")!).ToArray());
+        Assert.Equal(new[] { Pass.ToCss(), Critical.ToCss(), Neutral.ToCss() }, cells.Take(3).Select(cell => (string)cell.RenderedAttribute("fill")!).ToArray());
         Assert.Equal("DC01, LDAP: Critical", (string)cells[1].Attribute("aria-label")!);
         Assert.Equal("DC02, Backup: Critical. Backup is 9 days old", Title(cells[4]));
 
@@ -27,7 +27,7 @@ public sealed class CategoricalHeatmapTests {
 
         Assert.Single(ByRole(svg, "heatmap-cell-hatch"));
         Assert.Single(ByRole(svg, "state-segment-hatch"));
-        Assert.Equal(new[] { "Passed", "Critical", "Not evaluated" }, ByRole(svg, "state-legend-label").Select(label => label.Value).ToArray());
+        Assert.Equal(new[] { "Passed", "Critical", "Not evaluated" }, ByRole(svg, "legend-label").Select(label => label.Value).ToArray());
         Assert.Empty(ByRole(svg, "legend-item"));
         Assert.Empty(ByRole(svg, "heatmap-scale-step"));
     }
@@ -127,7 +127,7 @@ public sealed class CategoricalHeatmapTests {
             .AddHeatmapCategoryRow("DC01", new List<ChartHeatmapCell> { new("pending"), new("pending") })
             .AddHeatmapCategoryRow("DC02", new ChartHeatmapCell("pending"), null, null);
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string)ByRole(svg, "heatmap-cell")[0].Attribute("fill")!);
+        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string)ByRole(svg, "heatmap-cell")[0].RenderedAttribute("fill")!);
         Assert.Equal(3, ByRole(svg, "heatmap-column-label").Length);
         Assert.Equal(3, ByRole(svg, "heatmap-cell").Length);
     }
@@ -146,7 +146,7 @@ public sealed class CategoricalHeatmapTests {
         var summary = ByRole(svg, "legend-overflow").Single();
         Assert.True(int.Parse((string)summary.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
         Assert.All(ByRole(svg, "heatmap-cell"), cell => Assert.True(Number(cell, "height") >= 18));
-        Assert.All(ByRole(svg, "state-legend-label"), label => Assert.True(Number(label, "y") < 400));
+        Assert.All(ByRole(svg, "legend-label"), label => Assert.True(Number(label, "y") < 400));
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -156,11 +156,11 @@ public sealed class CategoricalHeatmapTests {
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"))
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"));
         var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
-        var ids = cells.Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray();
+        var ids = cells.Select(cell => (string?)cell.Attribute("data-cfx-source-id")).ToArray();
         Assert.All(ids, id => Assert.False(string.IsNullOrEmpty(id)));
         Assert.Equal(4, ids.Distinct().Count());
         Assert.All(cells, cell => Assert.EndsWith(": pass. Open evidence", Title(cell), StringComparison.Ordinal));
-        Assert.Equal(ids, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Select(cell => (string?)cell.Attribute("data-cfx-id")).ToArray());
+        Assert.Equal(ids, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Select(cell => (string?)cell.Attribute("data-cfx-source-id")).ToArray());
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public sealed class CategoricalHeatmapTests {
 
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 
-    private static string Title(XElement element) => element.Elements().Single(child => child.Name.LocalName == "title").Value;
+    private static string Title(XElement element) => element.Tooltip();
 
-    private static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, CultureInfo.InvariantCulture);
+    private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
 }

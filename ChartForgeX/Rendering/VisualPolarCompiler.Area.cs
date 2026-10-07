@@ -20,7 +20,7 @@ internal static partial class VisualPolarCompiler {
         using (builder.PushClip(plot)) {
             if (chart.Options.ShowGrid) for (var ring = 1; ring <= ChartVisualPrimitives.PolarAreaGridRings; ring++)
                 builder.Ellipse(cx, cy, radius * ring / ChartVisualPrimitives.PolarAreaGridRings, radius * ring / ChartVisualPrimitives.PolarAreaGridRings,
-                    null, colors.Border, context.Theme.GridStrokeWidth, "polar-area-ring");
+                    null, colors.Border, context.Theme.GridStrokeWidth, "polar-area-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             for (var index = 0; index < series.Points.Count; index++) {
                 var point = series.Points[index]; var color = ChartSeriesColours.Point(series, index, index, colors);
                 var start = -Math.PI / 2 + index * sweep; var zero = point.Y == 0;
@@ -34,7 +34,9 @@ internal static partial class VisualPolarCompiler {
                     ["data-cfx-value"] = N(point.Y), ["data-cfx-percent"] = N(total > 0 ? point.Y / total : 0)
                 })) {
                     builder.Slice(cx, cy, r, inner, start, sweep, zero ? ChartColorMath.WithOpacity(color, ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity) : color,
-                        zero ? color : colors.Surface, context.Theme.GridStrokeWidth, role);
+                        zero ? color : colors.Surface, context.Theme.GridStrokeWidth, role,
+                        paint: new VisualScenePaintBinding(zero ? VisualChartPaint.Series(series, color, index).WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity), ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity) : VisualChartPaint.Series(series, color, index),
+                            zero ? VisualChartPaint.Series(series, color, index) : SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(series, index);
                     if (!zero && pattern != ChartFillPattern.None) builder.PatternSlice(cx, cy, r, 0, start, sweep, pattern,
                         ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(100), role: "polar-area-pattern");

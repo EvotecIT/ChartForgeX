@@ -57,7 +57,7 @@ internal static class VisualRadialProgressCompiler {
             var bounds = new ChartRect(cx - radius - layout.StrokeWidth / 2, cy - radius - layout.StrokeWidth / 2,
                 radius * 2 + layout.StrokeWidth, radius * 2 + layout.StrokeWidth);
             builder.AddRegion(new VisualSemanticRegion(Id(index), "radial-bar-ring", bounds, label + ": " + formatted));
-            using (builder.PushGroup(Id(index), "radial-bar-point", Metadata(index, label, point.Y, 0, 100))) {
+            using (builder.PushGroup(Id(index), "radial-bar-point", Metadata(chart, index, label, point.Y, 0, 100))) {
                 VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2, colors.Border, "radial-bar-track", paint: SvgPaint.Of(colors.Border, SvgColorRole.Surface));
                 VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2 * point.Y / 100,
                     color, "radial-bar-ring", round: true, paint: VisualChartPaint.Series(series, color, index));
@@ -91,7 +91,7 @@ internal static class VisualRadialProgressCompiler {
             var bounds = new ChartRect(cx - radius - stroke / 2, cy - radius - stroke / 2, radius * 2 + stroke, radius * 2 + stroke);
             centerValue = ChartNumericFormatter.FormatValue(chart.Options, layer.Value);
             builder.AddRegion(new VisualSemanticRegion(Id(index), "layered-radial-layer", bounds, layer.Name + ": " + centerValue));
-            using (builder.PushGroup(Id(index), "layered-radial-point", Metadata(index, layer.Name, layer.Value, layer.Minimum, layer.Maximum))) {
+            using (builder.PushGroup(Id(index), "layered-radial-point", Metadata(chart, index, layer.Name, layer.Value, layer.Minimum, layer.Maximum))) {
                 VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, start, sweep, color, "layered-radial-layer", round: layer.LineCap == ChartRadialLayerCap.Round,
                     paint: VisualChartPaint.Series(series, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), index, layer.Color.HasValue).WithOpacity(color, layer.Opacity));
                 if (sweep <= 0 || layer.SeparatorCount <= 0) continue;
@@ -123,7 +123,8 @@ internal static class VisualRadialProgressCompiler {
     }
 
     private static string Id(int index) => "series-0-point-" + index.ToString(CultureInfo.InvariantCulture);
-    private static IReadOnlyDictionary<string, string> Metadata(int index, string label, double value, double min, double max) => new Dictionary<string, string> {
+    private static IReadOnlyDictionary<string, string> Metadata(Chart chart, int index, string label, double value, double min, double max) => new Dictionary<string, string> {
+        ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
         ["data-cfx-point"] = index.ToString(CultureInfo.InvariantCulture), ["data-cfx-label"] = label, ["data-cfx-value"] = value.ToString("R", CultureInfo.InvariantCulture),
         ["data-cfx-min"] = min.ToString("R", CultureInfo.InvariantCulture), ["data-cfx-max"] = max.ToString("R", CultureInfo.InvariantCulture)
     };

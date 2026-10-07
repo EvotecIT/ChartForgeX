@@ -14,7 +14,6 @@ namespace ChartForgeX.VisualBlocks;
 /// Renders visual grids as dependency-free static HTML.
 /// </summary>
 public sealed class HtmlVisualGridRenderer {
-    private readonly SvgChartRenderer _chartRenderer = new();
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid as an embeddable HTML fragment.</summary>
@@ -65,16 +64,7 @@ public sealed class HtmlVisualGridRenderer {
         return writer.Build();
     }
 
-    private string RenderChildChart(Chart chart, string childScope) {
-        var transparentBackground = chart.Options.TransparentBackground;
-        try {
-            chart.Options.TransparentBackground = true;
-            return _chartRenderer.Render(chart.Options.Theme.UseGraphiteLayout ? chart.PanelView() : chart, childScope);
-        }
-        finally {
-            chart.Options.TransparentBackground = transparentBackground;
-        }
-    }
+    private static string RenderChildChart(Chart chart, string childScope) => VisualGridChartRendering.Svg(chart, childScope);
 
     private string RenderChildBlock(IVisualBlock block, string childScope) {
         var transparentBackground = block.Options.TransparentBackground;

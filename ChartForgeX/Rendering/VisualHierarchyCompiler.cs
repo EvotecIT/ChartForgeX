@@ -55,7 +55,8 @@ internal static partial class VisualHierarchyCompiler {
                 ["data-cfx-parent"] = N(link.Parent), ["data-cfx-child"] = N(link.Child), ["data-cfx-value"] = N(link.Value),
                 ["data-cfx-source-label"] = source.Label, ["data-cfx-target-label"] = target.Label
             })) builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(x1, y1), ChartPathCommand.CubicTo(mid, y1, mid, y2, x2, y2) }),
-                stroke: ChartColorMath.WithOpacity(color, .65), strokeWidth: width, role: "tree-link-path");
+                stroke: ChartColorMath.WithOpacity(color, .65), strokeWidth: width, role: "tree-link-path",
+                paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .65), .65)));
         }
         foreach (var node in model.Nodes) {
             var b = new ChartRect(node.X, node.Y, model.NodeWidth, model.NodeHeight); var color = Color(series, node.Index, colors, node.Depth);
@@ -63,7 +64,8 @@ internal static partial class VisualHierarchyCompiler {
             metadata.Remove("data-cfx-value");
             if (node.Depth > 0) metadata["data-cfx-value"] = N(model.Links.First(link => link.Child == node.Index).Value);
             using (builder.PushGroup(Id("node", node.Index), "tree-node", metadata)) {
-                builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark");
+                builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark",
+                    paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
                 if (series.ShowDataLabels != false) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
             }
@@ -82,7 +84,7 @@ internal static partial class VisualHierarchyCompiler {
             string full = tile.PointIndex < series.PointLabels.Count && series.PointLabels[tile.PointIndex] != null ? series.PointLabels[tile.PointIndex]! : label;
             var metadata = Metadata(label, tile.PointIndex, 0, tile.Point.Y); metadata["data-cfx-full-label"] = full; metadata["data-cfx-formatted-value"] = value;
             using (builder.PushGroup(Id("point", tile.PointIndex), "treemap-tile", metadata)) {
-                builder.Rect(tile.Rect, color, radius: Math.Min(context.Theme.BarRadius, Math.Min(tile.Rect.Width, tile.Rect.Height) * .1), role: "treemap-tile-mark");
+                builder.Rect(tile.Rect, color, radius: Math.Min(context.Theme.BarRadius, Math.Min(tile.Rect.Width, tile.Rect.Height) * .1), role: "treemap-tile-mark", paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, tile.PointIndex)));
                 Pattern(builder, Rectangle(tile.Rect), series, tile.PointIndex, color, "treemap-pattern");
                 if (series.ShowDataLabels != false) Label(chart, context, builder, full + "\n" + value, tile.Rect, color, tile.PointIndex, "treemap-label");
             }
@@ -102,14 +104,19 @@ internal static partial class VisualHierarchyCompiler {
         foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) {
             double sweep = node.EndAngle - node.StartAngle, mid = node.StartAngle + sweep / 2;
             var color = Color(series, node.Index, colors, node.Depth == 0 ? 0 : node.Index + node.Depth - 1);
-            if (node.Depth == 0 && !series.Color.HasValue && series.StateRole == ChartSeriesState.None) color = ChartColorMath.Blend(colors.Surface, color, .28);
+            var paint = VisualChartPaint.Series(series, color, node.Index);
+            if (node.Depth == 0 && !series.Color.HasValue && series.StateRole == ChartSeriesState.None) {
+                var source = color; color = ChartColorMath.Blend(colors.Surface, source, .28);
+                paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, VisualChartPaint.SeriesRole(series, node.Index), .28);
+            }
             string formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
             var metadata = Metadata(node.Label, node.Index, node.Depth, node.Value); metadata["data-cfx-parent"] = N(node.Parent);
             metadata["data-cfx-authored-weight"] = N(node.IncomingValue);
             metadata["data-cfx-percent"] = N(node.Value / total); metadata["data-cfx-start-angle"] = N(node.StartAngle); metadata["data-cfx-sweep"] = N(sweep);
             metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
             using (builder.PushGroup(Id("node", node.Index), "sunburst-segment", metadata)) {
-                builder.Slice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, color, colors.Surface, 1, "sunburst-segment-mark");
+                builder.Slice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, color, colors.Surface, 1, "sunburst-segment-mark",
+                    paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern");

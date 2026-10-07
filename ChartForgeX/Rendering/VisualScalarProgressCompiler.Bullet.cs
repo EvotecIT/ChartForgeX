@@ -51,15 +51,16 @@ internal static partial class VisualScalarProgressCompiler {
                 for (var range = 0; range < ends.Count; range++) {
                     var rangeBounds = new ChartRect(X(previous), y - barHeight / 2, Math.Max(0, X(ends[range]) - X(previous)), barHeight);
                     using (builder.PushGroup(null, "bullet-range-source", new Dictionary<string, string> { ["data-cfx-min"] = N(previous), ["data-cfx-max"] = N(ends[range]) }))
-                        builder.Rect(rangeBounds, ChartColorMath.WithOpacity(color, ChartMarkSurface.BulletRangeOpacity(range)), role: "bullet-range");
+                        builder.Rect(rangeBounds, ChartColorMath.WithOpacity(color, ChartMarkSurface.BulletRangeOpacity(range)), role: "bullet-range",
+                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, 0).WithOpacity(ChartColorMath.WithOpacity(color, ChartMarkSurface.BulletRangeOpacity(range)), ChartMarkSurface.BulletRangeOpacity(range))));
                     previous = ends[range];
                 }
-                builder.Rect(new ChartRect(left, y - barHeight / 6, X(value) - left, barHeight / 3), color, role: "bullet-value");
-                builder.Line(X(target), y - barHeight * .7, X(target), y + barHeight * .7, colors.Foreground, context.Theme.SeriesStrokeWidth, "bullet-target");
+                builder.Rect(new ChartRect(left, y - barHeight / 6, X(value) - left, barHeight / 3), color, role: "bullet-value", paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, 0)));
+                builder.Line(X(target), y - barHeight * .7, X(target), y + barHeight * .7, colors.Foreground, context.Theme.SeriesStrokeWidth, "bullet-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Text));
                 if (series.ShowDataLabels != false) {
                     Text(chart, context, builder, series, 0, series.Name, new ChartRect(plot.Left, bounds.Top, Math.Max(0, labelWidth - gap), rowHeight), "bullet-row-label", Id(index) + "-label", colors.Foreground, context.Theme.Typography.DataLabelSize);
                     var marker = Math.Min(context.Theme.MarkerRadius, Math.Min(rowHeight / 8, gap / 3));
-                    builder.Ellipse(left + width + gap / 2, y, marker, marker, ChartSeriesColours.State(state, colors, colors.Accent), role: "bullet-status-marker");
+                    builder.Ellipse(left + width + gap / 2, y, marker, marker, ChartSeriesColours.State(state, colors, colors.Accent), role: "bullet-status-marker", paint: VisualChartPaint.Fill(ChartSeriesColours.State(state, colors, colors.Accent), SvgColorRole.Status));
                     var textLeft = left + width + gap;
                     Text(chart, context, builder, series, 0, labels[index], new ChartRect(textLeft, bounds.Top, Math.Max(0, plot.Right - textLeft), rowHeight / 2), "bullet-value-label", Id(index) + "-value", colors.Foreground, context.Theme.Typography.DataLabelSize, 700);
                     Text(chart, context, builder, series, 1, "target " + targets[index], new ChartRect(textLeft, y, Math.Max(0, plot.Right - textLeft), rowHeight / 2), "bullet-target-label", Id(index) + "-target", colors.MutedForeground, context.Theme.Typography.DataLabelSize);
@@ -68,10 +69,10 @@ internal static partial class VisualScalarProgressCompiler {
         }
         if (axisHeight > 0) {
             var y = plot.Bottom - axisHeight;
-            builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis");
+            builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             for (var index = 0; index < 5; index++) {
                 var tick = min + (max - min) * index / 4; var x = X(tick);
-                builder.Line(x, y, x, y + axisHeight / 6, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis-tick");
+                builder.Line(x, y, x, y + axisHeight / 6, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
                 var text = ChartAxisValueFormatter.Format(chart.Options.XAxis, tick, chart.Options.ValueFormatter);
                 var boxWidth = width / 4;
                 var boxLeft = Math.Max(left, Math.Min(left + width - boxWidth, x - boxWidth / 2));

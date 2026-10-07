@@ -43,8 +43,10 @@ public sealed class TopologyLabels {
 
     internal TopologyLabels Clone() => new() { _untitledTopology = _untitledTopology, _untitledReport = _untitledReport, AccessibleTextFormatter = AccessibleTextFormatter };
 
-    internal string Describe(TopologyChart chart) {
-        var facts = new ChartDescriptionFacts(ChartDescriptionKind.Topology, chart.Title, Array.Empty<string>(), chart.Nodes.Count, groupCount: chart.Groups.Count, edgeCount: chart.Edges.Count);
+    internal string Describe(TopologyChart chart) => Describe(chart.Title, chart.Groups.Count, chart.Nodes.Count, chart.Edges.Count);
+
+    internal string Describe(string? title, int groupCount, int nodeCount, int edgeCount) {
+        var facts = new ChartDescriptionFacts(ChartDescriptionKind.Topology, title, Array.Empty<string>(), nodeCount, groupCount: groupCount, edgeCount: edgeCount);
         var text = AccessibleTextFormatter?.Invoke(facts);
         return string.IsNullOrWhiteSpace(text) ? facts.EnglishText : text!;
     }
