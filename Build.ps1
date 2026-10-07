@@ -55,6 +55,8 @@ function New-VisualBaseline {
             name = $chart.name
             width = [int]$chart.svg.width
             height = [int]$chart.svg.height
+            logicalWidth = if ($chart.svg.PSObject.Properties.Name -contains 'logicalWidth') { [double]$chart.svg.logicalWidth } else { [double]$chart.svg.width }
+            logicalHeight = if ($chart.svg.PSObject.Properties.Name -contains 'logicalHeight') { [double]$chart.svg.logicalHeight } else { [double]$chart.svg.height }
             svg = [ordered]@{
                 minVisualNodes = [int][Math]::Max(2, [int][Math]::Floor([double]$chart.svg.visualNodes * 0.5))
                 maxClippedTextNodes = [int]$chart.svg.clippedTextNodes
@@ -113,7 +115,14 @@ function Assert-VisualBaseline {
 
         $actual = $generatedCharts[$expected.name]
         $expectedScale = if ($expected.png.PSObject.Properties.Name -contains 'outputScale') { [int]$expected.png.outputScale } else { 1 }
-        if ($actual.svg.width -ne $expected.width -or $actual.svg.height -ne $expected.height -or $actual.png.width -ne ($expected.width * $expectedScale) -or $actual.png.height -ne ($expected.height * $expectedScale)) {
+        $logicalWidth = if ($actual.svg.PSObject.Properties.Name -contains 'logicalWidth') { [double]$actual.svg.logicalWidth } else { [double]$actual.svg.width }
+        $logicalHeight = if ($actual.svg.PSObject.Properties.Name -contains 'logicalHeight') { [double]$actual.svg.logicalHeight } else { [double]$actual.svg.height }
+        # Old baselines constrain rounded SVG dimensions; allocation still uses the actual
+        # logical viewport. New baselines additionally retain its exact fractional dimensions.
+        $logicalDimensionsChanged = (($expected.PSObject.Properties.Name -contains 'logicalWidth') -and $logicalWidth -ne [double]$expected.logicalWidth) -or
+            (($expected.PSObject.Properties.Name -contains 'logicalHeight') -and $logicalHeight -ne [double]$expected.logicalHeight)
+        if ($actual.svg.width -ne $expected.width -or $actual.svg.height -ne $expected.height -or $logicalDimensionsChanged -or
+            $actual.png.scale -ne $expectedScale -or $actual.png.width -ne [Math]::Ceiling($logicalWidth * $expectedScale) -or $actual.png.height -ne [Math]::Ceiling($logicalHeight * $expectedScale)) {
             throw "SVG/PNG baseline dimensions changed for $($expected.name). Expected $($expected.width)x$($expected.height) at PNG scale $expectedScale. See $ComparisonManifest."
         }
 

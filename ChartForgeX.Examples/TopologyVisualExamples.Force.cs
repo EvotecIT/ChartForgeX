@@ -11,7 +11,9 @@ internal static partial class TopologyVisualExamples {
             .WithHtmlForceGraphControls()
             .WithFitContentToViewport();
         WriteForceGraphArtifact(target, artifacts, "visual-force-relationship-graph", "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", BuildForceRelationshipGraph(), options);
-        WriteForceGraphArtifact(target, artifacts, "visual-force-busy-relationship-graph", "Busy Force Relationship Graph", "Busy force-directed relationship graph using the relationship solver profile for degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", BuildBusyForceRelationshipGraph(), options);
+        var busyOptions = options.Clone();
+        busyOptions.FitContentToViewport = false;
+        WriteForceGraphArtifact(target, artifacts, "visual-force-busy-relationship-graph", "Busy Force Relationship Graph", "Busy force-directed relationship graph using the relationship solver profile for degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", BuildBusyForceRelationshipGraph(), busyOptions);
         var radialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls()
@@ -86,7 +88,7 @@ internal static partial class TopologyVisualExamples {
             .WithId("visual-force-busy-relationship-graph")
             .WithTitle("Busy Force Relationship Graph")
             .WithSubtitle("Large identity, endpoint, application, data, network, control, and ownership relationship graph using degree-weighted force layout diagnostics.")
-            .WithViewport(1500, 920, 32)
+            .WithViewport(1800, 1120, 32)
             .WithLayout(TopologyLayoutMode.ForceDirected)
             .WithLegend(TopologyLegend.Default()
                 .AddNodeKind("Identity", TopologyNodeKind.Person, symbol: "ID")

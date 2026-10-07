@@ -85,7 +85,9 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, scenario switching, and offender highlighting support.", meshOptions);
         SaveTopology(target, artifacts, "visual-replication-mesh-route-motion", BuildReplicationMeshExplorer(), "Replication Mesh Route Motion", "Script-free SVG route pulse plus sampled animated GIF and APNG exports for a scenario-driven topology route.", meshMotionOptions);
         SaveTopology(target, artifacts, "visual-force-relationship-graph", BuildForceRelationshipGraph(), "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
-        SaveTopology(target, artifacts, "visual-force-busy-relationship-graph", BuildBusyForceRelationshipGraph(), "Busy Force Relationship Graph", "Busy force-directed relationship graph using degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
+        var busyForceOptions = forceGraphOptions.Clone();
+        busyForceOptions.FitContentToViewport = false;
+        SaveTopology(target, artifacts, "visual-force-busy-relationship-graph", BuildBusyForceRelationshipGraph(), "Busy Force Relationship Graph", "Busy force-directed relationship graph using degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", busyForceOptions);
         var relationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls()

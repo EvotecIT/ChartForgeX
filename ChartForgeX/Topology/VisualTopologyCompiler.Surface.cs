@@ -126,7 +126,7 @@ internal sealed partial class VisualTopologyCompiler {
             var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown };
             for (var i = 0; i < counts.Length; i++) {
                 var b = Bounds(callout.X + 12 + i * 42, callout.Y + 58, 36, 22);
-                using (PinnedState()) _builder.Rect(b, Status(statuses[i]).WithOpacity(.1), Status(statuses[i]), .7 * _scale, b.Height / 2, "topology-callout-status", paint: Paint(Status(statuses[i]).WithOpacity(.1), SvgColorRole.Status, Status(statuses[i]), SvgColorRole.Status));
+                using (PinnedState()) _builder.Rect(b, Status(statuses[i]).WithOpacity(.1), Status(statuses[i]), _context.Theme.AxisStrokeWidth * _scale, b.Height / 2, "topology-callout-status", paint: Paint(Status(statuses[i]).WithOpacity(.1), SvgColorRole.Status, Status(statuses[i]), SvgColorRole.Status));
                 Text(counts[i].ToString(System.Globalization.CultureInfo.InvariantCulture), b, _context.Theme.Typography.DataLabelSize * .8, _colors.Foreground, 400, "topology-callout-count", centered: true);
             }
             _builder.AddRegion(new VisualSemanticRegion(callout.Group.Id + "-callout", "topology-callout", bounds, callout.Label));

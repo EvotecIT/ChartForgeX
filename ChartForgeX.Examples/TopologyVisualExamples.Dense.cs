@@ -30,7 +30,7 @@ internal static partial class TopologyVisualExamples {
             .WithId("visual-nested-user-hierarchy" + suffix)
             .WithTitle("Nested User Hierarchy" + DirectionTitleSuffix(direction))
             .WithSubtitle("Parent-child directory hierarchy with wrapped user rows and obstacle-checked exterior trunks.")
-            .WithViewport(horizontal ? 1540 : 1320, horizontal ? 760 : 920, 28)
+            .WithViewport(horizontal ? 1540 : 1600, horizontal ? 760 : 1120, 28)
             .WithLegend(TopologyLegend.Default()
                 .AddNodeKind("Namespace", TopologyNodeKind.Namespace, symbol: "DOM")
                 .AddNodeKind("Group", TopologyNodeKind.Team, symbol: "G")

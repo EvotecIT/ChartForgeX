@@ -299,4 +299,3 @@ public static partial class V2GalleryModels {
         model.Notes[0].StepIndex = 2; return model;
     }
 }
-

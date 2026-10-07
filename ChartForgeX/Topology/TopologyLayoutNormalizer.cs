@@ -207,11 +207,8 @@ internal static class TopologyLayoutNormalizer {
 
         var badge = NodeBadge(node);
         if (!string.IsNullOrWhiteSpace(badge)) {
-            var width = NodeBadgeWidth(node, options);
-            var height = 18.0;
-            var x = displayMode == TopologyNodeDisplayMode.Dot ? CenterX(node) + 8 : displayMode == TopologyNodeDisplayMode.Icon ? CenterX(node) - width / 2 : node.X + node.Width - width - 6;
-            var y = displayMode == TopologyNodeDisplayMode.Dot ? CenterY(node) - 21 : displayMode == TopologyNodeDisplayMode.Icon ? node.Y + node.Height + 4 : displayMode == TopologyNodeDisplayMode.Tile ? node.Y - 8 : node.Y + node.Height - height - 6;
-            bounds = bounds.Include(x, y, x + width, y + height);
+            var badgeBounds = NodeBadgeBounds(node, displayMode, options);
+            bounds = bounds.Include(badgeBounds.X, badgeBounds.Y, badgeBounds.Right, badgeBounds.Bottom);
         }
 
         if (!options.IncludeNodeLabels) return bounds;

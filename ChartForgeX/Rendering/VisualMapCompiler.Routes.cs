@@ -56,7 +56,7 @@ internal static partial class VisualMapCompiler {
                     var back = new ChartPoint(tip.X - ux * arrowLength, tip.Y - uy * arrowLength);
                     builder.Path(Path(new[] { (IReadOnlyList<ChartPoint>)new[] { tip, new ChartPoint(back.X - uy * arrowWidth / 2, back.Y + ux * arrowWidth / 2),
                         new ChartPoint(back.X + uy * arrowWidth / 2, back.Y - ux * arrowWidth / 2) } }), ChartColorMath.WithOpacity(color, .78), colors.Surface,
-                        Math.Min(width * .48, arrowWidth / 4), "dotted-map-connector-arrow", close: true,
+                        Math.Min(context.Theme.AxisStrokeWidth, arrowWidth / 4), "dotted-map-connector-arrow", close: true,
                         paint: new VisualScenePaintBinding(paint.WithOpacity(ChartColorMath.WithOpacity(color, .78), .78), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 }
                 if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) {

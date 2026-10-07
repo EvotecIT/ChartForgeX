@@ -40,6 +40,10 @@ public sealed class PreparedVisualArtifactTests {
         Assert.Contains(artifact.ToSvg(), artifact.ToHtmlPage());
         Assert.Contains("<html lang=\"pl-PL\">", artifact.ToHtmlPage());
         Assert.DoesNotContain("<script", artifact.ToHtmlPage());
+        Assert.Contains("-webkit-font-smoothing:antialiased", artifact.ToHtmlPage());
+        Assert.Contains("text-rendering:geometricPrecision", artifact.ToHtmlPage());
+        Assert.Contains("overflow:visible", artifact.ToHtmlPage());
+        Assert.Contains("@media print", artifact.ToHtmlPage());
         Assert.Equal(320, artifact.NaturalSize!.Value.Width);
         Assert.Equal(200, artifact.NaturalSize.Value.Height);
         Assert.True(artifact.PreserveNaturalSize);

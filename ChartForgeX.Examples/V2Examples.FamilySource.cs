@@ -21,6 +21,6 @@ public static partial class V2Examples {
             using var reader = new StreamReader(stream);
             foreach (var line in reader.ReadToEnd().Split('\n')) if (!line.StartsWith("using ", StringComparison.Ordinal)) source.AppendLine(line.TrimEnd('\r'));
         }
-        return source.ToString();
+        return source.ToString().TrimEnd() + "\n";
     }
 }

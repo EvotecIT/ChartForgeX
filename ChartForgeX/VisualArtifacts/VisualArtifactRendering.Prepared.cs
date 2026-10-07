@@ -84,7 +84,9 @@ public static partial class VisualArtifactRendering {
         var title = artifact.Title.Length == 0 ? artifact.Id : artifact.Title;
         return "<!doctype html><html lang=\"" + EscapeHtml(language) + "\"><head><meta charset=\"utf-8\">" +
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(title) +
-            "</title><style>body{margin:0}svg{display:block;max-width:100%;height:auto}</style></head><body>" +
+            "</title><style>body{margin:0;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}" +
+            "svg{display:block;max-width:100%;height:auto;overflow:visible}" +
+            "@media print{body{margin:0;background:transparent}svg{max-width:none}}</style></head><body>" +
             artifact.ToSvg(options) + "</body></html>";
     }
 }

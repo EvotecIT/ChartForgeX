@@ -245,6 +245,8 @@ public static partial class GalleryWriter {
                 svg = new {
                     width = pair.SvgDimensions.Width,
                     height = pair.SvgDimensions.Height,
+                    logicalWidth = pair.SvgDimensions.LogicalWidth,
+                    logicalHeight = pair.SvgDimensions.LogicalHeight,
                     bytes = pair.SvgBytes,
                     visualNodes = pair.SvgHealth.VisualNodes,
                     textNodes = pair.SvgHealth.TextNodes,
@@ -320,6 +322,12 @@ public static partial class GalleryWriter {
 
                 var width = baselineChart.GetProperty("width").GetInt32();
                 var height = baselineChart.GetProperty("height").GetInt32();
+                // Legacy baselines only constrain rounded dimensions. New baselines also
+                // preserve the exact logical viewport, before native raster allocation.
+                var logicalWidth = baselineChart.TryGetProperty("logicalWidth", out var storedWidth)
+                    ? storedWidth.GetDouble() : actual.SvgDimensions.LogicalWidth;
+                var logicalHeight = baselineChart.TryGetProperty("logicalHeight", out var storedHeight)
+                    ? storedHeight.GetDouble() : actual.SvgDimensions.LogicalHeight;
                 var svgBaseline = baselineChart.GetProperty("svg");
                 var pngBaseline = baselineChart.GetProperty("png");
                 var minVisualNodes = svgBaseline.GetProperty("minVisualNodes").GetInt32();
@@ -332,9 +340,11 @@ public static partial class GalleryWriter {
                 var maxEdgeInkPixels = ReadBaselineInt64(pngBaseline, "maxEdgeInkPixels", long.MaxValue);
                 if (actual.SvgDimensions.Width == width &&
                     actual.SvgDimensions.Height == height &&
+                    actual.SvgDimensions.LogicalWidth == logicalWidth &&
+                    actual.SvgDimensions.LogicalHeight == logicalHeight &&
                     actual.PngScale == outputScale &&
-                    actual.PngDimensions.Width == width * outputScale &&
-                    actual.PngDimensions.Height == height * outputScale &&
+                    actual.PngDimensions.Width == Math.Ceiling(logicalWidth * outputScale) &&
+                    actual.PngDimensions.Height == Math.Ceiling(logicalHeight * outputScale) &&
                     actual.SvgHealth.VisualNodes >= minVisualNodes &&
                     actual.SvgHealth.ClippedTextNodes <= maxClippedTextNodes &&
                     actual.SvgHealth.NearEdgeTextNodes <= maxNearEdgeTextNodes &&
@@ -480,16 +490,21 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
     private static AssetDimensions ReadSvgDimensions(string fileName) {
         try {
             var svg = File.ReadAllText(Path.GetFullPath(fileName));
-            var width = ReadSvgNumericAttribute(svg, "width");
-            var height = ReadSvgNumericAttribute(svg, "height");
+            var rootStart = svg.IndexOf("<svg", StringComparison.OrdinalIgnoreCase);
+            if (rootStart < 0) return default;
+            var rootEnd = svg.IndexOf('>', rootStart);
+            if (rootEnd < 0) return default;
+            var root = svg.Substring(rootStart, rootEnd - rootStart + 1);
+            var width = ReadSvgNumericAttribute(root, "width");
+            var height = ReadSvgNumericAttribute(root, "height");
             if (width > 0 && height > 0) return new AssetDimensions(width, height);
-            var viewBox = ReadSvgAttribute(svg, "viewBox");
+            var viewBox = ReadSvgAttribute(root, "viewBox");
             if (!string.IsNullOrWhiteSpace(viewBox)) {
                 var parts = viewBox.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 4 &&
                     double.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var viewWidth) &&
                     double.TryParse(parts[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var viewHeight)) {
-                    return new AssetDimensions((int)Math.Round(viewWidth), (int)Math.Round(viewHeight));
+                    return new AssetDimensions(viewWidth, viewHeight);
                 }
             }
         } catch (IOException) {
@@ -535,12 +550,12 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
     private static string FormatSvgMarkerRadius(double radius) =>
         radius > 0 ? radius.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "px" : "n/a";
 
-    private static int ReadSvgNumericAttribute(string svg, string name) {
+    private static double ReadSvgNumericAttribute(string svg, string name) {
         var value = ReadSvgAttribute(svg, name);
         if (string.IsNullOrWhiteSpace(value)) return 0;
         var digits = new string(value.TakeWhile(ch => char.IsDigit(ch) || ch == '.').ToArray());
         return double.TryParse(digits, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number)
-            ? (int)Math.Round(number)
+            ? number
             : 0;
     }
 
@@ -625,6 +640,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var edgeColors = new List<int>();
             var cornerColors = new Dictionary<int, int>();
             var edgeBand = PngEdgeBandSize(dimensions);
+            var edgeSampleBand = Math.Max(edgeBand, PngEdgeCornerSampleSize);
             var pixelColors = new int[dimensions.Width * dimensions.Height];
             var rawOffset = 0;
             for (var y = 0; y < dimensions.Height; y++) {
@@ -640,7 +656,9 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
                     var key = PngColorKey(r, g, b, a);
                     pixelColors[y * dimensions.Width + x / 4] = key;
                     if (colors.Count < 4096) colors.Add(key);
-                    var edgeSample = frameAllowance?.Includes(x / 4, y, key) == true ? frameAllowance.Fill : key;
+                    var isEdgeSample = x / 4 < edgeSampleBand || y < edgeSampleBand ||
+                        x / 4 >= dimensions.Width - edgeSampleBand || y >= dimensions.Height - edgeSampleBand;
+                    var edgeSample = isEdgeSample ? frameAllowance?.NormalizeEdgeSample(x / 4, y, key) ?? key : key;
                     if ((x / 4 < edgeBand || y < edgeBand || x / 4 >= dimensions.Width - edgeBand || y >= dimensions.Height - edgeBand) &&
                         hostAllowance?.Includes(x / 4, y, key) == true) edgeSample = 0;
                     TrackPngEdgeSamples(dimensions, x / 4, y, edgeBand, edgeSample, cornerColors, edgeColors);

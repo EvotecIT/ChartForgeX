@@ -38,7 +38,14 @@ internal sealed partial class VisualTopologyCompiler {
             if (!image) {
                 if (mode == TopologyNodeDisplayMode.Dot) {
                     using (PinnedState()) _builder.Ellipse(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, bounds.Width / 2, bounds.Height / 2, accent, role: "topology-node-surface", paint: new VisualScenePaintBinding(accentPaint));
-                    if (!string.IsNullOrWhiteSpace(node.Symbol)) Text(node.Symbol!, bounds, Math.Min(_context.Theme.Typography.DataLabelSize, node.Height * .65), _colors.Surface, 700, "topology-node-symbol", centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
+                    if (!string.IsNullOrWhiteSpace(node.Symbol)) {
+                        // The canonical compact symbol is 8px on the default 11px typography
+                        // scale. Preserve that ratio for custom themes and smaller dot budgets;
+                        // the common measured text fitter still owns line and width containment.
+                        var symbolRatio = DotNodeSymbolFontSize / 11;
+                        var symbolSize = Math.Min(_context.Theme.Typography.DataLabelSize, node.Height) * symbolRatio;
+                        Text(node.Symbol!, bounds, symbolSize, _colors.Surface, 700, "topology-node-symbol", centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
+                    }
                 }
                 else if (node.Shape.HasValue) {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
@@ -51,7 +58,7 @@ internal sealed partial class VisualTopologyCompiler {
                 }
                 if (_options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
-                    var left = hasGlyph && !caption && mode != TopologyNodeDisplayMode.Pill ? 44 : 10;
+                    var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
                     var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + 6, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - 12));
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
                     else if (mode == TopologyNodeDisplayMode.Icon) BuildIconCaption(node, accent, active);
@@ -65,9 +72,10 @@ internal sealed partial class VisualTopologyCompiler {
                 using (PinnedState()) _builder.Ellipse(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: Paint(status, SvgColorRole.Status));
             }
             if (!string.IsNullOrWhiteSpace(node.Badge)) {
-                var badge = Bounds(node.X + node.Width - 42, node.Y + node.Height - 18, 38, 16);
+                var reserved = NodeBadgeBounds(node, mode, _options);
+                var badge = Bounds(reserved.X, reserved.Y, reserved.Width, reserved.Height);
                 _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));
-                Text(node.Badge!, badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
+                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
             }
         }
         _builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));

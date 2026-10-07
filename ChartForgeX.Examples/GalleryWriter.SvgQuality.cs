@@ -40,6 +40,7 @@ public static partial class GalleryWriter {
             // Keep the gallery's explicit-size readability contract; use computed styles for visibility.
             // Counting inherited group strokes or CSS-only text changes that contract independently of placement.
             if (element.Get("stroke") is { } stroke && stroke != "none" && stroke != "transparent"
+                && !IsSvgDecorativeStroke(element, ancestors)
                 && !style.Stroke.IsNone && style.StrokeWidth > 0 && style.StrokeOpacity > 0 && (style.Stroke.Color?.A ?? 255) > 0) {
                 strokedNodes++;
                 minimumStrokeWidth = Math.Min(minimumStrokeWidth, style.StrokeWidth);
@@ -50,7 +51,7 @@ public static partial class GalleryWriter {
                 minimumMarkerRadius = Math.Min(minimumMarkerRadius, radius);
                 if (radius < MinimumReadableSvgMarkerRadius) tinyMarker++;
             }
-            if (element.Name == "text") {
+            if (element.Name == "text" && !IsSvgLegendGlyphText(element, ancestors)) {
                 if (double.TryParse(element.Get("font-size"), NumberStyles.Float, CultureInfo.InvariantCulture, out var fontSize) && fontSize > 0) {
                     minimumFontSize = Math.Min(minimumFontSize, fontSize);
                     if (fontSize < MinimumReadableSvgTextFontSize) tinyText++;
@@ -66,6 +67,23 @@ public static partial class GalleryWriter {
         }
         static double Number(SvgRasterElement element, string name) =>
             double.TryParse(element.Get(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : 0;
+    }
+
+    private static bool IsSvgDecorativeStroke(SvgRasterElement element, List<SvgRasterElement> ancestors) {
+        // Context geography, grids and icon artwork may deliberately use hairlines. Node outlines,
+        // relationship routes, arrowheads and data markers still carry information at their actual size.
+        var role = element.Get("data-cfx-role");
+        return role is "topology-map-boundary" or "dotted-map-boundary" or "topology-grid"
+            or "topology-icon-surface" or "topology-node-icon"
+            || string.IsNullOrEmpty(role) && ancestors.Any(parent => parent.Get("data-cfx-role") == "topology-node-icon");
+    }
+
+    private static bool IsSvgLegendGlyphText(SvgRasterElement element, List<SvgRasterElement> ancestors) {
+        // A legend icon's miniature lettering is artwork beside a separately measured legend label.
+        // Authored node symbols, node captions and legend labels themselves retain the text-size gate.
+        return string.IsNullOrEmpty(element.Get("data-cfx-role"))
+            && ancestors.Any(parent => parent.Get("data-cfx-role") == "topology-node-icon")
+            && ancestors.Any(parent => parent.Get("data-cfx-role") == "topology-legend-item");
     }
 
     private static bool IsSvgDataMarker(SvgRasterElement element) {
