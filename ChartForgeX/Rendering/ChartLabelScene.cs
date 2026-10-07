@@ -97,7 +97,8 @@ internal sealed partial class ChartLabelScene {
         return new TextStyle { Font = font, FontSize = size, LineHeight = 1, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
     }
 
-    private void Collect(XElement element, SvgRasterElement raster, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, List<SvgRasterElement> ancestors, ChartRect? clip = null) {
+    // siblings holds the element's earlier sibling elements in order; XLinq can only walk back to them from the first child.
+    private void Collect(XElement element, SvgRasterElement raster, SvgRasterStyle parentStyle, SvgRasterMatrix parentMatrix, List<SvgRasterElement> ancestors, ChartRect? clip = null, List<XElement>? siblings = null) {
         // Imported artwork is an atomic asset, already painted by the native mark renderer.
         // Its internal captions must not be relocated or painted a second time as chart labels.
         if (element.Name.LocalName is "defs" or "style" or "title" or "desc" || Role(element) == "topology-icon-artwork") return;
@@ -130,7 +131,7 @@ internal sealed partial class ChartLabelScene {
                 }
                 var contentBox = box;
                 var value = isGroup ? string.Join(" ", textElements.Select(e => e.Value)) : element.Value;
-                var decorations = isGroup ? element.Elements().Where(e => e.Name.LocalName != "text").ToList() : Decorations(element, false);
+                var decorations = isGroup ? element.Elements().Where(e => e.Name.LocalName != "text").ToList() : Decorations(element, false, siblings);
                 foreach (var decoration in decorations) {
                     decoration.SetAttributeValue("data-cfx-label-decoration", "true");
                     var decorationBox = IsLeader(decoration) ? null : Shape(decoration, matrix, null)?.Bounds;
@@ -153,7 +154,13 @@ internal sealed partial class ChartLabelScene {
             }
         }
         ancestors.Add(raster);
-        foreach (var child in element.Elements()) Collect(child, SvgRasterParser.ReadStyleElement(child), style, matrix, ancestors, clip);
+        // Collect changes attributes only, so the list of earlier children stays the parent's real order.
+        List<XElement>? children = null;
+        foreach (var child in element.Elements()) {
+            children ??= new List<XElement>();
+            Collect(child, SvgRasterParser.ReadStyleElement(child), style, matrix, ancestors, clip, children);
+            children.Add(child);
+        }
         ancestors.RemoveAt(ancestors.Count - 1);
     }
 

@@ -139,7 +139,9 @@ internal sealed class SvgRasterStyle {
 
     public static SvgRasterStyle Resolve(SvgRasterStyle parent, SvgRasterElement element, SvgRasterStyleSheet? styleSheet = null, IReadOnlyList<SvgRasterElement>? ancestors = null) {
         var style = parent.Inherit();
-        var declarations = new List<SvgStyleDeclaration>(8);
+        // Resolve never re-enters itself, so one list per thread serves every call.
+        var declarations = _declarations ??= new List<SvgStyleDeclaration>(32);
+        declarations.Clear();
         AddPresentation(declarations, element);
         if (styleSheet != null) {
             declarations.AddRange(styleSheet.DeclarationsFor(element, ancestors));
@@ -165,8 +167,11 @@ internal sealed class SvgRasterStyle {
         }
 
         style.PaletteContext = styleSheet?.PaletteContext(style.FontPalette);
+        declarations.Clear();
         return style;
     }
+
+    [ThreadStatic] private static List<SvgStyleDeclaration>? _declarations;
 
     private static string MergeTextDecorations(string inherited, string local) {
         var underline = ContainsDecoration(inherited, "underline") || ContainsDecoration(local, "underline");
@@ -200,7 +205,61 @@ internal sealed class SvgRasterStyle {
 
     public ChartColor StrokeColor() => WithOpacity(Stroke.Color ?? ChartColor.Transparent, Opacity * StrokeOpacity);
 
+    // Presentation attributes in the order AddPresentationByName adds them; xml:space adds its white-space just before
+    // the white-space attribute.
+    private static readonly string[] PresentationNames = {
+        "color", "fill", "fill-rule", "clip-rule", "clip-path", "filter", "stroke", "stroke-width", "paint-order", "stroke-linecap",
+        "stroke-linejoin", "stroke-miterlimit", "stroke-dasharray", "stroke-dashoffset", "opacity", "fill-opacity", "stroke-opacity",
+        "font-size", "font-family", "font-language-override", "font-variation-settings", "font-palette", "font-weight", "font-style",
+        "text-decoration", "text-decoration-style", "baseline-shift", "text-transform", "text-anchor", "dominant-baseline",
+        "alignment-baseline", "xml:space", "white-space", "display", "visibility", "mask-type", "overflow"
+    };
+    private static readonly Dictionary<string, int> PresentationOrder = CreatePresentationOrder();
+    [ThreadStatic] private static int[]? _presentationOrders;
+    [ThreadStatic] private static SvgStyleDeclaration[]? _presentationDeclarations;
+
+    private static Dictionary<string, int> CreatePresentationOrder() {
+        var order = new Dictionary<string, int>(PresentationNames.Length, StringComparer.Ordinal);
+        for (var i = 0; i < PresentationNames.Length; i++) order[PresentationNames[i]] = i;
+        return order;
+    }
+
+    // Adds the declarations AddPresentationByName adds, in its order, by visiting the element's few attributes instead of
+    // looking up every presentation name.
     private static void AddPresentation(List<SvgStyleDeclaration> declarations, SvgRasterElement element) {
+        var attributes = element.AttributeMap;
+        if (attributes.Count > 32) {
+            AddPresentationByName(declarations, element);
+            return;
+        }
+
+        var orders = _presentationOrders ??= new int[32];
+        var found = _presentationDeclarations ??= new SvgStyleDeclaration[32];
+        var count = 0;
+        foreach (var attribute in attributes) {
+            if (!PresentationOrder.TryGetValue(attribute.Key, out var order)) continue;
+            var declaration = order == 31
+                ? new SvgStyleDeclaration("white-space", string.Equals(attribute.Value.Trim(), "preserve", StringComparison.OrdinalIgnoreCase) ? "pre" : "normal")
+                : new SvgStyleDeclaration(attribute.Key, attribute.Value);
+            // Insertion by order; names are unique, so orders are too.
+            var at = count++;
+            while (at > 0 && orders[at - 1] > order) {
+                orders[at] = orders[at - 1];
+                found[at] = found[at - 1];
+                at--;
+            }
+
+            orders[at] = order;
+            found[at] = declaration;
+        }
+
+        for (var i = 0; i < count; i++) {
+            declarations.Add(found[i]);
+            found[i] = default;
+        }
+    }
+
+    private static void AddPresentationByName(List<SvgStyleDeclaration> declarations, SvgRasterElement element) {
         AddAttribute(declarations, element, "color");
         AddAttribute(declarations, element, "fill");
         AddAttribute(declarations, element, "fill-rule");
