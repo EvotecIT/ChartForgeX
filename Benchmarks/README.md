@@ -35,6 +35,20 @@ The charts suite measures the report charts of that large monitoring report: a 6
 Every lane validates byte-identical SVG and PNG outside timing, and both suites record `ThreadAllocatedBytes`, the managed allocation of the rendering thread inside the measured operation.
 Pass `-BaselineAssemblyPath` with a saved `net8.0/ChartForgeX.dll` to compare a change against that binary. Both binaries run in the same process with rotated ordering and identical fixtures; a geometry or SVG difference fails the comparison. Without a saved baseline, both lanes use the current binary as a repeatability check. Keep raw samples, binary hashes, source commits and processor/power settings with qualified comparisons. These machine-specific measurements run separately from ordinary correctness CI.
 
+## Direct-scene proof
+
+The `Scenes` suite compares the frozen legacy public export path with the prepared-scene path for six models: a seven-category Cartesian combination and donut, three-series grouped and stacked bars over 24 categories with positive, negative and zero values, 500 numeric scatter points, and a 1,000-point line with four explicit breaks. Both lanes use the canonical token JSON, the licensed Carlito regular/bold fixtures, an 800 × 440 logical viewport, explicit identical marker density and raster scale 1. The fixture project references a built product DLL and stays outside the solution and shipped packages.
+
+```powershell
+./Benchmarks/Invoke-RenderingBenchmark.ps1 -Suite Scenes -SkipBuild -BaselineAssemblyPath /path/to/frozen/ChartForgeX.dll -WarmupCount 2 -IterationCount 9 -OutputRoot /path/to/task-evidence/scenes
+```
+
+`Svg`, `Rgba` and `Png` include layout and export in both lanes. Candidate-only `Compile` measures preparation; `PreparedSvg`, `PreparedRgba` and `PreparedPng` reuse a scene prepared outside timing. Compare complete operations with their legacy counterpart. Prepared export timings describe scene reuse and do not represent complete rendering.
+
+Validation checks exact source-data digests across both lanes, every SVG source point and value (including radial aggregation coverage), nonempty drawing commands, SVG title, exact SVG/PNG/RGBA dimensions, decoded PNG/RGBA ink and deterministic SVG/PNG bytes within each unchanged lane. Each lane validates a complete SVG before samples, so raster workloads have the same source-coverage proof. Approved layout changes can alter old/new output bytes; the existing `Charts` suite retains its separate byte-identical preservation gate. `ThreadAllocatedBytes` measures managed allocations on the rendering thread; `OutputBytesOrRegions` reports bytes for exported outputs or semantic-region count for `Compile`.
+
+PowerForge rejects measurements when source provenance changes during a run. Freeze the participating worktree and binaries before qualification. An immutable copy of the same suite/helper and hashed product, fixture, token and font inputs can exercise validation while other development continues, but a zero-warmup, one-sample smoke run establishes no performance result. Record source revisions, input hashes, SDK/runtime, CPU/OS, power policy and quality settings with paired results. Keep raw samples; investigate any requested complete-operation regression above 10% rather than treating the separate history noise allowance as that proof.
+
 ## Accepted rendering history
 
 `Invoke-RenderingHistory.ps1` uses PowerForge's `Test-BenchmarkHistory` to verify three fixed 500 × 180 rendering cases: twelve composition labels with default and full hinting, and twelve imported SVG labels. The original portable font fixture avoids installed-font discovery. Every case checks dimensions and visible ink in all twelve rows outside timing. The benchmark fixture is excluded from solution and package builds.

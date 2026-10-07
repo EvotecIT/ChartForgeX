@@ -87,7 +87,17 @@ public sealed class LabelPlacementService {
     /// <param name="bounds">The usable scene rectangle.</param>
     /// <param name="obstacles">Mark rectangles to avoid.</param>
     /// <param name="gap">Minimum separation in logical pixels.</param>
-    public IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds, IReadOnlyList<LabelObstacle>? obstacles = null, double gap = 2) {
+    public IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds, IReadOnlyList<LabelObstacle>? obstacles = null, double gap = 2) =>
+        PlaceCore(requests, bounds, obstacles, gap, null);
+
+    /// <summary>Uses the prepared backend's measurements for both original and shortened labels, including font fallback.</summary>
+    /// <remarks>The callback receives displayed text and a style with casing already resolved. Existing public placement retains its measurement policy.</remarks>
+    internal IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds,
+        IReadOnlyList<LabelObstacle>? obstacles, double gap, Func<string, TextStyle, TextMetrics> measureText) =>
+        PlaceCore(requests, bounds, obstacles, gap, measureText ?? throw new ArgumentNullException(nameof(measureText)));
+
+    private IReadOnlyList<PlacedLabel> PlaceCore(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds,
+        IReadOnlyList<LabelObstacle>? obstacles, double gap, Func<string, TextStyle, TextMetrics>? measureText) {
         if (requests == null) throw new ArgumentNullException(nameof(requests));
         ChartGuards.Finite(gap, nameof(gap));
         if (gap < 0) throw new ArgumentOutOfRangeException(nameof(gap));
@@ -108,13 +118,15 @@ public sealed class LabelPlacementService {
         foreach (var index in order) {
             var request = requests[index];
             var text = TextCaseTransformer.Apply(request.Text, request.Style.TextCase, CultureInfo.InvariantCulture);
-            var result = TryPlace(request, text, bounds, occupied);
+            var displayedStyle = measureText == null ? null : request.Style.Clone();
+            if (displayedStyle != null) displayedStyle.TextCase = TextCaseTransform.None;
+            var result = TryPlace(request, text, bounds, occupied, measureText, displayedStyle);
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
                 for (var count = elements.Length - 1; count > 0 && result == null; count--) {
                     var shorter = text.Substring(0, elements[count]).TrimEnd() + "…";
-                    result = TryPlace(request, shorter, bounds, occupied, ellipsized: true);
+                    result = TryPlace(request, shorter, bounds, occupied, measureText, displayedStyle, ellipsized: true);
                 }
             }
             result ??= new PlacedLabel(request, string.Empty, default, true, -1);
@@ -124,9 +136,11 @@ public sealed class LabelPlacementService {
         return Array.AsReadOnly(placed);
     }
 
-    private PlacedLabel? TryPlace(LabelPlacementRequest request, string text, ChartRect scene, LabelSpatialIndex occupied, bool ellipsized = false) {
+    private PlacedLabel? TryPlace(LabelPlacementRequest request, string text, ChartRect scene, LabelSpatialIndex occupied,
+        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool ellipsized = false) {
         if (text.Length == 0) return null;
-        var metrics = !ellipsized && request.MeasuredSize.HasValue ? request.MeasuredSize.Value : MeasureDisplayed(text, request.Style);
+        var metrics = !ellipsized && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
+            : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, request.Style);
         var decoration = text != request.Text ? request.DecorationSize : null;
         var width = metrics.Width + request.Padding * 2 + (decoration?.Width ?? 0);
         var height = metrics.Height + request.Padding * 2 + (decoration?.Height ?? 0);

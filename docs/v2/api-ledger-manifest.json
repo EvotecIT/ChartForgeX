@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "generator": "SDK-bundled Roslyn; Git archive; no runtime package dependencies",
+  "analysisRuntime": ".NET 10.0.12",
+  "frameworkScope": "Source-symbol analysis against tool runtime BCL; no source conditionals tolerated for declaring all-TFM source equivalence. Compiled four-TFM asset verification is a separate owner gate.",
+  "compiledAssetVerification": "not-run-by-ledger-tool",
+  "evidenceMode": "Local tracked consumer source token co-occurrence, not semantic calls or published-package proof",
+  "consumerRepositories": [
+    {
+      "Name": "PowerBGInfo",
+      "Sha": "b267584067aa58370ce8954423ec6582268950e7",
+      "Status": "clean-local-source",
+      "Files": 33
+    },
+    {
+      "Name": "ImagePlayground",
+      "Sha": "46bd2fd5e06b076c8c038e134239edf2639ea724",
+      "Status": "clean-local-source",
+      "Files": 135
+    },
+    {
+      "Name": "OfficeIMO",
+      "Sha": "a7207099322cd4496eca9c54990c835291df2a4d",
+      "Status": "clean-local-source",
+      "Files": 35
+    },
+    {
+      "Name": "HtmlForgeX",
+      "Sha": "ed1f78b5c9d87d6d0c61ef8cb4ec1e9b9fdc5a96",
+      "Status": "clean-local-source",
+      "Files": 23
+    },
+    {
+      "Name": "TestimoX",
+      "Sha": "895d8d2aa3e60749c89bc2aeb6cbcc7d145a266f",
+      "Status": "clean-local-source",
+      "Files": 20
+    },
+    {
+      "Name": "ChartForgeX-tests",
+      "Sha": "fdb8fe16df11037c1228168c6984ed31316ae04f",
+      "Status": "dirty-local-source-text-leads-only",
+      "Files": 276
+    }
+  ],
+  "snapshots": [
+    {
+      "baseline": "main",
+      "sourceSha": "20e3443da9521bcd3371f68b232406596564191b",
+      "sourceCounts": {
+        "ChartForgeX": 861,
+        "ChartForgeX.Interactivity": 30,
+        "ChartForgeX.Interactivity.Html": 41,
+        "ChartForgeX.Markup": 22,
+        "ChartForgeX.Mermaid": 106,
+        "ChartForgeX.Markup.Mermaid": 4
+      },
+      "ledgerArtifact": {
+        "pathFromConsumerRoot": "_worktrees/_codex-evidence/ChartForgeX-v2-phase01/api-ledger/api-ledger-main.csv",
+        "sha256": "6C8F001845FA7334A9E409724F20C69E345A33276133BC3A7B41C5F1B2C969DD",
+        "bytes": 6909802
+      },
+      "exportedTypes": 762,
+      "totalRows": 7559,
+      "packages": [
+        {
+          "assembly": "ChartForgeX",
+          "rows": 5528,
+          "types": 487
+        },
+        {
+          "assembly": "ChartForgeX.Interactivity",
+          "rows": 538,
+          "types": 61
+        },
+        {
+          "assembly": "ChartForgeX.Interactivity.Html",
+          "rows": 187,
+          "types": 26
+        },
+        {
+          "assembly": "ChartForgeX.Markup",
+          "rows": 148,
+          "types": 24
+        },
+        {
+          "assembly": "ChartForgeX.Markup.Mermaid",
+          "rows": 11,
+          "types": 2
+        },
+        {
+          "assembly": "ChartForgeX.Mermaid",
+          "rows": 1147,
+          "types": 162
+        }
+      ],
+      "conditionalSources": [],
+      "classificationCounts": [
+        {
+          "disposition": "move-planned",
+          "rows": 1226
+        },
+        {
+          "disposition": "retained",
+          "rows": 6110
+        },
+        {
+          "disposition": "replacement-planned",
+          "rows": 193
+        },
+        {
+          "disposition": "removal-planned",
+          "rows": 30
+        }
+      ]
+    },
+    {
+      "baseline": "label",
+      "sourceSha": "5d2c4ada0f7b4aa1fb8704e9ba150ff3b9f0d5bb",
+      "sourceCounts": {
+        "ChartForgeX": 895,
+        "ChartForgeX.Interactivity": 30,
+        "ChartForgeX.Interactivity.Html": 42,
+        "ChartForgeX.Markup": 22,
+        "ChartForgeX.Mermaid": 96,
+        "ChartForgeX.Markup.Mermaid": 5
+      },
+      "ledgerArtifact": {
+        "pathFromConsumerRoot": "_worktrees/_codex-evidence/ChartForgeX-v2-phase01/api-ledger/api-ledger-label.csv",
+        "sha256": "56560CCD5298DE550E6392D0C0C9590BC6057FC2D0319232FD897EC4E47C3E17",
+        "bytes": 6964830
+      },
+      "exportedTypes": 766,
+      "totalRows": 7606,
+      "packages": [
+        {
+          "assembly": "ChartForgeX",
+          "rows": 5615,
+          "types": 497
+        },
+        {
+          "assembly": "ChartForgeX.Interactivity",
+          "rows": 538,
+          "types": 61
+        },
+        {
+          "assembly": "ChartForgeX.Interactivity.Html",
+          "rows": 187,
+          "types": 26
+        },
+        {
+          "assembly": "ChartForgeX.Markup",
+          "rows": 148,
+          "types": 24
+        },
+        {
+          "assembly": "ChartForgeX.Markup.Mermaid",
+          "rows": 40,
+          "types": 3
+        },
+        {
+          "assembly": "ChartForgeX.Mermaid",
+          "rows": 1078,
+          "types": 155
+        }
+      ],
+      "conditionalSources": [],
+      "classificationCounts": [
+        {
+          "disposition": "move-planned",
+          "rows": 1226
+        },
+        {
+          "disposition": "retained",
+          "rows": 6102
+        },
+        {
+          "disposition": "replacement-planned",
+          "rows": 217
+        },
+        {
+          "disposition": "removal-planned",
+          "rows": 30
+        },
+        {
+          "disposition": "replaced-in-integrated-baseline",
+          "rows": 31
+        }
+      ]
+    },
+    {
+      "baseline": "integrated",
+      "sourceSha": "fdb8fe16df11037c1228168c6984ed31316ae04f",
+      "sourceCounts": {
+        "ChartForgeX": 905,
+        "ChartForgeX.Interactivity": 30,
+        "ChartForgeX.Interactivity.Html": 42,
+        "ChartForgeX.Markup": 22,
+        "ChartForgeX.Mermaid": 106,
+        "ChartForgeX.Markup.Mermaid": 4
+      },
+      "ledgerArtifact": {
+        "pathFromConsumerRoot": "_worktrees/ChartForgeX-v2/docs/v2/api-ledger-integrated.csv",
+        "sha256": "4B1C4BD55C99C1D6883519830A0E1BBD6A982B36986064B4235F56864471DE55",
+        "bytes": 7052383
+      },
+      "exportedTypes": 773,
+      "totalRows": 7678,
+      "packages": [
+        {
+          "assembly": "ChartForgeX",
+          "rows": 5647,
+          "types": 498
+        },
+        {
+          "assembly": "ChartForgeX.Interactivity",
+          "rows": 538,
+          "types": 61
+        },
+        {
+          "assembly": "ChartForgeX.Interactivity.Html",
+          "rows": 187,
+          "types": 26
+        },
+        {
+          "assembly": "ChartForgeX.Markup",
+          "rows": 148,
+          "types": 24
+        },
+        {
+          "assembly": "ChartForgeX.Markup.Mermaid",
+          "rows": 11,
+          "types": 2
+        },
+        {
+          "assembly": "ChartForgeX.Mermaid",
+          "rows": 1147,
+          "types": 162
+        }
+      ],
+      "conditionalSources": [],
+      "classificationCounts": [
+        {
+          "disposition": "move-planned",
+          "rows": 1226
+        },
+        {
+          "disposition": "retained",
+          "rows": 6204
+        },
+        {
+          "disposition": "replacement-planned",
+          "rows": 218
+        },
+        {
+          "disposition": "removal-planned",
+          "rows": 30
+        }
+      ]
+    }
+  ],
+  "baselineDifferences": [
+    {
+      "comparison": "unchanged",
+      "rows": 15132
+    },
+    {
+      "comparison": "changed",
+      "rows": 2
+    },
+    {
+      "comparison": "absent",
+      "rows": 31
+    }
+  ],
+  "omissions": [
+    "Inherited members are represented by declaring-type/base/interface rows; accessors by property/event rows.",
+    "Internal/private/private-protected implementation members and compiler-generated backing fields are not exported API.",
+    "Explicit interface implementations are reachable through their exported interface member rows.",
+    "CLI arguments and PowerShell cmdlet surfaces belong to separate consumer ledgers."
+  ]
+}

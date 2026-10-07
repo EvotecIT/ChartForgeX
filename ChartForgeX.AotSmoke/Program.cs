@@ -94,6 +94,8 @@ foreach (var source in mermaidSources) {
     if (markup.HasErrors || markup.Artifacts.Count != 1) throw new InvalidOperationException("Mermaid markup AOT render failed.");
 }
 
+PreparedPipelineSmoke.Run();
+
 static void AssertContains(string text, string expected, string message) {
     if (!text.Contains(expected, StringComparison.Ordinal)) throw new InvalidOperationException(message);
 }

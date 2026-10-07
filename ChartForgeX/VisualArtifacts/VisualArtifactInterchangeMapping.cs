@@ -18,6 +18,8 @@ public static partial class VisualArtifactInterchangeMapping {
     /// <returns>A portable semantic envelope. Unsupported visual kinds retain common metadata and use their separately rendered SVG fallback.</returns>
     public static VisualArtifactInterchangeEnvelope ToInterchangeEnvelope(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        if (artifact.Model is ChartForgeX.Rendering.PreparedVisual prepared)
+            return FromPreparedArtifact(artifact, prepared);
         var envelope = Common(artifact, out var artifactMetadataKeys);
         switch (artifact.Model) {
             case TopologyChart topology:

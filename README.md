@@ -37,6 +37,25 @@ ChartForgeX turns .NET data into deterministic static visuals: charts, chart gri
 
 The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
 
+## Shared prepared rendering
+
+The prepared pipeline lays out a supported chart once, then exports SVG and native PNG from the same detached scene. The shared context controls its logical size, frame, canonical light/dark palette and typography. The initial route supports selected Cartesian and pie/donut options plus small topology/sequence diagrams; unsupported options fail explicitly while the existing exporters remain available.
+
+```csharp
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)),
+    themeMode: VisualThemeMode.Dark,
+    frame: new VisualFrame("Checks over time", showLegend: true));
+var prepared = chart.Prepare(context);
+string svg = prepared.ToSvg("report-checks");
+byte[] png = prepared.ToPng();
+```
+
+See the [architecture and phase boundaries](docs/v2/architecture.md), [API conventions](docs/v2/api-conventions.md), [consumer migration guide](docs/v2/migration.md) and [family capability roadmap](docs/v2/chart-capabilities.csv). Generate the isolated review catalog with `dotnet run --project ChartForgeX.Examples -c Release -- --v2-only --output <directory>`.
+
 ## Visual Tour
 
 These are generated artifacts from `ChartForgeX.Examples`, checked into the project site assets beside their matching HTML, SVG, PNG, and source snippets. HTML links open through the Evotec preview service so readers see the rendered page instead of GitHub's source view; SVG and PNG links stay pointed at the checked-in artifacts.

@@ -1,0 +1,113 @@
+using System;
+using System.Collections.Generic;
+using ChartForgeX.Primitives;
+
+namespace ChartForgeX.Rendering;
+
+/// <summary>A detached, ordered display list. Layout is complete before either backend reads it.</summary>
+internal sealed class VisualScene {
+    internal VisualScene(VisualSize size, IReadOnlyList<VisualSceneNode> nodes,
+        IReadOnlyList<VisualDiagnostic> diagnostics, IReadOnlyList<VisualSemanticRegion> regions) {
+        Size = size;
+        var copy = new VisualSceneNode[nodes.Count];
+        for (var i = 0; i < copy.Length; i++) copy[i] = nodes[i];
+        Nodes = Array.AsReadOnly(copy);
+        var diagnosticCopy = new VisualDiagnostic[diagnostics.Count];
+        for (var i = 0; i < diagnosticCopy.Length; i++) diagnosticCopy[i] = diagnostics[i];
+        Diagnostics = Array.AsReadOnly(diagnosticCopy);
+        var regionCopy = new VisualSemanticRegion[regions.Count];
+        for (var i = 0; i < regionCopy.Length; i++) regionCopy[i] = regions[i];
+        Regions = Array.AsReadOnly(regionCopy);
+    }
+
+    internal VisualSize Size { get; }
+    internal IReadOnlyList<VisualSceneNode> Nodes { get; }
+    internal IReadOnlyList<VisualDiagnostic> Diagnostics { get; }
+    internal IReadOnlyList<VisualSemanticRegion> Regions { get; }
+}
+
+internal abstract class VisualSceneNode {
+    protected VisualSceneNode(string? role, string? id) { Role = role; Id = id; }
+    internal string? Role { get; }
+    internal string? Id { get; }
+}
+
+internal sealed class VisualSceneGroup : VisualSceneNode {
+    internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata)
+        : base(role, id) {
+        Clip = clip;
+        var copy = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        if (metadata != null) foreach (var item in metadata) copy.Add(item.Key, item.Value);
+        Metadata = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(copy);
+    }
+    internal ChartRect? Clip { get; }
+    internal IReadOnlyDictionary<string, string> Metadata { get; }
+}
+
+internal sealed class VisualSceneEndGroup : VisualSceneNode {
+    internal VisualSceneEndGroup() : base(null, null) { }
+}
+
+internal abstract class VisualSceneMark : VisualSceneNode {
+    protected VisualSceneMark(ChartColor? fill, ChartColor? stroke, double strokeWidth, string? role, string? id)
+        : base(role, id) { Fill = fill; Stroke = stroke; StrokeWidth = strokeWidth; }
+    internal ChartColor? Fill { get; }
+    internal ChartColor? Stroke { get; }
+    internal double StrokeWidth { get; }
+}
+
+internal sealed class VisualSceneRectangle : VisualSceneMark {
+    internal VisualSceneRectangle(ChartRect bounds, double radius, ChartColor? fill, ChartColor? stroke,
+        double strokeWidth, string? role, string? id) : base(fill, stroke, strokeWidth, role, id) {
+        Bounds = bounds; Radius = radius;
+    }
+    internal ChartRect Bounds { get; }
+    internal double Radius { get; }
+}
+
+internal sealed class VisualSceneEllipse : VisualSceneMark {
+    internal VisualSceneEllipse(double cx, double cy, double rx, double ry, ChartColor? fill, ChartColor? stroke,
+        double strokeWidth, string? role, string? id) : base(fill, stroke, strokeWidth, role, id) {
+        Cx = cx; Cy = cy; Rx = rx; Ry = ry;
+    }
+    internal double Cx { get; }
+    internal double Cy { get; }
+    internal double Rx { get; }
+    internal double Ry { get; }
+}
+
+internal sealed class VisualSceneLine : VisualSceneMark {
+    internal VisualSceneLine(ChartPoint start, ChartPoint end, ChartColor color, double width,
+        string? role, string? id, double[]? dash) : base(null, color, width, role, id) {
+        Start = start; End = end;
+        Dash = dash == null ? null : Array.AsReadOnly((double[])dash.Clone());
+    }
+    internal ChartPoint Start { get; }
+    internal ChartPoint End { get; }
+    internal IReadOnlyList<double>? Dash { get; }
+}
+
+internal sealed class VisualScenePath : VisualSceneMark {
+    internal VisualScenePath(ChartPath path, bool close, ChartColor? fill, ChartColor? stroke,
+        double strokeWidth, string? role, string? id) : base(fill, stroke, strokeWidth, role, id) {
+        var copy = new ChartPathCommand[path.Commands.Count];
+        for (var i = 0; i < copy.Length; i++) copy[i] = path.Commands[i];
+        Commands = Array.AsReadOnly(copy); Close = close;
+    }
+    internal IReadOnlyList<ChartPathCommand> Commands { get; }
+    internal bool Close { get; }
+}
+
+internal sealed class VisualSceneSlice : VisualSceneMark {
+    internal VisualSceneSlice(double cx, double cy, double outer, double inner, double start, double sweep,
+        ChartColor fill, ChartColor? stroke, double strokeWidth, string? role, string? id)
+        : base(fill, stroke, strokeWidth, role, id) {
+        Cx = cx; Cy = cy; Outer = outer; Inner = inner; Start = start; Sweep = sweep;
+    }
+    internal double Cx { get; }
+    internal double Cy { get; }
+    internal double Outer { get; }
+    internal double Inner { get; }
+    internal double Start { get; }
+    internal double Sweep { get; }
+}

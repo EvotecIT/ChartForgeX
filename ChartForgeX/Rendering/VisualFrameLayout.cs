@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
+
+namespace ChartForgeX.Rendering;
+
+internal sealed class VisualLegendEntry {
+    internal VisualLegendEntry(string label, ChartColor color, string id) { Label = label; Color = color; Id = id; }
+    internal string Label { get; }
+    internal ChartColor Color { get; }
+    internal string Id { get; }
+}
+
+/// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
+internal static class VisualFrameLayout {
+    internal static ChartRect Build(VisualSceneBuilder builder, VisualRenderContext context, IReadOnlyList<VisualLegendEntry> entries) {
+        var size = context.Layout.Size;
+        var colors = context.Theme.Resolve(context.ThemeMode);
+        var typography = context.Theme.Typography;
+        var gap = context.Theme.Spacing;
+        var pad = context.Layout.Padding;
+        if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background");
+        var left = pad; var right = size.Width - pad; var top = pad; var bottom = size.Height - pad;
+        using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
+            Header(context.Frame.Title, typography.TitleSize, 600, colors.Foreground);
+            Header(context.Frame.Subtitle, typography.SubtitleSize, 400, colors.MutedForeground);
+        }
+        if (context.Frame.ShowLegend && entries.Count > 0) {
+            var position = context.Frame.LegendPosition;
+            var side = position == ChartLegendPosition.Left || position == ChartLegendPosition.Right;
+            var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
+            var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
+            var rows = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
+            foreach (var entry in entries) {
+                var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), typography.LegendSize).Width + 28);
+                if (row.Count > 0 && (side || used + gap + width > legendWidth)) { rows.Add(row); row = new(); used = 0; }
+                row.Add(entry); used += (row.Count > 1 ? gap : 0) + width;
+            }
+            if (row.Count > 0) rows.Add(row);
+            var lineHeight = typography.LegendSize * 1.5;
+            var available = Math.Max(0, (bottom - top) * (side ? 1 : 0.35));
+            var visible = Math.Min(rows.Count, (int)Math.Floor(available / lineHeight));
+            if (visible < rows.Count) builder.AddDiagnostic(new VisualDiagnostic("frame.legend-overflow", "Some legend entries do not fit the resolved frame."));
+            var height = visible * lineHeight;
+            var x = position == ChartLegendPosition.Right ? right - legendWidth : left;
+            var y = side || above ? top : bottom - height;
+            using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {
+                for (var r = 0; r < visible; r++) {
+                    var rowWidth = 0d;
+                    foreach (var entry in rows[r]) rowWidth += Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), typography.LegendSize).Width + 28) + gap;
+                    rowWidth = Math.Max(0, rowWidth - gap);
+                    var alignRight = position is ChartLegendPosition.TopRight or ChartLegendPosition.BottomRight;
+                    var alignCenter = position is ChartLegendPosition.Top or ChartLegendPosition.Bottom;
+                    var cursor = x + (alignRight ? legendWidth - rowWidth : alignCenter ? (legendWidth - rowWidth) / 2 : 0);
+                    foreach (var entry in rows[r]) {
+                        var width = Math.Min(legendWidth, builder.MeasureText(OneLine(entry.Label), typography.LegendSize).Width + 28);
+                        var baseline = y + r * lineHeight + builder.TextAscent(typography.LegendSize);
+                        builder.Rect(new ChartRect(cursor, baseline - typography.LegendSize * 0.65, 10, 10), entry.Color, role: "legend-swatch");
+                        var label = Fit(OneLine(entry.Label), Math.Max(0, width - 22), typography.LegendSize, 400);
+                        builder.Text(label, cursor + 18, baseline, typography.LegendSize, colors.Foreground, role: "legend-label");
+                        builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + r * lineHeight, width, lineHeight), entry.Label));
+                        cursor += width + gap;
+                    }
+                }
+            }
+            if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + gap; else right -= legendWidth + gap; }
+            else if (above) top += height + gap; else bottom -= height + gap;
+        }
+        if (bottom <= top || right <= left) {
+            builder.AddDiagnostic(new VisualDiagnostic("frame.insufficient-space", "The frame leaves no content viewport."));
+            return new ChartRect(left, Math.Min(top, size.Height - pad), Math.Max(0, right - left), 0);
+        }
+        var content = new ChartRect(left, top, right - left, bottom - top);
+        if (context.Frame.ShowSurface) builder.Rect(content, colors.Surface, colors.Border, radius: context.Theme.BarRadius, role: "content-surface");
+        return content;
+
+        void Header(string? text, double fontSize, int weight, ChartColor color) {
+            if (string.IsNullOrEmpty(text)) return;
+            // Bounded two-line wrapping leaves content space; full text remains in accessibility metadata.
+            var paragraphs = new Queue<string>(text!.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'));
+            var remainder = paragraphs.Dequeue(); var count = 0;
+            while ((remainder.Length > 0 || paragraphs.Count > 0) && count < 2 && top + fontSize * 1.3 < bottom) {
+                if (remainder.Length == 0) { remainder = paragraphs.Dequeue(); continue; }
+                var line = Fit(remainder, right - left, fontSize, weight, count == 1);
+                if (line.Length == 0) break;
+                builder.Text(line, left, top + builder.TextAscent(fontSize, weight), fontSize, color, weight, role: count == 0 ? "frame-heading" : "frame-heading-continuation");
+                top += fontSize * 1.3; count++;
+                if (line.EndsWith("…", StringComparison.Ordinal)) { remainder = ""; break; }
+                remainder = remainder.Substring(Math.Min(remainder.Length, line.Length)).TrimStart();
+            }
+            if (remainder.Length > 0 || paragraphs.Count > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.heading-overflow", "The heading exceeds the available frame space."));
+            top += gap;
+        }
+        string Fit(string text, double width, double fontSize, int weight, bool ellipsis = true) {
+            if (builder.MeasureText(text, fontSize, weight).Width <= width) return text;
+            var elements = StringInfo.ParseCombiningCharacters(text);
+            var count = elements.Length;
+            var length = text.Length;
+            while (count > 0 && builder.MeasureText(text.Substring(0, length) + (ellipsis ? "…" : ""), fontSize, weight).Width > width) {
+                count--; length = count == 0 ? 0 : elements[count];
+            }
+            if (ellipsis) {
+                builder.AddDiagnostic(new VisualDiagnostic("frame.text-truncated", "Frame text was shortened; its complete value remains in semantic metadata."));
+                return length == 0 ? "" : text.Substring(0, length) + "…";
+            }
+            var space = length > 0 ? text.LastIndexOf(' ', length - 1, length) : -1;
+            return text.Substring(0, space > 0 ? space : length);
+        }
+    }
+    private static string OneLine(string text) => text.Replace('\r', ' ').Replace('\n', ' ');
+}

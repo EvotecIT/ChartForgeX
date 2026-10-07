@@ -2,6 +2,19 @@
 
 This is the central place for active follow-up work. Keep feature ideas here until they are implemented, removed, or promoted into focused reference documentation. Avoid adding separate roadmap or "next plan" documents unless the topic needs a durable technical specification.
 
+## Shared rendering migration: Phases 0–1
+
+Scope and later phases are defined in [the architecture](docs/v2/architecture.md). Consumer repositories remain read-only. Track implementation separately from validation and publication.
+
+- [x] Integrate main and label-placement on one implementation branch; pass 2,384 baseline tests and freeze the baseline assembly.
+- [x] Inventory all six current runtime APIs and map the five consumer areas to required retained capabilities.
+- [x] Close architecture, API conventions, versioned theme/interchange and migration documentation against the implemented proof.
+- [x] Implement shared prepared scene, frame/theme/text and selected Cartesian/donut compilers; pass focused contract tests.
+- [x] Prove tiny topology/sequence and generic static/semantic artifact handoff in focused tests; AOT/runtime qualification remains below.
+- [ ] Close runtime gallery qualification: final inline SVG and native PNG inspected; compact/wide browser tests and font evidence pending.
+- [ ] Pass focused/full quality, framework/package and AOT checks; compare representative performance against the frozen baseline.
+- [ ] Reassess Phases 0–1, settle one PR and clean task-owned disposable output.
+
 ## Rendering Pipeline
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.

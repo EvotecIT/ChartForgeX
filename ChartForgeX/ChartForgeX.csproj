@@ -42,5 +42,6 @@
     <None Include="..\assets\ChartForgeX.png" Pack="true" PackagePath="\" />
     <None Include="Typography\Unicode-LICENSE.txt" Pack="true" PackagePath="licenses/Unicode-LICENSE.txt" />
     <EmbeddedResource Include="Topology\Assets\topology.css" LogicalName="ChartForgeX.Topology.Assets.topology.css" />
+    <EmbeddedResource Include="Themes\Tokens\evotec.chartforgex.tokens.json" LogicalName="ChartForgeX.Themes.Tokens.evotec.chartforgex.tokens.json" />
   </ItemGroup>
 </Project>

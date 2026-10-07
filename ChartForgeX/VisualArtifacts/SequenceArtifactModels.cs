@@ -85,7 +85,7 @@ public enum SequenceArtifactBlockKind {
 /// <summary>
 /// Describes a reusable product-neutral sequence or interaction diagram artifact.
 /// </summary>
-public sealed class SequenceArtifact {
+public sealed partial class SequenceArtifact {
     /// <summary>Gets accessible naming for static sequence previews.</summary>
     public VisualAccessibility Accessibility { get; } = new();
 

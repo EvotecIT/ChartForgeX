@@ -9,9 +9,9 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
+    public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null) {
         var copy = Clone(chart);
-        copy.TextMeasurement = new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.InstalledFonts);
+        copy.TextMeasurement = measurement ?? new TextMeasurementContext((copy.Theme ?? TopologyTheme.Light()).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.InstalledFonts);
         if (options != null) options.TextMeasurement = copy.TextMeasurement;
         copy.RenderOptions = options;
         ApplyNamedPortSides(copy);

@@ -7,7 +7,10 @@ namespace ChartForgeX.Raster;
 
 internal sealed partial class RgbaCanvas {
     private const int DefaultScale = 2;
-    private static readonly TrueTypeFont? DefaultOutlineFont = TrueTypeFont.TryLoadDefault();
+    // Prepared scene painters retain their faces and explicitly opt out of host font discovery.
+    // Legacy callers still share one default face, resolved only when they actually request it.
+    private static readonly Lazy<TrueTypeFont?> DefaultOutlineFontCache = new(TrueTypeFont.TryLoadDefault);
+    private static TrueTypeFont? DefaultOutlineFont => DefaultOutlineFontCache.Value;
     private readonly TrueTypeFont? _outlineFont;
     private readonly int _scale;
     private readonly int _supersamplingScale;

@@ -4,6 +4,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Composition;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using ChartForgeX.Stories;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
@@ -13,7 +14,7 @@ namespace ChartForgeX.VisualArtifacts;
 /// <summary>
 /// Provides static rendering helpers for product-neutral visual artifact envelopes.
 /// </summary>
-public static class VisualArtifactRendering {
+public static partial class VisualArtifactRendering {
     /// <summary>
     /// Renders a supported visual artifact model to SVG.
     /// </summary>
@@ -39,6 +40,7 @@ public static class VisualArtifactRendering {
     public static string ToHtmlPage(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.Model is TopologyChart) TopologyHtmlRenderer.EnsureStatic(TopologyOptions(artifact, options));
+        if (artifact.Model is PreparedVisual prepared) return RenderPreparedHtml(artifact, prepared, options);
         if (options != null && options.Watermarks.Count > 0) return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language, clipSvgViewport: true);
         var html = artifact.Model switch {
             Chart chart => chart.ToHtmlPage(),
@@ -66,6 +68,7 @@ public static class VisualArtifactRendering {
     public static byte[] ToPng(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         var png = artifact.Model switch {
+            PreparedVisual prepared => PreparedModel(artifact, prepared).ToPng(),
             Chart chart => chart.ToPng(),
             ChartGrid grid => grid.ToPng(),
             VisualCanvas canvas => canvas.ToPng(),
@@ -136,6 +139,7 @@ public static class VisualArtifactRendering {
 
     private static string RenderSvg(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         return artifact.Model switch {
+            PreparedVisual prepared => RenderPreparedSvg(artifact, prepared),
             Chart chart => chart.ToSvg(),
             ChartGrid grid => grid.ToSvg(),
             VisualCanvas canvas => canvas.ToSvg(),

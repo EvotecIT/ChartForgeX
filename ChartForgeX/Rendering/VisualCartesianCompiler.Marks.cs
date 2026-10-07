@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+
+namespace ChartForgeX.Rendering;
+
+internal static partial class VisualCartesianCompiler {
+    private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
+        int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        var series = chart.Series[index];
+        var points = new List<ChartPoint>(series.Points.Count);
+        var lower = new List<ChartPoint>(series.Points.Count);
+        foreach (var point in series.Points) {
+            var baseValue = series.Kind == ChartSeriesKind.StackedArea ? AreaBase(chart, index, point) : 0;
+            points.Add(new ChartPoint(map.X(point.X), map.Y(baseValue + point.Y), point.BreakBefore));
+            lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(baseValue) : map.YBaseline(), point.BreakBefore));
+        }
+        var color = Color(series, index, colors);
+        var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+        if (series.Kind != ChartSeriesKind.Scatter && points.Count > 0) {
+            if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
+                // Each disconnected segment closes independently; smoothing uses the existing path algorithm.
+                var offset = 0;
+                foreach (var segment in ChartPointSegments.Split(points)) {
+                    var baseline = lower.GetRange(offset, segment.Count);
+                    var upperPath = ChartPathBuilder.FromPoints(segment, series.Kind, series.Smooth).Flatten(12);
+                    var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Kind, series.Smooth).Flatten(12);
+                    var commands = new List<ChartPathCommand>();
+                    if (upperPath.Count > 0) {
+                        commands.Add(ChartPathCommand.MoveTo(upperPath[0].X, upperPath[0].Y));
+                        for (var point = 1; point < upperPath.Count; point++) commands.Add(ChartPathCommand.LineTo(upperPath[point].X, upperPath[point].Y));
+                        for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
+                        builder.Path(new ChartPath(commands), color.WithAlpha((byte)Math.Round(color.A * context.Theme.AreaOpacity)), role: "area", close: true);
+                    }
+                    offset += segment.Count;
+                }
+            }
+            var linePath = ChartPathBuilder.FromPoints(points, series.Kind, series.Smooth);
+            builder.Path(linePath, stroke: color, strokeWidth: stroke, role: "line");
+            if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)) {
+                var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
+                obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
+            }
+        }
+        var radius = series.MarkerRadius ?? context.Theme.MarkerRadius;
+        for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
+            var point = points[pointIndex];
+            var bounds = new ChartRect(point.X - radius, point.Y - radius, radius * 2, radius * 2);
+            var visible = series.Kind == ChartSeriesKind.Scatter || ShowMarker(chart, series, pointIndex);
+            using (PointGroup(builder, series, index, pointIndex, bounds)) {
+                if (visible)
+                    builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors), role: "marker");
+            }
+            if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
+            AddLabel(chart, context, series, index, pointIndex, point, bounds, colors, labels);
+        }
+    }
+
+    private static void DrawBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartBarCoordinateMap coordinates,
+        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        var series = chart.Series[index];
+        var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar).ToArray();
+        var grouped = chart.Options.BarMode == ChartBarMode.Grouped;
+        var count = grouped ? barIndices.Length : 1;
+        var position = grouped ? Array.IndexOf(barIndices, index) : 0;
+        var centers = barIndices.SelectMany(i => chart.Series[i].Points.Select(point => map.X(point.X))).Distinct().OrderBy(value => value).ToArray();
+        var spacing = plot.Width;
+        for (var point = 1; point < centers.Length; point++) spacing = Math.Min(spacing, centers[point] - centers[point - 1]);
+        var occupied = spacing * .68;
+        var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
+        var width = Math.Max(.1, (occupied - gap * (count - 1)) / count);
+        var offset = (position - (count - 1) / 2d) * (width + gap);
+        for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+            var point = series.Points[pointIndex];
+            var baseValue = grouped ? 0 : ChartBarStacking.BaseValue(chart, coordinates, index, pointIndex);
+            var y = map.Y(baseValue + point.Y);
+            var baseY = grouped ? map.YBaseline() : map.YOrBaseline(baseValue);
+            var left = map.X(point.X) + offset - width / 2;
+            var barWidth = width;
+            if (ChartHistogramBarSlot.TryResolve(chart, coordinates, index, pointIndex, map, out var histogramLeft, out var histogramWidth)) {
+                left = histogramLeft;
+                barWidth = histogramWidth;
+            }
+            var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
+            using (PointGroup(builder, series, index, pointIndex, bounds)) {
+                builder.Rect(bounds, PointColor(series, index, pointIndex, colors), radius: Math.Min(context.Theme.BarRadius, barWidth / 2), role: "bar");
+            }
+            obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
+            AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, colors, labels);
+        }
+    }
+
+    private static double AreaBase(Chart chart, int index, ChartPoint point) {
+        var sum = 0d;
+        for (var previous = 0; previous < index; previous++) {
+            var series = chart.Series[previous];
+            if (series.Kind != ChartSeriesKind.StackedArea) continue;
+            foreach (var candidate in series.Points) {
+                if (!ChartMath.SameCoordinate(candidate.X, point.X)) continue;
+                if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
+                break;
+            }
+        }
+        return sum;
+    }
+
+    private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {
+        var mode = chart.Options.LineMarkerMode;
+        if (mode == ChartLineMarkerMode.None) return false;
+        if (mode == ChartLineMarkerMode.All) return true;
+        if (mode == ChartLineMarkerMode.Last) return pointIndex == series.Points.Count - 1;
+        return series.Points.Count <= 24;
+    }
+
+    private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
+        ChartPoint anchor, ChartRect mark, VisualThemeColors colors, List<LabelPlacementRequest> labels) {
+        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels)) return;
+        var value = series.Points[pointIndex].Y;
+        var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
+            ? series.PointLabels[pointIndex]! : chart.Options.ValueFormatter?.Invoke(value) ?? ChartNumericFormatter.FormatCompact(value);
+        if (text.Length == 0) return;
+        var style = chart.Options.DataLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground });
+        style = series.DataLabelStyle.Resolve(style);
+        if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
+            style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
+        var spacing = context.Theme.Spacing;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var candidates = new List<LabelCandidate>();
+        if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
+            anchor = new ChartPoint(mark.X + mark.Width / 2, mark.Y + mark.Height / 2);
+            candidates.Add(new LabelCandidate(0, 0, .5, .5));
+        } else if (placement == ChartDataLabelPlacement.Left) candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
+        else if (placement == ChartDataLabelPlacement.Right) candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
+        else if (placement == ChartDataLabelPlacement.Below) candidates.Add(new LabelCandidate(0, spacing, .5, 0));
+        else if (placement == ChartDataLabelPlacement.Above) candidates.Add(new LabelCandidate(0, -spacing, .5, 1));
+        else {
+            candidates.Add(new LabelCandidate(0, value >= 0 ? -spacing : spacing, .5, value >= 0 ? 1 : 0));
+            candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
+            candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
+        }
+        var request = new LabelPlacementRequest(text, anchor, style, candidates) { AssociatedMarkId = PointId(seriesIndex, pointIndex) };
+        if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) request.Bounds = mark;
+        labels.Add(request);
+    }
+
+    private static void DrawDataLabels(VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        foreach (var request in labels) request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
+        var placed = new LabelPlacementService().Place(labels, plot, obstacles, 2, builder.MeasureText);
+        if (placed.Any(label => label.IsDropped || label.IsEllipsized))
+            builder.AddDiagnostic(new VisualDiagnostic("cartesian.data-label-overflow", "Data labels were shortened or omitted to avoid marks and other labels within the available plot."));
+        foreach (var label in placed) {
+            if (label.IsDropped) continue;
+            var displayedStyle = DisplayedStyle(label.Request.Style);
+            builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
+                role: "data-label", id: label.Request.AssociatedMarkId + "-label");
+        }
+    }
+
+    private static TextStyle DisplayedStyle(TextStyle original) {
+        var displayed = original.Clone();
+        displayed.FontSize = original.EffectiveFontSize;
+        displayed.Baseline = TextBaseline.Normal;
+        displayed.TextCase = TextCaseTransform.None;
+        return displayed;
+    }
+}

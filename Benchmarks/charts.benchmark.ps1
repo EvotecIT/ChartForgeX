@@ -2,7 +2,7 @@ $candidate = Get-BenchmarkInput AssemblyPath -Required
 $baseline = Get-BenchmarkInput BaselineAssemblyPath -Required
 $fixtures = Get-BenchmarkInput FixtureAssemblyPath -Required
 Add-Type -Path (Join-Path $PSScriptRoot 'ChartBenchmarkLane.cs')
-$fixtureNames = 'timeline-60', 'timeline-8', 'latency', 'calendar'
+$fixtureNames = 'timeline-60', 'timeline-8', 'latency', 'calendar', 'cartesian', 'donut'
 $lanes = @{}
 foreach ($lane in 'Baseline', 'Candidate') {
     foreach ($fixture in $fixtureNames) {

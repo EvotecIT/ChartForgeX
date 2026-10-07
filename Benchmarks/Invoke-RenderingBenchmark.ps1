@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Rendering', 'Decimation', 'Topology', 'Charts')]
+    [ValidateSet('Rendering', 'Decimation', 'Topology', 'Charts', 'Scenes')]
     [string] $Suite = 'Rendering',
 
     [ValidateRange(0, 100)]
@@ -41,16 +41,22 @@ if (-not (Test-Path -LiteralPath $assemblyPath -PathType Leaf)) {
 }
 
 $variables = @{ AssemblyPath = $assemblyPath }
-if ($Suite -in 'Topology', 'Charts') {
+if ($Suite -in 'Topology', 'Charts', 'Scenes') {
     if ([string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) { $BaselineAssemblyPath = $assemblyPath }
     $variables.BaselineAssemblyPath = (Resolve-Path -LiteralPath $BaselineAssemblyPath).Path
     $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
     $fixtureName = if ($Suite -eq 'Topology') { 'TopologyBenchmarkFixtures' } else { 'ChartBenchmarkFixtures' }
-    & dotnet build (Join-Path $PSScriptRoot "$Suite/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
+    $fixtureFolder = if ($Suite -eq 'Scenes') { 'Charts' } else { $Suite }
+    & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
     if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
     $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"
+    if ($Suite -eq 'Scenes') {
+        $variables.TokenPath = Join-Path $repositoryRoot 'ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json'
+        $variables.FontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Regular.ttf'
+        $variables.BoldFontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Bold.ttf'
+    }
 } elseif (-not [string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) {
-    throw '-BaselineAssemblyPath is supported by the Topology and Charts suites.'
+    throw '-BaselineAssemblyPath is supported by the Topology, Charts and Scenes suites.'
 }
 
 Import-Module PSPublishModule -MinimumVersion 3.0.72 -Force -ErrorAction Stop

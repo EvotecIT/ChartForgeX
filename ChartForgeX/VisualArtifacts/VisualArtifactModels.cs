@@ -135,6 +135,7 @@ public sealed class VisualArtifact {
     internal VisualAccessibility ModelAccessibilitySnapshot { get; } = new();
     internal bool HasModelAccessibilitySnapshot { get; set; }
     internal VisualArtifactSize? TopologyNaturalSizeSnapshot { get; set; }
+    internal string? PreparedInterchangeSnapshot { get; set; }
 
     /// <summary>Gets host-inspectable visual regions.</summary>
     public List<VisualArtifactRegion> Regions { get; } = new();

@@ -199,7 +199,7 @@ public static class SequenceArtifactRendering {
 
     private const string FontFamily = "Segoe UI, Arial, sans-serif";
 
-    private sealed class SequenceLayout {
+    internal sealed class SequenceLayout {
         public const double ParticipantBoxHeight = 38;
         public double Width { get; set; }
         public double Height { get; set; }
@@ -271,7 +271,7 @@ public static class SequenceArtifactRendering {
         }
     }
 
-    private sealed class ParticipantLayout {
+    internal sealed class ParticipantLayout {
         public ParticipantLayout(SequenceArtifactParticipant participant, double centerX, double boxWidth) {
             Participant = participant;
             CenterX = centerX;
@@ -285,7 +285,7 @@ public static class SequenceArtifactRendering {
         public double BoxWidth { get; }
     }
 
-    private sealed class MessageLayout {
+    internal sealed class MessageLayout {
         public MessageLayout(SequenceArtifactMessage message, double x1, double x2, double y) {
             Message = message;
             X1 = x1;
@@ -299,7 +299,7 @@ public static class SequenceArtifactRendering {
         public double Y { get; }
     }
 
-    private sealed class NoteLayout {
+    internal sealed class NoteLayout {
         public NoteLayout(SequenceArtifactNote note, double x, double y, double width, double height) {
             Note = note;
             X = x;
@@ -315,7 +315,7 @@ public static class SequenceArtifactRendering {
         public double Height { get; }
     }
 
-    private sealed class BlockLayout {
+    internal sealed class BlockLayout {
         public BlockLayout(SequenceArtifactBlock block, double y, double height) {
             Block = block;
             Y = y;

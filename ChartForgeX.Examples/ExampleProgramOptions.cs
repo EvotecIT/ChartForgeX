@@ -3,7 +3,7 @@ using ChartForgeX.Core;
 internal static class ExampleProgramOptions {
     public static string OutputDirectory(string[] args) {
         var index = Array.FindIndex(args, arg => string.Equals(arg, "--output", StringComparison.OrdinalIgnoreCase));
-        if (index < 0) return Path.Combine(AppContext.BaseDirectory, "output");
+        if (index < 0) return Path.Combine(AppContext.BaseDirectory, HasArg(args, "--v2-only") ? "output-v2" : "output");
         if (index + 1 >= args.Length || string.IsNullOrWhiteSpace(args[index + 1])) throw new ArgumentException("--output requires a directory.");
         return Path.GetFullPath(args[index + 1]);
     }
@@ -11,6 +11,11 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--v2-only")) {
+            V2Examples.Write(output, HasArg(args, "--v2-curated"));
+            Console.WriteLine("Generated direct-scene proof in: " + output);
+            return true;
+        }
         if (HasArg(args, "--mermaid-only")) {
             MermaidExamples.Write(output);
             GalleryWriter.Write(output);

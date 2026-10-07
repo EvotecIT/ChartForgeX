@@ -17,6 +17,8 @@ public static class ChartBenchmarkCases {
         "timeline-8" => Timeline(8, 11, false),
         "latency" => Latency(),
         "calendar" => Calendar(),
+        "cartesian" => Cartesian(),
+        "donut" => Donut(),
         _ => throw new ArgumentOutOfRangeException(nameof(fixture))
     };
 
@@ -84,4 +86,16 @@ public static class ChartBenchmarkCases {
         for (var day = 0; day < 14; day++) items.Add(new ChartCalendarHeatmapItem(Start.AddDays(day), (day * 7) % 11));
         return Report(1100, 260).AddCalendarHeatmap("Changes", items);
     }
+
+    private static Chart Cartesian() => Report(800, 440).WithTitle("Checks over the reporting period").WithLegend()
+        .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        .AddLine("Observed", Values(20, 23, 26, 29, 32, 35, 38))
+        .AddArea("Expected", Values(34, 38, 42, 46, 50, 54, 35))
+        .AddBar("Capacity", Values(48, 53, 58, 63, 68, 50, 55));
+
+    private static Chart Donut() => Report(800, 440).WithTitle("Findings by category").WithLegend()
+        .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        .AddDonut("Findings", Values(20, 23, 26, 29, 32, 35, 38));
+
+    private static ChartPoint[] Values(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 }
