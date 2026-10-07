@@ -38,6 +38,17 @@ public sealed class SvgMarkupDocumentTests {
         "<svg xmlns:p=\"urn:a\" xmlns:q=\"urn:a\"><q:g/></svg>",
         "<svg xmlns:p=\"urn:a\"><g xmlns:p=\"urn:b\"><p:x/></g></svg>",
         "<svg é=\"1\"><ét/></svg>",
+        "<svg xml:space=\"preserve\"><g xml:space=\"default\"/></svg>",
+        "<svg xml:lang=\"en\" xmlfoo=\"1\"/>",
+        "<svg xmlns=\"\"><g xmlns=\"urn:a\"><h xmlns=\"\"/></g></svg>",
+        "<svg><a\U00010000b c\U00010000=\"1\"/></svg>",
+        "<svg><!-- a\nb --><a\U00010000b/></svg>",
+        "<svg><!-- a\nb -->&#13;x&#13;&#10;y</svg>",
+        // Rejected by the framework.
+        "<svg xml:space=\"x\"/>",
+        "<svg xmlns=\"http://www.w3.org/XML/1998/namespace\"/>",
+        "<svg xmlns=\"http://www.w3.org/2000/xmlns/\"/>",
+        "<svg xmlns:p=\"\"/>",
         // Rejected by the framework.
         "<!DOCTYPE svg><svg/>",
         "<svg>a]]>b</svg>",
@@ -162,7 +173,36 @@ public sealed class SvgMarkupDocumentTests {
             return;
         }
 
-        Assert.Equal(expected, SvgMarkupParser.Parse(markup).ToString());
+        var document = SvgMarkupParser.Parse(markup);
+        Assert.Equal(expected, document.ToString());
+        var framework = Load(markup).Root!;
+        Assert.Equal(framework.Value, document.Root.Value);
+        Assert.Equal(framework.Attribute("a")?.Value, document.Root.Attribute("a"));
+    }
+
+    [Theory]
+    [InlineData("<svg xmlns=\"http://www.w3.org/2000/svg\"><g><text x=\"1\">a</text></g></svg>")]
+    [InlineData("<svg xmlns=\"http://www.w3.org/2000/svg\"><text xmlns=\"\" x=\"1\">a</text></svg>")]
+    [InlineData("<svg><text xmlns=\"http://www.w3.org/2000/svg\" x=\"1\">a</text></svg>")]
+    [InlineData("<svg xmlns=\"http://www.w3.org/2000/svg\"><text xmlns=\"http://www.w3.org/2000/svg\">a</text></svg>")]
+    [InlineData("<s:svg xmlns:s=\"http://www.w3.org/2000/svg\"><s:text>a</s:text></s:svg>")]
+    [InlineData("<svg><p:text xmlns:p=\"http://www.w3.org/2000/svg\">a</p:text></svg>")]
+    [InlineData("<svg xmlns:q=\"urn:a\"><p:text xmlns:p=\"urn:a\">a</p:text></svg>")]
+    [InlineData("<svg xmlns=\"urn:a\"><p:text xmlns:p=\"urn:a\">a</p:text></svg>")]
+    [InlineData("<svg xmlns:q=\"urn:b\"><g xmlns:q=\"urn:a\"><p:text xmlns:p=\"urn:a\" xmlns:x=\"urn:x\">a</p:text></g></svg>")]
+    [InlineData("<svg xmlns:p=\"urn:b\"><p:text xmlns:p=\"urn:a\">a</p:text></svg>")]
+    public void CreateSibling_LeaderBeforeALabel_WritesWhatXLinqWrites(string markup) {
+        var framework = Load(markup);
+        var document = SvgMarkupParser.Parse(markup);
+        var expectedText = framework.Descendants().First(e => e.Name.LocalName == "text");
+        var actualText = document.Descendants().First(e => e.LocalName == "text");
+        expectedText.AddBeforeSelf(new XElement(expectedText.Name.Namespace + "line", new XAttribute("x1", "1"), new XAttribute("stroke", "red")));
+        var line = actualText.CreateSibling("line", 3, out var declaration);
+        line.AddAttribute("x1", "1");
+        line.AddAttribute("stroke", "red");
+        if (declaration != null) line.AddAttribute("xmlns", declaration);
+        actualText.AddBeforeSelf(line);
+        Assert.Equal(framework.ToString(SaveOptions.DisableFormatting), document.ToString());
     }
 
     private static XDocument Load(string markup) {

@@ -173,6 +173,12 @@ internal sealed class SvgMarkupElement : SvgMarkupNode {
         (_nodes ??= new List<SvgMarkupNode>()).Add(node);
     }
 
+    /// <summary>Replaces the text or other non-element child at <paramref name="index"/>.</summary>
+    internal void ReplaceNode(int index, SvgMarkupNode node) {
+        if (_nodes == null || _nodes[index] is SvgMarkupElement || node is SvgMarkupElement) throw new InvalidOperationException("Only text and other nodes can be replaced.");
+        _nodes[index] = node;
+    }
+
     /// <summary>Marks the element as written with an end tag, so it keeps one even without content.</summary>
     internal void KeepEndTag() => _hasEndTag = true;
 
@@ -244,6 +250,73 @@ internal sealed class SvgMarkupElement : SvgMarkupNode {
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// Creates an element named <paramref name="localName"/> in this element's namespace, to be inserted as its sibling,
+    /// named as XLinq's writer names such an element. When this element declares no namespaces its prefix is in scope
+    /// at the sibling too, so the sibling takes the same prefix. Otherwise the sibling takes the nearest prefix bound to
+    /// the namespace in the parent's scope, or, when there is none, an empty prefix and the default namespace
+    /// declaration the writer adds (<paramref name="declaration"/>, to be appended after the other attributes).
+    /// </summary>
+    internal SvgMarkupElement CreateSibling(string localName, int attributeCapacity, out string? declaration) {
+        declaration = null;
+        if (!DeclaresNamespaces()) return new SvgMarkupElement(PrefixWithColon + localName, attributeCapacity);
+        var colon = Name.IndexOf(':');
+        var prefix = colon < 0 ? string.Empty : Name.Substring(0, colon);
+        var space = LookupNamespace(this, prefix) ?? string.Empty;
+        if (space.Length == 0) {
+            if (!string.IsNullOrEmpty(LookupNamespace(Parent, string.Empty))) declaration = string.Empty;
+            return new SvgMarkupElement(localName, attributeCapacity);
+        }
+
+        var bound = FindPrefix(Parent, space);
+        if (bound == null) {
+            if (LookupNamespace(Parent, string.Empty) != space) declaration = space;
+            return new SvgMarkupElement(localName, attributeCapacity);
+        }
+
+        return new SvgMarkupElement(bound.Length == 0 ? localName : bound + ":" + localName, attributeCapacity);
+    }
+
+    private bool DeclaresNamespaces() {
+        for (var i = 0; i < _attributeCount; i++) {
+            if (IsDeclaration(_attributes[i * 2], out _)) return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsDeclaration(string name, out string prefix) {
+        if (name == "xmlns") {
+            prefix = string.Empty;
+            return true;
+        }
+
+        prefix = name.StartsWith("xmlns:", StringComparison.Ordinal) ? name.Substring(6) : string.Empty;
+        return prefix.Length > 0;
+    }
+
+    // The namespace bound to prefix at element (null element: the document scope).
+    private static string? LookupNamespace(SvgMarkupElement? element, string prefix) {
+        var name = prefix.Length == 0 ? "xmlns" : "xmlns:" + prefix;
+        for (; element != null; element = element.Parent) {
+            if (element.Attribute(name) is { } space) return space;
+        }
+
+        return prefix.Length == 0 ? string.Empty : prefix == "xml" ? "http://www.w3.org/XML/1998/namespace" : null;
+    }
+
+    // The nearest prefix bound to space at element that no nearer declaration rebinds.
+    private static string? FindPrefix(SvgMarkupElement? element, string space) {
+        for (var scope = element; scope != null; scope = scope.Parent) {
+            for (var i = scope._attributeCount - 1; i >= 0; i--) {
+                if (!IsDeclaration(scope._attributes[i * 2], out var prefix) || scope._attributes[i * 2 + 1] != space) continue;
+                if (LookupNamespace(element, prefix) == space) return prefix;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>Inserts an element just before this one in its parent.</summary>

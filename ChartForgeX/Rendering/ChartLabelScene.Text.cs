@@ -140,11 +140,12 @@ internal sealed partial class ChartLabelScene {
             var start = leaderInverse.Transform(origin);
             var end = leaderInverse.Transform(result.LeaderEnd);
             var leaderRole = entry.Decorations.FirstOrDefault(IsLeader) is { } existingLeader ? Role(existingLeader) : "label-leader";
-            // A new element in the label's namespace, written with the label's prefix.
-            var line = new SvgMarkupElement(element.PrefixWithColon + "line", 10);
+            // A new element in the label's namespace, named and declared as the XLinq writer wrote it.
+            var line = element.CreateSibling("line", 11, out var declaration);
             line.AddAttribute("data-cfx-role", leaderRole); line.AddAttribute("data-cfx-label-decoration", "true");
             line.AddAttribute("x1", F(start.X)); line.AddAttribute("y1", F(start.Y)); line.AddAttribute("x2", F(end.X)); line.AddAttribute("y2", F(end.Y));
             line.AddAttribute("stroke", element.Attribute("fill") ?? "currentColor"); line.AddAttribute("stroke-width", "1"); line.AddAttribute("stroke-opacity", "0.65");
+            if (declaration != null) line.AddAttribute("xmlns", declaration);
             element.AddBeforeSelf(line);
         }
     }

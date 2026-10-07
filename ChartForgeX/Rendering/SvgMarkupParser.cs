@@ -41,9 +41,35 @@ internal sealed class SvgMarkupParser {
         // The framework accepts or rejects the markup as before; its own serialization is then taken as it is.
         using var source = new StringReader(markup);
         using var reader = XmlReader.Create(source, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
-        var normalized = XDocument.Load(reader, LoadOptions.PreserveWhitespace).ToString(SaveOptions.DisableFormatting);
-        return new SvgMarkupParser(normalized, normalized: true).Read()
+        var loaded = XDocument.Load(reader, LoadOptions.PreserveWhitespace);
+        var normalized = loaded.ToString(SaveOptions.DisableFormatting);
+        var read = new SvgMarkupParser(normalized, normalized: true).Read()
             ?? throw new InvalidOperationException("The framework's serialization of the markup could not be read back.");
+        // The writer writes a carriage return in text (&#13; in the source) as a line end, which reads back as a line
+        // feed; the framework's own text values are restored so the tree holds the same text, not only the same markup.
+        RestoreCarriageReturns(loaded.Root!, read.Root);
+        return read;
+    }
+
+    private static void RestoreCarriageReturns(XElement source, SvgMarkupElement target) {
+        var nodes = target.Nodes;
+        var index = 0;
+        foreach (var node in source.Nodes()) {
+            // The two trees correspond node for node; should they not, the read-back values are kept.
+            if (index >= nodes.Count) return;
+            switch (node) {
+                case XElement element when nodes[index] is SvgMarkupElement child:
+                    RestoreCarriageReturns(element, child);
+                    break;
+                case XCData:
+                    break;
+                case XText text when nodes[index] is SvgMarkupText { IsCData: false } && text.Value.IndexOf('\r') >= 0:
+                    target.ReplaceNode(index, new SvgMarkupText(text.Value));
+                    break;
+            }
+
+            index++;
+        }
     }
 
     /// <summary>Parses markup with the direct parser only; null when it would go through the framework.</summary>
@@ -138,6 +164,8 @@ internal sealed class SvgMarkupParser {
         var defaultNamespace = inheritedDefault;
         var declares = false;
         foreach (var (attributeName, value) in attributes) {
+            // Values the framework reader checks (xml: attributes, reserved namespace names) are left to it.
+            if (!_normalized && attributeName.StartsWith("xml", StringComparison.Ordinal) && !AcceptedReservedAttribute(attributeName, value)) return null;
             if (attributeName == "xmlns") {
                 defaultNamespace = value;
                 declares = true;
@@ -209,6 +237,16 @@ internal sealed class SvgMarkupParser {
         }
     }
 
+    // The reserved attributes the direct parser takes: namespace declarations (a default namespace that is not one of the
+    // reserved namespace names; prefixed declarations are checked above) and xml:space with one of its two values.
+    private static bool AcceptedReservedAttribute(string name, string value) {
+        if (name == "xmlns") return value is not ("http://www.w3.org/XML/1998/namespace" or "http://www.w3.org/2000/xmlns/");
+        if (name.StartsWith("xmlns:", StringComparison.Ordinal)) return true;
+        if (name == "xml:space") return value is "preserve" or "default";
+        // Other names starting with "xml" (xml:lang, xmlfoo) are rare in rendered markup.
+        return false;
+    }
+
     private static bool Resolves(string name, Dictionary<string, string>? prefixes) {
         var colon = name.IndexOf(':');
         return colon < 0 || prefixes != null && prefixes.ContainsKey(name.Substring(0, colon));
@@ -225,15 +263,30 @@ internal sealed class SvgMarkupParser {
     }
 
     // Qualified XML names; non-ASCII name characters are checked with the framework's NCName rules.
+    // Name characters above U+FFFF (surrogate pairs) are left to the framework reader; in normalized markup, which that
+    // reader has already accepted, they are taken as they are.
     private bool ReadName() {
-        if (_position >= _text.Length || !IsNameStart(_text[_position])) return false;
-        _position++;
+        if (_position >= _text.Length) return false;
+        if (SurrogatePair(_position)) {
+            if (!_normalized) return false;
+            _position += 2;
+        } else {
+            if (!IsNameStart(_text[_position])) return false;
+            _position++;
+        }
+
         var colons = 0;
         while (_position < _text.Length) {
             var c = _text[_position];
             if (c == ':') {
-                if (++colons > 1 || _position + 1 >= _text.Length || !IsNameStart(_text[_position + 1])) return false;
+                if (++colons > 1 || _position + 1 >= _text.Length || !(IsNameStart(_text[_position + 1]) || _normalized && SurrogatePair(_position + 1))) return false;
                 _position++;
+                continue;
+            }
+
+            if (SurrogatePair(_position)) {
+                if (!_normalized) return false;
+                _position += 2;
                 continue;
             }
 
@@ -483,6 +536,8 @@ internal sealed class SvgMarkupParser {
     }
 
     private static bool IsWhiteSpace(char c) => c is ' ' or '\t' or '\n' or '\r';
+
+    private bool SurrogatePair(int index) => char.IsHighSurrogate(_text[index]) && index + 1 < _text.Length && char.IsLowSurrogate(_text[index + 1]);
 
     private static bool IsNameStart(char c) => c < 0x80 ? c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or '_' : XmlConvert.IsStartNCNameChar(c);
 
