@@ -157,7 +157,7 @@ internal static partial class VisualSceneSvgRenderer {
             var css = "white-space:pre";
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
             css += style.OpenTypeLanguageTag == null ? ";font-language-override:normal" : ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
-            css += ";font-palette:" + ChartForgeX.Typography.TypographyPaletteCss.Name(style.Font.ColorPaletteIndex);
+            css += ";font-palette:" + (style.Font.ColorPaletteIndex == 0 ? "normal" : ChartForgeX.Typography.TypographyPaletteCss.Name(style.Font.ColorPaletteIndex));
             writer.Attribute("style", css).Text(line.Text).EndElement();
         }
         writer.EndElement();
@@ -167,10 +167,12 @@ internal static partial class VisualSceneSvgRenderer {
         var styles = new System.Collections.Generic.List<ChartForgeX.Typography.TextStyleOverride>();
         foreach (var node in scene.Nodes) if (node is VisualSceneText text) {
             var font = text.Text.Style.Font;
+            if (font.ColorPaletteIndex == 0) continue;
             styles.Add(new ChartForgeX.Typography.TextStyleOverride { FontFamily = font.Family, ColorPaletteIndex = font.ColorPaletteIndex });
         }
         if (styles.Count == 0) return;
-        writer.StartElement("style").Text(ChartForgeX.Typography.TypographyPaletteCss.Rules(string.Empty, styles.ToArray())).EndElement();
+        var rules = ChartForgeX.Typography.TypographyPaletteCss.Rules(string.Empty, styles.ToArray());
+        if (rules.Length > 0) writer.StartElement("style").Text(rules).EndElement();
     }
 
     private static string PathData(VisualScenePath path) {

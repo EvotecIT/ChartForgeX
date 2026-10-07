@@ -22,7 +22,8 @@ public static class FlowArtifactRendering {
             .WithTitle(flow.Title)
             .WithSubtitle(flow.Subtitle)
             .WithViewport(flow.Width, flow.Height, flow.Padding)
-            .WithLayout(ToTopologyLayout(flow.LayoutMode), ToVisualLinkDirection(flow.Direction));
+            .WithLayout(flow.LayoutMode == FlowArtifactLayoutMode.Layered && flow.Lanes.Count > 0
+                ? TopologyLayoutMode.Swimlane : ToTopologyLayout(flow.LayoutMode), ToVisualLinkDirection(flow.Direction));
 
         for (var i = 0; i < flow.Lanes.Count; i++) {
             var lane = flow.Lanes[i];
@@ -32,6 +33,9 @@ public static class FlowArtifactRendering {
         for (var i = 0; i < flow.Steps.Count; i++) {
             var step = flow.Steps[i];
             chart.AddAutoNode(step.Id, step.Label, ToTopologyKind(step.Kind), ToTopologyStatus(step.Status), step.LaneId, step.Subtitle, width: step.Width, height: step.Height, symbol: step.Symbol, color: step.Color, iconId: step.Icon);
+            // Flow declaration order is the progression contract. Infrastructure node-kind ranks
+            // would put starts, decisions and ends in one layer and then reorder them by id.
+            chart.Nodes[i].Metadata["layer"] = i.ToString(CultureInfo.InvariantCulture);
             chart.WithNodeDisplay(step.Id, ToDisplay(step.Kind));
             if (!string.IsNullOrWhiteSpace(step.Badge)) chart.WithNodeBadge(step.Id, step.Badge);
         }

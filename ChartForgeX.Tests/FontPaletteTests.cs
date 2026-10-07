@@ -223,7 +223,8 @@ public sealed class FontPaletteTests {
             grid.TitleStyle.WithFontFamily("CFX Palette").WithColorPalette(2); grid.SubtitleStyle.WithColorPalette(0);
             var page = Assert.Single(grid.Paginate(1)); Assert.Equal(2, page.Grid.TitleStyle.ColorPaletteIndex);
             var exported = page.Grid.ToSvg(); Assert.Contains("base-palette:2", exported);
-            Assert.Contains("font-palette:--cfx-font-palette-0", exported);
+            Assert.Contains("font-palette:normal", exported);
+            Assert.DoesNotContain("base-palette:0", exported);
             Assert.Contains("base-palette:2", new HtmlChartGridRenderer().RenderFragment(page.Grid));
             Assert.NotEmpty(page.Grid.ToPng());
         });

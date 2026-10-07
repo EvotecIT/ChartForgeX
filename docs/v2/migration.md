@@ -113,6 +113,8 @@ The artifact copies prepared region bounds and accessibility, and declares the p
 
 Prepared topology, flow and sequence producers carry their typed semantic snapshot. Calling `prepared.ToArtifact(id, kind)` retains that snapshot automatically, with the requested artifact ID and prepared dimensions. Node/group bounds, resolved routes and label bounds describe the displayed diagram; authored options and source metadata remain available through the versioned interchange. No diagram data is inferred from scene commands.
 
+Layered flows advance in declared step order and the selected direction. Flows with lanes use the shared swimlane layout, keeping lane bounds disjoint and their member steps contained. Explicit dense and force modes retain their separate layout policies; flow declarations no longer inherit infrastructure-node ranking or lexical ID ordering.
+
 Topology artwork retains its aspect-ratio policy, highlight dimming and selected outline. Embedded bitmap and inline SVG artwork become immutable pixels shared by both exporters. Safe host-managed image references remain references in SVG and HTML; native raster export uses the canonical glyph fallback and reports the unresolved external resource. Rendering does not fetch URLs or read image paths. Supply embedded artwork when a self-contained SVG/PNG pair must display the same image.
 
 Topology surface tints use premultiplied sRGB mixing, preserving the authored accent alpha in both SVG paint expressions and native raster colors. A translucent accent therefore produces a lighter tint than an opaque accent with the same RGB channels. Highlight dimming applies once after tint resolution; regenerate stored image baselines that assumed an opaque accent blend.
