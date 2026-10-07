@@ -1,11 +1,12 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using ChartForgeX.Core;
 using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private sealed record ProofArtifact(string Id, string Family, string Title, string Variant, string Theme,
-        int Width, int Height, string[] Diagnostics, int SemanticRegions);
+        int Width, int Height, string[] Diagnostics, int SemanticRegions, string[]? SeriesKinds = null);
 
     private static string Escape(string value) => WebUtility.HtmlEncode(value);
 
@@ -24,11 +25,13 @@ public static partial class V2Examples {
             schemaVersion = 1,
             matrixScope = curated ? "selected" : "full",
             pipeline = "model-to-prepared-scene-to-svg-or-raster",
+            chartKinds = artifacts.SelectMany(ArtifactKinds).Distinct().OrderBy(kind => kind).ToArray(),
             fonts = new[] { "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf" }.Select(file => new {
                 file, sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(Path.Combine(output, file))))
             }),
             artifacts = artifacts.Select(artifact => new {
                 id = artifact.Id, family = artifact.Family, title = artifact.Title, variant = artifact.Variant,
+                seriesKinds = ArtifactKinds(artifact),
                 theme = artifact.Theme, width = artifact.Width, height = artifact.Height,
                 naturalAspect = (double)artifact.Width / artifact.Height,
                 compact = artifact.Variant == "compact", source = artifact.Id + ".csharp.txt",
@@ -41,9 +44,10 @@ public static partial class V2Examples {
         ExampleArtifactWriter.WriteText(Path.Combine(output, "manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n");
         var page = new StringBuilder();
         StartPage(page, "ChartForgeX direct-scene catalog", "light");
-        page.Append("<header><h1>ChartForgeX direct-scene catalog</h1><p>Charts and diagram feasibility · light and dark · SVG and native PNG from one prepared scene</p><p><a href=\"manifest.json\">Artifact manifest</a></p></header><main>");
-        foreach (var family in new[] { "cartesian", "donut", "pie", "topology", "sequence" }.Where(family => artifacts.Any(artifact => artifact.Family == family))) {
-            page.Append("<h2>").Append(char.ToUpperInvariant(family[0]) + family.Substring(1)).Append("</h2><div class=\"grid\">");
+        page.Append("<header><h1>ChartForgeX direct-scene catalog</h1><p>Charts, grids, topology, flow and sequence · light and dark · SVG and native PNG from one prepared scene</p><p><a href=\"manifest.json\">Artifact manifest</a></p></header><main>");
+        foreach (var family in artifacts.Select(artifact => artifact.Family).Distinct().OrderBy(family => family, StringComparer.Ordinal)) {
+            var heading = string.Join(" ", family.Split('-').Select(word => char.ToUpperInvariant(word[0]) + word.Substring(1)));
+            page.Append("<h2>").Append(Escape(heading)).Append("</h2><div class=\"grid\">");
             foreach (var artifact in artifacts.Where(artifact => artifact.Family == family)) {
                 page.Append("<article class=\"tile\" data-theme=\"").Append(artifact.Theme).Append("\"><a class=\"preview\" href=\"").Append(artifact.Id).Append(".html\" aria-label=\"").Append(Escape(artifact.Title)).Append("\">").Append(File.ReadAllText(Path.Combine(output, artifact.Id + ".thumbnail.svg"))).Append("</a>");
                 page.Append("<div class=\"caption\"><h3>").Append(Escape(artifact.Title)).Append("</h3><p>").Append(Escape(artifact.Variant.Replace('-', ' '))).Append(" · ").Append(artifact.Theme).Append(" · ").Append(artifact.Width).Append('×').Append(artifact.Height).Append("</p>");
@@ -54,6 +58,11 @@ public static partial class V2Examples {
         page.Append("</main></body></html>");
         ExampleArtifactWriter.WriteText(Path.Combine(output, "index.html"), page.ToString());
     }
+
+    private static string[] ArtifactKinds(ProofArtifact artifact) => artifact.SeriesKinds ?? artifact.Family switch {
+        "cartesian" => new[] { nameof(ChartSeriesKind.Line), nameof(ChartSeriesKind.Area), nameof(ChartSeriesKind.Bar) },
+        "donut" => new[] { nameof(ChartSeriesKind.Donut) }, "pie" => new[] { nameof(ChartSeriesKind.Pie) }, _ => Array.Empty<string>()
+    };
 
     private static void StartPage(StringBuilder page, string title, string theme) {
         page.Append("<!doctype html><html lang=\"en\" data-theme=\"").Append(theme).Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>").Append(Escape(title)).Append("</title><style>");

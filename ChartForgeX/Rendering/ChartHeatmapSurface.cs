@@ -43,12 +43,12 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>
     /// Returns the colour of a matrix or hexbin heatmap cell. In a count heatmap (<see cref="ChartOptions.HeatmapRelativeScale"/>)
-    /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor"/> instead of the weakest ramp step.
-    /// Maps keep using <see cref="Color"/>, where zero can be a real magnitude.
+    /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor(Chart)"/> instead of the weakest ramp step.
+    /// Maps keep using <see cref="Color(Chart, ChartColor?, double, double, double)"/>, where zero can be a real magnitude.
     /// </summary>
     public static ChartColor CellColor(Chart chart, ChartColor? highColor, double value, double min, double max) => CellBlend(chart, highColor, value, min, max).Color;
 
-    /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor"/>).</summary>
+    /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor(Chart, ChartColor?, double, double, double)"/>).</summary>
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
         (chart.Options.HeatmapRelativeScale || chart.Options.Theme.UseGraphiteLayout) && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
 
@@ -76,7 +76,7 @@ internal static class ChartHeatmapSurface {
 
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) => ColorBlend(chart, highColor, value, min, max).Color;
 
-    /// <summary>Returns <see cref="Color"/> as a blend of its theme, series, or ramp colours.</summary>
+    /// <summary>Returns <see cref="Color(Chart, ChartColor?, double, double, double)"/> as a blend of its theme, series, or ramp colours.</summary>
     public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
@@ -224,7 +224,7 @@ internal static class ChartHeatmapSurface {
 
     public static ChartColor CalendarColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) => CalendarBlend(chart, series, pointColor, value, min, max).Color;
 
-    /// <summary>Returns <see cref="CalendarColor"/> as a blend of its ramp, series, and surface colours.</summary>
+    /// <summary>Returns <see cref="CalendarColor(Chart, ChartSeries, ChartColor?, double, double, double)"/> as a blend of its ramp, series, and surface colours.</summary>
     public static ChartColorBlend CalendarBlend(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
         var ratio = CalendarRatio(value, min, max);
         if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
@@ -235,12 +235,12 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>
     /// Returns the colour of a zero count: the surface behind the cells, shifted a little towards the muted text colour so
-    /// the cell stays visible without reading as activity. It differs from <see cref="CalendarEmptyColor"/>, which marks
+    /// the cell stays visible without reading as activity. It differs from <see cref="CalendarEmptyColor(Chart)"/>, which marks
     /// days without data.
     /// </summary>
     public static ChartColor ZeroColor(Chart chart) => ZeroBlend(chart).Color;
 
-    /// <summary>Returns <see cref="ZeroColor"/> as a blend of the backdrop and the muted text colour.</summary>
+    /// <summary>Returns <see cref="ZeroColor(Chart)"/> as a blend of the backdrop and the muted text colour.</summary>
     public static ChartColorBlend ZeroBlend(Chart chart) => chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(chart.Options.Theme.Neutral3, SvgColorRole.Surface) : TowardsMutedText(chart, 0.14);
 
     /// <summary>
@@ -249,7 +249,7 @@ internal static class ChartHeatmapSurface {
     /// </summary>
     public static ChartColor CalendarEmptyColor(Chart chart) => CalendarEmptyBlend(chart).Color;
 
-    /// <summary>Returns <see cref="CalendarEmptyColor"/> as a blend of the backdrop and the muted text colour.</summary>
+    /// <summary>Returns <see cref="CalendarEmptyColor(Chart)"/> as a blend of the backdrop and the muted text colour.</summary>
     public static ChartColorBlend CalendarEmptyBlend(Chart chart) => TowardsMutedText(chart, 0.30);
 
     /// <summary>Blends the backdrop towards the muted text colour, by <paramref name="share"/> of its opacity, into an opaque colour.</summary>

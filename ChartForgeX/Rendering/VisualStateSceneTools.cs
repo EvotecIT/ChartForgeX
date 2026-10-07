@@ -69,7 +69,7 @@ internal static class VisualStateSceneTools {
     }
 
     internal static void Text(VisualSceneBuilder builder, string text, ChartRect bounds, TextStyle style, string role,
-        string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false) {
+        string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false, SvgPaint? paint = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
         if (bounds.Width <= 0 || bounds.Height <= 0 || text.Length == 0) return;
         style = style.Clone();
@@ -84,7 +84,7 @@ internal static class VisualStateSceneTools {
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - builder.MeasureText(fit, style).Height) / 2 + builder.TextAscent(style);
-        using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id);
+        using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint);
     }
 
     internal static ChartPath RoundedRect(ChartRect bounds, double radius) {

@@ -10,7 +10,11 @@ internal static class LegendRowBudget {
     private const double PortableLineHeightEm = 1.2;
 
     internal static List<T> Apply<T>(List<T> rows, Chart chart, Func<T, int> count, Func<int, T> summary, double? availableHeight = null, ChartLegendPosition? position = null) {
-        var maximumRows = MaximumRows(chart, availableHeight, position);
+        return Apply(rows, MaximumRows(chart, availableHeight, position), count, summary);
+    }
+
+    /// <summary>Applies the same overflow policy to rows whose height budget was measured by a prepared frame.</summary>
+    internal static List<T> Apply<T>(List<T> rows, int maximumRows, Func<T, int> count, Func<int, T> summary) {
         if (maximumRows <= 0) {
             rows.Clear();
             return rows;

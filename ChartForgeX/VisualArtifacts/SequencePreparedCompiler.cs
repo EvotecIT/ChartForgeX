@@ -12,14 +12,39 @@ namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Compiles the sequence model directly to native scene primitives and a detached semantic projection.</summary>
 internal static partial class SequencePreparedCompiler {
-    internal static PreparedVisual Prepare(SequenceArtifact model, VisualRenderContext context) {
+    internal static PreparedVisual Prepare(SequenceArtifact model, VisualRenderContext context) => Prepare(model, context, false);
+
+    internal static PreparedVisual PrepareDefault(SequenceArtifact model) {
+        if (model == null) throw new ArgumentNullException(nameof(model));
+        var theme = VisualTheme.Graphite();
+        double nesting = Math.Max(model.Blocks.Select(b => b.Depth).DefaultIfEmpty(0).Max(), model.Branches.Select(b => b.Depth).DefaultIfEmpty(0).Max());
+        double gap = Math.Max(10, theme.Spacing), stroke = Math.Max(2, theme.SeriesStrokeWidth);
+        double inset = gap + nesting * 10 + stroke + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.Over) ? 32 : 0);
+        double noteReserve = (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? 120 + gap : 0)
+            + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? 120 + gap : 0);
+        double width = Math.Max(model.Width, model.Padding * 2 + inset * 2 + noteReserve + (model.Messages.Any(m => m.SourceId == m.TargetId) ? 70 : 0) + model.Participants.Count * 140);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, Math.Max(model.Height, model.Padding * 2 + 512)), model.Padding),
+            theme, frame: new VisualFrame(showLegend: false));
+        return Prepare(model, context, true);
+    }
+
+    private static PreparedVisual Prepare(SequenceArtifact model, VisualRenderContext context, bool fitContent) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         Validate(model);
         context = VisualDiagramPrimitives.WithFrame(context, model.Title, model.Subtitle);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var plot = VisualFrameLayout.Build(builder, context, Array.Empty<VisualLegendEntry>());
         var semantics = VisualArtifactInterchangeMapping.FromPreparedSequence(model, context.Layout.Size);
-        var layout = SequencePreparedLayout.Calculate(model, semantics, builder, context, plot);
+        var layout = SequencePreparedLayout.Calculate(model, semantics, builder, context, plot, fitContent);
+        if (fitContent) {
+            var resolvedSize = new VisualSize(context.Layout.Size.Width, Math.Max(model.Height, layout.Bottom + model.Padding + Math.Max(2, context.Theme.SeriesStrokeWidth)));
+            context = new VisualRenderContext(new VisualLayoutOptions(resolvedSize, model.Padding), context.Theme, context.ThemeMode, context.Frame, context.Font);
+            builder = new VisualSceneBuilder(resolvedSize, context.Font);
+            VisualFrameLayout.Build(builder, context, Array.Empty<VisualLegendEntry>());
+            semantics.Width = resolvedSize.Width; semantics.Height = resolvedSize.Height;
+        }
+        semantics.Extensions["chartforgex.source.width"] = model.Width.ToString("R", CultureInfo.InvariantCulture);
+        semantics.Extensions["chartforgex.source.height"] = model.Height.ToString("R", CultureInfo.InvariantCulture);
         var colors = context.Theme.Resolve(context.ThemeMode);
         double size = layout.FontSize, stroke = context.Theme.AxisStrokeWidth;
         foreach (var item in layout.Blocks.OrderBy(i => model.Blocks[i.Index].Depth)) {
@@ -70,7 +95,7 @@ internal static partial class SequencePreparedCompiler {
                 builder.Path(new ChartPath(points.Select((p, i) => i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)).ToArray()),
                     stroke: colors.Accent, strokeWidth: context.Theme.SeriesStrokeWidth, role: "sequence-message-line", dash: message.LineStyle == SequenceArtifactMessageLineStyle.Dashed ? new[] { 6d, 5d } : null);
                 MessageArrows(builder, message, points, colors, context.Theme.SeriesStrokeWidth);
-                Text(builder, item.Text, item.LabelBounds, size, colors.Foreground);
+                Text(builder, item.Text, item.LabelBounds, size, colors.Foreground, center: !self);
             }
             Region(builder, item, "sequence-message", message.Text);
             foreach (var point in points) semantics.Edges[item.Index].ResolvedRoute.Add(new VisualArtifactInterchangePoint { X = point.X, Y = point.Y });
@@ -133,10 +158,10 @@ internal static partial class SequencePreparedCompiler {
         foreach (var block in model.Blocks) { Span(block.StartStepIndex, block.EndStepIndex, block.Depth, block.IsEmpty); if (!Enum.IsDefined(typeof(SequenceArtifactBlockKind), block.Kind)) throw new ArgumentOutOfRangeException(nameof(model)); }
         foreach (var branch in model.Branches) { Span(branch.StartStepIndex, branch.EndStepIndex, branch.Depth, branch.IsEmpty); if (!Enum.IsDefined(typeof(SequenceArtifactBlockKind), branch.ParentKind)) throw new ArgumentOutOfRangeException(nameof(model)); }
         void RequireId(string id) { if (!ids.Contains(id)) throw new InvalidOperationException("Sequence target does not exist: " + id); }
-        void Step(int step) { if (step < 0 || step > 100000) throw new ArgumentOutOfRangeException(nameof(model), "Sequence step indices must be between zero and 100000."); }
+        void Step(int step) { if (step > 100000) throw new ArgumentOutOfRangeException(nameof(model), "Sequence step indices must not exceed 100000; negative indices normalize to zero."); }
         void Span(int start, int end, int depth, bool empty) {
             Step(start); Step(end);
-            if (depth < 0 || depth > 100 || (!empty && end < start)) throw new ArgumentOutOfRangeException(nameof(model), "Invalid sequence fragment span or nesting depth.");
+            if (depth < 0 || depth > 100) throw new ArgumentOutOfRangeException(nameof(model), "Invalid sequence fragment nesting depth.");
         }
     }
 }

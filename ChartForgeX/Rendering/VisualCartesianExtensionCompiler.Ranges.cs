@@ -39,7 +39,7 @@ internal static partial class VisualCartesianCompiler {
             if (area) builder.Path(ChartPathBuilder.FromPoints(middle.GetRange(offset, segment.Count), ChartSeriesKind.Line, series.Smooth),
                 stroke: ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), strokeWidth: ChartVisualPrimitives.RangeAreaMidlineStrokeWidth,
                 role: "range-midline", dash: new[] { ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap });
-            obstacles.Add(new LabelObstacle(SeriesId(index) + "-envelope-" + Number(offset), new LabelMarkShape(new[] { highFlat.Concat(lowFlat.Reverse()).ToList() }, true, stroke, plot)));
+            obstacles.Add(new LabelObstacle(SeriesId(index) + "-envelope-" + Number(offset), new LabelMarkShape(new[] { highFlat.Concat(lowFlat.AsEnumerable().Reverse()).ToList() }, true, stroke, plot)));
             offset += segment.Count;
         }
         for (var item = 0; item < count; item++) {

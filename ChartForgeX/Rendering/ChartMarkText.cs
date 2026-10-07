@@ -7,7 +7,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>
 /// Chooses the colour of text drawn on a filled mark (heatmap and hexbin values, categorical cell text, Gantt lane item
 /// labels), once for SVG and PNG, from two theme colours that SVG colour variables write by role: the surface behind the
-/// marks (<see cref="ChartStateMark.Backdrop"/>, <see cref="SvgColorRole.Surface"/>) on a strong fill, and the text colour
+/// marks (<see cref="ChartStateMark.Backdrop(Chart)"/>, <see cref="SvgColorRole.Surface"/>) on a strong fill, and the text colour
 /// (<see cref="SvgColorRole.Text"/>) on a weak one. Whether a fill is strong comes from where the cell sits on its scale,
 /// or how fully a state mark is filled, not from its colour in one theme. Token sets whose strong marks stand out from the
 /// surface in light and dark themes therefore pick the same role in both, and one SVG with colour variables serves both.

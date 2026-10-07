@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Xml.Linq;
+using ChartForgeX.Core;
 
 public static partial class V2Examples {
     /// <summary>Checks the generated manifest, source/output links and exact SVG/PNG dimensions.</summary>
@@ -8,6 +9,9 @@ public static partial class V2Examples {
         var artifacts = document.RootElement.GetProperty("artifacts").EnumerateArray().ToArray();
         if (artifacts.Length == 0) throw new InvalidOperationException("The v2 catalog has no artifacts.");
         var identifiers = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var theme in new[] { "light", "dark" })
+            if (!artifacts.Any(artifact => artifact.GetProperty("theme").GetString() == theme && artifact.GetProperty("seriesKinds").EnumerateArray().Any(value => value.GetString() == kind.ToString())))
+                throw new InvalidOperationException("The v2 catalog is missing " + kind + " in " + theme + ".");
         var catalog = File.ReadAllText(Path.Combine(output, "index.html"));
         foreach (var artifact in artifacts) {
             var id = artifact.GetProperty("id").GetString()!;

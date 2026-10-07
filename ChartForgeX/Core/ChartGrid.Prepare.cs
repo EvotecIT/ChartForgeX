@@ -24,7 +24,8 @@ public sealed partial class ChartGrid : IVisualRenderable {
         frame = new VisualFrame(frame.Title ?? Title, frame.Subtitle ?? Subtitle, frame.ShowLegend, frame.LegendPosition,
             frame.ShowSurface, frame.TransparentBackground,
             Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground),
-            Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground), frame.LegendStyle);
+            Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground), frame.LegendStyle,
+            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction);
         var resolved = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var content = VisualFrameLayout.Build(builder, resolved, Array.Empty<VisualLegendEntry>());
@@ -49,8 +50,11 @@ public sealed partial class ChartGrid : IVisualRenderable {
                 var x = cell.Left + (cell.Width - width) / 2; var y = cell.Top + (cell.Height - height) / 2;
                 var panelId = "panel-" + i.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 var panelFrame = new VisualFrame(chart.Title, chart.Subtitle, frame.ShowLegend, frame.LegendPosition,
-                    frame.ShowSurface, transparentBackground: true, legendStyle: frame.LegendStyle);
-                var panelPadding = Math.Min(context.Layout.Padding / 2, Math.Min(width, height) / 4);
+                    frame.ShowSurface, transparentBackground: true, legendStyle: frame.LegendStyle,
+                    legendMaximumRows: frame.LegendMaximumRows, legendMaximumHeightFraction: frame.LegendMaximumHeightFraction);
+                var padding = context.Layout.PaddingEdges;
+                var panelPadding = new ChartPadding(Math.Min(padding.Left / 2, width / 4), Math.Min(padding.Top / 2, height / 4),
+                    Math.Min(padding.Right / 2, width / 4), Math.Min(padding.Bottom / 2, height / 4));
                 var panelContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), panelPadding),
                     context.Theme, context.ThemeMode, panelFrame, context.Font);
                 var child = chart.Prepare(panelContext);

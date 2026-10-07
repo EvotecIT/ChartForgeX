@@ -33,7 +33,7 @@ internal static class VisualFrameLayout {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var typography = context.Theme.Typography;
         var gap = context.Theme.Spacing;
-        var pad = context.Layout.Padding;
+        var pad = context.Layout.PaddingEdges;
         TextStyle Style(TextStyle? explicitStyle, double size, int weight, ChartColor color) {
             if (explicitStyle != null) return explicitStyle;
             var font = context.Font; font.Weight = weight;
@@ -43,7 +43,7 @@ internal static class VisualFrameLayout {
         var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
         var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background");
-        var left = pad; var right = size.Width - pad; var top = pad; var bottom = size.Height - pad;
+        var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             Header(context.Frame.Title, titleStyle);
             Header(context.Frame.Subtitle, subtitleStyle);
@@ -61,9 +61,19 @@ internal static class VisualFrameLayout {
             }
             if (row.Count > 0) rows.Add(row);
             var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
-            var available = Math.Max(0, (bottom - top) * (side ? 1 : 0.35));
-            var visible = Math.Min(rows.Count, (int)Math.Floor(available / lineHeight));
-            if (visible < rows.Count) builder.AddDiagnostic(new VisualDiagnostic("frame.legend-overflow", "Some legend entries do not fit the resolved frame."));
+            var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
+            var legendGap = Math.Min(gap, Math.Max(0, available - lineHeight));
+            var maximumRows = available < lineHeight ? 0 : (int)Math.Floor((available - legendGap) / lineHeight);
+            if (context.Frame.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, context.Frame.LegendMaximumRows.Value);
+            var omitted = 0; VisualLegendEntry? overflow = null;
+            LegendRowBudget.Apply(rows, maximumRows, row => row.Count, count => {
+                omitted = count;
+                overflow = new VisualLegendEntry(LegendRowBudget.Summary(count), colors.MutedForeground, "overflow");
+                return new List<VisualLegendEntry> { overflow };
+            });
+            if (maximumRows == 0) omitted = entries.Count;
+            var visible = rows.Count;
+            if (omitted > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.legend-overflow", "Some legend entries do not fit the resolved frame; all entries remain in descriptive regions."));
             var height = visible * lineHeight;
             var x = position == ChartLegendPosition.Right ? right - legendWidth : left;
             var y = side || above ? top : bottom - height;
@@ -83,7 +93,7 @@ internal static class VisualFrameLayout {
                             ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
                             ["aria-label"] = entry.Label
                         })) {
-                            using (builder.PushClip(swatch)) {
+                            if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
                             if (entry.Marker != null) entry.Marker(builder, swatch);
                             else if (entry.State != null) {
                                 using (builder.PushGroup("legend-" + entry.Id + "-swatch", "state-legend-swatch",
@@ -108,12 +118,24 @@ internal static class VisualFrameLayout {
                     }
                 }
             }
-            if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + gap; else right -= legendWidth + gap; }
-            else if (above) top += height + gap; else bottom -= height + gap;
+            if (omitted > 0) {
+                var shown = new HashSet<VisualLegendEntry>();
+                foreach (var visibleRow in rows) foreach (var entry in visibleRow) shown.Add(entry);
+                foreach (var entry in entries) if (!shown.Contains(entry)) {
+                    builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(x, y, 0, 0), entry.Label));
+                    using (builder.PushGroup("legend-" + entry.Id, "legend-entry-omitted", new Dictionary<string, string> {
+                        ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["aria-label"] = entry.Label
+                    })) { }
+                }
+            }
+            if (height > 0) {
+                if (side) { if (position == ChartLegendPosition.Left) left += legendWidth + legendGap; else right -= legendWidth + legendGap; }
+                else if (above) top += height + legendGap; else bottom -= height + legendGap;
+            }
         }
         if (bottom <= top || right <= left) {
             builder.AddDiagnostic(new VisualDiagnostic("frame.insufficient-space", "The frame leaves no content viewport."));
-            return new ChartRect(left, Math.Min(top, size.Height - pad), Math.Max(0, right - left), 0);
+            return new ChartRect(left, Math.Min(top, size.Height - pad.Bottom), Math.Max(0, right - left), 0);
         }
         var content = new ChartRect(left, top, right - left, bottom - top);
         if (context.Frame.ShowSurface) builder.Rect(content, colors.Surface, colors.Border, radius: context.Theme.BarRadius, role: "content-surface");

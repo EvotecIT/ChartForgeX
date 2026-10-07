@@ -13,6 +13,7 @@ internal static partial class VisualSceneSvgRenderer {
         // Unbound paints stay literal. A renderer must retain provenance explicitly instead of
         // guessing whether an equal RGB value is a theme token, derived contrast ink or highlight.
         if (options?.Variables == null || !paint.HasValue || paint.Value.Value == null) return color.Value.ToCss();
+        if (!paint.Value.IsRaw) return options.Variables.TryPaint(color.Value, SvgColorRole.Any, out var mapped) ? mapped : color.Value.ToCss();
         return SvgPaint.Resolve(paint.Value.Value, options.Variables);
     }
 

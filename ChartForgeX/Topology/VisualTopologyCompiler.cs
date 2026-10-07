@@ -81,21 +81,19 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeLayoutDiagnosticOverlay) BuildDiagnostics();
         }
         var accessibility = _source.Accessibility.Clone();
-        accessibility.Name ??= _context.Frame.Title ?? _source.Id;
-        accessibility.Description ??= _context.Frame.Subtitle;
+        accessibility.Name ??= _context.Frame.Title ?? _source.Title ?? _source.Id;
+        accessibility.Description ??= _context.Frame.Subtitle ?? _source.Subtitle;
         var semantics = SemanticSnapshot();
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
-        return new PreparedVisual(_builder.Build(), accessibility, semanticInterchange: semantics);
+        var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,
+            _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext);
+        return new PreparedVisual(_builder.Build(), accessibility, semanticInterchange: semantics, svgOptions: svgOptions);
     }
 
     private void DiagnoseExportOptions() {
         if (_options.Motion != null) throw new NotSupportedException("TopologyRenderOptions.Motion requires the Stories animation pipeline; Prepare produces a fixed static scene.");
         if (_options.EnableHtmlInteractions || _options.EnableHtmlViewportControls || _options.EnableHtmlExportControls || _options.EnableHtmlForceGraphControls || _options.EnableHtmlSynchronizedState || _options.EnableHtmlSelectionPanel || _options.EnableHtmlFullscreenControl || _options.EnableHtmlScenarioUrlState)
             _builder.AddDiagnostic(new VisualDiagnostic("topology.host-options", "HTML interaction and viewport options remain host metadata; a static prepared scene does not install their controls."));
-        if (_options.SvgColorVariables != null) _builder.AddDiagnostic(new VisualDiagnostic("topology.svg-color-variables", "SvgColorVariables requires the common SVG export policy; this prepared snapshot currently exports resolved literal colors."));
-        if (_options.PinStateColorsInForcedColors) _builder.AddDiagnostic(new VisualDiagnostic("topology.forced-colors", "PinStateColorsInForcedColors requires the common SVG accessibility export policy; the static scene preserves status metadata but does not yet pin browser forced colors."));
-        if (_options.OpenLinksInNewTab) _builder.AddDiagnostic(new VisualDiagnostic("topology.link-target", "OpenLinksInNewTab requires the common link export policy; safe link destinations remain in the scene and semantic snapshot."));
-        if (!string.IsNullOrWhiteSpace(_options.IdScope)) _builder.AddDiagnostic(new VisualDiagnostic("topology.id-scope", "IdScope requires host SVG export scoping; default prepared SVG export uses its deterministic content scope."));
     }
 
     private static VisualRenderContext ResolveFrame(VisualRenderContext context, TopologyChart source, TopologyRenderOptions options) {
@@ -109,7 +107,8 @@ internal sealed partial class VisualTopologyCompiler {
         return new VisualRenderContext(resolved.Layout, resolved.Theme, resolved.ThemeMode,
             new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition, frame.ShowSurface, frame.TransparentBackground,
                 frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 600, colors.Foreground),
-                frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle), resolved.Font);
+                frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle,
+                frame.LegendMaximumRows, frame.LegendMaximumHeightFraction), resolved.Font);
     }
 
     private void ResolveFit() {

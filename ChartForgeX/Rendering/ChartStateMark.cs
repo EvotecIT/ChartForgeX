@@ -51,7 +51,7 @@ internal readonly struct ChartStateMark {
 
     private ChartColor Background { get; }
 
-    /// <summary>Gets the fill as it appears on the backdrop (see <see cref="Backdrop"/>), for choosing a readable text colour on the mark.</summary>
+    /// <summary>Gets the fill as it appears on the backdrop (see <see cref="Backdrop(Chart)"/>), for choosing a readable text colour on the mark.</summary>
     public ChartColor Surface => Over(ChartColorMath.WithOpacity(Color, FillOpacity), Background);
 
     /// <summary>Gets the pattern token written to <c>data-cfx-pattern</c>, or null for a solid mark.</summary>

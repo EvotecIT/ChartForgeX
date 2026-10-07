@@ -18,6 +18,7 @@
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="V2Examples.Diagrams.cs" LogicalName="ChartForgeX.Examples.V2DiagramSource" />
     <EmbeddedResource Include="V2Examples.RadialLabels.cs" LogicalName="ChartForgeX.Examples.V2RadialLabelSource" />
+    <EmbeddedResource Include="V2GalleryModels*.cs" LogicalName="ChartForgeX.Examples.%(Filename)%(Extension)" />
     <EmbeddedResource Include="Snippets\FiveLineChart.cs.txt" LogicalName="ChartForgeX.Examples.FiveLineChart.cs" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.svg" LogicalName="ChartForgeX.Examples.styled-multilingual-text.svg" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.html" LogicalName="ChartForgeX.Examples.styled-multilingual-text.html" WithCulture="false" />

@@ -64,7 +64,7 @@ public sealed class PreparedSequenceTests {
         var labels = xml.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "sequence-message")
             .Select(e => e.Descendants().Single(t => t.Name.LocalName == "text")).ToArray();
         for (int i = 0; i < labels.Length; i++)
-            Assert.Equal(envelope.Edges[i].ResolvedLabelBounds!.Value.X,
+            Assert.Equal(envelope.Edges[i].ResolvedLabelBounds!.Value.X + (i == 0 ? envelope.Edges[i].ResolvedLabelBounds!.Value.Width / 2 : 0),
                 double.Parse((string)labels[i].Attribute("x")!, System.Globalization.CultureInfo.InvariantCulture), 2);
     }
 
@@ -156,6 +156,45 @@ public sealed class PreparedSequenceTests {
         var message = Assert.Single(prepared.ToArtifact("operators", VisualArtifactKind.Sequence).ToInterchangeEnvelope().Edges);
         Assert.Equal(SequenceArtifactMessageKind.Call, message.Sequence!.Kind);
         Assert.Equal(notation, message.Extensions["mermaid.operator"]);
+    }
+
+    [Fact]
+    public void PublicExportsUseNativeContentSizingWhileSourceEnvelopeRetainsAuthoredBounds() {
+        var model = SequenceArtifact.Create("public-native").WithSize(500, 240)
+            .AddParticipant("a", "Caller", SequenceArtifactParticipantKind.Actor).AddParticipant("b", "Worker");
+        for (int i = 0; i < 8; i++) model.AddMessage("a", "b", "Request " + i);
+        model.AddActivation("b", true, 0).AddActivation("b", false, 7)
+            .AddBlock(SequenceArtifactBlockKind.Alt, "Result", 0, 7)
+            .AddBranch(SequenceArtifactBlockKind.Alt, "Else", "Retry", 4, 7);
+        var source = model.ToVisualArtifact();
+        Assert.Same(model, source.Model);
+        Assert.Equal(500, source.NaturalSize!.Value.Width); Assert.Equal(240, source.NaturalSize.Value.Height);
+        Assert.Equal(240, source.ToInterchangeEnvelope().Height);
+        var xml = XDocument.Parse(model.ToSvg());
+        double width = double.Parse((string)xml.Root!.Attribute("width")!, System.Globalization.CultureInfo.InvariantCulture);
+        double height = double.Parse((string)xml.Root.Attribute("height")!, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.True(width >= 500); Assert.True(height > 240);
+        Assert.Contains(xml.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "sequence-activation-bar");
+        Assert.Contains(xml.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "sequence-branch");
+        Assert.Equal(model.ToSvg(), source.ToSvg());
+        var pixels = ChartForgeX.Raster.RasterImageDecoder.Decode(model.ToPng());
+        Assert.Equal((int)Math.Ceiling(width), pixels.Width); Assert.Equal((int)Math.Ceiling(height), pixels.Height);
+        Assert.Throws<NotSupportedException>(() => model.Prepare(Context(500, 240)));
+    }
+
+    [Fact]
+    public void NativePlanUsesTheEstablishedNonnegativeOrderedSequenceSpans() {
+        var model = SequenceArtifact.Create("normalized").AddParticipant("a").AddParticipant("b").AddMessage("a", "b", "Call")
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { "a" }, "Note")
+            .AddBlock(SequenceArtifactBlockKind.Opt, "Span", -2, -5);
+        model.Notes[0].StepIndex = -3;
+        var prepared = model.Prepare(Context());
+        var envelope = prepared.ToArtifact("normalized", VisualArtifactKind.Sequence).ToInterchangeEnvelope();
+        Assert.All(envelope.Annotations, annotation => Assert.Equal(0, annotation.StartIndex));
+        Assert.Equal(0, envelope.Annotations.Single(a => a.Role == VisualArtifactInterchangeAnnotationRole.SequenceBlock).EndIndex);
+        Assert.Equal("960", envelope.Extensions["chartforgex.source.width"]);
+        Assert.Equal("560", envelope.Extensions["chartforgex.source.height"]);
+        Assert.Contains(prepared.Regions, r => r.Role == "sequence-note");
     }
 
     [Fact]

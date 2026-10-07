@@ -181,7 +181,8 @@ internal readonly struct SvgPaint {
                 var from = Color(body, 9);
                 var to = Color(body, 18);
                 if (!double.TryParse(body.Substring(26), NumberStyles.Float, CultureInfo.InvariantCulture, out var amount)) amount = 0;
-                if (variables != null && TryMix(variables, from, Role(body[8]), to, Role(body[17]), amount, out var mix)) return mix;
+                if (variables != null && TryMix(variables, from, Role(body[8]), to, Role(body[17]), amount, out var mix))
+                    return result.A == 255 ? mix : "color-mix(in srgb, " + mix + " " + (result.A / 255d * 100).ToString("0.##", CultureInfo.InvariantCulture) + "%, transparent)";
                 return keepLiterals ? Literal(result).Value! : result.ToCss();
             }
         }

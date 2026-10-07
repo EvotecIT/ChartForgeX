@@ -24,7 +24,7 @@ internal sealed class SequencePreparedLayout {
     internal double FontSize;
 
     internal static SequencePreparedLayout Calculate(SequenceArtifact model, VisualArtifactInterchangeEnvelope semantics,
-        VisualSceneBuilder builder, VisualRenderContext context, ChartRect plot) {
+        VisualSceneBuilder builder, VisualRenderContext context, ChartRect plot, bool allowHeightOverflow = false) {
         var layout = new SequencePreparedLayout { FontSize = context.Theme.Typography.DataLabelSize };
         double size = layout.FontSize, gap = Math.Max(10, context.Theme.Spacing), stroke = Math.Max(2, context.Theme.SeriesStrokeWidth);
         double nesting = Math.Max(model.Blocks.Select(b => b.Depth).DefaultIfEmpty(0).Max(), model.Branches.Select(b => b.Depth).DefaultIfEmpty(0).Max());
@@ -49,29 +49,29 @@ internal sealed class SequencePreparedLayout {
         layout.LifelineTop = top + participantHeight;
         foreach (var participant in layout.Participants) participant.Bounds = new ChartRect(participant.Bounds.X, top, boxWidth, participantHeight);
         int count = model.Messages.Count;
-        foreach (var note in model.Notes) count = Math.Max(count, note.StepIndex + 1);
-        foreach (var activation in model.Activations) count = Math.Max(count, activation.StepIndex + 1);
-        foreach (var block in model.Blocks) count = Math.Max(count, Math.Max(block.StartStepIndex, block.EndStepIndex) + 1);
-        foreach (var branch in model.Branches) count = Math.Max(count, Math.Max(branch.StartStepIndex, branch.EndStepIndex) + 1);
+        foreach (var note in model.Notes) count = Math.Max(count, Step(note.StepIndex) + 1);
+        foreach (var activation in model.Activations) count = Math.Max(count, Step(activation.StepIndex) + 1);
+        foreach (var block in model.Blocks) count = Math.Max(count, End(block.StartStepIndex, block.EndStepIndex) + 1);
+        foreach (var branch in model.Branches) count = Math.Max(count, End(branch.StartStepIndex, branch.EndStepIndex) + 1);
         count = Math.Max(1, count);
         layout.Steps = new double[count]; layout.Ends = new double[count];
         double y = layout.LifelineTop + gap * 2;
         for (int step = 0; step < count; step++) {
-            foreach (var block in model.Blocks.Select((value, index) => new { value, index }).Where(b => b.value.StartStepIndex == step).OrderBy(b => b.value.Depth)) {
+            foreach (var block in model.Blocks.Select((value, index) => new { value, index }).Where(b => Step(b.value.StartStepIndex) == step).OrderBy(b => b.value.Depth)) {
                 var bounds = new ChartRect(plot.X + gap + block.value.Depth * 10, y, plot.Width - gap * 2 - block.value.Depth * 20, 0);
                 string text = Wrap(block.value.Kind.ToString().ToLowerInvariant() + "  " + block.value.Text, bounds.Width - 20, builder, size);
                 double header = builder.MeasureText(text, size).Height + 14;
                 layout.Blocks.Add(new Item { Id = Annotation(semantics, VisualArtifactInterchangeAnnotationRole.SequenceBlock, block.index), Index = block.index, Text = text, Bounds = bounds, Y = header });
                 y += header + (block.value.IsEmpty ? gap : 0);
             }
-            foreach (var branch in model.Branches.Select((value, index) => new { value, index }).Where(b => b.value.StartStepIndex == step).OrderBy(b => b.value.Depth)) {
+            foreach (var branch in model.Branches.Select((value, index) => new { value, index }).Where(b => Step(b.value.StartStepIndex) == step).OrderBy(b => b.value.Depth)) {
                 var bounds = new ChartRect(plot.X + gap + branch.value.Depth * 10 + 8, y, plot.Width - gap * 2 - branch.value.Depth * 20 - 16, 0);
                 string text = Wrap(branch.value.Kind.ToLowerInvariant() + (branch.value.Text.Length == 0 ? "" : "  [" + branch.value.Text + "]"), bounds.Width - 16, builder, size);
                 double header = builder.MeasureText(text, size).Height + 12;
                 layout.Branches.Add(new Item { Id = Annotation(semantics, VisualArtifactInterchangeAnnotationRole.SequenceBranch, branch.index), Index = branch.index, Text = text, Bounds = bounds, Y = header });
                 y += header + (branch.value.IsEmpty ? gap : 0);
             }
-            foreach (var note in model.Notes.Select((value, index) => new { value, index }).Where(n => n.value.StepIndex == step)) {
+            foreach (var note in model.Notes.Select((value, index) => new { value, index }).Where(n => Step(n.value.StepIndex) == step)) {
                 double min = note.value.ParticipantIds.Min(id => layout.Lanes[id]), max = note.value.ParticipantIds.Max(id => layout.Lanes[id]);
                 double width = note.value.Placement == SequenceArtifactNotePlacement.Over ? Math.Max(120, max - min + boxWidth) : 120;
                 double x = note.value.Placement == SequenceArtifactNotePlacement.LeftOf ? min - width - gap
@@ -98,21 +98,22 @@ internal sealed class SequencePreparedLayout {
                 y = lineY + (loop ? 34 : 12) + gap;
             } else y += gap * 2;
             layout.Ends[step] = y;
-            int ending = model.Blocks.Count(b => !b.IsEmpty && b.EndStepIndex == step);
+            int ending = model.Blocks.Count(b => !b.IsEmpty && End(b.StartStepIndex, b.EndStepIndex) == step);
             y += ending * 8;
         }
         layout.Bottom = y + gap;
         foreach (var item in layout.Blocks) {
             var block = model.Blocks[item.Index];
-            double bottom = block.IsEmpty ? item.Bounds.Y + item.Y + gap : layout.Ends[block.EndStepIndex] + 4;
+            double bottom = block.IsEmpty ? item.Bounds.Y + item.Y + gap : layout.Ends[End(block.StartStepIndex, block.EndStepIndex)] + 4;
             item.Bounds = new ChartRect(item.Bounds.X, item.Bounds.Y, item.Bounds.Width, bottom - item.Bounds.Y);
         }
         foreach (var item in layout.Branches) {
             var branch = model.Branches[item.Index];
-            double bottom = branch.IsEmpty ? item.Bounds.Y + item.Y + gap : layout.Ends[branch.EndStepIndex];
+            double bottom = branch.IsEmpty ? item.Bounds.Y + item.Y + gap : layout.Ends[End(branch.StartStepIndex, branch.EndStepIndex)];
             item.Bounds = new ChartRect(item.Bounds.X, item.Bounds.Y, item.Bounds.Width, Math.Max(item.Y, bottom - item.Bounds.Y));
         }
-        if (layout.Bottom > plot.Bottom - stroke) throw new NotSupportedException("Prepared sequence requires at least " + (layout.Bottom - plot.Y + gap).ToString("0.##", CultureInfo.InvariantCulture) + " logical content pixels of height; enlarge the common viewport.");
+        if (layout.Bottom > plot.Bottom - stroke && !allowHeightOverflow) throw new NotSupportedException("Prepared sequence requires at least " + (layout.Bottom - plot.Y + gap).ToString("0.##", CultureInfo.InvariantCulture) + " logical content pixels of height; enlarge the common viewport.");
+        if (allowHeightOverflow) plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(plot.Height, layout.Bottom - plot.Y + stroke));
         foreach (var item in layout.Participants.Concat(layout.Messages).Concat(layout.Notes).Concat(layout.Blocks).Concat(layout.Branches))
             VisualDiagramPrimitives.RequireInside(item.Bounds, plot, item.Id);
         layout.LayoutActivations(model, semantics);
@@ -128,6 +129,9 @@ internal sealed class SequencePreparedLayout {
 
     private static string Annotation(VisualArtifactInterchangeEnvelope envelope, VisualArtifactInterchangeAnnotationRole role, int index) =>
         envelope.Annotations.Where(a => a.Role == role).ElementAt(index).Id;
+
+    private static int Step(int index) => Math.Max(0, index);
+    private static int End(int start, int end) => Math.Max(Step(start), end);
 
     private static string Number(SequenceArtifact model, int index) {
         if (!model.Metadata.TryGetValue("mermaid.autonumber", out var enabled) || enabled != "true") return string.Empty;
@@ -159,7 +163,7 @@ internal sealed class SequencePreparedLayout {
         var open = new Dictionary<string, Stack<Item>>(StringComparer.Ordinal);
         foreach (var id in Lanes.Keys) open.Add(id, new Stack<Item>());
         for (int step = 0; step < Steps.Length; step++) {
-            foreach (var activation in model.Activations.Select((value, index) => new { value, index }).Where(a => a.value.StepIndex == step))
+            foreach (var activation in model.Activations.Select((value, index) => new { value, index }).Where(a => Step(a.value.StepIndex) == step))
                 Change(activation.value.ParticipantId, activation.value.Active, Steps[step], Annotation(envelope, VisualArtifactInterchangeAnnotationRole.SequenceActivation, activation.index), activation.index);
             if (step < model.Messages.Count) {
                 var message = model.Messages[step]; var item = Messages[step];

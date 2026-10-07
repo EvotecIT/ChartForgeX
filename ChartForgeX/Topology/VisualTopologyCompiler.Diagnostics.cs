@@ -23,6 +23,6 @@ internal sealed partial class VisualTopologyCompiler {
         }
 
         void Rectangle(ChartRect rectangle, ChartColor color, string role) =>
-            _builder.Rect(Bounds(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height), stroke: color, strokeWidth: _context.Theme.AxisStrokeWidth * _scale, role: role);
+            _builder.Rect(Bounds(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height), fill: null, stroke: color, strokeWidth: _context.Theme.AxisStrokeWidth * _scale, role: role);
     }
 }

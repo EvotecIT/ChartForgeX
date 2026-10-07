@@ -29,16 +29,21 @@ public readonly struct VisualSize {
 /// <summary>The resolved viewport and outer padding used by every prepared visual.</summary>
 public sealed class VisualLayoutOptions {
     /// <summary>Creates a fixed viewport. Hosts implement fit sizing by supplying their measured viewport.</summary>
-    public VisualLayoutOptions(VisualSize size, double padding = 24) {
+    public VisualLayoutOptions(VisualSize size, double padding = 24) : this(size, ChartPadding.All(padding)) { }
+    /// <summary>Creates a fixed viewport with independently configured outer edge insets.</summary>
+    public VisualLayoutOptions(VisualSize size, ChartPadding padding) {
         VisualSize.Positive(size.Width, nameof(size)); VisualSize.Positive(size.Height, nameof(size));
-        if (double.IsNaN(padding) || double.IsInfinity(padding) || padding < 0 || padding * 2 >= Math.Min(size.Width, size.Height))
+        if (padding.Left + padding.Right >= size.Width || padding.Top + padding.Bottom >= size.Height)
             throw new ArgumentOutOfRangeException(nameof(padding));
-        Size = size; Padding = padding;
+        Size = size; PaddingEdges = padding;
     }
     /// <summary>Gets the resolved logical size.</summary>
     public VisualSize Size { get; }
-    /// <summary>Gets the outer padding in logical units.</summary>
-    public double Padding { get; }
+    /// <summary>Gets the smallest outer edge inset. Uniform layouts return their configured scalar padding.</summary>
+    /// <remarks>Use <see cref="PaddingEdges"/> when placing content; asymmetric layouts have four independent insets.</remarks>
+    public double Padding => Math.Min(Math.Min(PaddingEdges.Left, PaddingEdges.Right), Math.Min(PaddingEdges.Top, PaddingEdges.Bottom));
+    /// <summary>Gets the outer edge insets in logical units.</summary>
+    public ChartPadding PaddingEdges { get; }
 }
 
 /// <summary>Common title, subtitle, legend and surface configuration.</summary>
@@ -47,10 +52,15 @@ public sealed class VisualFrame {
     /// <summary>Creates an immutable frame configuration.</summary>
     public VisualFrame(string? title = null, string? subtitle = null, bool showLegend = true,
         ChartLegendPosition legendPosition = ChartLegendPosition.Bottom, bool showSurface = false, bool transparentBackground = false,
-        TextStyle? titleStyle = null, TextStyle? subtitleStyle = null, TextStyle? legendStyle = null) {
+        TextStyle? titleStyle = null, TextStyle? subtitleStyle = null, TextStyle? legendStyle = null,
+        int? legendMaximumRows = null, double legendMaximumHeightFraction = 0.35) {
         if (!Enum.IsDefined(typeof(ChartLegendPosition), legendPosition)) throw new ArgumentOutOfRangeException(nameof(legendPosition));
+        if (legendMaximumRows.HasValue && legendMaximumRows.Value < 1) throw new ArgumentOutOfRangeException(nameof(legendMaximumRows));
+        if (double.IsNaN(legendMaximumHeightFraction) || double.IsInfinity(legendMaximumHeightFraction) || legendMaximumHeightFraction <= 0 || legendMaximumHeightFraction > 1)
+            throw new ArgumentOutOfRangeException(nameof(legendMaximumHeightFraction));
         Title = title; Subtitle = subtitle; ShowLegend = showLegend; LegendPosition = legendPosition; ShowSurface = showSurface; TransparentBackground = transparentBackground;
         _titleStyle = titleStyle?.Clone(); _subtitleStyle = subtitleStyle?.Clone(); _legendStyle = legendStyle?.Clone();
+        LegendMaximumRows = legendMaximumRows; LegendMaximumHeightFraction = legendMaximumHeightFraction;
     }
     /// <summary>Gets the title.</summary>
     public string? Title { get; }
@@ -70,8 +80,12 @@ public sealed class VisualFrame {
     public TextStyle? SubtitleStyle => _subtitleStyle?.Clone();
     /// <summary>Gets a defensive copy of the explicit legend typography.</summary>
     public TextStyle? LegendStyle => _legendStyle?.Clone();
+    /// <summary>Gets the additional legend row limit, including any overflow summary row. Null uses only the height budget.</summary>
+    public int? LegendMaximumRows { get; }
+    /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
+    public double LegendMaximumHeightFraction { get; }
     internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, ShowLegend, LegendPosition,
-        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle);
+        ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction);
 }
 
 /// <summary>A complete immutable request for shared static rendering.</summary>

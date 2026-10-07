@@ -4,7 +4,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
-/// <summary>Deterministic Phase 1 models and their shared-context static exports.</summary>
+/// <summary>Deterministic chart and diagram models with shared-context static exports.</summary>
 public static partial class V2Examples {
     private const string ProofFont = "CFX Proof Carlito";
     private static readonly string[] Variants = { "wide", "compact", "long-title", "wrapped-legend", "surface", "empty", "zero", "missing", "dense", "explicit-status", "explicit-series" };
@@ -44,6 +44,7 @@ public static partial class V2Examples {
         }
         if (!curated) WriteRadialLabels(output, artifacts);
         WriteDiagrams(output, artifacts);
+        WriteFamilies(output, artifacts, curated);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
@@ -12,6 +13,7 @@ internal sealed partial class VisualTopologyCompiler {
         var source = _routes[edge.Id];
         if (source.Count < 2) throw new InvalidOperationException("A topology route requires both endpoints: " + edge.Id);
         var points = source.Select(Point).ToArray();
+        var colorRole = !string.IsNullOrWhiteSpace(edge.Color) ? SvgColorRole.Any : edge.IsMuted ? SvgColorRole.Surface : SvgColorRole.Status;
         var color = Highlight(Color(edge.Color, edge.IsMuted ? _colors.Border : Status(edge.Status)), _highlight.IsEdgeHighlighted(edge));
         if (edge.Opacity.HasValue) color = color.WithOpacity(color.A / 255d * edge.Opacity.Value);
         var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * _scale;
@@ -29,10 +31,11 @@ internal sealed partial class VisualTopologyCompiler {
             using (PinnedState()) {
                 foreach (var layer in ChartLineVisualLayers.Build(color, width / _scale, style)) {
                     if (layer.IsVisible) _builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth * _scale,
-                        role: "topology-edge-line" + layer.RoleSuffix, dash: dash);
+                        role: "topology-edge-line" + layer.RoleSuffix, dash: dash,
+                        paint: new VisualScenePaintBinding(stroke: layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity()) : SvgPaint.Of(layer.ColorWithOpacity(), colorRole)));
                 }
-                Marker(RenderedSourceMarker(edge, _options.IncludeDirectionMarkers), points[1], points[0], color);
-                Marker(RenderedTargetMarker(edge, _options.IncludeDirectionMarkers), points[points.Length - 2], points[points.Length - 1], color);
+                Marker(RenderedSourceMarker(edge, _options.IncludeDirectionMarkers), points[1], points[0], color, colorRole);
+                Marker(RenderedTargetMarker(edge, _options.IncludeDirectionMarkers), points[points.Length - 2], points[points.Length - 1], color, colorRole);
             }
             if (_options.IncludeEndpointLabels) {
                 Endpoint(edge.SourceLabel, source[0], source[1]);
@@ -50,7 +53,7 @@ internal sealed partial class VisualTopologyCompiler {
             var size = _context.Theme.Typography.DataLabelSize * .8;
             var metrics = _builder.MeasureText(text!, size * _scale, 600);
             var b = new ChartRect(p.X - metrics.Width / 2 - 3 * _scale, p.Y - metrics.Height / 2 - 3 * _scale, metrics.Width + 6 * _scale, metrics.Height + 6 * _scale);
-            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, _colors.Surface, role: "topology-endpoint-label-surface");
+            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, _colors.Surface, role: "topology-endpoint-label-surface", paint: Paint(_colors.Surface, SvgColorRole.Surface));
             Text(text!, b, size, _colors.Foreground, 600, "topology-endpoint-label", centered: true);
         }
     }
@@ -63,9 +66,9 @@ internal sealed partial class VisualTopologyCompiler {
             var active = _highlight.IsEdgeHighlighted(edge);
             if (_options.IncludeEdgeLabelLeaders && ShouldDrawEdgeLabelLeader(layout, _options)) {
                 var from = Point(new ChartPoint(layout.AnchorX, layout.AnchorY)); var to = Point(EdgeLabelLeaderEnd(layout));
-                _builder.Line(from.X, from.Y, to.X, to.Y, Highlight(_colors.Border, active), _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader");
+                _builder.Line(from.X, from.Y, to.X, to.Y, Highlight(_colors.Border, active), _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader", paint: Paint(stroke: Highlight(_colors.Border, active), strokeRole: SvgColorRole.Surface));
             }
-            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(bounds, Highlight(_colors.Surface, active), radius: _context.Theme.BarRadius * _scale, role: "topology-edge-label-surface");
+            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(bounds, Highlight(_colors.Surface, active), radius: _context.Theme.BarRadius * _scale, role: "topology-edge-label-surface", paint: Paint(Highlight(_colors.Surface, active), SvgColorRole.Surface));
             var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
             var height = bounds.Height / Math.Max(1, labels.Length);
             ChartRect? measured = null;
@@ -84,21 +87,21 @@ internal sealed partial class VisualTopologyCompiler {
         }
     }
 
-    private void Marker(TopologyMarkerKind kind, ChartPoint from, ChartPoint to, ChartColor color) {
+    private void Marker(TopologyMarkerKind kind, ChartPoint from, ChartPoint to, ChartColor color, SvgColorRole colorRole) {
         if (kind == TopologyMarkerKind.None) return;
         var angle = Math.Atan2(to.Y - from.Y, to.X - from.X);
         ChartPoint P(double x, double y) => new(to.X + (Math.Cos(angle) * x - Math.Sin(angle) * y) * _scale, to.Y + (Math.Sin(angle) * x + Math.Cos(angle) * y) * _scale);
         void Stroke(params double[] xy) {
             var commands = new List<ChartPathCommand>();
             for (var i = 0; i < xy.Length; i += 2) { var p = P(xy[i], xy[i + 1]); commands.Add(i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)); }
-            _builder.Path(new ChartPath(commands), stroke: color, strokeWidth: _context.Theme.AxisStrokeWidth * _scale, role: "topology-marker");
+            _builder.Path(new ChartPath(commands), stroke: color, strokeWidth: _context.Theme.AxisStrokeWidth * _scale, role: "topology-marker", paint: Paint(stroke: color, strokeRole: colorRole));
         }
         void Polygon(bool fill, params double[] xy) {
             var commands = new List<ChartPathCommand>();
             for (var i = 0; i < xy.Length; i += 2) { var p = P(xy[i], xy[i + 1]); commands.Add(i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)); }
-            _builder.Path(new ChartPath(commands), fill ? color : _colors.Surface, color, _context.Theme.AxisStrokeWidth * _scale, "topology-marker", close: true);
+            _builder.Path(new ChartPath(commands), fill ? color : _colors.Surface, color, _context.Theme.AxisStrokeWidth * _scale, "topology-marker", close: true, paint: Paint(fill ? color : _colors.Surface, fill ? colorRole : SvgColorRole.Surface, color, colorRole));
         }
-        void Circle(double x, bool fill) { var p = P(x, 0); _builder.Ellipse(p.X, p.Y, 3 * _scale, 3 * _scale, fill ? color : _colors.Surface, color, _context.Theme.AxisStrokeWidth * _scale, "topology-marker"); }
+        void Circle(double x, bool fill) { var p = P(x, 0); _builder.Ellipse(p.X, p.Y, 3 * _scale, 3 * _scale, fill ? color : _colors.Surface, color, _context.Theme.AxisStrokeWidth * _scale, "topology-marker", paint: Paint(fill ? color : _colors.Surface, fill ? colorRole : SvgColorRole.Surface, color, colorRole)); }
         switch (kind) {
             case TopologyMarkerKind.Arrow:
                 switch (_options.ArrowMarkerStyle) {
