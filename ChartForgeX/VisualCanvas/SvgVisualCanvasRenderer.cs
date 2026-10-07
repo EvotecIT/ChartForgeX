@@ -300,7 +300,7 @@ public sealed class SvgVisualCanvasRenderer {
         var baseY = plotY + plotH;
         if (tile.MiniChartKind == VisualCanvasInfoTileMiniChartKind.Bars) {
             var gap = values.Count > 1 ? Math.Min(Math.Max(1, plotW * 0.035), plotW / (values.Count * 3.0)) : 0;
-            var barW = Math.Max(0.5, (plotW - gap * (values.Count - 1)) / values.Count);
+            var barW = (plotW - gap * (values.Count - 1)) / values.Count;
             for (var i = 0; i < values.Count; i++) {
                 if (!values[i].HasValue) continue;
                 var ratio = data.Ratio(values[i]!.Value);
