@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -32,8 +33,9 @@ public sealed class LegendDefaultsTests {
         var arc = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "gauge-value");
         var item = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-entry");
         var swatch = Assert.Single(item.Descendants(), e => e.Name.LocalName == "rect");
-        var arcPath = arc.DescendantsAndSelf().Single(e => e.Attribute("stroke") != null);
-        Assert.Equal((string?)arcPath.Attribute("stroke"), (string?)swatch.Attribute("fill"));
+        var arcPath = arc.DescendantsAndSelf().Single(e => e.Attribute("fill") != null);
+        var valueColor = (string?)arcPath.Attribute("fill") == "none" ? (string?)arcPath.Attribute("stroke") : (string?)arcPath.Attribute("fill");
+        Assert.Equal(valueColor, (string?)swatch.Attribute("fill"));
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -42,7 +44,7 @@ public sealed class LegendDefaultsTests {
     [InlineData(true)]
     public void SliceNameAndPercentBelongToOneItemWithAnInlineGap(bool donut) {
         var chart = Chart.Create().WithSize(700, 440).WithXLabels("Completed", "Pending");
-        var points = new[] { new ChartPoint(0, 70), new ChartPoint(1, 30) };
+        var points = new[] { new ChartPoint(1, 70), new ChartPoint(2, 30) };
         if (donut) chart.AddDonut("Work", points); else chart.AddPie("Work", points);
         var items = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "legend-entry").ToArray();
         Assert.Equal(2, items.Length);
@@ -52,7 +54,12 @@ public sealed class LegendDefaultsTests {
             Assert.Contains(name.Value, new[] { "Completed", "Pending" });
             Assert.Contains(value.Value, new[] { "70%", "30%" });
             Assert.Contains(name.Value + ": " + value.Value, (string?)item.Attribute("aria-label"));
-            Assert.True((double)value.Attribute("x")! > (double)name.Attribute("x")! + 80);
+            var style = new TextStyle {
+                Font = new FontSpec { Family = (string)name.Attribute("font-family")!, Weight = (int)name.Attribute("font-weight")! },
+                FontSize = (double)name.Attribute("font-size")!
+            };
+            var nameRight = (double)name.Attribute("x")! + TextLayoutEngine.Measure(name.Value, style).Width;
+            Assert.True((double)value.Attribute("x")! - nameRight >= 11.99, "The percentage follows the measured name with the configured inline gap.");
         }
         Assert.NotEmpty(chart.ToPng());
     }

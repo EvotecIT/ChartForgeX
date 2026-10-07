@@ -40,10 +40,15 @@ public sealed class GraphiteBulletFormattingTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void PlainTargetsUseTheSameValuePolicyAsAxisTicks(bool dark) {
+    public void PlainTargetsKeepGroupedValuesAndCompactTicksWhileExplicitFormatOwnsBoth(bool dark) {
         var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithSize(640, 300).AddBullet("Count", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
+        Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
+        Assert.Equal("target 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
+        Assert.Equal(new[] { "0", "500", "1k", "1.5k", "2k" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
+        chart.WithValueFormat(ChartValueFormat.Number("#,0"));
+        nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
         Assert.Equal("target 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
         Assert.Equal(new[] { "0", "500", "1,000", "1,500", "2,000" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));

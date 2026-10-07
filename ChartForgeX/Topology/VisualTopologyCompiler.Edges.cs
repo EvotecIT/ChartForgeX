@@ -10,19 +10,20 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void BuildEdge(TopologyEdge edge) {
-        var source = _routes[edge.Id];
+        var source = _routes[edge];
         if (source.Count < 2) throw new InvalidOperationException("A topology route requires both endpoints: " + edge.Id);
         var points = source.Select(Point).ToArray();
         var colorRole = !string.IsNullOrWhiteSpace(edge.Color) ? SvgColorRole.Any : edge.IsMuted ? SvgColorRole.Surface : SvgColorRole.Status;
         var color = Highlight(Color(edge.Color, edge.IsMuted ? _colors.Border : Status(edge.Status)), _highlight.IsEdgeHighlighted(edge));
-        if (_options.UseForceGraphPresentation || edge.Opacity.HasValue) color = color.WithOpacity(color.A / 255d * EdgeOpacity(edge, _options));
+        if (IsMonitoringDashboardStyle(_options)) color = Highlight(Color(EdgeColor(edge, Theme(), _options), _colors.Border), _highlight.IsEdgeHighlighted(edge));
+        if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options) || edge.Opacity.HasValue) color = color.WithOpacity(color.A / 255d * EdgeOpacity(edge, _options));
         var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * _scale;
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
-        if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation) { width *= .7; color = color.WithOpacity(color.A / 255d * .5); }
+        if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) { width *= .7; color = color.WithOpacity(color.A / 255d * .5); }
         if (_options.SelectedEdgeIds.Contains(edge.Id)) width *= 1.5;
-        if (_options.UseForceGraphPresentation) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * _scale;
-        var paintPoints = _paintRoutes[edge.Id].Select(Point).ToArray();
-        var hasTrunk = _trunks.TryGetValue(edge.Id, out var trunk);
+        if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * _scale;
+        var paintPoints = _paintRoutes[edge].Select(Point).ToArray();
+        var hasTrunk = _trunks.TryGetValue(edge, out var trunk);
         using (Host(edge.Href, edge.Tooltip, edge.Id, "topology-edge-host"))
         using (_builder.PushGroup(edge.Id, "topology-edge", EdgeMetadata(edge))) {
             if (hasTrunk) {
@@ -32,15 +33,13 @@ internal sealed partial class VisualTopologyCompiler {
                 _builder.Path(hitPath, stroke: new ChartColor(0, 0, 0, 0), strokeWidth: Math.Max(width, 10 * _scale), role: "topology-shared-trunk-hit");
             }
             var dash = EffectiveEdgePngDashArray(edge)?.Select(length => length * _scale).ToArray();
-            // Preserve caller-authored line effects through the shared layer owner. Theme defaults
-            // remain flat; the legacy preset may still opt into its canonical line treatment.
-            var style = _options.EdgeVisualStyle ?? ChartForgeX.Core.ChartLineVisualStyle.Plain();
+            var style = EdgeVisualStyle(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options);
             using (PinnedState()) {
                 DrawLine(paintPoints);
                 Marker(RenderedSourceMarker(edge, _options.IncludeDirectionMarkers), points[1], points[0], color, colorRole);
                 if (!hasTrunk) Marker(RenderedTargetMarker(edge, _options.IncludeDirectionMarkers), points[points.Length - 2], points[points.Length - 1], color, colorRole);
-                else if (trunk.Owner == edge.Id) {
-                    using (_builder.PushGroup(edge.Id + "-trunk-tail", "topology-shared-trunk-tail", new Dictionary<string, string> { ["data-trunk-owner-id"] = trunk.Owner })) {
+                else if (ReferenceEquals(trunk.Owner, edge)) {
+                    using (_builder.PushGroup(edge.Id + "-trunk-tail", "topology-shared-trunk-tail", new Dictionary<string, string> { ["data-trunk-owner-id"] = trunk.Owner.Id })) {
                         var tail = trunk.Tail.Select(Point).ToArray(); DrawLine(tail);
                         Marker(RenderedTargetMarker(edge, _options.IncludeDirectionMarkers), tail[tail.Length - 2], tail[tail.Length - 1], color, colorRole);
                     }
@@ -53,6 +52,12 @@ internal sealed partial class VisualTopologyCompiler {
 
             void DrawLine(ChartPoint[] route) {
                 var path = new ChartPath(route.Select((point, index) => index == 0 ? ChartPathCommand.MoveTo(point.X, point.Y) : ChartPathCommand.LineTo(point.X, point.Y)).ToArray());
+                if (ShouldRenderMonitoringRouteHalo(_chart, edge, _nodesById, _options)) {
+                    var geographic = ShouldRenderGeographicRouteHalo(_chart, edge, _nodesById, _options);
+                    var halo = Highlight(_colors.Background.WithOpacity(RouteHaloOpacity(geographic)), _highlight.IsEdgeHighlighted(edge));
+                    _builder.Path(path, stroke: halo, strokeWidth: width + RouteHaloStrokeExtra(geographic) * _scale,
+                        role: "topology-edge-route-halo", dash: dash, paint: Paint(stroke: halo, strokeRole: SvgColorRole.Surface));
+                }
                 foreach (var layer in ChartLineVisualLayers.Build(color, width / _scale, style)) {
                     if (layer.IsVisible) _builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth * _scale,
                         role: "topology-edge-line" + layer.RoleSuffix, dash: dash,
@@ -97,6 +102,14 @@ internal sealed partial class VisualTopologyCompiler {
                 _builder.Line(from.X, from.Y, to.X, to.Y, Highlight(_colors.Border, active), _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader", paint: Paint(stroke: Highlight(_colors.Border, active), strokeRole: SvgColorRole.Surface));
             }
             if (_options.IncludeEdgeLabelBackplates) _builder.Rect(bounds, Highlight(_colors.Surface, active), radius: _context.Theme.BarRadius * _scale, role: "topology-edge-label-surface", paint: Paint(Highlight(_colors.Surface, active), SvgColorRole.Surface));
+            else if (ShouldDrawEdgeLabelClearance(layout, _options)) {
+                var containingGroup = EdgeLabelClearanceGroup(_chart, layout);
+                var fill = Color(EdgeLabelClearanceFill(containingGroup, Theme(), _options), _colors.Background)
+                    .WithOpacity(EdgeLabelClearanceOpacity(containingGroup));
+                _builder.Rect(Bounds(EdgeLabelClearanceX(layout, layout.CenterX), EdgeLabelClearanceY(layout, layout.CenterY),
+                    EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout)), Highlight(fill, active),
+                    radius: EdgeLabelClearanceRadius * _scale, role: "topology-edge-label-clearance", paint: Paint(Highlight(fill, active), SvgColorRole.Surface));
+            }
             var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
             var height = bounds.Height / Math.Max(1, labels.Length);
             ChartRect? measured = null;
@@ -110,7 +123,7 @@ internal sealed partial class VisualTopologyCompiler {
                     measured = new ChartRect(left, top, Math.Max(measured.Value.Right, textBounds.Value.Right) - left, Math.Max(measured.Value.Bottom, textBounds.Value.Bottom) - top);
                 }
             }
-            if (measured.HasValue) _resolvedLabelBounds.Add(edge.Id, measured.Value);
+            if (measured.HasValue) _resolvedLabelBounds.Add(edge, measured.Value);
             _builder.AddRegion(new VisualSemanticRegion(edge.Id + "-label", "topology-edge-label", bounds, string.Join("\n", labels)));
         }
     }

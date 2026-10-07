@@ -78,6 +78,10 @@ public sealed class VisualThemeColors {
     public ChartColor MutedForeground => _tokens.MutedForeground;
     /// <summary>Gets the guide and border color.</summary>
     public ChartColor Border => _tokens.Border;
+    /// <summary>Gets the axis rule color, falling back to the shared border role when unspecified.</summary>
+    public ChartColor Axis => _tokens.Axis ?? _tokens.Border;
+    /// <summary>Gets the plot grid color, falling back to the shared border role when unspecified.</summary>
+    public ChartColor Grid => _tokens.Grid ?? _tokens.Border;
     /// <summary>Gets the accent color.</summary>
     public ChartColor Accent => _tokens.Accent;
     /// <summary>Gets the ordered categorical palette.</summary>

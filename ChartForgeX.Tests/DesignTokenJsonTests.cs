@@ -85,7 +85,8 @@ public sealed class DesignTokenJsonTests {
             .WithStateCategories(tokens.Status.OperationalStateCategories())
             .AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(day, day.AddHours(2), "up"), new ChartStateTimelineSegment(day.AddHours(2), day.AddHours(3), "down") });
         var svg = XDocument.Parse(timeline.ToSvg());
-        var fills = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "state-segment").Select(element => (string)element.Attribute("fill")!).ToArray();
+        var fills = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "state-timeline-segment")
+            .Select(element => element.RenderedColor("fill").ToCss()).ToArray();
         Assert.Equal(new[] { tokens.Status.Pass.Fill.ToCss(), tokens.Status.Critical.Fill.ToCss() }, fills);
         Assert.Equal(tokens.MutedForeground, timeline.Options.Theme.MutedText);
 
@@ -201,7 +202,8 @@ public sealed class DesignTokenJsonTests {
         var tokens = VisualDesignTokens.FromJson(GraphiteJson);
         var chart = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 200d, 400d });
         chart.Options.HeatmapRelativeScale = true;
-        var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell").Select(element => (string)element.Attribute("fill")!).ToArray();
+        var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell")
+            .Select(element => element.RenderedColor("fill").ToCss()).ToArray();
         // A zero count takes the neutral surface; the ramp colours the counts above it.
         Assert.Equal(new[] { tokens.SequentialRamp![2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills.Skip(1).ToArray());
         Assert.DoesNotContain(fills[0], tokens.SequentialRamp.Select(colour => colour.ToCss()));

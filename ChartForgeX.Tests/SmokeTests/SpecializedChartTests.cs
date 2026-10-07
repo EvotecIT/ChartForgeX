@@ -433,33 +433,30 @@ internal static partial class SmokeTests {
         var funnel = Chart.Create()
             .WithSize(320, 220)
             .WithXLabels(longLabel, "Verified")
-            .AddFunnel("Funnel", Points(96, 72)).WithDataLabels()
-            .ToSvg();
-        Assert(funnel.Contains("data-cfx-role=\"funnel-label\"", StringComparison.Ordinal), "Funnel charts should mark fitted segment labels.");
-        Assert(funnel.Contains("...</text>", StringComparison.Ordinal), "Funnel segment labels should shorten when a stage is narrower than the label.");
+            .AddFunnel("Funnel", Points(96, 72)).WithDataLabels();
+        AssertFamilyTextFitsReservedRegion(PreparedFamily(funnel), "funnel-label", longLabel);
 
         var gauge = Chart.Create()
             .WithSize(260, 180)
             .WithValueFormatter(_ => longLabel)
-            .AddGauge(longLabel, 87)
-            .ToSvg();
-        Assert(gauge.Contains("data-cfx-role=\"gauge-label\"", StringComparison.Ordinal), "Gauges should mark fitted value labels.");
-        Assert(gauge.Contains("...</text>", StringComparison.Ordinal), "Gauge labels should shorten when values or names exceed the dial label width.");
+            .AddGauge(longLabel, 87);
+        AssertFamilyTextFitsReservedRegion(PreparedFamily(gauge), "gauge-label", longLabel);
 
-        var donut = Chart.Create()
+        var donutChart = Chart.Create()
             .WithSize(280, 180)
             .WithXLabels(longLabel)
-            .AddDonut(longLabel, Points(100))
-            .ToSvg();
-        Assert(donut.Contains("...</text>", StringComparison.Ordinal) || donut.Contains("data-cfx-label-status=\"dropped\"", StringComparison.Ordinal), "Donut labels should shorten or drop when the hole cannot fit readable text.");
+            .AddDonut(longLabel, Points(100));
+        var donut = PreparedFamily(donutChart);
+        Assert(donut.Regions.Any(region => region.Role == "donut-title" && region.Label == longLabel), "A fitted donut caption should retain its complete source text.");
+        var captions = FamilyLabels(donut, "donut-title");
+        Assert(captions.Length == 1 && FamilyContent(captions[0]).Length < longLabel.Length, "The visible donut caption should fit inside the hole rather than paint the full long source text.");
+        Assert(donut.ToPng().Length > 64, "Fitted donut content should render through the native painter.");
 
         var bullet = Chart.Create()
             .WithSize(320, 220)
             .WithValueFormatter(_ => longLabel)
-            .AddBullet(longLabel, 82, 90)
-            .ToSvg();
-        Assert(bullet.Contains("data-cfx-role=\"bullet-row-label\"", StringComparison.Ordinal), "Bullet charts should mark fitted row labels.");
-        Assert(bullet.Contains("...</text>", StringComparison.Ordinal), "Bullet row, value, and target labels should shorten when reserves are constrained.");
+            .AddBullet(longLabel, 82, 90);
+        AssertFamilyTextFitsReservedRegion(PreparedFamily(bullet), "bullet-row-label", longLabel);
 
         var heatmap = Chart.Create()
             .WithSize(320, 220)

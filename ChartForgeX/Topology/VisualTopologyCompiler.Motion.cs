@@ -8,6 +8,16 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
+    internal TopologyMotionSvgAdapter SvgAnimation(TopologyMotionOptions motion, TopologyMotionPlan? plan = null) {
+        var options = _options.CloneForRendering(); options.Motion = motion.Clone(); options.Motion.Validate();
+        plan ??= MotionPlan(options) ?? throw new InvalidOperationException("Topology motion requires a scenario route or explicitly selected edges.");
+        string ColorFor(string? authored, TopologyHealthStatus status) => Color(motion.MarkerColor ?? plan.Color ?? authored, Status(status)).ToCss();
+        var nodes = plan.NodeIds.Select(id => _chart.Nodes.FirstOrDefault(node => node.Id == id)).OfType<TopologyNode>()
+            .Where(node => TopologyRenderPrimitives.EffectiveNodeDisplayMode(node, _options) != TopologyNodeDisplayMode.Hidden)
+            .Select(node => (node.Id, Point(new ChartPoint(node.X + node.Width / 2, node.Y + node.Height / 2)), ColorFor(node.Color, node.Status))).ToArray();
+        return new TopologyMotionSvgAdapter(plan, motion, _colors.Background.ToCss(), edge => ColorFor(edge.Color, edge.Status), nodes, _scale);
+    }
+
     internal PreparedVisual MotionFrame(PreparedVisual basis, TopologyMotionOptions motion, TopologyMotionPlan? plan = null) {
         var options = _options.CloneForRendering(); options.Motion = motion.Clone(); options.Motion.Validate();
         plan ??= MotionPlan(options);
@@ -28,7 +38,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     internal TopologyMotionPlan? MotionPlan(TopologyRenderOptions options) {
-        var routes = _routes.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<ChartPoint>)entry.Value.Select(Point).ToArray(), StringComparer.Ordinal);
+        var routes = _routes.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<ChartPoint>)entry.Value.Select(Point).ToArray());
         return TopologyMotionPlanner.Build(_chart, options, routes);
     }
 }

@@ -102,8 +102,10 @@ public sealed class PreparedSequenceTests {
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 
-    [Fact]
-    public void PreparedSceneAndSemanticSnapshotDetachFromEverySequenceCollection() {
+    [Theory]
+    [InlineData("5", "15")]
+    [InlineData("0.5", "10.5")]
+    public void PreparedSceneAndSemanticSnapshotDetachFromEverySequenceCollection(string increment, string secondNumber) {
         var model = SequenceArtifact.Create("snapshot").AddParticipant("a", "Original participant").AddParticipant("b")
             .AddMessage("a", "b", "Original message").AddMessage("b", "a", "Return")
             .AddActivation("b", true, 0).AddActivation("b", false, 1)
@@ -112,7 +114,7 @@ public sealed class PreparedSequenceTests {
             .AddBranch(SequenceArtifactBlockKind.Opt, "Primary", "Original branch", 0, 1);
         model.Notes[0].StepIndex = 0;
         model.Participants[0].Href = "https://example.com/details?a=1&b=2";
-        model.Metadata["mermaid.autonumber"] = "true"; model.Metadata["mermaid.autonumber.start"] = "10"; model.Metadata["mermaid.autonumber.increment"] = "5";
+        model.Metadata["mermaid.autonumber"] = "true"; model.Metadata["mermaid.autonumber.start"] = "10"; model.Metadata["mermaid.autonumber.increment"] = increment;
         var prepared = model.Prepare(Context());
         var artifact = prepared.ToArtifact("snapshot", VisualArtifactKind.Sequence);
         string svg = prepared.ToSvg(), json = artifact.ToInterchangeJson(); byte[] png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
@@ -125,7 +127,7 @@ public sealed class PreparedSequenceTests {
         var xml = XDocument.Parse(svg);
         Assert.Contains(xml.Descendants(), e => e.Name.LocalName == "a" && (string?)e.Attribute("href") == "https://example.com/details?a=1&b=2");
         Assert.Contains("10. Original message", string.Concat(xml.Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value)));
-        Assert.Contains("15. Return", string.Concat(xml.Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value)));
+        Assert.Contains(secondNumber + ". Return", string.Concat(xml.Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value)));
         var firstRead = artifact.ToInterchangeEnvelope(); firstRead.Edges[0].ResolvedRoute[0].X = -1;
         Assert.True(artifact.ToInterchangeEnvelope().Edges[0].ResolvedRoute[0].X >= 0);
     }

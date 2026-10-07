@@ -35,7 +35,10 @@ public sealed class TopologyForcedColorsTests {
         var svg = Diagram().ToSvg(new TopologyRenderOptions { IncludeCss = false, PinStateColorsInForcedColors = true });
         Assert.Contains("style=\"forced-color-adjust:none\"", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("font-synthesis", svg, StringComparison.Ordinal);
-        Assert.DoesNotContain("<style", Diagram().ToSvg(new TopologyRenderOptions { IncludeCss = false }), StringComparison.Ordinal);
+        var styles = XDocument.Parse(Diagram().ToSvg(new TopologyRenderOptions { IncludeCss = false })).Descendants()
+            .Where(element => element.Name.LocalName == "style").Select(element => element.Value);
+        // Shared embedded-font palette declarations are allowed; topology pinning must stay bounded to its groups.
+        Assert.DoesNotContain(styles, style => style.Contains("forced-color-adjust", StringComparison.Ordinal));
     }
 
     private static TopologyChart Diagram() => TopologyChart.Create().WithId("sites").WithViewport(720, 420)

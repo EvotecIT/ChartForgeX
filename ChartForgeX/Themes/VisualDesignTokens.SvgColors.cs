@@ -19,8 +19,8 @@ public sealed partial class VisualDesignTokens {
     /// Each variable has the role of its token (<see cref="SvgColorRole.Surface"/> for <c>surface.*</c>, <c>Text</c>,
     /// <c>Series</c>, <c>Status</c> for severity, outcome, and state, <c>Ramp</c>; accents <c>Any</c>), so a renderer
     /// that writes a colour for a role names the same token in every theme. Text matched by value never takes a surface
-    /// token. Graphite adds paired <c>series.*.ink</c>, ramp ink and state ink variables so filled-mark labels retain
-    /// readable contrast when a host switches themes. Named effect themes retain their existing surface/text mapping.
+    /// token. Paired <c>series.*.ink</c>, ramp ink and state contrast-ink variables let filled-mark labels retain
+    /// readable contrast when a host switches themes.
     /// </summary>
     /// <param name="variableName">
     /// Returns the custom property name for a token path, or null to leave that token literal. Null names every token
@@ -83,7 +83,7 @@ public sealed partial class VisualDesignTokens {
             AddList("ramps.diverging.positive", ToArray(DivergingRamp.Positive));
         }
 
-        if (UseGraphiteLayout) {
+        {
             void Ink(string path, ChartColor color, SvgColorRole role) {
                 var variable = name(path + ".ink");
                 if (variable != null) variables.AddInk(variable, color, ChartColorMath.AccessibleTextOnBackground(color), role);
@@ -98,6 +98,14 @@ public sealed partial class VisualDesignTokens {
             if (Info.HasValue) Ink("mark.info", Info.Value, SvgColorRole.Status);
             if (Quiet.HasValue) Ink("mark.quiet", Quiet.Value, SvgColorRole.Status);
             if (Neutral.HasValue) Ink("mark.neutral", Neutral.Value, SvgColorRole.Status);
+            Ink("severity.critical.contrast", Status.Critical.Fill, SvgColorRole.Status);
+            Ink("severity.high.contrast", Status.High.Fill, SvgColorRole.Status);
+            Ink("severity.medium.contrast", Status.Medium.Fill, SvgColorRole.Status);
+            Ink("severity.low.contrast", Status.Low.Fill, SvgColorRole.Status);
+            Ink("severity.info.contrast", Status.Info.Fill, SvgColorRole.Status);
+            Ink("outcome.pass.contrast", Status.Pass.Fill, SvgColorRole.Status);
+            Ink("outcome.neutral.contrast", Status.Neutral.Fill, SvgColorRole.Status);
+            Ink("state.maintenance.contrast", Status.Maintenance.Fill, SvgColorRole.Status);
         }
 
         return variables;

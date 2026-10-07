@@ -3,15 +3,15 @@ using System.Xml.Linq;
 using ChartForgeX.Primitives;
 
 public static partial class GalleryWriter {
-    // A Graphite frame intentionally reaches the canvas edge. Only its declared stroke geometry and colours are
+    // A shared frame intentionally reaches the canvas edge. Only its declared stroke geometry and colours are
     // allowed there; arbitrary marks, text, or extra strokes still count as edge ink.
     private static PngFrameAllowance? ReadPngFrameAllowance(string pngPath, AssetDimensions png) {
         var svgPath=Path.ChangeExtension(pngPath,".svg");
         if (!File.Exists(svgPath)) return null;
         try {
             var root=XDocument.Load(svgPath).Root;
-            if ((string?)root?.Attribute("data-cfx-look")!="graphite") return null;
-            var frames=root.Descendants().Where(e=>(string?)e.Attribute("data-cfx-role")=="card-surface").ToArray();
+            if (root == null) return null;
+            var frames=root.Descendants().Where(e=>(string?)e.Attribute("data-cfx-role")=="frame-card").ToArray();
             if (frames.Length!=1) return null;
             var frame=frames[0];
             var svg=ReadSvgDimensions(svgPath);

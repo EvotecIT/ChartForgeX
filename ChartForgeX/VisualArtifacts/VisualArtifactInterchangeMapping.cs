@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Topology;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
@@ -82,7 +83,7 @@ public static partial class VisualArtifactInterchangeMapping {
             ids.AddNode(node.Id);
             foreach (var port in node.Ports) ids.AddPort(node.Id, port.Id);
         }
-        foreach (var edge in prepared.Edges) ids.AddEdge(edge.Id);
+        var edgeIds = prepared.Edges.Select(edge => ids.AddEdgeOccurrence(edge.Id)).ToArray();
         if (!string.IsNullOrWhiteSpace(prepared.Id)) {
             string preparedId = prepared.Id!;
             envelope.Id = BoundedGeneratedId(preparedId, !string.IsNullOrWhiteSpace(options.View?.Id) ? "topology-view" : "topology");
@@ -126,16 +127,18 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
-            envelope.Edges.Add(MapEdge(
+            var mappedEdge = MapEdge(
                 edge,
-                ids.Edge(edge.Id),
+                edgeIds[index],
                 ids.Node(edge.SourceNodeId),
                 ids.Node(edge.TargetNodeId),
                 ids.OptionalPort(edge.SourceNodeId, edge.SourcePortId),
                 ids.OptionalPort(edge.TargetNodeId, edge.TargetPortId),
                 index,
                 ids,
-                options));
+                options);
+            if (!string.Equals(edge.Id, mappedEdge.Id, StringComparison.Ordinal)) TrySetBoundedExtension(mappedEdge.Extensions, ProjectedSourceIdExtension, edge.Id);
+            envelope.Edges.Add(mappedEdge);
         }
         foreach (var scenario in prepared.Scenarios) {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
@@ -396,21 +399,24 @@ public static partial class VisualArtifactInterchangeMapping {
         };
         Copy(scenario.Metadata, mapped.Extensions);
         foreach (var step in scenario.Steps) {
-            string targetId;
+            IEnumerable<string> targetIds;
             if (step.Kind == TopologyScenarioStepKind.Node) {
-                if (!ids.TryNode(step.Id, out targetId)) continue;
+                if (!ids.TryNode(step.Id, out var nodeId)) continue;
+                targetIds = new[] { nodeId };
             } else {
-                if (!ids.TryEdge(step.Id, out targetId)) continue;
+                targetIds = ids.EdgeOccurrences(step.Id);
             }
-            var mappedStep = new VisualArtifactInterchangeScenarioStep {
-                TargetId = targetId,
-                Kind = step.Kind,
-                Label = step.Label,
-                Description = step.Description,
-                DurationMilliseconds = step.DurationMilliseconds
-            };
-            Copy(step.Metadata, mappedStep.Extensions);
-            mapped.Steps.Add(mappedStep);
+            foreach (var targetId in targetIds) {
+                var mappedStep = new VisualArtifactInterchangeScenarioStep {
+                    TargetId = targetId,
+                    Kind = step.Kind,
+                    Label = step.Label,
+                    Description = step.Description,
+                    DurationMilliseconds = step.DurationMilliseconds
+                };
+                Copy(step.Metadata, mappedStep.Extensions);
+                mapped.Steps.Add(mappedStep);
+            }
         }
         return mapped.Steps.Count == 0 ? null : mapped;
     }
@@ -518,6 +524,7 @@ public static partial class VisualArtifactInterchangeMapping {
         private readonly Dictionary<string, string> _groups = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _nodes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _edges = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<string>> _edgeOccurrences = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _scenarios = new(StringComparer.Ordinal);
         private readonly HashSet<string> _usedScenarios = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Dictionary<string, string>> _ports = new(StringComparer.Ordinal);
@@ -531,6 +538,14 @@ public static partial class VisualArtifactInterchangeMapping {
             return allocated;
         }
         public string AddEdge(string sourceId) => Add(_edges, sourceId, "edge");
+        public string AddEdgeOccurrence(string sourceId) {
+            string allocated = Allocate(sourceId, "edge");
+            if (!_edges.ContainsKey(sourceId)) _edges.Add(sourceId, allocated);
+            if (!_edgeOccurrences.TryGetValue(sourceId, out var occurrences)) _edgeOccurrences.Add(sourceId, occurrences = new List<string>());
+            occurrences.Add(allocated);
+            return allocated;
+        }
+        public IEnumerable<string> EdgeOccurrences(string sourceId) => _edgeOccurrences.TryGetValue(sourceId, out var occurrences) ? occurrences : Array.Empty<string>();
         public string AddScenario(string sourceId) {
             string allocated = AllocateLocal(_usedScenarios, sourceId, "scenario");
             _scenarios.Add(sourceId, allocated);

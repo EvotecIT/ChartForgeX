@@ -1,14 +1,18 @@
 using System;
+using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
+    private static XElement[] CalendarRole(XDocument document, string role) => document.Descendants()
+        .Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
+
     private static void CalendarHeatmapRendersContributionGrid() {
         var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(760, 360)
-            .WithTitle("Consistency Journey")
+            .WithSize(760, 360).WithTitle("Consistency Journey")
             .AddCalendarHeatmap("Commits", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1),
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 6), 4),
@@ -17,84 +21,76 @@ internal static partial class SmokeTests {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 2, 12), 2, ChartColor.FromHex("#22C55E")),
                 new ChartCalendarHeatmapItem(new DateTime(2026, 3, 21), 12)
             });
-
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap\"", StringComparison.Ordinal), "Calendar heatmaps should expose a role marker.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap\" data-cfx-label=\"Commits\" data-cfx-start-date=\"2026-01-04\" data-cfx-end-date=\"2026-03-21\" data-cfx-day-count=\"77\" data-cfx-filled-day-count=\"5\" data-cfx-empty-day-count=\"72\"", StringComparison.Ordinal), "Calendar heatmap containers should expose label, date range, and coverage metadata.");
-        Assert(svg.Contains("data-cfx-min-value=\"0\" data-cfx-max-value=\"12\"", StringComparison.Ordinal), "Calendar heatmap containers should expose the source value range.");
-        Assert(svg.Contains("Consistency Journey calendar heatmap for Commits from 2026-01-05 to 2026-03-21 with 4 days with a value, 1 day at zero, and 71 days without data.", StringComparison.Ordinal), "Calendar heatmap SVG descriptions should summarize the specialized chart shape.");
-        Assert(svg.Contains("role=\"group\" aria-label=\"Commits calendar heatmap from 2026-01-04 to 2026-03-21 with 4 days with a value, 1 day at zero, and 72 days without data\"", StringComparison.Ordinal), "Calendar heatmap containers should expose a useful group label.");
-        Assert(!svg.Contains("data-cfx-role=\"legend\"", StringComparison.Ordinal), "Calendar heatmaps should not emit generic series legends.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"calendar-heatmap-cell\"") >= 70, "Calendar heatmaps should render a continuous day grid across the date range.");
-        Assert(svg.Contains("data-cfx-date=\"2026-01-05\"", StringComparison.Ordinal), "Calendar heatmap cells should expose ISO dates.");
-        Assert(svg.Contains("data-cfx-date=\"2026-01-05\" data-cfx-week-index=\"0\" data-cfx-weekday-index=\"1\"", StringComparison.Ordinal), "Calendar heatmap cells should expose computed week and weekday indexes.");
-        Assert(svg.Contains("data-cfx-date=\"2026-02-12\" data-cfx-week-index=\"5\" data-cfx-weekday-index=\"4\" data-cfx-value=\"9\"", StringComparison.Ordinal), "Duplicate calendar heatmap dates should aggregate into one day cell while preserving grid metadata.");
-        Assert(svg.Contains("<title>Commits, 2026-02-12: 9</title>", StringComparison.Ordinal), "Calendar heatmap cells should expose native SVG hover titles.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"calendar-heatmap-cell\"", StringComparison.Ordinal), "Calendar heatmap cells should be named interactive SVG regions without a tab stop of their own.");
-        Assert(svg.Contains("data-cfx-empty=\"true\"", StringComparison.Ordinal), "Calendar heatmaps should mark empty days separately from explicit zero values.");
-        Assert(svg.Contains("data-cfx-date=\"2026-01-04\" data-cfx-week-index=\"0\" data-cfx-weekday-index=\"0\" data-cfx-value=\"0\" data-cfx-empty=\"true\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Calendar heatmap cells without data should expose empty status metadata and grid coordinates, without a data intensity level.");
-        Assert(svg.Contains("<title>Commits, 2026-01-04: No data</title>", StringComparison.Ordinal), "Calendar heatmap empty cells should describe missing data in native SVG hover titles.");
-        Assert(svg.Contains("data-cfx-date=\"2026-01-07\" data-cfx-week-index=\"0\" data-cfx-weekday-index=\"3\" data-cfx-value=\"0\" data-cfx-level=\"0\" data-cfx-empty=\"false\" role=", StringComparison.Ordinal), "Calendar heatmap explicit zero values should remain real low-value cells with grid coordinates and no status.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-weekday-label\"", StringComparison.Ordinal), "Calendar heatmaps should render weekday labels.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-month-label\"", StringComparison.Ordinal), "Calendar heatmaps should render month labels.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\"", StringComparison.Ordinal), "Calendar heatmaps should render a contribution scale.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Calendar heatmap scales should explain missing days separately from the value scale.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-zero\"", StringComparison.Ordinal), "Calendar heatmap scales should show the neutral zero separately from the value ramp.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"1\" data-cfx-value=\"1\" x=", StringComparison.Ordinal), "Calendar heatmap value ramps should start at the smallest non-zero value.");
-        Assert(svg.Contains("data-cfx-date=\"2026-01-04\"", StringComparison.Ordinal) && svg.Contains("fill=\"#CCD2DA\"", StringComparison.Ordinal), "Calendar heatmap empty cells should use a visible neutral fill on light themes.");
-        var lessLabelX = GetAttribute(svg, "data-cfx-role=\"calendar-heatmap-scale-label\"", "x");
-        var noDataX = GetAttribute(svg, "data-cfx-role=\"calendar-heatmap-scale-no-data\"", "x");
-        var noDataWidth = GetAttribute(svg, "data-cfx-role=\"calendar-heatmap-scale-no-data\"", "width");
-        var scaleX = GetAttribute(svg, "data-cfx-role=\"calendar-heatmap-scale-step\"", "x");
-        Assert(lessLabelX < noDataX, "Calendar heatmap no-data scale swatches should not overlap the Less label.");
-        Assert(noDataX + noDataWidth < scaleX, "Calendar heatmap no-data scale swatches should not overlap the value scale start.");
-        Assert(chart.ToPng().Length > 64, "Calendar heatmaps should render PNG output.");
-        AssertThrows<ArgumentException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddCalendarHeatmap("Empty", Array.Empty<ChartCalendarHeatmapItem>()), "Calendar heatmaps should reject empty inputs.");
+        var document = XDocument.Parse(chart.ToSvg());
+        var group = CalendarRole(document, "calendar-heatmap").Single();
+        Assert((string?)group.Attribute("data-cfx-start") == "2026-01-04" && (string?)group.Attribute("data-cfx-end") == "2026-03-21",
+            "Calendar groups should retain the complete padded week range.");
+        Assert((string?)group.Attribute("data-cfx-min") == "0" && (string?)group.Attribute("data-cfx-max") == "12",
+            "Calendar groups should retain the source value range.");
+        Assert((string?)group.Attribute("data-cfx-value-count") == "4" && (string?)group.Attribute("data-cfx-zero-count") == "1"
+            && (string?)group.Attribute("data-cfx-empty-count") == "72", "Calendar coverage should distinguish activity, explicit zero and missing days.");
+        Assert(((string?)group.Attribute("aria-label"))?.Contains("Commits", StringComparison.Ordinal) == true,
+            "Calendar groups should expose their series to screen readers.");
+        var cells = CalendarRole(document, "calendar-cell");
+        Assert(cells.Length == 77, "Calendar heatmaps should render every day in the complete padded week range.");
+        Assert(cells.All(cell => cell.Attribute("tabindex") == null), "Static calendar days should be named without creating extra tab stops.");
+        var duplicate = cells.Single(cell => (string?)cell.Attribute("data-cfx-date") == "2026-02-12");
+        Assert((string?)duplicate.Attribute("data-cfx-value") == "9" && (string?)duplicate.Attribute("data-cfx-week-index") == "5"
+            && (string?)duplicate.Attribute("data-cfx-weekday-index") == "4", "Duplicate dates should aggregate while retaining their calendar position.");
+        Assert(duplicate.Tooltip() == "Commits, 2026-02-12: 9", "Calendar days should retain native SVG hover descriptions.");
+        var missing = cells.Single(cell => (string?)cell.Attribute("data-cfx-date") == "2026-01-04");
+        Assert((string?)missing.Attribute("data-cfx-empty") == "true" && missing.Attribute("data-cfx-level") == null
+            && missing.Tooltip() == "Commits, 2026-01-04: No data", "Missing days should remain distinct from zero activity.");
+        var scale = CalendarRole(document, "calendar-scale-step");
+        Assert(scale.Any(step => (string?)step.Attribute("data-cfx-zero") == "true"), "The scale should represent explicit zero separately.");
+        Assert(scale.Any(step => (string?)step.Attribute("data-cfx-empty") == "false" && (string?)step.Attribute("data-cfx-zero") == "false"
+            && (string?)step.Attribute("data-cfx-value") == "1" && (string?)step.Attribute("data-cfx-level") == "1"),
+            "Calendar intensity scales should start at the smallest nonzero value.");
+        var bottom = scale.Max(step => (double)step.RenderedAttribute("y")! + (double)step.RenderedAttribute("height")!);
+        Assert(CalendarRole(document, "calendar-scale-label").All(label => (double)label.RenderedAttribute("y")! > bottom),
+            "Calendar scale captions should sit below their swatches.");
+        Assert(chart.ToPng().Length > 64, "Calendar heatmaps should render through the native PNG pipeline.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("Commits", Array.Empty<ChartCalendarHeatmapItem>()), "Calendar heatmaps should reject empty inputs.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), -1), "Calendar heatmap values should reject negatives.");
     }
 
     private static void CalendarHeatmapDoesNotLabelPaddingMonths() {
-        var svg = Chart.Create()
-            .WithSize(760, 360)
-            .AddCalendarHeatmap("Commits", new[] {
-                new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 1),
-                new ChartCalendarHeatmapItem(new DateTime(2026, 12, 31), 3)
-            })
-            .ToSvg();
-
-        Assert(CountOccurrences(svg, ">Jan</text>") == 1, "Calendar heatmaps should not add month labels for padded trailing weeks.");
-        Assert(svg.Contains("data-cfx-date=\"2027-01-01\"", StringComparison.Ordinal), "Calendar heatmaps should still render padded trailing week cells.");
-        Assert(Chart.Create().AddCalendarHeatmap("Commits", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 12, 31), 3) }).ToPng().Length > 64, "Calendar heatmaps with padded trailing weeks should render PNG output.");
+        var chart = Chart.Create().WithSize(760, 360).AddCalendarHeatmap("Commits", new[] {
+            new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 1), new ChartCalendarHeatmapItem(new DateTime(2026, 12, 31), 3)
+        });
+        var document = XDocument.Parse(chart.ToSvg());
+        Assert(CalendarRole(document, "calendar-month").Count(label => label.Value == "Jan") == 1,
+            "Calendar heatmaps should not label padded trailing months a second time.");
+        Assert(CalendarRole(document, "calendar-cell").Any(cell => (string?)cell.Attribute("data-cfx-date") == "2027-01-01"),
+            "Calendar heatmaps should retain padded trailing week cells.");
+        Assert(chart.ToPng().Length > 64, "Calendar heatmaps with padded trailing weeks should render PNG output.");
     }
 
     private static void CalendarHeatmapCompleteWeeksDoNotShowNoDataScale() {
         var start = new DateTime(2026, 1, 4);
-        var items = new ChartCalendarHeatmapItem[7];
-        for (var i = 0; i < items.Length; i++) items[i] = new ChartCalendarHeatmapItem(start.AddDays(i), i);
-
-        var svg = Chart.Create()
-            .WithSize(360, 220)
-            .AddCalendarHeatmap("Commits", items)
-            .ToSvg();
-
-        Assert(!svg.Contains("data-cfx-empty=\"true\"", StringComparison.Ordinal), "Calendar heatmaps with complete week data should not mark any cell empty.");
-        Assert(svg.Contains("data-cfx-filled-day-count=\"7\" data-cfx-empty-day-count=\"0\"", StringComparison.Ordinal), "Complete calendar heatmaps should expose zero empty days at container level.");
-        Assert(svg.Contains("data-cfx-min-value=\"0\" data-cfx-max-value=\"6\"", StringComparison.Ordinal), "Complete calendar heatmaps should expose the true source value range.");
-        Assert(!svg.Contains("data-cfx-role=\"calendar-heatmap-scale-no-data\"", StringComparison.Ordinal), "Complete calendar heatmaps should not reserve a missing-data scale swatch.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"1\" data-cfx-value=\"1\" x=", StringComparison.Ordinal), "Complete calendar heatmap value scales should start with the smallest non-zero value.");
+        var items = Enumerable.Range(0, 7).Select(index => new ChartCalendarHeatmapItem(start.AddDays(index), index)).ToArray();
+        var document = XDocument.Parse(Chart.Create().WithSize(360, 220).AddCalendarHeatmap("Commits", items).ToSvg());
+        Assert(CalendarRole(document, "calendar-cell").All(cell => (string?)cell.Attribute("data-cfx-empty") == "false"),
+            "Complete weeks should not contain missing-day marks.");
+        Assert((string?)CalendarRole(document, "calendar-heatmap").Single().Attribute("data-cfx-empty-count") == "0",
+            "Calendar groups should expose zero missing days for complete weeks.");
+        Assert(CalendarRole(document, "calendar-scale-step").All(step => (string?)step.Attribute("data-cfx-empty") == "false"),
+            "Complete weeks should not reserve a missing-data swatch.");
+        Assert(CalendarRole(document, "calendar-scale-label").All(label => label.Value != "No data"),
+            "Complete weeks should not show a missing-data caption.");
+        Assert(CalendarRole(document, "calendar-scale-step").Any(step => (string?)step.Attribute("data-cfx-value") == "1"
+            && (string?)step.Attribute("data-cfx-level") == "1"), "The value ramp should start at the smallest nonzero value.");
     }
 
     private static void CalendarHeatmapUsesLocalContributionRange() {
-        var chart = Chart.Create()
-            .WithSize(360, 220)
-            .AddCalendarHeatmap("Commits", new[] {
-                new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 1),
-                new ChartCalendarHeatmapItem(new DateTime(2026, 1, 2), 16)
-            }, ChartColor.FromHex("#22C55E"));
-
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-date=\"2026-01-02\"", StringComparison.Ordinal) && svg.Contains("fill=\"#22C55E\"", StringComparison.Ordinal), "Calendar heatmaps should scale contribution colors to their local data range instead of treating small counts as percentages.");
-        Assert(svg.Contains("data-cfx-role=\"calendar-heatmap-scale-step\" data-cfx-level=\"4\" data-cfx-value=\"16\" x=", StringComparison.Ordinal), "Calendar heatmap scales should mark the local maximum as the high-intensity step.");
-        Assert(chart.ToPng().Length > 64, "Calendar heatmap local contribution scaling should render PNG output.");
+        var chart = Chart.Create().WithSize(360, 220).AddCalendarHeatmap("Commits", new[] {
+            new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 1), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 2), 16)
+        }, ChartColor.FromHex("#22C55E"));
+        var document = XDocument.Parse(chart.ToSvg());
+        var maximum = CalendarRole(document, "calendar-cell").Single(cell => (string?)cell.Attribute("data-cfx-date") == "2026-01-02");
+        Assert((string?)maximum.RenderedAttribute("fill") == "#22C55E", "Contribution colors should reach the authored high color at the local maximum.");
+        Assert(CalendarRole(document, "calendar-scale-step").Any(step => (string?)step.Attribute("data-cfx-value") == "16"
+            && (string?)step.Attribute("data-cfx-level") == "4"), "The scale should retain the local maximum and its intensity.");
+        Assert(chart.ToPng().Length > 64, "Calendar local contribution scaling should render PNG output.");
     }
 }

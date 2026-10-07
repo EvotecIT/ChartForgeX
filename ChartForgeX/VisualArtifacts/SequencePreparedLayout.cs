@@ -135,12 +135,12 @@ internal sealed class SequencePreparedLayout {
 
     private static string Number(SequenceArtifact model, int index) {
         if (!model.Metadata.TryGetValue("mermaid.autonumber", out var enabled) || enabled != "true") return string.Empty;
-        long start = 1, increment = 1;
-        if (model.Metadata.TryGetValue("mermaid.autonumber.start", out var startText) && !long.TryParse(startText, NumberStyles.Integer, CultureInfo.InvariantCulture, out start))
-            throw new NotSupportedException("Sequence autonumber start must be an integer.");
-        if (model.Metadata.TryGetValue("mermaid.autonumber.increment", out var incrementText) && !long.TryParse(incrementText, NumberStyles.Integer, CultureInfo.InvariantCulture, out increment))
-            throw new NotSupportedException("Sequence autonumber increment must be an integer.");
-        return checked(start + index * increment).ToString(CultureInfo.InvariantCulture) + ". ";
+        decimal start = 1, increment = 1;
+        if (model.Metadata.TryGetValue("mermaid.autonumber.start", out var startText) && !decimal.TryParse(startText, NumberStyles.Float, CultureInfo.InvariantCulture, out start))
+            throw new NotSupportedException("Sequence autonumber start must be a finite decimal number.");
+        if (model.Metadata.TryGetValue("mermaid.autonumber.increment", out var incrementText) && !decimal.TryParse(incrementText, NumberStyles.Float, CultureInfo.InvariantCulture, out increment))
+            throw new NotSupportedException("Sequence autonumber increment must be a finite decimal number.");
+        return checked(start + index * increment).ToString("0.############################", CultureInfo.InvariantCulture) + ". ";
     }
 
     internal static string Wrap(string text, double width, VisualSceneBuilder builder, double size) {

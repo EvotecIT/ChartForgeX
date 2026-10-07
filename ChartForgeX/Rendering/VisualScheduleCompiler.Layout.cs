@@ -40,13 +40,18 @@ internal static partial class VisualScheduleCompiler {
         var gridWidth = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
         var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
         var previousRight = double.NegativeInfinity;
+        var measuredTickWidth = ticks.Select(tick => builder.MeasureText(format(tick), style).Width).DefaultIfEmpty(0).Max();
         for (var index = 0; index < ticks.Count; index++) {
             var x = project(ticks[index]);
             if (chart.Options.ShowGrid && grid.ShowVerticalLines)
                 builder.Line(x, plot.Top, x, plot.Bottom, colors.Border.WithOpacity(grid.VerticalOpacity), gridWidth, "schedule-grid", dash: dash,
                     paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(colors.Border.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
+            // The shared spacing policy depends on the allocated axis length and measured label extent, in either orientation.
+            if (!ChartAxisDensity.ShowVerticalLabel(index, ticks.Count, plot.Width, measuredTickWidth, chart.Options.XAxis.LabelDensity)) continue;
             var text = format(ticks[index]);
+            var tickStyle = style;
+            if (chart.Options.TryGetXAxisLabelHighlight(ticks[index], out var highlight)) { tickStyle = style.Clone(); tickStyle.Color = highlight; }
             var width = Math.Min(builder.MeasureText(text, style).Width, Math.Max(0, plot.Width / Math.Max(1, ticks.Count - 1) - gap / 2));
             var left = Math.Max(plot.Left, Math.Min(plot.Right - width, x - width / 2));
             var density = chart.Options.XAxis.LabelDensity;
@@ -55,7 +60,7 @@ internal static partial class VisualScheduleCompiler {
             var bounds = new ChartRect(left, tickTop, width, Math.Max(0, Math.Min(layout.AxisReserve - gap / 2, viewport.Bottom - tickTop)));
             using (builder.PushClip(viewport))
             using (builder.PushRotation(Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle)), x, bounds.Top))
-                VisualStateSceneTools.Text(builder, text, bounds, style, "schedule-tick-label", "schedule-tick-" + index, TextAlignment.Center);
+                VisualStateSceneTools.Text(builder, text, bounds, tickStyle, "schedule-tick-label", "schedule-tick-" + index, TextAlignment.Center);
             previousRight = left + width;
         }
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) {

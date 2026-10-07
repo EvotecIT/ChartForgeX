@@ -121,7 +121,7 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void SmallLegendsStayCompleteAndInvalidBudgetChangesAreAtomic() {
-        var chart = Dense("line", 1);
+        var chart = Dense("line", 1).WithLegend(true);
         Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "legend-entry-omitted"));
         Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "legend-entry"));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithLegendBudget(.5, 0));

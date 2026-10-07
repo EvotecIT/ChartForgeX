@@ -28,6 +28,7 @@ public sealed class ChartAxis {
     private double? _minimum;
     private double? _maximum;
     private ChartScaleKind _scale;
+    private bool _hasExplicitScale;
     private double _symmetricLogarithmThreshold = 1;
     private int _tickCount = 6;
     private ChartLabelDensity _labelDensity = ChartLabelDensity.Auto;
@@ -65,7 +66,13 @@ public sealed class ChartAxis {
             }
 
             _scale = value;
+            _hasExplicitScale = true;
         }
+    }
+
+    /// <summary>Lets a typed date builder select calendar ticks while preserving an authored axis scale and configuration.</summary>
+    internal void UseTimeScaleByDefault() {
+        if (!_hasExplicitScale) _scale = ChartScaleKind.Time;
     }
 
     /// <summary>Gets or sets the positive linear threshold used by symmetric logarithmic scaling.</summary>

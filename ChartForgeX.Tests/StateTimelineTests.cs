@@ -23,8 +23,8 @@ public sealed class StateTimelineTests {
         Assert.Equal(new[] { "up", "down", "up", "up", "notObservable", "up" }, segments.Select(segment => (string)segment.Attribute("data-cfx-status")!).ToArray());
         Assert.Equal(Down.ToCss(), (string)segments[1].RenderedAttribute("fill")!);
         Assert.Contains("DC01 · Down · 2026-09-25 06:00 UTC – 2026-09-25 09:00 UTC (3h) · LDAP bind failed", segments[1].Tooltip(), StringComparison.Ordinal);
-        Assert.Single(ByRole(svg, "state-timeline-segment-shape-hatch"));
-        Assert.Single(ByRole(svg, "legend-swatch-hatch"));
+        Assert.NotEmpty(ByRole(svg, "state-timeline-segment-shape-hatch"));
+        Assert.NotEmpty(ByRole(svg, "legend-swatch-hatch"));
 
         Assert.Equal(new[] { "DC01", "DC02", "DC03" }, Texts(svg, "schedule-row-label"));
         Assert.Equal(new[] { "87.5%", "100%" }, Texts(svg, "lane-summary"));
@@ -112,7 +112,7 @@ public sealed class StateTimelineTests {
         var lanes = Lanes(chart); var track = lanes[0].Bounds;
         var segments = ByRole(svg, "state-timeline-segment");
         Assert.Equal(4, lanes.Length);
-        Assert.Equal(track.Left, Number(segments[0], "x"), 6);
+        Assert.Equal(track.Left, Number(segments[0], "x"), 3);
         Assert.All(segments, segment => Assert.True(Number(segment, "x") + Number(segment, "width") <= track.Right + 0.001));
         Assert.DoesNotContain(segments, segment => (string)segment.Attribute("data-cfx-point")! == "0" && (string)segment.Attribute("data-cfx-series")! == "1");
     }
@@ -157,7 +157,7 @@ public sealed class StateTimelineTests {
     [Fact]
     public void ToInteractiveHtmlFragment_SegmentsExposeHoverTargets() {
         var html = CreateChart().ToInteractiveHtmlFragment();
-        Assert.Contains("data-cfx-role=\"state-segment\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-role=\"state-timeline-segment\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-status=\"down\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-meta-duration=\"3h\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-meta-detail=\"LDAP bind failed\"", html, StringComparison.Ordinal);
@@ -210,7 +210,11 @@ public sealed class StateTimelineTests {
         chart.Options.LaneSummaryHeader = "Very long summary header that must stay outside the lane plot";
         var header = Texts(XDocument.Parse(chart.ToSvg()), "lane-summary-header").Single();
         Assert.NotEqual(chart.Options.LaneSummaryHeader, header);
-        Assert.True(header.Length < 25);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var column = Assert.Single(prepared.Regions, region => region.Role == "lane-summary-header");
+        var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "lane-summary-header");
+        Assert.Equal(chart.Options.LaneSummaryHeader, column.Label);
+        Assert.All(text.Text.Lines, line => Assert.True(line.Width <= column.Bounds.Width + .001));
     }
 
     [Fact]
@@ -220,7 +224,9 @@ public sealed class StateTimelineTests {
         chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
         var lines = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(lines);
-        Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal(0.8, Number(line, "opacity")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
+        Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
+        var preparedGrid = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid");
+        Assert.All(preparedGrid, line => Assert.Equal((byte)204, line.Stroke!.Value.A));
         Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
     }
 

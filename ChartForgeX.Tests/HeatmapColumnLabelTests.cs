@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
 using Xunit;
 
@@ -23,10 +24,11 @@ public sealed class HeatmapColumnLabelTests {
 
         Assert.Equal(Checks, labels.Select(label => label.Value).ToArray());
         Assert.All(labels, label => {
-            Assert.StartsWith("rotate(-45 ", (string?)label.Attribute("transform"), StringComparison.Ordinal);
+            Assert.StartsWith("rotate(-45 ", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal);
             Assert.Equal(tickSize, Number(label, "font-size"));
-            Assert.Equal("end", (string?)label.Attribute("text-anchor"));
         });
+        Assert.All(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-column-label"),
+            node => Assert.Equal(TextAlignment.Right, node.Alignment));
 
         var cellBottom = ByRole(svg, "heatmap-cell").Max(cell => Number(cell, "y") + Number(cell, "height"));
         Assert.All(labels, label => Assert.True(Number(label, "y") > cellBottom, "Labels hang below the cells."));
@@ -45,7 +47,8 @@ public sealed class HeatmapColumnLabelTests {
         var svg = XDocument.Parse(chart.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
         Assert.Equal(Checks, labels.Select(label => label.Value).ToArray());
-        Assert.All(labels, label => Assert.Equal(angle < 0 ? "end" : "start", (string?)label.Attribute("text-anchor")));
+        Assert.All(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-column-label"),
+            node => Assert.Equal(angle < 0 ? TextAlignment.Right : TextAlignment.Left, node.Alignment));
         Assert.NotEqual(Matrix().ToPng(), chart.ToPng());
     }
 
@@ -61,7 +64,7 @@ public sealed class HeatmapColumnLabelTests {
     public void ToSvg_UnrotatedColumnLabels_StillShrinkToTheirColumn() {
         var svg = XDocument.Parse(Matrix().ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
-        Assert.All(labels, label => Assert.Null(label.Attribute("transform")));
+        Assert.All(labels, label => Assert.Null(label.RenderedAttribute("transform")));
         Assert.Contains(labels, label => Number(label, "font-size") < 12 || label.Value.EndsWith("…", StringComparison.Ordinal) || label.Value.EndsWith("...", StringComparison.Ordinal));
     }
 
@@ -73,7 +76,7 @@ public sealed class HeatmapColumnLabelTests {
             .AddHeatmapRow("DC02", Enumerable.Range(0, Checks.Length).Select(i => (double)(i * 3 % 10)).ToArray());
         var svg = XDocument.Parse(chart.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
-        Assert.All(labels, label => Assert.StartsWith("rotate(60 ", (string?)label.Attribute("transform"), StringComparison.Ordinal));
+        Assert.All(labels, label => Assert.StartsWith("rotate(60 ", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal));
         var scaleTop = ByRole(svg, "heatmap-scale-step").Min(step => Number(step, "y"));
         Assert.All(labels, label => Assert.True(RotatedLabelBottom(label, 60) <= scaleTop + 1, "The scale sits below the rotated labels."));
         Assert.True(scaleTop + 8 <= chart.Options.Size.Height);
@@ -95,7 +98,7 @@ public sealed class HeatmapColumnLabelTests {
     }
 
     private static Chart Matrix() {
-        var chart = Chart.Create().WithSize(520, 380)
+        var chart = Chart.Create().WithSize(520, 380).WithLegendPosition(ChartLegendPosition.Bottom)
             .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("fail", "Failed", ChartColor.FromHex("#d4302f")))
             .WithXLabels(Checks);
         for (var row = 0; row < 4; row++) {
@@ -111,11 +114,11 @@ public sealed class HeatmapColumnLabelTests {
         // Check the drawn text, including any trimming, against the following mark. Character-count estimates
         // can be wider than the installed font and report an overlap where the rendered label actually fits.
         var fontSize = Number(label, "font-size");
-        var text = new TextStyle { Font = new FontSpec { Family = (string)label.Attribute("font-family")!, Weight = 700 }, FontSize = fontSize };
+        var text = new TextStyle { Font = new FontSpec { Family = (string)label.RenderedAttribute("font-family")!, Weight = int.Parse((string)label.RenderedAttribute("font-weight")!, CultureInfo.InvariantCulture) }, FontSize = fontSize };
         var width = TextLayoutEngine.Measure(label.Value, text).Width;
         var radians = Math.Abs(angle) * Math.PI / 180;
         return Number(label, "y") + Math.Sin(radians) * width + Math.Cos(radians) * fontSize * 1.2 / 2;
     }
 
-    private static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, CultureInfo.InvariantCulture);
+    private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
 }

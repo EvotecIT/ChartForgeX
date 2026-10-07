@@ -84,19 +84,25 @@ internal sealed partial class VisualSceneBuilder {
     internal void AddRegion(VisualSemanticRegion region) => _regions.Add(region ?? throw new ArgumentNullException(nameof(region)));
 
     internal void Text(string text, double x, double baseline, double size, ChartColor color, int weight = 400,
-        string? role = null, string? id = null, TextAlignment alignment = TextAlignment.Left, SvgPaint? paint = null) {
+        string? role = null, string? id = null, TextAlignment alignment = TextAlignment.Left, SvgPaint? paint = null,
+        ChartColor? stroke = null, double strokeWidth = 0, SvgPaint? strokePaint = null) {
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
+        ChartGuards.Finite(strokeWidth, nameof(strokeWidth));
+        if (strokeWidth < 0) throw new ArgumentOutOfRangeException(nameof(strokeWidth));
         if (!Enum.IsDefined(typeof(TextAlignment), alignment)) throw new ArgumentOutOfRangeException(nameof(alignment));
-        _nodes.Add(new VisualSceneText(Face(weight).Prepare(text, size), x, baseline, color, alignment, role, id, paint));
+        _nodes.Add(new VisualSceneText(Face(weight).Prepare(text, size), x, baseline, color, alignment, role, id, paint, stroke, strokeWidth, strokePaint));
     }
 
-    internal void Text(string text, double x, double baseline, TextStyle style, string? role = null, string? id = null, SvgPaint? paint = null) {
+    internal void Text(string text, double x, double baseline, TextStyle style, string? role = null, string? id = null, SvgPaint? paint = null,
+        ChartColor? stroke = null, double strokeWidth = 0, SvgPaint? strokePaint = null) {
         if (style == null) throw new ArgumentNullException(nameof(style));
         ChartGuards.Finite(x, nameof(x)); ChartGuards.Finite(baseline, nameof(baseline));
+        ChartGuards.Finite(strokeWidth, nameof(strokeWidth));
+        if (strokeWidth < 0) throw new ArgumentOutOfRangeException(nameof(strokeWidth));
         var prepared = new VisualSceneTextFace(style).Prepare(text, style.EffectiveFontSize);
         baseline += style.Baseline == TextBaseline.Superscript ? -style.FontSize * 0.35
             : style.Baseline == TextBaseline.Subscript ? style.FontSize * 0.22 : 0;
-        _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id, paint));
+        _nodes.Add(new VisualSceneText(prepared, x, baseline, style.Color, style.Alignment, role, id, paint, stroke, strokeWidth, strokePaint));
         AddTextDecorations(prepared, x, baseline, style, paint);
     }
 
@@ -123,7 +129,7 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     private VisualSceneTextFace Face(int weight) {
-        if (weight < 100 || weight > 900) throw new ArgumentOutOfRangeException(nameof(weight));
+        if (weight < 1 || weight > 1000) throw new ArgumentOutOfRangeException(nameof(weight));
         if (!_faces.TryGetValue(weight, out var face)) {
             face = new VisualSceneTextFace(_font, weight);
             _faces.Add(weight, face);

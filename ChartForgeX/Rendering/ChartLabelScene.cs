@@ -104,7 +104,7 @@ internal sealed partial class ChartLabelScene {
     internal static TextStyle ResolveTextStyle(double size, TextStyleOverride style, int weight) => ResolveTextStyle(size, style, weight, style.FontFamily);
     private static TextStyle ResolveTextStyle(double size, TextStyleOverride style, int weight, string? family) {
         var font = (CurrentFont ?? FontSpec.SystemSans()).Clone();
-        font.Family = family ?? font.Family; font.Weight = Math.Max(100, Math.Min(900, style.ResolveFontWeight(weight))); font.Italic = style.Italic;
+        font.Family = family ?? font.Family; font.Weight = TypographyFontResolver.FontSpecWeight(style.ResolveFontWeight(weight)); font.Italic = style.Italic;
         font.Variations = style.Variations ?? FontVariationSettings.Default;
         return new TextStyle { Font = font, FontSize = size, LineHeight = 1, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
     }

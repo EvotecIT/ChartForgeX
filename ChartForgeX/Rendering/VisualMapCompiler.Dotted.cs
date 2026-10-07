@@ -28,6 +28,7 @@ internal static partial class VisualMapCompiler {
         var map = Fit(plot, longitudeSpan, latitudeSpan, Math.Max(dot * 2.45, maxRadius * 1.85) + Math.Max(1, dot * .55) / 2);
         var labels = new List<MapLabel>(); var obstacles = new List<LabelObstacle>();
         using (builder.PushGroup("series-0", "dotted-map", new Dictionary<string, string> {
+            ["role"] = "group", ["aria-label"] = chart.Options.Labels.Describe(DescriptionFacts(chart, true)),
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
             ["data-cfx-projection"] = "equirectangular", ["data-cfx-viewport"] = viewport.Name ?? "",
             ["data-cfx-point-count"] = N(series.Points.Count), ["data-cfx-visible-point-count"] = N(series.Points.Count(point => Visible(point, viewport))),

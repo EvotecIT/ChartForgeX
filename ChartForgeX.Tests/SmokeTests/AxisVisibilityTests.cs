@@ -29,7 +29,7 @@ internal static partial class SmokeTests {
             .AddBar("Values", Points(12, 24));
         var verticalSvg = vertical.ToSvg();
         Assert(!verticalSvg.Contains(">Count</text>", StringComparison.Ordinal), "Hiding the y-axis should suppress y-axis titles.");
-        Assert(verticalSvg.Contains("text-anchor=\"middle\"", StringComparison.Ordinal), "Hiding the y-axis should keep x-axis labels visible.");
+        Assert(verticalSvg.Contains("data-cfx-role=\"axis-x-label\"", StringComparison.Ordinal), "Hiding the y-axis should keep x-axis labels visible.");
         Assert(vertical.ToPng().Length > 64, "Independent y-axis visibility should render PNG output.");
 
         var theme = ChartTheme.ReportLight();

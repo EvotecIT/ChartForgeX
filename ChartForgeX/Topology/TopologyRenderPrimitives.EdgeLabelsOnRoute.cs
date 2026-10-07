@@ -25,8 +25,9 @@ internal static partial class TopologyRenderPrimitives {
         var boxes = new List<LabelBox>(chart.Nodes.Count * 2 + chart.Groups.Count);
         foreach (var node in chart.Nodes) {
             if (EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Hidden) continue;
+            boxes.Add(EdgeLabelNodeObstacle(node, options, 1));
             // The card and its caption count as one block as wide as the wider of the two.
-            var caption = TopologyNodeFootprint.Caption(chart, node);
+            var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
             var center = CenterX(node);
             var half = Math.Max(node.Width, caption.Width) / 2;
             boxes.Add(LabelBox.FromBounds(center - half - 1, node.Y - 1, center + half + 1, node.Y + node.Height + caption.Height + 1));
@@ -56,6 +57,17 @@ internal static partial class TopologyRenderPrimitives {
             var b = points[i + 1];
             var horizontal = Math.Abs(a.Y - b.Y) < 0.01;
             if (!horizontal && Math.Abs(a.X - b.X) >= 0.01) continue;
+            // Orthogonal routes may split a straight run at coincident elbow points. The label
+            // needs the complete continuous run, while the canonical route remains unchanged.
+            var end = i + 1;
+            while (end + 1 < points.Count) {
+                var next = points[end + 1];
+                var aligned = horizontal ? Math.Abs(next.Y - a.Y) < .01 : Math.Abs(next.X - a.X) < .01;
+                var direction = horizontal ? (b.X - a.X) * (next.X - b.X) : (b.Y - a.Y) * (next.Y - b.Y);
+                if (!aligned || direction < 0) break;
+                b = next; end++;
+            }
+            i = end - 1;
             var length = horizontal ? Math.Abs(b.X - a.X) : Math.Abs(b.Y - a.Y);
             var room = length - (horizontal ? width : height) - RouteLabelEndMargin * 2;
             if (room < 0) continue;
@@ -80,6 +92,9 @@ internal static partial class TopologyRenderPrimitives {
             }
         }
 
+        // Association with the route cannot justify painting over another card or its caption.
+        // The classic owner can place an off-route label with a leader when no clear run exists.
+        if (best.HasValue && OverlapScore(LabelBox.FromCenter(best.Value.X, best.Value.Y, width, height), obstacles) > 0) return null;
         return best;
     }
 }

@@ -17,6 +17,7 @@ internal static partial class VisualMapCompiler {
         var map = Fit(plot, source.Width, source.Height, width / 2);
         var values = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null);
         using (builder.PushGroup("region-map", "region-map", new Dictionary<string, string> {
+            ["role"] = "group", ["aria-label"] = chart.Options.Labels.Describe(DescriptionFacts(chart, true)),
             ["data-cfx-map-id"] = definition.Id, ["data-cfx-source-left"] = N(source.Left), ["data-cfx-source-top"] = N(source.Top),
             ["data-cfx-source-width"] = N(source.Width), ["data-cfx-source-height"] = N(source.Height), ["data-cfx-region-count"] = N(definition.Regions.Count),
             ["data-cfx-filled-region-count"] = N(values.Count), ["data-cfx-missing-region-count"] = N(definition.Regions.Count - values.Count)
@@ -78,6 +79,7 @@ internal static partial class VisualMapCompiler {
         var gridWidth = size * definition.ColumnCount + gap * (definition.ColumnCount - 1);
         var gridHeight = size * definition.RowCount + gap * (definition.RowCount - 1);
         using (builder.PushGroup("tile-map", "tile-map", new Dictionary<string, string> { ["data-cfx-map-id"] = definition.Id,
+            ["role"] = "group", ["aria-label"] = chart.Options.Labels.Describe(DescriptionFacts(chart, true)),
             ["data-cfx-region-count"] = N(definition.Regions.Count), ["data-cfx-filled-region-count"] = N(values.Count), ["data-cfx-missing-region-count"] = N(definition.Regions.Count - values.Count) })) using (builder.PushClip(plot)) {
             Surface(chart, context, builder, new ChartRect(plot.Left + (plot.Width - gridWidth) / 2, plot.Top + (plot.Height - gridHeight) / 2, gridWidth, gridHeight), colors, "tile-map-surface");
             foreach (var region in definition.Regions) {

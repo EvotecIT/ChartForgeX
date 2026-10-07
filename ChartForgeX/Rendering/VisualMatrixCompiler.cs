@@ -111,7 +111,7 @@ internal static partial class VisualMatrixCompiler {
                           CellLabel(chart, context, builder, series, pointIndex, bounds, viewport,
                               stateMark.HasValue ? ChartMarkText.OnStateMark(chart, colors, context.Frame, stateMark.Value)
                                   : ChartMarkText.OnHeatmapCell(chart, colors, context.Frame, fill, series.Color, point.Y, min, max,
-                                      blend.FromRole ?? SvgColorRole.Ramp), cell, id);
+                                      blend.FromRole ?? SvgColorRole.Ramp, blend), cell, id);
                         }
                     }
                 }

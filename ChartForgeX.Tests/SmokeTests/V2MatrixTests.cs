@@ -20,7 +20,8 @@ public sealed class V2MatrixTests {
             zero.Descendants().Single(element => element.Name.LocalName == "rect").Attribute("fill")?.Value);
         var steps = ByRole(document, "heatmap-scale-step");
         Assert.Equal(5, steps.Length);
-        Assert.Equal(new[] { "0", "25", "50", "75", "100" }, steps.Select(element => element.Attribute("data-cfx-value")?.Value));
+        Assert.Equal(new[] { "20", "40", "60", "80", "100" }, steps.Select(element => element.Attribute("data-cfx-value")?.Value));
+        Assert.Single(ByRole(document, "heatmap-scale-zero"));
         Assert.Contains(prepared.Regions, region => region.Role == "heatmap-scale-step" && region.Label == "100");
         Assert.NotEmpty(prepared.ToPng());
     }

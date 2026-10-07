@@ -130,6 +130,7 @@ public sealed class StatePresentationTests {
         var svg = XDocument.Parse(chart.ToSvg());
         var outline = ByRole(svg, "heatmap-cell-shape-outline").Single();
         Assert.Equal("3 2", (string?)outline.Attribute("stroke-dasharray"));
+        Assert.Equal("butt", (string?)outline.Attribute("stroke-linecap"));
 
         // Along the top edge of the outline the raster output alternates between dash and gap.
         var image = PngReader.Decode(chart.ToPng());
@@ -153,14 +154,14 @@ public sealed class StatePresentationTests {
             .Select(line => (string)line.Attribute("stroke")!).Distinct().ToArray();
 
         var dark = Matrix().WithTheme(ChartTheme.Dark());
-        var darkStroke = ChartColor.Parse(Strokes(dark).Single());
+        var darkStroke = PreparedSvgTestExtensions.ParseRenderedColor(Strokes(dark).Single());
         Assert.InRange(darkStroke.A, 1, 254);
         Assert.True(darkStroke.R < 96 && darkStroke.G < 96 && darkStroke.B < 96, "On a dark theme the lines are dark.");
         Assert.NotEqual(Matrix().ToPng(), dark.ToPng());
 
         // A theme without any opaque surface still gets visible lines, and the hatched cell still differs from a solid one.
         var overlay = Matrix().WithTheme(ChartTheme.TransparentOverlayDark());
-        var overlayStroke = ChartColor.Parse(Strokes(overlay).Single());
+        var overlayStroke = PreparedSvgTestExtensions.ParseRenderedColor(Strokes(overlay).Single());
         Assert.InRange(overlayStroke.A, 1, 254);
         var svg = XDocument.Parse(overlay.ToSvg());
         var image = PngReader.Decode(overlay.ToPng());
@@ -173,7 +174,7 @@ public sealed class StatePresentationTests {
     [Fact]
     public void MarkBackdrop_ChoosesTheSurfaceBehindTheMarks() {
         string Stroke(Chart chart) {
-            var color = ChartColor.Parse(ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell-shape-hatch").Select(line => (string)line.Attribute("stroke")!).Distinct().Single());
+            var color = PreparedSvgTestExtensions.ParseRenderedColor(ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell-shape-hatch").Select(line => (string)line.Attribute("stroke")!).Distinct().Single());
             return ChartColor.FromRgb(color.R, color.G, color.B).ToCss();
         }
         Chart Transparent(ChartMarkBackdrop? backdrop) {
@@ -341,7 +342,7 @@ public sealed class StatePresentationTests {
 
     private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
 
-    private static ChartColor Fill(XElement element) => ChartColor.Parse((string)element.RenderedAttribute("fill")!);
+    private static ChartColor Fill(XElement element) => PreparedSvgTestExtensions.ParseRenderedColor((string)element.RenderedAttribute("fill")!);
 
     private static (byte R, byte G, byte B) Pixel(RgbaImage image, double x, double y) {
         var offset = ((int)y * image.Width + (int)x) * 4;

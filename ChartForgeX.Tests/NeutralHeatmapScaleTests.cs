@@ -48,20 +48,20 @@ public sealed class NeutralHeatmapScaleTests {
         var start = new DateTime(2026, 1, 5);
         var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 260).AddCalendarHeatmap("Commits", Enumerable.Range(0, 20).Select(day => new ChartCalendarHeatmapItem(start.AddDays(day), day % 5)));
         var svg = XDocument.Parse(chart.ToSvg());
-        var valued = ByRole(svg, "calendar-heatmap-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "false").ToArray();
-        var empty = ByRole(svg, "calendar-heatmap-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "true").ToArray();
+        var valued = ByRole(svg, "calendar-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "false").ToArray();
+        var empty = ByRole(svg, "calendar-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "true").ToArray();
         Assert.All(valued, cell => Assert.Null(cell.Attribute("data-cfx-status")));
         Assert.NotEmpty(empty);
         Assert.All(empty, cell => Assert.Null(cell.Attribute("data-cfx-level")));
-        Assert.All(ByRole(svg, "calendar-heatmap-scale-step"), step => Assert.Null(step.Attribute("data-cfx-status")));
+        Assert.All(ByRole(svg, "calendar-scale-step"), step => Assert.Null(step.Attribute("data-cfx-status")));
         var strongest = valued.First(cell => (string?)cell.Attribute("data-cfx-level") == "4");
-        Assert.NotEqual(chart.Options.Theme.Positive.ToCss(), (string)strongest.Attribute("fill")!);
+        Assert.NotEqual(chart.Options.Theme.Positive.ToCss(), (string)strongest.RenderedAttribute("fill")!);
     }
 
     [Fact]
     public void LocalizedLevelLabel_IsEmittedOnlyWhenChangedAndReadByTooltips() {
         Chart Create() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
-        Assert.Null(ByRole(XDocument.Parse(Create().ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
+        Assert.Equal("Level", (string?)ByRole(XDocument.Parse(Create().ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
         var localized = Create().WithLabels(labels => labels.Level = "Poziom");
         Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(localized.ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
         var calendar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLabels(labels => labels.Level = "Poziom").AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 9, 1), 3) });

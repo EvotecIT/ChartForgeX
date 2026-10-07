@@ -12,7 +12,11 @@ internal static partial class TopologyLayoutEngine {
             MapViewport = chart.MapViewport,
             Legend = chart.Legend == null ? null : TopologyLegend.Clone(chart.Legend),
             Theme = chart.Theme?.Clone(),
-            DefaultRenderOptions = chart.DefaultRenderOptions?.Clone()
+            DefaultRenderOptions = chart.DefaultRenderOptions?.Clone(),
+            // Prepared geometry depends on the resolved routing policy and measured font.
+            // Prepare replaces these values for a fresh layout; detached prepared clones retain them.
+            RenderOptions = chart.RenderOptions?.Clone(),
+            TextMeasurement = chart.TextMeasurement
         };
         copy.Accessibility.Name = chart.Accessibility.Name;
         copy.Accessibility.Description = chart.Accessibility.Description;

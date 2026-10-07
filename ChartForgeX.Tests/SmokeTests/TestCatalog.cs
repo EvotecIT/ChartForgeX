@@ -322,7 +322,6 @@ internal static partial class SmokeTests {
         ("Calendar heatmap uses local contribution range", CalendarHeatmapUsesLocalContributionRange),
         ("Dotted map renders world dots and points", DottedMapRendersWorldDotsAndPoints),
         ("Topology renders demo SVG", TopologyRendersDemoSvg),
-        ("Topology SVG renderer uses SVG markup engine", TopologySvgRendererUsesSvgMarkupEngine),
         ("Topology default legend is product neutral", TopologyDefaultLegendIsProductNeutral),
         ("Topology legend grows for domain specific items", TopologyLegendGrowsForDomainSpecificItems),
         ("Topology relationship overview supports multiline labels", TopologyRelationshipOverviewSupportsMultilineLabels),

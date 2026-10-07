@@ -20,13 +20,13 @@ internal sealed partial class VisualTopologyCompiler {
     private readonly VisualThemeColors _colors;
     private readonly bool _resolvedLayout;
     private readonly bool _naturalSize;
-    private readonly Dictionary<string, IReadOnlyList<ChartPoint>> _routes = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, IReadOnlyList<ChartPoint>> _paintRoutes = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, (string Owner, IReadOnlyList<ChartPoint> Tail)> _trunks = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, Dictionary<string, string>> _edgeMetadata = new(StringComparer.Ordinal);
+    private readonly Dictionary<TopologyEdge, IReadOnlyList<ChartPoint>> _routes = new();
+    private readonly Dictionary<TopologyEdge, IReadOnlyList<ChartPoint>> _paintRoutes = new();
+    private readonly Dictionary<TopologyEdge, (TopologyEdge Owner, IReadOnlyList<ChartPoint> Tail)> _trunks = new();
+    private readonly Dictionary<TopologyEdge, Dictionary<string, string>> _edgeMetadata = new();
     private Dictionary<string, TopologyNode> _nodesById = null!;
     private IReadOnlyDictionary<TopologyEdge, int> _edgeRenderOrders = null!;
-    private readonly Dictionary<string, ChartRect> _resolvedLabelBounds = new(StringComparer.Ordinal);
+    private readonly Dictionary<TopologyEdge, ChartRect> _resolvedLabelBounds = new();
     private TopologyChart _chart = null!;
     private TopologyHighlightState _highlight = null!;
     private TopologyLegend? _legend;
@@ -84,10 +84,10 @@ internal sealed partial class VisualTopologyCompiler {
         _edgeRenderOrders = EdgeRenderOrderMap(_chart, _options);
         foreach (var edge in _chart.Edges) {
             var route = EdgePoints(_chart, edge, nodes);
-            _routes.Add(edge.Id, SampleRoute(route));
-            _paintRoutes.Add(edge.Id, SampleRoute(TopologyDenseRoutePlanner.PaintPoints(_chart, edge, route, includeOwner: true)));
+            _routes.Add(edge, SampleRoute(route));
+            _paintRoutes.Add(edge, SampleRoute(TopologyDenseRoutePlanner.PaintPoints(_chart, edge, route, includeOwner: true)));
             var trunk = TopologyDenseRoutePlanner.SharedTrunk(_chart, edge);
-            if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge.Id, (trunk.Owner.Id, SampleRoute(trunk.Tail)));
+            if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge, (trunk.Owner, SampleRoute(trunk.Tail)));
 
             IReadOnlyList<ChartPoint> SampleRoute(List<ChartPoint> points) {
                 IReadOnlyList<ChartPoint> rendered = RenderedEdgeSamplePoints(_chart, edge, nodes, points, 64);
@@ -107,7 +107,7 @@ internal sealed partial class VisualTopologyCompiler {
         var accessibility = _source.Accessibility.Clone();
         accessibility.Name ??= HeadingOrSource(_context.Frame.Title, _source.Title) ?? _source.Labels.UntitledTopology;
         accessibility.Description ??= HeadingOrSource(_context.Frame.Subtitle, _source.Subtitle)
-            ?? _source.Labels.Describe(HeadingOrSource(_context.Frame.Title, _source.Title), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count);
+            ?? VisualArtifactInterchangeMapping.BoundedGeneratedText(_source.Labels.Describe(HeadingOrSource(_context.Frame.Title, _source.Title), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count), string.Empty);
         var semantics = SemanticSnapshot(accessibility);
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
         var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,

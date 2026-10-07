@@ -14,11 +14,11 @@ internal static partial class SmokeTests {
         Assert(!compact.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Heatmaps should hide row labels when axes are disabled.");
         Assert(!compact.Contains("data-cfx-role=\"heatmap-column-label\"", System.StringComparison.Ordinal), "Heatmaps should hide column labels when axes are disabled.");
         Assert(!compact.Contains("data-cfx-role=\"heatmap-x-axis-title\"", System.StringComparison.Ordinal), "Heatmaps should hide x-axis titles when axes are disabled.");
-        Assert(compact.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "Heatmaps should keep scale labels as heatmap context.");
+        Assert(!compact.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "The shared legend permission should hide continuous heatmap scales.");
 
         var axesOnly = HeatmapSample().WithLegend(false).ToSvg();
         Assert(axesOnly.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Heatmaps should keep axes when only legends are disabled.");
-        Assert(axesOnly.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "Heatmap scales should remain visible when series legends are disabled.");
+        Assert(!axesOnly.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "The shared legend permission should hide continuous heatmap scales while retaining axes.");
         var withoutScale = HeatmapSample().WithHeatmapScaleLegend(false).ToSvg();
         Assert(!withoutScale.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "Heatmap scale legends should be optional.");
         Assert(HeatmapSample().WithHeatmapScaleLegend(false).ToPng().Length > 64, "Heatmaps without scale legends should render valid PNG output.");

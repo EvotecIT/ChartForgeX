@@ -10,13 +10,14 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
     private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max) {
-        if (!chart.Options.ShowMapScaleLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
+        if (!chart.Options.ShowMapScaleLegend || !chart.Options.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
         var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
         var texts = new[] { ChartHeatmapSurface.MapHighLabel(chart) + " · " + ChartNumericFormatter.FormatValue(chart.Options, values[0]),
             (ChartHeatmapSurface.MapMidpointLabel(chart) ?? "") + " " + ChartNumericFormatter.FormatValue(chart.Options, values[1]),
             ChartHeatmapSurface.MapLowLabel(chart) + " · " + ChartNumericFormatter.FormatValue(chart.Options, values[2]) };
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
-        var height = texts.Select(text => builder.MeasureText(text, style).Height).Max();
+        var height = texts.Concat(new[] { "Mg", chart.Series[0].Name, chart.Options.Labels.NoData })
+            .Max(text => builder.MeasureText(text, style).Height);
         if (chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
             var measured = texts.Concat(new[] { chart.Series[0].Name, chart.Options.Labels.NoData }).Max(text => builder.MeasureText(text, style).Width);
             var width = Math.Min(plot.Width * .4, measured + height + gap * 3);
@@ -29,9 +30,10 @@ internal static partial class VisualMapCompiler {
     }
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max) {
-        if (!chart.Options.ShowMapScaleLegend) return;
+        if (!chart.Options.ShowMapScaleLegend || !chart.Options.ShowLegend || !context.Frame.ShowLegend) return;
         var area = layout.Scale; var gap = context.Theme.Spacing; var style = TickStyle(chart, context);
-        var row = builder.MeasureText("Mg", style).Height;
+        var row = layout.Texts.Concat(new[] { "Mg", chart.Series[0].Name, chart.Options.Labels.NoData })
+            .Max(text => builder.MeasureText(text, style).Height);
         var missing = (chart.Options.RegionMapDefinition?.Regions.Count ?? chart.Options.TileMapDefinition?.Regions.Count ?? 0) > chart.Series[0].Points.Count;
         var steps = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
         using (builder.PushGroup("map-scale", "map-scale", new Dictionary<string, string> {

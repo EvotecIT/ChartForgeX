@@ -8,6 +8,30 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
+    private void BuildIconCaption(TopologyNode node, ChartColor accent, bool active) {
+        var text = IconLabelText(node, _chart.TextMeasurement);
+        var size = _context.Theme.Typography.DataLabelSize * (10.5 / 11);
+        var metrics = _builder.MeasureText(text, size * _scale, 700);
+        var width = Math.Max(IconLabelPlateWidth(node, _chart.TextMeasurement) * _scale, metrics.Width + 12 * _scale);
+        var height = Math.Max(15 * _scale, metrics.LineHeight);
+        var origin = Point(new ChartPoint(node.X + node.Width / 2, IconLabelPlateY(node)));
+        var bounds = new ChartRect(origin.X - width / 2, origin.Y, width, height);
+        _builder.Rect(bounds, Highlight(_colors.Surface, active), accent.WithOpacity(.4), _context.Theme.AxisStrokeWidth * _scale,
+            _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: Paint(Highlight(_colors.Surface, active), SvgColorRole.Surface, accent.WithOpacity(.4), AccentRole(node.Color)));
+        Text(text, bounds, size, Highlight(_colors.Foreground, active), 700, "topology-node-label", centered: true, id: node.Id + "-label");
+    }
+
+    private void BuildDiagramCaption(TopologyNode node, bool active) {
+        var lines = DiagramNodeLabelLines(node, _options);
+        var size = _context.Theme.Typography.DataLabelSize;
+        var lineHeight = Math.Max(14 * _scale, _builder.MeasureText("Ag", size * _scale, 600).LineHeight);
+        var center = Point(new ChartPoint(node.X + node.Width / 2, DiagramNodeLabelCenterY(node)));
+        for (var i = 0; i < lines.Count; i++) _builder.Text(lines[i], center.X,
+            center.Y - _builder.MeasureText("Ag", size * _scale, 600).Height / 2 + _builder.TextAscent(size * _scale, 600) + i * lineHeight,
+            size * _scale, Highlight(_colors.Foreground, active), 600, "topology-node-label", node.Id + "-label-" + i,
+            TextAlignment.Center, SvgPaint.Of(Highlight(_colors.Foreground, active), SvgColorRole.Text));
+    }
+
     private void BuildTileCaption(TopologyNode node, ChartColor accent, bool active) {
         // The canonical caption owner also supplies routing obstacles and layout footprints.
         var lines = TileCaptionLines(node, _options);

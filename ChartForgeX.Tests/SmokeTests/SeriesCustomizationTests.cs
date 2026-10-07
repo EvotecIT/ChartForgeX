@@ -100,7 +100,9 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Series data-label styling should still render labels.");
         Assert(svg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Series data-label styles should override chart-level label color.");
-        Assert(svg.Contains("font-weight=\"900\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "Series data-label styles should override label weight and decoration.");
+        var labels = FamilyLabels(PreparedFamily(chart), "data-label");
+        Assert(labels.Length == 4 && labels.All(label => label.Text.Style.Font.Weight == 900 && label.Text.Style.Underline
+            && label.Text.Style.FontSize == 13), "Series data-label styles should override weight, decoration and size in the shared text snapshot.");
         Assert(chart.ToPng().Length > 64, "Series data-label styles should render PNG output.");
         AssertThrows<ArgumentNullException>(() => chart.Series[0].WithDataLabelStyle(null!), "Series data-label style callbacks should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithDataLabelStyle(style => style.WithFontSize(0)), "Series data-label styles should reject invalid font sizes.");
@@ -113,9 +115,10 @@ internal static partial class SmokeTests {
             .WithDataLabelStyle(style => style.WithColor("#64748b"))
             .AddPie("Slices", Points(70, 30));
         pie.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithUnderline().WithFontSize(14));
-        var pieSvg = pie.ToSvg();
+        var pieSvg = PreparedFamily(pie).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         Assert(pieSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Pie data labels should render with series styles enabled.");
-        Assert(pieSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && pieSvg.Contains("font-weight=\"900\"", StringComparison.Ordinal) && pieSvg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "Pie labels should honor per-series data-label style overrides.");
+        var pieLabels = FamilyLabels(PreparedFamily(pie), "data-label");
+        Assert(pieLabels.Length == 2 && pieLabels.All(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F766E")) && label.Text.Style.Font.Weight == 900 && label.Text.Style.Underline), "Pie labels should honor per-series color, weight and underline in the shared text snapshot.");
         Assert(pie.ToPng().Length > 64, "Pie series data-label styles should render PNG output.");
 
         var heatmap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -135,7 +138,7 @@ internal static partial class SmokeTests {
             .WithDataLabelStyle(style => style.WithColor("#64748b"))
             .AddRadar("Current", Points(92, 74, 88));
         radar.Series[0].WithDataLabelStyle(style => style.WithColor("#7c3aed").WithWeight("900"));
-        Assert(radar.ToSvg().Contains("fill=\"#7C3AED\"", StringComparison.Ordinal), "Radar data labels should honor per-series data-label color overrides.");
+        Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#7C3AED"))), "Radar data labels should honor per-series data-label color overrides.");
         Assert(radar.ToPng().Length > 64, "Radar series data-label styles should render PNG output.");
 
         var regularPolarArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -150,7 +153,7 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .AddPolarArea("Polar", Points(92, 74, 88));
         polarArea.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithFontFamily("monospace").WithWeight("normal").WithItalic().WithUnderline().WithFontSize(16));
-        var polarAreaSvg = polarArea.ToSvg();
+        var polarAreaSvg = PreparedFamily(polarArea).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         var polarAreaPng = polarArea.ToPng();
         Assert(polarAreaSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && polarAreaSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Polar-area labels should honor per-series data-label style overrides.");
         Assert(!regularPolarArea.SequenceEqual(polarAreaPng), "Polar-area PNG labels should render and position with resolved series text styling.");
@@ -177,7 +180,9 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(svg.Contains("fill=\"#123456\"", StringComparison.Ordinal), "Point data-label styles should override series label color.");
         Assert(svg.Contains("fill=\"#654321\"", StringComparison.Ordinal), "Unstyled point labels should continue using the series label style.");
-        Assert(svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "Point data-label styles should include decoration overrides.");
+        var styledLabel = FamilyLabels(PreparedFamily(chart), "data-label").Single(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#123456")));
+        Assert(styledLabel.Text.Style.Underline && styledLabel.Text.Style.Font.Weight == 900 && styledLabel.Text.Style.FontSize == 14,
+            "Point data-label styles should include decoration, weight and size overrides in the shared text snapshot.");
         Assert(chart.ToPng().Length > 64, "Point data-label styles should render PNG output.");
 
         chart.Series[0].UseSeriesDataLabelStyle(1);
@@ -188,7 +193,7 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .AddPie("Slices", Points(70, 30));
         pie.Series[0].WithPointDataLabelStyle(1, style => style.WithColor("#0f3d5e").WithWeight("900"));
-        Assert(pie.ToSvg().Contains("fill=\"#0F3D5E\"", StringComparison.Ordinal), "Pie slice labels should honor point-level data-label style overrides.");
+        Assert(FamilyLabels(PreparedFamily(pie), "data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F3D5E"))), "Pie slice labels should honor point-level data-label style overrides.");
         Assert(pie.ToPng().Length > 64, "Pie point data-label styles should render PNG output.");
 
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointDataLabelStyle(-1, _ => { }), "Point data-label styles should reject negative indexes.");
@@ -460,7 +465,7 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Below)
             .AddRadar("Current", Points(92, 74, 88));
-        Assert(radar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Radar labels should render when below placement is configured.");
+        Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Length == 3, "Radar labels should render for each point when below placement is configured.");
         Assert(radar.ToPng().Length > 64, "Radar below label placement should render PNG output.");
 
         var bubble = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())

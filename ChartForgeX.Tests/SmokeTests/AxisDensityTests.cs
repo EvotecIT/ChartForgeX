@@ -60,7 +60,7 @@ internal static partial class SmokeTests {
             .WithTickCount(11)
             .AddLine("Values", Points(10, 50, 90));
         var automaticSvg = automatic.ToSvg();
-        var automaticLabels = CountOccurrences(automaticSvg, "data-cfx-role=\"y-axis-label\"");
+        var automaticLabels = CountOccurrences(automaticSvg, "data-cfx-role=\"axis-y-label\"");
         Assert(automaticLabels >= 2 && automaticLabels < 11, "Automatic y-axis density should retain the endpoints while removing vertically crowded labels.");
         Assert(automatic.ToPng().Length > 64, "PNG should use the same y-axis density policy.");
 
@@ -71,7 +71,7 @@ internal static partial class SmokeTests {
             .WithYAxisLabelDensity(ChartLabelDensity.All)
             .AddLine("Values", Points(10, 50, 90))
             .ToSvg();
-        Assert(CountOccurrences(allSvg, "data-cfx-role=\"y-axis-label\"") == 11, "All y-axis density should preserve every generated label.");
+        Assert(CountOccurrences(allSvg, "data-cfx-role=\"axis-y-label\"") == 11, "All y-axis density should preserve every generated label.");
 
         var secondary = Chart.Create()
             .WithSize(360, 150)
@@ -83,7 +83,7 @@ internal static partial class SmokeTests {
         secondary.Options.SecondaryYAxis.TickCount = 11;
         secondary.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.All;
         var secondarySvg = secondary.ToSvg();
-        Assert(CountOccurrences(secondarySvg, "data-cfx-role=\"secondary-y-axis-tick\"") == 11, "Secondary y-axis density should be independent from the primary y-axis density.");
+        Assert(CountOccurrences(secondarySvg, "data-cfx-role=\"axis-secondary-y-label\"") == 11, "Secondary y-axis density should be independent from the primary y-axis density.");
         Assert(secondary.ToPng().Length > 64, "Secondary y-axis density should render through the PNG path.");
     }
 }

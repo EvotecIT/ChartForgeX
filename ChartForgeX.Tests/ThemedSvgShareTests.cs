@@ -103,10 +103,10 @@ public sealed class ThemedSvgShareTests {
     [Fact]
     public void MarkText_IsWrittenByRole_WithVariables() {
         var svg = Build("categorical-text", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
-        // Solid marks carry the card surface as text, quiet and outlined tints the text colour.
+        // Solid marks carry their own paired contrast ink; quiet and outlined tints retain primary text.
         var fills = ByRole(XDocument.Parse(svg), "data-label").SelectMany(label => label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text"))
             .Select(text => (string)text.Attribute("fill")!).ToArray();
-        Assert.Contains("var(--cfx-surface-card, #FFFFFF)", fills);
+        Assert.Contains(fills, fill => fill.Contains("-contrast-ink, ", StringComparison.Ordinal));
         Assert.Contains("var(--cfx-text-primary, #16181C)", fills);
         Assert.All(fills, fill => Assert.StartsWith("var(", fill));
     }
@@ -176,9 +176,9 @@ public sealed class ThemedSvgShareTests {
         Assert.All(highlights, highlight => {
             var stroke = (string)highlight.Attribute("stroke")!;
             Assert.DoesNotContain("var(", stroke, StringComparison.Ordinal);
-            var color = ChartColor.Parse(stroke);
+            var color = PreparedSvgTestExtensions.ParseRenderedColor(stroke);
             Assert.Equal(ChartColor.White, color.WithAlpha(255));
-            Assert.True(color.A > 0);
+            Assert.InRange(color.A, 1, 254);
         });
         // Applied to finished markup, the variables still match by value.
         var mapped = Light.ToSvgColorVariables().Apply(Build("line", Light).WithLineVisualStyle(ChartLineVisualStyle.Premium()).ToSvg());
@@ -257,7 +257,8 @@ public sealed class ThemedSvgShareTests {
     }
 
     private static void AssertShared(string light, string dark, VisualDesignTokens? darkTokens = null) {
-        var dictionary = (darkTokens ?? Dark).ToSvgColorVariables().Variables.GroupBy(variable => variable.Name).ToDictionary(group => group.Key, group => Hex(group.First().Color));
+        var dictionary = (darkTokens ?? Dark).ToSvgColorVariables().GetVariablesForSvg(light)
+            .GroupBy(variable => variable.Name).ToDictionary(group => group.Key, group => Hex(group.First().Color));
         // As the host compares: definitions nothing references are left out (the card and plot surface gradients of a
         // chart that draws neither), each property takes its dark value, and the ids of the rendering are made equal.
         string Canonical(string svg) {
@@ -295,11 +296,11 @@ public sealed class ThemedSvgShareTests {
         var result = new List<(ChartColor, ChartColor, string)>();
         foreach (var mark in XDocument.Parse(svg).Descendants().Where(element => MarkRoles.Contains((string?)element.Attribute("data-cfx-role") ?? ""))) {
             var geometry = mark.DescendantsAndSelf().First(element => element.Name.LocalName is "rect" or "path" && (string?)element.Attribute("fill") is not (null or "none"));
-            var fill = ChartColor.Parse((string)geometry.Attribute("fill")!);
+            var fill = PreparedSvgTestExtensions.ParseRenderedColor((string)geometry.Attribute("fill")!);
             var opacity = double.Parse((string?)geometry.Attribute("fill-opacity") ?? "1", CultureInfo.InvariantCulture) * fill.A / 255d;
             var shown = Over(fill, opacity, backdrop);
             foreach (var text in mark.Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") is "data-label" or "gantt-lane-item-label"))) {
-                var ink = ChartColor.Parse((string)text.Attribute("fill")!);
+                var ink = PreparedSvgTestExtensions.ParseRenderedColor((string)text.Attribute("fill")!);
                 result.Add((shown, Over(ink, ink.A / 255d, shown), text.Value));
             }
         }

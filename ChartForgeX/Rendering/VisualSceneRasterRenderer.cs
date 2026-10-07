@@ -55,7 +55,7 @@ internal static partial class VisualSceneRasterRenderer {
                 } else if (node is VisualScenePath path) PaintContours(canvas, VisualSceneGeometry.Flatten(path, canvas.PixelsPerUnit), path);
                 else if (node is VisualSceneSlice slice) PaintContours(canvas, VisualSceneGeometry.Flatten(slice, canvas.PixelsPerUnit), slice);
                 else if (node is VisualSceneText text) {
-                    if (transform.IsIdentity) PaintText(canvas, text, textHinting);
+                    if (transform.IsIdentity && (!text.Stroke.HasValue || text.StrokeWidth <= 0)) PaintText(canvas, text, textHinting);
                     else PaintTransformedText(canvas, text, transform, textHinting);
                 }
             }

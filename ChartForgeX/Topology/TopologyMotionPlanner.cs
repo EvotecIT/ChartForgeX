@@ -7,7 +7,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static class TopologyMotionPlanner {
-    public static TopologyMotionPlan? Build(TopologyChart chart, TopologyRenderOptions options, IReadOnlyDictionary<string, IReadOnlyList<ChartPoint>>? resolvedRoutes = null) {
+    public static TopologyMotionPlan? Build(TopologyChart chart, TopologyRenderOptions options, IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes = null) {
         if (options.Motion == null || chart.Edges.Count == 0) return null;
         options.Motion.Validate();
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -28,7 +28,7 @@ internal static class TopologyMotionPlanner {
         return null;
     }
 
-    private static TopologyMotionPlan? BuildScenarioPlan(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyScenario scenario, IReadOnlyDictionary<string, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
+    private static TopologyMotionPlan? BuildScenarioPlan(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyScenario scenario, IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
         var entries = new List<TopologyMotionEntry>();
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var step in scenario.Steps) {
@@ -59,10 +59,10 @@ internal static class TopologyMotionPlanner {
         return new TopologyMotionSample(first.Points[0], MotionColor(first.Edge, plan, options, theme));
     }
 
-    private static void AddEdges(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, List<TopologyMotionEntry> entries, string edgeId, IReadOnlyDictionary<string, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
+    private static void AddEdges(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, List<TopologyMotionEntry> entries, string edgeId, IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
         foreach (var edge in chart.Edges.Where(candidate => string.Equals(candidate.Id, edgeId, StringComparison.Ordinal))) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-            var routePoints = resolvedRoutes != null && resolvedRoutes.TryGetValue(edge.Id, out var resolved) ? resolved : RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes));
+            var routePoints = resolvedRoutes != null && resolvedRoutes.TryGetValue(edge, out var resolved) ? resolved : RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes));
             if (routePoints.Count < 2) continue;
             entries.Add(new TopologyMotionEntry(edge, routePoints, PolylineLength(routePoints)));
         }

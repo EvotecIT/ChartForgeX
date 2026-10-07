@@ -22,7 +22,7 @@ internal sealed partial class VisualExportRequest {
         var legendEntries = VisualChartCompiler.LegendEntries(VisualChartCompiler.Family(chart), chart, theme.Resolve(VisualThemeMode.Light));
         var frame = new VisualFrame(options.ShowHeader && !options.HostOwnsFrame ? chart.Title : string.Empty,
             options.ShowHeader && !options.HostOwnsFrame ? chart.Subtitle : string.Empty,
-            ChartLegendVisibility.ForEntries(chart, legendEntries.Count) && !options.HostOwnsFrame, options.LegendPosition,
+            ChartLegendVisibility.ForPreparedContent(chart, legendEntries.Count) && !options.HostOwnsFrame, options.LegendPosition,
             options.ShowPlotBackground && !options.HostOwnsFrame, options.TransparentBackground || options.HostOwnsFrame,
             legendMaximumRows: options.LegendMaximumRows, legendMaximumHeightFraction: options.LegendMaximumHeightFraction,
             showCard: options.ShowCard && options.Theme.UseCard && !options.HostOwnsFrame);

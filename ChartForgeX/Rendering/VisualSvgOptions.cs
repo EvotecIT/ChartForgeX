@@ -14,11 +14,14 @@ public sealed class VisualSvgOptions {
     /// <param name="idPrefix">Unique host namespace; null uses a deterministic content namespace.</param>
     /// <param name="colorVariables">Host CSS properties with resolved static fallback colors. The mapping is copied.</param>
     /// <param name="linkTarget">Whether safe scene links use the current browsing context or a new protected context.</param>
-    public VisualSvgOptions(string? idPrefix = null, SvgColorVariables? colorVariables = null, VisualSvgLinkTarget linkTarget = VisualSvgLinkTarget.SameContext) {
+    /// <param name="responsive">Whether inline SVG shrinks to its host width while preserving the logical viewport and aspect ratio.</param>
+    public VisualSvgOptions(string? idPrefix = null, SvgColorVariables? colorVariables = null, VisualSvgLinkTarget linkTarget = VisualSvgLinkTarget.SameContext,
+        bool responsive = false) {
         if (!Enum.IsDefined(typeof(VisualSvgLinkTarget), linkTarget)) throw new ArgumentOutOfRangeException(nameof(linkTarget));
         IdPrefix = idPrefix == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idPrefix);
         _colorVariables = colorVariables?.Clone();
         LinkTarget = linkTarget;
+        Responsive = responsive;
     }
 
     /// <summary>Gets the host ID namespace, or null for a deterministic content namespace.</summary>
@@ -27,6 +30,8 @@ public sealed class VisualSvgOptions {
     public SvgColorVariables? ColorVariables => _colorVariables?.Clone();
     /// <summary>Gets the safe link target policy.</summary>
     public VisualSvgLinkTarget LinkTarget { get; }
+    /// <summary>Gets whether the SVG carries self-contained responsive sizing for inline hosts.</summary>
+    public bool Responsive { get; }
     internal SvgColorVariables? Variables => _colorVariables;
 
     /// <summary>Maps an external host identifier to a deterministic valid namespace without losing identity to sanitization collisions.</summary>

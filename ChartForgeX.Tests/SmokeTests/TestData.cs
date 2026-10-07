@@ -313,12 +313,15 @@ internal static partial class SmokeTests {
         var document = System.Xml.Linq.XDocument.Parse(text);
         var selectors = System.Text.RegularExpressions.Regex.Matches(marker, "([\\w:-]+)=\"([^\"]*)\"");
         var tag = marker.StartsWith("<", StringComparison.Ordinal) ? marker.Substring(1).Split(' ', '>')[0] : null;
-        var selected = document.Descendants().FirstOrDefault(element =>
+        var matches = document.Descendants().Where(element =>
             (tag == null || element.Name.LocalName == tag) && selectors.Cast<System.Text.RegularExpressions.Match>().All(selector => {
                 var name = selector.Groups[1].Value; var value = System.Net.WebUtility.HtmlDecode(selector.Groups[2].Value);
                 return name == "data-cfx-role" ? (string?)element.Attribute(name) == value
                     : element.AncestorsAndSelf().Any(owner => (string?)owner.Attribute(name) == value);
-            }));
+            })).ToArray();
+        var selected = matches.FirstOrDefault(element => element.Attribute(attribute) != null ||
+            element.Descendants().Any(child => child.Attribute(attribute) != null) ||
+            element.Ancestors().Any(owner => owner.Attribute(attribute) != null)) ?? matches.FirstOrDefault();
         if (selected == null) throw new InvalidOperationException("Missing marker: " + marker);
         var result = selected.Attribute(attribute);
         if (attribute.StartsWith("data-", StringComparison.Ordinal))
@@ -326,6 +329,13 @@ internal static partial class SmokeTests {
         result ??= selected.Descendants().Select(child => child.Attribute(attribute)).FirstOrDefault(value => value != null);
         result ??= selected.Ancestors().Select(owner => owner.Attribute(attribute)).FirstOrDefault(value => value != null);
         return result?.Value ?? throw new InvalidOperationException("Missing attribute: " + attribute + " on " + marker);
+    }
+
+    private static bool SvgHasAttributes(string svg, string attributes) {
+        var selectors = System.Text.RegularExpressions.Regex.Matches(attributes, "([\\w:-]+)=\"([^\"]*)\"");
+        if (selectors.Count == 0) throw new ArgumentException("Expected SVG attribute selectors.", nameof(attributes));
+        return System.Xml.Linq.XDocument.Parse(svg).Descendants().Any(element => selectors.Cast<System.Text.RegularExpressions.Match>()
+            .All(selector => (string?)element.Attribute(selector.Groups[1].Value) == System.Net.WebUtility.HtmlDecode(selector.Groups[2].Value)));
     }
 
     private static DecodedPng DecodePng(byte[] png) {

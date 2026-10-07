@@ -29,7 +29,7 @@ internal static partial class SmokeTests {
         secondary.Series[0].UseSecondaryYAxis();
         var secondarySvg = secondary.ToSvg();
         Assert(secondarySvg.Contains(">generic-secondary</text>", StringComparison.Ordinal), "Secondary y-axis ticks should fall back to the generic value formatter when the axis has no dedicated formatter.");
-        Assert(secondarySvg.Contains("data-cfx-role=\"secondary-y-axis-tick\"", StringComparison.Ordinal) && secondarySvg.Contains("font-weight=\"650\"", StringComparison.Ordinal) && secondarySvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Secondary SVG axis ticks should honor the shared tick-label typography style.");
+        Assert(secondarySvg.Contains("data-cfx-role=\"axis-secondary-y-label\"", StringComparison.Ordinal) && secondarySvg.Contains("font-weight=\"650\"", StringComparison.Ordinal) && secondarySvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Secondary SVG axis ticks should honor the shared tick-label typography style.");
         var secondaryPng = secondary.ToPng();
         secondary.WithValueFormatter(_ => "changed-secondary");
         Assert(!secondaryPng.AsSpan().SequenceEqual(secondary.ToPng()), "Secondary PNG ticks should use the same generic formatter fallback as SVG output.");

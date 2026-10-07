@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -23,10 +24,10 @@ public sealed class CategoricalHeatmapTests {
 
         var links = ByRole(svg, "heatmap-cell-link");
         Assert.Equal(new[] { "#dc01-ldap", "evidence/dc02.html#backup" }, links.Select(link => (string)link.Attribute("href")!).ToArray());
-        Assert.Equal("heatmap-cell", (string)links[0].Elements().Single().Attribute("data-cfx-role")!);
+        Assert.Contains(links[0].Ancestors(), owner => (string?)owner.Attribute("data-cfx-role") == "heatmap-cell");
 
-        Assert.Single(ByRole(svg, "heatmap-cell-hatch"));
-        Assert.Single(ByRole(svg, "state-segment-hatch"));
+        Assert.NotEmpty(ByRole(svg, "heatmap-cell-shape-hatch"));
+        Assert.NotEmpty(ByRole(svg, "legend-swatch-hatch"));
         Assert.Equal(new[] { "Passed", "Critical", "Not evaluated" }, ByRole(svg, "legend-label").Select(label => label.Value).ToArray());
         Assert.Empty(ByRole(svg, "legend-item"));
         Assert.Empty(ByRole(svg, "heatmap-scale-step"));
@@ -47,8 +48,10 @@ public sealed class CategoricalHeatmapTests {
         var svg = XDocument.Parse(CreateChart().ToSvg());
         var labels = ByRole(svg, "data-label");
         Assert.NotEmpty(labels);
-        Assert.All(labels, label => Assert.Contains(label.Ancestors(),
-            ancestor => (string?)ancestor.Attribute("pointer-events") == "none"));
+        var linkedCell = ByRole(svg, "heatmap-cell").Single(cell => cell.Descendants().Any(element => (string?)element.Attribute("href") == "evidence/dc02.html#backup"));
+        var linkedLabel = Assert.Single(linkedCell.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "data-label");
+        Assert.Contains(linkedLabel.Ancestors(), owner => (string?)owner.Attribute("href") == "evidence/dc02.html#backup");
+        Assert.All(labels, label => Assert.Contains(label.Ancestors(), owner => (string?)owner.Attribute("data-cfx-role") == "heatmap-cell"));
     }
 
     [Fact]
@@ -98,7 +101,7 @@ public sealed class CategoricalHeatmapTests {
     [Fact]
     public void ToSvg_TitleAndWrappingLegend_StayBelowColumnLabelsWithoutOverlap() {
         var categories = Enumerable.Range(0, 9).Select(index => new ChartStateCategory("s" + index.ToString(CultureInfo.InvariantCulture), "Category number " + index.ToString(CultureInfo.InvariantCulture), Pass)).ToArray();
-        var chart = Chart.Create().WithSize(520, 360).WithXAxis("Checks").WithStateCategories(categories).WithXLabels("A", "B", "C")
+        var chart = Chart.Create().WithSize(520, 360).WithLegendPosition(ChartLegendPosition.Bottom).WithXAxis("Checks").WithStateCategories(categories).WithXLabels("A", "B", "C")
             .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("s0"), new ChartHeatmapCell("s1"), new ChartHeatmapCell("s2"));
         var svg = XDocument.Parse(chart.ToSvg());
         var legendRows = ByRole(svg, "state-legend-swatch").Select(swatch => Number(swatch, "y")).Distinct().ToArray();
@@ -143,8 +146,10 @@ public sealed class CategoricalHeatmapTests {
             .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("s0", "1", href: "#evidence"), new ChartHeatmapCell("s1"));
         chart.Options.LegendStyle.FontSize = 32;
         var svg = XDocument.Parse(chart.ToSvg());
-        var summary = ByRole(svg, "legend-overflow").Single();
-        Assert.True(int.Parse((string)summary.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var summary = Assert.Single(prepared.Regions, region => region.Id == "legend-overflow");
+        Assert.Contains("more entries", summary.Label);
+        Assert.NotEmpty(ByRole(svg, "legend-entry-omitted"));
         Assert.All(ByRole(svg, "heatmap-cell"), cell => Assert.True(Number(cell, "height") >= 18));
         Assert.All(ByRole(svg, "legend-label"), label => Assert.True(Number(label, "y") < 400));
         Assert.NotEmpty(chart.ToPng());

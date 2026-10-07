@@ -5,6 +5,7 @@ using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -35,6 +36,7 @@ internal static partial class SmokeTests {
     private static void SmoothSeriesRenderAsBezierPaths() {
         var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
+            .WithLineVisualStyle(ChartLineVisualStyle.Premium())
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
             .ToSvg();
         Assert(svg.Contains(" C ", StringComparison.Ordinal), "Smooth series should render cubic Bezier path segments.");
@@ -55,8 +57,9 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(chart.Options.LineVisualStyle.HighlightOpacity == 0.31, "Charts should clone reusable line style instances so later caller changes do not mutate chart output.");
-        Assert(svg.Contains("data-cfx-role=\"line-ambient-halo\"", StringComparison.Ordinal) && svg.Contains("opacity=\"0.07\"", StringComparison.Ordinal), "Reusable line styles should control ambient halo opacity.");
-        Assert(svg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && svg.Contains("opacity=\"0.31\"", StringComparison.Ordinal), "Reusable line styles should control highlight opacity.");
+        var layers = PreparedFamily(chart).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().ToArray();
+        Assert(layers.Single(layer => layer.Role == "line-ambient-halo").Stroke!.Value.A == (byte)Math.Round(.07 * 255), "Reusable line styles should control ambient halo opacity.");
+        Assert(layers.Single(layer => layer.Role == "line-highlight").Stroke!.Value.A == (byte)Math.Round(.31 * 255), "Reusable line styles should control highlight opacity.");
 
         var classicSvg = Chart.Create()
             .WithSize(420, 260)
@@ -92,13 +95,13 @@ internal static partial class SmokeTests {
     private static void StepAreaSeriesRenderAsStairStepAreas() {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 30), new ChartPoint(3, 18), new ChartPoint(4, 42) };
         var area = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).AddArea("Values", points);
-        var stepArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithDataLabels().AddStepArea("Values", points, ChartColor.FromRgb(37, 99, 235));
+        var stepArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithDataLabels().WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddStepArea("Values", points, ChartColor.FromRgb(37, 99, 235));
         var areaSvg = area.ToSvg();
         var stepAreaSvg = stepArea.ToSvg();
         Assert(stepArea.Series[0].Kind == ChartSeriesKind.StepArea, "Step areas should use their own series kind.");
-        Assert(stepAreaSvg.Contains("data-cfx-role=\"step-area\"", StringComparison.Ordinal), "SVG step areas should expose a filled step-area role.");
-        Assert(stepAreaSvg.Contains("data-cfx-role=\"step-area-line\"", StringComparison.Ordinal), "SVG step areas should expose a readable boundary role.");
-        Assert(stepAreaSvg.Contains("data-cfx-role=\"step-area-line-highlight\"", StringComparison.Ordinal), "SVG step-area boundaries should use the shared premium line highlight.");
+        Assert(stepAreaSvg.Contains("data-cfx-role=\"area\"", StringComparison.Ordinal), "SVG step areas should expose their filled geometry.");
+        Assert(stepAreaSvg.Contains("data-cfx-role=\"line\"", StringComparison.Ordinal), "SVG step areas should expose a readable boundary.");
+        Assert(stepAreaSvg.Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal), "SVG step-area boundaries should honor explicitly enabled line highlights.");
         Assert(CountOccurrences(stepAreaSvg, " L ") > CountOccurrences(areaSvg, " L "), "SVG step areas should add horizontal and vertical stair-step area segments.");
         Assert(stepAreaSvg.Contains(">42</text>", StringComparison.Ordinal), "Step-area data labels should render values when enabled.");
         Assert(!area.ToPng().SequenceEqual(stepArea.ToPng()), "PNG step areas should rasterize differently from straight area series.");
@@ -118,7 +121,7 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(svg.Contains(">$119,000 MRR</text>", StringComparison.Ordinal), "Point callouts should render custom data-label text.");
-        Assert(svg.Contains("data-cfx-role=\"point-callout\"", StringComparison.Ordinal), "Point callouts should expose a stable semantic SVG role.");
+        Assert(svg.Contains("data-cfx-semantic-role=\"point-callout\"", StringComparison.Ordinal), "Point callouts should retain their source semantic role.");
         Assert(!svg.Contains(">119</text>", StringComparison.Ordinal), "Point callouts should replace the formatted point value with the custom label.");
         Assert(!svg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"1\"", StringComparison.Ordinal), "Point callouts should not add dashboard-only highlights to the legend.");
         Assert(svg.Contains("with 1 data series: MRR.", StringComparison.Ordinal), "Point callouts should not inflate generic SVG data-series descriptions.");
@@ -159,8 +162,8 @@ internal static partial class SmokeTests {
     private static void DataLabelsUseReadableEdgeAwareStyling() {
         var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddLine("Values", Points(1000, 900, 1000)).ToSvg();
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Data labels should be identifiable in SVG output.");
-        Assert(svg.Contains("paint-order=\"stroke fill\"", StringComparison.Ordinal), "Data labels should render with a text halo for readability.");
-        Assert(svg.Contains("dominant-baseline=\"middle\"", StringComparison.Ordinal), "Data labels should use stable vertical alignment.");
+        Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "data-label"))
+            .All(element => double.TryParse((string?)element.Attribute("y"), NumberStyles.Float, CultureInfo.InvariantCulture, out _)), "Data labels should export their measured numeric baselines.");
 
         var longSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(220, 140)
@@ -169,7 +172,7 @@ internal static partial class SmokeTests {
             .AddBar("Values", Points(72))
             .ToSvg();
         Assert(longSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Long SVG data labels should still render as identifiable data labels.");
-        Assert(longSvg.Contains("...</text>", StringComparison.Ordinal), "SVG data labels should shorten formatter output that cannot fit inside the plot.");
+        Assert(longSvg.Contains("…</text>", StringComparison.Ordinal), "SVG data labels should shorten formatter output that cannot fit inside the plot.");
     }
 
     private static void CustomValueFormatterAffectsSvgValues() {
@@ -234,7 +237,7 @@ internal static partial class SmokeTests {
             .WithXAxisValueFormatter(value => "Checkpoint " + value.ToString("0", CultureInfo.InvariantCulture))
             .AddLine("Incidents", new[] { new ChartPoint(0, 12), new ChartPoint(2, 18), new ChartPoint(4, 16) });
         var longRotated = longRotatedChart.ToSvg();
-        Assert(GetAttribute(longRotated, "<clipPath", "height") < GetAttribute(plainRotated, "<clipPath", "height"), "Rotated generated x-axis labels should reserve more SVG bottom space when formatting makes them longer.");
+        Assert(CartesianPlot(longRotated).Height < CartesianPlot(plainRotated).Height, "Rotated generated x-axis labels should reserve more SVG bottom space when formatting makes them longer.");
         Assert(longRotatedChart.ToPng().Length > 64, "Rotated generated x-axis labels should render valid PNG output when formatting makes them longer.");
     }
 
@@ -244,7 +247,7 @@ internal static partial class SmokeTests {
             .WithValueFormatter(value => "$" + value.ToString("N0", CultureInfo.InvariantCulture) + " ms")
             .AddLine("Latency budget", Points(1000000, 1120000, 1080000))
             .ToSvg();
-        Assert(GetAttribute(svg, "<clipPath", "x") > 76, "Long formatted y-axis labels should push the SVG plot area to the right.");
+        Assert(CartesianPlot(svg).Left > 76, "Long formatted y-axis labels should push the SVG plot area to the right.");
         Assert(svg.Contains(" ms</text>", StringComparison.Ordinal), "Long formatted y-axis labels should render after density-aware selection.");
     }
 
@@ -256,7 +259,7 @@ internal static partial class SmokeTests {
             .WithYAxis(longTitle)
             .AddLine("Values", Points(10, 20, 30))
             .ToSvg();
-        Assert(svg.Contains("...</text>", StringComparison.Ordinal), "SVG axis titles should shorten when the chart cannot fit the full title.");
+        Assert(svg.Contains("…</text>", StringComparison.Ordinal), "SVG axis titles should shorten when the chart cannot fit the full title.");
         Assert(Chart.Create().WithSize(240, 180).WithXAxis(longTitle).WithYAxis(longTitle).AddLine("Values", Points(10, 20, 30)).ToPng().Length > 64, "PNG axis titles should render valid output when long titles require fitting.");
     }
 
@@ -268,11 +271,24 @@ internal static partial class SmokeTests {
             .WithTitle(longTitle)
             .WithSubtitle(longSubtitle)
             .AddLine("Values", Points(10, 20, 30));
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"chart-title\"", StringComparison.Ordinal), "SVG header titles should expose a stable role marker.");
-        Assert(svg.Contains("data-cfx-role=\"chart-subtitle\"", StringComparison.Ordinal), "SVG header subtitles should expose a stable role marker.");
-        Assert(svg.Contains("...</text>", StringComparison.Ordinal), "SVG header text should shorten when it cannot fit in the chart width.");
-        Assert(chart.ToPng().Length > 64, "PNG header text should render valid output when long title and subtitle fitting is required.");
+        var request = VisualExportRequest.ForChart(chart);
+        var prepared = chart.Prepare(request.Context);
+        var headings = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "frame-heading"
+            || node.Role == "frame-heading-continuation").ToArray();
+        Assert(headings.Count(node => node.Role == "frame-heading") == 2,
+            "The shared frame should retain visible title and subtitle lines in a compact viewport.");
+        var padding = request.Context.Layout.PaddingEdges;
+        Assert(headings.All(node => node.Text.Lines.All(line => node.LineLeft(line) >= padding.Left - .000001
+            && node.LineLeft(line) + line.Width <= prepared.Size.Width - padding.Right + .000001)),
+            "Shared header fitting should keep every measured line inside the available horizontal bounds.");
+        Assert(headings.All(node => node.Baseline - node.Text.Ascent >= padding.Top - .000001
+            && node.Baseline <= prepared.Size.Height - padding.Bottom + .000001), "Header baselines should remain inside the viewport.");
+        Assert(headings.SelectMany(node => node.Text.Lines).Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)),
+            "The shared frame should visibly mark truncated compact headings.");
+        Assert(prepared.Accessibility.Name == longTitle, "Visual fitting should retain the complete title in the text alternative.");
+        Assert(request.Context.Frame.Subtitle == longSubtitle, "Fitting should preserve the complete source subtitle.");
+        Assert(prepared.ToSvg().Contains("data-cfx-role=\"frame-heading\"", StringComparison.Ordinal), "SVG should expose the canonical shared header role.");
+        Assert(prepared.ToPng(request.RasterOptions).Length > 64, "The same fitted header scene should render native PNG output.");
     }
 
     private static void AnnotationsRenderInSvg() {
@@ -305,16 +321,21 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">mean</text>", StringComparison.Ordinal), "Mean overlays should render line labels.");
         Assert(svg.Contains(">median</text>", StringComparison.Ordinal), "Median overlays should render line labels.");
         Assert(svg.Contains(">1 sigma</text>", StringComparison.Ordinal), "Standard deviation bands should render band labels.");
-        Assert(svg.Contains("opacity=\"0.16\"", StringComparison.Ordinal), "Standard deviation bands should use the requested opacity.");
+        var band = PreparedFamily(chart).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Single(mark => mark.Role == "annotation-band");
+        Assert(band.Fill!.Value.A == (byte)Math.Round(.16 * 255), "Standard deviation bands should use the requested opacity.");
         Assert(CountOccurrences(svg, "stroke-dasharray=\"6 5\"") >= 2, "Mean and median overlays should render as annotation lines.");
         Assert(chart.ToPng().Length > 64, "Statistical overlays should render PNG output.");
     }
 
     private static void AnnotationLabelsStayInsidePlot() {
-        var svg = Chart.Create().WithSize(420, 280).AddLine("Values", Points(10, 20, 30)).AddVerticalLine(3, "right edge marker", ChartColor.FromRgb(251, 191, 36)).ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"annotation-label\"", StringComparison.Ordinal), "Annotation label pills should be identifiable in SVG output.");
+        var chart = Chart.Create().WithSize(420, 280).AddLine("Values", Points(10, 20, 30)).AddVerticalLine(3, "right edge marker", ChartColor.FromRgb(251, 191, 36));
+        var svg = chart.ToSvg();
+        Assert(svg.Contains("data-cfx-role=\"annotation-label\"", StringComparison.Ordinal), "Annotation labels should be identifiable in SVG output.");
         Assert(svg.Contains(">right edge marker</text>", StringComparison.Ordinal), "Annotation label text should render.");
-        Assert(svg.Contains("text-anchor=\"end\"", StringComparison.Ordinal), "Right-edge annotation labels should switch to end alignment.");
+        var label = FamilyLabels(PreparedFamily(chart), "annotation-label").Single();
+        var line = label.Text.Lines.Single();
+        var plot = CartesianPlot(svg);
+        Assert(label.LineLeft(line) >= plot.Left && label.LineLeft(line) + line.Width <= plot.Right, "Right-edge annotation labels should fit their entire measured text in the plot.");
     }
 
     private static void SvgIncludesAccessibilityMetadata() {
@@ -332,25 +353,34 @@ internal static partial class SmokeTests {
     }
 
     private static void SvgUsesReportGradeStyling() {
-        var svg = Chart.Create().WithTitle("Styled").WithTheme(ChartTheme.ReportDark()).WithSize(640, 360)
+        var chart = Chart.Create().WithTitle("Styled").WithTheme(ChartTheme.ReportDark()).WithSize(640, 360)
+            .WithLineVisualStyle(ChartLineVisualStyle.Premium())
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(96, 165, 250))
-            .AddHorizontalLine(25, "target", ChartColor.FromRgb(251, 191, 36))
-            .ToSvg();
-        Assert(svg.Contains("-seriesFill0", StringComparison.Ordinal), "SVG should include series fill gradients.");
-        Assert(svg.Contains("stroke-opacity=\"0.36\"", StringComparison.Ordinal), "Annotation labels should render as legible pills.");
-        Assert(svg.Contains("font-weight=\"750\"", StringComparison.Ordinal), "SVG should use stronger title and label typography.");
+            .AddHorizontalLine(25, "target", ChartColor.FromRgb(251, 191, 36));
+        var prepared = PreparedFamily(chart);
+        Assert(prepared.Scene.Nodes.OfType<VisualScenePath>().Any(mark => mark.Role == "line-highlight")
+            && prepared.Scene.Nodes.OfType<VisualScenePath>().Any(mark => mark.Role == "line-halo"),
+            "Explicit premium styling should retain its shared highlight and halo layers.");
+        Assert(FamilyLabels(prepared, "annotation-label").Any(label => label.Text.Lines.Any(line => line.Text == "target")),
+            "Annotations should retain their readable visible captions.");
+        Assert(FamilyLabels(prepared, "frame-heading").Single().Text.Style.Font.Weight == 600,
+            "Report titles should use the shared heading weight.");
+        Assert(chart.ToSvg().Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && chart.ToPng().Length > 64,
+            "The same explicit styling scene should render SVG and native PNG.");
     }
 
     private static void TypographyUsesNativeFontStackAndEscapesCustomFamilies() {
-        Assert(SampleChart().ToSvg().Contains(ChartFontStacks.SystemSans, StringComparison.Ordinal), "SVG should default to a native system font stack.");
+        var system = Chart.Create().WithFontFamily(ChartFontStacks.SystemSans).AddLine("Values", Points(1, 2, 3));
+        Assert(system.ToSvg().Contains(ChartFontStacks.SystemSans, StringComparison.Ordinal), "SVG should retain a configured native system font stack.");
         var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLegend(true).WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
         var editorial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
         var dashboard = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.DashboardLight()).AddBar("KPI", Points(8, 9, 7)).ToSvg();
-        Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && dashboard.Contains("rx=\"24\"", StringComparison.Ordinal), "Dashboard themes should expose the reusable KPI-card visual language.");
-        var saas = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.SaasDashboardLight()).AddSmoothLine("MRR", Points(104, 112, 126)).ToSvg();
-        Assert(saas.Contains("#356AF4", StringComparison.Ordinal) && saas.Contains("r=\"4.2\"", StringComparison.Ordinal), "SaaS dashboard themes should expose recurring-revenue line-card tokens.");
+        Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && dashboard.Contains("rx=\"14\"", StringComparison.Ordinal), "Dashboard themes should preserve their palette and shared frame corner geometry.");
+        var saasChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.SaasDashboardLight()).WithLineMarkers(ChartLineMarkerMode.All).AddSmoothLine("MRR", Points(104, 112, 126));
+        var saas = saasChart.ToSvg();
+        Assert(saas.Contains("#356AF4", StringComparison.Ordinal) && PreparedFamily(saasChart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "marker").All(mark => mark.Rx == 4.2), "SaaS dashboard themes should retain their series palette and explicit endpoint marker radius.");
         var customized = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithTitle("Custom typography")
             .WithTheme(theme => theme
@@ -382,7 +412,7 @@ internal static partial class SmokeTests {
         Assert(customized.Contains("#010101", StringComparison.Ordinal) && customized.Contains("#020202", StringComparison.Ordinal), "Theme callbacks should let users customize surface colors fluently.");
         Assert(customized.Contains("#050505", StringComparison.Ordinal), "Theme callbacks should let users customize text colors fluently.");
         Assert(customized.Contains("#070707", StringComparison.Ordinal) && customized.Contains("#080808", StringComparison.Ordinal), "Theme callbacks should let users customize guide colors fluently.");
-        Assert(customized.Contains("rx=\"24\"", StringComparison.Ordinal), "Theme callbacks should let users apply reusable surface styles fluently.");
+        Assert(customized.Contains("rx=\"14\"", StringComparison.Ordinal), "Theme callbacks should preserve their shared frame corner geometry.");
         var bare = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithTheme(theme => theme.WithSurfaceStyle(ChartSurfaceStyle.Bare))
             .AddLine("Values", Points(1, 2, 3))
@@ -504,15 +534,20 @@ internal static partial class SmokeTests {
     }
 
     private static void EdgeXAxisLabelsStayInsidePlot() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35)).ToSvg();
-        Assert(svg.Contains("text-anchor=\"start\"", StringComparison.Ordinal) && svg.Contains(">January</text>", StringComparison.Ordinal), "First x-axis label should be start-aligned.");
-        Assert(svg.Contains("text-anchor=\"end\"", StringComparison.Ordinal) && svg.Contains(">December</text>", StringComparison.Ordinal), "Last x-axis label should be end-aligned.");
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
+        var plot = CartesianPlot(chart.ToSvg());
+        var labels = FamilyLabels(PreparedFamily(chart), "axis-x-label");
+        Assert(labels.Any(label => label.Text.Lines.Single().Text == "January") && labels.Any(label => label.Text.Lines.Single().Text == "December"),
+            "Edge x-axis labels should preserve their complete visible category text.");
+        Assert(labels.All(label => label.Text.Lines.All(line => label.LineLeft(line) >= plot.Left - .000001
+            && label.LineLeft(line) + line.Width <= plot.Right + .000001)), "Every measured x-axis label should remain inside the plot's horizontal bounds.");
     }
 
     private static void XAxisLabelsCanBeRotated() {
         var svg = Chart.Create().WithSize(520, 340).WithXAxis("Month").WithXAxisLabelAngle(-35).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March").AddLine("Values", Points(10, 20, 30)).ToSvg();
         Assert(svg.Contains("transform=\"rotate(-35", StringComparison.Ordinal), "SVG should rotate x-axis labels when requested.");
-        Assert(svg.Contains("dominant-baseline=\"middle\"", StringComparison.Ordinal), "Rotated labels should use a stable text baseline.");
+        Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "axis-x-label"))
+            .All(element => double.TryParse((string?)element.Attribute("y"), NumberStyles.Float, CultureInfo.InvariantCulture, out _)), "Rotated labels should retain explicitly measured text baselines.");
     }
 
     private static void LargeSvgValuesUseCompactUnits() {

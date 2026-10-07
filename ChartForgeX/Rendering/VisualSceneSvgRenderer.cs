@@ -20,9 +20,11 @@ internal static partial class VisualSceneSvgRenderer {
             .Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
             .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height))
             .Attribute("lang", language).Attribute("xml:lang", language);
+        if (options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
         if (decorative) writer.Attribute("aria-hidden", true).Attribute("focusable", false);
         else {
             writer.Attribute("role", "img").Attribute("aria-label", title);
+            if (!string.IsNullOrEmpty(title)) writer.Attribute("aria-labelledby", prefix + "-title");
             if (!string.IsNullOrEmpty(description)) writer.Attribute("aria-describedby", prefix + "-description");
         }
         writer.EndStartElement();
@@ -141,6 +143,8 @@ internal static partial class VisualSceneSvgRenderer {
                 .Attribute("font-family", style.Font.Family).Attribute("font-size", prepared.Size).Attribute("font-weight", style.Font.Weight)
                 .Attribute("font-style", style.Font.Italic ? "italic" : "normal").Attribute("fill", ResolvePaint(node.Color, node.Paint, options))
                 .Attribute("xml:space", "preserve");
+            if (node.Stroke.HasValue && node.StrokeWidth > 0) writer.Attribute("stroke", ResolvePaint(node.Stroke, node.StrokePaint, options))
+                .Attribute("stroke-width", node.StrokeWidth).Attribute("stroke-linejoin", "round").Attribute("paint-order", "stroke");
             var css = "white-space:pre";
             if (style.Font.Variations.Count > 0) css += ";font-variation-settings:" + style.Font.Variations.Css;
             css += style.OpenTypeLanguageTag == null ? ";font-language-override:normal" : ";font-language-override:'" + style.OpenTypeLanguageTag + "'";
@@ -232,6 +236,7 @@ internal static partial class VisualSceneSvgRenderer {
                     WriteGradientIdentity(writer, gradient);
                 } else if (node is VisualSceneText text) {
                     writer.Write(text.X); writer.Write(text.Baseline); writer.Write((int)text.Alignment); Color(writer, text.Color); Text(writer, text.Paint?.Value);
+                    Color(writer, text.Stroke); writer.Write(text.StrokeWidth); Text(writer, text.StrokePaint?.Value);
                     var prepared = text.Text; var style = prepared.Style; var font = style.Font;
                     writer.Write(prepared.Size); writer.Write(prepared.Ascent); writer.Write(prepared.Metrics.Width);
                     writer.Write(prepared.Metrics.Height); writer.Write(prepared.Metrics.LineHeight);

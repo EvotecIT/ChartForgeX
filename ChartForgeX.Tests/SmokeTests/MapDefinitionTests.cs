@@ -111,12 +111,12 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-label=\"Births\"", StringComparison.Ordinal), "Region heatmaps should render through the map series surface.");
-        Assert(svg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Region heatmaps should activate their provided color scale.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"region-map-region\"") == 4, "Region heatmaps should render every custom region polygon.");
-        Assert(svg.Contains("data-cfx-region=\"A\" data-cfx-region-name=\"Alpha\" data-cfx-value=\"0\"", StringComparison.Ordinal), "Region heatmaps should preserve each polygon's own value.");
-        Assert(svg.Contains("data-cfx-region=\"D\" data-cfx-region-name=\"Delta\" data-cfx-value=\"10\"", StringComparison.Ordinal), "Region heatmaps should preserve the high polygon's own value.");
-        Assert(svg.Contains("data-cfx-region=\"A\"", StringComparison.Ordinal) && svg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Region heatmaps should color low-valued polygons with the low scale color.");
-        Assert(svg.Contains("data-cfx-region=\"D\"", StringComparison.Ordinal) && svg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Region heatmaps should color high-valued polygons with the high scale color.");
+        var prepared = PreparedFamily(chart);
+        var sources = FamilyGroups(prepared, "region-map-region-source");
+        Assert(sources.Single(source => source.Metadata["data-cfx-region"] == "A").Metadata["data-cfx-value"] == "0" && sources.Single(source => source.Metadata["data-cfx-region"] == "D").Metadata["data-cfx-value"] == "10", "Region heatmaps should preserve each polygon's own value.");
+        var fills = prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(path => path.Role == "region-map-region").ToArray();
+        Assert(fills[0].Fill.Equals(ChartColor.FromHex("#F97316")) && fills[3].Fill.Equals(ChartColor.FromHex("#065F46")), "Region heatmaps should apply the configured low and high scale colors to their polygons.");
         Assert(chart.ToPng().Length > 64, "Region heatmaps should render PNG output.");
     }
 
@@ -173,7 +173,8 @@ internal static partial class SmokeTests {
         Assert(regionSvg.Contains("data-cfx-role=\"map-base-layer\"", StringComparison.Ordinal), "Report-style region maps should render context base geography behind data regions.");
         Assert(regionSvg.Contains("data-cfx-role=\"map-boundary-layer\"", StringComparison.Ordinal), "Report-style region maps should render boundary overlays above data regions.");
         Assert(regionSvg.Contains("stroke-width=\"0.42\"", StringComparison.Ordinal), "Report-style region maps should allow quiet internal region strokes.");
-        Assert(regionSvg.Contains("data-cfx-source-left=\"-12\" data-cfx-source-top=\"-72\" data-cfx-source-width=\"47\" data-cfx-source-height=\"38\"", StringComparison.Ordinal), "Report-style region maps should expose explicit coordinate framing metadata.");
+        var sourceFrame = FamilyGroups(regionPrepared, "region-map").Single();
+        Assert(FamilyNumber(sourceFrame, "data-cfx-source-left") == -12 && FamilyNumber(sourceFrame, "data-cfx-source-top") == -72 && FamilyNumber(sourceFrame, "data-cfx-source-width") == 47 && FamilyNumber(sourceFrame, "data-cfx-source-height") == 38, "Report-style region maps should expose explicit coordinate framing metadata.");
         Assert(regionSvg.IndexOf("data-cfx-role=\"map-base-layer\"", StringComparison.Ordinal) < regionSvg.IndexOf("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal) && regionSvg.IndexOf("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal) < regionSvg.IndexOf("data-cfx-role=\"map-boundary-layer\"", StringComparison.Ordinal), "Cartographic region-map layers should render base geography, data regions, then boundary overlays.");
         Assert(PreparedFamily(tile).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Count(node => node.Role == "map-scale-step") == 32, "Tile heatmaps should support the same vertical report scale.");
         Assert(!tileSvg.Contains("data-cfx-role=\"tile-map-surface\"", StringComparison.Ordinal), "Report-style tile maps should be able to suppress the map surface.");

@@ -16,17 +16,17 @@ public sealed class GraphiteHeatmapLegendTests {
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + (value == 120 ? "+ events" : " events"))
             .AddHeatmapRow("Count", new[] { 0d, 2, 20, 120 });
         chart.Options.HeatmapRelativeScale = true;
-        var legend = Assert.Single(XDocument.Parse(chart.ToSvg()).Descendants(), e => (string?)e.Attribute("data-cfx-role") == "heatmap-scale");
-        var items = legend.Elements().ToArray();
-        Assert.Equal("0 events", items[0].Value);
-        Assert.Equal("heatmap-scale-zero", (string?)items[1].Attribute("data-cfx-role"));
-        Assert.Equal(chart.Options.Theme.Neutral3.ToCss(), (string?)items[1].Attribute("fill"));
-        var steps = items.Where(e => (string?)e.Attribute("data-cfx-role") == "heatmap-scale-step").ToArray();
+        var document = XDocument.Parse(chart.ToSvg());
+        var legend = Assert.Single(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale");
+        var zero = Assert.Single(legend.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-zero");
+        var zeroCell = Assert.Single(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell" && (string?)element.Attribute("data-cfx-value") == "0");
+        Assert.Equal((string?)zeroCell.RenderedAttribute("fill"), (string?)zero.RenderedAttribute("fill"));
+        var steps = legend.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-step").ToArray();
         Assert.Equal(5, steps.Length);
-        Assert.All(steps, step => Assert.True((double)step.Attribute("x")! > (double)items[1].Attribute("x")!));
-        Assert.Equal(new[] { "0 events", "2 events", "…", "120+ events" }, items.Where(e => e.Name.LocalName == "text").Select(e => e.Value));
-        Assert.Equal("heatmap-scale-step", (string?)items[2].Attribute("data-cfx-role"));
-        Assert.True((double)items[^1].Attribute("x")! > (double)steps[^1].Attribute("x")!);
+        Assert.All(steps, step => Assert.True((double)step.RenderedAttribute("x")! > (double)zero.RenderedAttribute("x")!));
+        Assert.Equal("2", (string?)steps[0].Attribute("data-cfx-value"));
+        Assert.Equal("120", (string?)steps[^1].Attribute("data-cfx-value"));
+        Assert.Equal(new[] { "0 events", "2 events", "120+ events" }, legend.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value));
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -35,9 +35,10 @@ public sealed class GraphiteHeatmapLegendTests {
     [InlineData(5, 5)]
     public void LegendDoesNotInventNonZeroBoundsForConstantData(double value, int steps) {
         var chart = Chart.Create().WithSize(640, 320).AddHeatmapRow("Count", new[] { value, value });
-        var legend = Assert.Single(XDocument.Parse(chart.ToSvg()).Descendants(), e => (string?)e.Attribute("data-cfx-role") == "heatmap-scale");
-        Assert.Equal(steps, legend.Elements().Count(e => (string?)e.Attribute("data-cfx-role") == "heatmap-scale-step"));
-        if (value == 0) Assert.Equal("0", Assert.Single(legend.Elements(), e => e.Name.LocalName == "text").Value);
-        else Assert.Equal(new[] { "0", "5", "…", "5" }, legend.Elements().Where(e => e.Name.LocalName == "text").Select(e => e.Value));
+        var legend = Assert.Single(XDocument.Parse(chart.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale");
+        var swatches = legend.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-step").ToArray();
+        Assert.Equal(steps, swatches.Length);
+        Assert.All(swatches, swatch => Assert.Equal(value, double.Parse((string)swatch.Attribute("data-cfx-value")!, CultureInfo.InvariantCulture)));
+        Assert.All(legend.Descendants().Where(element => element.Name.LocalName == "text"), label => Assert.Equal(value.ToString(CultureInfo.InvariantCulture), label.Value));
     }
 }

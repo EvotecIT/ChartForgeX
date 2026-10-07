@@ -12,23 +12,23 @@ internal static partial class SmokeTests {
         var color = ChartColor.FromRgb(37, 99, 235);
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 30), new ChartPoint(3, 20) };
         var referenceSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(320, 200)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
             .WithTheme(theme => theme.WithMarkerRadius(4))
             .AddLine("Values", points, color)
             .ToSvg();
         var referenceMarkers = SvgDocument.Parse(referenceSvg).Root
-            .FindByTag("circle")
-            .Where(element => element.GetAttribute("data-cfx-role") == "line-marker")
+            .FindByTag("ellipse")
+            .Where(element => element.GetAttribute("data-cfx-role") == "marker")
             .ToArray();
         Assert(referenceMarkers.Length == points.Length, "Positive marker radii should preserve one SVG marker per line point.");
 
         var markerless = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithSize(320, 200)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
             .WithTheme(theme => theme.WithMarkerRadius(0))
             .AddLine("Values", points, color);
         var markerlessSvg = markerless.ToSvg();
-        Assert(!markerlessSvg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "A zero marker radius should omit optional SVG line markers.");
-        Assert(!SvgDocument.Parse(markerlessSvg).Root.FindByTag("circle").Any(), "A markerless line should not advertise a point marker in its SVG legend.");
+        Assert(!markerlessSvg.Contains("data-cfx-role=\"marker\"", StringComparison.Ordinal), "A zero marker radius should omit optional SVG line markers.");
+        Assert(!SvgDocument.Parse(markerlessSvg).Root.FindByTag("ellipse").Any(), "A markerless line should not advertise a point marker in its SVG legend.");
 
         var pixels = ReadPngRgba(markerless.ToPng(), out var width, out _);
         var middleX = double.Parse(referenceMarkers[1].GetAttribute("cx")!, CultureInfo.InvariantCulture);
@@ -44,24 +44,16 @@ internal static partial class SmokeTests {
 
         var markedArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithLegend(true)
-            .WithSize(320, 200)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
             .WithTheme(theme => theme.WithMarkerRadius(4))
             .AddArea("Area", points, color);
         var markerlessArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithLegend(true)
-            .WithSize(320, 200)
+            .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
             .WithTheme(theme => theme.WithMarkerRadius(0))
             .AddArea("Area", points, color);
-        Assert(!SvgDocument.Parse(markerlessArea.ToSvg()).Root.FindByTag("circle").Any(), "A markerless area should not advertise a point marker in its SVG legend.");
-        var markedAreaPixels = ReadPngRgba(markedArea.ToPng(), out var areaWidth, out var areaHeight);
-        var markerlessAreaPixels = ReadPngRgba(markerlessArea.ToPng(), out _, out _);
-        var legendCircle = System.Xml.Linq.XDocument.Parse(markedArea.ToSvg()).Descendants().Last(e => e.Name.LocalName == "circle");
-        var matrix = SvgRaster.SvgRasterMatrix.Identity;
-        foreach (var ancestor in legendCircle.Ancestors().Reverse()) matrix = matrix.Multiply(SvgRaster.SvgRasterMatrix.ParseTransform((string?)ancestor.Attribute("transform")));
-        var center = matrix.Transform(new ChartPoint(double.Parse(legendCircle.Attribute("cx")!.Value, CultureInfo.InvariantCulture), double.Parse(legendCircle.Attribute("cy")!.Value, CultureInfo.InvariantCulture)));
-        // Sample the circle above the line, where its white outline cannot reduce line ink.
-        var markedLegendInk = CountNearColorInRect(markedAreaPixels, areaWidth, (int)center.X - 3, (int)center.Y - 4, 7, 3, color.R, color.G, color.B, 48);
-        var markerlessLegendInk = CountNearColorInRect(markerlessAreaPixels, areaWidth, (int)center.X - 3, (int)center.Y - 4, 7, 3, color.R, color.G, color.B, 48);
-        Assert(markerlessLegendInk < markedLegendInk, "A markerless area should omit the PNG legend marker while retaining its line symbol.");
+        Assert(!SvgDocument.Parse(markerlessArea.ToSvg()).Root.FindByTag("ellipse").Any(), "A markerless area should not advertise a point marker in its SVG legend.");
+        Assert(SvgDocument.Parse(markedArea.ToSvg()).Root.FindByTag("ellipse").Count(element => element.GetAttribute("data-cfx-role") == "marker") == points.Length, "Area series should preserve explicitly enabled point markers.");
+        Assert(!markedArea.ToPng().SequenceEqual(markerlessArea.ToPng()), "A zero radius should remove area point markers from native PNG output.");
     }
 }

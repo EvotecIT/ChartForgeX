@@ -31,7 +31,7 @@ public sealed class GraphiteGalleryTests {
             using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));
             var charts = manifest.RootElement.GetProperty("charts").EnumerateArray().ToDictionary(e => e.GetProperty("name").GetString()!, e => e.Clone());
             Assert.True(charts["normal"].GetProperty("svg").GetProperty("healthy").GetBoolean());
-            Assert.True(charts["normal"].GetProperty("png").GetProperty("healthy").GetBoolean());
+            Assert.True(charts["normal"].GetProperty("png").GetProperty("healthy").GetBoolean(), charts["normal"].GetProperty("png").GetRawText());
             Assert.Equal(0, charts["normal"].GetProperty("png").GetProperty("edgeInkPixels").GetInt64());
             Assert.False(charts["edge-mark"].GetProperty("png").GetProperty("healthy").GetBoolean());
             Assert.True(charts["edge-mark"].GetProperty("png").GetProperty("edgeInkPixels").GetInt64() > 0);

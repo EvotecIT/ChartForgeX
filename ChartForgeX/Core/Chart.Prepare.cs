@@ -32,8 +32,9 @@ public sealed partial class Chart : IVisualRenderable {
         var content = VisualFrameLayout.Build(builder, context, entries);
         VisualChartCompiler.Build(family, this, context, builder, content);
         var accessibility = Accessibility.Clone();
-        accessibility.Name ??= string.IsNullOrWhiteSpace(frame.Title) ? Title : frame.Title;
-        accessibility.Description ??= string.IsNullOrWhiteSpace(frame.Subtitle) ? Subtitle : frame.Subtitle;
+        accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title
+            : !string.IsNullOrWhiteSpace(Title) ? Title : Options.Labels.UntitledChart;
+        accessibility.Description ??= Options.Labels.Describe(ChartAccessibleDescription.Facts(this));
         return new PreparedVisual(builder.Build(), accessibility,
             svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables));
     }

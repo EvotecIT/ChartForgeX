@@ -85,7 +85,7 @@ public sealed class HourWeekdayHeatmapTests {
         var quiet = cells.Single(cell => ((string)cell.Attribute("aria-label")!).StartsWith("Mon, 11:", StringComparison.Ordinal));
         Assert.Null(busiest.Attribute("data-cfx-status"));
         Assert.Equal("4", (string?)busiest.Attribute("data-cfx-level"));
-        Assert.NotEqual((string)busiest.Attribute("fill")!, (string)quiet.Attribute("fill")!);
+        Assert.NotEqual((string)busiest.RenderedAttribute("fill")!, (string)quiet.RenderedAttribute("fill")!);
 
         var percent = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(900, 360).AddHourWeekdayHeatmap(values);
         percent.Options.HeatmapRelativeScale = false;

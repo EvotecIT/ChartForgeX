@@ -55,7 +55,7 @@ internal sealed class VisualSceneTextFace {
         return width * FallbackScale(size);
     }
     private static FontSpec WithWeight(FontSpec font, int weight) {
-        var copy = font.Clone(); copy.Weight = Math.Min(900, weight); return copy;
+        var copy = font.Clone(); copy.Weight = weight; return copy;
     }
 }
 
@@ -86,14 +86,19 @@ internal sealed class VisualSceneTextLine {
 
 internal sealed class VisualSceneText : VisualSceneNode {
     internal VisualSceneText(VisualScenePreparedText text, double x, double baseline, ChartColor color,
-        TextAlignment alignment, string? role, string? id, SvgPaint? paint = null) : base(role, id) {
+        TextAlignment alignment, string? role, string? id, SvgPaint? paint = null,
+        ChartColor? stroke = null, double strokeWidth = 0, SvgPaint? strokePaint = null) : base(role, id) {
         Text = text; X = x; Baseline = baseline; Color = color; Alignment = alignment; Paint = paint;
+        Stroke = stroke; StrokeWidth = strokeWidth; StrokePaint = strokePaint;
     }
     internal VisualScenePreparedText Text { get; }
     internal double X { get; }
     internal double Baseline { get; }
     internal ChartColor Color { get; }
     internal SvgPaint? Paint { get; }
+    internal ChartColor? Stroke { get; }
+    internal double StrokeWidth { get; }
+    internal SvgPaint? StrokePaint { get; }
     internal TextAlignment Alignment { get; }
     internal double LineLeft(VisualSceneTextLine line) => X - (Alignment == TextAlignment.Center ? line.Width / 2 : Alignment == TextAlignment.Right ? line.Width : 0);
 }

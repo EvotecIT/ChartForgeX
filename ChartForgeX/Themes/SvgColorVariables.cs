@@ -39,7 +39,7 @@ namespace ChartForgeX.Themes;
 /// surface tokens share a colour in one theme, the one added first names it.
 /// </para>
 /// </remarks>
-public sealed class SvgColorVariables {
+public sealed partial class SvgColorVariables {
     private static readonly Regex VariableName = new("^--[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant);
     private const string Paint = @"#[0-9A-Fa-f]{6}(?![0-9A-Fa-f])|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*[0-9]*\.?[0-9]+\s*)?\)";
     // Compiled: Apply scans every tag of finished, often very large, markup. Compilation does not change what matches.
@@ -239,10 +239,14 @@ public sealed class SvgColorVariables {
     internal bool TryPaint(ChartColor color, SvgColorRole role, out string paint) {
         paint = string.Empty;
         if (color.A == 0) return false;
+        return TryVariable(color, role, out var variable) && TryWrite(variable, color.A / 255.0, out paint);
+    }
+
+    internal bool TryVariable(ChartColor color, SvgColorRole role, out SvgColorVariable variable) {
         var key = Rgb(color.R, color.G, color.B);
-        if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out var variable)) &&
+        if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out variable)) &&
             !(role == SvgColorRole.Text ? _text : _any).TryGetValue(key, out variable)) return false;
-        return TryWrite(variable, color.A / 255.0, out paint);
+        return true;
     }
 
     private string ReplaceTag(string tag, string attrs) {

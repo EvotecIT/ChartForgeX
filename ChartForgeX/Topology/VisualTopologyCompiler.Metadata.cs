@@ -11,6 +11,8 @@ internal sealed partial class VisualTopologyCompiler {
         ["class"] = CssPrefix,
         ["data-chart-id"] = _source.Id ?? "topology", ["data-layout-mode"] = _chart.LayoutMode.ToString(),
         ["data-layout-direction"] = _chart.LayoutDirection.ToString(), ["data-visual-style"] = _options.VisualStyle.ToString(),
+        ["data-header-style"] = _options.HeaderStyle.ToString(),
+        ["data-cfx-map-background-style"] = UseSoftMapBackground(_options) ? "SoftSilhouette" : "Dots",
         ["data-cfx-scenario-count"] = _chart.Scenarios.Count.ToString(CultureInfo.InvariantCulture),
         ["data-cfx-scenarios"] = TopologyScenarioJson.Summaries(_chart) ?? "[]", ["data-cfx-scenario-ids"] = TopologyScenarioJson.ScenarioIds(_chart) ?? string.Empty,
         ["data-cfx-active-scenario"] = _highlight.ActiveScenarioId ?? string.Empty
@@ -18,8 +20,9 @@ internal sealed partial class VisualTopologyCompiler {
 
     private Dictionary<string, string> NodeMetadata(TopologyNode node) {
         var data = CommonMetadata(node.Id, "node", node.Status, TopologyScenarioStepKind.Node, node.Metadata, node.Metrics);
-        data["class"] = CssPrefix + "__node" + CustomCssClasses(node.CssClass);
+        data["class"] = CssPrefix + "__node" + CustomCssClasses(node.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsNodeHighlighted(node));
         data["data-node-kind"] = node.Kind.ToString(); data["data-node-label"] = node.Label;
+        if (node.Shape.HasValue) data["data-node-shape"] = node.Shape.Value.ToString();
         data["data-node-display-mode"] = EffectiveNodeDisplayMode(node, _options).ToString();
         data["data-group-id"] = node.GroupId ?? string.Empty;
         data["data-group-label"] = _chart.Groups.FirstOrDefault(group => group.Id == node.GroupId)?.Label ?? string.Empty;
@@ -40,7 +43,7 @@ internal sealed partial class VisualTopologyCompiler {
 
     private Dictionary<string, string> GroupMetadata(TopologyGroup group) {
         var data = CommonMetadata(group.Id, "group", group.Status, null, group.Metadata, null);
-        data["class"] = CssPrefix + "__group" + CustomCssClasses(group.CssClass);
+        data["class"] = CssPrefix + "__group" + CustomCssClasses(group.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsGroupHighlighted(group));
         data["data-group-label"] = group.Label; data["data-group-color"] = group.Color ?? string.Empty;
         data["data-group-layout-policy"] = group.LayoutPolicy.ToString(); data["data-group-symbol"] = group.Symbol ?? string.Empty;
         data["data-cfx-selected"] = _options.SelectedGroupIds.Contains(group.Id) ? "true" : "false";
@@ -51,9 +54,9 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private Dictionary<string, string> EdgeMetadata(TopologyEdge edge) {
-        if (_edgeMetadata.TryGetValue(edge.Id, out var cached)) return cached;
+        if (_edgeMetadata.TryGetValue(edge, out var cached)) return cached;
         var data = CommonMetadata(edge.Id, "edge", edge.Status, TopologyScenarioStepKind.Edge, edge.Metadata, edge.Metrics);
-        data["class"] = CssPrefix + "__edge" + CustomCssClasses(edge.CssClass);
+        data["class"] = CssPrefix + "__edge" + CustomCssClasses(edge.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsEdgeHighlighted(edge));
         data["data-source-node-id"] = edge.SourceNodeId; data["data-target-node-id"] = edge.TargetNodeId;
         data["data-source-group-id"] = _nodesById[edge.SourceNodeId].GroupId ?? string.Empty;
         data["data-target-group-id"] = _nodesById[edge.TargetNodeId].GroupId ?? string.Empty;
@@ -79,8 +82,8 @@ internal sealed partial class VisualTopologyCompiler {
         data["data-route-lane"] = edge.RouteLane.ToString("R", CultureInfo.InvariantCulture); data["data-route-curve"] = edge.Routing.ToString();
         data["data-route-offset"] = Number(EdgeRouteOffset(_chart, edge) * _scale);
         data["data-label-offset-x"] = Number(edge.LabelOffsetX * _scale); data["data-label-offset-y"] = Number(edge.LabelOffsetY * _scale);
-        if (_trunks.TryGetValue(edge.Id, out var trunk)) data["data-trunk-owner-id"] = trunk.Owner;
-        var points = _routes[edge.Id]; var first = Point(points[0]); var last = Point(points[points.Count - 1]);
+        if (_trunks.TryGetValue(edge, out var trunk)) data["data-trunk-owner-id"] = trunk.Owner.Id;
+        var points = _routes[edge]; var first = Point(points[0]); var last = Point(points[points.Count - 1]);
         data["data-route-start-x"] = first.X.ToString("R", CultureInfo.InvariantCulture); data["data-route-start-y"] = first.Y.ToString("R", CultureInfo.InvariantCulture);
         data["data-route-end-x"] = last.X.ToString("R", CultureInfo.InvariantCulture); data["data-route-end-y"] = last.Y.ToString("R", CultureInfo.InvariantCulture);
         if (IsGeographicCurve(_chart, edge, _nodesById)) {
@@ -97,7 +100,7 @@ internal sealed partial class VisualTopologyCompiler {
         data["data-route-obstacle-hits"] = diagnostic.ObstacleHits.ToString(CultureInfo.InvariantCulture);
         data["data-route-label-obstacle-hits"] = diagnostic.LabelObstacleHits.ToString(CultureInfo.InvariantCulture);
         data["data-route-overlap-score"] = diagnostic.RouteOverlapScore.ToString("R", CultureInfo.InvariantCulture);
-        _edgeMetadata.Add(edge.Id, data);
+        _edgeMetadata.Add(edge, data);
         return data;
     }
 

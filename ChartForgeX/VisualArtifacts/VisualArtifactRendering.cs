@@ -193,10 +193,16 @@ public static partial class VisualArtifactRendering {
 
     private static string TopologyArtifactSvg(VisualArtifact artifact, PreparedTopology prepared) {
         var accessibility = artifact.Accessibility.Clone();
+        if (artifact.HasModelAccessibilitySnapshot) {
+            if (accessibility.Name == artifact.ModelAccessibilitySnapshot.Name) accessibility.Name = prepared.Visual.Accessibility.Name;
+            if (accessibility.Description == artifact.ModelAccessibilitySnapshot.Description) accessibility.Description = prepared.Visual.Accessibility.Description;
+            if (accessibility.Language == artifact.ModelAccessibilitySnapshot.Language) accessibility.Language = prepared.Visual.Accessibility.Language;
+            if (accessibility.IsDecorative == artifact.ModelAccessibilitySnapshot.IsDecorative) accessibility.IsDecorative = prepared.Visual.Accessibility.IsDecorative;
+        }
         accessibility.Name ??= prepared.Visual.Accessibility.Name ?? (artifact.Title.Length == 0 ? artifact.Id : artifact.Title);
         accessibility.Description ??= prepared.Visual.Accessibility.Description;
         accessibility.Language ??= prepared.Visual.Accessibility.Language;
-        return prepared.Visual.ToSvg(accessibility);
+        return prepared.ToSvg(accessibility);
     }
 
     internal static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {

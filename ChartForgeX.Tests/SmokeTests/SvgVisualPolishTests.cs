@@ -4,6 +4,7 @@ using System.Reflection;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
@@ -75,14 +76,14 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedChartLayoutsKeepContentInsidePlotFrame() {
-        var bullet = Chart.Create()
+        var bulletChart = Chart.Create()
             .WithSize(920, 560)
             .WithTheme(ChartTheme.ReportDark())
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(52, 211, 153))
-            .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250))
-            .ToSvg();
-        var bulletLabelX = double.Parse(GetStringAttribute(bullet, "data-cfx-role=\"bullet-row-label\"", "x"), CultureInfo.InvariantCulture);
-        Assert(bulletLabelX >= 90, "Bullet row labels should honor internal content padding instead of touching the plot frame.");
+            .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250));
+        var bulletPrepared = PreparedFamily(bulletChart);
+        var bulletPadding = ChartForgeX.Rendering.VisualExportRequest.ForChart(bulletChart).Context.Layout.PaddingEdges;
+        Assert(FamilyLabels(bulletPrepared, "bullet-row-label").All(label => label.Text.Lines.All(line => label.LineLeft(line) >= bulletPadding.Left)), "Bullet row labels should honor the common frame padding.");
 
         var narrowBulletChart = Chart.Create()
             .WithSize(180, 140)
@@ -96,7 +97,7 @@ internal static partial class SmokeTests {
         Assert(valueX >= 0 && valueX + valueWidth <= 180, "Narrow bullet charts should keep bars inside the chart viewport after internal padding.");
         Assert(narrowBulletChart.ToPng().Length > 64, "Narrow bullet chart bounds should render in PNG output.");
 
-        var tree = Chart.Create()
+        var treeChart = Chart.Create()
             .WithSize(1040, 600)
             .WithTheme(ChartTheme.ReportLight())
             .AddTree("Control hierarchy", new[] {
@@ -109,16 +110,15 @@ internal static partial class SmokeTests {
                 new ChartTreeLink("Certificate lifecycle", "SAN inventory"),
                 new ChartTreeLink("DNS hygiene", "DNSSEC rollout"),
                 new ChartTreeLink("DNS hygiene", "Stale record cleanup")
-            })
-            .ToSvg();
-        var leftNodeX = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Security posture\"", "x"), CultureInfo.InvariantCulture);
-        var rightNodeX = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Stale record cleanup\"", "x"), CultureInfo.InvariantCulture);
-        var rightNodeWidth = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Stale record cleanup\"", "width"), CultureInfo.InvariantCulture);
-        Assert(leftNodeX >= 90, "Tree root nodes should keep left breathing room inside the plot frame.");
-        Assert(rightNodeX + rightNodeWidth <= 990, "Tree leaf nodes should keep right breathing room inside the plot frame.");
-        Assert(tree.Contains("data-cfx-role=\"tree-link-ambient-halo\"", StringComparison.Ordinal) && tree.Contains("data-cfx-role=\"tree-link-highlight\"", StringComparison.Ordinal), "Tree links should use the shared premium stroke layers instead of a single flat path.");
-        Assert(tree.Contains("class=\"cfx-premium-stroke\"", StringComparison.Ordinal), "Tree links should opt into the shared non-scaling premium stroke class.");
-        Assert(tree.Contains("data-cfx-role=\"tree-node-label\"", StringComparison.Ordinal) && tree.Contains("stroke-opacity=\"0.56\"", StringComparison.Ordinal), "Tree labels should use a softer surface-colored halo instead of heavy opposite-color outlines.");
+            });
+        var tree = PreparedFamily(treeChart);
+        var treePadding = ChartForgeX.Rendering.VisualExportRequest.ForChart(treeChart).Context.Layout.PaddingEdges;
+        var nodes = tree.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(node => node.Role == "tree-node-mark").ToArray();
+        Assert(nodes.Length == 10 && nodes.All(node => node.Bounds.Left >= treePadding.Left && node.Bounds.Right <= tree.Size.Width - treePadding.Right), "Every tree node should stay inside the common horizontal frame padding.");
+        var links = tree.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(path => path.Role == "tree-link-path").ToArray();
+        Assert(links.Length == 9 && links.All(link => link.Commands.Any(command => command.Kind == ChartPathCommandKind.CubicTo)), "Tree relationships should retain their weighted curved native paths.");
+        Assert(FamilyLabels(tree, "tree-node-label").Length == nodes.Length, "Tree nodes should retain their fitted labels.");
+        Assert(tree.ToPng().Length > 64, "Fitted tree layout should render through the native painter.");
     }
 
     private static void SharedRoutePolishReachesTopologyAndMapOutputs() {

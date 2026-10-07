@@ -47,7 +47,7 @@ internal static partial class VisualMatrixCompiler {
                 } else {
                     var radians = Math.Abs(angle) * Math.PI / 180;
                     var height = builder.MeasureText(text, style).Height;
-                    var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength,
+                    var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength(chart, height),
                         (layout.LabelHeight - height * Math.Cos(radians) - 8) / Math.Max(.001, Math.Sin(radians))));
                     var textWidth = Math.Min(maxWidth, builder.MeasureText(text, style).Width);
                     var left = angle < 0 ? x - textWidth : x;
@@ -103,18 +103,45 @@ internal static partial class VisualMatrixCompiler {
         if (bounds.Height <= 0 || bounds.Width <= 0) return;
         var colors = context.Theme.Resolve(context.ThemeMode); var style = VisualStateSceneTools.TickStyle(chart, context);
         var textHeight = builder.MeasureText("Mg", style).Height; var swatch = Math.Min(12, Math.Max(0, bounds.Height - textHeight));
-        var width = Math.Min(bounds.Width / 5, 32); var left = bounds.Left + (bounds.Width - width * 5) / 2;
-        var floor = chart.Options.HeatmapRelativeScale ? Math.Min(0, min) : min;
-        for (var index = 0; index < 5; index++) {
-            var value = ChartHeatmapSurface.InterpolateObservedRange(floor, max, index / 4d);
-            var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, value, min, max); var fill = blend.Color;
-            var box = new ChartRect(left + index * width, bounds.Top, Math.Max(0, width - 2), swatch);
-            var label = ChartNumericFormatter.FormatValue(chart.Options, value);
-            using (VisualStateSceneTools.Mark(builder, "matrix-scale-" + index, "heatmap-scale-step", box, label,
-                new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value) })) builder.Rect(box, fill, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
+        var values = chart.Series.SelectMany(series => series.Points).Select(point => point.Y).ToArray();
+        var zero = min >= 0 && values.Any(value => value == 0);
+        var nonZero = values.Where(value => value != 0).ToArray();
+        var floor = zero && nonZero.Length > 0 ? nonZero.Min() : min;
+        var zeroLabel = ChartNumericFormatter.FormatValue(chart.Options, 0);
+        var zeroWidth = zero ? Math.Min(bounds.Width * .3, builder.MeasureText(zeroLabel, style).Width + context.Theme.Spacing) : 0;
+        if (nonZero.Length == 0) zeroWidth = bounds.Width;
+        using (builder.PushGroup("matrix-scale", "heatmap-scale", new Dictionary<string, string> {
+            ["data-cfx-min-value"] = VisualStateSceneTools.Number(floor), ["data-cfx-max-value"] = VisualStateSceneTools.Number(max)
+        })) {
+            if (zero) {
+                var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, 0, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
+                var box = new ChartRect(bounds.Left + (zeroWidth - Math.Min(12, zeroWidth)) / 2, bounds.Top, Math.Min(12, zeroWidth), swatch);
+                using (VisualStateSceneTools.Mark(builder, "matrix-scale-zero", "heatmap-scale-zero", box, zeroLabel,
+                    ScaleMetadata(0, ChartHeatmapSurface.Ratio(chart, 0, min, max)))) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
+                VisualStateSceneTools.Text(builder, zeroLabel, new ChartRect(bounds.Left, bounds.Top + swatch, zeroWidth, textHeight),
+                    style, "heatmap-scale-zero-label", "matrix-scale-zero-label", TextAlignment.Center);
+            }
+            if (nonZero.Length == 0) return;
+            var area = new ChartRect(bounds.Left + zeroWidth, bounds.Top, Math.Max(0, bounds.Width - zeroWidth), bounds.Height);
+            var width = Math.Min(area.Width / 5, 32); var left = area.Left + (area.Width - width * 5) / 2;
+            for (var index = 0; index < 5; index++) {
+                var value = ChartHeatmapSurface.InterpolateObservedRange(floor, max, index / 4d);
+                var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
+                var box = new ChartRect(left + index * width, bounds.Top, Math.Max(0, width - 2), swatch);
+                var label = ChartNumericFormatter.FormatValue(chart.Options, value);
+                using (VisualStateSceneTools.Mark(builder, "matrix-scale-" + index, "heatmap-scale-step", box, label,
+                    ScaleMetadata(value, ChartHeatmapSurface.Ratio(chart, value, min, max)))) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
+            }
+            VisualStateSceneTools.Text(builder, ChartNumericFormatter.FormatValue(chart.Options, floor), new ChartRect(area.Left, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
+            VisualStateSceneTools.Text(builder, ChartNumericFormatter.FormatValue(chart.Options, max), new ChartRect(area.Left + area.Width / 2, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
         }
-        VisualStateSceneTools.Text(builder, chart.Options.Labels.Less, new ChartRect(bounds.Left, bounds.Top + swatch, bounds.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
-        VisualStateSceneTools.Text(builder, chart.Options.Labels.More, new ChartRect(bounds.Left + bounds.Width / 2, bounds.Top + swatch, bounds.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
+        Dictionary<string, string> ScaleMetadata(double value, double ratio) {
+            var metadata = new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value) };
+            var status = ChartHeatmapSurface.CellStatus(chart, ratio);
+            if (status != null) metadata["data-cfx-status"] = status;
+            else metadata["data-cfx-level"] = ChartHeatmapSurface.Level(ratio).ToString();
+            return metadata;
+        }
     }
 
     private sealed class MatrixLayout {

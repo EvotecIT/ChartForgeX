@@ -25,7 +25,8 @@ internal static partial class VisualMatrixCompiler {
         var sourceIndices = model.Series.Points.Select((point, index) => new { Date = DateTime.FromOADate(point.X).Date, Index = index })
             .GroupBy(item => item.Date).ToDictionary(group => group.Key, group => group.Select(item => item.Index).ToArray());
         using (builder.PushGroup("calendar", "calendar-heatmap", new Dictionary<string, string> {
-            ["aria-label"] = model.Summary(), ["role"] = "group", ["data-cfx-min"] = VisualStateSceneTools.Number(model.Min),
+            ["aria-label"] = model.Summary(), ["role"] = "group", ["data-cfx-label-level"] = chart.Options.Labels.Level,
+            ["data-cfx-min"] = VisualStateSceneTools.Number(model.Min),
             ["data-cfx-max"] = VisualStateSceneTools.Number(model.Max), ["data-cfx-start"] = model.DateText(model.Start),
             ["data-cfx-end"] = model.DateText(model.End), ["data-cfx-first-day"] = model.FirstDay.ToString(), ["data-cfx-value-count"] = model.ValueDays.ToString(),
             ["data-cfx-empty-count"] = model.EmptyDays.ToString(), ["data-cfx-zero-count"] = model.ZeroDays.ToString()
@@ -89,10 +90,11 @@ internal static partial class VisualMatrixCompiler {
             using (VisualStateSceneTools.Mark(builder, "calendar-scale-" + index, "calendar-scale-step", box, label, metadata)) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
         }
         var textTop = bounds.Top + height + 6;
-        VisualStateSceneTools.Text(builder, chart.Options.Labels.NoData, new ChartRect(bounds.Left, textTop, bounds.Width * .35, Math.Max(0, bounds.Bottom - textTop)),
+        var emptyLabelWidth = model.EmptyDays > 0 ? bounds.Width * .35 : 0;
+        if (model.EmptyDays > 0) VisualStateSceneTools.Text(builder, chart.Options.Labels.NoData, new ChartRect(bounds.Left, textTop, emptyLabelWidth, Math.Max(0, bounds.Bottom - textTop)),
             style, "calendar-scale-label", "calendar-scale-empty");
         VisualStateSceneTools.Text(builder, chart.Options.Labels.Less + " – " + chart.Options.Labels.More,
-            new ChartRect(bounds.Left + bounds.Width * .35, textTop, bounds.Width * .65, Math.Max(0, bounds.Bottom - textTop)), style,
+            new ChartRect(bounds.Left + emptyLabelWidth, textTop, bounds.Width - emptyLabelWidth, Math.Max(0, bounds.Bottom - textTop)), style,
             "calendar-scale-label", "calendar-scale-range", TextAlignment.Right);
     }
 }

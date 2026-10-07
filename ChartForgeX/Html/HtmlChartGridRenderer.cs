@@ -22,7 +22,7 @@ public sealed class HtmlChartGridRenderer {
         var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
         return new HtmlMarkupWriter().StartElement("section").Attribute("class", "chartforgex-grid")
             .Attribute("style", "width:100%;max-width:" + prepared.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
-            .EndStartElement().RawTrusted(prefix == null ? prepared.ToSvg() : prepared.ToSvg(prefix)).EndElement().Build();
+            .EndStartElement().RawTrusted(prepared.ToSvg(new VisualSvgOptions(prefix, grid.SvgColorVariables, responsive: true))).EndElement().Build();
     }
 
     /// <summary>Renders a complete script-free HTML document with the same grid layout as static exports.</summary>

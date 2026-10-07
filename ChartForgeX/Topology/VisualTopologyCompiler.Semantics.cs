@@ -31,8 +31,8 @@ internal sealed partial class VisualTopologyCompiler {
         }
         var envelope = VisualArtifactInterchangeMapping.FromPreparedTopology(snapshot, _options);
         for (var i = 0; i < _chart.Edges.Count; i++) {
-            if (_resolvedLabelBounds.TryGetValue(_chart.Edges[i].Id, out var labelBounds)) envelope.Edges[i].ResolvedLabelBounds = labelBounds;
-            foreach (var point in _routes[_chart.Edges[i].Id]) {
+            if (_resolvedLabelBounds.TryGetValue(_chart.Edges[i], out var labelBounds)) envelope.Edges[i].ResolvedLabelBounds = labelBounds;
+            foreach (var point in _routes[_chart.Edges[i]]) {
                 var p = Point(point);
                 envelope.Edges[i].ResolvedRoute.Add(new VisualArtifactInterchangePoint { X = p.X, Y = p.Y });
             }

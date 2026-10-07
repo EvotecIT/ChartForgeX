@@ -27,11 +27,12 @@ public sealed class PlotClippingTests {
     [InlineData(true)]
     public void EdgeMarkersSurviveButOutsideCentersAreDropped(bool svg) {
         var chart = CreateChart().AddScatter("edge", new[] { new ChartPoint(0, 5), new ChartPoint(-1, 5) }, ChartColors.Red);
+        chart.Series[0].WithMarkerRadius(3);
         var image = svg ? SvgRasterizer.ToImage(chart.ToSvg()) : chart.ToRgbaImage();
         Assert.True(image.Pixels[(100 * image.Width + 38) * 4 + 3] > 0);
         Assert.Equal(0, image.Pixels[(100 * image.Width + 24) * 4 + 3]);
         var document = XDocument.Parse(chart.ToSvg());
-        Assert.Single(document.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "scatter-point");
+        Assert.Single(document.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "marker");
     }
 
     private static Chart CreateChart() {

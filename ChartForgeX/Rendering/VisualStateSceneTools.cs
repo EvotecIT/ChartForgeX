@@ -58,7 +58,7 @@ internal static class VisualStateSceneTools {
         // The same clipped numeric contour drives patterns and outline dashes in both backends.
         var path = RoundedRect(bounds, radius);
         if (mark.Outlined) builder.Path(path, stroke: ChartColorMath.WithOpacity(mark.Color, mark.OutlineOpacity), strokeWidth: ChartStateMark.OutlineWidth,
-            role: role + "-outline", close: true, dash: new[] { ChartStateMark.OutlineDash, ChartStateMark.OutlineGap },
+            role: role + "-outline", close: true, dash: new[] { ChartStateMark.OutlineDash, ChartStateMark.OutlineGap }, cap: VisualStrokeCap.Butt,
             paint: VisualChartPaint.Stroke(SvgPaint.Of(mark.Color, SvgColorRole.Status).WithOpacity(ChartColorMath.WithOpacity(mark.Color, mark.OutlineOpacity), mark.OutlineOpacity)));
         builder.Pattern(path, mark.Lines, ChartColorMath.WithOpacity(mark.LineColor, ChartStateCategoryLegend.HatchOpacity),
             ChartStateCategoryLegend.HatchSpacing, ChartStateMark.PatternLineWidth, role + "-hatch",
@@ -90,7 +90,7 @@ internal static class VisualStateSceneTools {
         }
         var fit = ChartTextFitting.TrimEnd(text, style.EffectiveFontSize, bounds.Width, (value, _) => builder.MeasureText(value, style).Width);
         if (fit != text) builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."));
-        if (builder.MeasureText(fit, style).Height > bounds.Height) return;
+        if (builder.MeasureText(fit, style).Height > bounds.Height + .000001) return;
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - builder.MeasureText(fit, style).Height) / 2 + builder.TextAscent(style);

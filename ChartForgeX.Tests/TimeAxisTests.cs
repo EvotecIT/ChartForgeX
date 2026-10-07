@@ -34,7 +34,7 @@ public sealed class TimeAxisTests {
         if (secondary) chart.Series[0].UseSecondaryYAxis();
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
         axis.WithTimeScale().WithBounds(start, end);
-        var role = secondary ? "secondary-y-axis-tick" : "y-axis-label";
+        var role = secondary ? "axis-secondary-y-label" : "axis-y-label";
         var labels = XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == role)
             .Select(element => element.Value).ToArray();
@@ -68,14 +68,18 @@ public sealed class TimeAxisTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Render_ClassicDateSchedules_DoNotAdvertiseAnUnappliedTimeZone(bool gantt) {
+    public void Render_ClassicDateSchedules_ApplyRequestedTimeZoneAndTitleLabel(bool gantt) {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus5", TimeSpan.FromHours(5), "Test +05", "Test +05");
         Chart Create(bool show) {
             var chart = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(zone, show, "UTC+05");
             return gantt ? chart.AddGanttTask("Maintenance", Day, Day.AddDays(2)) : chart.AddTimelineItem("Maintenance", Day, Day.AddDays(2));
         }
-        Assert.DoesNotContain("UTC+05", Create(true).ToSvg(), StringComparison.Ordinal);
-        Assert.Equal(Create(false).ToPng(), Create(true).ToPng());
+        var chart = Create(true);
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "schedule-x-axis-title"
+            && element.Value.Contains("UTC+05", StringComparison.Ordinal));
+        Assert.NotEqual(Create(false).ToPng(), chart.ToPng());
+        Assert.Contains("+05", ChartTimeScale.FormatInstant(chart.Options.XAxis, Day.ToOADate()), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -105,11 +109,33 @@ public sealed class TimeAxisTests {
         chart = gantt ? chart.AddGanttTask("Work", Day, Day.AddDays(2))
             : chart.AddTimelineItem("Work", Day, Day.AddDays(2));
         var svg = XDocument.Parse(chart.ToSvg());
-        var labels = svg.Descendants().Where(element => element.Name.LocalName == "text" && element.Value.StartsWith("Mar ", StringComparison.Ordinal)).ToArray();
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").ToArray();
         Assert.NotEmpty(labels);
-        Assert.DoesNotContain(svg.Descendants(), element => element.Name.LocalName == "text" && (element.Value == "Feb 28" || element.Value == "Mar 4"));
+        Assert.Equal(ChartScaleKind.Time, chart.Options.XAxis.Scale);
+        Assert.Contains(labels, label => label.Value == "2026-03-01");
+        Assert.Contains(labels, label => label.Value == "2026-03-03");
         var positions = labels.Select(element => (string?)element.RenderedAttribute("x")).ToArray();
         Assert.Equal(positions.Length, positions.Distinct().Count());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DateScheduleDefaults_PreserveExplicitScaleConfigurationAndNumericOverloads(bool gantt) {
+        var numeric = Chart.Create();
+        if (gantt) numeric.AddGanttTask("Numeric", 1d, 3d); else numeric.AddTimelineRange("Numeric", 1d, 3d);
+        Assert.Equal(ChartScaleKind.Linear, numeric.Options.XAxis.Scale);
+
+        var authored = Chart.Create();
+        authored.Options.XAxis.WithScale(ChartScaleKind.Linear).WithBounds(Day.ToOADate(), Day.AddDays(2).ToOADate());
+        authored.Options.XAxis.LabelFormatter = _ => "Authored numeric tick";
+        if (gantt) authored.AddGanttTask("Date", Day, Day.AddDays(2)); else authored.AddTimelineItem("Date", Day, Day.AddDays(2));
+        Assert.Equal(ChartScaleKind.Linear, authored.Options.XAxis.Scale);
+        Assert.Equal(Day.ToOADate(), authored.Options.XAxis.Minimum);
+        Assert.Contains("Authored numeric tick", authored.ToSvg(), StringComparison.Ordinal);
+
+        var milestone = Chart.Create().AddGanttMilestone("Date milestone", Day);
+        Assert.Equal(ChartScaleKind.Time, milestone.Options.XAxis.Scale);
     }
 
     [Fact]
@@ -252,7 +278,7 @@ public sealed class TimeAxisTests {
 
         var timeline = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(showTimeZone: true)
             .AddTimelineItem("Maintenance", Day.AddHours(2), Day.AddHours(5));
-        Assert.Contains(">Window</text>", timeline.ToSvg(), StringComparison.Ordinal);
+        Assert.Contains(">Window (UTC)</text>", timeline.ToSvg(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -278,7 +304,7 @@ public sealed class TimeAxisTests {
     public void Render_UnrepresentableTimeRange_FallsBackToNumericTicks() {
         var chart = Chart.Create().WithSize(480, 240).WithXAxisTimeScale()
             .AddLine("Out of range", new[] { new ChartPoint(3_000_000, 1), new ChartPoint(3_000_100, 2) });
-        Assert.Contains("data-cfx-role=\"x-axis-label\"", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.Contains("data-cfx-role=\"axis-x-label\"", chart.ToSvg(), StringComparison.Ordinal);
         Assert.True(chart.ToPng().Length > 200);
     }
 

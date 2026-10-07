@@ -40,7 +40,7 @@ public sealed class GanttLaneTests {
         Assert.Equal(new[] { "Critical", "High", "Medium", "Low", "Informational" }, Texts(svg, "legend-label"));
         Assert.Equal(new[] { "2", "3" }, Texts(svg, "lane-summary"));
         Assert.Equal(new[] { "Incidents" }, Texts(svg, "lane-summary-header"));
-        Assert.Contains("USN rollback", Texts(svg, "gantt-lane-item-label"));
+        Assert.Contains("USN rollback", Texts(svg, "data-label"));
         Assert.Empty(ByRole(svg, "legend-item"));
     }
 
@@ -56,13 +56,13 @@ public sealed class GanttLaneTests {
     [Fact]
     public void ToSvg_OpenItem_RunsToNowAndIsMarkedOngoing() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
-        var now = ByRole(svg, "gantt-lanes-now").Single();
-        Assert.Equal("none", (string?)now.Attribute("pointer-events"));
+        var now = ByRole(svg, "gantt-now").Single();
+        Assert.DoesNotContain(now.DescendantsAndSelf(), element => element.Attribute("href") != null || element.Attribute("tabindex") != null);
         var open = ByRole(svg, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-open") == "true");
         Assert.Equal(Number(now, "x1"), Number(open, "x") + Number(open, "width"), 3);
         Assert.NotNull(open.Attribute("data-cfx-end")); // Prepared output snapshots the resolved current endpoint.
         Assert.Contains("ongoing", Title(open), StringComparison.Ordinal);
-        Assert.Equal(new[] { "Now" }, Texts(svg, "gantt-lanes-now-label"));
+        Assert.Equal(new[] { "Now" }, Texts(svg, "gantt-now-label"));
 
         var withoutToday = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(4), "low"), new ChartGanttLaneItem(Start.AddHours(1), null, "high") });
@@ -70,7 +70,7 @@ public sealed class GanttLaneTests {
         var openItem = ByRole(fallback, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-open") == "true");
         var closed = ByRole(fallback, "gantt-lane-item").First();
         Assert.True(Number(openItem, "x") + Number(openItem, "width") > Number(closed, "x") + Number(closed, "width") + 2, "Without a current time, open items extend past the latest data.");
-        Assert.Empty(ByRole(fallback, "gantt-lanes-now"));
+        Assert.Empty(ByRole(fallback, "gantt-now"));
 
         var lateStart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).WithGanttToday(Start.AddHours(2)).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(6), "low"), new ChartGanttLaneItem(Start.AddHours(4), null, "high") });
@@ -108,13 +108,17 @@ public sealed class GanttLaneTests {
 
     [Fact]
     public void Render_NearPixelThreshold_UsesSharedSubRowsForSvgAndPng() {
-        var boundary = 2.0 / 467.9;
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
-            .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(0, boundary, "low"), new ChartGanttLaneItem(boundary, boundary + 0.001, "high") });
-        chart.Options.ShowLegend = false;
-        chart.Options.XAxis.WithBounds(0, 1);
-        var rows = ChartGanttLaneModel.Build(chart).Rows.Single().Items.Select(item => item.SubRow).ToArray();
-        Assert.Equal(new[] { 0, 1 }, rows);
+        Chart Create(double boundary) {
+            var candidate = Chart.Create().WithTheme(ChartTheme.Light()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+                .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(0, boundary, "low"), new ChartGanttLaneItem(boundary, boundary + 0.001, "high") });
+            candidate.Options.ShowLegend = false;
+            candidate.Options.XAxis.WithBounds(0, 1);
+            return candidate;
+        }
+        var probe = Create(0.001);
+        var plotWidth = probe.Prepare(VisualExportRequest.ForChart(probe).Context).Regions.Single(region => region.Role == "schedule-plot").Bounds.Width;
+        // The first interval is narrower than the minimum painted width; the touching interval must use another row.
+        var chart = Create(1.9 / plotWidth);
         Assert.Equal(new[] { "0", "1" }, ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item")
             .Select(item => (string?)item.Attribute("data-cfx-sub-row")).ToArray());
         Assert.NotEmpty(chart.ToPng());
@@ -169,7 +173,11 @@ public sealed class GanttLaneTests {
         var items = ByRole(svg, "gantt-lane-item");
         Assert.Equal(new[] { "0", "0", "0" }, items.Select(item => (string)item.Attribute("data-cfx-sub-row")!).ToArray());
         Assert.Equal(new[] { "Site" }, Texts(svg, "gantt-lane-group"));
-        Assert.Single(ByRole(svg, "gantt-lane-group-rule"));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var group = prepared.Regions.First(region => region.Role == "gantt-lane-group" && region.Label == "Site");
+        Assert.Equal("Site", group.Label);
+        Assert.True(group.Bounds.Bottom <= Number(items[0], "y"));
+        Assert.True(Number(items[2], "y") >= Number(items[0], "y") + Number(items[0], "height"));
     }
 
     [Fact]
@@ -204,7 +212,7 @@ public sealed class GanttLaneTests {
             labels.SoFar = "dotąd";
         });
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Equal(new[] { "Teraz" }, Texts(svg, "gantt-lanes-now-label"));
+        Assert.Equal(new[] { "Teraz" }, Texts(svg, "gantt-now-label"));
         var open = ByRole(svg, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-open") == "true");
         Assert.Contains("– trwa (", Title(open), StringComparison.Ordinal);
         Assert.Contains(" dotąd)", Title(open), StringComparison.Ordinal);
@@ -213,14 +221,22 @@ public sealed class GanttLaneTests {
 
         var edge = CreateChart().WithGanttToday(Start.AddHours(47.5)).WithLabels(labels => labels.Now = "Aktualny czas systemowy");
         var edgeSvg = XDocument.Parse(edge.ToSvg());
-        var label = ByRole(edgeSvg, "gantt-lanes-now-label").Single();
+        var label = ByRole(edgeSvg, "gantt-now-label").Single();
         var axis = ByRole(edgeSvg, "schedule-axis").Single();
-        var now = ByRole(edgeSvg, "gantt-lanes-now").Single();
-        Assert.Equal("middle", (string)label.RenderedAttribute("text-anchor")!);
+        var now = ByRole(edgeSvg, "gantt-now").Single();
         // The marker sits at (or next to) the right edge, so a long centred label must shift left of it (font-independent).
         Assert.True(Number(axis, "x2") - Number(now, "x1") < 20);
         Assert.True(Number(label, "x") < Number(now, "x1") - 20, "A long label near the right edge is pulled inside the plot.");
         Assert.True(Number(label, "x") > Number(axis, "x1"));
+        var prepared = edge.Prepare(VisualExportRequest.ForChart(edge).Context);
+        var plot = Assert.Single(prepared.Regions, region => region.Role == "schedule-plot").Bounds;
+        var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gantt-now-label");
+        Assert.Equal(TextAlignment.Center, text.Alignment);
+        Assert.All(text.Text.Lines, line => {
+            var left = text.LineLeft(line);
+            Assert.InRange(left, plot.Left - .001, plot.Right + .001);
+            Assert.True(left + line.Width <= plot.Right + .001);
+        });
     }
 
     [Fact]
@@ -281,16 +297,27 @@ public sealed class GanttLaneTests {
     public void Render_AxisVisibilityDensityAndGridStyle_FollowSharedAxisControls() {
         var chart = CreateChart().WithSize(390, 300);
         var all = CreateChart().WithSize(390, 300);
+        // Explicit, closely spaced labels make density observable independently of the automatic tick interval.
+        var ticks = Enumerable.Range(0, 8).Select(index => new ChartAxisLabel(Start.AddHours(1 + index * 6),
+            "Day " + (index + 1).ToString(CultureInfo.InvariantCulture) + " 12:00 UTC")).ToArray();
+        chart.WithXLabels(ticks);
+        all.WithXLabels(ticks);
         all.Options.XAxisLabelDensity = ChartLabelDensity.All;
         var automaticLabels = Texts(XDocument.Parse(chart.ToSvg()), "schedule-tick-label");
         var allLabels = Texts(XDocument.Parse(all.ToSvg()), "schedule-tick-label");
         Assert.True(automaticLabels.Length >= 2 && automaticLabels.Length < allLabels.Length);
+        Assert.Equal(ticks.Length, allLabels.Length);
+        var automaticRegions = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Regions
+            .Where(region => region.Role == "schedule-tick-label").ToArray();
+        Assert.Equal(ticks[0].Text, automaticRegions[0].Label);
+        Assert.Equal(ticks[^1].Text, automaticRegions[^1].Label);
 
         chart.Options.ShowXAxis = false;
         var hiddenX = XDocument.Parse(chart.ToSvg());
         Assert.Empty(ByRole(hiddenX, "schedule-tick-label"));
         Assert.Empty(ByRole(hiddenX, "schedule-axis"));
-        Assert.Empty(ByRole(hiddenX, "gantt-lanes-now-label"));
+        // The current instant is data and remains visible when only axis chrome is hidden.
+        Assert.Single(ByRole(hiddenX, "gantt-now-label"));
         Assert.NotEmpty(ByRole(hiddenX, "schedule-row-label"));
         chart.Options.ShowXAxis = true;
         chart.Options.ShowYAxis = false;
@@ -304,7 +331,9 @@ public sealed class GanttLaneTests {
         chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
         var grid = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(grid);
-        Assert.All(grid, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal(0.8, Number(line, "opacity")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
+        Assert.All(grid, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
+        var preparedGrid = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid");
+        Assert.All(preparedGrid, line => Assert.Equal((byte)204, line.Stroke!.Value.A));
         Assert.True(chart.ToPng().Length > 200);
     }
 
@@ -314,8 +343,8 @@ public sealed class GanttLaneTests {
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(Start.AddHours(5).ToOADate(), "Five hours"));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Equal(new[] { "Five hours" }, Texts(svg, "schedule-tick-label"));
-        Assert.All(ByRole(svg, "gantt-lane-item-label"), label =>
-            Assert.Equal("none", (string?)label.Parent?.Attribute("pointer-events")));
+        Assert.All(ByRole(svg, "data-label"), label =>
+            Assert.Contains(label.Ancestors(), owner => (string?)owner.Attribute("data-cfx-role") == "gantt-lane-item"));
 
         var shortChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(Status.SeverityCategories())
@@ -375,7 +404,7 @@ public sealed class GanttLaneTests {
                 new ChartGanttLaneItem(now, null, "high")
             });
         var svg = XDocument.Parse(chart.ToSvg());
-        var marker = Assert.Single(ByRole(svg, "gantt-lanes-now"));
+        var marker = Assert.Single(ByRole(svg, "gantt-now"));
         var open = Assert.Single(ByRole(svg, "gantt-lane-item"), item => (string?)item.Attribute("data-cfx-open") == "true");
         Assert.Equal(Number(marker, "x1"), Number(open, "x"), 2);
         Assert.InRange(Number(open, "width"), 2, 3);
@@ -389,7 +418,7 @@ public sealed class GanttLaneTests {
         var label = new string('N', 160);
         var chart = CreateChart().WithSize(390, 300).WithLabels(labels => labels.Now = label);
         var svg = XDocument.Parse(chart.ToSvg());
-        var shown = Assert.Single(Texts(svg, "gantt-lanes-now-label"));
+        var shown = Assert.Single(Texts(svg, "gantt-now-label"));
         Assert.NotEmpty(shown);
         Assert.True(shown.Length < label.Length);
         Assert.True(chart.ToPng().Length > 200);

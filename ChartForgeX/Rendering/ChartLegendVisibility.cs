@@ -4,6 +4,17 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Shared entry-count policy for series, slice, point and categorical legends.</summary>
 internal static class ChartLegendVisibility {
+    /// <summary>Continuous scales carry information even when the family has no categorical legend entries.</summary>
+    internal static bool ForPreparedContent(Chart chart, int entryCount) {
+        if (!chart.Options.ShowLegend) return false;
+        foreach (var series in chart.Series) {
+            if (chart.Options.ShowHeatmapScale && (series.Kind == ChartSeriesKind.CalendarHeatmap
+                || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
+            if (chart.Options.ShowMapScaleLegend && series.Kind is ChartSeriesKind.DottedMap or ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) return true;
+        }
+        return ForEntries(chart, entryCount);
+    }
+
     public static bool ForEntries(Chart chart, int count) =>
         chart.Options.ShowLegend && count > 0 && (count > 1 || chart.Options.HasExplicitLegend);
 

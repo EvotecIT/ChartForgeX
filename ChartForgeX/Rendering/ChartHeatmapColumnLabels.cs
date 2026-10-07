@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 /// </summary>
 internal static class ChartHeatmapColumnLabels {
     /// <summary>Limits the rotated label band to a portion of the available canvas height, retaining room for cells.</summary>
-    private static double MaximumRotatedLength(Chart chart, double textHeight) {
+    internal static double MaximumRotatedLength(Chart chart, double textHeight) {
         var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
         var height = Math.Max(0, chart.Options.Size.Height - chart.Options.Padding.Top - chart.Options.Padding.Bottom);
         var band = height * 0.4 - RotatedOffset - 8 - Math.Cos(radians) * textHeight;

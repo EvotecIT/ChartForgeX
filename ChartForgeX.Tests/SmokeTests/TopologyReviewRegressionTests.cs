@@ -413,7 +413,7 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGeographicRegionHulls = true };
         var svg = chart.ToSvg(options);
-        var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-region-hulls\"", "r");
+        var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-hull\"", "rx");
 
         Assert(Math.Abs(radius - options.GeographicRegionHullMinRadius) < 0.01, "Hidden geographic anchor nodes should not enlarge rendered region hulls.");
         Assert(chart.ToPng(options).Length > 64, "Hidden geographic anchor nodes should not break PNG region hull rendering.");

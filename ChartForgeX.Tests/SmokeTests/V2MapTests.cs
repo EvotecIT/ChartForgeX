@@ -61,9 +61,26 @@ public sealed class V2MapTests {
         var regions = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "region-map-region").ToArray();
         Assert.Equal(middle, regions[0].Fill); Assert.Equal(explicitPoint, regions[1].Fill); Assert.Equal(missing, regions[2].Fill);
         Assert.Contains(scene.Regions, region => region.Label == "Mid 20,0 %");
+        Assert.Contains(scene.Nodes.OfType<VisualSceneText>(), text =>
+            text.Role is "map-scale-label" or "map-scale-midpoint-label" && string.Join("\n", text.Text.Lines.Select(line => line.Text)) == "Mid 20,0 %");
         Assert.Contains(scene.Regions, region => region.Label == "High · 100,0 %");
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "map-scale" && group.Metadata["data-cfx-midpoint-value"] == "20");
         Assert.Contains(scene.Nodes, node => node.Role == "map-scale-no-data");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MapScaleHonorsExplicitChartAndHostLegendVisibility(bool host) {
+        var chart = Chart.Create().AddRegionMap("Values", Definition(), new[] { new ChartRegionMapItem("A", 10) }).WithMapLabels(false);
+        var visible = Compile(chart);
+        Assert.Contains(visible.Nodes, node => node.Role == "map-scale");
+        var hiddenContext = host ? new VisualRenderContext(frame: new VisualFrame(showLegend: false)) : new VisualRenderContext();
+        if (!host) chart.WithLegend(false);
+        var hidden = Compile(chart, context: hiddenContext);
+        Assert.DoesNotContain(hidden.Nodes, node => node.Role == "map-scale");
+        Assert.Equal(3, hidden.Nodes.Count(node => node.Role == "region-map-region"));
+        Assert.NotEmpty(VisualSceneRasterRenderer.Render(hidden).Pixels);
     }
 
     [Theory]

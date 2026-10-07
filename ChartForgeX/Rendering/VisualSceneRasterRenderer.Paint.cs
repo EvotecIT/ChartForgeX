@@ -54,7 +54,7 @@ internal static partial class VisualSceneRasterRenderer {
     private static void PaintTransformedText(RgbaCanvas canvas, VisualSceneText node, VisualSceneTransform transform, Typography.TextHinting? textHinting = null) {
         var text = node.Text;
         // Retain shaped glyphs and faces. Only their ink is buffered for rigid rotation; no font lookup or reshaping occurs.
-        var margin = Math.Max(4, text.Size);
+        var margin = TextInkMargin(text) + (node.Stroke.HasValue ? node.StrokeWidth / 2 : 0);
         var left = node.Alignment == Typography.TextAlignment.Center ? node.X - text.Metrics.Width / 2
             : node.Alignment == Typography.TextAlignment.Right ? node.X - text.Metrics.Width : node.X;
         left -= margin;
@@ -62,11 +62,33 @@ internal static partial class VisualSceneRasterRenderer {
         var width = Dimension(text.Metrics.Width + margin * 2);
         var height = Dimension(text.Metrics.Height + margin * 2);
         var density = Math.Max(1, canvas.PixelsPerUnit);
+        var allocation = RasterAllocationGuard.Calculate(width, height, 1, density);
+        if ((long)allocation.PixelWidth * allocation.PixelHeight > RasterTextStroke.MaximumIntermediatePixels)
+            throw new ArgumentOutOfRangeException(nameof(node), "Native text paint exceeds the supported intermediate raster budget.");
         var buffer = new RgbaCanvas(width, height, 1, null, density, useDefaultOutlineFont: false);
+        if (node.Stroke.HasValue && node.StrokeWidth > 0 && node.Stroke.Value.A > 0) {
+            var mask = new RgbaCanvas(width, height, 1, null, density, useDefaultOutlineFont: false);
+            PaintText(mask, new VisualSceneText(text, node.X - left, node.Baseline - top, ChartColor.White, node.Alignment, null, null), textHinting);
+            RasterTextStroke.Paint(buffer.Pixels, mask.Pixels, allocation.PixelWidth, allocation.PixelHeight,
+                Math.Max(1, Dimension(node.StrokeWidth * density / 2)), node.Stroke.Value);
+        }
         PaintText(buffer, new VisualSceneText(text, node.X - left, node.Baseline - top, node.Color, node.Alignment, null, null), textHinting);
         var image = buffer.ToImage();
         var origin = transform.Apply(new ChartPoint(left, top));
         canvas.DrawImageTransformed(image.Width, image.Height, image.Pixels,
             transform.A / density, transform.B / density, transform.C / density, transform.D / density, origin.X, origin.Y);
+    }
+
+    private static double TextInkMargin(VisualScenePreparedText text) {
+        var margin = Math.Max(4, text.Size);
+        if (text.Face.Font == null) return margin;
+        // Positioned marks may extend beyond their shaped advance. Retain them and their outline in the buffer.
+        foreach (var line in text.Lines) {
+            var ink = text.Face.Font.MeasureGlyphInk(line.Glyphs, text.Size, text.Face.SynthesizeItalic);
+            if (!ink.HasValue) continue;
+            var box = ink.Value;
+            margin = Math.Max(margin, 2 + Math.Max(Math.Max(-box.X, box.Right - line.Width), Math.Max(-box.Y, box.Bottom - text.Metrics.LineHeight)));
+        }
+        return margin;
     }
 }

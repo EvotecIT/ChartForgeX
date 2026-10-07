@@ -22,7 +22,7 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains("viewBox=\"0 0 280 180\"", StringComparison.Ordinal), "Topology normalization should expand the viewport for tile labels, subtitle chips, and badges.");
         Assert(svg.Contains("data-cfx-role=\"topology-node-subtitle\"", StringComparison.Ordinal), "Tile subtitle chips should render after viewport fitting.");
         Assert(svg.Contains("data-node-badge=\"WAN\"", StringComparison.Ordinal), "Node badges should still be present after viewport fitting.");
-        Assert(!svg.Contains("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal), "Hidden legends should not reserve layout space or render.");
+        Assert(!svg.Contains("data-cfx-role=\"legend\"", StringComparison.Ordinal), "Hidden legends should not reserve layout space or render.");
         Assert(chart.ToPng(options).Length > 64, "Viewport-expanded tile adornments should render as PNG.");
     }
 
@@ -106,9 +106,9 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-visual-style=\"MonitoringDashboard\"", StringComparison.Ordinal), "Monitoring style should be emitted as reusable SVG metadata.");
         Assert(svg.Contains("data-cfx-map-background-style=\"SoftSilhouette\"", StringComparison.Ordinal), "Monitoring geographic topology should use soft silhouettes by default.");
-        Assert(svg.Contains("data-cfx-role=\"topology-geographic-land-area\"", StringComparison.Ordinal), "World geographic topology should render reusable land silhouettes.");
-        Assert(svg.Contains("data-cfx-role=\"topology-geographic-region-hulls\"", StringComparison.Ordinal), "Monitoring geographic topology should render reusable regional hulls.");
-        Assert(!svg.Contains("data-cfx-role=\"topology-geographic-land-dot\"", StringComparison.Ordinal), "Soft silhouette map style should not fall back to dotted land when world boundaries are available.");
+        Assert(svg.Contains("data-cfx-role=\"topology-map-boundary\"", StringComparison.Ordinal), "World geographic topology should render reusable land silhouettes.");
+        Assert(svg.Contains("data-cfx-role=\"topology-geographic-hull\"", StringComparison.Ordinal), "Monitoring geographic topology should render reusable regional hulls.");
+        Assert(!svg.Contains("data-cfx-role=\"topology-map-land\"", StringComparison.Ordinal), "Soft silhouette map style should not fall back to dotted land when world boundaries are available.");
         Assert(chart.ToPng(options).Length > 64, "Soft silhouette geographic topology should render as PNG.");
     }
 
@@ -178,7 +178,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-callout-placement=\"left-corner\"", StringComparison.Ordinal), "Dashboard geographic callouts should place the western region in the left edge slot.");
         Assert(svg.Contains("data-callout-placement=\"top\"", StringComparison.Ordinal), "Dashboard geographic callouts should place middle regions in the top context slot.");
         Assert(svg.Contains("data-callout-placement=\"right-corner\"", StringComparison.Ordinal), "Dashboard geographic callouts should place the eastern region in the right edge slot.");
-        Assert(svg.Contains("data-cfx-role=\"topology-geographic-callout-mini-topology\"", StringComparison.Ordinal), "Dashboard geographic callouts should include a compact topology preview.");
+        Assert(svg.Contains("data-cfx-role=\"topology-callout-preview-node\"", StringComparison.Ordinal), "Dashboard geographic callouts should include a compact topology preview.");
         Assert(chart.ToPng(options).Length > 64, "Dashboard geographic callout slots should render as PNG.");
     }
 
@@ -216,7 +216,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", StringComparison.Ordinal), "Route-aware geographic maps should still render dashboard callouts.");
         Assert(svg.Contains("data-cfx-role=\"topology-edge-label-text\"", StringComparison.Ordinal), "Route-aware callout placement should account for rendered edge label boxes.");
         Assert(svg.Contains("data-cfx-role=\"topology-geographic-route-halo\"", StringComparison.Ordinal), "Monitoring geographic route arcs should render a clean underlay for dashboard map layering.");
-        Assert(svg.Contains("data-cfx-role=\"topology-geographic-route-halo\" d=\"", StringComparison.Ordinal) && svg.Contains("fill=\"none\" stroke=\"#FFFFFF\"", StringComparison.Ordinal), "Geographic route halos should explicitly disable path fill so open map arcs never render as filled wedges.");
+        Assert(SvgHasAttributes(svg, "data-cfx-role=\"topology-geographic-route-halo\" d=\"") && SvgHasAttributes(svg, "fill=\"none\" stroke=\"#FFFFFF\""), "Geographic route halos should explicitly disable path fill so open map arcs never render as filled wedges.");
         Assert(svg.Contains("data-cfx-role=\"topology-geographic-callout-leader-halo\"", StringComparison.Ordinal), "Monitoring geographic callout leaders should render a clean underlay above map routes and silhouettes.");
         Assert(svg.Contains("data-cfx-role=\"topology-geographic-callout-leader\"", StringComparison.Ordinal), "Monitoring geographic callouts should use routed leaders instead of raw diagonal connector lines.");
         Assert(chart.ToPng(options).Length > 64, "Route-aware geographic callouts should render as PNG.");
@@ -239,7 +239,7 @@ internal static partial class SmokeTests {
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false }
             .WithMonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
-        var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-region-hulls\"", "r");
+        var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-hull\"", "rx");
 
         Assert(radius <= 82, "Monitoring geographic region hulls should use a tighter max radius than generic report maps.");
         Assert(svg.Contains("data-hull-padding=\"16\"", StringComparison.Ordinal), "Region hull padding should be exposed as reusable SVG metadata.");
@@ -490,7 +490,8 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-edge-label-text\"", StringComparison.Ordinal), "Monitoring edge labels should expose reusable text roles.");
-        Assert(svg.Contains("data-cfx-halo=\"true\"", StringComparison.Ordinal), "Monitoring labels without backplates should render a halo for readability over links.");
+        var labelText = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text" && element.AncestorsAndSelf().Any(owner => (string?)owner.Attribute("data-cfx-role") == "topology-edge-label-text")).ToArray();
+        Assert(labelText.Length > 0 && labelText.All(element => element.Attribute("stroke") != null && (double?)element.Attribute("stroke-width") > 0), "Monitoring labels without backplates should render a halo for readability over links.");
         Assert(svg.Contains("paint-order=\"stroke\"", StringComparison.Ordinal), "SVG label halos should use stroke paint order instead of opaque cards.");
         Assert(chart.ToPng(options).Length > 64, "Monitoring halo edge labels should render as PNG.");
     }
@@ -512,7 +513,7 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-edge-route-halo\"", StringComparison.Ordinal), "Monitoring topology routes should render route halos so crossing paths remain separated.");
-        Assert(svg.Contains("data-cfx-role=\"topology-edge-path-ambient-halo\"", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal), "Monitoring topology routes should render shared premium edge layers in addition to clearance halos.");
+        Assert(svg.Contains("data-cfx-role=\"topology-edge-line-ambient-halo\"", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal), "Monitoring topology routes should render shared premium edge layers in addition to clearance halos.");
         Assert(chart.ToPng(options).Length > 64, "Monitoring route halos should render as PNG.");
     }
 
@@ -602,7 +603,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-visual-style=\"MonitoringDashboard\"", StringComparison.Ordinal), "Neutral group surfaces should compose with monitoring style.");
         Assert(svg.Contains("data-group-symbol=\"globe\"", StringComparison.Ordinal), "Neutral group surfaces should keep reusable group symbols.");
         Assert(svg.Contains("data-cfx-role=\"topology-group-status\"", StringComparison.Ordinal), "Monitoring group headers should expose compact reusable status dots.");
-        Assert(svg.Contains("fill=\"#FFFFFF\" stroke=\"#16A34A\"", StringComparison.Ordinal), "Neutral group surfaces should render white cards with status-colored borders.");
+        Assert(SvgHasAttributes(svg, "fill=\"#FFFFFF\" stroke=\"#16A34A\""), "Neutral group surfaces should render white cards with status-colored borders.");
         Assert(chart.ToPng(options).Length > 64, "Neutral group surfaces should render as PNG.");
     }
 
@@ -677,7 +678,7 @@ internal static partial class SmokeTests {
             .WithMonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
-        Assert(svg.Contains("data-cfx-role=\"topology-node-dot-symbol\"", StringComparison.Ordinal), "Monitoring dot nodes should render compact reusable symbols when a node has a symbol.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-symbol\"", StringComparison.Ordinal), "Monitoring dot nodes should render compact reusable symbols when a node has a symbol.");
         Assert(chart.ToPng(options).Length > 64, "Monitoring dot node symbols should render as PNG.");
     }
 

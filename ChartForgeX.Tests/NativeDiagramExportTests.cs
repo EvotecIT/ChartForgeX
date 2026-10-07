@@ -37,12 +37,12 @@ public sealed class NativeDiagramExportTests {
         var options = chart.DefaultRenderOptions!.Clone().WithForceGraphStyle();
         var svg = XDocument.Parse(chart.ToSvg(options));
         static XElement Line(XDocument document) => document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
-        Assert.Equal((byte)Math.Round(255 * .26), ChartColor.Parse(Line(svg).Attribute("stroke")!.Value).A);
+        Assert.Equal((byte)Math.Round(255 * .26), Line(svg).RenderedColor("stroke").A);
         Assert.Equal(TopologyRenderPrimitives.ForceGraphNormalEdgeStrokeWidth,
             double.Parse(Line(svg).Attribute("stroke-width")!.Value, System.Globalization.CultureInfo.InvariantCulture));
         chart.Edges[0].Opacity = .8;
         var explicitSvg = XDocument.Parse(chart.ToSvg(options));
-        Assert.Equal((byte)Math.Round(255 * .8), ChartColor.Parse(Line(explicitSvg).Attribute("stroke")!.Value).A);
+        Assert.Equal((byte)Math.Round(255 * .8), Line(explicitSvg).RenderedColor("stroke").A);
         Assert.NotEmpty(chart.ToPng(options));
     }
 
@@ -92,10 +92,13 @@ public sealed class NativeDiagramExportTests {
         var motion = TopologyMotionOptions.RoutePulseForEdges("link"); motion.Loop = false; motion.Progress = 0;
         var options = new TopologyRenderOptions { IncludeLegend = false, Motion = motion, FitContentToViewport = true };
         var start = chart.ToSvg(options);
+        var startPng = chart.ToPng(options);
         motion.Progress = 1;
         var end = chart.ToSvg(options);
         static XElement Marker(string svg) => XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker");
-        Assert.NotEqual((string?)Marker(start).Attribute("cx"), (string?)Marker(end).Attribute("cx"));
+        Assert.Equal(start, end); // SVG owns continuous motion; Progress selects a raster sample.
+        Assert.Contains(Marker(start).Elements(), element => element.Name.LocalName == "animateMotion");
+        Assert.NotEqual(startPng, chart.ToPng(options));
         Assert.Equal(1, options.Motion!.Progress);
         var plain = options.Clone(); plain.Motion = null;
         var prepared = chart.Prepare(plain); var original = prepared.ToSvg();

@@ -2,6 +2,7 @@ using System;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Topology;
 
@@ -17,10 +18,26 @@ public sealed class PreparedTopology {
     private readonly PreparedVisual _visual;
     private readonly VisualRenderContext _context;
     private readonly VisualRenderOptions _rasterOptions;
+    private readonly string? _title;
+    private readonly string? _subtitle;
+    private readonly TopologyLegend? _legend;
+    private readonly PreparedVisual _staticVisual;
+    private readonly TopologyMotionOptions? _motion;
+    private readonly TopologyMotionSvgAdapter? _animation;
 
-    internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions) {
+    internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions, TopologyMotionOptions? motion = null) {
         _chart = compiler.LayoutSnapshot(); _options = compiler.OptionsSnapshot();
-        _visual = visual; _context = compiler.Context; _rasterOptions = rasterOptions;
+        _staticVisual = visual; _motion = motion?.Clone();
+        if (motion == null) _visual = visual;
+        else {
+            var motionOptions = _options.CloneForRendering(); motionOptions.Motion = motion;
+            var plan = compiler.MotionPlan(motionOptions);
+            _animation = compiler.SvgAnimation(motion, plan);
+            _visual = compiler.MotionFrame(visual, motion, plan);
+        }
+        _context = compiler.Context; _rasterOptions = rasterOptions;
+        _title = compiler.SourceTitle; _subtitle = compiler.SourceSubtitle;
+        _legend = compiler.FrameLegend;
         _requestedWidth = visual.Size.Width; _requestedHeight = visual.Size.Height;
     }
 
@@ -33,7 +50,7 @@ public sealed class PreparedTopology {
     /// <summary>Gets the number of retained relationships.</summary>
     public int EdgeCount => _chart.Edges.Count;
     /// <summary>Gets the source title without requiring interchange serialization.</summary>
-    public string? Title => _chart.Title;
+    public string? Title => _title;
     /// <summary>Gets the source language for accessible labels and surrounding document content.</summary>
     public string? Language => _chart.Accessibility.Language;
 
@@ -42,12 +59,16 @@ public sealed class PreparedTopology {
         if (width == _requestedWidth && height == _requestedHeight) return this;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), _context.Layout.PaddingEdges),
             _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
-        var compiler = new VisualTopologyCompiler(_chart, context, _options, resolvedLayout: true);
-        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions);
+        var source = TopologyLayoutEngine.Clone(_chart);
+        source.Title = _title; source.Subtitle = _subtitle;
+        source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
+        var compiler = new VisualTopologyCompiler(source, context, _options, resolvedLayout: true);
+        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions, _motion);
     }
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
-    public string ToSvg() => _visual.ToSvg();
+    public string ToSvg() => _animation?.Compose(_staticVisual.ToSvg()) ?? _visual.ToSvg();
+    internal string ToSvg(VisualAccessibility accessibility) => _animation?.Compose(_staticVisual.ToSvg(accessibility)) ?? _visual.ToSvg(accessibility);
 
     /// <summary>Renders the same prepared geometry through the dependency-free raster renderer.</summary>
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);
@@ -59,7 +80,7 @@ public sealed class PreparedTopology {
     public VisualArtifactInterchangeEnvelope ToInterchangeEnvelope() => _visual.SemanticInterchange!;
 
     /// <summary>Measures the prepared geometry without running layout again. The returned report is detached.</summary>
-    public TopologyLayoutDiagnosticReport Analyze() => TopologyLayoutDiagnostics.AnalyzePrepared(_chart, _options);
+    public TopologyLayoutDiagnosticReport Analyze() => TopologyLayoutDiagnostics.AnalyzePrepared(_chart, _chart.RenderOptions ?? _options);
 
     /// <summary>Evaluates collisions, viewport expansion, and readability at a target display size.</summary>
     public TopologyReadabilityReport AssessReadability(double targetWidth, double targetHeight, double minimumScale = 0.65) =>
@@ -78,7 +99,6 @@ public static partial class TopologyChartExtensions {
         var motion = effective.Motion; effective.Motion = null;
         var compiler = new VisualTopologyCompiler(chart, request.Context, effective, naturalSize: true);
         var visual = compiler.Compile();
-        if (motion != null) visual = compiler.MotionFrame(visual, motion);
-        return new PreparedTopology(compiler, visual, request.RasterOptions);
+        return new PreparedTopology(compiler, visual, request.RasterOptions, motion);
     }
 }

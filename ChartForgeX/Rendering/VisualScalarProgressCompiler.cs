@@ -13,9 +13,15 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScalarProgressCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) => chart.Series
         .Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend)
-        .Select(item => new VisualLegendEntry(item.series.Name,
-            item.series.Kind == ChartSeriesKind.Circle ? CircleColor(item.series, colors) : ChartSeriesColours.Resolve(item.series, item.index, colors),
-            Id(item.index), item.series.Kind, item.series.FillPattern, item.series.StateRole, item.series.InteractionIdentityKey)).ToArray();
+        .Select(item => {
+            var circle = item.series.Kind == ChartSeriesKind.Circle;
+            var color = circle ? CircleColor(item.series, colors) : ChartSeriesColours.Resolve(item.series, item.index, colors);
+            var paint = circle
+                ? SvgPaint.Of(color, item.series.Color.HasValue || item.series.PointColors.Count > 0 && item.series.PointColors[0].HasValue ? SvgColorRole.Series : SvgColorRole.Status)
+                : VisualChartPaint.Series(item.series, color);
+            return new VisualLegendEntry(item.series.Name, color, Id(item.index), item.series.Kind,
+                item.series.FillPattern, item.series.StateRole, item.series.InteractionIdentityKey, paint: paint);
+        }).ToArray();
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var kind = chart.Series[0].Kind;

@@ -63,11 +63,11 @@ public sealed class FontSpec {
         set => _faceName = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
     }
 
-    /// <summary>Gets or sets the numeric font weight from 100 through 900.</summary>
+    /// <summary>Gets or sets the CSS numeric font weight from 1 through 1000, independently of available font faces.</summary>
     public int Weight {
         get => _weight;
         set {
-            if (value < 100 || value > 900) throw new ArgumentOutOfRangeException(nameof(value), value, "Font weight must be from 100 through 900.");
+            if (value < 1 || value > 1000) throw new ArgumentOutOfRangeException(nameof(value), value, "Font weight must be from 1 through 1000.");
             _weight = value;
         }
     }

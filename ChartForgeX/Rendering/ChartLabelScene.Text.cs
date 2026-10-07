@@ -12,7 +12,7 @@ internal sealed partial class ChartLabelScene {
         FontSize = Math.Max(1, style.FontSize), LineHeight = 1,
         OpenTypeLanguageTag = style.OpenTypeLanguageTag,
         Font = new FontSpec {
-            Family = style.FontFamily ?? _font.Family, Weight = Math.Max(100, Math.Min(900, style.FontWeight)),
+            Family = style.FontFamily ?? _font.Family, Weight = TypographyFontResolver.FontSpecWeight(style.FontWeight),
             Italic = style.FontStyle != "normal", Variations = style.Variations ?? FontVariationSettings.Default,
             FilePath = _font.FilePath, CollectionIndex = _font.CollectionIndex, FaceName = _font.FaceName
         }

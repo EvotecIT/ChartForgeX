@@ -21,12 +21,12 @@ namespace ChartForgeX.Themes;
 /// writers replace in any escaped text, so no chart content can forge one. Every renderer resolves them before it
 /// returns markup (<see cref="Resolve"/>); without variables they become the same literal colours as before.
 /// </remarks>
-internal readonly struct SvgPaint {
+internal readonly partial struct SvgPaint {
     private const char Start = '\uFDD0';
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>P)(?<body>[0-7][0-9A-F]{8})|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -134,6 +134,13 @@ internal readonly struct SvgPaint {
                 return RoleDigit(text, ref i, false) && Hex(text, ref i, 8) && Close(text, i) ? i + 1 - index : 0;
             case 'I':
                 return RoleDigit(text, ref i, false) && Hex(text, ref i, 16) && Close(text, i) ? i + 1 - index : 0;
+            case 'C': {
+                if (!Hex(text, ref i, 16)) return 0;
+                var source = 0;
+                while (source <= 1024 && i + source < text.Length && IsBase64(text[i + source])) source++;
+                i += source;
+                return source > 0 && source <= 1024 && Close(text, i) ? i + 1 - index : 0;
+            }
             case 'M': {
                 if (!Hex(text, ref i, 8) || !RoleDigit(text, ref i, true) || !Hex(text, ref i, 8) || !RoleDigit(text, ref i, true) || !Hex(text, ref i, 8)) return 0;
                 var amount = 0;
@@ -199,6 +206,7 @@ internal readonly struct SvgPaint {
                 if (variables != null && variables.TryInk(fill, role, out var paint)) return paint;
                 return keepLiterals ? Literal(ink).Value! : ink.ToCss();
             }
+            case 'C': return ResolveContrastSource(body, variables, keepLiterals);
             case 'O': {
                 var result = Color(body, 0);
                 var separator = body.IndexOf(':', 8);

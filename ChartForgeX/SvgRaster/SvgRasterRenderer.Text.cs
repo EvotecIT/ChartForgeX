@@ -8,7 +8,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.SvgRaster;
 
 internal static partial class SvgRasterRenderer {
-    private const long MaximumTextIntermediatePixels = 8_000_000;
+    private const long MaximumTextIntermediatePixels = RasterTextStroke.MaximumIntermediatePixels;
 
     private static void RenderText(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
         var cursorX = HorizontalLength(element, "x", viewport) + HorizontalLength(element, "dx", viewport);
@@ -247,7 +247,7 @@ internal static partial class SvgRasterRenderer {
             if (strikethrough) RasterTextDecoration.Draw(glyphMask, padding, padding + width, strikeY, strikethroughStyle, ChartColor.White, underlineThickness);
         }
         if (style.StrokeBeforeFill && strokeColor.A > 0)
-            PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
+            RasterTextStroke.Paint(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
         if (style.Fill.IsReference && glyphMask != null) {
             var localToCanvas = matrix
                 .Multiply(SvgRasterMatrix.Translate(drawX - padding / renderScale, drawY - padding / renderScale))
@@ -285,7 +285,7 @@ internal static partial class SvgRasterRenderer {
             if (strikethrough) RasterTextDecoration.Draw(buffer, padding, padding + width, strikeY, strikethroughStyle, fillColor, underlineThickness);
         }
         if (!style.StrokeBeforeFill && strokeColor.A > 0) {
-            PaintDilatedTextStroke(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
+            RasterTextStroke.Paint(buffer.Pixels, glyphMask!.Pixels, localWidth, localHeight, strokeRadius, strokeColor);
         }
 
         var textMatrix = matrix
@@ -396,79 +396,6 @@ internal static partial class SvgRasterRenderer {
         return false;
     }
 
-    private static void PaintDilatedTextStroke(byte[] destination, byte[] glyphPixels, int width, int height, int radius, ChartColor color) {
-        var dilated = FilterTextAlpha(glyphPixels, width, height, radius, maximize: true);
-        var eroded = FilterTextAlpha(glyphPixels, width, height, radius, maximize: false);
-        for (var pixel = 0; pixel < dilated.Length; pixel++) {
-            var coverage = Math.Max(0, dilated[pixel] - eroded[pixel]);
-            if (coverage == 0) continue;
-            var index = pixel * 4;
-            BlendTextPixel(destination, index, color, (byte)Math.Round(color.A * coverage / 255.0));
-        }
-    }
-
-    private static byte[] FilterTextAlpha(byte[] glyphPixels, int width, int height, int radius, bool maximize) {
-        var pixelCount = checked(width * height);
-        var horizontal = new byte[pixelCount];
-        var filtered = new byte[pixelCount];
-        var deque = new int[Math.Max(width, height)];
-        for (var y = 0; y < height; y++) {
-            var head = 0;
-            var tail = 0;
-            for (var x = 0; x < width + radius; x++) {
-                if (x < width) {
-                    var alpha = glyphPixels[(y * width + x) * 4 + 3];
-                    while (tail > head && PreferTextAlpha(alpha, glyphPixels[(y * width + deque[tail - 1]) * 4 + 3], maximize)) tail--;
-                    deque[tail++] = x;
-                }
-                var outputX = x - radius;
-                if (outputX < 0) continue;
-                while (tail > head && deque[head] < outputX - radius) head++;
-                horizontal[y * width + outputX] = !maximize && (outputX < radius || outputX + radius >= width)
-                    ? (byte)0
-                    : glyphPixels[(y * width + deque[head]) * 4 + 3];
-            }
-        }
-
-        for (var x = 0; x < width; x++) {
-            var head = 0;
-            var tail = 0;
-            for (var y = 0; y < height + radius; y++) {
-                if (y < height) {
-                    var alpha = horizontal[y * width + x];
-                    while (tail > head && PreferTextAlpha(alpha, horizontal[deque[tail - 1] * width + x], maximize)) tail--;
-                    deque[tail++] = y;
-                }
-                var outputY = y - radius;
-                if (outputY < 0) continue;
-                while (tail > head && deque[head] < outputY - radius) head++;
-                filtered[outputY * width + x] = !maximize && (outputY < radius || outputY + radius >= height)
-                    ? (byte)0
-                    : horizontal[deque[head] * width + x];
-            }
-        }
-        return filtered;
-    }
-
-    private static bool PreferTextAlpha(byte candidate, byte existing, bool maximize) => maximize ? candidate >= existing : candidate <= existing;
-
-    private static void BlendTextPixel(byte[] destination, int index, ChartColor color, byte alpha) {
-        if (alpha == 0) return;
-        if (alpha == 255) {
-            destination[index] = color.R;
-            destination[index + 1] = color.G;
-            destination[index + 2] = color.B;
-            destination[index + 3] = 255;
-            return;
-        }
-        var sourceAlpha = alpha / 255.0;
-        var destinationAlpha = destination[index + 3] / 255.0;
-        var outputAlpha = sourceAlpha + destinationAlpha * (1 - sourceAlpha);
-        destination[index] = (byte)((color.R * sourceAlpha + destination[index] * destinationAlpha * (1 - sourceAlpha)) / outputAlpha);
-        destination[index + 1] = (byte)((color.G * sourceAlpha + destination[index + 1] * destinationAlpha * (1 - sourceAlpha)) / outputAlpha);
-        destination[index + 2] = (byte)((color.B * sourceAlpha + destination[index + 2] * destinationAlpha * (1 - sourceAlpha)) / outputAlpha);
-        destination[index + 3] = (byte)(outputAlpha * 255);
-    }
 
     private static string NormalizeTextWhitespace(string value, string whiteSpace, ref TextWhitespaceState state) {
         if (value.Length == 0) return string.Empty;

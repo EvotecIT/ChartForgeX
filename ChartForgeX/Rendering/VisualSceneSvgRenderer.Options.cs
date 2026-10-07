@@ -22,14 +22,18 @@ internal static partial class VisualSceneSvgRenderer {
     }
 
     private static string ExportIdentity(VisualScene scene, string identity, VisualSvgOptions? options) {
-        if (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext) return identity;
+        if (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
             writer.Write(identity); writer.Write((int)options.LinkTarget);
+            if (options.Responsive) writer.Write("responsive");
             foreach (var node in scene.Nodes) {
                 if (node is VisualSceneMark mark) Mark(mark);
-                else if (node is VisualSceneText text) writer.Write(ResolvePaint(text.Color, text.Paint, options));
+                else if (node is VisualSceneText text) {
+                    writer.Write(ResolvePaint(text.Color, text.Paint, options));
+                    writer.Write(ResolvePaint(text.Stroke, text.StrokePaint, options));
+                }
                 else if (node is VisualSceneGradient gradient) {
                     Mark(gradient.Shape);
                     foreach (var stop in gradient.Stops) writer.Write(ResolvePaint(stop.Color, stop.Paint, options));

@@ -126,7 +126,11 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"topology-motion\"", StringComparison.Ordinal), "Topology SVG motion should emit a script-free motion layer.");
         Assert(svg.Contains("<animate", StringComparison.Ordinal) && svg.Contains("attributeName=\"stroke-dashoffset\"", StringComparison.Ordinal), "Topology SVG motion should use native SVG animation elements.");
         Assert(svg.Contains("data-cfx-role=\"topology-motion-tour-path\"", StringComparison.Ordinal), "Topology SVG motion should build one reusable tour path across the animated route.");
-        Assert(svg.Contains("<animateMotion", StringComparison.Ordinal) && svg.Contains("href=\"#motion-scenario-motion-tour-route\"", StringComparison.Ordinal) && svg.Contains("xlink:href=\"#motion-scenario-motion-tour-route\"", StringComparison.Ordinal), "Topology SVG motion should render one marker that follows the generated tour path.");
+        var motionDocument = System.Xml.Linq.XDocument.Parse(svg);
+        var tour = motionDocument.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-tour-path");
+        var reference = motionDocument.Descendants().Single(element => element.Name.LocalName == "mpath");
+        Assert((string?)reference.Attribute("href") == "#" + (string?)tour.Attribute("id") &&
+            (string?)reference.Attribute(System.Xml.Linq.XName.Get("href", "http://www.w3.org/1999/xlink")) == "#" + (string?)tour.Attribute("id"), "Topology SVG motion should render one marker that follows the scoped generated tour path.");
         Assert(svg.IndexOf("data-cfx-role=\"topology-motion-route\"", StringComparison.Ordinal) < svg.IndexOf("data-cfx-role=\"topology-node\"", StringComparison.Ordinal), "Topology SVG route pulses should render under node surfaces.");
         Assert(svg.IndexOf("data-cfx-role=\"topology-motion-marker\"", StringComparison.Ordinal) > svg.IndexOf("data-cfx-role=\"topology-node\"", StringComparison.Ordinal), "Topology SVG moving markers should render above node surfaces to match PNG frame visibility.");
         var nonLoopSvg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }

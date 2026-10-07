@@ -33,29 +33,30 @@ public sealed class GraphiteThemeTests {
     [InlineData(true)]
     public void GraphiteTokensPreserveRolesThroughThemesAndSvgVariables(bool dark) {
         var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
+        var canonical = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var theme = tokens.ApplyTo(new ChartTheme()).Clone();
         Assert.True(theme.UseGraphiteLayout && theme.FlatMarks);
         Assert.Equal(tokens.ElevatedSurface, theme.CardBackground);
         Assert.Equal(tokens.MutedForeground, theme.Text2);
-        Assert.Equal(tokens.Muted, theme.MutedText);
-        Assert.Equal(tokens.Grid, theme.Grid);
-        Assert.Equal(tokens.Axis, theme.Axis);
-        Assert.Equal(tokens.QuietLine, theme.QuietLine);
-        Assert.Equal(8, theme.Palette.Length);
-        Assert.Equal(6, theme.SequentialRamp!.Length);
+        Assert.Equal(tokens.Muted ?? tokens.MutedForeground, theme.MutedText);
+        Assert.Equal(tokens.Grid ?? tokens.Border.WithOpacity(.55), theme.Grid);
+        Assert.Equal(tokens.Axis ?? tokens.MutedForeground.WithOpacity(.75), theme.Axis);
+        Assert.Equal(canonical.Palette, theme.Palette);
+        Assert.Equal(canonical.SequentialRamp, theme.SequentialRamp!);
         Assert.Equal(17, theme.TitleFontSize);
         Assert.Equal(13.5, theme.SubtitleFontSize);
         var copy = tokens.Clone();
         Assert.Equal(tokens.ToSvgColorVariables().Variables.Select(v => (v.Name, v.Role, v.Color)),
             copy.ToSvgColorVariables().Variables.Select(v => (v.Name, v.Role, v.Color)));
-        Assert.Contains(copy.ToSvgColorVariables().Variables, v => v.Name == "--cfx-guide-grid" && v.Role == SvgColorRole.Grid);
-        Assert.Contains(copy.ToSvgColorVariables().Variables, v => v.Name == "--cfx-status-quiet-line");
-        var state = new[] { theme.Positive, theme.Warning, theme.Negative, theme.Info, theme.Quiet, theme.QuietLine, theme.Neutral };
+        Assert.Contains(copy.ToSvgColorVariables().Variables, v => v.Name == "--cfx-surface-line" && v.Role == SvgColorRole.Surface && v.Color.Equals(canonical.Border));
+        Assert.Contains(copy.ToSvgColorVariables().Variables, v => v.Name == "--cfx-outcome-pass-fill" && v.Color.Equals(canonical.Status.Pass.Fill));
+        var state = new[] { theme.Positive, theme.Warning, theme.Negative };
         Assert.All(theme.Palette, colour => Assert.DoesNotContain(colour, state));
-        Assert.All(theme.Palette.Concat(theme.SequentialRamp).Concat(state), colour =>
+        var ramp = Assert.IsType<ChartColor[]>(theme.SequentialRamp);
+        Assert.All(theme.Palette.Concat(ramp).Concat(state), colour =>
             Assert.True(ChartColorMath.ContrastRatio(ChartColorMath.AccessibleTextOnBackground(colour), colour) >= 4.5));
         // Contrast against black is monotonic in linear luminance, and therefore in CIELAB L*.
-        var lightness = theme.SequentialRamp.Select(colour => ChartColorMath.ContrastRatio(ChartColor.Black, colour)).ToArray();
+        var lightness = ramp.Select(colour => ChartColorMath.ContrastRatio(ChartColor.Black, colour)).ToArray();
         for (var i = 1; i < lightness.Length; i++) Assert.True(dark ? lightness[i] > lightness[i - 1] : lightness[i] < lightness[i - 1]);
     }
 }

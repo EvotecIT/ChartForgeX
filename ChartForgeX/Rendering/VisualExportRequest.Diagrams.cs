@@ -23,7 +23,10 @@ internal sealed partial class VisualExportRequest {
         tokens.Status.Neutral = Pair(ChartColor.Parse(source.Unknown), tokens.Status.Neutral);
         tokens.Status.Maintenance = Pair(ChartColor.Parse(source.Disabled), tokens.Status.Maintenance);
         var theme = new VisualTheme(tokens, tokens, new VisualTypography(source.FontFamily));
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(chart.Viewport.Width, chart.Viewport.Height), chart.Viewport.Padding),
+        // A convenience export can grow a tiny authored canvas after canonical layout. Its initial
+        // padding must still leave a positive plot; explicit Prepare(context) retains strict validation.
+        var padding = Math.Min(chart.Viewport.Padding, Math.Max(0, Math.Min(chart.Viewport.Width, chart.Viewport.Height) / 2 - 1));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(chart.Viewport.Width, chart.Viewport.Height), padding),
             theme, frame: new VisualFrame(showLegend: options.IncludeLegend, transparentBackground: tokens.Background.A == 0),
             font: new FontSpec { Family = source.FontFamily });
         return new VisualExportRequest(context, new VisualRenderOptions(options.PngOutputScale, options.PngSupersamplingScale));

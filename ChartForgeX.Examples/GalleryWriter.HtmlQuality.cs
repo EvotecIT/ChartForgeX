@@ -18,6 +18,6 @@ public static partial class GalleryWriter {
             html.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal) && html.Contains("text-rendering:geometricPrecision", StringComparison.Ordinal),
             hasExpectedOverflow,
             html.Contains("@media print", StringComparison.Ordinal) && html.Contains("background:transparent", StringComparison.Ordinal),
-            html.Contains("data-cfx-look=\"graphite\"", StringComparison.Ordinal) && !html.Contains("linear-gradient(", StringComparison.Ordinal) && !html.Contains("radial-gradient(", StringComparison.Ordinal));
+            html.Contains("data-cfx-role=\"frame-card\"", StringComparison.Ordinal) && !html.Contains("linear-gradient(", StringComparison.Ordinal) && !html.Contains("radial-gradient(", StringComparison.Ordinal));
     }
 }

@@ -5,25 +5,32 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Chooses the colour of text drawn on a filled mark (heatmap and hexbin values, categorical cell text, Gantt lane item
-/// labels), once for SVG and PNG, from two theme colours that SVG colour variables write by role: the surface behind the
-/// marks (<see cref="ChartStateMark.Backdrop(Chart)"/>, <see cref="SvgColorRole.Surface"/>) on a strong fill, and the text colour
-/// (<see cref="SvgColorRole.Text"/>) on a weak one. Whether a fill is strong comes from where the cell sits on its scale,
-/// or how fully a state mark is filled, not from its colour in one theme. Token sets whose strong marks stand out from the
-/// surface in light and dark themes therefore pick the same role in both, and one SVG with colour variables serves both.
+/// Chooses mark text once for SVG and PNG. Prepared numeric and fully filled state marks use opaque contrast ink;
+/// quiet state marks use the canonical foreground when readable, with contrast ink as a fallback. Portable model-only
+/// helpers also retain the surface/text policy for their existing consumers.
 /// </summary>
 /// <remarks>
-/// A colour that does not reach <see cref="MinimumContrast"/> against the fill gives way to the other colour when that
+/// In the portable surface/text policy, a colour that does not reach <see cref="MinimumContrast"/> against the fill gives way to the other colour when that
 /// one contrasts more, so pale caller colours and fills close to the surface stay readable. That check runs in each theme,
 /// so one SVG serves both themes only when every strong fill reaches the minimum against the surface behind the marks in
 /// both: true for the Graphite tokens on the card (<see cref="ChartMarkBackdrop.Card"/>), not for a light page surface
 /// under the medium severity fill.
 /// </remarks>
 internal static class ChartMarkText {
+    /// <summary>Chooses opaque text against an actual prepared fill, compositing translucent fills on their resolved backdrop.</summary>
+    internal static ChartColorBlend OnPreparedMark(ChartColor fill, SvgColorRole fillRole, ChartColor backdrop) {
+        if (fill.A == 255) return ChartColorBlend.Contrast(fill, fillRole);
+        // An alpha fill is already a resolved colour: preserve its actual straight-alpha composition.
+        // Do not infer a token from a matching opaque RGB value.
+        var composed = new ChartColorBlend(backdrop, null, ChartColor.FromRgb(fill.R, fill.G, fill.B), null, fill.A / 255d);
+        return ChartColorBlend.Contrast(composed);
+    }
+
     /// <summary>Resolves prepared numeric matrix ink from canonical frame surfaces and observed scale strength.</summary>
     internal static ChartColorBlend OnHeatmapCell(Chart chart, VisualThemeColors colors, VisualFrame frame,
         ChartColor fill, ChartColor? high, double value, double min, double max,
-        SvgColorRole fillRole = SvgColorRole.Ramp) => ChartColorBlend.Contrast(fill, fillRole);
+        SvgColorRole fillRole = SvgColorRole.Ramp, ChartColorBlend? source = null) => source.HasValue
+            ? ChartColorBlend.Contrast(source.Value) : ChartColorBlend.Contrast(fill, fillRole);
 
     /// <summary>Resolves prepared state-mark ink against the same composited surface as its fill and pattern.</summary>
     internal static ChartColorBlend OnStateMark(Chart chart, VisualThemeColors colors, VisualFrame frame, ChartStateMark mark) =>

@@ -21,6 +21,11 @@ internal static partial class VisualCartesianCompiler {
             labels[value] = text;
         }
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
+        internal void IncludeValueTicks(ChartAxis axis, double minimum, double maximum) {
+            if (axis.Labels.Count == 0) return;
+            _ticks[axis] = ChartTicks.GenerateInside(axis, minimum, maximum).Concat(axis.Labels.Select(label => label.Value))
+                .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray();
+        }
         internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) => _ticks.TryGetValue(axis, out var ticks)
             ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : AxisTicks(axis, minimum, maximum);
         internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
@@ -76,20 +81,20 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRange range,
         ChartMapper map, ChartRange? secondaryRange, ChartMapper? secondaryMap, VisualThemeColors colors, ChartRect viewport, AxisLabelCache labels) {
         var xTicks = labels.Ticks(chart.Options.XAxis, range.MinX, range.MaxX);
-        var yTicks = AxisTicks(chart.Options.YAxis, range.MinY, range.MaxY);
+        var yTicks = labels.Ticks(chart.Options.YAxis, range.MinY, range.MaxY);
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle();
             var gridWidth = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
             foreach (var tick in yTicks) {
                 var y = map.Y(tick);
-                if (grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, colors.Border.WithOpacity(grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash,
-                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(colors.Border.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
+                if (grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, colors.Grid.WithOpacity(grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash,
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
             }
             foreach (var tick in xTicks) {
                 var x = map.X(tick);
-                if (grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, colors.Border.WithOpacity(grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash,
-                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Border, SvgColorRole.Grid).WithOpacity(colors.Border.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
+                if (grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, colors.Grid.WithOpacity(grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash,
+                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
             }
         }
         if (!chart.Options.ShowAxes) return;
@@ -98,7 +103,7 @@ internal static partial class VisualCartesianCompiler {
         });
         var spacing = context.Theme.Spacing;
         if (chart.Options.XAxis.Visible) {
-            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var tickHeight = TickMetrics(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, null, labels).Height;
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
@@ -111,7 +116,7 @@ internal static partial class VisualCartesianCompiler {
                 colors, TextAlignment.Center, "axis-x-title");
         }
         if (chart.Options.YAxis.Visible) {
-            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var bounds = new ChartRect(viewport.Left, plot.Top, Math.Max(0, plot.Left - viewport.Left - spacing), plot.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, style, spacing, chart.Options.ValueFormatter, labels);
             if (!string.IsNullOrEmpty(chart.YAxisTitle)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
@@ -119,8 +124,8 @@ internal static partial class VisualCartesianCompiler {
                 colors, TextAlignment.Left, "axis-y-title");
         }
         if (secondaryMap != null && secondaryRange != null && chart.Options.SecondaryYAxis.Visible) {
-            var ticks = AxisTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            if (chart.Options.SecondaryYAxis.ShowLine) builder.Line(plot.Right, plot.Top, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-secondary-y", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+            var ticks = labels.Ticks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+            if (chart.Options.SecondaryYAxis.ShowLine) builder.Line(plot.Right, plot.Top, plot.Right, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-secondary-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var bounds = new ChartRect(plot.Right + spacing, plot.Top, Math.Max(0, viewport.Right - plot.Right - spacing), plot.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, style, spacing, chart.Options.ValueFormatter, labels);
             if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle)) {
@@ -154,7 +159,8 @@ internal static partial class VisualCartesianCompiler {
             if (horizontal && options.TryGetXAxisLabelHighlight(tick, out var highlight)) { tickStyle = style.Clone(); tickStyle.Color = highlight; }
             requests.Add(new LabelPlacementRequest(text, anchor, tickStyle, horizontal
                 ? new[] { new LabelCandidate(0, 0, .5, 0), new LabelCandidate(0, 0, 0, 0), new LabelCandidate(0, 0, 1, 0) }
-                : new[] { new LabelCandidate(0, 0, secondary ? 0 : 1, .5), new LabelCandidate(0, 0, secondary ? 0 : 1, 0), new LabelCandidate(0, 0, secondary ? 0 : 1, 1) }));
+                : new[] { new LabelCandidate(0, 0, secondary ? 0 : 1, .5), new LabelCandidate(0, 0, secondary ? 0 : 1, 0), new LabelCandidate(0, 0, secondary ? 0 : 1, 1) },
+                priority: tick.Equals(ticks[0]) || tick.Equals(ticks[ticks.Count - 1]) ? 1 : 0));
         }
         // End ticks use the same bounds policy as intermediate ticks: labels cannot escape the measured frame.
         foreach (var request in requests) request.MeasuredSize = RotatedMetrics(builder.MeasureText(request.Text, request.Style), axis.LabelAngle);

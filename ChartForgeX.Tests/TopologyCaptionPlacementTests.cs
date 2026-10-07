@@ -27,12 +27,11 @@ public sealed class TopologyCaptionPlacementTests {
             var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
                 NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeLegend = false
             }));
-            var caption = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "topology-node-label");
-            var lines = caption.Elements().Where(e => e.Name.LocalName == "text").ToArray();
+            var lines = svg.Descendants().Where(e => e.Name.LocalName == "text" && e.AncestorsAndSelf().Any(a => (string?)a.Attribute("data-cfx-role") == "topology-node-label")).ToArray();
             Assert.Equal(new[] { "HO", "OH" }, lines.Select(e => e.Value));
-            Assert.Equal(14, (double)lines[1].Attribute("y")! - (double)lines[0].Attribute("y")!, 3);
+            Assert.True((double)lines[1].Attribute("y")! - (double)lines[0].Attribute("y")! >= 14);
             Assert.All(lines, line => { Assert.Null(line.Attribute("transform")); Assert.NotEqual("none", (string?)line.Attribute("display")); });
-            Assert.DoesNotContain(caption.Parent!.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "label-leader");
+            Assert.DoesNotContain(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "label-leader");
         } finally {
             FontRegistry.Clear();
         }

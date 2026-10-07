@@ -58,7 +58,8 @@ internal sealed partial class VisualTopologyCompiler {
                     Text(group.Label, Bounds(group.X + 12 + reserve, group.Y + 9, Math.Max(0, group.Width - 24 - reserve), 24), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label");
                     if (!string.IsNullOrWhiteSpace(group.Subtitle)) Text(group.Subtitle!, Bounds(group.X + 12 + reserve, group.Y + 31, Math.Max(0, group.Width - 24 - reserve), 18), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle");
                     if (_options.IncludeGroupStatusDots) {
-                        using (PinnedState()) _builder.Ellipse(bounds.Right - 12 * _scale, bounds.Y + 16 * _scale, 4 * _scale, 4 * _scale, accent, role: "topology-group-status", paint: Paint(accent, accentRole));
+                        var status = Highlight(Status(group.Status), active);
+                        using (PinnedState()) _builder.Ellipse(bounds.Right - 12 * _scale, bounds.Y + 16 * _scale, 4 * _scale, 4 * _scale, status, role: "topology-group-status", paint: Paint(status, SvgColorRole.Status));
                     }
                 }
             }
@@ -80,7 +81,9 @@ internal sealed partial class VisualTopologyCompiler {
             }
             radius = Math.Min(_options.GeographicRegionHullMaxRadius, Math.Max(_options.GeographicRegionHullMinRadius, radius)) * _scale;
             var accent = Color(group.Color, Status(group.Status));
-            _builder.Ellipse(p.X, p.Y, radius, radius, accent.WithOpacity(.05), accent.WithOpacity(.3), _context.Theme.AxisStrokeWidth * _scale, "topology-geographic-hull", paint: Paint(accent.WithOpacity(.05), AccentRole(group.Color), accent.WithOpacity(.3), AccentRole(group.Color)));
+            using (_builder.PushGroup(group.Id + "-hull", "topology-geographic-hull", new Dictionary<string, string> {
+                ["data-group-id"] = group.Id, ["data-hull-padding"] = Number(_options.GeographicRegionHullPadding * _scale)
+            })) _builder.Ellipse(p.X, p.Y, radius, radius, accent.WithOpacity(.05), accent.WithOpacity(.3), _context.Theme.AxisStrokeWidth * _scale, paint: Paint(accent.WithOpacity(.05), AccentRole(group.Color), accent.WithOpacity(.3), AccentRole(group.Color)));
         }
         var calloutChart = TopologyLayoutEngine.Clone(_chart); calloutChart.Legend = null;
         foreach (var callout in TopologyGeographicCallouts.Build(calloutChart, _options, Theme())) {

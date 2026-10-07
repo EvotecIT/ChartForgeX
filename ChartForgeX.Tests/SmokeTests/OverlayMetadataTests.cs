@@ -1,5 +1,8 @@
 using ChartForgeX;
 using ChartForgeX.Core;
+using System.Linq;
+using System.Xml.Linq;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -11,10 +14,10 @@ internal static partial class SmokeTests {
             .AddHorizontalLine(100, "target")
             .AddVerticalBand(1.5, 2.5, "window", opacity: 0.1)
             .ToSvg();
-        Assert(annotations.Contains("data-cfx-role=\"annotation-line\" data-cfx-kind=\"horizontal-line\" data-cfx-value=\"100\" data-cfx-label=\"target\"", System.StringComparison.Ordinal), "Annotation lines should expose kind, value, and label metadata.");
-        Assert(annotations.Contains("data-cfx-role=\"annotation-band\" data-cfx-kind=\"vertical-band\" data-cfx-value=\"1.5\" data-cfx-end=\"2.5\" data-cfx-label=\"window\"", System.StringComparison.Ordinal), "Annotation bands should expose kind, start, end, and label metadata.");
-        Assert(annotations.Contains("data-cfx-role=\"annotation-label\" data-cfx-label=\"target\"", System.StringComparison.Ordinal), "Annotation label pills should expose label metadata.");
-        Assert(annotations.Contains("data-cfx-role=\"annotation-label-text\" data-cfx-label=\"window\"", System.StringComparison.Ordinal), "Annotation label text should expose label metadata.");
+        var overlays = XDocument.Parse(annotations).Descendants().Where(element => element.Name.LocalName == "g" && element.Attribute("data-cfx-kind") != null).ToArray();
+        CartesianMetadata(overlays.Single(element => (string?)element.Attribute("data-cfx-kind") == "HorizontalLine"), ("value", "100"), ("label", "target"));
+        CartesianMetadata(overlays.Single(element => (string?)element.Attribute("data-cfx-kind") == "VerticalBand"), ("value", "1.5"), ("end", "2.5"), ("label", "window"));
+        Assert(overlays.All(element => element.Descendants().Any(child => (string?)child.Attribute("data-cfx-role") == "annotation-label")), "Visible annotation labels should remain associated with their source annotation group.");
 
         var secondary = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
@@ -23,14 +26,16 @@ internal static partial class SmokeTests {
             .AddLine("Rate", Points(88, 93, 91));
         secondary.Series[0].UseSecondaryYAxis();
         var secondarySvg = secondary.ToSvg();
-        Assert(secondarySvg.Contains("data-cfx-role=\"secondary-y-axis-tick\" data-cfx-value=\"100\"", System.StringComparison.Ordinal), "Secondary axis ticks should expose raw numeric values.");
-        Assert(secondarySvg.Contains("data-cfx-role=\"secondary-y-axis-title\" data-cfx-label=\"Rate\"", System.StringComparison.Ordinal), "Secondary axis titles should expose the full configured label.");
+        var secondaryPrepared = secondary.Prepare(VisualExportRequest.ForChart(secondary).Context);
+        Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label == "100% (100)"), "Secondary axis ticks should retain displayed text and raw values.");
+        Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-title" && region.Label == "Rate"), "Secondary axis titles should retain the full configured label.");
 
         var legend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .AddBar("Logged", Points(12, 18))
             .AddLine("Trend", Points(10, 20))
             .ToSvg();
-        Assert(legend.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Logged\" data-cfx-series-key=\"Logged\" data-cfx-kind=\"Bar\" data-cfx-label=\"Logged\"", System.StringComparison.Ordinal), "Legend items should expose series, semantic identity, kind, and label metadata.");
-        Assert(legend.Contains("data-cfx-role=\"legend-label\" data-cfx-series=\"1\" data-cfx-series-name=\"Trend\" data-cfx-series-key=\"Trend\"", System.StringComparison.Ordinal), "Legend labels should expose the associated series index and semantic identity.");
+        var entries = XDocument.Parse(legend).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "legend-entry").ToArray();
+        Assert(entries.Length == 2 && entries.Any(entry => (string?)entry.Attribute("data-cfx-series-key") == "Logged") && entries.Any(entry => (string?)entry.Attribute("data-cfx-series-key") == "Trend"), "Legend entries should retain their source series identities.");
+        Assert(entries.All(entry => entry.Descendants().Any(label => (string?)label.Attribute("data-cfx-role") == "legend-label")), "Each legend entry should contain its own visible label.");
     }
 }

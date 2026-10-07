@@ -30,7 +30,7 @@ public sealed class HtmlChartRenderer {
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
-        var svg = prefix == null ? prepared.ToSvg() : prepared.ToSvg(prefix);
+        var svg = prepared.ToSvg(new VisualSvgOptions(prefix, chart.Options.SvgColorVariables, responsive: true));
         var style = (constrainMaxWidth ? "width:100%;max-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;" : string.Empty) + "box-sizing:border-box;overflow:visible";
         return new HtmlMarkupWriter()
             .StartElement("div")

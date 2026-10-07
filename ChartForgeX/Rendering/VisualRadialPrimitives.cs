@@ -43,7 +43,8 @@ internal static class VisualRadialPrimitives {
         using (builder.PushGroup(id + "-source", role + "-source", new Dictionary<string, string> { ["aria-label"] = full, ["data-cfx-label"] = full })) {
             var fitted = ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => builder.MeasureText(text, style).Width);
             var metrics = builder.MeasureText(fitted, style);
-            if (fitted.Length == 0 || metrics.Height > area.Height) {
+            // Centering and intersecting a measured row may subtract a floating-point ULP.
+            if (fitted.Length == 0 || metrics.Height > area.Height + .000001) {
                 builder.AddDiagnostic(new VisualDiagnostic("radial.text-overflow", "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."));
                 return;
             }

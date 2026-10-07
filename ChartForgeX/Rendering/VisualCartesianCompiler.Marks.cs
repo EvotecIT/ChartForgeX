@@ -22,33 +22,35 @@ internal static partial class VisualCartesianCompiler {
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
         if (series.Kind != ChartSeriesKind.Scatter && points.Count > 0) {
-            if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
-                // Each disconnected segment closes independently; smoothing uses the existing path algorithm.
-                var offset = 0;
-                foreach (var segment in ChartPointSegments.Split(points)) {
-                    var baseline = lower.GetRange(offset, segment.Count);
-                    var upperPath = ChartPathBuilder.FromPoints(segment, series.Kind, series.Smooth).Flatten(12);
-                    var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Kind, series.Smooth).Flatten(12);
-                    var commands = new List<ChartPathCommand>();
-                    if (upperPath.Count > 0) {
-                        commands.Add(ChartPathCommand.MoveTo(upperPath[0].X, upperPath[0].Y));
-                        for (var point = 1; point < upperPath.Count; point++) commands.Add(ChartPathCommand.LineTo(upperPath[point].X, upperPath[point].Y));
-                        for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
-                        var area = new ChartPath(commands);
-                        var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
-                        builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
-                        DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
+            using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null) {
+                if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
+                    // Each disconnected segment closes independently; smoothing uses the existing path algorithm.
+                    var offset = 0;
+                    foreach (var segment in ChartPointSegments.Split(points)) {
+                        var baseline = lower.GetRange(offset, segment.Count);
+                        var upperPath = ChartPathBuilder.FromPoints(segment, series.Kind, series.Smooth).Flatten(12);
+                        var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Kind, series.Smooth).Flatten(12);
+                        var commands = new List<ChartPathCommand>();
+                        if (upperPath.Count > 0) {
+                            commands.Add(ChartPathCommand.MoveTo(upperPath[0].X, upperPath[0].Y));
+                            for (var point = 1; point < upperPath.Count; point++) commands.Add(ChartPathCommand.LineTo(upperPath[point].X, upperPath[point].Y));
+                            for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
+                            var area = new ChartPath(commands);
+                            var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
+                            builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
+                            DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
+                        }
+                        offset += segment.Count;
                     }
-                    offset += segment.Count;
                 }
-            }
-            var linePath = ChartPathBuilder.FromPoints(points, series.Kind, series.Smooth);
-            foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
-                if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
-                    paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
-            if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)) {
-                var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
-                obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
+                var linePath = ChartPathBuilder.FromPoints(points, series.Kind, series.Smooth);
+                foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
+                    if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
+                        paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
+                if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)) {
+                    var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
+                    obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
+                }
             }
         }
         var radius = series.MarkerRadius ?? context.Theme.MarkerRadius;
@@ -56,7 +58,9 @@ internal static partial class VisualCartesianCompiler {
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
             var bounds = new ChartRect(point.X - radius, point.Y - radius, radius * 2, radius * 2);
-            var visible = radius > 0 && (series.Kind == ChartSeriesKind.Scatter || ShowMarker(chart, series, pointIndex));
+            var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
+            var visible = radius > 0 && (!chart.Options.ClipMarksToPlot || inside)
+                && (series.Kind == ChartSeriesKind.Scatter || ShowMarker(chart, series, pointIndex));
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
                 if (visible) {
@@ -175,21 +179,31 @@ internal static partial class VisualCartesianCompiler {
         if (placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar && chart.Options.BarMode == ChartBarMode.Stacked)
             placement = ChartDataLabelPlacement.Inside;
         var candidates = new List<LabelCandidate>();
+        var leftOffset = mark.Left - anchor.X - spacing;
+        var rightOffset = mark.Right - anchor.X + spacing;
         if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) {
             anchor = new ChartPoint(mark.X + mark.Width / 2, mark.Y + mark.Height / 2);
             candidates.Add(new LabelCandidate(0, 0, .5, .5));
-        } else if (placement == ChartDataLabelPlacement.Left) candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
-        else if (placement == ChartDataLabelPlacement.Right) candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
-        else if (placement == ChartDataLabelPlacement.Below) candidates.Add(new LabelCandidate(0, spacing, .5, 0));
-        else if (placement == ChartDataLabelPlacement.Above) candidates.Add(new LabelCandidate(0, -spacing, .5, 1));
+        } else if (placement == ChartDataLabelPlacement.Left) candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+        else if (placement == ChartDataLabelPlacement.Right) candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+        else if (placement == ChartDataLabelPlacement.Below || placement == ChartDataLabelPlacement.Above) {
+            var above = placement == ChartDataLabelPlacement.Above;
+            foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -spacing : spacing, alignment, above ? 1 : 0));
+        }
         else {
             candidates.Add(new LabelCandidate(0, value >= 0 ? -spacing : spacing, .5, value >= 0 ? 1 : 0));
-            candidates.Add(new LabelCandidate(spacing, 0, 0, .5));
-            candidates.Add(new LabelCandidate(-spacing, 0, 1, .5));
+            candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+            candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
         }
+        var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center;
+        var autoInside = placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar;
+        var insideCandidate = candidates.Count;
+        if (autoInside) candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
         var style = resolvedLabel.Style;
+        var insideStyle = style;
         Themes.SvgPaint? paint = null;
-        if ((placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center)
+        Themes.SvgPaint? insidePaint = null;
+        if ((inside || autoInside)
             && !chart.Options.DataLabelStyle.Color.HasValue && !series.DataLabelStyle.Color.HasValue
             && !(pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex]?.Color != null)) {
             var colors = context.Theme.Resolve(context.ThemeMode);
@@ -199,14 +213,16 @@ internal static partial class VisualCartesianCompiler {
                 if (barStyle.Kind == ChartBarStyle.SegmentedCapsule) fill = ChartColorMath.WithOpacity(fill, barStyle.BodyOpacity);
             }
             var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
-            var composed = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(fill.R, fill.G, fill.B), fill.A / 255d);
-            style = style.Clone(); style.Color = ChartColorMath.AccessibleTextOnBackground(composed);
-            paint = fill.A == 255 ? Themes.SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(series, pointIndex)) : Themes.SvgPaint.Literal(style.Color);
+            var ink = ChartMarkText.OnPreparedMark(fill, VisualChartPaint.SeriesRole(series, pointIndex), backdrop);
+            insideStyle = style.Clone(); insideStyle.Color = ink.Color;
+            insidePaint = ink.Paint;
         }
+        if (inside) { style = insideStyle; paint = insidePaint; }
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
             AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint
         };
-        if (placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center) request.Bounds = mark;
+        if (inside) request.Bounds = mark;
+        if (autoInside) ((CartesianLabels)labels).ContainedInk.Add(request, (insideCandidate, mark, insideStyle, insidePaint));
         labels.Add(request);
     }
 
@@ -218,10 +234,13 @@ internal static partial class VisualCartesianCompiler {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.data-label-overflow", "Data labels were shortened or omitted to avoid marks and other labels within the available plot."));
         foreach (var label in placed) {
             if (label.IsDropped) continue;
-            var displayedStyle = DisplayedStyle(label.Request.Style);
+            var ink = ((CartesianLabels)labels).ContainedInk;
+            var contained = ink.TryGetValue(label.Request, out var insideInk) && label.CandidateIndex == insideInk.Candidate
+                && LabelPlacementService.Contains(insideInk.Bounds, label.Bounds);
+            var displayedStyle = DisplayedStyle(contained ? insideInk.Style : label.Request.Style);
             builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
                 role: label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true ? "stack-total-label" : "data-label",
-                id: label.Request.AssociatedMarkId + "-label", paint: label.Request.Paint ?? VisualChartPaint.Text(displayedStyle));
+                id: label.Request.AssociatedMarkId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle));
         }
     }
 

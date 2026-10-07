@@ -74,12 +74,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-node-icon-artwork=\"image\"", StringComparison.Ordinal), "Relationship overview topology should expose arbitrary image artwork metadata.");
         Assert(svg.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Relationship overview topology should expose node-supplied artwork source metadata.");
         Assert(svg.Contains("data-node-artwork-source=\"icon\"", StringComparison.Ordinal), "Relationship overview topology should expose catalog-supplied artwork source metadata.");
-        Assert(svg.Contains("data-cfx-role=\"topology-icon-artwork\"", StringComparison.Ordinal), "Relationship overview topology should embed arbitrary icon artwork in SVG output.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-artwork\"", StringComparison.Ordinal), "Relationship overview topology should embed arbitrary icon artwork in SVG output.");
         Assert(svg.Contains("<rect x=\"8\" y=\"10\" width=\"28\"", StringComparison.Ordinal), "Relationship overview topology should render caller-supplied endpoint artwork.");
         Assert(svg.Contains("data-node-id=\"backdrop\"", StringComparison.Ordinal) && svg.Contains("data-node-display-mode=\"Artwork\"", StringComparison.Ordinal), "Relationship overview topology should support full-bounds artwork nodes.");
-        Assert(svg.Contains("width=\"260\" height=\"140\" viewBox=\"0 0 244 124\"", StringComparison.Ordinal), "Artwork display nodes should scale trusted SVG artwork to the full node bounds.");
+        Assert(SvgHasAttributes(svg, "width=\"260\" height=\"140\" viewBox=\"0 0 244 124\""), "Artwork display nodes should scale trusted SVG artwork to the full node bounds.");
         Assert(svg.Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "Artwork display nodes should preserve caller-supplied preserveAspectRatio values.");
-        Assert(svg.Contains("href=\"data:image/png;base64,", StringComparison.Ordinal) && svg.Contains("width=\"32\" height=\"32\"", StringComparison.Ordinal), "Artwork display nodes should embed host-managed image href artwork.");
+        Assert(svg.Contains("href=\"data:image/png;base64,", StringComparison.Ordinal) && SvgHasAttributes(svg, "width=\"32\" height=\"32\""), "Artwork display nodes should embed host-managed image href artwork.");
         var overrideNodeTag = TopologyNodeStartTag(svg, "arbitrary-icon-topology", "override");
         Assert(overrideNodeTag.Contains("data-node-icon-id=\"access-sample:destination\"", StringComparison.Ordinal) && overrideNodeTag.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Node-supplied artwork should override catalog artwork while preserving icon metadata.");
         var clearedNodeTag = TopologyNodeStartTag(svg, "arbitrary-icon-topology", "cleared");
@@ -307,7 +307,7 @@ internal static partial class SmokeTests {
         var autoSvg = autoChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(autoSvg.Contains("data-layout-mode=\"Layered\"", StringComparison.Ordinal), "Auto artwork nodes should participate in deterministic layout modes.");
         Assert(autoSvg.Contains("data-node-id=\"auto-art\"", StringComparison.Ordinal) && autoSvg.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Auto artwork nodes should preserve node-supplied artwork metadata after layout.");
-        Assert(autoSvg.Contains("width=\"112\" height=\"72\" viewBox=\"0 0 244 124\"", StringComparison.Ordinal), "Auto artwork nodes should render full-bounds SVG artwork after layout.");
+        Assert(SvgHasAttributes(autoSvg, "width=\"112\" height=\"72\" viewBox=\"0 0 244 124\""), "Auto artwork nodes should render full-bounds SVG artwork after layout.");
 
         var inferredBackdropChart = TopologyChart.Create()
             .WithId("inferred-artwork-route")

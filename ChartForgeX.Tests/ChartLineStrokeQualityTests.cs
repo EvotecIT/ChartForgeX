@@ -3,6 +3,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Topology;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -61,8 +62,9 @@ public sealed class ChartLineStrokeQualityTests {
         var magenta = ChartColor.FromRgb(200, 0, 200);
         var withLine = ReferenceLineChart(magenta);
         var withoutLine = ReferenceLineChart(Hidden(magenta));
-        var png = DashRuns(Coverage(withLine.ToRgbaImage(), withoutLine.ToRgbaImage(), magenta), 1.6);
-        var svg = DashRuns(Coverage(SvgRasterizer.ToImage(withLine.ToSvg()), SvgRasterizer.ToImage(withoutLine.ToSvg()), magenta), 1.6);
+        var width = VisualExportRequest.ForChart(withLine).Context.Theme.AxisStrokeWidth;
+        var png = DashRuns(Coverage(withLine.ToRgbaImage(), withoutLine.ToRgbaImage(), magenta), width);
+        var svg = DashRuns(Coverage(SvgRasterizer.ToImage(withLine.ToSvg()), SvgRasterizer.ToImage(withoutLine.ToSvg()), magenta), width);
         // stroke-dasharray="6 5" with butt caps: 6 px dashes and 5 px gaps.
         Assert.True(png.Dashes.Count > 20 && svg.Dashes.Count > 20);
         Assert.InRange(png.Dashes.Average(), 5.6, 6.4);
@@ -73,13 +75,13 @@ public sealed class ChartLineStrokeQualityTests {
 
     [Fact]
     public void AxisLineKeepsItsStrokeWidth() {
-        var png = Coverage(AxisChart(true).ToRgbaImage(), AxisChart(false).ToRgbaImage());
-        var svg = Coverage(SvgRasterizer.ToImage(AxisChart(true).ToSvg()), SvgRasterizer.ToImage(AxisChart(false).ToSvg()));
+        var png = Coverage(AxisChart(true).ToRgbaImage(), AxisChart(false).ToRgbaImage(), Ink);
+        var svg = Coverage(SvgRasterizer.ToImage(AxisChart(true).ToSvg()), SvgRasterizer.ToImage(AxisChart(false).ToSvg()), Ink);
         var pngWidths = ColumnInk(png).Where(value => value > 0.5).ToList();
         var svgWidths = ColumnInk(svg).Where(value => value > 0.5).ToList();
         Assert.True(pngWidths.Count > 300 && svgWidths.Count > 300);
-        // ChartVisualPrimitives.AxisStrokeWidth is 1.2; the axis colour is opaque.
-        Assert.InRange(Median(pngWidths), 1.1, 1.3);
+        var width = VisualExportRequest.ForChart(AxisChart(true)).Context.Theme.AxisStrokeWidth;
+        Assert.InRange(Median(pngWidths), width - .1, width + .1);
         Assert.InRange(Math.Abs(Median(pngWidths) - Median(svgWidths)), 0, 0.1);
     }
 
@@ -159,6 +161,7 @@ public sealed class ChartLineStrokeQualityTests {
             .AddLine("Series", new[] { new ChartPoint(0, 10), new ChartPoint(10, 12) }, ChartColor.FromRgba(0, 0, 0, 0));
         chart.Options.XAxis.ShowLine = showLine;
         chart.Options.YAxis.ShowLine = false;
+        chart.Options.Theme.Axis = Ink;
         return chart;
     }
 

@@ -16,6 +16,18 @@ internal static partial class SmokeTests {
     private static double FamilyNumber(VisualSceneGroup group, string key) => double.Parse(group.Metadata[key], CultureInfo.InvariantCulture);
     private static string FamilyContent(VisualSceneText label) => string.Join("\n", label.Text.Lines.Select(line => line.Text));
 
+    private static void AssertFamilyTextFitsReservedRegion(PreparedVisual prepared, string role, string full) {
+        var labels = FamilyLabels(prepared, role);
+        Verify.NotEmpty(labels);
+        Verify.Contains(prepared.Regions, region => region.Role == role && region.Label!.Contains(full));
+        foreach (var label in labels) {
+            var region = Verify.Single(prepared.Regions, candidate => candidate.Id == label.Id && candidate.Role == role);
+            Verify.True(label.Text.Metrics.Width <= region.Bounds.Width + .01);
+            Verify.True(label.Text.Metrics.Height <= region.Bounds.Height + .01);
+        }
+        Verify.NotEmpty(prepared.ToPng());
+    }
+
     private static void GaugeSeriesRenderValueArcs() {
         var chart = Chart.Create().WithSize(640, 420).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddGauge("Security score", 87);
         var prepared = PreparedFamily(chart);
@@ -152,7 +164,12 @@ internal static partial class SmokeTests {
         var prepared = PreparedFamily(chart);
         var tiles = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "treemap-tile-mark").ToArray();
         Verify.Equal(4, tiles.Length);
-        Verify.Equal(50d / 8, tiles[0].Bounds.Width * tiles[0].Bounds.Height / (tiles[3].Bounds.Width * tiles[3].Bounds.Height), 6);
+        var areas = tiles.Select(tile => tile.Bounds.Width * tile.Bounds.Height).ToArray();
+        // Visible tiles include a small fixed gutter; it removes proportionally more area from small tiles.
+        Verify.InRange(areas[0] / areas[3], 50d / 8 * .95, 50d / 8 * 1.05);
+        Verify.True(areas.Zip(areas.Skip(1), (first, second) => first > second).All(larger => larger));
+        for (var index = 0; index < tiles.Length; index++)
+            for (var other = index + 1; other < tiles.Length; other++) Verify.False(MapOverlap(tiles[index].Bounds, tiles[other].Bounds));
         Verify.Equal(new[] { 50d, 28, 14, 8 }, FamilyGroups(prepared, "treemap-tile").Select(tile => FamilyNumber(tile, "data-cfx-value")));
         Verify.Contains(prepared.Regions, region => region.Role == "treemap-tile" && region.Label == "Critical: 50");
         Verify.NotEmpty(FamilyLabels(prepared, "treemap-label")); Verify.NotEmpty(prepared.ToPng());

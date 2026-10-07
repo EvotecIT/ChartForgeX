@@ -113,14 +113,16 @@ internal static partial class VisualCartesianCompiler {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
             if (grid.ShowVerticalLines) foreach (var tick in xTicks) builder.Line(map.X(tick), plot.Top, map.X(tick), plot.Bottom,
-                ChartColorMath.WithOpacity(colors.Border, grid.VerticalOpacity), width, role: "grid-x", dash: dash);
+                colors.Grid.WithOpacity(grid.VerticalOpacity), width, role: "grid-x", dash: dash,
+                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.VerticalOpacity), grid.VerticalOpacity)));
             if (grid.ShowHorizontalLines) foreach (var category in categories) builder.Line(plot.Left, map.Y(category), plot.Right, map.Y(category),
-                ChartColorMath.WithOpacity(colors.Border, grid.HorizontalOpacity), width, role: "grid-y", dash: dash);
+                colors.Grid.WithOpacity(grid.HorizontalOpacity), width, role: "grid-y", dash: dash,
+                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(colors.Grid.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }
         if (!chart.Options.ShowAxes) return;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
         if (chart.Options.XAxis.Visible) {
-            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-x");
+            if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var tickHeight = TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height;
             var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width, Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing)));
             DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache);
@@ -129,7 +131,7 @@ internal static partial class VisualCartesianCompiler {
                 new ChartRect(plot.Left, bounds.Bottom + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - spacing)), colors, TextAlignment.Center, "axis-x-title");
         }
         if (chart.Options.YAxis.Visible) {
-            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, role: "axis-y");
+            if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             DrawAxisLabels(builder, chart.Options, axes.Category, categories, map.Y, false, false,
                 new ChartRect(viewport.Left, plot.Top, Math.Max(0, plot.Left - viewport.Left - spacing), plot.Height), style, spacing, null, cache);
             if (chart.YAxisTitle.Length > 0) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,

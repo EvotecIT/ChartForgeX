@@ -110,7 +110,14 @@ internal static partial class SmokeTests {
         Assert(new TextStyleOverride().WithWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
         Assert(new TextStyleOverride().WithWeight("bolder").ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
         Assert(new TextStyleOverride().WithWeight("lighter").ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
-
+        foreach (var weight in new[] { 1, 650, 850, 1000 }) {
+            var font = new FontSpec { Weight = weight };
+            Assert(font.Clone().Weight == weight, "Font specifications must preserve exact CSS weights when cloned.");
+            Assert(new TextStyleOverride().WithWeight(weight.ToString(CultureInfo.InvariantCulture)).Resolve(new TextStyle()).Font.Weight == weight,
+                "Complete style resolution must retain the requested weight independently of available faces.");
+        }
+        AssertThrows<ArgumentOutOfRangeException>(() => new FontSpec { Weight = 0 }, "CSS font weights below one must be rejected.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new FontSpec { Weight = 1001 }, "CSS font weights above one thousand must be rejected.");
     }
 
     private static void ImageCompositionUsesSharedTypographyContract() {
