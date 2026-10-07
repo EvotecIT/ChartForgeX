@@ -24,7 +24,7 @@ New-BenchmarkSuite 'chartforgex-topology' {
                 }
             }
             foreach ($fixture in 'small', 'mesh', 'overview', 'replication') {
-                foreach ($operation in 'Svg', 'PreparedSvg') {
+                foreach ($operation in 'Svg', 'RepeatSvg', 'PreparedSvg') {
                     Add-BenchmarkCase "$lane-$fixture-$operation" @{ Lane = $lane; Fixture = $fixture; Mode = $operation; Svg = $true }
                 }
             }
@@ -39,6 +39,7 @@ New-BenchmarkSuite 'chartforgex-topology' {
                 Prepare { $run.Lane.Prepare() }
                 CompletePrepare { $run.Lane.CompletePrepare() }
                 Svg { $run.Lane.Svg() }
+                RepeatSvg { $run.Lane.RepeatSvg() }
                 PreparedSvg { $run.Lane.PreparedSvg() }
             }
             $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
@@ -49,7 +50,7 @@ New-BenchmarkSuite 'chartforgex-topology' {
     Add-BenchmarkMetric ThreadAllocatedBytes { param($case, $run) $run.Allocated }
     Add-BenchmarkMetadata BaselineSha256 (Get-FileHash -LiteralPath $baseline).Hash
     Add-BenchmarkMetadata CandidateSha256 (Get-FileHash -LiteralPath $candidate).Hash
-    Add-BenchmarkMetadata Scope 'Prepare measures layout; CompletePrepare includes Analyze to finish and inspect routes; Svg includes Prepare and ToSvg; PreparedSvg reuses a fully planned snapshot. Validation outside timing requires identical full diagnostics and SVG.'
+    Add-BenchmarkMetadata Scope 'Prepare measures layout; CompletePrepare includes Analyze to finish and inspect routes; Prepare, CompletePrepare and Svg clear the shared plan cache first; Svg includes Prepare and ToSvg; RepeatSvg is Svg without clearing, as a host drawing the same chart again; PreparedSvg reuses a fully planned snapshot. Validation outside timing requires identical full diagnostics and SVG.'
     Add-BenchmarkMetadata LogicalProcessors ([Environment]::ProcessorCount)
     Add-BenchmarkMetadata ProcessorPlacement 'Baseline and candidate share the same process and processor placement. Record host placement and power policy when qualifying a comparison.'
     Set-BenchmarkArtifacts Json, Csv, Markdown

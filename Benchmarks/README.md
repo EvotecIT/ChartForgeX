@@ -24,7 +24,7 @@ The topology suite measures dense layout, completed routes and exports on small 
 .\Benchmarks\Invoke-RenderingBenchmark.ps1 -Suite Topology -WarmupCount 2 -IterationCount 9
 ```
 
-`Prepare` measures detached layout and can defer route planning. `CompletePrepare` includes `Analyze()` to finish and inspect the routes inside the timed operation. `Svg` creates a fresh snapshot and exports it; `PreparedSvg` reuses a fully planned snapshot. Each lane checks attached ends, dimensions, node/edge counts, complete diagnostic digests and SVG outside timing.
+`Prepare` measures detached layout and can defer route planning. `CompletePrepare` includes `Analyze()` to finish and inspect the routes inside the timed operation. `Svg` creates a fresh snapshot and exports it; `PreparedSvg` reuses a fully planned snapshot. The dense planner shares a plan between charts whose planning inputs are equal (a host's light and dark drawings of one chart), so `Prepare`, `CompletePrepare` and `Svg` clear that cache before they run; `RepeatSvg` is `Svg` without clearing it, as a host drawing the same chart again. Each lane checks attached ends, dimensions, node/edge counts, complete diagnostic digests and SVG outside timing.
 
 The charts suite measures the report charts of that large monitoring report: a 60-lane status timeline with about 1,300 periods, an 8-lane overview timeline, a two-series latency line and a calendar heatmap, each with host colour variables, rendered to SVG and PNG:
 

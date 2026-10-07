@@ -125,6 +125,10 @@ internal static partial class TopologyDenseRoutePlanner {
         // Without a grid (more lines than the search can hold) only facing neighbours are joined; every other edge falls
         // back to the corridor candidates.
         var fixedRoutes = FixedRoutes(chart, nodes);
+        // A chart drawn again (a host's dark drawing prepares its own chart) gets the plan of an equal key.
+        var key = PlanKey.Create(chart, scene, edges, requests, fixedRoutes);
+        var cached = FindCachedPlan(key);
+        if (cached != null) return cached.Restore(edges, paintRoutes, trunkOwners);
         // One set of large per-point arrays serves the plan's grid and every repair grid built after it.
         var buffers = new GridBuffers();
         var grid = Grid.Create(scene, requests, fixedRoutes, buffers);
@@ -147,6 +151,7 @@ internal static partial class TopologyDenseRoutePlanner {
         RepairLaneOverlaps(scene, requests, planned, fixedRoutes, sideUse, buffers);
         if (chart.RenderOptions!.ShareIncomingTrunks) JoinIncomingTrunks(chart, scene, planned, fixedRoutes, paintRoutes, trunkOwners);
         foreach (var route in planned) routes[route.Request.Edge] = route.Points;
+        StoreCachedPlan(new CachedPlan(key, edges, routes, paintRoutes, trunkOwners));
         return routes;
     }
 

@@ -13,6 +13,7 @@ public sealed class TopologyBenchmarkLane {
     private readonly Func<object, object> _analyze;
     private readonly MethodInfo _proof;
     private readonly PropertyInfo _height;
+    private readonly Action _clearPlanCache;
     private object _lastPrepared;
     private string? _lastSvg;
     private string _expectedPrepare, _expectedSvg;
@@ -38,6 +39,9 @@ public sealed class TopologyBenchmarkLane {
         _svg = Expression.Lambda<Func<object, string>>(Expression.Call(Expression.Convert(p, preparedType), preparedType.GetMethod("ToSvg")!), p).Compile();
         _analyze = Expression.Lambda<Func<object, object>>(Expression.Convert(Expression.Call(Expression.Convert(p, preparedType), preparedType.GetMethod("Analyze")!), typeof(object)), p).Compile();
         _height = preparedType.GetProperty("Height")!;
+        // Binaries with a shared plan cache would serve every repeated preparation from it; measured operations start cold.
+        var clear = library.GetType("ChartForgeX.Topology.TopologyDenseRoutePlanner")?.GetMethod("ClearPlanCache", BindingFlags.NonPublic | BindingFlags.Static);
+        _clearPlanCache = clear == null ? () => { } : (Action)Delegate.CreateDelegate(typeof(Action), clear);
         _prepared = _lastPrepared = _prepare(_chart, _options);
         _expectedPrepare = Proof(_prepared, null);
         _expectedSvg = Proof(_prepared, _svg(_prepared));
@@ -52,6 +56,7 @@ public sealed class TopologyBenchmarkLane {
 
     /// <summary>Measures detached node/group layout, which may defer dense route planning.</summary>
     public double Prepare() {
+        _clearPlanCache();
         _lastPrepared = _prepare(_chart, _options); _lastSvg = null;
         return (double)_height.GetValue(_lastPrepared)!;
     }
@@ -63,6 +68,12 @@ public sealed class TopologyBenchmarkLane {
 
     /// <summary>Creates a fresh snapshot and renders it.</summary>
     public int Svg() {
+        _clearPlanCache();
+        _lastPrepared = _prepare(_chart, _options); _lastSvg = _svg(_lastPrepared); return _lastSvg.Length;
+    }
+
+    /// <summary>Creates a fresh snapshot and renders it, as a host's second drawing of the same chart does: a plan of equal geometry may come from the cache.</summary>
+    public int RepeatSvg() {
         _lastPrepared = _prepare(_chart, _options); _lastSvg = _svg(_lastPrepared); return _lastSvg.Length;
     }
 
