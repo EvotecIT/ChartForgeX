@@ -151,7 +151,7 @@ internal sealed partial class ChartLabelScene {
         if (legend) return new List<XElement>(); // Swatches travel with their legend group.
         var role = Role(element);
         var result = new List<XElement>();
-        var previous = element.ElementsBeforeSelf().LastOrDefault();
+        var previous = PreviousElement(element);
         while (previous != null) {
             var previousRole = Role(previous);
             var match = previousRole.Contains("label-backdrop") || previousRole.Contains("label-backplate") || previousRole.Contains("label-leader") || previousRole.Contains("label-connector")
@@ -159,9 +159,19 @@ internal sealed partial class ChartLabelScene {
                 || previousRole.StartsWith("point-callout-label", StringComparison.Ordinal) && role == "point-callout-label-text"
                 || previousRole == "gauge-status-marker" && role == "gauge-status-label";
             if (!match) break;
-            result.Add(previous); previous = previous.ElementsBeforeSelf().LastOrDefault();
+            result.Add(previous); previous = PreviousElement(previous);
         }
         return result;
+    }
+
+    // The nearest element sibling before this one, as ElementsBeforeSelf().LastOrDefault() returns, without walking every
+    // earlier sibling from the first.
+    private static XElement? PreviousElement(XElement element) {
+        for (var node = element.PreviousNode; node != null; node = node.PreviousNode) {
+            if (node is XElement previous) return previous;
+        }
+
+        return null;
     }
 
     private sealed class Mark {

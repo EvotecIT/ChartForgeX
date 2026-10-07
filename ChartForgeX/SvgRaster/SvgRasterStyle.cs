@@ -139,7 +139,7 @@ internal sealed class SvgRasterStyle {
 
     public static SvgRasterStyle Resolve(SvgRasterStyle parent, SvgRasterElement element, SvgRasterStyleSheet? styleSheet = null, IReadOnlyList<SvgRasterElement>? ancestors = null) {
         var style = parent.Inherit();
-        var declarations = new List<SvgStyleDeclaration>();
+        var declarations = new List<SvgStyleDeclaration>(8);
         AddPresentation(declarations, element);
         if (styleSheet != null) {
             declarations.AddRange(styleSheet.DeclarationsFor(element, ancestors));
