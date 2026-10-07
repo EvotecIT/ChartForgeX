@@ -38,7 +38,9 @@ internal static partial class VisualRadialCompiler {
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var outside = placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
-        var maximumOffset = series.PointSliceOffsets.Count == 0 ? 0 : series.PointSliceOffsets.Max();
+        // Only painted source slices contribute to the envelope; Other has no source offset.
+        var maximumOffset = slices.Where(slice => slice.Value > 0 && slice.PointIndex >= 0 && slice.PointIndex < series.PointSliceOffsets.Count)
+            .Select(slice => series.PointSliceOffsets[slice.PointIndex]).DefaultIfEmpty(0).Max();
         var horizontalBudget = outside ? plot.Width * 0.57 : plot.Width;
         var verticalBudget = vertical ? plot.Height * 0.76 : plot.Height;
         var radius = Math.Max(0, (Math.Min(horizontalBudget, verticalBudget) / 2 - context.Theme.Spacing) / (1 + maximumOffset));

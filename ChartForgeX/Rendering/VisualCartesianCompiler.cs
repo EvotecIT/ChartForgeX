@@ -42,7 +42,7 @@ internal static partial class VisualCartesianCompiler {
     private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport, bool measureAxes) {
         Validate(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
-        if (!chart.Series.Any(series => series.Points.Count > 0)) {
+        if (!chart.Series.Any(series => series.Points.Count > 0) && chart.Annotations.Count == 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
@@ -118,6 +118,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
             ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         });
     }
@@ -131,9 +132,13 @@ internal static partial class VisualCartesianCompiler {
             var color = annotation.Color;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
             var id = "annotation-" + Number(index);
-            using (builder.PushGroup(id, bands ? "annotation-band" : "annotation-line", new Dictionary<string, string> {
+            var description = annotation.Kind + ": " + Number(annotation.Value)
+                + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
+                + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);
+            using (builder.PushGroup(id, "annotation", new Dictionary<string, string> {
                 ["data-cfx-kind"] = annotation.Kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
-                ["data-cfx-end"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty, ["data-cfx-label"] = annotation.Label
+                ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
+                ["data-cfx-label"] = annotation.Label, ["aria-label"] = description
             })) {
             if (annotation.EndValue.HasValue) {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.EndValue.Value)));
@@ -145,7 +150,7 @@ internal static partial class VisualCartesianCompiler {
                 dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
             else builder.Line(position, plot.Top, position, plot.Bottom, color, context.Theme.AxisStrokeWidth, role: "annotation-line",
                 dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
-            builder.AddRegion(new VisualSemanticRegion(id, bands ? "annotation-band" : "annotation-line", bounds, annotation.Label));
+            builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
             if (!string.IsNullOrEmpty(annotation.Label)) {
                 var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = bands ? colors.MutedForeground : color };
                 var anchor = new ChartPoint(horizontal ? plot.Left + context.Theme.Spacing : position + context.Theme.Spacing,

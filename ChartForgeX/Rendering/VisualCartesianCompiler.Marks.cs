@@ -60,7 +60,8 @@ internal static partial class VisualCartesianCompiler {
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
                 if (visible) {
-                    builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors), role: "marker",
+                    builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors),
+                        role: series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole : "marker",
                         paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, PointColor(series, index, pointIndex, colors), pointIndex)));
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;

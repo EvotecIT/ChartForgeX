@@ -152,6 +152,18 @@ public sealed class CalendarHeatmapOptionsTests {
         Assert.True(bottom < scale && scale <= 230, "The scale stays below the days and inside the chart.");
         if (header) Assert.True(cells.Min(cell => double.Parse((string)cell.Attribute("y")!, CultureInfo.InvariantCulture)) > 60, "The days stay below the title.");
 
+        // Weekday captions identify fixed rows. Collision handling may omit a caption, but must not move it
+        // onto another row or over a day (the compact Linux face previously moved Friday into the first cell).
+        var weekdayLabels = ByRole(svg, "calendar-heatmap-weekday-label")
+            .Where(label => (string?)label.Attribute("display") != "none").ToArray();
+        Assert.NotEmpty(weekdayLabels);
+        var firstCellX = cells.Min(cell => double.Parse((string)cell.Attribute("x")!, CultureInfo.InvariantCulture));
+        Assert.All(weekdayLabels, label => {
+            double Number(string name) => double.Parse((string)label.Attribute(name)!, CultureInfo.InvariantCulture);
+            Assert.True(Number("data-cfx-label-x") + Number("data-cfx-label-width") < firstCellX, "Weekday captions stay beside the days.");
+            Assert.InRange(Math.Abs(Number("data-cfx-label-y") + Number("data-cfx-label-height") / 2 - Number("y")), 0, Number("data-cfx-label-height") / 2);
+        });
+
         // The PNG lays the days out in the same frame: the darkest day is at the same place.
         var darkest = cells.Where(cell => (string?)cell.Attribute("data-cfx-level") == "4").First();
         var image = ChartForgeX.Raster.PngReader.Decode(chart.ToPng());
