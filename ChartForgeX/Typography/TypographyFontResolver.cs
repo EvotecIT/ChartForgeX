@@ -40,7 +40,9 @@ internal static class TypographyFontResolver {
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;
-    internal static int CacheVersion { get { lock (CacheLock) return _cacheVersion; } }
+    // Read without the cache lock: every text measurement checks it, and parallel renders contended on that lock. The
+    // version only changes inside the lock, with a full fence, after the caches it guards are cleared.
+    internal static int CacheVersion => System.Threading.Volatile.Read(ref _cacheVersion);
     private static readonly System.Collections.Generic.Dictionary<string, ResolvedTypeface> FamilyCache = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
@@ -193,7 +195,7 @@ internal static class TypographyFontResolver {
     internal static void ClearCache() {
         lock (CacheLock) {
             FamilyCache.Clear();
-            _cacheVersion++;
+            System.Threading.Interlocked.Increment(ref _cacheVersion);
         }
 
         FontFallbackChain.Reset();

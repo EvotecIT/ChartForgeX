@@ -49,6 +49,17 @@ public sealed class LabelMeasurementCacheTests {
         Assert.Equal(expectedPlain, reversed.Measure("Underline", plain));
     }
 
+    [Fact]
+    public void Measure_AfterTheFontCacheIsCleared_SeesTheNewVersionAndTheSameMetrics() {
+        var style = new TextStyle { Font = FontSpec.SystemSans(), FontSize = 12, LineHeight = 1 };
+        var service = new LabelPlacementService();
+        var before = service.Measure("Version", style);
+        var version = TypographyFontResolver.CacheVersion;
+        TypographyFontResolver.ClearCache();
+        Assert.True(TypographyFontResolver.CacheVersion > version);
+        Assert.Equal(before, service.Measure("Version", style));
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
