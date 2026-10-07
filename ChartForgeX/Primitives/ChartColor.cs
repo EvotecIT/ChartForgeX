@@ -140,13 +140,45 @@ public readonly struct ChartColor {
     public static bool TryFromHex(string? hex, out ChartColor color) {
         color = default;
         if (string.IsNullOrWhiteSpace(hex)) return false;
+        return TryFromHexCore(hex!.Trim(), out color);
+    }
+
+    // Decides without an exception whenever the answer is certain: a length FromHex rejects, a short form with a
+    // non-hex digit, or a channel with no hex digit at all. Only a channel that mixes one hex digit with another
+    // character, which the framework parser may accept as padding, still takes the original parsing path.
+    private static bool TryFromHexCore(string trimmed, out ChartColor color) {
+        color = default;
+        var start = trimmed[0] == '#' ? 1 : 0;
+        var length = trimmed.Length - start;
+        if (length is not (3 or 4 or 6 or 8)) return false;
+        var certain = true;
+        if (length is 3 or 4) {
+            for (var i = start; i < trimmed.Length; i++) {
+                if (!IsHexDigit(trimmed[i])) return false;
+            }
+        } else {
+            for (var i = start; i < trimmed.Length; i += 2) {
+                var first = IsHexDigit(trimmed[i]);
+                var second = IsHexDigit(trimmed[i + 1]);
+                if (!first && !second) return false;
+                certain &= first && second;
+            }
+        }
+
+        if (certain) {
+            color = FromHex(trimmed);
+            return true;
+        }
+
         try {
-            color = FromHex(hex!);
+            color = FromHex(trimmed);
             return true;
         } catch (ArgumentException) {
             return false;
         }
     }
+
+    private static bool IsHexDigit(char value) => value is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
 
     /// <summary>
     /// Parses a named color or a hexadecimal color string.
@@ -169,12 +201,7 @@ public readonly struct ChartColor {
         if (string.IsNullOrWhiteSpace(value)) return false;
         var trimmed = value!.Trim();
         if (ChartColors.TryGet(trimmed, out color)) return true;
-        try {
-            color = FromHex(trimmed);
-            return true;
-        } catch (ArgumentException) {
-            return false;
-        }
+        return TryFromHexCore(trimmed, out color);
     }
 
     /// <summary>
