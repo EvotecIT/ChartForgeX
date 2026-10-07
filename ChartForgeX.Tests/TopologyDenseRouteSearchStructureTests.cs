@@ -8,6 +8,7 @@ namespace ChartForgeX.Tests;
 /// queue, so the queue must pop by priority and then by state index, whatever the push order, and reused buffers must
 /// start every grid without blocks or occupancy left by an earlier one.
 /// </summary>
+[Collection(nameof(TopologyDensePlanCacheTests))]
 public sealed class TopologyDenseRouteSearchStructureTests {
     [Fact]
     public void MinHeap_InterleavedPushesAndPops_PopsByPriorityThenState() {
@@ -92,9 +93,13 @@ public sealed class TopologyDenseRouteSearchStructureTests {
     [InlineData("replication-sites-60")]
     [InlineData("mesh")]
     public void DensePlan_PreparedTwice_RoutesAreIdentical(string fixture) {
+        // The plan cache is cleared before each prepare, so both run the search (with reused buffers) from scratch.
         var (firstChart, options) = TopologyRouteQualityTests.Build(fixture);
         var (secondChart, _) = TopologyRouteQualityTests.Build(fixture);
+        TopologyDenseRoutePlanner.ClearPlanCache();
         var first = firstChart.Prepare(options).Analyze();
+        TopologyDenseRoutePlanner.ClearPlanCache();
+        Assert.Equal(0, TopologyDenseRoutePlanner.CachedPlanCount);
         var second = secondChart.Prepare(options).Analyze();
         Assert.Equal(first.Edges.Count, second.Edges.Count);
         for (var i = 0; i < first.Edges.Count; i++) Assert.Equal(first.Edges[i].Points, second.Edges[i].Points);
