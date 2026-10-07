@@ -31,8 +31,10 @@ public sealed class TopologyChartPresentationTests {
         fitted.PreserveNaturalSize = true;
         var stored = chart.ToVisualArtifact();
         stored.PreserveNaturalSize = true;
-        // Compare the same explicit output size: the stored tile options discover a different prepared height.
-        fitted.NaturalSize = stored.NaturalSize;
+        // A discovered size preserves the prepared layout; replacing it requests a new viewport.
+        // Give both artifacts the same actual replacement, distinct from either discovery snapshot.
+        var explicitSize = new VisualArtifactSize(stored.NaturalSize!.Value.Width + 20, stored.NaturalSize.Value.Height + 20);
+        fitted.NaturalSize = explicitSize; stored.NaturalSize = explicitSize;
         Assert.Equal(fitted.ToSvg(new VisualArtifactRenderOptions { Topology = Tiles }), stored.ToSvg());
         Assert.Equal(Chart().ToVisualArtifact().ToInterchangeJson(new VisualArtifactRenderOptions { Topology = Tiles }), chart.ToVisualArtifact().ToInterchangeJson());
         Assert.Equal(new HtmlInteractiveTopologyRenderer().RenderFragment(Chart(), Tiles), new HtmlInteractiveTopologyRenderer().RenderFragment(chart));

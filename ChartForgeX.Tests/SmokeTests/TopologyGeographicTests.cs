@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
@@ -46,9 +47,14 @@ internal static partial class SmokeTests {
         var arc = chart.Prepare(options).ToInterchangeEnvelope().Edges.Single(edge => edge.Id == "nyc-lon").ResolvedRoute;
         var start = arc.First(); var end = arc.Last();
         Assert(arc.Count > 3 && arc.Skip(1).Take(arc.Count - 2).Any(point => Math.Abs((end.X - start.X) * (point.Y - start.Y) - (end.Y - start.Y) * (point.X - start.X)) > 1), "Geographic links should retain a sampled curved map arc shared by SVG, PNG and semantic interchange.");
-        Assert(SvgHasAttributes(svg, "data-node-id=\"nyc\" data-node-kind=\"Location\" data-node-display-mode=\"Tile\" data-cfx-status=\"Healthy\" data-cfx-selected=\"false\" data-node-longitude=\"-74.006\" data-node-latitude=\"40.713\" data-node-geo-visible=\"true\""), "Geographic topology should expose projected node coordinates.");
+        var nyc = TopologyEntity(svg, "node", "nyc");
+        Assert((string?)nyc.Attribute("data-node-kind") == "Location" && (string?)nyc.Attribute("data-node-display-mode") == "Tile" && (string?)nyc.Attribute("data-cfx-status") == "Healthy"
+            && (string?)nyc.Attribute("data-cfx-selected") == "false" && (string?)nyc.Attribute("data-node-geo-visible") == "true"
+            && (double?)nyc.Attribute("data-node-longitude") == -74.006 && (double?)nyc.Attribute("data-node-latitude") == 40.7128, "Geographic topology should preserve full source coordinates and projected visibility metadata.");
         Assert(svg.Contains("data-node-id=\"south\"", StringComparison.Ordinal) && svg.Contains("data-node-geo-visible=\"false\"", StringComparison.Ordinal), "Geographic topology should mark clamped out-of-viewport coordinates.");
-        Assert(SvgHasAttributes(svg, "data-group-id=\"amer\" data-group-layout-policy=\"Auto\" data-group-applied-layout-policy=\"Auto\" data-cfx-status=\"Healthy\" data-cfx-selected=\"false\" data-group-longitude=\"-98.58\" data-group-latitude=\"39.828\" data-group-geo-visible=\"true\""), "Geographic topology should expose group coordinates.");
+        var amer = XDocument.Parse(svg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "topology-group" && (string?)element.Attribute("data-group-id") == "amer");
+        Assert((double?)amer.Attribute("data-group-longitude") == -98.5795 && (double?)amer.Attribute("data-group-latitude") == 39.8283
+            && (string?)amer.Attribute("data-group-geo-visible") == "true", "Geographic topology should preserve full group coordinates and projected visibility metadata.");
         Assert(svg.Contains("data-cfx-metric-latency-p95=\"72 ms\"", StringComparison.Ordinal), "Geographic topology should preserve node metrics for host inspectors.");
         Assert(svg.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", StringComparison.Ordinal), "Geographic topology should render opt-in region callouts.");
         Assert(svg.Contains("data-callout-node-count=\"2\"", StringComparison.Ordinal), "Geographic callouts should expose grouped node counts.");
@@ -71,7 +77,10 @@ internal static partial class SmokeTests {
             .WithNodeCoordinates("warsaw", 21.0122, 52.2297);
         var europeSvg = europe.ToSvg(options);
         Assert(europeSvg.Contains("data-cfx-role=\"topology-map-boundary\"", StringComparison.Ordinal), "Regional geographic topology should render filled land areas.");
-        Assert(europeSvg.Contains("data-cfx-role=\"topology-geographic-boundary\"", StringComparison.Ordinal), "Regional geographic topology should render boundary outlines.");
+        var regionalBoundaries = XDocument.Parse(europeSvg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-map-boundary").ToArray();
+        Assert(regionalBoundaries.Any(element => element.Attribute("d") != null && (double?)element.Attribute("stroke-width") > 0
+            && element.RenderedColor("stroke").A > 0 && (string?)element.Attribute("fill") != "none"),
+            "Regional geographic topology should paint both filled land and visible boundary outlines from its native paths.");
 
         var invalid = TopologyChart.Create()
             .AddNode("partial", "Partial", 0, 0);

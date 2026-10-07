@@ -111,7 +111,7 @@ internal sealed partial class VisualTopologyCompiler {
         return Math.Min(Math.Max(1, maximum), count);
     }
 
-    private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null) {
+    private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1) {
         if (string.IsNullOrEmpty(value) || bounds.Width <= 0 || bounds.Height <= 0) return null;
         size *= _scale;
         var lineHeight = _builder.MeasureText("Ag", size, weight).LineHeight;
@@ -139,12 +139,14 @@ internal sealed partial class VisualTopologyCompiler {
         if (queue.Count > 0) _builder.AddDiagnostic(new VisualDiagnostic("topology.label-lines", "A topology label exceeds its configured line count; complete source text remains in semantic interchange."));
         var baseline = bounds.Y + _builder.TextAscent(size, weight);
         var halo = role == "topology-endpoint-label" || role == "topology-edge-label-text" && IsMonitoringDashboardStyle(_options) && !_options.IncludeEdgeLabelBackplates;
+        var haloColor = ChartColorMath.WithOpacity(_colors.Background, opacity);
         foreach (var line in lines) {
+            if (line.Length == 0) { baseline += lineHeight; continue; }
             _builder.Text(line, centered ? bounds.X + bounds.Width / 2 : bounds.X, baseline, size, color, weight, role, id,
                 centered ? TextAlignment.Center : TextAlignment.Left, paint ?? SvgPaint.Of(color, SvgColorRole.Text),
-                stroke: halo ? _colors.Background : null,
+                stroke: halo ? haloColor : null,
                 strokeWidth: halo ? (role == "topology-endpoint-label" ? 3 * _scale : ChartTextHalo.SvgStrokeWidth(size / _scale, weight >= 600) * _scale) : 0,
-                strokePaint: halo ? SvgPaint.Of(_colors.Background, SvgColorRole.Surface) : null);
+                strokePaint: halo ? SvgPaint.Of(haloColor, SvgColorRole.Surface) : null);
             baseline += lineHeight;
         }
         if (lines.Count == 0) return null;

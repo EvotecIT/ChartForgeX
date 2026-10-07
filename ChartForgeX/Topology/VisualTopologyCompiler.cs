@@ -41,6 +41,7 @@ internal sealed partial class VisualTopologyCompiler {
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
         _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
+        _options.ResolvedEdgeLabelScale = context.Theme.Typography.DataLabelSize / 11;
         if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
         _builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         _colors = context.Theme.Resolve(context.ThemeMode);

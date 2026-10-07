@@ -235,7 +235,12 @@ internal static partial class SmokeTests {
             .AddFunnel("Pipeline", Points(120, 74, 32));
         funnel.Series[0].WithPointColor(1, "#E11D48");
         var funnelSvg = funnel.ToSvg();
-        Assert(funnelSvg.Contains("funnelPointFill1", StringComparison.Ordinal) && funnelSvg.Contains("stop-color=\"#E11D48\"", StringComparison.Ordinal), "Funnel segments should honor point-specific colors in SVG.");
+        var funnelPoint = System.Xml.Linq.XDocument.Parse(funnelSvg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "funnel-stage"
+            && (string?)element.Attribute("data-cfx-point") == "1");
+        Assert(funnelPoint.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "funnel-segment" && (string?)element.Attribute("fill") == "#E11D48"),
+            "The authored funnel stage should use its point-specific color in SVG.");
+        Assert(PreparedFamily(funnel).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(node => node.Role == "funnel-segment").ElementAt(1).Fill!.Value.Equals(ChartColor.FromHex("#E11D48")),
+            "The same funnel stage should retain its point-specific color for native raster rendering.");
         Assert(funnel.ToPng().Length > 64, "Funnel point colors should render PNG output.");
 
         var treemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -246,7 +251,12 @@ internal static partial class SmokeTests {
                 new ChartTreemapItem("Long tail", 12)
             });
         treemap.Series[0].WithPointColor(1, "#8B5CF6");
-        Assert(treemap.ToSvg().Contains("treemapFillSeries0Point1", StringComparison.Ordinal), "Treemap tiles should honor point-specific colors in SVG.");
+        var treemapTile = System.Xml.Linq.XDocument.Parse(treemap.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile"
+            && (string?)element.Attribute("data-cfx-point") == "1");
+        Assert(treemapTile.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile-mark" && (string?)element.Attribute("fill") == "#8B5CF6"),
+            "The authored treemap tile should use its point-specific color in SVG.");
+        Assert(PreparedFamily(treemap).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Any(node => node.Role == "treemap-tile-mark" && node.Fill!.Value.Equals(ChartColor.FromHex("#8B5CF6"))),
+            "Native treemap geometry should retain the authored purple point color.");
         Assert(treemap.ToPng().Length > 64, "Treemap point colors should render PNG output.");
 
         var scatter = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -260,7 +270,10 @@ internal static partial class SmokeTests {
             .WithSize(540, 320)
             .AddLine("Trend", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         line.Series[0].WithPointColor(2, "#DB2777");
-        Assert(line.ToSvg().Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal) && line.ToSvg().Contains("fill=\"#DB2777\"", StringComparison.Ordinal), "Line markers should honor point-specific colors in SVG.");
+        Assert(CartesianPoint(line.ToSvg(), 0, 2).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "marker"
+            && (string?)element.Attribute("fill") == "#DB2777"), "The authored line observation should retain its point-specific marker color in SVG.");
+        Assert(PreparedFamily(line).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Single(node => node.Role == "marker").Fill!.Value.Equals(ChartColor.FromHex("#DB2777")),
+            "The same line observation should retain its point-specific color for native raster rendering.");
         Assert(line.ToPng().Length > 64, "Line marker point colors should render PNG output.");
 
         var lollipop = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())

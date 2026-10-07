@@ -15,8 +15,8 @@ public sealed class NativeTopologyCaptionFootprintTests {
     [InlineData(TextMeasurementMode.InstalledFonts)]
     public void LargeThemeIconCaptionReservesItsPaintedPlateForLayoutAndRelationshipLabels(TextMeasurementMode measurement) {
         var chart = TopologyChart.Create().WithId("large-icon-caption").WithViewport(700, 380, 20).WithLegend(null)
-            .AddNode("left", "Left", 40, 130, width: 40, height: 40)
-            .AddNode("right", "Right", 570, 130, width: 40, height: 40)
+            .AddNode("left", "Left", 40, 130, width: 120, height: 70)
+            .AddNode("right", "Right", 530, 130, width: 120, height: 70)
             .AddNode("owner", "Payments Platform Owner", 290, 88, width: 48, height: 42)
             .WithNodeDisplay("owner", TopologyNodeDisplayMode.Icon)
             .AddEdge("link", "left", "right", "64 ms", routing: TopologyEdgeRouting.Straight);
@@ -25,7 +25,7 @@ public sealed class NativeTopologyCaptionFootprintTests {
             new VisualTypography(dataLabelSize: 28));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(700, 380), 20), theme,
             frame: new VisualFrame(showLegend: false));
-        var prepared = chart.Prepare(context, new TopologyRenderOptions { IncludeLegend = false, TextMeasurementMode = measurement });
+        var prepared = chart.Prepare(context, new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true, TextMeasurementMode = measurement });
         var svg = XDocument.Parse(prepared.ToSvg());
         var plate = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-node-icon-label");
         var x = (double)plate.Attribute("x")!; var y = (double)plate.Attribute("y")!;
@@ -33,6 +33,8 @@ public sealed class NativeTopologyCaptionFootprintTests {
         Assert.True(width > 34 && height > 20);
         Assert.True(x >= 20 && y >= 20 && x + width <= 680 && y + height <= 360);
         var label = Assert.Single(prepared.SemanticInterchange!.Edges).ResolvedLabelBounds!.Value;
+        Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "64 ms"
+            && Math.Abs((double)element.Attribute("font-size")! - 28) < .001);
         Assert.True(label.Right <= x || label.Left >= x + width || label.Bottom <= y || label.Top >= y + height,
             "An edge caption must avoid the complete plate drawn at the selected typography scale.");
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "topology-node-label")

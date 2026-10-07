@@ -261,7 +261,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawDataLabels(VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
-        foreach (var request in labels) request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
+        foreach (var request in labels) request.MeasuredSize ??= builder.MeasureText(request.Text, request.Style);
         var placed = new LabelPlacementService().Place(labels, plot, obstacles, 2, builder.MeasureText);
         if (placed.Any(label => label.IsDropped || label.IsEllipsized))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.data-label-overflow", "Data labels were shortened or omitted to avoid marks and other labels within the available plot."));

@@ -96,8 +96,9 @@ internal sealed partial class VisualTopologyCompiler {
             var size = _context.Theme.Typography.DataLabelSize * .8;
             var metrics = _builder.MeasureText(text!, size * _scale, 600);
             var b = new ChartRect(p.X - metrics.Width / 2 - 3 * _scale, p.Y - metrics.Height / 2 - 3 * _scale, metrics.Width + 6 * _scale, metrics.Height + 6 * _scale);
-            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, _colors.Surface, role: "topology-endpoint-label-surface", paint: Paint(_colors.Surface, SvgColorRole.Surface));
-            Text(text!, b, size, _colors.Foreground, 600, "topology-endpoint-label", centered: true);
+            var fill = EdgeLabelColor(_colors.Surface, edge);
+            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: Paint(fill, SvgColorRole.Surface));
+            Text(text!, b, size, EdgeLabelColor(_colors.Foreground, edge), 600, "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge));
         }
     }
 
@@ -125,14 +126,15 @@ internal sealed partial class VisualTopologyCompiler {
             metadata["data-label-line-count"] = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }
                 .Count(label => !string.IsNullOrWhiteSpace(label)).ToString(System.Globalization.CultureInfo.InvariantCulture);
             using var labelGroup = _builder.PushGroup(edge.Id + "-label", "topology-edge-label", metadata);
-            var active = _highlight.IsEdgeHighlighted(edge);
+            ChartColor LabelColor(ChartColor color) => EdgeLabelColor(color, edge);
             if (_options.IncludeEdgeLabelLeaders && ShouldDrawEdgeLabelLeader(layout, _options)) {
                 var from = Point(new ChartPoint(layout.AnchorX, layout.AnchorY)); var to = Point(EdgeLabelLeaderEnd(layout));
-                _builder.Line(from.X, from.Y, to.X, to.Y, Highlight(_colors.Border, active), _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader", paint: Paint(stroke: Highlight(_colors.Border, active), strokeRole: SvgColorRole.Surface));
+                var color = LabelColor(_colors.Border);
+                _builder.Line(from.X, from.Y, to.X, to.Y, color, _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader", paint: Paint(stroke: color, strokeRole: SvgColorRole.Surface));
             }
             if (_options.IncludeEdgeLabelBackplates) {
-                var fill = Highlight(ChartColorMath.WithOpacity(Color(EdgeLabelBackplateFill(Theme(), _options), _colors.Surface), EdgeLabelBackplateFillOpacity(_options)), active);
-                var stroke = Highlight(ChartColorMath.WithOpacity(_colors.Border, EdgeLabelBackplateStrokeOpacity(_options)), active);
+                var fill = LabelColor(ChartColorMath.WithOpacity(Color(EdgeLabelBackplateFill(Theme(), _options), _colors.Surface), EdgeLabelBackplateFillOpacity(_options)));
+                var stroke = LabelColor(ChartColorMath.WithOpacity(_colors.Border, EdgeLabelBackplateStrokeOpacity(_options)));
                 _builder.Rect(bounds, fill, stroke, EdgeLabelBackplateStrokeWidth * _scale,
                     EdgeLabelBackplateRadius(_options) * _scale, "topology-edge-label-surface", paint: Paint(fill, SvgColorRole.Surface, stroke, SvgColorRole.Surface));
             }
@@ -145,15 +147,15 @@ internal sealed partial class VisualTopologyCompiler {
                     ["data-clearance-group-id"] = containingGroup?.Id ?? string.Empty
                 });
                 _builder.Rect(Bounds(EdgeLabelClearanceX(layout, layout.CenterX), EdgeLabelClearanceY(layout, layout.CenterY),
-                    EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout)), Highlight(fill, active),
-                    radius: EdgeLabelClearanceRadius * _scale, role: "topology-edge-label-clearance", paint: Paint(Highlight(fill, active), SvgColorRole.Surface));
+                    EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout)), LabelColor(fill),
+                    radius: EdgeLabelClearanceRadius * _scale, role: "topology-edge-label-clearance", paint: Paint(LabelColor(fill), SvgColorRole.Surface));
             }
             var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
             var height = bounds.Height / Math.Max(1, labels.Length);
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var textBounds = Text(labels[i], new ChartRect(bounds.X + 4 * _scale, bounds.Y + i * height, Math.Max(0, bounds.Width - 8 * _scale), height),
-                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), Highlight(i == 0 ? _colors.Foreground : _colors.MutedForeground, active), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true);
+                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true, opacity: EdgeLabelOpacity(edge));
                 if (!textBounds.HasValue) continue;
                 if (!measured.HasValue) measured = textBounds;
                 else {
@@ -165,6 +167,9 @@ internal sealed partial class VisualTopologyCompiler {
             _builder.AddRegion(new VisualSemanticRegion(edge.Id + "-label", "topology-edge-label", bounds, string.Join("\n", labels)));
         }
     }
+
+    private double EdgeLabelOpacity(TopologyEdge edge) => (edge.Opacity ?? 1) * (_highlight.IsActive && !_highlight.IsEdgeHighlighted(edge) ? _highlight.DimmedOpacity : 1);
+    private ChartColor EdgeLabelColor(ChartColor color, TopologyEdge edge) => ChartColorMath.WithOpacity(color, EdgeLabelOpacity(edge));
 
     private void Marker(TopologyMarkerKind kind, ChartPoint from, ChartPoint to, ChartColor color, SvgColorRole colorRole, SvgPaint? sourcePaint = null) {
         if (kind == TopologyMarkerKind.None) return;

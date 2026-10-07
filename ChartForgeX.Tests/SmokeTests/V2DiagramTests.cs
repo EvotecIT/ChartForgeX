@@ -21,17 +21,16 @@ public sealed class V2DiagramTests {
         topology.Edges[0].Label = null;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
             frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true));
-        var prepared = topology.Prepare(context);
+        var prepared = topology.Prepare(context, new TopologyRenderOptions().WithPlainTopologyEdges());
         var edge = Find(XDocument.Parse(prepared.ToSvg()), "topology-edge");
         var css = ChartColor.FromRgba(255, 0, 0, expectedAlpha).ToCss();
-        var lines = edge.Descendants().Where(element => element.Name.LocalName == "line").ToArray();
-        Assert.NotEmpty(lines);
-        Assert.All(lines, line => Assert.Equal(css, line.Attribute("stroke")?.Value));
-        Assert.Equal(css, edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-arrow").Attribute("fill")?.Value);
+        var line = Assert.Single(edge.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+        Assert.Equal(css, line.Attribute("stroke")?.Value);
+        Assert.Equal(css, edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").Attribute("fill")?.Value);
         var image = prepared.ToRgba();
-        double Coordinate(string name) => double.Parse(lines[0].Attribute(name)!.Value, System.Globalization.CultureInfo.InvariantCulture);
-        var x = (int)Math.Round((Coordinate("x1") + Coordinate("x2")) / 2);
-        var y = (int)Math.Round((Coordinate("y1") + Coordinate("y2")) / 2);
+        var route = prepared.SemanticInterchange!.Edges.Single().ResolvedRoute;
+        var x = (int)Math.Round((route.First().X + route.Last().X) / 2);
+        var y = (int)Math.Round((route.First().Y + route.Last().Y) / 2);
         // Sample the shaft away from the marker/endpoint overlap; those overlaps legitimately composite twice.
         var shaftAlpha = Enumerable.Range(y - 1, 3).SelectMany(row => Enumerable.Range(x - 1, 3)
             .Select(column => image.Pixels[(row * image.Width + column) * 4 + 3])).Max();

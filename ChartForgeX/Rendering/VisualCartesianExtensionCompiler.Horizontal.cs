@@ -30,7 +30,7 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static (double Height, double Offset) ResolveHorizontalBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {
+    private static (double Height, double Offset, double Pitch) ResolveHorizontalBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {
         var grouped = chart.Options.BarMode == ChartBarMode.Grouped;
         var centers = chart.Series.SelectMany(s => s.Points.Select(point => map.Y(point.X))).Distinct().OrderBy(value => value).ToArray();
         var spacing = plot.Height;
@@ -39,7 +39,7 @@ internal static partial class VisualCartesianCompiler {
         var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
         var height = Math.Max(.1, Math.Min(30, (occupied - gap * (count - 1)) / count));
         var offset = grouped ? (index - (count - 1) / 2d) * (height + gap) : 0;
-        return (height, offset);
+        return (height, offset, spacing);
     }
 
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
@@ -59,24 +59,6 @@ internal static partial class VisualCartesianCompiler {
         labels.Add(new LabelPlacementRequest(label.Text, anchor, label.Style, value >= 0
             ? new[] { new LabelCandidate(spacing, 0, 0, .5), new LabelCandidate(-spacing, 0, 1, .5) }
             : new[] { new LabelCandidate(-spacing, 0, 1, .5), new LabelCandidate(spacing, 0, 0, .5) }) { AssociatedMarkId = PointId(index, item) });
-    }
-
-    private static void AddHorizontalTotals(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, VisualThemeColors colors, List<LabelPlacementRequest> labels) {
-        var rowOffset = ResolveHorizontalBarLayout(chart, context, plot, map, 0).Height / 2 + context.Theme.Spacing;
-        foreach (var category in chart.Series.SelectMany(series => series.Points.Select(point => point.X)).Distinct().OrderBy(value => value)) {
-            foreach (var positive in new[] { true, false }) {
-                var total = chart.Series.SelectMany(series => series.Points).Where(point => ChartMath.SameCoordinate(point.X, category) && (point.Y >= 0) == positive).Sum(point => point.Y);
-                if (total == 0) continue;
-                var text = Value(chart, total); var id = "stack-total-horizontal-" + Number(category) + (positive ? "-positive" : "-negative");
-                var style = chart.Options.DataLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground });
-                var point = new ChartPoint(map.X(total), map.Y(category));
-                builder.AddRegion(new VisualSemanticRegion(id, "stack-total", new ChartRect(point.X, point.Y, 0, 0), text + " category=" + Number(category) + " value=" + Number(total)));
-                labels.Add(new LabelPlacementRequest(text, point, style, positive
-                    ? new[] { new LabelCandidate(context.Theme.Spacing, 0, 0, .5), new LabelCandidate(0, -rowOffset, 1, 1), new LabelCandidate(0, rowOffset, 1, 0) }
-                    : new[] { new LabelCandidate(-context.Theme.Spacing, 0, 1, .5), new LabelCandidate(0, rowOffset, 0, 0), new LabelCandidate(0, -rowOffset, 0, 1) }, priority: 1) { AssociatedMarkId = id });
-            }
-        }
     }
 
     private static (ChartAxis Value, ChartAxis Category) HorizontalAxes(Chart chart, AxisLabelCache cache) {
@@ -114,7 +96,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawHorizontalAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartRange range, ChartMapper map, VisualThemeColors colors, ChartRect viewport, AxisLabelCache cache) {
+        ChartRange range, ChartMapper map, VisualThemeColors colors, ChartRect viewport, AxisLabelCache cache, double categoryLabelRight) {
         var axes = HorizontalAxes(chart, cache); var xTicks = AxisTicks(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategories(chart, range);
         var spacing = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
@@ -141,7 +123,7 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.YAxis.Visible) {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             DrawAxisLabels(builder, chart.Options, axes.Category, categories, map.Y, false, false,
-                new ChartRect(viewport.Left, plot.Top, Math.Max(0, plot.Left - viewport.Left - spacing), plot.Height), style, spacing, null, cache);
+                new ChartRect(viewport.Left, plot.Top, Math.Max(0, categoryLabelRight - viewport.Left - spacing), plot.Height), style, spacing, null, cache);
             if (chart.YAxisTitle.Length > 0) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");
         }

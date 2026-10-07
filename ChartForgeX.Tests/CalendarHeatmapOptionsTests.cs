@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -143,7 +144,8 @@ public sealed class CalendarHeatmapOptionsTests {
         // A 230 px card with the default padding used to leave the calendar 1 px cells.
         var items = Enumerable.Range(0, 90).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 6, 1).AddDays(day), day % 5)).ToArray();
         var chart = Chart.Create().WithSize(760, 230).WithHeader(header).WithTitle("Changes").AddCalendarHeatmap("Changes", items);
-        var svg = XDocument.Parse(chart.ToSvg());
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
         var cells = ByRole(svg, "calendar-cell");
         var size = double.Parse((string)cells[0].RenderedAttribute("width")!, CultureInfo.InvariantCulture);
         Assert.True(size >= 8, "Cells should stay readable, got " + size.ToString(CultureInfo.InvariantCulture) + " px.");
@@ -154,14 +156,17 @@ public sealed class CalendarHeatmapOptionsTests {
 
         // Weekday captions identify fixed rows. Collision handling may omit a caption, but must not move it
         // onto another row or over a day (the compact Linux face previously moved Friday into the first cell).
-        var weekdayLabels = ByRole(svg, "calendar-heatmap-weekday-label")
-            .Where(label => (string?)label.Attribute("display") != "none").ToArray();
+        var weekdayLabels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(label => label.Role == "calendar-weekday").ToArray();
         Assert.NotEmpty(weekdayLabels);
-        var firstCellX = cells.Min(cell => double.Parse((string)cell.Attribute("x")!, CultureInfo.InvariantCulture));
+        var firstCellX = cells.Min(cell => double.Parse((string)cell.RenderedAttribute("x")!, CultureInfo.InvariantCulture));
         Assert.All(weekdayLabels, label => {
-            double Number(string name) => double.Parse((string)label.Attribute(name)!, CultureInfo.InvariantCulture);
-            Assert.True(Number("data-cfx-label-x") + Number("data-cfx-label-width") < firstCellX, "Weekday captions stay beside the days.");
-            Assert.InRange(Math.Abs(Number("data-cfx-label-y") + Number("data-cfx-label-height") / 2 - Number("y")), 0, Number("data-cfx-label-height") / 2);
+            var line = Assert.Single(label.Text.Lines);
+            var row = int.Parse(label.Id!.Substring("calendar-weekday-".Length), CultureInfo.InvariantCulture);
+            var rowTop = cells.Where(cell => (string?)cell.Attribute("data-cfx-row") == row.ToString(CultureInfo.InvariantCulture))
+                .Min(cell => double.Parse((string)cell.RenderedAttribute("y")!, CultureInfo.InvariantCulture));
+            Assert.True(label.LineLeft(line) + line.Width < firstCellX, "Weekday captions stay beside the days.");
+            var center = label.Baseline - label.Text.Ascent + label.Text.Metrics.Height / 2;
+            Assert.InRange(Math.Abs(center - (rowTop + size / 2)), 0, .001);
         });
 
         // The PNG lays the days out in the same frame: the darkest day is at the same place.

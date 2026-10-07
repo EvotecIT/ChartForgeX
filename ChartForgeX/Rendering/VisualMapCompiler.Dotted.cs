@@ -66,7 +66,8 @@ internal static partial class VisualMapCompiler {
                         var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]!
                             : category + (formatted.Length > 0 ? " " + formatted : "");
                         AddMapLabel(builder, labels, text, text, point, MapDataStyle(chart, context, index), id + "-label", "dotted-map-data-label", plot, radius + context.Theme.Spacing, 50,
-                            series.DataLabelPlacement ?? chart.Options.DataLabelPlacement);
+                            series.DataLabelPlacement ?? chart.Options.DataLabelPlacement, leaderColor: color, leaderPaint: paint,
+                            leaderRadius: radius + Math.Max(1, dot * .55) / 2);
                     }
                 }
             }

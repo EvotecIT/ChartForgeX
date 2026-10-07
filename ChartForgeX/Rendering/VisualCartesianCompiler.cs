@@ -76,10 +76,14 @@ internal static partial class VisualCartesianCompiler {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.insufficient-space", "No plotting area remains after measuring the frame and axes."));
             return;
         }
+        var labelBounds = plot;
+        var horizontalTotals = horizontal && chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked
+            ? ResolveHorizontalTotals(chart, context, builder, colors) : Array.Empty<HorizontalStackTotal>();
+        if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(plot, horizontalTotals, context.Theme.Spacing);
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         using (builder.PushClip(viewport)) {
-            if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels);
+            if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
         }
         var labels = new CartesianLabels();
@@ -111,10 +115,10 @@ internal static partial class VisualCartesianCompiler {
                 DrawAnnotations(chart, context, builder, plot, map, colors, false);
         }
         if (chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked) {
-            if (horizontal) AddHorizontalTotals(chart, context, builder, plot, map, colors, labels);
+            if (horizontal) AddHorizontalTotals(horizontalTotals, context, builder, map, labels);
             else AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, colors, labels);
         }
-        DrawDataLabels(context, builder, plot, labels, obstacles);
+        DrawDataLabels(context, builder, labelBounds, labels, obstacles);
     }
 
     private static void Validate(Chart chart) {

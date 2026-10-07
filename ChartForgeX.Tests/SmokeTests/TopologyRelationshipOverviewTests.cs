@@ -31,7 +31,7 @@ internal static partial class SmokeTests {
         var markers = TopologyEntity(svg, "edge", "domain-finding").Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").ToArray();
         Assert(markers.Length == 1 && (string?)markers[0].Attribute("fill") == "none" && markers[0].Attribute("d")!.Value.Count(character => character == 'L') == 2, "Relationship overview topology should use a native open chevron with two stroked arms.");
         Assert(svg.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview topology should support explicit relationship colors independent from health status.");
-        Assert(svg.Contains("stroke=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview edge colors should be used by the route renderer.");
+        Assert(TopologyEdgeLine(svg, "domain-finding").RenderedColor("stroke").ToHex() == "#DC2626", "Relationship overview edge colors should be used by the route renderer while retaining highlight opacity.");
         Assert(markers[0].RenderedColor("stroke").ToHex() == "#DC2626", "Native direction markers should use the explicit relationship color.");
         Assert(svg.Contains(">Links<", StringComparison.Ordinal), "Relationship overview topology should preserve caller-shaped legends.");
         Assert(TopologyRoleTexts(svg, "legend-label").Length == 3, "The common legend should render all caller-shaped relationship entries.");
@@ -43,7 +43,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Confidence 92%<", StringComparison.Ordinal), "Topology node subtitles should preserve the first explicit subtitle line.");
         Assert(svg.Contains(">24 linked records<", StringComparison.Ordinal), "Topology node subtitles should render explicit second subtitle lines.");
         Assert(svg.Contains("data-edge-line-style=\"Dotted\"", StringComparison.Ordinal), "Relationship overview topology should keep typed dotted relationship links.");
-        Assert(svg.Contains("cfx-topology--selected", StringComparison.Ordinal), "Relationship overview preset should still support selected record highlighting.");
+        var selectedDomain = TopologyEntity(svg, "node", "domain");
+        Assert((string?)selectedDomain.Attribute("data-cfx-selected") == "true"
+            && selectedDomain.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-node-surface" && (double?)element.Attribute("stroke-width") > 2),
+            "Relationship overview preset should expose selected records and paint a stronger selection outline.");
         Assert(chart.ToPng(options).Length > 64, "Relationship overview topology should render multiline cards as PNG.");
     }
 

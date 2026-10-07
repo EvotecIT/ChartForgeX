@@ -109,6 +109,33 @@ public sealed class V2MapTests {
     }
 
     [Fact]
+    public void DottedLabelLeadersJoinTheirMarkerToMeasuredTextWithSharedHaloAndNativeInk() {
+        var color = ChartColor.FromHex("#DC2626");
+        var chart = Chart.Create().AddDottedMap("Cities", new[] { new ChartMapPoint("Warsaw", 19.1451, 51.9194, 142, color) })
+            .WithMapViewport(ChartMapViewport.Europe()).WithDataLabels();
+        var scene = Compile(chart);
+        var point = Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "dotted-map-point");
+        var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "dotted-map-data-label");
+        var leader = Assert.Single(scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "dotted-map-label-leader");
+        var halo = Assert.Single(scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "dotted-map-label-leader-halo");
+        Assert.Equal(color, leader.Stroke);
+        Assert.True(halo.StrokeWidth > leader.StrokeWidth && halo.Stroke!.Value.A < color.A);
+        var startDistance = Math.Sqrt(Math.Pow(leader.Start.X - point.Cx, 2) + Math.Pow(leader.Start.Y - point.Cy, 2));
+        Assert.True(startDistance > point.Rx, "Leaders must start outside the painted observation circle.");
+        var textBounds = new ChartRect(label.X, label.Baseline - label.Text.Ascent, label.Text.Metrics.Width, label.Text.Metrics.Height);
+        Assert.False(leader.End.X >= textBounds.Left && leader.End.X <= textBounds.Right && leader.End.Y >= textBounds.Top && leader.End.Y <= textBounds.Bottom,
+            "Leader strokes must stop before the measured label rectangle.");
+        var image = VisualSceneRasterRenderer.Render(scene, supersampling: 1);
+        var x = (int)Math.Round((leader.Start.X + leader.End.X) / 2); var y = (int)Math.Round((leader.Start.Y + leader.End.Y) / 2);
+        Assert.Contains(Enumerable.Range(-1, 3).SelectMany(dy => Enumerable.Range(-1, 3).Select(dx => ((y + dy) * image.Width + x + dx) * 4)),
+            pixel => image.Pixels[pixel] > 150 && image.Pixels[pixel + 1] < 90 && image.Pixels[pixel + 3] > 0);
+        var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(scene));
+        Assert.Contains(svg.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "dotted-map-label-leader-halo");
+        chart.WithDataLabels(false);
+        Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role?.StartsWith("dotted-map-label-leader", StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
     public void DottedWeightsUseSeparateMagnitudeValuesAndRetainInvisibleSourceIdentity() {
         var color = ChartColor.FromHex("#123456"); var calls = 0;
         var chart = Chart.Create().AddDottedMap("Cities", new[] { new ChartMapPoint("Small", 15, 50, 10), new ChartMapPoint("Large", 20, 52, 100, color),
