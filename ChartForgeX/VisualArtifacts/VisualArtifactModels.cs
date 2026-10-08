@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Accessibility;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -100,6 +101,11 @@ public sealed class VisualArtifact {
 
     /// <summary>Gets or sets the renderer-independent artifact model.</summary>
     public object? Model { get; set; }
+
+    /// <summary>Gets or sets a producer-owned static presentation, independently of the semantic model.</summary>
+    /// <remarks>Optional packages and decorators supply this contract without registering types in the core.
+    /// Null renders the model through its own static contract or the core's native producers.</remarks>
+    public IStaticVisualSource? RenderSource { get; set; }
 
     /// <summary>Gets or sets the static export formats supported by this artifact.</summary>
     public VisualArtifactExportFormat ExportFormats {

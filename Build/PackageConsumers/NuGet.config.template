@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <fallbackPackageFolders><clear /></fallbackPackageFolders>
+  <packageSources>
+    <clear />
+    <add key="staged-chartforgex" value="{PackageRoot}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+  <packageSourceMapping>
+    <clear />
+    <packageSource key="staged-chartforgex">
+      <package pattern="ChartForgeX" />
+      <package pattern="ChartForgeX.*" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="Microsoft.*" />
+      <package pattern="NETStandard.Library*" />
+      <package pattern="System.*" />
+      <package pattern="runtime.*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>

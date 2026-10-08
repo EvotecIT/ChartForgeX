@@ -1,0 +1,397 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.release-validation.schema.json",
+  "SchemaVersion": 1,
+  "ProjectRoot": "../..",
+  "Packages": {
+    "Path": "{PackageRoot}",
+    "ExactSet": true,
+    "SameVersion": true,
+    "VerifySignatures": false,
+    "Items": [
+      {
+        "Id": "ChartForgeX",
+        "RequiredEntries": [
+          "README.md",
+          "licenses/Unicode-LICENSE.txt",
+          "ChartForgeX.png",
+          "lib/net472/ChartForgeX.dll",
+          "lib/net472/ChartForgeX.xml",
+          "lib/netstandard2.0/ChartForgeX.dll",
+          "lib/netstandard2.0/ChartForgeX.xml",
+          "lib/net8.0/ChartForgeX.dll",
+          "lib/net8.0/ChartForgeX.xml",
+          "lib/net10.0/ChartForgeX.dll",
+          "lib/net10.0/ChartForgeX.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.pdb",
+          "lib/netstandard2.0/ChartForgeX.pdb",
+          "lib/net8.0/ChartForgeX.pdb",
+          "lib/net10.0/ChartForgeX.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [],
+        "ForbiddenDependencies": [
+          "ChartForgeX.Visuals",
+          "ChartForgeX.Stories",
+          "ChartForgeX.Interactivity",
+          "ChartForgeX.Interactivity.Html",
+          "ChartForgeX.Markup",
+          "ChartForgeX.Mermaid",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Visuals",
+        "RequiredEntries": [
+          "README.md",
+          "licenses/Unicode-LICENSE.txt",
+          "ChartForgeX.png",
+          "lib/net472/ChartForgeX.Visuals.dll",
+          "lib/net472/ChartForgeX.Visuals.xml",
+          "lib/netstandard2.0/ChartForgeX.Visuals.dll",
+          "lib/netstandard2.0/ChartForgeX.Visuals.xml",
+          "lib/net8.0/ChartForgeX.Visuals.dll",
+          "lib/net8.0/ChartForgeX.Visuals.xml",
+          "lib/net10.0/ChartForgeX.Visuals.dll",
+          "lib/net10.0/ChartForgeX.Visuals.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Visuals.pdb",
+          "lib/netstandard2.0/ChartForgeX.Visuals.pdb",
+          "lib/net8.0/ChartForgeX.Visuals.pdb",
+          "lib/net10.0/ChartForgeX.Visuals.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [
+          "ChartForgeX"
+        ],
+        "ForbiddenDependencies": [
+          "ChartForgeX.Stories",
+          "ChartForgeX.Interactivity",
+          "ChartForgeX.Interactivity.Html",
+          "ChartForgeX.Markup",
+          "ChartForgeX.Mermaid",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Stories",
+        "RequiredEntries": [
+          "README.md",
+          "licenses/Unicode-LICENSE.txt",
+          "ChartForgeX.png",
+          "lib/net472/ChartForgeX.Stories.dll",
+          "lib/net472/ChartForgeX.Stories.xml",
+          "lib/netstandard2.0/ChartForgeX.Stories.dll",
+          "lib/netstandard2.0/ChartForgeX.Stories.xml",
+          "lib/net8.0/ChartForgeX.Stories.dll",
+          "lib/net8.0/ChartForgeX.Stories.xml",
+          "lib/net10.0/ChartForgeX.Stories.dll",
+          "lib/net10.0/ChartForgeX.Stories.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Stories.pdb",
+          "lib/netstandard2.0/ChartForgeX.Stories.pdb",
+          "lib/net8.0/ChartForgeX.Stories.pdb",
+          "lib/net10.0/ChartForgeX.Stories.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [
+          "ChartForgeX"
+        ],
+        "ForbiddenDependencies": [
+          "ChartForgeX.Visuals",
+          "ChartForgeX.Interactivity",
+          "ChartForgeX.Interactivity.Html",
+          "ChartForgeX.Markup",
+          "ChartForgeX.Mermaid",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Interactivity",
+        "RequiredEntries": [
+          "README.md",
+          "ChartForgeX.png",
+          "lib/net472/ChartForgeX.Interactivity.dll",
+          "lib/net472/ChartForgeX.Interactivity.xml",
+          "lib/netstandard2.0/ChartForgeX.Interactivity.dll",
+          "lib/netstandard2.0/ChartForgeX.Interactivity.xml",
+          "lib/net8.0/ChartForgeX.Interactivity.dll",
+          "lib/net8.0/ChartForgeX.Interactivity.xml",
+          "lib/net10.0/ChartForgeX.Interactivity.dll",
+          "lib/net10.0/ChartForgeX.Interactivity.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Interactivity.pdb",
+          "lib/netstandard2.0/ChartForgeX.Interactivity.pdb",
+          "lib/net8.0/ChartForgeX.Interactivity.pdb",
+          "lib/net10.0/ChartForgeX.Interactivity.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [],
+        "ForbiddenDependencies": [
+          "ChartForgeX",
+          "ChartForgeX.Visuals",
+          "ChartForgeX.Stories",
+          "ChartForgeX.Interactivity.Html",
+          "ChartForgeX.Markup",
+          "ChartForgeX.Mermaid",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Interactivity.Html",
+        "RequiredEntries": [
+          "README.md",
+          "ChartForgeX.png",
+          "lib/net472/ChartForgeX.Interactivity.Html.dll",
+          "lib/net472/ChartForgeX.Interactivity.Html.xml",
+          "lib/netstandard2.0/ChartForgeX.Interactivity.Html.dll",
+          "lib/netstandard2.0/ChartForgeX.Interactivity.Html.xml",
+          "lib/net8.0/ChartForgeX.Interactivity.Html.dll",
+          "lib/net8.0/ChartForgeX.Interactivity.Html.xml",
+          "lib/net10.0/ChartForgeX.Interactivity.Html.dll",
+          "lib/net10.0/ChartForgeX.Interactivity.Html.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Interactivity.Html.pdb",
+          "lib/netstandard2.0/ChartForgeX.Interactivity.Html.pdb",
+          "lib/net8.0/ChartForgeX.Interactivity.Html.pdb",
+          "lib/net10.0/ChartForgeX.Interactivity.Html.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [
+          "ChartForgeX",
+          "ChartForgeX.Interactivity"
+        ],
+        "ForbiddenDependencies": [
+          "ChartForgeX.Visuals",
+          "ChartForgeX.Stories",
+          "ChartForgeX.Markup",
+          "ChartForgeX.Mermaid",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Markup",
+        "RequiredEntries": [
+          "README.md",
+          "schemas/chartforgex-markup-v1.schema.json",
+          "lib/net472/ChartForgeX.Markup.dll",
+          "lib/net472/ChartForgeX.Markup.xml",
+          "lib/netstandard2.0/ChartForgeX.Markup.dll",
+          "lib/netstandard2.0/ChartForgeX.Markup.xml",
+          "lib/net8.0/ChartForgeX.Markup.dll",
+          "lib/net8.0/ChartForgeX.Markup.xml",
+          "lib/net10.0/ChartForgeX.Markup.dll",
+          "lib/net10.0/ChartForgeX.Markup.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Markup.pdb",
+          "lib/netstandard2.0/ChartForgeX.Markup.pdb",
+          "lib/net8.0/ChartForgeX.Markup.pdb",
+          "lib/net10.0/ChartForgeX.Markup.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [
+          "ChartForgeX",
+          "ChartForgeX.Visuals"
+        ],
+        "ForbiddenDependencies": [
+          "ChartForgeX.Stories",
+          "ChartForgeX.Interactivity",
+          "ChartForgeX.Interactivity.Html",
+          "ChartForgeX.Mermaid",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Mermaid",
+        "RequiredEntries": [
+          "README.md",
+          "ChartForgeX.png",
+          "lib/net472/ChartForgeX.Mermaid.dll",
+          "lib/net472/ChartForgeX.Mermaid.xml",
+          "lib/netstandard2.0/ChartForgeX.Mermaid.dll",
+          "lib/netstandard2.0/ChartForgeX.Mermaid.xml",
+          "lib/net8.0/ChartForgeX.Mermaid.dll",
+          "lib/net8.0/ChartForgeX.Mermaid.xml",
+          "lib/net10.0/ChartForgeX.Mermaid.dll",
+          "lib/net10.0/ChartForgeX.Mermaid.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Mermaid.pdb",
+          "lib/netstandard2.0/ChartForgeX.Mermaid.pdb",
+          "lib/net8.0/ChartForgeX.Mermaid.pdb",
+          "lib/net10.0/ChartForgeX.Mermaid.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [
+          "ChartForgeX"
+        ],
+        "ForbiddenDependencies": [
+          "ChartForgeX.Visuals",
+          "ChartForgeX.Stories",
+          "ChartForgeX.Interactivity",
+          "ChartForgeX.Interactivity.Html",
+          "ChartForgeX.Markup",
+          "ChartForgeX.Markup.Mermaid",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      },
+      {
+        "Id": "ChartForgeX.Markup.Mermaid",
+        "RequiredEntries": [
+          "README.md",
+          "lib/net472/ChartForgeX.Markup.Mermaid.dll",
+          "lib/net472/ChartForgeX.Markup.Mermaid.xml",
+          "lib/netstandard2.0/ChartForgeX.Markup.Mermaid.dll",
+          "lib/netstandard2.0/ChartForgeX.Markup.Mermaid.xml",
+          "lib/net8.0/ChartForgeX.Markup.Mermaid.dll",
+          "lib/net8.0/ChartForgeX.Markup.Mermaid.xml",
+          "lib/net10.0/ChartForgeX.Markup.Mermaid.dll",
+          "lib/net10.0/ChartForgeX.Markup.Mermaid.xml"
+        ],
+        "ForbiddenEntries": [
+          "tools/**",
+          "runtimes/**"
+        ],
+        "SymbolEntries": [
+          "lib/net472/ChartForgeX.Markup.Mermaid.pdb",
+          "lib/netstandard2.0/ChartForgeX.Markup.Mermaid.pdb",
+          "lib/net8.0/ChartForgeX.Markup.Mermaid.pdb",
+          "lib/net10.0/ChartForgeX.Markup.Mermaid.pdb"
+        ],
+        "DependencyFrameworks": [
+          "net472",
+          "netstandard2.0",
+          "net8.0",
+          "net10.0"
+        ],
+        "RequiredDependencies": [
+          "ChartForgeX.Markup",
+          "ChartForgeX.Mermaid"
+        ],
+        "ForbiddenDependencies": [
+          "ChartForgeX",
+          "ChartForgeX.Visuals",
+          "ChartForgeX.Stories",
+          "ChartForgeX.Interactivity",
+          "ChartForgeX.Interactivity.Html",
+          "Microsoft.NETFramework.ReferenceAssemblies.net472",
+          "HtmlTinkerX",
+          "Svg.Skia",
+          "Microsoft.NET.Test.Sdk",
+          "xunit",
+          "xunit.runner.visualstudio"
+        ]
+      }
+    ]
+  }
+}

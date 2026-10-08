@@ -15,7 +15,6 @@ internal static class RasterRenderer {
         return grid.Prepare(request.Context).ToRgba(request.RasterOptions);
     }
 
-    internal static RgbaImage RenderImage(IVisualBlock block) => new PngVisualBlockRenderer().RenderImage(block);
+    internal static RgbaImage RenderImage(IVisualBlock block) => block.RenderRgba();
 
-    internal static RgbaImage RenderImage(VisualGrid grid) => new PngVisualGridRenderer().RenderImage(grid);
 }

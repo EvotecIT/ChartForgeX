@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Globalization;
 using ChartForgeX.SvgRaster;
 
 /// <summary>
@@ -13,7 +14,8 @@ public static partial class GalleryWriter {
         var hasWatermark = html.Contains("data-cfx-watermark", StringComparison.Ordinal);
         var hasExpectedOverflow = hasWatermark
             ? html.Contains("overflow:hidden", StringComparison.Ordinal)
-            : html.Contains("overflow:visible", StringComparison.Ordinal) || HasUnclippedNativeGrid(html, css);
+            : html.Contains("overflow:visible", StringComparison.Ordinal) || HasUnclippedNativeGrid(html, css)
+                || HasClippedStaticArtifact(html, css);
         var hasFlatBody = Regex.Matches(css, "(?:^|})\\s*body\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase)
             .Select(match => Regex.Match(match.Groups["body"].Value, "(?:^|;)\\s*background(?:-color)?\\s*:\\s*(?<color>[^;]+)", RegexOptions.IgnoreCase))
             .Where(match => match.Success).Take(1)
@@ -47,5 +49,21 @@ public static partial class GalleryWriter {
         // Do not accept default overflow merely because the wrapper has a familiar class.
         // A clipping/scrolling declaration on its host is still a quality failure.
         return !Regex.IsMatch(css + wrapper.Value, "overflow(?:-[xy])?\\s*:\\s*(?:hidden|clip|auto|scroll)\\b", RegexOptions.IgnoreCase);
+    }
+
+    private static bool HasClippedStaticArtifact(string html, string css) {
+        // A completed static source has the same finite picture boundary as its PNG.
+        // Clip its SVG viewport, while preserving ordinary overflow on the page and host.
+        if (!Regex.IsMatch(html, "<div\\s[^>]*class=\"chartforgex-visual-artifact\"[^>]*>", RegexOptions.IgnoreCase)) return false;
+        var rule = Regex.Match(css, "\\.chartforgex-visual-artifact\\s+svg\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase);
+        if (!rule.Success || !Regex.IsMatch(rule.Groups["body"].Value, "(?:^|;)\\s*overflow\\s*:\\s*hidden\\s*(?:;|$)", RegexOptions.IgnoreCase)) return false;
+        var hostRules = Regex.Matches(css, "(?:^|})\\s*(?:html,body|body|\\.chartforgex-visual-artifact)\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase);
+        if (hostRules.Any(host => Regex.IsMatch(host.Groups["body"].Value, "overflow(?:-[xy])?\\s*:", RegexOptions.IgnoreCase))) return false;
+        var svg = Regex.Match(html, "<svg\\s[^>]*>", RegexOptions.IgnoreCase);
+        var viewBox = Regex.Match(svg.Value, "(?:^|\\s)viewBox=\"(?<bounds>[^\"]+)\"", RegexOptions.IgnoreCase);
+        var bounds = Regex.Split(viewBox.Groups["bounds"].Value.Trim(), "[\\s,]+");
+        return viewBox.Success && bounds.Length == 4 && bounds.All(value =>
+            double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && double.IsFinite(number))
+            && double.Parse(bounds[2], CultureInfo.InvariantCulture) > 0 && double.Parse(bounds[3], CultureInfo.InvariantCulture) > 0;
     }
 }

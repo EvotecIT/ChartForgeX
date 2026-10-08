@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "baselineSha": "9cd02a52af97426eab4bf64b9775ce93057e5986",
+  "candidateSha": "dde212476007fd911ae7ff6bdb4581ad7b85891c",
+  "assemblies": {
+    "ChartForgeX": 780,
+    "ChartForgeX.Visuals": 79,
+    "ChartForgeX.Stories": 55,
+    "ChartForgeX.Interactivity": 30,
+    "ChartForgeX.Interactivity.Html": 43,
+    "ChartForgeX.Markup": 22,
+    "ChartForgeX.Mermaid": 106,
+    "ChartForgeX.Markup.Mermaid": 4
+  },
+  "exportedRows": 7858,
+  "changes": {
+    "assembly-move": 1124,
+    "retained": 6546,
+    "removed-or-replaced": 153,
+    "assembly-move-and-signature-change": 14,
+    "signature-change": 1
+  },
+  "scope": "Source symbols; packed four-framework runtime/dependency/resource proof is a separate gate."
+}

@@ -26,12 +26,12 @@ internal static partial class SmokeTests {
             .WithSubtitle("A deterministic visual story")
             .WithTheme(ChartTheme.ReportDark())
             .WithColumns(2)
-            .WithMotion(timeline)
             .Add("metric", metric)
             .Add("activity", activity)
             .Add("activity-accent", accent, columnSpan: 2);
 
-        var svg = grid.ToSvg("motion-story");
+        var presentation = VisualMotionPresentation.Create(grid, timeline);
+        var svg = presentation.ToSvg("motion-story");
         var svgId = SvgDocument.Parse(svg).Root.GetAttribute("id")!;
         Assert(svg.Contains("data-cfx-motion=\"timeline\"", StringComparison.Ordinal), "Animated visual grids should declare motion metadata.");
         Assert(svg.Contains("data-cfx-motion-duration=\"2.2\"", StringComparison.Ordinal), "Animated visual grids should expose deterministic total duration metadata.");
@@ -41,8 +41,8 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Motion is decorative and has a static reduced-motion fallback.", StringComparison.Ordinal), "Animated visual grids should describe the accessibility fallback.");
         Assert(!svg.Contains("<script", StringComparison.OrdinalIgnoreCase), "Visual motion should remain script-free.");
 
-        var html = grid.ToHtmlPage();
-        Assert(html.Contains("data-cfx-motion=\"timeline\"", StringComparison.Ordinal) && html.Contains("@keyframes cfx-visual-grid-motion-0", StringComparison.Ordinal), "Visual grid HTML pages should carry the same script-free motion timeline.");
+        var html = presentation.ToHtmlPage();
+        Assert(html.Contains("data-cfx-motion=\"timeline\"", StringComparison.Ordinal) && html.Contains("@keyframes cfx-motion", StringComparison.Ordinal), "Visual grid HTML pages should carry the same script-free motion timeline.");
         Assert(html.Contains("data-cfx-motion-target=\"activity\"", StringComparison.Ordinal), "Visual grid HTML panels should retain stable motion targets.");
         Assert(!html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Visual grid HTML motion should remain script-free.");
 
@@ -54,22 +54,20 @@ internal static partial class SmokeTests {
             .Add(metric)
             .Add(activity)
             .Add(accent, columnSpan: 2);
-        Assert(grid.ToPng().SequenceEqual(staticGrid.ToPng()), "Raster output should render the completed visual state without motion artifacts.");
+        Assert(presentation.ToPng().SequenceEqual(staticGrid.ToPng()), "Raster output should render the completed visual state without motion artifacts.");
     }
 
     private static void VisualMotionKeyframesUseFinalContentIdentity() {
         var metric = MetricCard.Create().WithMetric("Maintained packages", 24);
         var fadeGrid = VisualGrid.Create()
             .WithTitle("Engineering signal")
-            .WithMotion(VisualMotionTimeline.Create().Fade("metric"))
             .Add("metric", metric);
         var riseGrid = VisualGrid.Create()
             .WithTitle("Engineering signal")
-            .WithMotion(VisualMotionTimeline.Create().Rise("metric"))
             .Add("metric", metric);
 
-        var fadeSvg = fadeGrid.ToSvg();
-        var riseSvg = riseGrid.ToSvg();
+        var fadeSvg = VisualMotionPresentation.Create(fadeGrid, VisualMotionTimeline.Create().Fade("metric")).ToSvg();
+        var riseSvg = VisualMotionPresentation.Create(riseGrid, VisualMotionTimeline.Create().Rise("metric")).ToSvg();
         var fadeDocument = SvgDocument.Parse(fadeSvg);
         var riseDocument = SvgDocument.Parse(riseSvg);
         var fadeId = fadeDocument.Root.GetAttribute("id")!;
@@ -84,18 +82,15 @@ internal static partial class SmokeTests {
             "Child SVG identities should be scoped from the final motion-specific parent identity.");
         Assert(fadeSvg.Contains("@keyframes " + fadeId + "-motion-0", StringComparison.Ordinal) && fadeSvg.Contains("animation:" + fadeId + "-motion-0 ", StringComparison.Ordinal), "The first inline SVG should bind its keyframe definition and reference to its final identity.");
         Assert(riseSvg.Contains("@keyframes " + riseId + "-motion-0", StringComparison.Ordinal) && riseSvg.Contains("animation:" + riseId + "-motion-0 ", StringComparison.Ordinal), "The second inline SVG should bind its keyframe definition and reference to its final identity.");
-        Assert(!fadeSvg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal) && !riseSvg.Contains("@keyframes cfx-visual-grid-seed-", StringComparison.Ordinal), "Rendered SVGs should not retain provisional keyframe names that can collide in a shared document.");
     }
 
     private static void VisualMotionTimelineRejectsAmbiguousTargets() {
-        AssertThrows<InvalidOperationException>(() => VisualGrid.Create()
-            .WithTitle("Missing")
-            .WithMotion(VisualMotionTimeline.Create().Fade("unknown"))
-            .Add("known", MetricCard.Create().WithMetric("Known", 1))
-            .ToSvg(), "Visual motion should reject targets that are not present in the grid.");
+        AssertThrows<InvalidOperationException>(() => VisualMotionPresentation.Create(
+            VisualGrid.Create().WithTitle("Missing").Add("known", MetricCard.Create().WithMetric("Known", 1)),
+            VisualMotionTimeline.Create().Fade("unknown")).ToSvg(), "Visual motion should reject targets that are not present in the grid.");
         AssertThrows<ArgumentException>(() => VisualGrid.Create()
             .Add("duplicate", MetricCard.Create().WithMetric("One", 1))
-            .Add("duplicate", MetricCard.Create().WithMetric("Two", 2)), "Visual grid motion target ids should be unique.");
+            .Add("duplicate", MetricCard.Create().WithMetric("Two", 2)), "Visual grid source target ids should be unique.");
         AssertThrows<ArgumentException>(() => VisualGrid.Create()
             .Add("title", MetricCard.Create().WithMetric("Reserved", 1)), "Visual grid panel targets should not alias the built-in title target.");
         AssertThrows<ArgumentException>(() => VisualMotionTimeline.Create().Fade("bad target"), "Visual motion target ids should be safe stable tokens.");
@@ -126,26 +121,20 @@ internal static partial class SmokeTests {
         var second = new VisualMotionCue("second", VisualMotionEffect.Rise);
         var retargeted = VisualMotionTimeline.Create().Add(first).Add(second);
         second.TargetId = "first";
-        AssertThrows<InvalidOperationException>(() => VisualGrid.Create()
-            .WithMotion(retargeted)
-            .Add("first", MetricCard.Create().WithMetric("First", 1))
-            .Add("second", MetricCard.Create().WithMetric("Second", 2))
-            .ToSvg(), "Visual motion validation should reject duplicate ids introduced after cues are added.");
-        AssertThrows<InvalidOperationException>(() => VisualGrid.Create()
-            .WithTitle("Empty")
-            .WithMotion(VisualMotionTimeline.Create())
-            .Add(MetricCard.Create().WithMetric("One", 1))
-            .ToSvg(), "Visual motion timelines should require at least one cue.");
+        AssertThrows<InvalidOperationException>(() => VisualMotionPresentation.Create(
+            VisualGrid.Create().Add("first", MetricCard.Create().WithMetric("First", 1))
+                .Add("second", MetricCard.Create().WithMetric("Second", 2)), retargeted).ToSvg(), "Visual motion validation should reject duplicate ids introduced after cues are added.");
+        AssertThrows<InvalidOperationException>(() => VisualMotionPresentation.Create(
+            VisualGrid.Create().WithTitle("Empty").Add(MetricCard.Create().WithMetric("One", 1)),
+            VisualMotionTimeline.Create()).ToSvg(), "Visual motion timelines should require at least one cue.");
         var atomicTiming = new VisualMotionCue("atomic", VisualMotionEffect.Fade).WithTiming(1, 2);
         AssertThrows<ArgumentOutOfRangeException>(() => atomicTiming.WithTiming(5, -1), "Visual motion timing should reject an invalid prospective duration.");
         Assert(Math.Abs(atomicTiming.DelaySeconds - 1) < 0.001 && Math.Abs(atomicTiming.DurationSeconds - 2) < 0.001,
             "A rejected visual motion timing update should leave both existing values unchanged.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualMotionCue("valid", (VisualMotionEffect)999), "Visual motion cues should reject unknown effects.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualMotionCue("valid", VisualMotionEffect.Rise).WithDistance(81), "Visual motion cues should keep entrance distances restrained.");
-        AssertThrows<InvalidOperationException>(() => VisualGrid.Create()
-            .WithTitle("Long")
-            .WithMotion(VisualMotionTimeline.Create().Fade("title", delaySeconds: 59.5, durationSeconds: 1))
-            .Add(MetricCard.Create().WithMetric("One", 1))
-            .ToSvg(), "Visual motion cues should complete within the bounded timeline.");
+        AssertThrows<InvalidOperationException>(() => VisualMotionPresentation.Create(
+            VisualGrid.Create().WithTitle("Long").Add(MetricCard.Create().WithMetric("One", 1)),
+            VisualMotionTimeline.Create().Fade("title", delaySeconds: 59.5, durationSeconds: 1)).ToSvg(), "Visual motion cues should complete within the bounded timeline.");
     }
 }

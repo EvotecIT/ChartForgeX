@@ -28,8 +28,7 @@ internal static partial class TopologyVisualExamples {
             .WithMarker(5);
         var meshMotionOptions = new TopologyRenderOptions { IncludeIconLabels = true, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
             .WithMonitoringDashboardStyle()
-            .WithActiveScenario("client-request-europe")
-            .WithMotion(meshMotion);
+            .WithActiveScenario("client-request-europe");
         var replicationHealthOptions = new TopologyRenderOptions { IncludeEdgeLabels = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Explicit }
             .WithMonitoringDashboardStyle()
             .WithNeutralGroupSurfaces();
@@ -82,7 +81,7 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-readable-dense-replication", BuildReadableDenseReplication(), "Readable Dense Replication", "Opt-in wrapped site rows, card-based medium-sized groups, and routes planned together: clear of cards, captions and group headers, on separate lanes where they share a corridor, with labels on their routes.", new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
         SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, scenario switching, and offender highlighting support.", meshOptions);
-        SaveTopology(target, artifacts, "visual-replication-mesh-route-motion", BuildReplicationMeshExplorer(), "Replication Mesh Route Motion", "Script-free SVG route pulse plus sampled animated GIF and APNG exports for a scenario-driven topology route.", meshMotionOptions);
+        SaveTopology(target, artifacts, "visual-replication-mesh-route-motion", BuildReplicationMeshExplorer(), "Replication Mesh Route Motion", "Script-free SVG route pulse plus sampled animated GIF and APNG exports for a scenario-driven topology route.", meshMotionOptions, meshMotion);
         SaveTopology(target, artifacts, "visual-force-relationship-graph", BuildForceRelationshipGraph(), "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
         SaveTopology(target, artifacts, "visual-force-busy-relationship-graph", BuildBusyForceRelationshipGraph(), "Busy Force Relationship Graph", "Busy force-directed relationship graph using degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
         var relationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
@@ -742,15 +741,21 @@ internal static partial class TopologyVisualExamples {
         }
     }
 
-    private static void SaveTopology(string target, List<VisualArtifact> artifacts, string name, TopologyChart chart, string title, string notes, TopologyRenderOptions? options = null) {
-        chart.SaveSvg(Path.Combine(target, name + ".svg"), options);
-        if (options?.EnableHtmlInteractions == true) chart.SaveInteractiveHtml(Path.Combine(target, name + ".html"), options);
-        else chart.SaveHtml(Path.Combine(target, name + ".html"), options);
-        chart.SavePng(Path.Combine(target, name + ".png"), options);
-        var hasMotion = options?.Motion != null;
-        if (hasMotion) chart.SaveGif(Path.Combine(target, name + ".gif"), options);
-        if (hasMotion) chart.SaveApng(Path.Combine(target, name + ".apng"), options);
-        artifacts.Add(new VisualArtifact(name, title, "topology", notes, hasMotion, hasMotion));
+    private static void SaveTopology(string target, List<VisualArtifact> artifacts, string name, TopologyChart chart, string title, string notes, TopologyRenderOptions? options = null, TopologyMotionOptions? motion = null) {
+        if (motion != null) {
+            var presentation = chart.WithMotion(motion, options);
+            File.WriteAllText(Path.Combine(target, name + ".svg"), presentation.ToSvg());
+            File.WriteAllText(Path.Combine(target, name + ".html"), presentation.ToHtmlPage());
+            File.WriteAllBytes(Path.Combine(target, name + ".png"), presentation.ToPng());
+            File.WriteAllBytes(Path.Combine(target, name + ".gif"), presentation.ToGif());
+            File.WriteAllBytes(Path.Combine(target, name + ".apng"), presentation.ToApng());
+        } else {
+            chart.SaveSvg(Path.Combine(target, name + ".svg"), options);
+            if (options?.EnableHtmlInteractions == true) chart.SaveInteractiveHtml(Path.Combine(target, name + ".html"), options);
+            else chart.SaveHtml(Path.Combine(target, name + ".html"), options);
+            chart.SavePng(Path.Combine(target, name + ".png"), options);
+        }
+        artifacts.Add(new VisualArtifact(name, title, "topology", notes, motion != null, motion != null));
     }
 
     private static void SaveMap(string target, List<VisualArtifact> artifacts, string name, Chart chart, string title, string notes) {

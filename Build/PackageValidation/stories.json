@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.release-validation.schema.json",
+  "SchemaVersion": 1,
+  "ProjectRoot": "../..",
+  "Packages": {
+    "Path": "{PackageRoot}",
+    "ExactSet": false,
+    "SameVersion": true,
+    "VerifySignatures": false,
+    "Items": [
+      {
+        "Id": "ChartForgeX"
+      },
+      {
+        "Id": "ChartForgeX.Stories"
+      }
+    ]
+  },
+  "Consumers": [
+    {
+      "SourceDirectory": "Build/PackageConsumers",
+      "ProjectFile": "Stories/StoriesPackageProbe.csproj",
+      "Frameworks": [
+        "net8.0",
+        "net10.0"
+      ],
+      "WindowsFrameworks": [
+        "net472"
+      ],
+      "DependencySources": [
+        "https://api.nuget.org/v3/index.json"
+      ]
+    }
+  ],
+  "Commands": [
+    {
+      "Name": "Compile Stories package consumer (netstandard2.0)",
+      "FileName": "dotnet",
+      "Arguments": [
+        "build",
+        "{CompileRoot}/Stories/StoriesPackageProbe.csproj",
+        "--framework",
+        "netstandard2.0",
+        "--configuration",
+        "Release",
+        "--nologo",
+        "-p:PackageVersion={Version}",
+        "-p:RestoreConfigFile={CompileRoot}/NuGet.Config",
+        "-p:RestorePackagesPath={CompileRoot}/packages"
+      ],
+      "WorkingDirectory": "{CompileRoot}",
+      "TimeoutSeconds": 600
+    }
+  ]
+}

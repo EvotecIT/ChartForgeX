@@ -60,10 +60,13 @@ internal static class GifReader {
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var colorIndex = indices[y * width + x];
-                    if (colorIndex == transparentIndex) continue;
+                    var offset = ((top + y) * canvasWidth + left + x) * 4;
+                    if (colorIndex == transparentIndex) {
+                        pixels[offset + 3] = 0;
+                        continue;
+                    }
                     var paletteOffset = colorIndex * 3;
                     if (paletteOffset + 2 >= palette.Length) throw new InvalidDataException("GIF pixel references a color outside its table.");
-                    var offset = ((top + y) * canvasWidth + left + x) * 4;
                     pixels[offset] = palette[paletteOffset];
                     pixels[offset + 1] = palette[paletteOffset + 1];
                     pixels[offset + 2] = palette[paletteOffset + 2];

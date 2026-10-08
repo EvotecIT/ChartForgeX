@@ -1,5 +1,4 @@
 using System;
-using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
@@ -183,36 +182,6 @@ public sealed partial class VisualDesignTokens {
             theme.WithTypography(17, 13.5, 12, 12, 13, 12);
             theme.MarkerRadius = 3;
         }
-        return theme;
-    }
-
-    /// <summary>Applies the shared tokens to a visual-canvas renderer theme.</summary>
-    public VisualCanvasTheme ApplyTo(VisualCanvasTheme theme) {
-        if (theme == null) throw new ArgumentNullException(nameof(theme));
-        theme.Accent = Accent;
-        theme.SecondaryAccent = SecondaryAccent;
-        theme.HeroTitleColor = Foreground;
-        theme.HeroTitleAccentColor = Accent;
-        theme.SubtitleColor = MutedForeground;
-        theme.TileGlassTop = ElevatedSurface.WithOpacity(0.96);
-        theme.TileGlassBottom = Surface.WithOpacity(0.94);
-        theme.TileInnerStroke = Border.WithOpacity(0.35);
-        theme.TileLabelColor = MutedForeground;
-        theme.TileValueColor = Foreground;
-        theme.TileDetailColor = MutedForeground;
-        theme.TileProgressTrackColor = Border.WithOpacity(0.52);
-        theme.TileMiniChartFillColor = Accent.WithOpacity(0.18);
-        theme.TileMiniChartTrackColor = Border.WithOpacity(0.30);
-        theme.HeroBadgeGlowColor = SecondaryAccent.WithOpacity(0.12);
-        theme.HeroBadgeTop = ElevatedSurface;
-        theme.HeroBadgeBottom = Surface;
-        theme.HeroBadgeTextColor = Foreground;
-        theme.ImagePlaceholderFill = Surface.WithOpacity(0.68);
-        theme.ImagePlaceholderStroke = Accent.WithOpacity(0.34);
-        theme.FeatureDividerColor = Border.WithOpacity(0.32);
-        theme.FeatureLabelColor = Foreground;
-        theme.FontFamily = FontFamily;
-        theme.MonospaceFontFamily = MonospaceFontFamily;
         return theme;
     }
 

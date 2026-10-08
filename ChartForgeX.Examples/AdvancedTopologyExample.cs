@@ -47,7 +47,7 @@ internal static class AdvancedTopologyExample {
         watermark.Opacity = 0.075;
         watermark.FontSize = 34;
         watermark.Scale = 1.2;
-        render.Watermarks.Add(watermark);
+        artifact.WithWatermarks(render, watermark);
 
         artifact.SaveSvg(Path.Combine(target, "advanced-topology.svg"), render);
         artifact.SaveHtml(Path.Combine(target, "advanced-topology.html"), render);
@@ -57,6 +57,7 @@ internal static class AdvancedTopologyExample {
             Topology = render.Topology!.Clone()
         };
         diagnostic.Topology.IncludeLayoutDiagnosticOverlay = true;
-        artifact.SaveSvg(Path.Combine(target, "advanced-topology-diagnostics.svg"), diagnostic);
+        chart.ToVisualArtifact().WithWatermarks(diagnostic, watermark)
+            .SaveSvg(Path.Combine(target, "advanced-topology-diagnostics.svg"), diagnostic);
     }
 }

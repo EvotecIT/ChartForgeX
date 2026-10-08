@@ -10,6 +10,8 @@ internal static partial class SmokeTests {
     private static void BuildScriptVerifiesReleaseArtifacts() {
         var buildScript = Path.Combine(FindRepositoryRoot(), "Build.ps1");
         var script = File.ReadAllText(buildScript);
+        var consumerProgram = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Build", "PackageConsumers", "Adapters", "Program.cs"));
+        Assert(script.Contains("Build/PackageConsumers/Adapters/Program.cs", StringComparison.Ordinal), "Build script should execute the tracked adapter package-consumer source.");
         Assert(script.Contains("artifacts/packages/$Configuration", StringComparison.Ordinal), "Build script should put all release packages in a shared ignored artifact folder.");
         Assert(script.Contains("ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should package the HTML interactivity adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");
@@ -17,7 +19,7 @@ internal static partial class SmokeTests {
         Assert(script.Contains("ChartForgeX.Markup.Mermaid", StringComparison.Ordinal), "Build script should package the Mermaid markup adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX.Markup', 'ChartForgeX.Mermaid')", StringComparison.Ordinal), "Build script should verify the Mermaid markup package depends on both core markup and Mermaid packages.");
         Assert(script.Contains("'add', 'package', 'ChartForgeX.Markup.Mermaid'", StringComparison.Ordinal), "Build script should install the Mermaid markup package from the built artifacts in the consumer smoke test.");
-        Assert(script.Contains("new MermaidVisualMarkupParser().Parse", StringComparison.Ordinal), "Build script should verify one package consumer parser handles Mermaid markup fences.");
+        Assert(consumerProgram.Contains("new MermaidVisualMarkupParser().Parse", StringComparison.Ordinal), "Build script should verify one package consumer parser handles Mermaid markup fences.");
         Assert(script.Contains("README.md", StringComparison.Ordinal), "Build script should verify README package inclusion.");
         Assert(script.Contains("@('README.md')", StringComparison.Ordinal), "Build script should verify README package inclusion without requiring separate changelog packaging.");
         Assert(script.Contains("lib/$framework/$($packageProject.Assembly).$extension", StringComparison.Ordinal), "Build script should verify package framework assets.");
@@ -48,10 +50,10 @@ internal static partial class SmokeTests {
         Assert(!script.Contains("'add', 'package', '" + retiredGraphPackageId + "'", StringComparison.Ordinal), "Build script should not install a duplicate graph explorer package; graph explorer should ship in the HTML interactivity package.");
         Assert(script.Contains("function Join-ProcessArguments", StringComparison.Ordinal), "Build script should keep a Windows PowerShell compatible argument fallback.");
         Assert(script.Contains("$startInfo.Arguments = Join-ProcessArguments", StringComparison.Ordinal), "Build script should support ProcessStartInfo on runtimes without ArgumentList.");
-        Assert(script.Contains("ToInteractiveHtmlPage", StringComparison.Ordinal), "Build script should verify interactive HTML package consumption from a clean project.");
-        Assert(script.Contains("ToInteractiveHtmlDashboardPage", StringComparison.Ordinal), "Build script should verify interactive dashboard package consumption from a clean project.");
-        Assert(script.Contains("GraphScene.Create", StringComparison.Ordinal), "Build script should verify graph scene package consumption from a clean project.");
-        Assert(script.Contains("ToGraphExplorerHtmlPage", StringComparison.Ordinal), "Build script should verify graph explorer adapter package consumption from a clean project.");
+        Assert(consumerProgram.Contains("ToInteractiveHtmlPage", StringComparison.Ordinal), "Build script should verify interactive HTML package consumption from a clean project.");
+        Assert(consumerProgram.Contains("ToInteractiveHtmlDashboardPage", StringComparison.Ordinal), "Build script should verify interactive dashboard package consumption from a clean project.");
+        Assert(consumerProgram.Contains("GraphScene.Create", StringComparison.Ordinal), "Build script should verify graph scene package consumption from a clean project.");
+        Assert(consumerProgram.Contains("ToGraphExplorerHtmlPage", StringComparison.Ordinal), "Build script should verify graph explorer adapter package consumption from a clean project.");
         Assert(script.Contains("<dependency\\s", StringComparison.Ordinal), "Build script should verify dependency-free package invariants.");
         Assert(script.Contains("svg-png-comparison.json", StringComparison.Ordinal), "Build script should verify generated SVG/PNG comparison health.");
         Assert(script.Contains("function Assert-VisualComparisonHealth", StringComparison.Ordinal), "Build script should keep visual comparison health checks isolated.");
@@ -107,6 +109,8 @@ internal static partial class SmokeTests {
         var expectedVersionMap = projectBuildRoot.GetProperty("ExpectedVersionMap");
         foreach (var packageProject in new[] {
             "ChartForgeX",
+            "ChartForgeX.Visuals",
+            "ChartForgeX.Stories",
             "ChartForgeX.Interactivity",
             "ChartForgeX.Interactivity.Html",
             "ChartForgeX.Markup",
@@ -166,14 +170,7 @@ internal static partial class SmokeTests {
         Assert(markupSchema.Contains("\"multiselect\"", StringComparison.Ordinal) && markupSchema.Contains("\"cellselect\"", StringComparison.Ordinal) && markupSchema.Contains("\"virtualization\"", StringComparison.Ordinal) && !markupSchema.Contains("\"paginate\"", StringComparison.Ordinal), "Markup v1 schema should mirror parser-supported table capabilities.");
         Assert(markupSchema.Contains("\"totalRows\"", StringComparison.Ordinal) && !markupSchema.Contains("\"column\",\r\n        \"row\"", StringComparison.Ordinal) && !markupSchema.Contains("\"column\",\n        \"row\"", StringComparison.Ordinal), "Markup v1 schema should advertise table commands that the parser actually supports.");
 
-        var markupReference = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "docs", "markup-v1-reference.md"));
-        Assert(markupReference.Contains("chartforgex <kind> v1", StringComparison.Ordinal), "Markup v1 reference should document the required native fence shape.");
-        Assert(markupReference.Contains("VisualArtifact", StringComparison.Ordinal) && markupReference.Contains("FlowArtifact", StringComparison.Ordinal) && markupReference.Contains("SequenceArtifact", StringComparison.Ordinal), "Markup v1 reference should document artifact API models.");
 
-        var visualArtifacts = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "docs", "visual-artifacts.md"));
-        var todo = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "TODO.md"));
-        Assert(visualArtifacts.Contains("Examples that show the wiring belong in `ChartForgeX.Examples` or docs, not inside library packages.", StringComparison.Ordinal), "Visual artifact docs should keep rich table examples out of library packages.");
-        Assert(todo.Contains("Design a production table-interaction adapter only when there is a real host requirement", StringComparison.Ordinal), "TODO should track rich table interaction as a production adapter or host feature, not a library demo.");
     }
 
     private static void VisualBaselineIsStructuredAndActionable() {

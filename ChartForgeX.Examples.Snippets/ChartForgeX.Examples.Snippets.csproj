@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\ChartForgeX.Examples\Snippets\FiveLineChart.cs.txt" Link="Program.cs" />
+    <ProjectReference Include="..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Stories\ChartForgeX.Stories.csproj" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
   </ItemGroup>
 </Project>

@@ -22,20 +22,13 @@ public sealed class PreparedTopology {
     private readonly string? _title;
     private readonly string? _subtitle;
     private readonly TopologyLegend? _legend;
-    private readonly PreparedVisual _staticVisual;
-    private readonly TopologyMotionOptions? _motion;
-    private readonly TopologyMotionSvgAdapter? _animation;
+    private readonly Lazy<ResolvedTopologyGeometry> _geometry;
+    internal ResolvedTopologyGeometry Geometry => _geometry.Value;
+    internal VisualRenderOptions RasterOptions => _rasterOptions;
 
-    internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions, TopologyMotionOptions? motion = null) {
+    internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions) {
         _chart = compiler.LayoutSnapshot(); _options = compiler.OptionsSnapshot();
-        _staticVisual = visual; _motion = motion?.Clone();
-        if (motion == null) _visual = visual;
-        else {
-            var motionOptions = _options.CloneForRendering(); motionOptions.Motion = motion;
-            var plan = compiler.MotionPlan(motionOptions);
-            _animation = compiler.SvgAnimation(motion, plan);
-            _visual = compiler.MotionFrame(visual, motion, plan);
-        }
+        _visual = visual; _geometry = compiler.GeometrySnapshot(_chart, _options);
         _context = compiler.Context; _rasterOptions = rasterOptions;
         _title = compiler.SourceTitle; _subtitle = compiler.SourceSubtitle;
         _legend = compiler.FrameLegend;
@@ -64,19 +57,12 @@ public sealed class PreparedTopology {
         source.Title = _title; source.Subtitle = _subtitle;
         source.Legend = _legend == null ? null : TopologyLegend.Clone(_legend);
         var compiler = new VisualTopologyCompiler(source, context, _options, resolvedLayout: true);
-        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions, _motion);
+        return new PreparedTopology(compiler, compiler.Compile(), _rasterOptions);
     }
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
-    public string ToSvg() => _animation == null ? _visual.ToSvg() : ToSvg(_staticVisual.Accessibility);
-    internal string ToSvg(VisualAccessibility accessibility) => _animation == null ? _visual.ToSvg(accessibility)
-        : _animation.Compose(_staticVisual.ToSvg(accessibility, AnimationPrefix(accessibility)));
-
-    private string AnimationPrefix(VisualAccessibility accessibility) => VisualSvgOptions.NamespaceFromExternalId(_options.IdScope)
-        ?? VisualSceneSvgRenderer.Identity(_staticVisual.Scene, accessibility.Name, accessibility.Description, accessibility.Language,
-            accessibility.IsDecorative, new VisualSvgOptions(colorVariables: _options.SvgColorVariables,
-                linkTarget: _options.OpenLinksInNewTab ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext,
-                responsive: _options.UseResponsiveSvg)) + "-" + _animation!.PolicyIdentity;
+    public string ToSvg() => _visual.ToSvg();
+    internal string ToSvg(VisualAccessibility accessibility) => _visual.ToSvg(accessibility);
 
     /// <summary>Renders the same prepared geometry through the dependency-free raster renderer.</summary>
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);
@@ -104,9 +90,8 @@ public static partial class TopologyChartExtensions {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var request = VisualExportRequest.ForTopology(chart, effective);
-        var motion = effective.Motion; effective.Motion = null;
         var compiler = new VisualTopologyCompiler(chart, request.Context, effective, naturalSize: true);
         var visual = compiler.Compile();
-        return new PreparedTopology(compiler, visual, request.RasterOptions, motion);
+        return new PreparedTopology(compiler, visual, request.RasterOptions);
     }
 }

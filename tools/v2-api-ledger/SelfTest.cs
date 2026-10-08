@@ -26,12 +26,8 @@ internal static class SelfTest {
             public sealed class Explicit : IContract { int IContract.Read() => 1; }
             public delegate void Callback(int value);
             """;
-        var refs = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator).Select(path => MetadataReference.CreateFromFile(path));
-        var compilation = CSharpCompilation.Create("Fixture", [CSharpSyntaxTree.ParseText(source, path: "fixture.cs")], refs,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
-        var errors = compilation.GetDiagnostics().Where(item => item.Severity == DiagnosticSeverity.Error).ToArray();
-        Require(errors.Length == 0, string.Join("\n", errors.Select(item => item.ToString())));
-        var rows = Inventory.Extract(compilation);
+        var refs = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator).Select(path => MetadataReference.CreateFromFile(path)).ToArray();
+        var rows = ExtractFixture("Fixture", source, refs);
         Require(rows.Count(row => row.DocId == "T:Fixture.Api`1") == 1, "Partial type must occur exactly once.");
         Require(rows.Count(row => row.Name == "Add") == 2, "Overloads must remain distinct.");
         Require(rows.Single(row => row.DocId == "M:Fixture.Api`1.Add(System.Int32)").Signature.Contains("3", StringComparison.Ordinal), "Optional default must be captured.");
@@ -46,8 +42,33 @@ internal static class SelfTest {
         Require(rows.Any(row => row.DocId == "M:Fixture.IContract.Read"), "Explicit implementation must remain reachable through interface contract.");
         Require(rows.Any(row => row.DocId == "T:Fixture.Callback") && rows.Any(row => row.Name == "Invoke"), "Delegate invocation contract must be captured.");
         Require(rows.Single(row => row.DocId == "P:Fixture.Api`1.Value").Signature.Contains("private set", StringComparison.Ordinal), "Accessor visibility must be retained.");
-        EvidenceSelfTest.Run(scratchDirectory, rows.Single(row => row.DocId == "M:Fixture.Api`1.Add(System.Int32)"));
-        Console.WriteLine("API ledger self-test passed: symbol fidelity, private evidence anonymization, external mapping validation and LF CSV serialization.");
+        var optionalMethod = rows.Single(row => row.DocId == "M:Fixture.Api`1.Add(System.Int32)");
+        CheckPhase4Changes(source, refs, optionalMethod);
+        EvidenceSelfTest.Run(scratchDirectory, optionalMethod);
+        Console.WriteLine("API ledger self-test passed: symbol fidelity, simultaneous assembly/contract changes, private evidence anonymization, external mapping validation and LF CSV serialization.");
+    }
+
+    private static void CheckPhase4Changes(string source, IEnumerable<MetadataReference> references, ApiSymbol baseline) {
+        const string methodId = "M:Fixture.Api`1.Add(System.Int32)";
+        string changedSource = source.Replace("int count = 3", "int count = 7", StringComparison.Ordinal);
+        var moved = ExtractFixture("FixtureMoved", source, references).Single(row => row.DocId == methodId);
+        var changed = ExtractFixture("Fixture", changedSource, references).Single(row => row.DocId == methodId);
+        var movedAndChanged = ExtractFixture("FixtureMoved", changedSource, references).Single(row => row.DocId == methodId);
+        Require(changed.Signature.Contains("7", StringComparison.Ordinal), "Changed optional default must reach the migration comparison.");
+        Require(Phase4Ledger.Classify(baseline, movedAndChanged) == "assembly-move-and-signature-change",
+            "A moved method with a changed optional default requires both migration classifications.");
+        Require(Phase4Ledger.Classify(baseline, moved) == "assembly-move", "Unchanged assembly moves must retain their classification.");
+        Require(Phase4Ledger.Classify(baseline, changed) == "signature-change", "Contract-only changes must retain their classification.");
+        Require(Phase4Ledger.Classify(baseline, baseline) == "retained", "An unchanged method must remain retained.");
+        Require(Phase4Ledger.Classify(baseline, null) == "removed-or-replaced", "An absent method must remain removed or replaced.");
+    }
+
+    private static List<ApiSymbol> ExtractFixture(string assemblyName, string source, IEnumerable<MetadataReference> references) {
+        var compilation = CSharpCompilation.Create(assemblyName, [CSharpSyntaxTree.ParseText(source, path: "fixture.cs")], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        var errors = compilation.GetDiagnostics().Where(item => item.Severity == DiagnosticSeverity.Error).ToArray();
+        Require(errors.Length == 0, string.Join("\n", errors.Select(item => item.ToString())));
+        return Inventory.Extract(compilation);
     }
 
     private static void Require(bool condition, string message) {

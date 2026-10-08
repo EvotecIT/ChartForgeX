@@ -20,12 +20,12 @@ public sealed class NativeTopologyMotionSizingTests {
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
         var options = new TopologyRenderOptions {
             FitContentToViewport = true,
-            PngSupersamplingScale = 8,
-            Motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(.8).WithFrameRate(10).WithFrameLimit(8)
+            PngSupersamplingScale = 8
         };
+        var motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(.8).WithFrameRate(10).WithFrameLimit(8);
         using var output = new MemoryStream();
         var error = Assert.Throws<InvalidOperationException>(() => {
-            if (apng) chart.WriteApng(output, options); else chart.WriteGif(output, options);
+            if (apng) chart.WriteApng(output, options, motion); else chart.WriteGif(output, options, motion);
         });
         Assert.Contains("256 MiB", error.Message);
         Assert.Equal(0, output.Length);
@@ -41,23 +41,23 @@ public sealed class NativeTopologyMotionSizingTests {
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
         var options = new TopologyRenderOptions {
             FitContentToViewport = true,
-            PngSupersamplingScale = 1,
-            Motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(200).WithFrameRate(10).WithFrameLimit(2000)
+            PngSupersamplingScale = 1
         };
+        var motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(200).WithFrameRate(10).WithFrameLimit(2000);
         var error = Assert.Throws<InvalidOperationException>(() => {
-            if (apng) chart.ToApng(options); else chart.ToGif(options);
+            if (apng) chart.ToApng(options, motion); else chart.ToGif(options, motion);
         });
         Assert.Contains("256 MiB", error.Message);
         using var output = new MemoryStream();
         Assert.Throws<InvalidOperationException>(() => {
-            if (apng) chart.WriteApng(output, options); else chart.WriteGif(output, options);
+            if (apng) chart.WriteApng(output, options, motion); else chart.WriteGif(output, options, motion);
         });
         Assert.Equal(0, output.Length);
         var path = Path.Combine(Path.GetTempPath(), "chartforge-animation-budget-" + Guid.NewGuid().ToString("N"));
         try {
             File.WriteAllText(path, "existing content");
             Assert.Throws<InvalidOperationException>(() => {
-                if (apng) chart.SaveApng(path, options); else chart.SaveGif(path, options);
+                if (apng) chart.SaveApng(path, options, motion); else chart.SaveGif(path, options, motion);
             });
             Assert.Equal("existing content", File.ReadAllText(path));
         } finally { File.Delete(path); }
@@ -76,19 +76,20 @@ public sealed class NativeTopologyMotionSizingTests {
             .AddScenario("delivery", "Delivery", scenario => scenario.AddEdgeStep("route"));
         var options = new TopologyRenderOptions {
             FitContentToViewport = fit, PngSupersamplingScale = 1,
-            LegendMode = TopologyLegendMode.Explicit,
-            Motion = new TopologyMotionOptions {
-                ScenarioId = "delivery", DurationSeconds = .2, FramesPerSecond = 10, MaximumRasterFrames = 2, Progress = .375
-            }
+            LegendMode = TopologyLegendMode.Explicit
         };
+        var motion = new TopologyMotionOptions {
+            ScenarioId = "delivery", DurationSeconds = .2, FramesPerSecond = 10, MaximumRasterFrames = 2, Progress = .375
+        };
+        var presentation = chart.WithMotion(motion, options);
         var prepared = chart.Prepare(options);
         if (fit) {
             Assert.Equal(420, prepared.Width);
             Assert.Equal(240, prepared.Height);
         } else Assert.True(prepared.Height > 240, "Natural animation must reserve the shared frame around the complete resolved topology.");
 
-        var gifBytes = chart.ToGif(options);
-        var apngBytes = chart.ToApng(options);
+        var gifBytes = presentation.ToGif();
+        var apngBytes = presentation.ToApng();
         var gif = GifReader.Decode(gifBytes);
         var apng = PngReader.Decode(apngBytes);
         var png = PngReader.Decode(prepared.ToPng());
@@ -100,7 +101,7 @@ public sealed class NativeTopologyMotionSizingTests {
         Assert.Contains("acTL", Encoding.ASCII.GetString(apngBytes));
         Assert.Contains("fdAT", Encoding.ASCII.GetString(apngBytes));
 
-        var html = chart.ToHtmlFragment(options);
+        var html = presentation.ToHtmlFragment();
         var svgStart = html.IndexOf("<svg", StringComparison.Ordinal);
         var svgEnd = html.IndexOf("</svg>", svgStart, StringComparison.Ordinal) + "</svg>".Length;
         var svg = XDocument.Parse(html.Substring(svgStart, svgEnd - svgStart));
@@ -115,7 +116,7 @@ public sealed class NativeTopologyMotionSizingTests {
         Assert.Equal(280, chart.Nodes[1].X); Assert.Equal(210, chart.Nodes[1].Y);
         Assert.Empty(chart.Edges.Single().Waypoints);
         Assert.Equal("Service route", chart.Title); Assert.Equal("Route health", chart.Legend!.Title);
-        Assert.Equal(.375, options.Motion!.Progress);
+        Assert.Equal(.375, motion.Progress);
         Assert.Equal(fit, options.FitContentToViewport);
     }
 }

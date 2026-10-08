@@ -14,6 +14,55 @@ Consumer repositories remain unchanged. Revalidate their intended branch before 
 
 Paths in this guide and the CSV are repository-relative. Resolve the repository root through `EVOTEC_GITHUB_ROOT`, with the platform default described in `AGENTS.md` when unset. Source findings are not consumer builds, installed-module tests or package publication proof.
 
+## Optional package migration
+
+V2 moves public types between assemblies and uses package version `2.0.0`. Rebuild compiled callers. Domain namespaces stay stable for canvas, factual blocks, stories and terminal models; add the owning package reference rather than copying types or using forwarding shims.
+
+| Existing capability | Owning package and migration |
+| --- | --- |
+| Charts, topology, flow, sequence and the six genuine block diagrams | `ChartForgeX`; existing source models and shared prepared export remain core |
+| `VisualCanvas`, `ImageComposition`, factual metric/table/list blocks and static `VisualGrid` | Add `ChartForgeX.Visuals`; keep the domain namespaces |
+| `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.WithWatermarks(...)` decorator; semantic `Model` remains available |
+| `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
+| Timed RGBA animation frames | Add `ChartForgeX.Stories` for `RasterAnimationEncoder`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; keep the `ChartForgeX.Raster` namespace and use Core `RgbaImage` inputs |
+| `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
+| `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
+| `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |
+| Decorative static menus, selection controls, navigation arrows and action buttons | Remove their configuration; preserve dates, trend text and status as ordinary content |
+
+Factual completion checks, activity completion, progress handles, selected-period emphasis and identity initials remain meaningful marks. Markup takes a Visuals reference for its existing table preview producer. Mermaid, core-only charts and static topology do not require either optional package.
+
+The core artifact renderer accepts `IStaticVisualSource` through `RenderSource` or a producer model. Optional packages own their concrete drawing; hosts can retain semantic table/diagram data in `Model` while choosing a different static presentation. This export contract does not convert legacy blocks into native prepared scenes.
+
+For a still artifact, apply the decoration before choosing its output format:
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.VisualArtifacts;
+
+artifact.WithWatermarks(VisualWatermark.FromText("Draft"));
+byte[] png = artifact.ToPng();
+string svg = artifact.ToSvg();
+```
+
+The decorator copies watermark declarations and preserves their order. The overload accepting `VisualArtifactRenderOptions` captures topology and raster settings with the producer. Changing an already captured watermark object does not alter the decoration.
+
+For animated topology, create one presentation from the static request:
+
+```csharp
+using ChartForgeX.Topology;
+
+var motion = TopologyMotionOptions.RoutePulseForEdges("network");
+var presentation = topology.WithMotion(motion, staticOptions);
+byte[] gif = presentation.ToGif();
+byte[] apng = presentation.ToApng();
+string animatedHtml = presentation.ToHtmlPage();
+```
+
+The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToImage().ToGif()`.
+
+`VisualMotionPresentation.Create(grid, timeline)` adds SVG/HTML motion to the grid's static target IDs. Its PNG and common static-source exports retain the completed picture. VisualStory and TerminalStory artifact factories in `ChartForgeX.Stories` capture the completed display and transcript; rebuild the artifact after changing a story. `Model` retains the original semantic object independently of that captured picture.
+
 ## Static HTML embedding
 
 `chart.ToHtmlFragment()` and `grid.ToHtmlFragment()` embed a responsive prepared SVG. The inline SVG shrinks to the host's width and preserves its aspect ratio without a page stylesheet. Its logical `width`, `height` and `viewBox` remain the prepared viewport; proportional scaling does not perform a new compact layout.
@@ -153,7 +202,7 @@ The ChartForgeX integration belongs primarily to `ImagePlayground.PowerShell`; t
 
 `New-ImageStory` produces VisualStory; `New-ImageVisualStory` currently produces VisualGrid plus VisualMotionTimeline. Preserve both operator workflows while sharing timing/export ownership. `New-ImageConsoleStory` retains terminal tabs, commands, output, tables, pauses, playback and transcript. Route `New-ImageTopology` GIF/APNG output through Stories; static topology and actual HTML controls retain their own owners.
 
-Topology SVG motion uses the explicit `TopologyMotionSvgAdapter` over native prepared routes and node positions. It adds animation to the exported SVG without changing the static prepared scene; raster motion selects a sample from the same route plan. `NativeDiagramExportTests.TopologyMotionSamplesNativeResolvedRouteWithoutChangingBaseSceneOrSourceOptions` protects route sampling. `NativeTopologyMotionSizingTests` verifies that GIF/APNG and animated HTML share the ordinary natural-size policy, preserve an explicitly fitted viewport and leave source models/options unchanged. Phase 4 moves the adapter and GIF/APNG animation policy into Stories, then qualifies the ImagePlayground animated workflows against the extracted package. These owner fixtures do not qualify an installed downstream module or complete that package move.
+Topology SVG motion uses the Stories `TopologyMotionSvgAdapter` over native prepared routes and node positions. It adds animation to the exported SVG without changing the static prepared scene; raster motion selects a sample from the same route plan. `NativeDiagramExportTests.TopologyMotionSamplesNativeResolvedRouteWithoutChangingBaseSceneOrSourceOptions` protects route sampling. `NativeTopologyMotionSizingTests` verifies that GIF/APNG and animated HTML share the ordinary natural-size policy, preserve an explicitly fitted viewport and leave source models/options unchanged. Add Stories for the adapter and GIF/APNG output. Owner fixtures and the packed Stories probe qualify the extracted owner; ImagePlayground still requires installed-module execution in both PowerShell runtimes.
 
 Package moves affect compiled parameter/output types, enums, type accelerators, assembly load context, binary bundling, namespace imports, generated help and examples. Update explicit-source, sibling-source and NuGet modes coherently. Qualify installed module imports and moved-type parameter binding in Windows PowerShell 5.1 and PowerShell 7, with no neighboring source projects available.
 
@@ -204,9 +253,10 @@ Phase 1 color intake does not establish universal status-treatment rendering. Ha
 - [x] Complete the Phase 1 representative performance comparison: all 30 paired workloads remain within 10% elapsed/allocation, with 756 retained samples and no failures. Earlier flags were investigated before qualifying the stable runtime. Larger redesigned SVG/PNG payloads remain an explicit cost in the [reassessment](architecture.md#phase-1-reassessment).
 - [x] Qualify the integrated Phase 2–3 core producers with framework/package/AOT checks, observed SVG/native PNG and representative performance; see the [reassessment](architecture.md#phases-2-3-reassessment) for scope and limits.
 - [ ] Qualify the core-focused private HTML adapter and OfficeIMO candidates, preserving artifact/interchange contracts.
-- [ ] Extract Visuals and qualify PowerBGInfo plus static ImagePlayground; extract Stories and qualify animated workflows.
+- [x] Extract the peer Visuals and Stories owners, preserving static compositions, factual blocks, completed story output, transcripts and animation exports.
+- [ ] Qualify PowerBGInfo wallpapers and ImagePlayground's static and animated workflows against the published owners during consumer migration.
 - [ ] Restore the private reporting consumer's reproducible dependency closure and qualify representative reports.
-- [ ] Pack all target assets into a clean feed; record hashes/dependency graphs and run package-only consumer proof without project-reference fallbacks.
+- [x] Qualify all eight packed libraries and their dependency/resource boundaries. Isolated core-only, core+Visuals and core+Stories probes compile all four frameworks and execute on net472, net8.0 and net10.0; adapter probes execute on net8.0 and net10.0. These owner probes do not establish downstream consumer execution.
 - [ ] With separate release authority, publish/verify owner packages, then repin and release consumers in dependency order.
 
 Do not publish consumers against a locally packed or unpublished owner candidate. Local-source proof is useful and must be labeled separately. No compatibility probes, fallback copies of rendering logic or temporary project references should conceal package publication lag.

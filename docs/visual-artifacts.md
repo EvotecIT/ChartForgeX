@@ -109,7 +109,7 @@ var svg = flow.ToSvg();
 
 ## TableArtifact
 
-`TableArtifact` is the first reusable artifact model in this layer. It replaces browser-table assumptions with a deterministic, host-neutral contract:
+`TableArtifact` is a core model with a deterministic, host-neutral contract. Add `ChartForgeX.Visuals` for the static preview extensions shown here:
 
 ```csharp
 using ChartForgeX.VisualArtifacts;
@@ -137,7 +137,7 @@ var svg = table.ToSvg();
 var png = table.ToPng();
 ```
 
-The core renderer produces a static preview by converting the table to a `ChartTable` visual block. Static output is suitable for generated reports, email, documentation, export previews, and visual galleries. It does not implement search boxes, sort headers, filters, keyboard selection, clipboard behavior, or virtual scrolling in ChartForgeX core.
+`ChartForgeX.Visuals` produces a static preview by converting the core table model to a `ChartTable` visual block. Static output is suitable for generated reports, email, documentation, export previews, and visual galleries. Search boxes, sort headers, filters, keyboard selection, clipboard behavior, and virtual scrolling belong in a host or adapter.
 
 Rich table interaction means grid-like behavior around the artifact: search, sort, filter, row or cell selection, keyboard navigation, copy, export, paging, remote data windows, and virtualization. If ChartForgeX grows that surface, it should be a production adapter or consuming-host feature. Examples that show the wiring belong in `ChartForgeX.Examples` or docs, not inside library packages.
 

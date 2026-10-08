@@ -8,6 +8,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Stories\ChartForgeX.Stories.csproj" />
     <ProjectReference Include="..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
     <ProjectReference Include="..\ChartForgeX.Examples.Snippets\ChartForgeX.Examples.Snippets.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />

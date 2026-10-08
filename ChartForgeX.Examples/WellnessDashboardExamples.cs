@@ -190,7 +190,6 @@ internal static class WellnessDashboardExamples {
                 .WithSymbol(symbol)
                 .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
                 .WithStatus(status)
-                .WithAction("View details")
                 .WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#64748B").WithAlpha(112));
 
         MetricCard SparkCard(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color) =>
@@ -203,7 +202,6 @@ internal static class WellnessDashboardExamples {
                 .WithSymbol(symbol)
                 .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
                 .WithStatus(status)
-                .WithAction("View details")
                 .WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(42));
 
         var cards = new[] {
@@ -239,8 +237,7 @@ internal static class WellnessDashboardExamples {
                 .WithCaption(caption)
                 .WithSymbol(symbol)
                 .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .WithStatus(status)
-                .WithAction("Open report", url: "#report-" + label.ToLowerInvariant().Replace(' ', '-'));
+                .WithStatus(status);
             return sparkline
                 ? card.WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(36))
                 : card.WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#CBD5E1").WithAlpha(160));
@@ -279,8 +276,7 @@ internal static class WellnessDashboardExamples {
                 .WithCaption(caption)
                 .WithSymbol(symbol)
                 .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .WithStatus(status)
-                .WithAction("Open report");
+                .WithStatus(status);
             return sparkline
                 ? card.WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(46))
                 : card.WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromRgba(148, 163, 184, 70));
@@ -326,7 +322,6 @@ internal static class WellnessDashboardExamples {
             .WithTheme(theme)
             .WithPadding(18)
             .WithHeader("May 9, 2026")
-            .WithNavigation(false)
             .AddItem("s", "9", selected: true, color: blue)
             .AddItem("s", "10")
             .AddItem("m", "10")

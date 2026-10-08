@@ -4,7 +4,7 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgVisualBlockRenderer {
-    private static string BuildProvisionalId(IVisualBlock block, string idScope) {
+    internal static string BuildProvisionalId(IVisualBlock block, string idScope) {
         var options = block.Options;
         return SvgRenderedIdentity.CreateProvisionalId(
             "cfx-visual",
@@ -15,7 +15,7 @@ public sealed partial class SvgVisualBlockRenderer {
             options.Size.Height.ToString(CultureInfo.InvariantCulture));
     }
 
-    private static string BindVisualIdentity(string svg, string provisionalId, string idScope) {
+    internal static string BindVisualIdentity(string svg, string provisionalId, string idScope) {
         return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual", idScope);
     }
 }

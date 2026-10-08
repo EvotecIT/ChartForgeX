@@ -2,6 +2,8 @@
 
 `RasterAnimationEncoder` writes complete RGBA canvases as GIF or animated PNG. Use it for frames produced by `ImageComposition`, chart renderers, or another image library. It shares the same palette, frame optimization, and encoding engines as visual stories and terminal presentations.
 
+Install `ChartForgeX.Stories` to use the encoder, frame, format and playback types in the `ChartForgeX.Raster` namespace. `RgbaImage` belongs to Core. The example below also uses `ChartForgeX.Visuals` for image composition.
+
 ```csharp
 using System;
 using System.IO;

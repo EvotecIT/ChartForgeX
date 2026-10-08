@@ -57,7 +57,7 @@ Every PNG line goes through `RgbaCanvas` (`DrawLine`, `DrawDashedLine`, `DrawPol
 
 ## Visual Artifact Layout
 
-- Keep product-neutral artifact models such as `VisualArtifact` and `TableArtifact` in the core package when they can render deterministic static previews without runtime dependencies.
+- Keep product-neutral artifact models such as `VisualArtifact` and `TableArtifact` in the core package. Static chart and diagram previews use core renderers; table previews use `ChartForgeX.Visuals` over the core table model and producer contract.
 - Keep rich interaction, keyboard behavior, clipboard, export workflows, virtualization, and native control binding in host or adapter packages.
 - Keep `ChartForgeX.Markup` generic. It owns Markdown fence scanning, built-in ChartForgeX visual parsers, diagnostics, and extension points.
 - Keep `ChartForgeX.Mermaid` separate from markup. It owns Mermaid source parsing, AST models, diagnostics, and Mermaid-to-ChartForgeX conversion.

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.release-validation.schema.json",
+  "SchemaVersion": 1,
+  "ProjectRoot": "../..",
+  "Packages": {
+    "Path": "{PackageRoot}",
+    "ExactSet": false,
+    "SameVersion": true,
+    "VerifySignatures": false,
+    "Items": [
+      {
+        "Id": "ChartForgeX"
+      },
+      {
+        "Id": "ChartForgeX.Interactivity"
+      },
+      {
+        "Id": "ChartForgeX.Interactivity.Html"
+      },
+      {
+        "Id": "ChartForgeX.Markup"
+      },
+      {
+        "Id": "ChartForgeX.Mermaid"
+      },
+      {
+        "Id": "ChartForgeX.Markup.Mermaid"
+      },
+      {
+        "Id": "ChartForgeX.Visuals"
+      }
+    ]
+  },
+  "Consumers": [
+    {
+      "SourceDirectory": "Build/PackageConsumers",
+      "ProjectFile": "Adapters/AdaptersPackageProbe.csproj",
+      "Frameworks": [
+        "net8.0",
+        "net10.0"
+      ],
+      "DependencySources": [
+        "https://api.nuget.org/v3/index.json"
+      ]
+    }
+  ]
+}

@@ -90,20 +90,23 @@ public sealed class NativeDiagramExportTests {
     public void TopologyMotionSamplesNativeResolvedRouteWithoutChangingBaseSceneOrSourceOptions() {
         var chart = Sample();
         var motion = TopologyMotionOptions.RoutePulseForEdges("link"); motion.Loop = false; motion.Progress = 0;
-        var options = new TopologyRenderOptions { IncludeLegend = false, Motion = motion, FitContentToViewport = true };
-        var start = chart.ToSvg(options);
-        var startPng = chart.ToPng(options);
-        motion.Progress = 1;
-        var end = chart.ToSvg(options);
+        var options = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
+        var prepared = chart.Prepare(options);
+        var original = prepared.ToSvg();
+        var presentation = prepared.WithMotion(motion);
+        var start = presentation.ToSvg();
+        var startPng = presentation.Sample(0).ToPng();
+        var endPng = presentation.Sample(1).ToPng();
         static XElement Marker(string svg) => XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker");
-        Assert.Equal(start, end); // SVG owns continuous motion; Progress selects a raster sample.
         Assert.Contains(Marker(start).Elements(), element => element.Name.LocalName == "animateMotion");
-        Assert.NotEqual(startPng, chart.ToPng(options));
-        Assert.Equal(1, options.Motion!.Progress);
-        var plain = options.Clone(); plain.Motion = null;
-        var prepared = chart.Prepare(plain); var original = prepared.ToSvg();
-        Assert.DoesNotContain("topology-motion-marker", original); Assert.Equal(original, prepared.ToSvg());
-        Assert.NotEmpty(chart.ToPng(options));
+        Assert.NotEqual(startPng, endPng);
+        motion.Progress = 1;
+        Assert.Equal(start, presentation.ToSvg());
+        Assert.Equal(startPng, presentation.Sample(0).ToPng());
+        Assert.Equal(1, motion.Progress);
+        Assert.Equal(original, prepared.ToSvg());
+        Assert.Equal(original, presentation.StaticVisual.ToSvg());
+
     }
 
     private static TopologyChart Sample() {
