@@ -33,7 +33,7 @@ internal sealed class VisualLegendEntry {
 
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
 internal static class VisualFrameLayout {
-    internal static ChartRect Build(VisualSceneBuilder builder, VisualRenderContext context, IReadOnlyList<VisualLegendEntry> entries) {
+    internal static ChartRect Build(VisualSceneBuilder builder, VisualRenderContext context, IReadOnlyList<VisualLegendEntry> entries, VisualFramePaints? paints = null) {
         var size = context.Layout.Size;
         var colors = context.Theme.Resolve(context.ThemeMode);
         var typography = context.Theme.Typography;
@@ -47,14 +47,14 @@ internal static class VisualFrameLayout {
         var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 700, colors.Foreground);
         var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
         var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
-        if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(colors.Background, SvgColorRole.Surface));
-        if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors);
+        if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(paints?.Background ?? SvgPaint.Of(colors.Background, SvgColorRole.Surface)));
+        if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors, paints);
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             var headingTop = top;
-            Header(context.Frame.Title, titleStyle);
+            Header(context.Frame.Title, titleStyle, paints?.Foreground);
             if (top > headingTop && !string.IsNullOrEmpty(context.Frame.Subtitle)) top += gap / 6;
-            Header(context.Frame.Subtitle, subtitleStyle);
+            Header(context.Frame.Subtitle, subtitleStyle, paints?.MutedForeground);
             if (top > headingTop) top += gap * 5 / 6;
         }
         if (context.Frame.ShowLegend && entries.Count > 0) {
@@ -102,7 +102,7 @@ internal static class VisualFrameLayout {
                             : legendTitleStyle.Alignment == TextAlignment.Right ? x + legendWidth : x;
                         builder.Text(Fit(OneLine(legendTitle!), legendWidth, legendTitleStyle), anchor,
                             y + builder.TextAscent(legendTitleStyle), legendTitleStyle, id: "frame-legend-title", role: "legend-title",
-                            paint: VisualChartPaint.Text(legendTitleStyle));
+                            paint: paints?.Foreground ?? VisualChartPaint.Text(legendTitleStyle));
                     } else builder.AddDiagnostic(new VisualDiagnostic("frame.legend-title-overflow", "The legend title does not fit; its complete value remains in descriptive regions."));
                 }
                 for (var r = 0; r < visible; r++) {
@@ -147,17 +147,17 @@ internal static class VisualFrameLayout {
                             var labelWidth = Math.Max(0, width - (isSummary ? 0 : 22) - (valueWidth > 0 ? valueWidth + gap : 0));
                             var label = Fit(fullLabel, labelWidth, legendStyle);
                             var anchor = cursor + (isSummary ? 0 : 18) + (legendStyle.Alignment == TextAlignment.Center ? labelWidth / 2 : legendStyle.Alignment == TextAlignment.Right ? labelWidth : 0);
-                            builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: VisualChartPaint.Text(legendStyle));
+                            builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: paints?.Foreground ?? VisualChartPaint.Text(legendStyle));
                             if (valueWidth > 0) {
                                 var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
                                 var percentageWidth = NumericWidths(entry).Percentage;
                                 var valueRight = cursor + width - 4;
                                 if (percentageWidth > 0) {
                                     var percentageStyle = valueStyle.Clone(); percentageStyle.Color = colors.MutedForeground;
-                                    builder.Text(entry.Percentage!, valueRight, baseline, percentageStyle, role: "legend-percentage", paint: VisualChartPaint.Text(percentageStyle));
+                                    builder.Text(entry.Percentage!, valueRight, baseline, percentageStyle, role: "legend-percentage", paint: paints?.MutedForeground ?? VisualChartPaint.Text(percentageStyle));
                                     valueRight -= percentageWidth + gap * 2 / 3;
                                 }
-                                builder.Text(Fit(entry.Value!, Math.Max(0, valueRight - cursor - (isSummary ? 0 : 22)), valueStyle), valueRight, baseline, valueStyle, role: "legend-value", paint: VisualChartPaint.Text(valueStyle));
+                                builder.Text(Fit(entry.Value!, Math.Max(0, valueRight - cursor - (isSummary ? 0 : 22)), valueStyle), valueRight, baseline, valueStyle, role: "legend-value", paint: paints?.Foreground ?? VisualChartPaint.Text(valueStyle));
                             }
                         }
                         builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + titleHeight + r * lineHeight, width, lineHeight), entry.Description));
@@ -209,10 +209,10 @@ internal static class VisualFrameLayout {
         }
         var content = new ChartRect(left, top, right - left, bottom - top);
         if (context.Frame.ShowSurface) builder.Rect(content, colors.Surface, colors.Border, radius: context.Theme.BarRadius, role: "content-surface",
-            paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
+            paint: new VisualScenePaintBinding(paints?.Surface ?? SvgPaint.Of(colors.Surface, SvgColorRole.Surface), paints?.Border ?? SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
         return content;
 
-        void Header(string? text, TextStyle style) {
+        void Header(string? text, TextStyle style, SvgPaint? paint) {
             if (string.IsNullOrEmpty(text)) return;
             var fontSize = style.EffectiveFontSize;
             var lineHeight = Math.Max(fontSize * 1.3, builder.MeasureText("Mg", style).Height);
@@ -224,7 +224,7 @@ internal static class VisualFrameLayout {
                 var line = Fit(remainder, right - left, style, count == 1);
                 if (line.Length == 0) break;
                 var anchor = style.Alignment == TextAlignment.Center ? (left + right) / 2 : style.Alignment == TextAlignment.Right ? right : left;
-                builder.Text(line, anchor, top + builder.TextAscent(style), style, role: count == 0 ? "frame-heading" : "frame-heading-continuation", paint: VisualChartPaint.Text(style));
+                builder.Text(line, anchor, top + builder.TextAscent(style), style, role: count == 0 ? "frame-heading" : "frame-heading-continuation", paint: paint ?? VisualChartPaint.Text(style));
                 top += lineHeight; count++;
                 if (line.EndsWith("…", StringComparison.Ordinal)) { remainder = ""; break; }
                 remainder = remainder.Substring(Math.Min(remainder.Length, line.Length)).TrimStart();
