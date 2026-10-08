@@ -102,6 +102,7 @@ internal static partial class SmokeTests {
         ("PNG output is deflate-compressed", PngOutputIsCompressed),
         ("Animated raster encoder dispatches formats", AnimatedRasterEncoderDispatchesFormats),
         ("GIF writer uses adaptive palette for brand colors", GifWriterUsesAdaptivePaletteForBrandColors),
+        ("GIF writer orders dominant-channel ties by color", GifWriterOrdersDominantChannelTiesByColor),
         ("GIF writer uses delta frames for small motion", GifWriterUsesDeltaFramesForSmallMotion),
         ("GIF writer preserves transparent pixels", GifWriterPreservesTransparentPixels),
         ("GIF reader decodes dependency-free raster input", GifReaderDecodesDependencyFreeRasterInput),

@@ -39,6 +39,9 @@ internal readonly struct RasterDecodeLimits {
 
     internal byte[] Read(Stream stream) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
+        if (stream.CanSeek && stream.Length - stream.Position > MaximumEncodedBytes) {
+            throw new InvalidDataException("Raster encoded input exceeds the configured byte limit.");
+        }
         using var output = new MemoryStream();
         var buffer = new byte[8192];
         while (output.Length < MaximumEncodedBytes) {

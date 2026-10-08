@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace ChartForgeX.Raster;
 
@@ -20,27 +21,29 @@ internal static class GifWriter {
         WriteRgba(stream, animation);
     }
 
-    public static void WriteRgba(Stream stream, AnimatedRasterFrames animation) {
+    public static void WriteRgba(Stream stream, AnimatedRasterFrames animation, CancellationToken cancellationToken = default) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (animation == null) throw new ArgumentNullException(nameof(animation));
         ValidateLogicalScreen(animation);
+        cancellationToken.ThrowIfCancellationRequested();
         WriteAscii(stream, "GIF89a");
-        var palette = GifPaletteQuantizer.BuildPalette(animation.Frames);
+        var palette = GifPaletteQuantizer.BuildPalette(animation.Frames, cancellationToken);
         WriteUInt16(stream, animation.Width, "logical screen width");
         WriteUInt16(stream, animation.Height, "logical screen height");
         stream.WriteByte(0xF7);
         stream.WriteByte(palette.HasTransparency ? (byte)palette.TransparentIndex : (byte)0);
         stream.WriteByte(0);
         WritePalette(stream, palette);
-        if (animation.Loop) WriteLoopExtension(stream);
-        var indexedFrames = GifFrameOptimizer.BuildFrames(animation.Frames, palette);
+        if (animation.PlayCount != 1) WriteLoopExtension(stream, animation.PlayCount == 0 ? 0 : animation.PlayCount - 1);
+        var indexedFrames = GifFrameOptimizer.BuildFrames(animation.Frames, palette, cancellationToken);
         for (var index = 0; index < indexedFrames.Count; index++) {
-            WriteFrame(stream, indexedFrames[index], animation.DelayForFrame(index), palette);
+            cancellationToken.ThrowIfCancellationRequested();
+            WriteFrame(stream, indexedFrames[index], animation.DelayForFrame(index), palette, cancellationToken);
         }
         stream.WriteByte(0x3B);
     }
 
-    private static void WriteFrame(Stream stream, GifIndexedFrame frame, int delayCentiseconds, GifPalette palette) {
+    private static void WriteFrame(Stream stream, GifIndexedFrame frame, int delayCentiseconds, GifPalette palette, CancellationToken cancellationToken) {
         ValidateFrame(frame);
         stream.WriteByte(0x21);
         stream.WriteByte(0xF9);
@@ -56,10 +59,10 @@ internal static class GifWriter {
         WriteUInt16(stream, frame.Height, "frame height");
         stream.WriteByte(0);
         stream.WriteByte(8);
-        WriteSubBlocks(stream, LzwEncode(frame.Pixels, 8));
+        WriteSubBlocks(stream, LzwEncode(frame.Pixels, 8, cancellationToken));
     }
 
-    private static byte[] LzwEncode(byte[] indices, int minimumCodeSize) {
+    private static byte[] LzwEncode(byte[] indices, int minimumCodeSize, CancellationToken cancellationToken) {
         var clearCode = 1 << minimumCodeSize;
         var endCode = clearCode + 1;
         var nextCode = endCode + 1;
@@ -70,6 +73,7 @@ internal static class GifWriter {
         writer.Write(clearCode, codeSize);
         var prefix = indices.Length == 0 ? string.Empty : ((char)indices[0]).ToString();
         for (var i = 1; i < indices.Length; i++) {
+            if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
             var value = (char)indices[i];
             var candidate = prefix + value;
             if (dictionary.ContainsKey(candidate)) {
@@ -109,14 +113,14 @@ internal static class GifWriter {
         }
     }
 
-    private static void WriteLoopExtension(Stream stream) {
+    private static void WriteLoopExtension(Stream stream, int repeatCount) {
         stream.WriteByte(0x21);
         stream.WriteByte(0xFF);
         stream.WriteByte(11);
         WriteAscii(stream, "NETSCAPE2.0");
         stream.WriteByte(3);
         stream.WriteByte(1);
-        WriteUInt16(stream, 0, "loop count");
+        WriteUInt16(stream, repeatCount, "loop count");
         stream.WriteByte(0);
     }
 

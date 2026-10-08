@@ -37,14 +37,8 @@ public static partial class VisualArtifactRendering {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.RenderSource != null) return artifact.RenderSource;
         if (artifact.Model is IStaticVisualSource source) return source;
-        var model = artifact.Model ?? throw new InvalidOperationException("Artifact '" + artifact.Id + "' has no static render model.");
-        var snapshot = VisualArtifact.Create(artifact.Id, artifact.Kind, model);
-        snapshot.Title = artifact.Title; snapshot.Subtitle = artifact.Subtitle;
-        snapshot.NaturalSize = artifact.NaturalSize; snapshot.PreserveNaturalSize = artifact.PreserveNaturalSize;
-        snapshot.TopologyNaturalSizeSnapshot = artifact.TopologyNaturalSizeSnapshot;
-        snapshot.HasModelAccessibilitySnapshot = artifact.HasModelAccessibilitySnapshot;
-        CopyAccessibility(artifact.Accessibility, snapshot.Accessibility);
-        CopyAccessibility(artifact.ModelAccessibilitySnapshot, snapshot.ModelAccessibilitySnapshot);
+        if (artifact.Model == null) throw new InvalidOperationException("Artifact '" + artifact.Id + "' has no static render model.");
+        var snapshot = artifact.Clone();
         var capturedOptions = options == null ? null : new VisualArtifactRenderOptions {
             Topology = options.Topology?.CloneForRendering(),
             Raster = options.Raster == null ? null : new RasterImageOptions {
@@ -53,11 +47,6 @@ public static partial class VisualArtifactRendering {
             }
         };
         return new ArtifactStaticSource(snapshot, capturedOptions);
-    }
-
-    private static void CopyAccessibility(Accessibility.VisualAccessibility source, Accessibility.VisualAccessibility target) {
-        target.Name = source.Name; target.Description = source.Description;
-        target.Language = source.Language; target.IsDecorative = source.IsDecorative;
     }
 
     private sealed class ArtifactStaticSource : IStaticVisualSource {

@@ -22,6 +22,36 @@ internal static partial class SmokeTests {
         Assert(ReadDecodedFramePixelCounts(gif)[0] == 16 * 16, "Adaptive GIF image data should decode to the full frame pixel count.");
     }
 
+    private static void GifWriterOrdersDominantChannelTiesByColor() {
+        for (var dominant = 0; dominant < 3; dominant++) {
+            var secondary = (dominant + 1) % 3;
+            var pixels = new byte[17 * 4];
+            for (var i = 0; i < 16; i++) {
+                pixels[i * 4 + secondary] = (byte)(i * 8);
+                pixels[i * 4 + 3] = 255;
+            }
+            pixels[16 * 4 + dominant] = 128;
+            pixels[16 * 4 + 3] = 255;
+
+            var gif = GifWriter.WriteRgba(new[] { new RgbaImage(17, 1, pixels) }, 10, loop: false);
+            // The first weighted cut puts secondary values 0..56 in the lower box.
+            // Palette slot 1 descends from the upper box and retains its lowest value, 64.
+            const int upperBoxPaletteOffset = 13 + 3;
+            Assert(gif[upperBoxPaletteOffset + dominant] == 0 && gif[upperBoxPaletteOffset + secondary] == 64,
+                "GIF median cuts should order equal dominant-channel samples by their remaining color channels.");
+
+            var decoded = ReadDecodedFramePixels(gif)[0];
+            Assert(decoded.Length == 17, "Tie-rich GIF image data should preserve every source pixel.");
+            for (var i = 0; i < decoded.Length; i++) {
+                var paletteOffset = 13 + decoded[i] * 3;
+                for (var channel = 0; channel < 3; channel++) {
+                    Assert(gif[paletteOffset + channel] == pixels[i * 4 + channel],
+                        "A tie-rich image with fewer than 256 colors should retain every source color exactly.");
+                }
+            }
+        }
+    }
+
     private static void GifWriterUsesDeltaFramesForSmallMotion() {
         var first = SolidFrame(16, 16, 12, 18, 24);
         var second = SolidFrame(16, 16, 12, 18, 24);

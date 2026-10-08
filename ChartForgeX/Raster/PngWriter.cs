@@ -53,13 +53,18 @@ internal static class PngWriter {
         return ms.ToArray();
     }
 
-    private static CompressionLevel ToCompressionLevel(int compressionLevel) {
+    /// <summary>Maps the shared PNG level contract to the compression modes available on every supported target.</summary>
+    internal static CompressionLevel ToCompressionLevel(int compressionLevel) {
+        if (compressionLevel < 0 || compressionLevel > 9) {
+            throw new ArgumentOutOfRangeException(nameof(compressionLevel), compressionLevel, "PNG compression level must be between 0 and 9.");
+        }
         if (compressionLevel <= 0) return CompressionLevel.NoCompression;
         if (compressionLevel <= 3) return CompressionLevel.Fastest;
         return CompressionLevel.Optimal;
     }
 
-    private static void WriteZlibHeader(Stream stream, int compressionLevel) {
+    /// <summary>Writes the zlib header describing the shared PNG compression mode.</summary>
+    internal static void WriteZlibHeader(Stream stream, int compressionLevel) {
         stream.WriteByte(0x78);
         if (compressionLevel <= 0) stream.WriteByte(0x01);
         else if (compressionLevel <= 3) stream.WriteByte(0x5E);

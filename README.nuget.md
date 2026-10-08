@@ -104,6 +104,7 @@ record Sample(double Index, double Value);
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
 | Still raster file output | `chart.Save("chart.jpg", rasterOptions)` or `chart.SaveRasterImage("chart.tiff")`; add Stories for `chart.ToRgbaImage().ToGif()` |
 | Reusable image composition | Add Visuals for `ImageComposition.TryFromBytes(bytes, out var composition)`, `composition.StrokeRectangle(...)`, `composition.DrawCallout(...)` and `composition.Write(stream, RasterImageFormat.Png)`; add Stories for `composition.ToImage().ToGif()` |
+| RGBA frame animation | Add Stories for `RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif, options)` or `.WriteTo(stream, frames, RasterAnimationFormat.Apng, options)` with individual frame durations and finite or infinite playback |
 | Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")` |
 
 `RasterImageOptions` controls JPEG quality, PNG compression level, and the flattening background for opaque formats.

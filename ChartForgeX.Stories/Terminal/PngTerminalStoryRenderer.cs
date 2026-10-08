@@ -41,9 +41,11 @@ public sealed class PngTerminalStoryRenderer {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out _);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
-        var supersampled = RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale).ByteCount;
-        var output = checked((long)layout.Width * renderScale * layout.Height * renderScale * 4);
-        return checked(supersampled + output);
+        RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale);
+        var width = checked((long)layout.Width * renderScale);
+        var height = checked((long)layout.Height * renderScale);
+        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) +
+            AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1));
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {

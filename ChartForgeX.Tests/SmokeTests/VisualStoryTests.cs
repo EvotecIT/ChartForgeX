@@ -415,8 +415,8 @@ internal static partial class SmokeTests {
             320,
             4,
             AnimatedRasterFormat.Gif);
-        Assert(fourFrameGifBudget == oneFrameGifBudget + 480L * 320 * 3,
-            "GIF memory estimates should include retained indexed frames and bounded per-frame compression buffers.");
+        Assert(fourFrameGifBudget >= oneFrameGifBudget + (480L * 320 + 24 + 24) * 3,
+            "GIF memory estimates should include indexed pixel arrays, their headers, and indexed-frame collection entries.");
         Assert(
             AnimatedRasterMemoryBudget.MaximumStreamedGifBytes(fourFrameGifBudget) <
             AnimatedRasterMemoryBudget.MaximumStreamedGifBytes(oneFrameGifBudget),

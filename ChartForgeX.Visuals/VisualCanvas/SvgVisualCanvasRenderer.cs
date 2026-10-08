@@ -427,21 +427,22 @@ public sealed class SvgVisualCanvasRenderer {
     private static string ResolveBadgeImageHref(VisualCanvasHeroBadgeLayer badge) {
         if (badge.ImageHref.Length > 0) return badge.ImageHref;
         if (badge.ImageRgba == null || badge.ImageSourceWidth <= 0 || badge.ImageSourceHeight <= 0) return string.Empty;
-        var png = RasterImageEncoder.Encode(new RgbaImage(badge.ImageSourceWidth, badge.ImageSourceHeight, badge.ImageRgba), RasterImageFormat.Png);
-        return "data:image/png;base64," + Convert.ToBase64String(png);
+        return VisualCanvasImagePixels.EmbeddedPng(badge.ImageSourceWidth, badge.ImageSourceHeight, badge.ImageRgba);
     }
 
     private static void RenderImage(SvgMarkupWriter writer, VisualCanvasImageLayer image, string id, int layerIndex, VisualCanvasTheme theme) {
         VisualCanvas.ValidateEnum(image.Fit, nameof(image.Fit));
+        var href = image.Href;
+        if (href.Length == 0 && image.Rgba != null) href = VisualCanvasImagePixels.EmbeddedPng(image.SourceWidth, image.SourceHeight, image.Rgba);
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-image").EndStartElement().Line();
-        if (image.Href.Length > 0) {
+        if (href.Length > 0) {
             var preserveAspectRatio = PreserveAspectRatio(image.Fit);
             var imageScope = id + "-image-" + layerIndex.ToString(CultureInfo.InvariantCulture);
             if (image.Fit == VisualCanvasImageFit.Tile && image.SourceWidth > 0 && image.SourceHeight > 0) {
                 var patternId = imageScope + "-pattern";
                 writer.StartElement("defs").EndStartElement().Line()
                     .StartElement("pattern").Attribute("id", patternId).Attribute("patternUnits", "userSpaceOnUse").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.SourceWidth).Attribute("height", image.SourceHeight).EndStartElement().Line()
-                    .StartElement("image").Attribute("x", 0).Attribute("y", 0).Attribute("width", image.SourceWidth).Attribute("height", image.SourceHeight).Attribute("href", image.Href).Attribute("preserveAspectRatio", "none").EndEmptyElement().Line()
+                    .StartElement("image").Attribute("x", 0).Attribute("y", 0).Attribute("width", image.SourceWidth).Attribute("height", image.SourceHeight).Attribute("href", href).Attribute("preserveAspectRatio", "none").EndEmptyElement().Line()
                     .EndElement().Line()
                     .EndElement().Line();
                 writer.StartElement("rect").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.Width).Attribute("height", image.Height).Attribute("fill", "url(#" + patternId + ")").Attribute("opacity", image.Opacity).EndEmptyElement().Line();
@@ -455,13 +456,13 @@ public sealed class SvgVisualCanvasRenderer {
                     .Attribute("y", image.Y + (image.Height - image.SourceHeight) / 2)
                     .Attribute("width", image.SourceWidth)
                     .Attribute("height", image.SourceHeight)
-                    .Attribute("href", image.Href)
+                    .Attribute("href", href)
                     .Attribute("preserveAspectRatio", "none")
                     .Attribute("opacity", image.Opacity)
                     .Attribute("clip-path", "url(#" + clipId + ")")
                     .EndEmptyElement().Line();
             } else {
-                writer.StartElement("image").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.Width).Attribute("height", image.Height).Attribute("href", image.Href).Attribute("preserveAspectRatio", preserveAspectRatio).Attribute("opacity", image.Opacity).EndEmptyElement().Line();
+                writer.StartElement("image").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.Width).Attribute("height", image.Height).Attribute("href", href).Attribute("preserveAspectRatio", preserveAspectRatio).Attribute("opacity", image.Opacity).EndEmptyElement().Line();
             }
         } else {
             writer.StartElement("rect").Attribute("x", image.X).Attribute("y", image.Y).Attribute("width", image.Width).Attribute("height", image.Height).Attribute("rx", 12).Attribute("fill", theme.ImagePlaceholderFill.ToCss()).Attribute("stroke", theme.ImagePlaceholderStroke.ToCss()).EndEmptyElement().Line();

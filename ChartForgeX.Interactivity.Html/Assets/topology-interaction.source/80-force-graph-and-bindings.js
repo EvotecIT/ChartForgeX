@@ -145,6 +145,19 @@
       });
       let drag = null;
       let suppressClick = false;
+      const endViewportDrag = (event, canceled = false) => {
+        if (!drag || (event && drag.id !== event.pointerId)) return;
+        const ended = drag;
+        drag = null;
+        suppressClick = ended.moved && !canceled;
+        try { if (viewport.releasePointerCapture) viewport.releasePointerCapture(ended.id); } catch { }
+        if (forceGraphMotionTimer) window.clearTimeout(forceGraphMotionTimer);
+        forceGraphMotionTimer = null;
+        wrapper.removeAttribute('data-cfx-force-moving-edges');
+        wrapper.removeAttribute('data-cfx-topology-dragging');
+        wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
+        if (ended.moved) emitViewport();
+      };
       const isViewportChrome = target => target instanceof Element && target.closest('.cfx-topology-controls,.cfx-topology-scenarios,.cfx-topology-scenario-panel,.cfx-topology-selection-panel,.cfx-topology-force-controls');
       viewport.addEventListener('wheel', event => {
         if (isViewportChrome(event.target)) return;
@@ -156,35 +169,32 @@
         if (isViewportChrome(event.target)) return;
         if (!(event.target instanceof Element && event.target.closest(selectables))) event.preventDefault();
         const state = viewportState();
+        suppressClick = false;
         drag = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY, moved: false };
         wrapper.setAttribute('data-cfx-topology-dragging', 'true');
-        try { if (viewport.setPointerCapture) viewport.setPointerCapture(event.pointerId); } catch { }
       });
       viewport.addEventListener('pointermove', event => {
         if (!drag || drag.id !== event.pointerId) return;
         const dx = event.clientX - drag.x;
         const dy = event.clientY - drag.y;
         if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+          // Capturing a simple press retargets its click away from the semantic node or link.
+          if (!drag.moved) {
+            try { if (viewport.setPointerCapture) viewport.setPointerCapture(event.pointerId); } catch { }
+          }
           drag.moved = true;
           suppressClick = true;
           markForceGraphMoving();
         }
         applyViewport({ zoom: viewportState().zoom, panX: drag.panX + dx, panY: drag.panY + dy });
       });
-      viewport.addEventListener('pointerup', event => {
-        if (!drag || drag.id !== event.pointerId) return;
-        try { if (viewport.releasePointerCapture) viewport.releasePointerCapture(event.pointerId); } catch { }
-        if (drag.moved) emitViewport();
-        wrapper.removeAttribute('data-cfx-force-moving-edges');
-        wrapper.removeAttribute('data-cfx-topology-dragging');
-        wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
-        drag = null;
-      });
-      viewport.addEventListener('pointercancel', event => {
-        if (drag && drag.id === event.pointerId) {
-          wrapper.removeAttribute('data-cfx-topology-dragging');
-          drag = null;
-        }
+      // Before movement starts there is no capture, so release can occur outside this viewport.
+      window.addEventListener('pointerup', event => endViewportDrag(event), true);
+      window.addEventListener('pointercancel', event => endViewportDrag(event, true), true);
+      window.addEventListener('blur', () => endViewportDrag(null, true));
+      viewport.addEventListener('lostpointercapture', event => {
+        // A touch node's implicit capture can end when the viewport acquires the moving gesture.
+        if (event.target === viewport) endViewportDrag(event, true);
       });
       wrapper.addEventListener('cfx-topology-set-viewport', event => {
         applyViewport(event.detail || {});

@@ -11,10 +11,14 @@ public static class RasterImageDecoder {
     public static RgbaImage Read(string path) => Read(path, null);
 
     /// <summary>Reads a raster file with explicit encoded-input and pixel limits.</summary>
-    public static RgbaImage Read(string path, RasterDecodeOptions? options) {
+    public static RgbaImage Read(string path, RasterDecodeOptions? options) => Read(path, options, out _);
+
+    internal static RgbaImage Read(string path, RasterDecodeOptions? options, out byte[] encodedBytes) {
         if (path == null) throw new ArgumentNullException(nameof(path));
+        var limits = RasterDecodeLimits.From(options);
         using var stream = File.OpenRead(path);
-        return Read(stream, options);
+        encodedBytes = limits.Read(stream);
+        return Decode(encodedBytes, limits);
     }
 
     /// <summary>Reads and decodes a raster image stream.</summary>

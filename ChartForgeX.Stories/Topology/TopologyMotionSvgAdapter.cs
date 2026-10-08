@@ -89,7 +89,9 @@ internal sealed class TopologyMotionSvgAdapter {
         content.Add(overlay);
         return document.ToString(SaveOptions.DisableFormatting);
 
-        XElement Group(string role) => new(ns + "g", new XAttribute("data-cfx-role", role), new XAttribute("data-cfx-motion-source", _source), new XAttribute("data-cfx-motion-kind", "route-pulse"));
+        // Motion decorates semantic topology entities; pointer hits belong to the underlying nodes and edges.
+        XElement Group(string role) => new(ns + "g", new XAttribute("data-cfx-role", role), new XAttribute("data-cfx-motion-source", _source),
+            new XAttribute("data-cfx-motion-kind", "route-pulse"), new XAttribute("pointer-events", "none"));
         XElement Animation(string name, params object[] attributes) => new(ns + name, attributes,
             new XAttribute("dur", F(_motion.DurationSeconds) + "s"), new XAttribute("repeatCount", _motion.Loop ? "indefinite" : "1"),
             new XAttribute("fill", _motion.Loop ? "remove" : "freeze"));

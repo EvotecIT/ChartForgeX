@@ -131,7 +131,19 @@ var canvas = background
 canvas.SavePng("wallpaper-with-info.png");
 ```
 
-`AddImageFile(...)`, `AddImageBytes(...)`, and `AddHeroBadgeImageFile(...)` are available when an image should be placed into an existing canvas region or inside the central hero badge. The dependency-free decoder supports baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Hosts that need unsupported image variants can decode them before handing RGBA pixels to `AddRasterImage(...)` or `AddHeroBadge(...)`.
+`AddImageFile(...)`, `AddImageBytes(...)`, and `AddHeroBadgeImageFile(...)` are available when an image should be placed into an existing canvas region or inside the central hero badge. Their optional `RasterDecodeOptions` uses the same bounds as direct decoding. The dependency-free decoder supports baseline/progressive JPEG, PNG, BMP, PPM, and uncompressed RGB TIFF. Hosts can decode other supported variants with their image owner before passing an `RgbaImage` to the typed canvas input:
+
+```csharp
+RgbaImage logo = RasterImageDecoder.Read("logo.png");
+canvas.AddImage(logo, 20, 20, 160, 100, opacity: 0.8,
+    fit: VisualCanvasImageFit.Contain);
+```
+
+Typed `AddImage` and `AddHeroBadge` calls copy the required pixels during the call. SVG embeds a PNG from the same snapshot used by raster output, so changing the caller's array later does not change the scene. `RgbaImage` itself retains the supplied array; keep it unchanged while a borrowing renderer or encoder runs. `AddRasterImage` uses the same snapshot path.
+
+Encoded image helpers preserve the original static PNG or JPEG container in SVG output and use its decoded pixels for raster output. Animated PNG and other supported containers embed the decoded static image as PNG, keeping the canvas scene static in both renderers.
+
+The raw image layer can carry a paired SVG href and RGBA representation, preserving vector output from charts, grids, blocks, and topology renderers. Callers supplying both representations own their equivalence. RGBA-only input is embedded in SVG. Href-only input is an SVG resource reference and uses the raster placeholder; the renderer does not fetch that resource.
 
 All raster decoders bound encoded input and pixel counts before allocating image buffers. The defaults are 64 MiB of input and 67,108,864 pixels (256 MiB of RGBA output). Codec working buffers use additional memory. Set smaller limits for uploads or other untrusted input; the same options work with files, byte arrays, and non-seekable streams:
 
@@ -143,7 +155,7 @@ var limits = new RasterDecodeOptions {
 var uploadedImage = RasterImageDecoder.Read(uploadStream, limits);
 ```
 
-`Read` leaves the supplied stream open. Oversized input, invalid dimensions, and PNG data that expands beyond its declared scanlines throw `InvalidDataException`; `TryRead` and `TryDecode` return `false`. Applications that intentionally decode larger trusted images can increase the limits explicitly.
+`Read` leaves the supplied stream open. Oversized input, invalid dimensions, and PNG data that expands beyond its declared scanlines throw `InvalidDataException`; `TryRead` and `TryDecode` return `false`. Seekable inputs check the remaining length before allocating a read buffer; nonseekable inputs use the bounded read loop. Applications that intentionally decode larger trusted images can increase the limits explicitly.
 
 ```csharp
 var brandedCanvas = VisualCanvas.CreateSocialPreview()

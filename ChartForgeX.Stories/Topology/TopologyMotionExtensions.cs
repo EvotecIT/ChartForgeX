@@ -23,14 +23,14 @@ public static class TopologyMotionExtensions {
     /// <summary>Saves sampled topology motion as GIF.</summary>
     public static void SaveGif(this TopologyChart chart, string path, TopologyRenderOptions? options = null, TopologyMotionOptions? motion = null) {
         if (path == null) throw new ArgumentNullException(nameof(path));
-        var frames = chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames();
+        var frames = chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames(AnimatedRasterFormat.Gif, out _);
         using var stream = File.Create(path);
         AnimatedRasterEncoder.Write(stream, AnimatedRasterFormat.Gif, frames);
     }
     /// <summary>Saves sampled topology motion as animated PNG.</summary>
     public static void SaveApng(this TopologyChart chart, string path, TopologyRenderOptions? options = null, TopologyMotionOptions? motion = null) {
         if (path == null) throw new ArgumentNullException(nameof(path));
-        var frames = chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames();
+        var frames = chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames(AnimatedRasterFormat.Apng, out _);
         using var stream = File.Create(path);
         AnimatedRasterEncoder.Write(stream, AnimatedRasterFormat.Apng, frames);
     }
@@ -38,13 +38,13 @@ public static class TopologyMotionExtensions {
     public static void WriteGif(this TopologyChart chart, Stream stream, TopologyRenderOptions? options = null, TopologyMotionOptions? motion = null) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         AnimatedRasterEncoder.Write(stream, AnimatedRasterFormat.Gif,
-            chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames());
+            chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames(AnimatedRasterFormat.Gif, out _));
     }
     /// <summary>Writes sampled topology motion to an animated PNG stream.</summary>
     public static void WriteApng(this TopologyChart chart, Stream stream, TopologyRenderOptions? options = null, TopologyMotionOptions? motion = null) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         AnimatedRasterEncoder.Write(stream, AnimatedRasterFormat.Apng,
-            chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames());
+            chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).Frames(AnimatedRasterFormat.Apng, out _));
     }
     internal static double RasterFrameProgress(TopologyMotionOptions motion, int frame, int frameCount) {
         if (motion == null) throw new ArgumentNullException(nameof(motion));

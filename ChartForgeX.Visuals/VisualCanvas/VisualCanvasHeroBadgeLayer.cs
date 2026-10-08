@@ -26,9 +26,9 @@ public sealed class VisualCanvasHeroBadgeLayer : VisualCanvasLayer {
     public ChartColor Accent { get => AccentOverride ?? ChartColor.FromHex("#22A7FF"); set => AccentOverride = value; }
     /// <summary>Gets or sets an explicit badge accent color. When empty, renderers use the current theme secondary accent.</summary>
     public ChartColor? AccentOverride { get; set; }
-    /// <summary>Gets or sets an SVG-compatible image reference for the badge logo.</summary>
+    /// <summary>Gets or sets an SVG-compatible image reference for the badge logo. Renderers never fetch it for PNG output.</summary>
     public string ImageHref { get => _imageHref; set => _imageHref = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Gets or sets optional source RGBA pixels for PNG output.</summary>
+    /// <summary>Gets or sets borrowed source RGBA pixels. SVG embeds them as PNG when ImageHref is empty.</summary>
     public byte[]? ImageRgba { get; set; }
     /// <summary>Gets or sets the source bitmap width for PNG output.</summary>
     public int ImageSourceWidth { get; set; }
