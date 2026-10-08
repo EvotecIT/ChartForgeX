@@ -30,7 +30,7 @@ public sealed class GraphiteFrameTypographyTests {
         var context = VisualExportRequest.ForChart(chart).Context;
         var colors = context.Theme.Resolve(context.ThemeMode);
         Assert.Equal(context.Theme.Typography.TitleSize, (double)title.Attribute("font-size")!);
-        Assert.Equal("600", (string?)title.Attribute("font-weight"));
+        Assert.Equal("700", (string?)title.Attribute("font-weight"));
         Assert.Equal(colors.Foreground.ToCss(), (string?)title.Attribute("fill"));
         Assert.Equal(context.Theme.Typography.SubtitleSize, (double)subtitle.Attribute("font-size")!);
         Assert.Equal(colors.MutedForeground.ToCss(), (string?)subtitle.Attribute("fill"));

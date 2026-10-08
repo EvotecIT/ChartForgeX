@@ -22,12 +22,14 @@ public sealed partial class ChartGrid : IVisualRenderable {
         if (Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
         var frame = context.Frame;
         var colors = context.Theme.Resolve(context.ThemeMode);
-        TextStyle Heading(TextStyle? explicitStyle, TextStyleOverride modelStyle, double size, ChartColor color) =>
-            modelStyle.Resolve(explicitStyle ?? new TextStyle { Font = context.Font, FontSize = size, Color = color });
+        TextStyle Heading(TextStyle? explicitStyle, TextStyleOverride modelStyle, double size, ChartColor color, int weight) {
+            var font = context.Font; font.Weight = weight;
+            return modelStyle.Resolve(explicitStyle ?? new TextStyle { Font = font, FontSize = size, Color = color });
+        }
         frame = new VisualFrame(frame.Title ?? Title, frame.Subtitle ?? Subtitle, frame.ShowLegend, frame.LegendPosition,
             frame.ShowSurface, frame.TransparentBackground,
-            Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground),
-            Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground), frame.LegendStyle,
+            Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground, 700),
+            Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground, 400), frame.LegendStyle,
             frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, showCard: frame.ShowCard, legendTitle: frame.LegendTitle);
         var resolved = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
@@ -59,7 +61,7 @@ public sealed partial class ChartGrid : IVisualRenderable {
                     : frame.LegendMaximumRows ?? options.LegendMaximumRows;
                 var panelFrame = new VisualFrame(options.ShowHeader && modelFrame ? chart.Title : string.Empty,
                     options.ShowHeader && modelFrame ? chart.Subtitle : string.Empty,
-                    frame.ShowLegend && options.ShowLegend && modelFrame, options.LegendPosition,
+                    !frame.ShowLegend || !modelFrame ? false : options.HasExplicitLegend ? options.ShowLegend : null, options.LegendPosition,
                     frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
                     legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
                     legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),

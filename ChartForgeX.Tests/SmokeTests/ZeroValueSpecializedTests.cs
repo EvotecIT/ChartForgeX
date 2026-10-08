@@ -22,8 +22,11 @@ internal static partial class SmokeTests {
         Verify.Equal(ChartColor.FromHex("#E11D48"), slices[0].Fill);
         var displacement = Math.Sqrt(Math.Pow(slices[0].Cx - slices[1].Cx, 2) + Math.Pow(slices[0].Cy - slices[1].Cy, 2));
         Verify.Equal(slices[0].Outer * .12, displacement, 8);
-        Verify.Equal(new[] { "Zero", "Live", "Tail" }, FamilyLabels(piePrepared, "legend-label").Select(FamilyContent));
-        Verify.Equal("0%", FamilyContent(FamilyLabels(piePrepared, "legend-value")[0]));
+        Verify.Equal(new[] { "Live", "Tail", "Zero" }, FamilyLabels(piePrepared, "legend-label").Select(FamilyContent));
+        Verify.Equal("0", FamilyContent(FamilyLabels(piePrepared, "legend-value")[^1]));
+        Verify.Equal("0%", FamilyContent(FamilyLabels(piePrepared, "legend-percentage")[^1]));
+        Verify.Contains(FamilyGroups(piePrepared, "legend-entry"), entry => entry.Id == "legend-series-0-point-0"
+            && entry.Metadata["aria-label"] == "Zero: 0 (0%)");
         Verify.NotEmpty(piePrepared.ToPng());
 
         var polarArea = Chart.Create().WithSize(540, 320).WithXLabels("Zero", "Live", "Tail")

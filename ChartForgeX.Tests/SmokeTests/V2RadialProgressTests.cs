@@ -53,6 +53,35 @@ public sealed class V2RadialProgressTests {
         Assert.True(second.Cx - second.Outer >= 0 && second.Cy - second.Outer >= 0 && second.Cx + second.Outer <= 420 && second.Cy + second.Outer <= 320);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MeasuredCenterRowsPaintTheirValueAndCaptionInsideTheRealRingHole(bool layered) {
+        var chart = layered ? Chart.Create().AddLayeredRadial("Completion", new[] {
+            new ChartRadialLayer("Reviewed", 76) { RadiusRatio = 1, StrokeRatio = .13 },
+            new ChartRadialLayer("Verified", 58) { RadiusRatio = .7, StrokeRatio = .13 },
+            new ChartRadialLayer("Complete", 42) { RadiusRatio = .4, StrokeRatio = .13 }
+        }) : Chart.Create().AddRadialBar("Completion", new[] { 20d, 40, 60, 80, 90, 70 }
+            .Select((value, index) => new ChartPoint(index + 1, value)));
+        var scene = Compile(chart);
+        var role = layered ? "layered-radial" : "radial-bar";
+        var value = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == role + "-value");
+        var caption = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == role + "-title");
+        Assert.Equal(layered ? "42" : "60", Assert.Single(value.Text.Lines).Text);
+        Assert.Equal("Completion", Assert.Single(caption.Text.Lines).Text);
+        Assert.True(value.Baseline - value.Text.Ascent + value.Text.Metrics.Height <= caption.Baseline - caption.Text.Ascent);
+        var radius = layered ? scene.Nodes.OfType<VisualSceneSlice>().Where(mark => mark.Role == "layered-radial-layer").Min(mark => mark.Inner)
+            : Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), mark => mark.Role == "radial-bar-center").Rx;
+        foreach (var text in new[] { value, caption }) {
+            var vertical = Math.Max(Math.Abs(text.Baseline - text.Text.Ascent - 160),
+                Math.Abs(text.Baseline - text.Text.Ascent + text.Text.Metrics.Height - 160));
+            Assert.True(Math.Sqrt(Math.Pow(text.Text.Metrics.Width / 2, 2) + vertical * vertical) <= radius + .001);
+        }
+        Assert.Contains(scene.Regions, region => region.Id == "series-0-center-value" && region.Label == (layered ? "42" : "60"));
+        chart.Series[0].ShowDataLabels = false;
+        Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role == role + "-value" || node.Role == role + "-title");
+    }
+
     private static VisualScene Compile(Chart chart) {
         var context = new VisualRenderContext(); var builder = new VisualSceneBuilder(new VisualSize(420, 320), context.Font);
         VisualRadialProgressCompiler.Build(chart, context, builder, new ChartRect(0, 0, 420, 320));

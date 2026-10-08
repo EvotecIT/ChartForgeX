@@ -102,7 +102,7 @@ internal static partial class VisualHierarchyCompiler {
         double total = model.Nodes[model.Root].Value;
         if (!Finite(total)) throw new InvalidOperationException("Sunburst aggregate weights exceed the supported finite range.");
         foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) {
-            double sweep = node.EndAngle - node.StartAngle, mid = node.StartAngle + sweep / 2;
+            double sweep = node.EndAngle - node.StartAngle;
             var color = Color(series, node.Index, colors, node.Depth == 0 ? 0 : node.Index + node.Depth - 1);
             var paint = VisualChartPaint.Series(series, color, node.Index);
             if (node.Depth == 0 && !series.Color.HasValue && series.StateRole == ChartSeriesState.None) {
@@ -120,14 +120,7 @@ internal static partial class VisualHierarchyCompiler {
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern");
-                if (series.ShowDataLabels != false) {
-                    double radius = node.Depth == 0 ? 0 : (node.InnerRadius + node.OuterRadius) / 2;
-                    double thickness = node.OuterRadius - node.InnerRadius;
-                    double width = node.Depth == 0 ? node.OuterRadius * 1.5 : Math.Min(thickness * .65, 2 * radius * Math.Sin(Math.Min(Math.PI / 2, sweep / 2)) * .45);
-                    double height = Math.Min(thickness * .5, width);
-                    double x = model.CenterX + Math.Cos(mid) * radius, y = model.CenterY + Math.Sin(mid) * radius;
-                    Label(chart, context, builder, node.Label, new ChartRect(x - width / 2, y - height / 2, width, height), color, node.Index, "sunburst-label", center: true);
-                }
+                if (series.ShowDataLabels != false) SunburstLabel(chart, context, builder, model, node, color);
             }
             var bounds = new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2);
             builder.AddRegion(new VisualSemanticRegion(Id("node", node.Index), "sunburst-segment", bounds, node.Label + ": " + formatted));

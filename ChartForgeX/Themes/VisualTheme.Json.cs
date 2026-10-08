@@ -17,6 +17,8 @@ public sealed partial class VisualTheme {
     /// within bounded input limits; duplicate keys and unsupported versions are rejected. Optional per-mode
     /// <c>roles</c> preserve independent semantic and annotation colors without selecting a legacy renderer path.
     /// Optional <c>geometry.cardRadius</c> defaults to 3 logical units and controls the outer frame independently of marks.
+    /// Optional <c>typography.scalarValueSize</c> and <c>typography.centerValueSize</c> default to 34 and 20 logical units.
+    /// Optional <c>geometry.gaugeStrokeWidth</c> and <c>geometry.gaugeBandWidth</c> default to 14 and 4 logical units.
     /// Optional <c>effects.cardShadowOpacity</c> and <c>effects.cardShadowColor</c> retain native card shadows;
     /// omitted effects keep the default flat frame. Shadows use available authored padding without moving content.
     /// </remarks>
@@ -36,13 +38,15 @@ public sealed partial class VisualTheme {
         return new VisualTheme(light, dark,
             new VisualTypography(Required(typography, "family", "typography").AsString("typography.family"),
                 Number(typography, "titleSize", "typography"), Number(typography, "subtitleSize", "typography"),
-                Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography")),
+                Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography"),
+                OptionalNumber(typography, "scalarValueSize", "typography", 34), OptionalNumber(typography, "centerValueSize", "typography", 20)),
             Number(geometry, "spacing", "geometry"), Number(geometry, "seriesStrokeWidth", "geometry"), Number(geometry, "markerRadius", "geometry"),
             Number(geometry, "areaOpacity", "geometry"), Number(geometry, "barRadius", "geometry"),
             Number(geometry, "gridStrokeWidth", "geometry"), Number(geometry, "axisStrokeWidth", "geometry"),
             geometry.TryGetValue("cardRadius", out var cardRadius) ? cardRadius.AsNumber("geometry.cardRadius") : DefaultCardRadius,
             effects.TryGetValue("cardShadowOpacity", out var opacity) ? opacity.AsNumber("effects.cardShadowOpacity") : 0,
-            effects.TryGetValue("cardShadowColor", out var shadow) ? Hex(shadow.AsString("effects.cardShadowColor"), "cardShadowColor") : null);
+            effects.TryGetValue("cardShadowColor", out var shadow) ? Hex(shadow.AsString("effects.cardShadowColor"), "cardShadowColor") : null,
+            OptionalNumber(geometry, "gaugeStrokeWidth", "geometry", 14), OptionalNumber(geometry, "gaugeBandWidth", "geometry", 4));
     }
 
     /// <summary>Exports the complete paired color, typography and geometry theme using schemaVersion 1.</summary>
@@ -58,12 +62,14 @@ public sealed partial class VisualTheme {
         writer.Property("family"); writer.String(Typography.Family);
         WriteNumber(writer, "titleSize", Typography.TitleSize); WriteNumber(writer, "subtitleSize", Typography.SubtitleSize);
         WriteNumber(writer, "axisSize", Typography.AxisSize); WriteNumber(writer, "legendSize", Typography.LegendSize); WriteNumber(writer, "dataLabelSize", Typography.DataLabelSize);
+        WriteNumber(writer, "scalarValueSize", Typography.ScalarValueSize); WriteNumber(writer, "centerValueSize", Typography.CenterValueSize);
         writer.EndObject();
         writer.Property("geometry"); writer.StartObject();
         WriteNumber(writer, "spacing", Spacing); WriteNumber(writer, "seriesStrokeWidth", SeriesStrokeWidth); WriteNumber(writer, "markerRadius", MarkerRadius);
         WriteNumber(writer, "areaOpacity", AreaOpacity); WriteNumber(writer, "barRadius", BarRadius);
         WriteNumber(writer, "gridStrokeWidth", GridStrokeWidth); WriteNumber(writer, "axisStrokeWidth", AxisStrokeWidth);
         WriteNumber(writer, "cardRadius", CardRadius);
+        WriteNumber(writer, "gaugeStrokeWidth", GaugeStrokeWidth); WriteNumber(writer, "gaugeBandWidth", GaugeBandWidth);
         writer.EndObject();
         writer.Property("effects"); writer.StartObject();
         WriteNumber(writer, "cardShadowOpacity", CardShadowOpacity); WriteColor(writer, "cardShadowColor", CardShadowColor);
@@ -145,6 +151,8 @@ public sealed partial class VisualTheme {
         parent.TryGetValue(name, out var value) && !value.IsNull ? value : throw new ArgumentException("Theme requires '" + path + "." + name + "'.");
     private static Dictionary<string, GeoJsonValue> Object(Dictionary<string, GeoJsonValue> parent, string name, string path) => Required(parent, name, path).AsObject(path + "." + name);
     private static double Number(Dictionary<string, GeoJsonValue> parent, string name, string path) => Required(parent, name, path).AsNumber(path + "." + name);
+    private static double OptionalNumber(Dictionary<string, GeoJsonValue> parent, string name, string path, double fallback) =>
+        parent.TryGetValue(name, out var value) ? value.AsNumber(path + "." + name) : fallback;
     private static ChartColor Role(Dictionary<string, GeoJsonValue> roles, string name, ChartColor fallback) =>
         roles.TryGetValue(name, out var value) ? Hex(value.AsString("roles." + name), name) : fallback;
     private static ChartColor? NullableRole(Dictionary<string, GeoJsonValue> roles, string name, ChartColor? fallback) =>

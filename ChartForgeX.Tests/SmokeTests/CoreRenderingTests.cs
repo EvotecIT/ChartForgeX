@@ -363,7 +363,7 @@ internal static partial class SmokeTests {
             "Explicit premium styling should retain its shared highlight and halo layers.");
         Assert(FamilyLabels(prepared, "annotation-label").Any(label => label.Text.Lines.Any(line => line.Text == "target")),
             "Annotations should retain their readable visible captions.");
-        Assert(FamilyLabels(prepared, "frame-heading").Single().Text.Style.Font.Weight == 600,
+        Assert(FamilyLabels(prepared, "frame-heading").Single().Text.Style.Font.Weight == 700,
             "Report titles should use the shared heading weight.");
         Assert(chart.ToSvg().Contains("data-cfx-role=\"line-highlight\"", StringComparison.Ordinal) && chart.ToPng().Length > 64,
             "The same explicit styling scene should render SVG and native PNG.");

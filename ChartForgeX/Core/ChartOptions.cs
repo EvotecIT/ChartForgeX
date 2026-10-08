@@ -10,7 +10,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
-    private ChartPadding _padding = new(18, 16, 18, 12);
+    private ChartPadding _padding = ChartPadding.All(24);
     private ChartTheme _theme = ChartTheme.GraphiteLight();
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.TopLeft;
@@ -189,7 +189,7 @@ public sealed partial class ChartOptions {
     /// Gets or sets where the legend is placed relative to the plot area.
     /// </summary>
     public ChartLegendPosition LegendPosition {
-        get => HasExplicitLegendPosition || Theme.UseGraphiteLayout ? _legendPosition : ChartLegendPosition.Bottom;
+        get => _legendPosition;
         set {
             if (!Enum.IsDefined(typeof(ChartLegendPosition), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown legend position.");
             _legendPosition = value;

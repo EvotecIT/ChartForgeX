@@ -55,6 +55,9 @@ public sealed partial class V2PreparedFamilyPaintTests {
         var sankey = V2GalleryModels.Create(ChartSeriesKind.Sankey);
         sankey.Options.SankeyNodeStates[0] = ChartSeriesState.Danger;
         var nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
+        Assert.All(nodePaints, paint => Assert.Contains("var(--status,", paint));
+        sankey.Series[0].WithPointColor(1, Shared);
+        nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
         Assert.Contains("var(--status,", nodePaints[0]); Assert.Contains("var(--series,", nodePaints[1]);
         var funnel = V2GalleryModels.Create(ChartSeriesKind.Funnel).WithDataLabels(); funnel.Series[0].Color = Shared;
         var variables = Variables().AddInk("--series-ink", Shared, ChartColor.White, SvgColorRole.Series);
@@ -86,6 +89,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
         tokens.Status.Critical = new VisualTokenColor(Shared, ChartColor.White);
         tokens.Status.Medium = new VisualTokenColor(Shared, ChartColor.White);
         tokens.Status.Pass = new VisualTokenColor(Shared, ChartColor.White);
+        tokens.Status.Neutral = new VisualTokenColor(Shared, ChartColor.White);
         return new VisualRenderContext(layout: new(new(800, 520)), theme: new VisualTheme(tokens, tokens), frame: new(showLegend: showLegend));
     }
 

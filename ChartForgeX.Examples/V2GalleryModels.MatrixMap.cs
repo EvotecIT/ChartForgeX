@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 
 public static partial class V2GalleryModels {
     private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
-        var chart = Categories(); var colors = VisualTheme.Graphite().Resolve(mode);
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
         switch (kind) {
             case ChartSeriesKind.Heatmap:
                 if (variant == "options") return States(mode).WithXLabels("Identity", "Network", "Storage", "Backup")

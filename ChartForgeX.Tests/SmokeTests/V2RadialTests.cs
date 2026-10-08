@@ -172,7 +172,7 @@ public sealed class V2RadialTests {
         var complete = new[] { prefix + "A", prefix + "B", centerValue, centerCaption };
         Assert.All(complete, full => Assert.DoesNotContain(full, displayed));
         Assert.NotEmpty(displayed);
-        Assert.Equal(complete.Take(2), svg.Descendants().Attributes("data-cfx-full-label").Select(attribute => attribute.Value));
+        RetainsPointLabels(svg);
         Assert.Equal(centerValue, Assert.Single(svg.Descendants().Attributes("data-cfx-center-value")).Value);
         Assert.Equal(centerCaption, Assert.Single(svg.Descendants().Attributes("data-cfx-center-caption")).Value);
         Assert.All(complete, full => Assert.Contains(prepared.Regions, region => region.Label == full));
@@ -185,7 +185,7 @@ public sealed class V2RadialTests {
         var artifact = prepared.ToArtifact("retained-radial-text", VisualArtifactKind.Chart);
         Assert.All(complete, full => Assert.Contains(artifact.Regions, region => region.Label == full && region.AlternativeText == full));
         var artifactSvg = XDocument.Parse(artifact.ToSvg());
-        Assert.Equal(complete.Take(2), artifactSvg.Descendants().Attributes("data-cfx-full-label").Select(attribute => attribute.Value));
+        RetainsPointLabels(artifactSvg);
         Assert.Equal(centerValue, Assert.Single(artifactSvg.Descendants().Attributes("data-cfx-center-value")).Value);
         Assert.Equal(centerCaption, Assert.Single(artifactSvg.Descendants().Attributes("data-cfx-center-caption")).Value);
         string snapshot = prepared.ToSvg();
@@ -194,6 +194,15 @@ public sealed class V2RadialTests {
         Assert.Equal(snapshot, prepared.ToSvg());
         Assert.NotEmpty(artifact.ToPng());
         Assert.Equal(2, calls);
+
+        void RetainsPointLabels(XDocument document) {
+            Assert.Equal(2, document.Descendants().Attributes("data-cfx-full-label").Count());
+            for (var point = 0; point < 2; point++) {
+                var source = Assert.Single(document.Descendants(), element =>
+                    (string?)element.Attribute("data-cfx-point") == point.ToString(CultureInfo.InvariantCulture));
+                Assert.Equal(complete[point], source.Attribute("data-cfx-full-label")!.Value);
+            }
+        }
     }
 
     [Fact]

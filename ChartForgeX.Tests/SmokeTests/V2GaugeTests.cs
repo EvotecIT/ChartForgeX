@@ -30,7 +30,7 @@ public sealed class V2GaugeTests {
         if (form == ChartGaugeForm.Arc) {
             var arc = Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "gauge-value");
             Assert.Equal(Math.PI * 4 / 3, arc.Sweep, 10);
-            Assert.Equal(new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light).Status.Pass.Fill, arc.Fill);
+            Assert.Equal(new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light).Palette[0], arc.Fill);
         } else if (form == ChartGaugeForm.Needle) Assert.Contains(scene.Nodes, node => node.Role == "gauge-needle");
         else {
             var track = Assert.Single(scene.Nodes.OfType<VisualSceneRectangle>(), rect => rect.Role == "gauge-track");

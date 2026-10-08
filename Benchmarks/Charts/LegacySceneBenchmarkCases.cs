@@ -29,7 +29,7 @@ public static partial class LegacySceneBenchmarkCases {
         var theme = tokens.ApplyTo(ChartTheme.GraphiteLight()).WithFontFamily("CFX Proof Carlito")
             .WithTypography(22, 13, 11, 11, 12, 11);
         var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
-            .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPngOutputScale(1)
+            .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPadding(24, 24, 24, 24).WithPngOutputScale(1)
             .WithXLabels(Enumerable.Range(1, fixture.EndsWith("bars", StringComparison.Ordinal) ? 24 : 7).Select(index => "Day " + index).ToArray());
         // Explicit marker density keeps the same marks visible in the two rendering paths.
         chart.Options.LineMarkerMode = ChartLineMarkerMode.All;

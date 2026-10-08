@@ -113,9 +113,10 @@ Every migrated family needs typed data/geometry, shared frame/theme/text, SVG/na
 | 2 | Complete Cartesian/radial migration and unified formatting/sparkline policy | Supported option closure; remove replaced legacy family paths |
 | 3 | Diagram and remaining family migration | Shared contracts plus family-specific semantic/visual closure |
 | 4 | Extract Visuals and Stories; remove decorative static dashboard controls | Full package dependency/asset closure and preserved composition/animation capabilities |
+| Visual acceptance | Finish the shared visual system and curated family gallery before consumer migration | Observed SVG/PNG light/dark compact/wide output; coherent typography, spacing, labels and legends; usable theme/filter/example/export navigation; qualified performance and package boundaries |
 | 5 | Consumer migrations and release qualification | Published-package-only consumer builds and real document/module/wallpaper execution |
 
-The active checklist lives in [TODO.md](../../TODO.md). Phase 1 ends with a reassessment; it does not authorize publishing packages or migrating consumers.
+The active checklist lives in [TODO.md](../../TODO.md). Visual acceptance precedes Phase 5. Package extraction qualifies ownership and retained capabilities; the gallery and rendered chart layouts require their own observed acceptance. Package publication and consumer migration require separate authority.
 
 ## Validation and performance
 
@@ -127,7 +128,7 @@ Keep unchanged-output benchmark cases byte-identical. Redesign cases must valida
 
 Use the existing PowerForge benchmark orchestration, paired/rotated warm samples, allocations and output sizes. Investigate every unexplained regression above 10% per representative workload; do not average away a family regression or remove labels/quality to pass. Record source/assembly/font hashes, runtime/SDK, quality settings and distributions. The threshold is a gate to investigate, not a guarantee from one median.
 
-Generated SVG must be inspected in a browser and native PNG viewed directly. Numeric health checks and XML assertions complement that inspection. Keep the legacy gallery intact while the isolated `generated-v2` catalog is reviewed. Baseline refresh follows observed approval, not the other way around.
+Generated SVG must be inspected in a browser and native PNG viewed directly. Numeric health checks and XML assertions complement that inspection. The curated `generated-v2` catalog provides uniform family examples; the complementary scenario gallery retains compositions, interactions and dense fixtures. Regenerate both from the same source when defaults change. Baseline refresh follows observed approval.
 
 The stable Phase 1 runtime is commit `913245cd0d6e34d3e9fb5a7a02c6fe6ae00aa67c`, net8.0 assembly SHA-256 `F9E6C9DE9137BA37698FC73539CF7554D9DF60A82DAF5F47EFA542D64D5A9DC4`. Its complete local quality loop passed 2,491 tests, 42 Mermaid conformance fixtures, Native AOT execution, 317 healthy visual pairs, all four target-framework assets and isolated consumption of the six packed libraries. The 56-case gallery and 16 checked-in selections remain byte-identical after the bounded opaque-background raster optimization; the earlier 14 executed browser cases and direct PNG/SVG inspection therefore cover those same outputs.
 
@@ -177,4 +178,12 @@ Assembly moves require compiled callers to rebuild against package version `2.0.
 
 Topology performance compares 22 paired workloads with identical full diagnostics and SVG. Twenty pairs meet the 10% elapsed/allocation gate in the initial 396-sample run. The two initial timing flags pass a controlled repeat with 21 samples per case and 30 warmups: mesh complete preparation is 4.10% faster and reused replication SVG is 5.74% faster, with stable allocations. Both original and confirmation results remain available; these local Windows measurements do not establish quiet-host or cross-platform performance.
 
-Phase 5 closes the downstream contracts in the [consumer migration guide](migration.md). PowerBGInfo needs actual wallpaper execution, ImagePlayground needs installed-module static and animated workflows in both PowerShell runtimes, and OfficeIMO needs saved-document and editable-diagram proof. Owner source, local packages and owner fixtures do not establish those results or package publication. The chart option roadmap and annotation polish remain separate work in [TODO.md](../../TODO.md).
+Visual acceptance closes the shared presentation and gallery work in [TODO.md](../../TODO.md) before Phase 5. Phase 5 closes the downstream contracts in the [consumer migration guide](migration.md). PowerBGInfo needs actual wallpaper execution, ImagePlayground needs installed-module static and animated workflows in both PowerShell runtimes, and OfficeIMO needs saved-document and editable-diagram proof. Owner source, local packages and owner fixtures do not establish those results or package publication. The chart option roadmap remains separate future work.
+
+## Visual acceptance reassessment
+
+Charts and diagrams share the paired canonical colors, measured frame, typography roles and label-placement services. The default heading is 17px bold, outer padding is 24px, and scalar values have a separate 34px role. Frame legend settings resolve consistently across families; authored sizes, colors, axis bounds and family-specific scale switches remain effective. Automatic Cartesian and schedule ranges reserve room for endpoint marks. Annotation placement accounts for data marks, including the appointment chart's peak-window caption.
+
+The curated catalog covers all 49 chart kinds with native wide and compact light/dark SVG and PNG examples. Its 54 primary tiles use one 400x280 preview canvas, meaningful titles and chart-only artwork. Full examples retain their semantic content and expose SVG, PNG and C# source. The canonical website imports declared artifact dependencies and preserves theme, family and return navigation. A compact example may use a smaller overview dataset so its labels remain readable; its source makes that choice visible.
+
+Measured placement retains full semantic text when an optional label cannot fit, and records the omission. Fixed canvases cannot promise that arbitrary dense data or long text will remain fully painted. Explicit undersized fonts and bounds remain caller choices. Browser hover, selection, zoom and host controls belong to the interaction adapters; additional chart options and families remain in the [capability roadmap](chart-capabilities.csv). Visual acceptance covers the supported static layouts and observed fixtures, while consumer execution, public package availability and website deployment retain separate gates.

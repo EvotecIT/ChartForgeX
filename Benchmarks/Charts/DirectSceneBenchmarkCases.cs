@@ -13,10 +13,10 @@ public static class DirectSceneBenchmarkCases {
     /// <summary>Loads the same canonical theme file as the legacy lane outside timing.</summary>
     public static void Initialize(string tokenPath, string fontPath, string boldFontPath) {
         LegacySceneBenchmarkCases.Initialize(tokenPath, fontPath, boldFontPath);
-        _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(LegacySceneBenchmarkCases.Width, LegacySceneBenchmarkCases.Height)),
-            VisualTheme.FromJson(File.ReadAllText(tokenPath)), VisualThemeMode.Light,
-            new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG"), FontSpec.FromFamily("CFX Proof Carlito"));
         var theme = VisualTheme.FromJson(File.ReadAllText(tokenPath), new VisualTypography("CFX Proof Carlito", 22, 13, 11, 12, 11));
+        _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(LegacySceneBenchmarkCases.Width, LegacySceneBenchmarkCases.Height)),
+            theme, VisualThemeMode.Light,
+            new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG"), FontSpec.FromFamily("CFX Proof Carlito"));
         _phase3Context = new VisualRenderContext(_context.Layout, theme, VisualThemeMode.Light, _context.Frame, _context.Font);
         _topologyContext = new VisualRenderContext(_context.Layout, theme, VisualThemeMode.Light,
             new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: false), _context.Font);

@@ -23,12 +23,14 @@ public sealed class PreparedTopology {
     private readonly string? _subtitle;
     private readonly TopologyLegend? _legend;
     private readonly Lazy<ResolvedTopologyGeometry> _geometry;
+    private readonly Func<TopologyLayoutDiagnosticReport> _diagnostics;
     internal ResolvedTopologyGeometry Geometry => _geometry.Value;
     internal VisualRenderOptions RasterOptions => _rasterOptions;
 
     internal PreparedTopology(VisualTopologyCompiler compiler, PreparedVisual visual, VisualRenderOptions rasterOptions) {
         _chart = compiler.LayoutSnapshot(); _options = compiler.OptionsSnapshot();
         _visual = visual; _geometry = compiler.GeometrySnapshot(_chart, _options);
+        _diagnostics = compiler.DiagnosticsSnapshot(_chart, _chart.RenderOptions ?? _options);
         _context = compiler.Context; _rasterOptions = rasterOptions;
         _title = compiler.SourceTitle; _subtitle = compiler.SourceSubtitle;
         _legend = compiler.FrameLegend;
@@ -73,8 +75,8 @@ public sealed class PreparedTopology {
     /// <summary>Returns a detached semantic envelope with the positions used by the renderers.</summary>
     public VisualArtifactInterchangeEnvelope ToInterchangeEnvelope() => _visual.SemanticInterchange!;
 
-    /// <summary>Measures the prepared geometry without running layout again. The returned report is detached.</summary>
-    public TopologyLayoutDiagnosticReport Analyze() => TopologyLayoutDiagnostics.AnalyzePrepared(_chart, _chart.RenderOptions ?? _options);
+    /// <summary>Measures the prepared geometry in output coordinates without running layout again. The returned report is detached.</summary>
+    public TopologyLayoutDiagnosticReport Analyze() => _diagnostics();
 
     /// <summary>Evaluates collisions, viewport expansion, and readability at a target display size.</summary>
     public TopologyReadabilityReport AssessReadability(double targetWidth, double targetHeight, double minimumScale = 0.65) =>

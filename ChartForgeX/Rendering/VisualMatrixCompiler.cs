@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>Prepares matrix, hexagonal and calendar geometry directly into one native scene.</summary>
 internal static partial class VisualMatrixCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
-        chart.Options.ShowLegend && chart.Options.ShowHeatmapScale && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
+        chart.Options.ShowHeatmapScale && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
             ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray()
             : Array.Empty<VisualLegendEntry>();
 
@@ -121,7 +121,7 @@ internal static partial class VisualMatrixCompiler {
         }
     }
 
-    private static bool ScaleVisible(Chart chart, VisualRenderContext context) => chart.Options.ShowHeatmapScale && chart.Options.ShowLegend && context.Frame.ShowLegend;
+    private static bool ScaleVisible(Chart chart, VisualRenderContext context) => chart.Options.ShowHeatmapScale && context.Frame.ShowLegend;
     private static void NoData(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds) =>
         VisualStateSceneTools.Text(builder, chart.Options.Labels.NoData, bounds, VisualStateSceneTools.TickStyle(chart, context), "no-data", "matrix-no-data", TextAlignment.Center);
 }

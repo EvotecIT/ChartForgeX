@@ -28,7 +28,7 @@ internal static partial class VisualSankeyCompiler {
         double reserve = showLabels ? Math.Min(plot.Width * .22, model.Nodes.Max(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Width) + 16) : 2;
         var nodePlot = new ChartRect(plot.X + reserve, plot.Y + 1, plot.Width - reserve * 2, Math.Max(1, plot.Height - 2));
         if (nodePlot.Width <= 1) throw new NotSupportedException("Sankey labels require a wider common viewport.");
-        ChartSankeyLayout.Layout(model, nodePlot, Math.Max(10, Math.Min(24, context.Theme.BarRadius * 4)), gap: Math.Max(12, context.Theme.Spacing * 1.5));
+        ChartSankeyLayout.Layout(model, nodePlot, 10, gap: Math.Max(12, context.Theme.Spacing * 1.5));
         using (builder.PushGroup("series-0", "sankey-series", new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name,
             ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty, ["data-cfx-weight-scale"] = N(model.Scale)
@@ -51,13 +51,13 @@ internal static partial class VisualSankeyCompiler {
                 builder.AddRegion(new VisualSemanticRegion(Id("link", link.Index), "sankey-link", bounds, full));
             }
             foreach (var node in model.Nodes) {
-                var bounds = new ChartRect(node.X, node.Y, model.NodeWidth, node.Height); var color = Color(chart, colors, node.Index);
+                var bounds = new ChartRect(node.X, node.Y, model.NodeWidth, node.Height); var color = Color(chart, colors, node.Index, neutralDefault: true);
                 using (builder.PushGroup(Id("node", node.Index), "sankey-node", new Dictionary<string, string> {
                     ["data-cfx-node"] = N(node.Index), ["data-cfx-layer"] = N(node.Layer), ["data-cfx-label"] = node.Label,
                     ["data-cfx-value"] = N(node.Value), ["data-cfx-incoming"] = N(node.Incoming), ["data-cfx-outgoing"] = N(node.Outgoing),
                     ["data-cfx-full-label"] = labels[node.Index], ["data-cfx-state"] = chart.Options.SankeyNodeStates.TryGetValue(node.Index, out var state) ? state.ToString() : series.StateRole.ToString()
                 })) {
-                    builder.Rect(bounds, color, radius: Math.Min(context.Theme.BarRadius, node.Height / 2), role: "sankey-node-mark", paint: VisualChartPaint.Fill(Paint(chart, color, node.Index)));
+                    builder.Rect(bounds, color, radius: Math.Min(context.Theme.BarRadius, node.Height / 2), role: "sankey-node-mark", paint: VisualChartPaint.Fill(Paint(chart, color, node.Index, neutralDefault: true)));
                     var pattern = Pattern(series, node.Index);
                     if (pattern != ChartFillPattern.None) builder.Pattern(Rectangle(bounds), pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sankey-node-pattern");
                 }
@@ -67,18 +67,18 @@ internal static partial class VisualSankeyCompiler {
         }
     }
 
-    private static ChartColor Color(Chart chart, VisualThemeColors colors, int node) {
+    private static ChartColor Color(Chart chart, VisualThemeColors colors, int node, bool neutralDefault = false) {
         var series = chart.Series[0];
         if (node < series.PointColors.Count && series.PointColors[node].HasValue) return series.PointColors[node]!.Value;
         if (series.Color.HasValue) return series.Color.Value;
         var role = chart.Options.SankeyNodeStates.TryGetValue(node, out var state) ? state : series.StateRole;
-        return ChartSeriesColours.State(role, colors, colors.Palette[node % colors.Palette.Count]);
+        return ChartSeriesColours.State(role, colors, neutralDefault ? colors.Status.Neutral.Fill : colors.Palette[node % colors.Palette.Count]);
     }
-    private static SvgPaint Paint(Chart chart, ChartColor color, int node) {
+    private static SvgPaint Paint(Chart chart, ChartColor color, int node, bool neutralDefault = false) {
         var series = chart.Series[0];
         var explicitColor = series.Color.HasValue || node < series.PointColors.Count && series.PointColors[node].HasValue;
         var state = chart.Options.SankeyNodeStates.TryGetValue(node, out var configured) ? configured : series.StateRole;
-        return SvgPaint.Of(color, explicitColor || state == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status);
+        return SvgPaint.Of(color, explicitColor || state == ChartSeriesState.None && !neutralDefault ? SvgColorRole.Series : SvgColorRole.Status);
     }
     private static TextStyle Style(Chart chart, VisualRenderContext context, int node, ChartColor color) {
         var series = chart.Series[0];

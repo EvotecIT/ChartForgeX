@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Xml.Linq;
+using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using Xunit;
 
@@ -510,10 +511,23 @@ public sealed class DenseTopologyLayoutTests {
             .Elements().Single();
         var left = (double)clip.Attribute("x")!; var top = (double)clip.Attribute("y")!;
         var right = left + (double)clip.Attribute("width")!; var bottom = top + (double)clip.Attribute("height")!;
-        Assert.True(top > 0 && bottom < prepared.Height, "Measured headings and legend must reserve real content space.");
+        Assert.True(top > 0 && bottom <= prepared.Height, "Measured headings and legend must reserve real content space.");
         Assert.Contains(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "frame-heading");
         Assert.Contains(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-entry");
+        var headings = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>()
+            .Where(text => text.Role is "frame-heading" or "frame-heading-continuation").ToArray();
+        Assert.NotEmpty(headings);
+        Assert.All(headings, heading => Assert.True(heading.Baseline - heading.Text.Ascent + heading.Text.Metrics.Height <= top));
+        var legends = prepared.Visual.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
+        Assert.NotEmpty(legends);
+        Assert.All(legends, legend => Assert.True(legend.Bounds.Bottom <= top));
         Assert.All(route.Points, point => { Assert.InRange(point.X, left, right); Assert.InRange(point.Y, top, bottom); });
+        var renderedRoute = prepared.ToInterchangeEnvelope().Edges.Single().ResolvedRoute;
+        Assert.Equal(renderedRoute.Count, route.Points.Count);
+        for (var index = 0; index < route.Points.Count; index++) {
+            Assert.Equal(renderedRoute[index].X, route.Points[index].X, 6);
+            Assert.Equal(renderedRoute[index].Y, route.Points[index].Y, 6);
+        }
         Assert.Equal(0, route.ObstacleHits);
         Assert.Equal(0, route.LabelObstacleHits);
     }

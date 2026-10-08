@@ -32,13 +32,11 @@ public static partial class V2Examples {
                     var id = family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
-                    var thumbnail = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
-                        VisualTheme.Graphite(), mode, new VisualFrame("", "", showSurface: false), FontSpec.FromFamily(ProofFont)));
-                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
+                    WriteThumbnail(output, chart, id, title, family, mode, legend: true);
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), Snippet(family, variant, mode, width, height));
-                    WritePage(output, id, title, mode);
                     artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
-                        prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count));
+                        prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
+                        DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray()));
                 }
             }
         }

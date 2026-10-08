@@ -11,11 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
         ChartColor fill, int pointIndex, string role, bool center = false) {
-        var series = chart.Series[0];
-        var fallback = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = ChartColorMath.AccessibleTextOnBackground(fill) };
-        var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(fallback));
-        if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null) style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
-        style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
+        var style = LabelStyle(chart, context, fill, pointIndex);
         var inset = Math.Min(8, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);
         var metrics = builder.MeasureText("M", style);
@@ -37,8 +33,18 @@ internal static partial class VisualHierarchyCompiler {
         style.Alignment = center ? TextAlignment.Center : TextAlignment.Left;
         double y = center ? bounds.Y + (bounds.Height - builder.MeasureText(displayed, style).Height) / 2 : bounds.Y + inset;
         var paint = VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex) ? VisualChartPaint.Text(style)
-            : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(series, pointIndex));
+            : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], pointIndex));
         builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
+    }
+
+    /// <summary>Resolves the same authored caption typography for rectangular and radial hierarchy marks.</summary>
+    private static TextStyle LabelStyle(Chart chart, VisualRenderContext context, ChartColor fill, int pointIndex) {
+        var series = chart.Series[0];
+        var fallback = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = ChartColorMath.AccessibleTextOnBackground(fill) };
+        var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(fallback));
+        if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null) style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
+        style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
+        return style;
     }
 
     /// <summary>Validates mutable tuple input before recursive canonical hierarchy helpers can observe it.</summary>

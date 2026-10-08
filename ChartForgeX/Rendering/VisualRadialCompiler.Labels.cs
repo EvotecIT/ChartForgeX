@@ -212,7 +212,7 @@ internal static partial class VisualRadialCompiler {
         var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
         builder.AddRegion(new VisualSemanticRegion("series-0-center-value", "donut-total-label", bounds, value));
         builder.AddRegion(new VisualSemanticRegion("series-0-center-caption", "donut-title", bounds, label));
-        var valueStyle = Style(chart, context, -1, colors.Foreground, Math.Min(context.Theme.Typography.TitleSize, inner * 0.44), 700);
+        var valueStyle = Style(chart, context, -1, colors.Foreground, Math.Min(context.Theme.Typography.CenterValueSize, inner * 0.44), 700);
         var labelStyle = Style(chart, context, -1, colors.MutedForeground, Math.Min(context.Theme.Typography.DataLabelSize, inner * 0.25));
         valueStyle.FontSize = Math.Min(valueStyle.FontSize, inner * 0.44);
         labelStyle.FontSize = Math.Min(labelStyle.FontSize, inner * 0.25);

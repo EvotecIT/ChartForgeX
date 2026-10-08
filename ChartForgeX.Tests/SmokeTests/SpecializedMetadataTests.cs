@@ -59,7 +59,7 @@ internal static partial class SmokeTests {
         Verify.Equal(0, FamilyNumber(gaugeSource, "data-cfx-min"));
         Verify.Equal(100, FamilyNumber(gaugeSource, "data-cfx-max"));
         Verify.Equal(.84, FamilyNumber(gaugeSource, "data-cfx-percent"));
-        Verify.Equal(ChartSeriesState.Success.ToString(), gaugeSource.Metadata["data-cfx-status"]);
+        Verify.Equal(ChartSeriesState.None.ToString(), gaugeSource.Metadata["data-cfx-status"]);
         Verify.Equal("Score: 84", gaugeSource.Metadata["aria-label"]);
         var gaugeArc = Verify.Single(gauge.Scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-value");
         Verify.Equal(.84, gaugeArc.Sweep / (Math.PI * 4 / 3), 10);

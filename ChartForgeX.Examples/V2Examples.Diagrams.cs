@@ -17,13 +17,11 @@ public static partial class V2Examples {
                 var prepared = model.Prepare(context);
                 ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
                 File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
-                var thumbnail = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
-                    VisualTheme.Graphite(), mode, new VisualFrame("", "", showLegend: false), FontSpec.FromFamily(ProofFont)));
-                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
+                WriteThumbnail(output, model, id, title, family, mode, legend: false);
                 ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), DiagramSnippet(family, title, mode));
-                WritePage(output, id, title, mode);
                 artifacts.Add(new ProofArtifact(id, family, title, "feasibility", mode.ToString().ToLowerInvariant(), 640, 400,
-                    prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count));
+                    prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
+                    DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray()));
             }
         }
     }
