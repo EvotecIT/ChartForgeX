@@ -52,6 +52,15 @@ internal sealed partial class VisualSceneBuilder {
     internal IDisposable PushTranslation(double x, double y) =>
         OpenGroup(new VisualSceneGroup(null, null, null, null, translation: new ChartPoint(x, y)));
 
+    /// <summary>Appends a completed layer in this scene's coordinates without changing semantic identities.</summary>
+    /// <remarks>The child contains balanced groups and already measured text. Callers own identity uniqueness.</remarks>
+    internal void Append(VisualScene scene) {
+        if (scene == null) throw new ArgumentNullException(nameof(scene));
+        foreach (var node in scene.Nodes) _nodes.Add(node);
+        foreach (var diagnostic in scene.Diagnostics) _diagnostics.Add(diagnostic);
+        foreach (var region in scene.Regions) _regions.Add(region);
+    }
+
     /// <summary>Places an immutable child scene without rendering or reshaping it.</summary>
     internal void Append(VisualScene scene, double x, double y, string panelId) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));

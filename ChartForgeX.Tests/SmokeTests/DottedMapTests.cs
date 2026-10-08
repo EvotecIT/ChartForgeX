@@ -153,7 +153,21 @@ internal static partial class SmokeTests {
         Verify.True(prepared.Scene.Nodes.ToList().IndexOf(paths[0]) < prepared.Scene.Nodes.ToList().IndexOf(marker));
         Verify.Equal(ChartColor.FromHex("#22C55E").R, paths[0].Stroke!.Value.R);
         Verify.NotEmpty(prepared.ToPng());
-        Verify.Equal(2, FamilyLabels(PreparedFamily(chart.WithDataLabels()), "dotted-map-connector-label").Length);
+        var labelled = PreparedFamily(chart.WithDataLabels());
+        var captions = FamilyLabels(labelled, "dotted-map-connector-label");
+        var sources = FamilyGroups(labelled, "dotted-map-connector-label-source");
+        Verify.Equal(new[] { "Spain to Warsaw", "Warsaw to Oslo" }, sources.Select(source => source.Metadata["data-cfx-full-label"]));
+        foreach (var full in new[] { "Spain to Warsaw", "Warsaw to Oslo" })
+            Verify.Contains(labelled.Regions, region => region.Role == "dotted-map-connector-label" && region.Label == full);
+        var painted = captions.Concat(FamilyLabels(labelled, "dotted-map-data-label")).Select(MapTextBounds).ToArray();
+        for (var index = 0; index < painted.Length; index++) {
+            Verify.InRange(painted[index].Left, 0, labelled.Size.Width); Verify.InRange(painted[index].Right, 0, labelled.Size.Width);
+            Verify.InRange(painted[index].Top, 0, labelled.Size.Height); Verify.InRange(painted[index].Bottom, 0, labelled.Size.Height);
+            Verify.DoesNotContain(painted.Skip(index + 1), other => MapOverlap(painted[index], other));
+        }
+        if (captions.Length < 2 || captions.Any(caption => FamilyContent(caption) != labelled.Regions.Single(region => region.Id == caption.Id).Label))
+            Verify.Contains(labelled.Diagnostics, diagnostic => diagnostic.Code == "map.label-overflow");
+        Verify.Equal(2, FamilyLabels(PreparedFamily(chart.WithSize(900, 520)), "dotted-map-connector-label").Length);
         AssertThrows<ArgumentException>(() => Chart.Create().AddMapConnector(" ", 0, 0, 1, 1), "Routes need a label.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddMapConnector("Bad", -181, 0, 1, 1), "Route coordinates must be geographic.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddMapRouteBetweenPoints("Bad", "Spain", "Warsaw"), "Bound routes require source points.");

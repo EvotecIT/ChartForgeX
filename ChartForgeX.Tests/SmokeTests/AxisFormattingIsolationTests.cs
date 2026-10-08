@@ -22,12 +22,16 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng().Length > 64, "Independent y-axis and generic value formatters should render through the PNG path.");
 
         var secondary = Chart.Create()
-            .WithSize(420, 280)
+            .WithSize(700, 280)
             .WithValueFormatter(_ => "generic-secondary")
+            .ConfigureYAxis(axis => axis.LabelFormatter = _ => "primary-fixed")
             .WithTickLabelStyle(style => style.WithWeight("650").WithItalic())
             .WithSecondaryYAxis("Rate")
             .AddLine("Rate", Points(20, 40, 60));
         secondary.Series[0].UseSecondaryYAxis();
+        var secondaryPrepared = PreparedFamily(secondary);
+        Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label!.StartsWith("generic-secondary (", StringComparison.Ordinal)),
+            "Secondary tick regions should retain the complete fallback-formatted value.");
         var secondarySvg = secondary.ToSvg();
         Assert(secondarySvg.Contains(">generic-secondary</text>", StringComparison.Ordinal), "Secondary y-axis ticks should fall back to the generic value formatter when the axis has no dedicated formatter.");
         Assert(secondarySvg.Contains("data-cfx-role=\"axis-secondary-y-label\"", StringComparison.Ordinal) && secondarySvg.Contains("font-weight=\"650\"", StringComparison.Ordinal) && secondarySvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Secondary SVG axis ticks should honor the shared tick-label typography style.");

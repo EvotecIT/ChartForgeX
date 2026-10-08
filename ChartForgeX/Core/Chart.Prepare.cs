@@ -14,21 +14,23 @@ public sealed partial class Chart : IVisualRenderable {
         var family = VisualChartCompiler.Family(this);
         var sourceFrame = context.Frame;
         var frameColors = context.Theme.Resolve(context.ThemeMode);
+        var entries = VisualChartCompiler.LegendEntries(family, this, frameColors);
         TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
             var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
             if (configured == null) fallback.Font.Weight = weight;
             return model.Resolve(fallback);
         }
         var frame = new VisualFrame(sourceFrame.Title ?? Title, sourceFrame.Subtitle ?? Subtitle,
-            sourceFrame.ShowLegend, sourceFrame.LegendPosition, sourceFrame.ShowSurface, sourceFrame.TransparentBackground,
-            RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, 600),
+            sourceFrame.HasExplicitLegend ? sourceFrame.ShowLegend : ChartLegendVisibility.ForPreparedContent(this, entries.Count),
+            sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.LegendPosition,
+            sourceFrame.ShowSurface, sourceFrame.TransparentBackground,
+            RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, 700),
             RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
             RoleStyle(sourceFrame.LegendStyle, Options.LegendStyle, context.Theme.Typography.LegendSize, frameColors.Foreground, 400),
             sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle);
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var entries = VisualChartCompiler.LegendEntries(family, this, colors);
         var content = VisualFrameLayout.Build(builder, context, entries);
         VisualChartCompiler.Build(family, this, context, builder, content);
         var accessibility = Accessibility.Clone();

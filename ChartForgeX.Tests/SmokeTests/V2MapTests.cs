@@ -75,9 +75,10 @@ public sealed class V2MapTests {
         var chart = Chart.Create().AddRegionMap("Values", Definition(), new[] { new ChartRegionMapItem("A", 10) }).WithMapLabels(false);
         var visible = Compile(chart);
         Assert.Contains(visible.Nodes, node => node.Role == "map-scale");
-        var hiddenContext = host ? new VisualRenderContext(frame: new VisualFrame(showLegend: false)) : new VisualRenderContext();
+        var hiddenContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(440, 330)),
+            frame: new VisualFrame(showLegend: host ? false : null));
         if (!host) chart.WithLegend(false);
-        var hidden = Compile(chart, context: hiddenContext);
+        var hidden = chart.Prepare(hiddenContext).Scene;
         Assert.DoesNotContain(hidden.Nodes, node => node.Role == "map-scale");
         Assert.Equal(3, hidden.Nodes.Count(node => node.Role == "region-map-region"));
         Assert.NotEmpty(VisualSceneRasterRenderer.Render(hidden).Pixels);

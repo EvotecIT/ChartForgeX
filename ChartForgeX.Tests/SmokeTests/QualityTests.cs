@@ -204,9 +204,17 @@ internal static partial class SmokeTests {
         chart.Options.ShowGrid = false;
         chart.Options.ShowPlotBackground = false;
 
+        chart.Options.TransparentBackground = true;
+        var prepared = PreparedFamily(chart);
+        var headings = FamilyLabels(prepared, "frame-heading").ToArray();
+        var legends = prepared.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
+        Assert(headings.Length == 2 && legends.Length == 2, "Report chrome should retain its title, subtitle and both legend entries.");
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
-        var headerAlpha = CountAlphaInRect(pixels, width, 0, 0, width, 84);
-        var legendAlpha = CountAlphaInRect(pixels, width, 0, height - 44, width, 44);
+        var headerBottom = (int)Math.Ceiling(headings.Max(heading => heading.Baseline - heading.Text.Ascent + heading.Text.Metrics.Height));
+        var legendTop = (int)Math.Floor(legends.Min(region => region.Bounds.Top));
+        var legendBottom = Math.Min(height, (int)Math.Ceiling(legends.Max(region => region.Bounds.Bottom)));
+        var headerAlpha = CountAlphaInRect(pixels, width, 0, 0, width, headerBottom);
+        var legendAlpha = CountAlphaInRect(pixels, width, 0, legendTop, width, legendBottom - legendTop);
 
         Assert(headerAlpha > 300, "PNG renderer should include readable header title and subtitle text.");
         Assert(legendAlpha > 180, $"PNG renderer should include a readable cartesian legend when legends are enabled. Actual alpha pixels: {legendAlpha}.");

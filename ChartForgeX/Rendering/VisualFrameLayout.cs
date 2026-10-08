@@ -11,13 +11,14 @@ namespace ChartForgeX.Rendering;
 internal sealed class VisualLegendEntry {
     internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
         ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null,
-        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null) {
+        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null) {
         Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
-        State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint; Value = value;
+        State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint; Value = value; Percentage = percentage;
     }
     internal string Label { get; }
     internal string? Value { get; }
-    internal string Description => string.IsNullOrEmpty(Value) ? Label : Label + ": " + Value;
+    internal string? Percentage { get; }
+    internal string Description => string.IsNullOrEmpty(Value) ? Label : Label + ": " + Value + (string.IsNullOrEmpty(Percentage) ? "" : " (" + Percentage + ")");
     internal ChartColor Color { get; }
     internal string Id { get; }
     internal ChartSeriesKind? Kind { get; }
@@ -43,17 +44,21 @@ internal static class VisualFrameLayout {
             var font = context.Font; font.Weight = weight;
             return new TextStyle { Font = font, FontSize = size, Color = color, LineHeight = 1 };
         }
-        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 600, colors.Foreground);
+        var titleStyle = Style(context.Frame.TitleStyle, typography.TitleSize, 700, colors.Foreground);
         var subtitleStyle = Style(context.Frame.SubtitleStyle, typography.SubtitleSize, 400, colors.MutedForeground);
         var legendStyle = Style(context.Frame.LegendStyle, typography.LegendSize, 400, colors.Foreground);
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(paints?.Background ?? SvgPaint.Of(colors.Background, SvgColorRole.Surface)));
         if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors, paints);
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
+            var headingTop = top;
             Header(context.Frame.Title, titleStyle, paints?.Foreground);
+            if (top > headingTop && !string.IsNullOrEmpty(context.Frame.Subtitle)) top += gap / 6;
             Header(context.Frame.Subtitle, subtitleStyle, paints?.MutedForeground);
+            if (top > headingTop) top += gap * 5 / 6;
         }
         if (context.Frame.ShowLegend && entries.Count > 0) {
+            Dictionary<VisualLegendEntry, (double Value, double Percentage)>? numericWidths = null;
             var position = context.Frame.LegendPosition;
             var side = position == ChartLegendPosition.Left || position == ChartLegendPosition.Right;
             var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
@@ -138,14 +143,21 @@ internal static class VisualFrameLayout {
                             // trimming so a compact side legend still explains that more entries are available.
                             if (isSummary && builder.MeasureText(fullLabel, legendStyle).Width > width)
                                 fullLabel = "+ " + omitted.ToString(CultureInfo.InvariantCulture) + " more";
-                            var valueWidth = string.IsNullOrEmpty(entry.Value) ? 0 : builder.MeasureText(entry.Value!, legendStyle).Width;
-                            var labelWidth = Math.Max(0, width - (isSummary ? 0 : 22) - (valueWidth > 0 ? valueWidth + 12 : 0));
+                            var valueWidth = ValueWidth(entry);
+                            var labelWidth = Math.Max(0, width - (isSummary ? 0 : 22) - (valueWidth > 0 ? valueWidth + gap : 0));
                             var label = Fit(fullLabel, labelWidth, legendStyle);
                             var anchor = cursor + (isSummary ? 0 : 18) + (legendStyle.Alignment == TextAlignment.Center ? labelWidth / 2 : legendStyle.Alignment == TextAlignment.Right ? labelWidth : 0);
                             builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: paints?.Foreground ?? VisualChartPaint.Text(legendStyle));
                             if (valueWidth > 0) {
                                 var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
-                                builder.Text(entry.Value!, cursor + width - 4, baseline, valueStyle, role: "legend-value", paint: paints?.Foreground ?? VisualChartPaint.Text(valueStyle));
+                                var percentageWidth = NumericWidths(entry).Percentage;
+                                var valueRight = cursor + width - 4;
+                                if (percentageWidth > 0) {
+                                    var percentageStyle = valueStyle.Clone(); percentageStyle.Color = colors.MutedForeground;
+                                    builder.Text(entry.Percentage!, valueRight, baseline, percentageStyle, role: "legend-percentage", paint: paints?.MutedForeground ?? VisualChartPaint.Text(percentageStyle));
+                                    valueRight -= percentageWidth + gap * 2 / 3;
+                                }
+                                builder.Text(Fit(entry.Value!, Math.Max(0, valueRight - cursor - (isSummary ? 0 : 22)), valueStyle), valueRight, baseline, valueStyle, role: "legend-value", paint: paints?.Foreground ?? VisualChartPaint.Text(valueStyle));
                             }
                         }
                         builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + titleHeight + r * lineHeight, width, lineHeight), entry.Description));
@@ -168,10 +180,27 @@ internal static class VisualFrameLayout {
                 else if (above) top += height + legendGap; else bottom -= height + legendGap;
             }
             double LegendWidth(VisualLegendEntry entry, double overhead) {
-                var valueWidth = string.IsNullOrEmpty(entry.Value) ? 0 : builder.MeasureText(entry.Value!, legendStyle).Width + 12;
+                var valueWidth = ValueWidth(entry);
+                if (valueWidth > 0) valueWidth += gap;
                 var label = OneLine(entry.Label); var availableWidth = Math.Max(0, legendWidth - overhead - valueWidth);
                 var length = ChartTextFitting.PrefixLength(label, availableWidth, text => builder.MeasureText(text, legendStyle).Width);
                 return length == label.Length ? Math.Min(legendWidth, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : legendWidth;
+            }
+            double ValueWidth(VisualLegendEntry entry) {
+                if (string.IsNullOrEmpty(entry.Value)) return 0;
+                var widths = NumericWidths(entry);
+                return widths.Value + (string.IsNullOrEmpty(entry.Percentage) ? 0 : widths.Percentage + gap * 2 / 3);
+            }
+            (double Value, double Percentage) NumericWidths(VisualLegendEntry entry) {
+                if (string.IsNullOrEmpty(entry.Value)) return default;
+                numericWidths ??= new Dictionary<VisualLegendEntry, (double Value, double Percentage)>();
+                if (!numericWidths.TryGetValue(entry, out var widths)) {
+                    // Wrapping, row alignment and paint placement share this frame's unchanged legend style.
+                    widths = (builder.MeasureText(entry.Value!, legendStyle).Width,
+                        string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width);
+                    numericWidths.Add(entry, widths);
+                }
+                return widths;
             }
         }
         if (bottom <= top || right <= left) {
@@ -201,7 +230,6 @@ internal static class VisualFrameLayout {
                 remainder = remainder.Substring(Math.Min(remainder.Length, line.Length)).TrimStart();
             }
             if (remainder.Length > 0 || paragraphs.Count > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.heading-overflow", "The heading exceeds the available frame space."));
-            top += gap;
         }
         string Fit(string text, double width, TextStyle style, bool ellipsis = true) {
             var fitted = ChartTextFitting.FitEnd(text, width, value => builder.MeasureText(value, style).Width, ellipsis ? "…" : "");

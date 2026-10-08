@@ -50,7 +50,7 @@ internal sealed partial class VisualExportRequest {
             var headingFont = font.Clone(); headingFont.Weight = weight;
             return model.Resolve(new TextStyle { Font = headingFont, FontSize = size, Color = color, LineHeight = 1 });
         }
-        var title = Heading(grid.TitleStyle, theme.Typography.TitleSize, colors.Foreground, 600);
+        var title = Heading(grid.TitleStyle, theme.Typography.TitleSize, colors.Foreground, 700);
         var subtitle = Heading(grid.SubtitleStyle, theme.Typography.SubtitleSize, colors.MutedForeground, 400);
         var frame = new VisualFrame(grid.Title, grid.Subtitle, showLegend: true, showSurface: true,
             titleStyle: title, subtitleStyle: subtitle, showCard: true);

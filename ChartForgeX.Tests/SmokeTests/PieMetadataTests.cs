@@ -25,7 +25,8 @@ internal static partial class SmokeTests {
             Verify.Equal(.75, slices[0].Sweep / (Math.PI * 2), 10);
             Verify.Equal(donut, slices[0].Inner > 0);
             Verify.Equal(new[] { "75%", "25%" }, FamilyLabels(prepared, "data-label").Select(FamilyContent));
-            Verify.Equal(new[] { "75%", "25%" }, FamilyLabels(prepared, "legend-value").Select(FamilyContent));
+            Verify.Equal(new[] { "75", "25" }, FamilyLabels(prepared, "legend-value").Select(FamilyContent));
+            Verify.Equal(new[] { "75%", "25%" }, FamilyLabels(prepared, "legend-percentage").Select(FamilyContent));
             var svg = XDocument.Parse(prepared.ToSvg());
             for (var index = 0; index < groups.Length; index++) {
                 var source = groups[index]; var sliceId = slices[index].Id;
@@ -45,7 +46,8 @@ internal static partial class SmokeTests {
         var positioned = PreparedFamily(positionedLegend);
         Verify.True(positioned.Regions.Where(region => region.Role == "legend").Max(region => region.Bounds.Bottom) <
             positioned.Scene.Nodes.OfType<VisualSceneSlice>().First().Cy);
-        Verify.Equal(new[] { "70%", "20%", "10%" }, FamilyLabels(positioned, "legend-value").Select(FamilyContent));
+        Verify.Equal(new[] { "70", "20", "10" }, FamilyLabels(positioned, "legend-value").Select(FamilyContent));
+        Verify.Equal(new[] { "70%", "20%", "10%" }, FamilyLabels(positioned, "legend-percentage").Select(FamilyContent));
         Verify.NotEmpty(positioned.ToPng());
     }
 }

@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
 using Xunit;
 
@@ -42,24 +43,37 @@ public sealed class LegendDefaultsTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void SliceNameAndPercentBelongToOneItemWithAnInlineGap(bool donut) {
+    public void SliceNameValueAndPercentBelongToOneItemWithMeasuredGaps(bool donut) {
         var chart = Chart.Create().WithSize(700, 440).WithXLabels("Completed", "Pending");
         var points = new[] { new ChartPoint(1, 70), new ChartPoint(2, 30) };
         if (donut) chart.AddDonut("Work", points); else chart.AddPie("Work", points);
+        var context = VisualExportRequest.ForChart(chart).Context;
         var items = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "legend-entry").ToArray();
         Assert.Equal(2, items.Length);
         foreach (var item in items) {
             var name = Assert.Single(item.Descendants(), e => e.Name.LocalName == "text" && (string?)e.Parent?.Attribute("data-cfx-role") == "legend-label");
             var value = Assert.Single(item.Descendants(), e => e.Name.LocalName == "text" && (string?)e.Parent?.Attribute("data-cfx-role") == "legend-value");
+            var percentage = Assert.Single(item.Descendants(), e => e.Name.LocalName == "text" && (string?)e.Parent?.Attribute("data-cfx-role") == "legend-percentage");
             Assert.Contains(name.Value, new[] { "Completed", "Pending" });
-            Assert.Contains(value.Value, new[] { "70%", "30%" });
-            Assert.Contains(name.Value + ": " + value.Value, (string?)item.Attribute("aria-label"));
+            Assert.Equal(name.Value == "Completed" ? "70" : "30", value.Value);
+            Assert.Equal(value.Value + "%", percentage.Value);
+            Assert.Equal(name.Value + ": " + value.Value + " (" + percentage.Value + ")", (string?)item.Attribute("aria-label"));
+            Assert.Equal(context.Theme.Resolve(context.ThemeMode).MutedForeground.ToCss(), (string?)percentage.Attribute("fill"));
             var style = new TextStyle {
                 Font = new FontSpec { Family = (string)name.Attribute("font-family")!, Weight = (int)name.Attribute("font-weight")! },
                 FontSize = (double)name.Attribute("font-size")!
             };
             var nameRight = (double)name.Attribute("x")! + TextLayoutEngine.Measure(name.Value, style).Width;
-            Assert.True((double)value.Attribute("x")! - nameRight >= 11.99, "The percentage follows the measured name with the configured inline gap.");
+            Assert.True((double)value.Attribute("x")! - nameRight >= context.Theme.Spacing - .01,
+                "The raw value follows the measured name with the configured inline gap.");
+            var valueStyle = new TextStyle {
+                Font = new FontSpec { Family = (string)value.Attribute("font-family")!, Weight = (int)value.Attribute("font-weight")! },
+                FontSize = (double)value.Attribute("font-size")!
+            };
+            var valueRight = (double)value.Attribute("x")! + TextLayoutEngine.Measure(value.Value, valueStyle).Width;
+            Assert.True((double)percentage.Attribute("x")! - valueRight >= context.Theme.Spacing * 2 / 3 - .01,
+                "The separate percentage follows the measured raw value with its configured gap.");
+            Assert.Equal((double)value.Attribute("y")!, (double)percentage.Attribute("y")!);
         }
         Assert.NotEmpty(chart.ToPng());
     }

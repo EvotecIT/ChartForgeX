@@ -53,7 +53,8 @@ public sealed class V2ScalarProgressTests {
         Assert.Equal(2, groups.Length); Assert.All(groups, group => Assert.Equal("1000", group.Metadata["data-cfx-scale-max"]));
         Assert.Equal("100", groups[0].Metadata["data-cfx-max"]); Assert.Equal("-100", groups[1].Metadata["data-cfx-target"]);
         var bars = scene.Nodes.OfType<VisualSceneRectangle>().Where(rect => rect.Role == "bullet-value").ToArray();
-        Assert.Equal(paint, bars[0].Fill); Assert.Equal(bars[0].Bounds.Width * 10, bars[1].Bounds.Width, 8);
+        Assert.Equal(paint, bars[0].Fill);
+        Assert.InRange(Math.Abs(bars[0].Bounds.Width * 10 - bars[1].Bounds.Width), 0, 1e-8);
         var targets = scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "bullet-target").ToArray();
         Assert.Equal(bars[1].Bounds.Left, targets[1].Start.X, 8);
         Assert.Equal(5, scene.Nodes.Count(node => node.Role == "bullet-axis-tick"));

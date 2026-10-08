@@ -25,13 +25,10 @@ internal static partial class VisualCartesianCompiler {
             var x = map.X(point.X); var y = map.Y(point.Y);
             var color = PointColor(series, index, item, colors);
             var sourcePaint = VisualChartPaint.Series(series, color, item);
-            var radius = series.MarkerRadius ?? context.Theme.MarkerRadius;
+            var radius = ResolveMarkerRadius(series, context);
             if (series.Kind == ChartSeriesKind.Bubble) {
                 var size = series.Points[raw + 1].Y;
-                var maximumRadius = Math.Max(14, Math.Min(32, Math.Min(plot.Width, plot.Height) * .075));
-                radius = maxSize == minSize ? (6 + maximumRadius) / 2 : 6 + Math.Sqrt((size - minSize) / (maxSize - minSize)) * (maximumRadius - 6);
-                // An explicit radius is a scale override, keeping the relative area encoding.
-                if (series.MarkerRadius.HasValue) radius *= series.MarkerRadius.Value / Math.Max(.1, context.Theme.MarkerRadius);
+                radius = ResolveBubbleRadius(series, context, plot, minSize, maxSize, size);
                 var bounds = Extents(x, y, x, y, radius);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, size));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("y", point.Y), ("size", size))) {
@@ -47,7 +44,6 @@ internal static partial class VisualCartesianCompiler {
                 var lower = series.Points[raw + 1].Y; var upper = series.Points[raw + 2].Y;
                 var lowerY = map.Y(lower); var upperY = map.Y(upper);
                 var cap = Math.Max(9, Math.Min(24, plot.Width / Math.Max(1, count * 8)));
-                radius = series.MarkerRadius ?? Math.Max(ChartVisualPrimitives.ErrorBarMarkerMinRadius, radius + ChartVisualPrimitives.ErrorBarMarkerRadiusExtra);
                 var bounds = Extents(x - cap / 2, Math.Min(y - radius, Math.Min(lowerY, upperY)), x + cap / 2, Math.Max(y + radius, Math.Max(lowerY, upperY)));
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("value", point.Y), ("lower", lower), ("upper", upper))) {
@@ -62,7 +58,6 @@ internal static partial class VisualCartesianCompiler {
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles);
             } else if (series.Kind == ChartSeriesKind.Dumbbell) {
                 var end = series.Points[raw + 1].Y; var endY = map.Y(end);
-                radius = series.MarkerRadius ?? Math.Max(ChartVisualPrimitives.DumbbellMarkerMinRadius, radius + ChartVisualPrimitives.DumbbellMarkerRadiusExtra);
                 var bounds = Extents(x, y, x, endY, radius);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y) + "–" + Value(chart, end));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("start", point.Y), ("end", end), ("delta", end - point.Y))) {
@@ -75,7 +70,6 @@ internal static partial class VisualCartesianCompiler {
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, end, label, labels, obstacles);
             } else if (series.Kind == ChartSeriesKind.Lollipop) {
-                radius = series.MarkerRadius ?? Math.Max(4, radius + 2.25);
                 var baseline = map.YBaseline(); var bounds = Extents(x, baseline, x, y, radius);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("value", point.Y))) {
@@ -117,7 +111,7 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(new[] { points.ToList() }, false, SeriesStroke(series, context), plot)));
-        var radius = series.MarkerRadius ?? Math.Max(ChartVisualPrimitives.SlopeMarkerMinRadius, context.Theme.MarkerRadius + ChartVisualPrimitives.SlopeMarkerRadiusExtra);
+        var radius = ResolveMarkerRadius(series, context);
         for (var endpoint = 0; endpoint < 2; endpoint++) {
             var raw = endpoint == 0 ? 0 : series.Points.Count - 1; var source = series.Points[raw]; var point = points[endpoint];
             var bounds = Extents(point.X, point.Y, point.X, point.Y, trend ? 0 : radius);

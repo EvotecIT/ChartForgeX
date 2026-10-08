@@ -37,7 +37,13 @@ internal static partial class VisualScheduleCompiler {
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
         var slot = plot.Height / items.Count; var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
-        double Project(double value) => plot.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * plot.Width;
+        var milestoneSize = Math.Min(height, plot.Width);
+        var milestoneExtent = items.Any(item => item.Milestone) ? milestoneSize / 2 : 0;
+        var minimumExtent = Math.Max(milestoneExtent, now == min ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
+        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), now == max ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var projection = MarkProjection(axis, plot, minimumExtent, maximumExtent);
+        double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
             Axis(chart, context, builder, viewport, layout, ticks, Project, Format);
             foreach (var item in items) {
@@ -69,7 +75,7 @@ internal static partial class VisualScheduleCompiler {
                 var visible = item.End >= min && item.Start <= max;
                 var left = Project(item.Start); var right = Project(item.End);
                 var bounds = new ChartRect(left, center - height / 2, visible ? Math.Min(plot.Right - left, Math.Max(1, right - left)) : 0, height);
-                if (item.Milestone) bounds = new ChartRect(left - height / 2, center - height / 2, height, height);
+                if (item.Milestone) bounds = new ChartRect(left - milestoneSize / 2, center - milestoneSize / 2, milestoneSize, milestoneSize);
                 var id = VisualStateSceneTools.SourceId(item.Index, 0);
                 var duration = chart.Options.ValueFormatter?.Invoke(item.End - item.Start) ?? ChartStateTimelineModel.FormatDuration(item.End - item.Start);
                 var completion = (item.Progress * 100).ToString("0.#", chart.Options.ValueFormat.Culture) + "%";
@@ -87,8 +93,8 @@ internal static partial class VisualScheduleCompiler {
                     using (builder.PushClip(plot)) {
                         ChartPath shape;
                         if (item.Milestone) {
-                            shape = new ChartPath(new[] { ChartPathCommand.MoveTo(left, center - height / 2), ChartPathCommand.LineTo(left + height / 2, center),
-                                ChartPathCommand.LineTo(left, center + height / 2), ChartPathCommand.LineTo(left - height / 2, center) });
+                            shape = new ChartPath(new[] { ChartPathCommand.MoveTo(left, center - milestoneSize / 2), ChartPathCommand.LineTo(left + milestoneSize / 2, center),
+                                ChartPathCommand.LineTo(left, center + milestoneSize / 2), ChartPathCommand.LineTo(left - milestoneSize / 2, center) });
                             builder.Path(shape, fill, role: "gantt-milestone-shape", close: true, paint: VisualChartPaint.Fill(fillPaint));
                         } else {
                             var radius = Math.Min(context.Theme.BarRadius, height / 2); shape = VisualStateSceneTools.RoundedRect(bounds, radius);

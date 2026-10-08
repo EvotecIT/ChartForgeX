@@ -147,7 +147,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
         return new VisualRenderContext(resolved.Layout, resolved.Theme, resolved.ThemeMode,
             new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition, frame.ShowSurface, frame.TransparentBackground,
-                frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 600, colors.Foreground),
+                frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 700, colors.Foreground),
                 frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle,
                 frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard, legendTitle: frame.LegendTitle), resolved.Font);
     }

@@ -38,7 +38,8 @@ internal static class VisualRadialPrimitives {
         return style;
     }
 
-    internal static void Text(VisualSceneBuilder builder, string full, ChartRect area, TextStyle style, string role, string id, SvgPaint? paint = null) {
+    internal static void Text(VisualSceneBuilder builder, string full, ChartRect area, TextStyle style, string role, string id, SvgPaint? paint = null,
+        TextAlignment alignment = TextAlignment.Center) {
         builder.AddRegion(new VisualSemanticRegion(id, role, area, full));
         using (builder.PushGroup(id + "-source", role + "-source", new Dictionary<string, string> { ["aria-label"] = full, ["data-cfx-label"] = full })) {
             var fitted = ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => builder.MeasureText(text, style).Width);
@@ -50,10 +51,11 @@ internal static class VisualRadialPrimitives {
             }
             if (!string.Equals(fitted, full, StringComparison.Ordinal))
                 builder.AddDiagnostic(new VisualDiagnostic("radial.text-overflow", "Radial text was shortened; the complete value remains in descriptive regions."));
-            style = style.Clone(); style.Alignment = TextAlignment.Center;
+            style = style.Clone(); style.Alignment = alignment;
             var shift = style.Baseline == TextBaseline.Superscript ? -style.FontSize * .35 : style.Baseline == TextBaseline.Subscript ? style.FontSize * .22 : 0;
             var baseline = area.Top + (area.Height - metrics.Height) / 2 + builder.TextAscent(style);
-            builder.Text(fitted, area.Left + area.Width / 2, baseline - shift, style, role, id, paint: paint ?? VisualChartPaint.Text(style));
+            var anchor = alignment == TextAlignment.Left ? area.Left : alignment == TextAlignment.Right ? area.Right : area.Left + area.Width / 2;
+            builder.Text(fitted, anchor, baseline - shift, style, role, id, paint: paint ?? VisualChartPaint.Text(style));
         }
     }
 

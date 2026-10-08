@@ -358,6 +358,8 @@ State roles are explicit; series names do not change colours. Healthy and quiet 
 
 Graphite uses flat marks, straight 2 px lines, a marker on the last point, horizontal guides, and inline legends below the subtitle. Single-series legends are hidden. Donut and pie charts use a value-and-percentage list, with smaller slices combined into **Other** when more than six slices are present. Gauges, bullets, funnels and Sankey charts label their data directly.
 
+Charts and diagrams share 24px default outer padding and a measured typography scale: 17px bold titles, 13.5px subtitles, 13px legends and 12px axes/data labels. Authored styles and sizes remain available. Pie and donut lists descend by value while retaining source point identities; raw values and muted percentages stay together. Compact exports recompute layout at their native size, and full labels remain available through semantic regions when a fixed canvas needs shortening or omission.
+
 Use `.WithHostFrame()` when the embedding host provides the surface and padding. `ChartGrid` and `VisualGrid` use 16 px gaps and 15 px panel titles. Value labels use compact numbers; SVG accessible names and numeric `data-cfx-*` attributes retain the full values.
 
 Arc gauges support targets and optional semantic bands through `.WithGauge(...)`; `ChartGaugeForm.Needle` selects a needle. `.AddLinearGauge("Readiness", 87)` uses neutral bullet bands, a thin measure and a value triangle. The named `ChartTheme.Light()`, `Dark()`, `ReportLight()`, `ReportDark()` and other presets remain available. `ChartBarStyle.Solid` and `SegmentedCapsule` opt into the earlier effect styles.

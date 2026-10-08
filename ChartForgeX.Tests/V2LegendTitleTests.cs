@@ -32,7 +32,7 @@ public sealed class V2LegendTitleTests {
         const string title = "Complete legend heading retained in a compact viewport";
         var chart = Chart.Create().AddLine("Data", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, 100)),
-            frame: new VisualFrame(legendTitle: title, legendMaximumHeightFraction: .1)));
+            frame: new VisualFrame(showLegend: true, legendTitle: title, legendMaximumHeightFraction: .1)));
         Assert.Equal(title, Assert.Single(prepared.Regions, region => region.Role == "legend-title").Label);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "frame.legend-title-overflow");
     }

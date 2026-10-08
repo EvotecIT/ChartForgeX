@@ -1,12 +1,39 @@
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class GraphiteHeatmapLegendTests {
+    [Theory]
+    [InlineData(360, false)]
+    [InlineData(800, true)]
+    public void NumericCaptionsStayWithTheCompactRampAtEachViewport(int width, bool zero) {
+        var values = zero ? new[] { 0d, 2, 20, 120 } : new[] { 2d, 20, 120 };
+        var chart = Chart.Create().WithSize(width, 320).AddHeatmapRow("Events", values)
+            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " events");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var steps = prepared.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
+        Assert.Equal(5, steps.Length);
+        var low = Assert.Single(prepared.Regions, region => region.Id == "matrix-scale-low");
+        var high = Assert.Single(prepared.Regions, region => region.Id == "matrix-scale-high");
+        Assert.Equal(steps[0].Bounds.Left, low.Bounds.Left, 8);
+        Assert.True(high.Bounds.Left < steps[^1].Bounds.Left);
+        Assert.InRange(high.Bounds.Right - steps[^1].Bounds.Right, 0, 12);
+        Assert.Equal(low.Bounds.Right, high.Bounds.Left, 8);
+        Assert.True(low.Bounds.Top >= steps[0].Bounds.Bottom);
+        Assert.Equal("2 events", low.Label); Assert.Equal("120 events", high.Label);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
+        Assert.Equal(new[] { "2 events", "120 events" }, labels.Select(node => Assert.Single(node.Text.Lines).Text));
+        if (zero) {
+            var neutral = Assert.Single(prepared.Regions, region => region.Role == "heatmap-scale-zero");
+            Assert.True(steps[0].Bounds.Left - neutral.Bounds.Right < steps[0].Bounds.Width);
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

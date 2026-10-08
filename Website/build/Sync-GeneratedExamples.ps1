@@ -1,7 +1,9 @@
 param(
     [string] $SourceRoot = (Join-Path $PSScriptRoot '..\..\ChartForgeX.Examples\bin\Release\net8.0\output'),
     [string] $DestinationRoot = (Join-Path $PSScriptRoot '..\static\examples\generated'),
-    [string] $GalleryPath = (Join-Path $PSScriptRoot '..\data\gallery.json')
+    [string] $GalleryPath = (Join-Path $PSScriptRoot '..\data\gallery.json'),
+    [string] $V2SourceRoot = (Join-Path $PSScriptRoot '..\..\ChartForgeX.Examples\bin\Release\net8.0\output-v2'),
+    [string] $V2DestinationRoot = (Join-Path $PSScriptRoot '..\static\examples\generated-v2')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -168,6 +170,90 @@ function Normalize-GeneratedTextArtifacts {
 
         Write-Utf8NoBom -Path $file.FullName -Text $text
     }
+}
+
+$v2ManifestPath = Join-Path $V2SourceRoot 'manifest.json'
+if (Test-Path -LiteralPath $v2ManifestPath -PathType Leaf) {
+    $v2Source = (Resolve-Path -LiteralPath $V2SourceRoot).Path
+    $v2Destination = [IO.Path]::GetFullPath($V2DestinationRoot)
+    $manifest = Read-Utf8Text -Path $v2ManifestPath | ConvertFrom-Json
+    if ($manifest.schemaVersion -ne 1 -or $manifest.pipeline -ne 'model-to-prepared-scene-to-svg-or-raster') {
+        throw 'The gallery sync requires the ChartForgeX prepared-scene catalog manifest.'
+    }
+    $primary = @($manifest.artifacts | Where-Object { $_.primary -and $_.theme -eq 'light' })
+    if ($primary.Count -eq 0) { throw 'The gallery manifest has no primary examples.' }
+    if (@($primary.family | Select-Object -Unique).Count -ne $primary.Count) {
+        throw 'The gallery manifest must select one primary light example per family.'
+    }
+    $declaredAssets = @($manifest.assets)
+    if ($declaredAssets.Count -eq 0) { throw 'The gallery manifest must declare its linked presentation assets.' }
+    foreach ($relative in $declaredAssets) {
+        $relative = [string] $relative
+        $resolvedAsset = [IO.Path]::GetFullPath((Join-Path $v2Source $relative))
+        if ([IO.Path]::IsPathRooted($relative) -or -not $resolvedAsset.StartsWith($v2Source.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+            -not (Test-Path -LiteralPath $resolvedAsset -PathType Leaf)) {
+            throw "The gallery manifest references a missing or invalid presentation asset: $relative"
+        }
+    }
+    foreach ($artifact in @($manifest.artifacts)) {
+        foreach ($property in @('svg', 'png', 'html', 'source', 'thumbnail', 'thumbnailPng')) {
+            $relative = [string] $artifact.$property
+            if ([string]::IsNullOrWhiteSpace($relative) -or [IO.Path]::GetFileName($relative) -ne $relative -or
+                -not (Test-Path -LiteralPath (Join-Path $v2Source $relative) -PathType Leaf)) {
+                throw "The gallery manifest references a missing or invalid $property file: $relative"
+            }
+        }
+    }
+    New-Item -ItemType Directory -Force -Path $v2Destination | Out-Null
+    if (-not $v2Source.Equals($v2Destination, [StringComparison]::OrdinalIgnoreCase)) {
+        foreach ($relative in $declaredAssets) {
+            $target = [IO.Path]::GetFullPath((Join-Path $v2Destination $relative))
+            if (-not $target.StartsWith($v2Destination.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Gallery output must stay within its destination: $relative"
+            }
+            [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target)) | Out-Null
+            Copy-Item -LiteralPath (Join-Path $v2Source $relative) -Destination $target -Force
+        }
+    }
+    Normalize-GeneratedTextArtifacts -Root $v2Destination
+    $urlRoot = '/examples/generated-v2/'
+    $items = foreach ($artifact in $primary) {
+        $exampleKey = $artifact.id.Substring(0, $artifact.id.Length - $artifact.theme.Length - 1)
+        $dark = @($manifest.artifacts | Where-Object { $_.id -eq "$exampleKey-dark" })
+        if ($dark.Count -ne 1) { throw "A primary example requires its matching dark output: $($artifact.id)" }
+        $compact = @($manifest.artifacts | Where-Object { $_.family -eq $artifact.family -and $_.variant -eq 'compact' -and $_.theme -eq 'light' } |
+            Sort-Object @{ Expression = { if ($_.id.StartsWith('family-', [StringComparison]::Ordinal)) { 0 } else { 1 } } }, id | Select-Object -First 1)
+        $darkCompact = @()
+        if ($compact.Count -eq 1) {
+            $compactKey = $compact[0].id.Substring(0, $compact[0].id.Length - $compact[0].theme.Length - 1)
+            $darkCompact = @($manifest.artifacts | Where-Object { $_.id -eq "$compactKey-dark" })
+            if ($darkCompact.Count -ne 1) { throw "A compact example requires its matching dark output: $($compact[0].id)" }
+        }
+        [pscustomobject][ordered]@{
+            category = $artifact.group
+            familyLabel = $artifact.familyLabel
+            title = $artifact.title
+            body = "$($artifact.familyLabel). SVG, PNG and C# source with matching light and dark themes."
+            tags = @(@($artifact.seriesKinds) + @($artifact.familyLabel) | Select-Object -Unique)
+            image = $urlRoot + $artifact.svg
+            thumbnail = $urlRoot + $artifact.thumbnailPng
+            source = $urlRoot + $artifact.source
+            html = $urlRoot + $artifact.html
+            darkImage = $urlRoot + $dark[0].svg
+            darkThumbnail = $urlRoot + $dark[0].thumbnailPng
+            darkHtml = $urlRoot + $dark[0].html
+            darkSource = $urlRoot + $dark[0].source
+            compactHtml = if ($compact.Count -eq 1) { $urlRoot + $compact[0].html } else { $null }
+            darkCompactHtml = if ($darkCompact.Count -eq 1) { $urlRoot + $darkCompact[0].html } else { $null }
+        }
+    }
+    [pscustomobject][ordered]@{
+        categories = @($manifest.groups | ForEach-Object { [pscustomobject][ordered]@{ id = $_.id; label = $_.label } })
+        assets = @($declaredAssets | ForEach-Object { $urlRoot + $_ })
+        items = @($items)
+    } | ConvertTo-Json -Depth 8 | ForEach-Object { Write-Utf8NoBom -Path $GalleryPath -Text $_ }
+    Write-Host "Synced $($primary.Count) primary gallery examples from $v2Source"
+    return
 }
 
 $source = Resolve-Path -LiteralPath $SourceRoot -ErrorAction SilentlyContinue

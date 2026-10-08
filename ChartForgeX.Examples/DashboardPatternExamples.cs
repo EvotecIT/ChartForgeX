@@ -62,7 +62,7 @@ internal static class DashboardPatternExamples {
 
     private static HeatmapInsightCard AppointmentVolume() => HeatmapInsightCard.Create()
             .WithTitle("Appointment Volume")
-            .WithSubtitle("Jan 7 - Jan 13, 2024")
+            .WithSubtitle("Appointments by weekday and hour")
             .WithTheme(OperationsTheme())
             .WithPadding(28, 26, 28, 24)
             .WithPeriodLabel("Jan 7 - Jan 13, 2024")
@@ -92,7 +92,7 @@ internal static class DashboardPatternExamples {
             .WithAxisLines(false)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
             .WithXLabels("8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm")
-            .WithHighlightedXAxisRange(7.5, 11.5, Red, 0.08, "review-peak-window")
+            .WithHighlightedXAxisRange(7.5, 11.5, Red, 0.08, "Peak review window")
             .AddBar("Reviews", Points(3, 1, 3, 1, 0, 0, 0, 9, 10, 9, 7, 0, 0), SoftGray);
 
         chart.Series[0].WithPointColorRange(7, 4, Red);

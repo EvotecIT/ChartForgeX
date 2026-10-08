@@ -28,8 +28,10 @@ public sealed class V2ApiConventionTests {
                 var factory = type == typeof(VisualTheme) && method.IsStatic && method.ReturnType == type && (method.Name is "Graphite" or "FromJson" or "FromThemeJson");
                 var resolve = type == typeof(VisualTheme) && method.Name == "Resolve" && method.ReturnType == typeof(VisualThemeColors);
                 var export = (type == typeof(PreparedVisual) || type == typeof(VisualTheme)) && method.Name.StartsWith("To", StringComparison.Ordinal);
-                Assert.True(factory || resolve || export,
-                    type.Name + "." + method.Name + " needs a reviewed operation role. Immutable render contracts use constructors/factories; With/Add/Configure belong to mutable model builders.");
+                var copy = type == typeof(VisualTheme) && !method.IsStatic && method.Name == nameof(VisualTheme.WithTypography)
+                    && method.ReturnType == type && method.GetParameters().Select(parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VisualTypography) });
+                Assert.True(factory || resolve || export || copy,
+                    type.Name + "." + method.Name + " needs a reviewed operation role. Immutable render contracts use constructors, factories, and explicitly reviewed copy operations; Add/Configure belong to mutable model builders.");
             }
         }
         var prepare = typeof(Chart).GetMethod(nameof(Chart.Prepare), new[] { typeof(VisualRenderContext) });

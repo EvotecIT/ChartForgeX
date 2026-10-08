@@ -50,15 +50,19 @@ public sealed class VisualLayoutOptions {
 public sealed class VisualFrame {
     private readonly TextStyle? _titleStyle, _subtitleStyle, _legendStyle;
     /// <summary>Creates an immutable frame configuration.</summary>
-    public VisualFrame(string? title = null, string? subtitle = null, bool showLegend = true,
-        ChartLegendPosition legendPosition = ChartLegendPosition.Bottom, bool showSurface = false, bool transparentBackground = false,
+    /// <remarks>Omitted legend visibility and placement use the producer's data-aware policy and model configuration.
+    /// Supply explicit values to override them, including <c>showLegend: true</c> for a redundant single-series legend.</remarks>
+    public VisualFrame(string? title = null, string? subtitle = null, bool? showLegend = null,
+        ChartLegendPosition? legendPosition = null, bool showSurface = false, bool transparentBackground = false,
         TextStyle? titleStyle = null, TextStyle? subtitleStyle = null, TextStyle? legendStyle = null,
         int? legendMaximumRows = null, double legendMaximumHeightFraction = 0.35, bool showCard = false, string? legendTitle = null) {
-        if (!Enum.IsDefined(typeof(ChartLegendPosition), legendPosition)) throw new ArgumentOutOfRangeException(nameof(legendPosition));
+        if (legendPosition.HasValue && !Enum.IsDefined(typeof(ChartLegendPosition), legendPosition.Value)) throw new ArgumentOutOfRangeException(nameof(legendPosition));
         if (legendMaximumRows.HasValue && legendMaximumRows.Value < 1) throw new ArgumentOutOfRangeException(nameof(legendMaximumRows));
         if (double.IsNaN(legendMaximumHeightFraction) || double.IsInfinity(legendMaximumHeightFraction) || legendMaximumHeightFraction <= 0 || legendMaximumHeightFraction > 1)
             throw new ArgumentOutOfRangeException(nameof(legendMaximumHeightFraction));
-        Title = title; Subtitle = subtitle; ShowLegend = showLegend; LegendPosition = legendPosition; ShowSurface = showSurface; TransparentBackground = transparentBackground;
+        Title = title; Subtitle = subtitle; ShowLegend = showLegend ?? true; LegendPosition = legendPosition ?? ChartLegendPosition.TopLeft;
+        HasExplicitLegend = showLegend.HasValue; HasExplicitLegendPosition = legendPosition.HasValue;
+        ShowSurface = showSurface; TransparentBackground = transparentBackground;
         _titleStyle = titleStyle?.Clone(); _subtitleStyle = subtitleStyle?.Clone(); _legendStyle = legendStyle?.Clone();
         LegendMaximumRows = legendMaximumRows; LegendMaximumHeightFraction = legendMaximumHeightFraction;
         ShowCard = showCard;
@@ -68,8 +72,10 @@ public sealed class VisualFrame {
     public string? Title { get; }
     /// <summary>Gets the subtitle.</summary>
     public string? Subtitle { get; }
-    /// <summary>Gets whether the legend is shown.</summary>
+    /// <summary>Gets the requested legend visibility. When omitted, the producer resolves its data-aware default.</summary>
     public bool ShowLegend { get; }
+    internal bool HasExplicitLegend { get; }
+    internal bool HasExplicitLegendPosition { get; }
     /// <summary>Gets an optional measured heading above the legend entries. Null uses the producer's source title.</summary>
     public string? LegendTitle { get; }
     /// <summary>Gets the legend placement.</summary>
@@ -90,9 +96,9 @@ public sealed class VisualFrame {
     public int? LegendMaximumRows { get; }
     /// <summary>Gets the maximum fraction of the full viewport height occupied by the legend and its spacing.</summary>
     public double LegendMaximumHeightFraction { get; }
-    internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, ShowLegend, LegendPosition,
+    internal VisualFrame WithHeadings(string? title, string? subtitle) => new(title, subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
         ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, LegendTitle);
-    internal VisualFrame WithLegendTitle(string? legendTitle) => new(Title, Subtitle, ShowLegend, LegendPosition,
+    internal VisualFrame WithLegendTitle(string? legendTitle) => new(Title, Subtitle, HasExplicitLegend ? ShowLegend : null, HasExplicitLegendPosition ? LegendPosition : null,
         ShowSurface, TransparentBackground, _titleStyle, _subtitleStyle, _legendStyle, LegendMaximumRows, LegendMaximumHeightFraction, ShowCard, legendTitle);
 }
 

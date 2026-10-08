@@ -20,7 +20,19 @@ public sealed class V2ExportRequestTests {
         chart.Options.ShowHeader = false; chart.Options.ShowLegend = false;
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Equal(3, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "point"));
-        Assert.Equal(new ChartPadding(18, 16, 18, 12), chart.Options.Padding);
+        Assert.Equal(ChartPadding.All(24), chart.Options.Padding);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "axis-x-label" or "axis-y-label").ToArray();
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => {
+            var top = label.Baseline - label.Text.Ascent;
+            Assert.InRange(top, chart.Options.Padding.Top - .001, chart.Options.Size.Height - chart.Options.Padding.Bottom);
+            Assert.True(top + label.Text.Metrics.Height <= chart.Options.Size.Height - chart.Options.Padding.Bottom + .001);
+            Assert.All(label.Text.Lines, line => {
+                Assert.InRange(label.LineLeft(line), chart.Options.Padding.Left - .001, chart.Options.Size.Width - chart.Options.Padding.Right);
+                Assert.True(label.LineLeft(line) + line.Width <= chart.Options.Size.Width - chart.Options.Padding.Right + .001);
+            });
+        });
         var pixels = chart.ToRgbaImage();
         Assert.Equal(240, pixels.Width); Assert.Equal(160, pixels.Height);
     }

@@ -17,7 +17,8 @@ internal static partial class VisualRadialCompiler {
         return slices.Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice),
                 chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey,
                 paint: VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex),
-                value: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture))).ToArray();
+                value: ChartNumericFormatter.FormatValue(chart.Options, slice.Value),
+                percentage: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture))).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -102,15 +103,17 @@ internal static partial class VisualRadialCompiler {
             Label(chart, point, index), point.Y, ChartSeriesColours.Point(series, index, index, colors),
             index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern)).ToList();
         var positive = slices.Where(slice => slice.Value > 0).ToList();
-        if (positive.Count <= chart.Options.MaximumPieSlices) return slices;
+        if (positive.Count <= chart.Options.MaximumPieSlices)
+            return slices.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex).ToArray();
         var retained = positive.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex)
             .Take(chart.Options.MaximumPieSlices - 1).Select(slice => slice.PointIndex).ToArray();
         var rest = positive.Where(slice => !retained.Contains(slice.PointIndex)).ToArray();
-        var result = slices.Where(slice => retained.Contains(slice.PointIndex)).ToList();
+        var result = slices.Where(slice => retained.Contains(slice.PointIndex)).OrderByDescending(slice => slice.Value)
+            .ThenBy(slice => slice.PointIndex).ToList();
         var patterns = rest.Select(slice => slice.Pattern).Distinct().ToArray();
         result.Add(new RadialSlice(-1, rest.SelectMany(slice => slice.SourcePointIndices).ToArray(), "Other",
             rest.Sum(slice => slice.Value), series.Color.HasValue || series.StateRole != ChartSeriesState.None
-                ? ChartSeriesColours.Resolve(series, 0, colors) : colors.MutedForeground, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
+                ? ChartSeriesColours.Resolve(series, 0, colors) : colors.Neutral, patterns.Length == 1 ? patterns[0] : ChartFillPattern.None,
             rest.Select(slice => slice.Pattern).ToArray()));
         return result;
     }

@@ -4,6 +4,18 @@ This guide records the breaking-release target and the observed consumer contrac
 
 Consumer repositories remain unchanged. Revalidate their intended branch before migrating: a primary checkout, cached remote source, local project reference and installed NuGet package are different evidence boundaries.
 
+## Shared visual defaults
+
+Default charts and diagrams use 24 logical units of outer padding, 17px bold titles, 13.5px subtitles, 13px legends and 12px axis/data labels. The paired theme owns these values; authored padding, text styles and model legend settings remain authoritative. Native compact exports lay out the data again instead of scaling a desktop chart and its text down.
+
+`VisualFrame` accepts nullable legend visibility and placement. Omit them to use the producer's data-aware policy and the model's configuration; supply `showLegend: true` or a position to override that policy. Rebuild callers compiled against the former constructor signature. Single-series Cartesian legends and direct-label gauge/bullet legends are hidden by default. Explicit legends, slice lists, multiple series and meaningful state mappings remain available.
+
+Pie and donut display lists descend by value, with an aggregate `Other` last. Original point indices, authored colors, formatter inputs and semantic model order remain unchanged. Their legend items show the raw value followed by a muted percentage. Bullet rows show `value / target`; format and culture settings apply to both numbers. Gauge values use the categorical palette unless declared warning/danger bands or an authored state/color supplies emphasis.
+
+`VisualTypography` includes separate scalar and center-value sizes, defaulting to 34px and 20px. `VisualTheme.WithTypography(scale)` returns an independent paired theme and preserves its palettes, geometry and effects. Version 1 theme JSON accepts optional `scalarValueSize`, `centerValueSize`, `gaugeStrokeWidth` and `gaugeBandWidth`; older documents use the corresponding defaults. The curated gallery demonstrates full SVG/PNG exports, native compact layouts, paired themes and executable C# source for every chart kind.
+
+`PreparedTopology.Analyze()` reports the coordinates and dimensions of the exported canvas, including its common frame and any output fit. Diagnostic nodes, ports, routes and labels therefore align with SVG/PNG and the interchange envelope. Remove consumer offsets that compensated for the former content-local report. Standalone `TopologyLayoutDiagnostics.Analyze(...)` retains its content-local layout contract; analysis does not change authored node positions or rerun routing.
+
 | Consumer | Inspected source | Declared dependency / boundary |
 | --- | --- | --- |
 | [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo) | `v2-speedygonzales`, `b267584067aa58370ce8954423ec6582268950e7`, clean; three commits behind cached upstream | `Sources/PowerBGInfo/PowerBGInfo.csproj`: core `1.7.0`, optional source override. Core + Visuals required. |
@@ -241,9 +253,9 @@ The export has `name`, `decision`, `source`, `notes`, `light`, `dark`; it has no
 
 The full owner source defines aliases and treatments omitted from that palette export: fail uses severity when known, otherwise neutral; notEvaluated is neutral plus hatching; couldNotEvaluate is neutral plus dashed outline; up→pass, degraded→medium, down→critical, recovering→low, unknown/notObservable→neutral plus hatching. Preserve separate semantic keys and legend labels even when colors match. A shared presentation model does not collapse these vocabularies into one enum.
 
-The export also omits typography, spacing, radius, elevation, motion and accessibility overrides. Phase 1 must document its explicit defaults/role mapping for those fields and never invent another authoritative Evotec palette. Expanding the export is later token-owner work. Do not import the full owner source with a parser expecting the generated chart shape.
+The export also omits typography, spacing, radius, elevation, motion and accessibility overrides. `VisualTheme` supplies the chart geometry and typography roles described in this guide while retaining the canonical palette. Expanding the palette export belongs to its token owner. Do not import the full owner source with a parser expecting the generated chart shape.
 
-Phase 1 color intake does not establish universal status-treatment rendering. Hatch patterns, dashed-outline outcomes, forced-colors behavior and status legend treatment must be qualified as their mark families migrate in Phase 2 and later. Matching neutral colors alone is insufficient proof that not-evaluated, could-not-evaluate, unknown and not-observable remain distinguishable.
+Color intake alone does not establish universal status-treatment rendering. Hatch patterns, dashed-outline outcomes, forced-colors behavior and status legend treatment require their own family and host fixtures. Matching neutral colors alone is insufficient proof that not-evaluated, could-not-evaluate, unknown and not-observable remain distinguishable.
 
 ## Qualification sequence and open gates
 

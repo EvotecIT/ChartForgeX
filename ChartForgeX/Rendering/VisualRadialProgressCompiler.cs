@@ -44,7 +44,7 @@ internal static class VisualRadialProgressCompiler {
         if (outer < 1) { builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "The viewport is too small for progress rings.")); return; }
         var average = series.Points.Average(point => point.Y);
         var value = ChartNumericFormatter.FormatValue(chart.Options, average);
-        var style = VisualRadialPrimitives.Style(chart, context, colors.Foreground, context.Theme.Typography.TitleSize, 700);
+        var style = VisualRadialPrimitives.Style(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, 700);
         var captionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize);
         var requested = series.ShowDataLabels != false && chart.Options.ShowRadialBarCenterLabel
             ? Math.Max(Math.Max(builder.MeasureText(value, style).Width, builder.MeasureText(series.Name, captionStyle).Width) / 2,
@@ -58,7 +58,7 @@ internal static class VisualRadialProgressCompiler {
                 radius * 2 + layout.StrokeWidth, radius * 2 + layout.StrokeWidth);
             builder.AddRegion(new VisualSemanticRegion(Id(index), "radial-bar-ring", bounds, label + ": " + formatted));
             using (builder.PushGroup(Id(index), "radial-bar-point", Metadata(chart, index, label, point.Y, 0, 100))) {
-                VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2, colors.Border, "radial-bar-track", paint: SvgPaint.Of(colors.Border, SvgColorRole.Surface));
+                VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2, colors.Neutral2, "radial-bar-track", paint: SvgPaint.Of(colors.Neutral2, SvgColorRole.Surface));
                 VisualRadialPrimitives.Arc(builder, cx, cy, radius, layout.StrokeWidth, -Math.PI / 2, Math.PI * 2 * point.Y / 100,
                     color, "radial-bar-ring", round: true, paint: VisualChartPaint.Series(series, color, index));
             }
@@ -66,8 +66,8 @@ internal static class VisualRadialProgressCompiler {
         builder.Ellipse(cx, cy, layout.CenterRadius, layout.CenterRadius, colors.Surface, colors.Border, role: "radial-bar-center",
             paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
         if (series.ShowDataLabels != false && chart.Options.ShowRadialBarCenterLabel)
-            Center(builder, cx, cy, layout.CenterRadius, value, series.Name,
-                CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.TitleSize, layout.CenterRadius, 700),
+            Center(builder, context, cx, cy, layout.CenterRadius, value, series.Name,
+                CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, layout.CenterRadius, 700),
                 CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, layout.CenterRadius), "radial-bar");
     }
 
@@ -106,8 +106,8 @@ internal static class VisualRadialProgressCompiler {
             }
         }
         if (series.ShowDataLabels != false) {
-            Center(builder, cx, cy, centerRadius, centerValue!, series.Name,
-                CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.TitleSize, centerRadius, 700),
+            Center(builder, context, cx, cy, centerRadius, centerValue!, series.Name,
+                CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, centerRadius, 700),
                 CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, centerRadius), "layered-radial");
         }
     }
@@ -115,11 +115,22 @@ internal static class VisualRadialProgressCompiler {
     private static ChartForgeX.Typography.TextStyle CenterStyle(Chart chart, VisualRenderContext context, ChartColor color, double size, double radius, int weight = 400) =>
         VisualRadialPrimitives.Style(chart, context, color, Math.Min(size, Math.Max(.1, radius * .7 / 1.3)), weight);
 
-    private static void Center(VisualSceneBuilder builder, double cx, double cy, double radius, string value, string caption,
+    private static void Center(VisualSceneBuilder builder, VisualRenderContext context, double cx, double cy, double radius, string value, string caption,
         ChartForgeX.Typography.TextStyle valueStyle, ChartForgeX.Typography.TextStyle captionStyle, string role) {
-        var height = Math.Max(0, radius * .7); var width = Math.Max(0, radius * 1.6);
-        VisualRadialPrimitives.Text(builder, value, new ChartRect(cx - width / 2, cy - height, width, height), valueStyle, role + "-value", "series-0-center-value");
-        VisualRadialPrimitives.Text(builder, caption, new ChartRect(cx - width / 2, cy, width, height), captionStyle, role + "-title", "series-0-center-caption");
+        var availableHeight = Math.Max(0, radius * 1.6);
+        var gap = Math.Min(context.Theme.Spacing / 3, radius * .1);
+        var captionHeight = Math.Min(builder.MeasureText(caption, captionStyle).Height, availableHeight * .45);
+        var valueHeight = Math.Min(builder.MeasureText(value, valueStyle).Height, Math.Max(0, availableHeight - captionHeight - gap));
+        var top = cy - (valueHeight + gap + captionHeight) / 2;
+        Draw(value, top, valueHeight, valueStyle, role + "-value", "series-0-center-value");
+        Draw(caption, top + valueHeight + gap, captionHeight, captionStyle, role + "-title", "series-0-center-caption");
+
+        void Draw(string text, double y, double height, ChartForgeX.Typography.TextStyle style, string textRole, string id) {
+            // The row's outermost corners must stay within the actual circular hole.
+            var offset = Math.Max(Math.Abs(y - cy), Math.Abs(y + height - cy));
+            var width = Math.Min(radius * 1.6, 2 * Math.Sqrt(Math.Max(0, radius * radius - offset * offset)));
+            VisualRadialPrimitives.Text(builder, text, new ChartRect(cx - width / 2, y, width, height), style, textRole, id);
+        }
     }
 
     private static string Id(int index) => "series-0-point-" + index.ToString(CultureInfo.InvariantCulture);

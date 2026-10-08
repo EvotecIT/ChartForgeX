@@ -10,7 +10,6 @@ namespace ChartForgeX.Rendering;
 /// <summary>Native preparation for range schedules, state lanes and packed Gantt lanes.</summary>
 internal static partial class VisualScheduleCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
-        if (!chart.Options.ShowLegend) return Array.Empty<VisualLegendEntry>();
         if (chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane))
             return chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray();
         return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend)
@@ -76,12 +75,19 @@ internal static partial class VisualScheduleCompiler {
         var model = ChartGanttLaneModel.Build(chart, viewport.Width, colors.MutedForeground);
         var layout = LaneLayout(chart, context, builder, viewport, model.Rows.Where(row => !row.IsGroup).Select(row => row.Name),
             model.Rows.Where(row => !row.IsGroup).Select(row => row.Summary), model.HasSummary, model.NowVisible, model.Ticks, model.FormatTick);
-        model = model.Repack(layout.Plot.Width);
+        var outlined = model.Rows.SelectMany(row => row.Items).Any(item => item.Category.Pattern == ChartStatePattern.Outlined);
+        var open = model.Rows.SelectMany(row => row.Items).Any(item => item.Item.IsOpen);
+        var outlineExtent = outlined ? ChartStateMark.OutlineWidth / 2 : 0;
+        var minimumExtent = Math.Max(outlineExtent, model.Now == model.Min ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var maximumExtent = Math.Max(Math.Max(outlineExtent, open ? GanttLaneOpenEndStrokeWidth / 2 : 0),
+            model.Now == model.Max ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var projection = MarkProjection(chart.Options.XAxis, layout.Plot, minimumExtent, maximumExtent);
+        model = model.Repack(projection.Width);
         var plot = layout.Plot; var tops = model.RowTops(plot); var band = model.Band(plot);
         builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
-            Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, plot), model.FormatTick);
-            if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, plot), model.Now.Value);
+            Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick);
+            if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, projection), model.Now.Value);
             for (var rowIndex = 0; rowIndex < model.Rows.Count; rowIndex++) {
                 var row = model.Rows[rowIndex];
                 if (row.IsGroup) {
@@ -93,7 +99,7 @@ internal static partial class VisualScheduleCompiler {
                 LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, tops[rowIndex], tops[rowIndex + 1] - tops[rowIndex], row.SeriesIndex);
                 var series = chart.Series[row.SeriesIndex];
                 foreach (var placed in row.Items) {
-                    var visible = model.TrySpan(placed, plot, out var left, out var width);
+                    var visible = model.TrySpan(placed, projection, out var left, out var width);
                     var top = visible ? model.BarTop(plot, tops[rowIndex], placed.SubRow) : tops[rowIndex];
                     var bounds = new ChartRect(visible ? left : plot.Left, top, visible ? Math.Max(0, Math.Min(width, plot.Right - left)) : 0, Math.Max(0, band));
                     var metadata = VisualStateSceneTools.StateMetadata(chart, placed.Category);
@@ -115,7 +121,7 @@ internal static partial class VisualScheduleCompiler {
                                 var extent = Math.Min(bounds.Height / 3, bounds.Width / 2);
                                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(bounds.Right - extent, bounds.Top + bounds.Height / 2 - extent),
                                     ChartPathCommand.LineTo(bounds.Right, bounds.Top + bounds.Height / 2), ChartPathCommand.LineTo(bounds.Right - extent, bounds.Top + bounds.Height / 2 + extent) }),
-                                    stroke: ChartColorMath.AccessibleTextOnBackground(mark.Surface), strokeWidth: 1.5, role: "gantt-lane-open-end",
+                                    stroke: ChartColorMath.AccessibleTextOnBackground(mark.Surface), strokeWidth: GanttLaneOpenEndStrokeWidth, role: "gantt-lane-open-end",
                                     paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.AccessibleTextOnBackground(mark.Surface))));
                             }
                         }

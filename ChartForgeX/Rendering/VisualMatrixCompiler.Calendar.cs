@@ -19,7 +19,9 @@ internal static partial class VisualMatrixCompiler {
         var axes = chart.Options.ShowAxes;
         var left = axes && chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .22, Enumerable.Range(0, 7).Select(row => builder.MeasureText(model.DayName(row), style).Width).Max() + gap) : 0;
         var top = axes && chart.Options.XAxis.Visible ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
-        var scaleHeight = ScaleVisible(chart, context) ? Math.Min(viewport.Height * .25, lineHeight * 2 + gap + 12) : 0;
+        var scaleHeight = ScaleVisible(chart, context) ? Math.Min(viewport.Height * .25,
+            CalendarScaleCaptionHeight(chart, builder, model, style) + 12 + gap + gap / 3) : 0;
+        var scaleGap = Math.Min(gap, scaleHeight / 3);
         var area = new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - scaleHeight));
         var grid = model.Layout(area);
         var sourceIndices = model.Series.Points.Select((point, index) => new { Date = DateTime.FromOADate(point.X).Date, Index = index })
@@ -67,34 +69,8 @@ internal static partial class VisualMatrixCompiler {
                 foreach (var month in model.MonthLabels(grid, text => builder.MeasureText(text, style).Width))
                     VisualStateSceneTools.Text(builder, model.MonthName(month.Month), new ChartRect(month.X, viewport.Top, Math.Max(0, area.Right - month.X), top),
                         style, "calendar-month", "calendar-month-" + month.Month.ToString("yyyy-MM", CultureInfo.InvariantCulture));
-            if (ScaleVisible(chart, context)) CalendarScale(chart, context, builder, model, new ChartRect(area.Left, viewport.Bottom - scaleHeight, area.Width, scaleHeight));
+            if (ScaleVisible(chart, context)) CalendarScale(chart, context, builder, model,
+                new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap)));
         }
-    }
-
-    private static void CalendarScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartCalendarHeatmapModel model, ChartRect bounds) {
-        if (bounds.Width <= 0 || bounds.Height <= 0) return;
-        var style = VisualStateSceneTools.TickStyle(chart, context); var colors = context.Theme.Resolve(context.ThemeMode);
-        var special = (model.EmptyDays > 0 ? 1 : 0) + (model.ZeroDays > 0 ? 1 : 0); var count = special + 5;
-        var height = Math.Min(12, bounds.Height / 3); var pitch = Math.Min(24, bounds.Width / count); var left = bounds.Left + (bounds.Width - pitch * count) / 2;
-        for (var index = 0; index < count; index++) {
-            var empty = model.EmptyDays > 0 && index == 0; var zero = !empty && index < special;
-            var value = index < special ? 0 : model.ScaleValue(index - special);
-            var blend = empty ? ChartHeatmapSurface.CalendarEmptyBlend(colors) : zero ? ChartHeatmapSurface.ZeroBlend(colors)
-                : ChartHeatmapSurface.CalendarBlend(colors, model.Series.Color, value, model.RampMin, model.Max, VisualChartPaint.SeriesRole(model.Series));
-            var label = empty ? chart.Options.Labels.NoData : ChartNumericFormatter.FormatValue(chart.Options, value);
-            var box = new ChartRect(left + index * pitch, bounds.Top + 4, Math.Max(0, pitch - 3), height);
-            var metadata = new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value),
-                ["data-cfx-empty"] = empty ? "true" : "false", ["data-cfx-zero"] = zero ? "true" : "false",
-                ["data-cfx-level"] = model.Level(value).ToString(CultureInfo.InvariantCulture) };
-            if (empty && chart.Options.PinStateColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
-            using (VisualStateSceneTools.Mark(builder, "calendar-scale-" + index, "calendar-scale-step", box, label, metadata)) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
-        }
-        var textTop = bounds.Top + height + 6;
-        var emptyLabelWidth = model.EmptyDays > 0 ? bounds.Width * .35 : 0;
-        if (model.EmptyDays > 0) VisualStateSceneTools.Text(builder, chart.Options.Labels.NoData, new ChartRect(bounds.Left, textTop, emptyLabelWidth, Math.Max(0, bounds.Bottom - textTop)),
-            style, "calendar-scale-label", "calendar-scale-empty");
-        VisualStateSceneTools.Text(builder, chart.Options.Labels.Less + " – " + chart.Options.Labels.More,
-            new ChartRect(bounds.Left + emptyLabelWidth, textTop, bounds.Width - emptyLabelWidth, Math.Max(0, bounds.Bottom - textTop)), style,
-            "calendar-scale-label", "calendar-scale-range", TextAlignment.Right);
     }
 }

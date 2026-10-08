@@ -52,7 +52,7 @@ public sealed class V2MatrixTests {
 
     [Fact]
     public void CategoricalCellsRetainSafeLinksTooltipsPatternsUnknownKeysAndFullIdentity() {
-        var chart = Chart.Create().WithXLabels("Check A", "Check B", "Check C")
+        var chart = Chart.Create().WithLegend(true).WithXLabels("Check A", "Check B", "Check C")
             .WithStateCategories(new ChartStateCategory("quiet", "Not evaluated", ChartColor.FromHex("#7c818a"), ChartStatePattern.CrossHatched, ChartStateEmphasis.Quiet))
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell?[] { new("quiet", "1", "Full evidence", "#details"), null, new("pending") }, "Group")
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("quiet"));
