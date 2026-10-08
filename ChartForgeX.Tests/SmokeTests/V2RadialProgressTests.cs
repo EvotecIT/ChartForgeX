@@ -68,7 +68,20 @@ public sealed class V2RadialProgressTests {
         var value = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == role + "-value");
         var caption = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == role + "-title");
         Assert.Equal(layered ? "42" : "60", Assert.Single(value.Text.Lines).Text);
-        Assert.Equal("Completion", Assert.Single(caption.Text.Lines).Text);
+        var captionRegion = Assert.Single(scene.Regions, region => region.Id == "series-0-center-caption");
+        Assert.Equal("Completion", captionRegion.Label);
+        var paintedCaption = Assert.Single(caption.Text.Lines).Text;
+        var fullCaption = new VisualSceneTextFace(caption.Text.Style).Prepare("Completion", caption.Text.Size);
+        if (fullCaption.Metrics.Width <= captionRegion.Bounds.Width) Assert.Equal("Completion", paintedCaption);
+        else {
+            Assert.True(paintedCaption.Length > 3);
+            Assert.EndsWith("...", paintedCaption);
+            Assert.StartsWith(paintedCaption[..^3], "Completion", StringComparison.Ordinal);
+            Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
+        }
+        var typography = new VisualRenderContext().Theme.Typography;
+        Assert.Equal(typography.CenterValueSize, value.Text.Size);
+        Assert.Equal(typography.DataLabelSize, caption.Text.Size);
         Assert.True(value.Baseline - value.Text.Ascent + value.Text.Metrics.Height <= caption.Baseline - caption.Text.Ascent);
         var radius = layered ? scene.Nodes.OfType<VisualSceneSlice>().Where(mark => mark.Role == "layered-radial-layer").Min(mark => mark.Inner)
             : Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), mark => mark.Role == "radial-bar-center").Rx;

@@ -63,9 +63,12 @@ public sealed class PreparedSequenceTests {
         });
         var labels = xml.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "sequence-message")
             .Select(e => e.Descendants().Single(t => t.Name.LocalName == "text")).ToArray();
-        for (int i = 0; i < labels.Length; i++)
-            Assert.Equal(envelope.Edges[i].ResolvedLabelBounds!.Value.X,
-                double.Parse((string)labels[i].Attribute("x")!, System.Globalization.CultureInfo.InvariantCulture), 2);
+        for (int i = 0; i < labels.Length; i++) {
+            var expectedX = envelope.Edges[i].ResolvedLabelBounds!.Value.X;
+            var svgX = double.Parse((string)labels[i].Attribute("x")!, System.Globalization.CultureInfo.InvariantCulture);
+            // SVG coordinates round to 0.001 logical pixels.
+            Assert.InRange(Math.Abs(expectedX - svgX), 0, .000500001);
+        }
     }
 
     [Theory]
