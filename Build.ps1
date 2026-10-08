@@ -868,7 +868,7 @@ try {
                     $cleanupRoot = [IO.Path]::GetFullPath($consumerRoot)
                     $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
                     if (-not $cleanupRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package consumer cleanup target is outside the selected temporary root.' }
-                    $linked = @((Get-Item -LiteralPath $cleanupRoot), (Get-ChildItem -LiteralPath $cleanupRoot -Recurse -Force)) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
+                    $linked = (@(Get-Item -LiteralPath $cleanupRoot) + @(Get-ChildItem -LiteralPath $cleanupRoot -Recurse -Force)) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
                     if ($linked) { throw 'Package consumer cleanup target contains a linked path.' }
                     Remove-Item -LiteralPath $cleanupRoot -Recurse -ErrorAction Stop
                 }

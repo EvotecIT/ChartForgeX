@@ -59,7 +59,7 @@ try {
         throw 'Package compilation cleanup target is outside the selected temporary root.'
     }
     if (Test-Path -LiteralPath $resolvedCompileRoot) {
-        $linked = @((Get-Item -LiteralPath $resolvedCompileRoot), (Get-ChildItem -LiteralPath $resolvedCompileRoot -Recurse -Force)) |
+        $linked = (@(Get-Item -LiteralPath $resolvedCompileRoot) + @(Get-ChildItem -LiteralPath $resolvedCompileRoot -Recurse -Force)) |
             Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
         if ($linked) { throw 'Package compilation cleanup target contains a linked path.' }
         Remove-Item -LiteralPath $resolvedCompileRoot -Recurse -ErrorAction Stop

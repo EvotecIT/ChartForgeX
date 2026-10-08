@@ -16,6 +16,14 @@ internal static partial class SmokeTests {
         var composition = ImageComposition.FromBytes(gif);
         Assert(composition.Width == 5 && composition.Height == 3, "Image composition should accept GIF wallpaper input through the shared decoder.");
 
+        var transparentSource = new RgbaImage(2, 1, new byte[] { 20, 80, 120, 255, 80, 30, 90, 0 });
+        var transparentGif = transparentSource.ToGif();
+        var transparentInput = RasterImageDecoder.Decode(transparentGif);
+        Assert(transparentInput.Width == 2 && transparentInput.Height == 1 && transparentInput.Pixels[3] == 255 && transparentInput.Pixels[7] == 0,
+            "GIF input should preserve an explicitly transparent frame pixel independently of its logical-screen background.");
+        Assert(ImageComposition.FromBytes(transparentGif).ToImage().Pixels[7] == 0,
+            "Transparent GIF wallpaper input must remain transparent when passed to composition.");
+
         var partialFrameGif = new byte[] {
             0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
             0x02, 0x00, 0x02, 0x00, 0x80, 0x00, 0x00,

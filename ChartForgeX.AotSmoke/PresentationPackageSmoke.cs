@@ -44,6 +44,8 @@ internal static class PresentationPackageSmoke {
         Require(gif.Length > 64 && gif[0] == 'G' && gif[1] == 'I' && gif[2] == 'F', "Stories topology GIF failed.");
         Require(route.ToApng().Length > 64, "Stories topology APNG failed.");
         Require(ImageComposition.Create(8, 8, ChartColor.FromRgb(255, 0, 0)).ToImage().ToGif().Length > 32, "Stories composition GIF failed.");
+        var transparentGif = new RgbaImage(2, 1, new byte[] { 20, 80, 120, 255, 80, 30, 90, 0 }).ToGif();
+        Require(RasterImageDecoder.Decode(transparentGif).Pixels[7] == 0, "Core GIF input lost Stories output transparency.");
         Console.WriteLine("Presentation packages AOT smoke passed: Visuals facts/canvas/watermarks and Stories scenes/motion/GIF/APNG.");
     }
 
