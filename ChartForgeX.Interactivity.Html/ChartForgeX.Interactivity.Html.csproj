@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>Aligns package dependencies and rendering contracts with ChartForgeX 1.8.2.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

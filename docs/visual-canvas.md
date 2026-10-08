@@ -2,6 +2,8 @@
 
 `VisualCanvas` is a fixed-size layered composition surface for visuals that are not grids: desktop wallpapers, social preview images, report covers, kiosk screens, and product hero graphics.
 
+Install `ChartForgeX.Visuals` for the canvas API. Add `ChartForgeX.Stories` when encoding its completed pixels as GIF.
+
 Use it when the output needs explicit placement, layered backgrounds, side rails, central hero typography, badges, or host-provided image slots. `VisualGrid` remains the right surface for rows and columns of charts or visual blocks.
 
 The first canvas primitives are intentionally generic:
@@ -19,7 +21,7 @@ The first canvas primitives are intentionally generic:
 - rendered ChartForgeX layers for charts, chart grids, visual blocks, visual grids, and topology diagrams
 - anchor-based placement for all built-in canvas layers and rendered ChartForgeX layers
 - feature strips for compact bottom rows
-- SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF export
+- SVG, HTML, PNG, JPEG, BMP, PPM, and TIFF export, plus GIF encoding through Stories
 
 Example:
 
@@ -87,7 +89,7 @@ var canvas = VisualCanvas.CreateSocialPreview()
 
 canvas.SaveSvg("powerbginfo-social-preview.svg");
 canvas.SavePng("powerbginfo-social-preview.png");
-canvas.Save("powerbginfo-social-preview.gif");
+canvas.ToRgbaImage().SaveGif("powerbginfo-social-preview.gif"); // Requires ChartForgeX.Stories.
 canvas.Save("powerbginfo-social-preview.jpg", new RasterImageOptions { JpegQuality = 92, PngCompressionLevel = 9 });
 canvas.SaveBmp("powerbginfo-social-preview.bmp");
 ```

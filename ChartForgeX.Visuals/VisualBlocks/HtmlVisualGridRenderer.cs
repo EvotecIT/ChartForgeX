@@ -1,0 +1,167 @@
+using System;
+using System.Globalization;
+using System.Text;
+using ChartForgeX.Core;
+using ChartForgeX.Html;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Svg;
+
+namespace ChartForgeX.VisualBlocks;
+
+/// <summary>
+/// Renders visual grids as dependency-free static HTML.
+/// </summary>
+public sealed class HtmlVisualGridRenderer {
+    private readonly SvgVisualBlockRenderer _blockRenderer = new();
+
+    /// <summary>Renders a visual grid as an embeddable HTML fragment.</summary>
+    public string RenderFragment(VisualGrid grid) => RenderFragment(grid, string.Empty);
+
+    /// <summary>Renders a visual grid fragment with a caller-provided deterministic ID scope.</summary>
+    /// <param name="grid">The visual grid to render.</param>
+    /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
+    /// <returns>An HTML fragment containing inline SVG children.</returns>
+    public string RenderFragment(VisualGrid grid, string idScope) {
+        if (grid == null) throw new ArgumentNullException(nameof(grid));
+        if (idScope == null) throw new ArgumentNullException(nameof(idScope));
+        if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
+        var scope = idScope;
+        var layout = VisualGridLayout.FromGrid(grid);
+        var columns = Math.Min(grid.Columns, grid.Items.Count);
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("section")
+            .Attribute("class", GridClass(grid))
+            .Attribute("style", GridStyle(grid, layout, columns))
+            .EndStartElement();
+        if (grid.Title.Length > 0 || grid.Subtitle.Length > 0) {
+            writer.StartElement("header").Attribute("class", "chartforgex-visual-grid-header").EndStartElement();
+            if (grid.Title.Length > 0) writer.StartElement("h1").Attribute("data-cfx-target", "title").EndStartElement().Text(grid.Title).EndElement();
+            if (grid.Subtitle.Length > 0) writer.StartElement("p").Attribute("data-cfx-target", "subtitle").EndStartElement().Text(grid.Subtitle).EndElement();
+            writer.EndElement();
+        }
+
+        writer.StartElement("div").Attribute("class", "chartforgex-visual-grid-body").EndStartElement();
+        for (var i = 0; i < grid.Items.Count; i++) {
+            var item = grid.Items[i];
+            var columnSpan = Math.Min(item.ColumnSpan, columns);
+            var childSvg = item.Chart != null ? RenderChildChart(item.Chart, scope + "-chart-" + i.ToString(CultureInfo.InvariantCulture)) : RenderChildBlock(item.Block!, scope + "-block-" + i.ToString(CultureInfo.InvariantCulture));
+            writer.StartElement("article")
+                .Attribute("class", "chartforgex-visual-grid-panel")
+                .Attribute("aria-label", ItemTitle(item))
+                .Attribute("style", PanelSpanStyle(columnSpan, item.RowSpan, grid.PanelSize.HasValue))
+                .Attribute("data-cfx-target", item.TargetId)
+                .EndStartElement()
+                .RawTrusted(PrepareChildSvg(childSvg, grid.PanelSize.HasValue && grid.PanelFit == VisualPanelFit.Stretch))
+                .EndElement();
+        }
+
+        writer.EndElement().EndElement();
+        return writer.Build();
+    }
+
+    private static string RenderChildChart(Chart chart, string childScope) => VisualGridChartRendering.Svg(chart, childScope);
+
+    private string RenderChildBlock(IVisualBlock block, string childScope) {
+        var transparentBackground = block.Options.TransparentBackground;
+        var originalTheme = block.Options.Theme;
+        try {
+            block.Options.TransparentBackground = true;
+            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
+            return _blockRenderer.Render(block, childScope);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+            block.Options.Theme = originalTheme;
+        }
+    }
+
+    /// <summary>Renders a visual grid as a complete HTML document.</summary>
+    public string RenderPage(VisualGrid grid) {
+        if (grid == null) throw new ArgumentNullException(nameof(grid));
+        if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
+        var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
+        var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
+        var title = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
+        var writer = new HtmlMarkupWriter();
+        writer.Doctype().Line()
+            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("head").EndStartElement().Line();
+        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(grid, background, theme.Text.ToCss(), theme.MutedText.ToCss(), theme.CardBorder.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize, theme.UseGraphiteLayout));
+        writer.EndElement().Line()
+            .StartElement("body").EndStartElement().Line()
+            .RawTrusted(RenderFragment(grid, "html-page")).Line()
+            .EndElement().Line()
+            .EndElement();
+        return writer.Build();
+    }
+
+    private static string BuildCss(VisualGrid grid, ChartColor background, string text, string mutedText, string border, string fontFamily, double titleFontSize, double subtitleFontSize, bool graphite) {
+        var css = HtmlSurfacePolish.ReportBodyCss(background, fontFamily, "0", graphite) + ".chartforgex-visual-grid{display:block;width:min(100%,1440px);margin:0 auto;padding:var(--cfx-visual-grid-padding,24px);box-sizing:border-box}.chartforgex-visual-grid.has-frame{border:1px solid " + border + ";border-radius:30px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)}.chartforgex-visual-grid-header{margin:0 0 18px}.chartforgex-visual-grid-header h1{margin:0;color:" + text + ";font-size:" + titleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.15;font-weight:" + (graphite ? "700" : "800") + "}.chartforgex-visual-grid-header p{margin:6px 0 0;color:" + mutedText + ";font-size:" + subtitleFontSize.ToString(CultureInfo.InvariantCulture) + "px;line-height:1.45}.chartforgex-visual-grid-body{display:grid;grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,1fr));grid-auto-rows:var(--cfx-visual-grid-panel-height,auto);grid-auto-flow:row dense;gap:var(--cfx-visual-grid-gap)}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:repeat(var(--cfx-visual-grid-columns),minmax(0,var(--cfx-visual-grid-panel-width)));justify-content:center}.chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}.chartforgex-visual-grid-panel svg{width:auto;height:auto;max-width:100%;max-height:100%;display:block;overflow:visible}.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%}.chartforgex-visual-grid.has-fixed-panels.fit-stretch .chartforgex-visual-grid-panel svg{width:100%;height:100%;max-width:none;max-height:none}@media(max-width:900px){.chartforgex-visual-grid{padding:16px}.chartforgex-visual-grid-body,.chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-visual-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0!important}.chartforgex-visual-grid-header h1{font-size:" + Math.Max(18, titleFontSize * 0.85).ToString(CultureInfo.InvariantCulture) + "px}}@media print{body{min-height:auto;background:transparent}}";
+        return css;
+    }
+
+    private static string ItemTitle(VisualGridItem item) {
+        if (item.Chart != null) return item.Chart.Title.Length == 0 ? "Chart" : item.Chart.Title;
+        return item.Block?.AccessibleName ?? "Visual block";
+    }
+
+    private static string GridClass(VisualGrid grid) {
+        var value = "chartforgex-visual-grid";
+        if (grid.PanelSize.HasValue) value += " has-fixed-panels";
+        if (grid.PanelSize.HasValue && grid.PanelFit == VisualPanelFit.Stretch) value += " fit-stretch";
+        if (grid.FrameVisible && !(grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0])).FlatMarks) value += " has-frame";
+        return value;
+    }
+
+    private static string GridStyle(VisualGrid grid, VisualGridLayout layout, int columns) {
+        var sb = new StringBuilder();
+        sb.Append("--cfx-visual-grid-columns:").Append(columns.ToString(CultureInfo.InvariantCulture));
+        sb.Append(";--cfx-visual-grid-gap:").Append(grid.Gap.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-padding:").Append(grid.Padding.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-panel-width:").Append(layout.PanelWidth.ToString(CultureInfo.InvariantCulture)).Append("px");
+        sb.Append(";--cfx-visual-grid-panel-height:");
+        if (!grid.PanelSize.HasValue && grid.AdaptiveRowHeights) sb.Append("auto");
+        else sb.Append(layout.PanelHeight.ToString(CultureInfo.InvariantCulture)).Append("px");
+
+        return sb.ToString();
+    }
+
+    private static string? PanelSpanStyle(int columnSpan, int rowSpan, bool hasFixedPanelSize) {
+        if (columnSpan == 1 && rowSpan == 1) return null;
+        var sb = new StringBuilder();
+        sb.Append("grid-column:span ");
+        sb.Append(columnSpan.ToString(CultureInfo.InvariantCulture));
+        sb.Append(";grid-row:span ");
+        sb.Append(rowSpan.ToString(CultureInfo.InvariantCulture));
+        if (hasFixedPanelSize && rowSpan > 1) {
+            sb.Append(";min-height:calc((var(--cfx-visual-grid-panel-height) * ");
+            sb.Append(rowSpan.ToString(CultureInfo.InvariantCulture));
+            sb.Append(") + (var(--cfx-visual-grid-gap) * ");
+            sb.Append((rowSpan - 1).ToString(CultureInfo.InvariantCulture));
+            sb.Append("))");
+        }
+
+        return sb.ToString();
+    }
+
+    private static string PrepareChildSvg(string svg, bool stretch) {
+        if (!stretch) return svg;
+        var tagEnd = svg.IndexOf('>');
+        if (tagEnd < 0) return svg;
+        var open = svg.Substring(0, tagEnd);
+        open = SetSvgAttribute(open, "preserveAspectRatio", "none");
+        return open + svg.Substring(tagEnd);
+    }
+
+    private static string SetSvgAttribute(string openTag, string name, string value) {
+        var attribute = " " + name + "=\"";
+        var start = openTag.IndexOf(attribute, StringComparison.Ordinal);
+        if (start < 0) return openTag + attribute + VisualBlockRendering.Escape(value) + "\"";
+        var valueStart = start + attribute.Length;
+        var valueEnd = openTag.IndexOf('"', valueStart);
+        if (valueEnd < 0) return openTag;
+        return openTag.Substring(0, valueStart) + VisualBlockRendering.Escape(value) + openTag.Substring(valueEnd);
+    }
+
+}

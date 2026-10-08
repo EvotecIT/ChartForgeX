@@ -1,4 +1,3 @@
-using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Raster;
 using ChartForgeX.VisualBlocks;
@@ -21,13 +20,4 @@ public static partial class ChartExtensions {
     /// <returns>The rendered RGBA image.</returns>
     public static RgbaImage ToRgbaImage(this IVisualBlock block) => RasterRenderer.RenderImage(block);
 
-    /// <summary>Renders a visual grid directly to an in-memory RGBA image without encoding it.</summary>
-    /// <param name="grid">The visual grid to render.</param>
-    /// <returns>The rendered RGBA image.</returns>
-    public static RgbaImage ToRgbaImage(this VisualGrid grid) => RasterRenderer.RenderImage(grid);
-
-    /// <summary>Renders a visual canvas directly to an in-memory RGBA image without encoding it.</summary>
-    /// <param name="canvas">The visual canvas to render.</param>
-    /// <returns>The rendered RGBA image.</returns>
-    public static RgbaImage ToRgbaImage(this VisualCanvas canvas) => new PngVisualCanvasRenderer().RenderImage(canvas);
 }

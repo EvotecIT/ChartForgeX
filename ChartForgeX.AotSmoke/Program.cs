@@ -97,6 +97,7 @@ foreach (var source in mermaidSources) {
 }
 
 PreparedPipelineSmoke.Run();
+PresentationPackageSmoke.Run();
 
 static void AssertContains(string text, string expected, string message) {
     if (!text.Contains(expected, StringComparison.Ordinal)) throw new InvalidOperationException(message);

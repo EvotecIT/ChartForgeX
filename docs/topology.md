@@ -61,28 +61,29 @@ var options = new TopologyRenderOptions()
 var html = chart.ToInteractiveHtmlPage(options);
 ```
 
-Use `TopologyMotionOptions.RoutePulseForScenario(...)` when a scenario route should become a script-free animated asset. SVG output adds native `<animate>` route pulses without JavaScript, while GIF output samples deterministic PNG frames from the same topology model. This is intended for route tours, map arcs, replication flow, failover paths, and README/documentation previews; static SVG, HTML, and PNG remain unchanged unless motion is explicitly enabled.
+Add `ChartForgeX.Stories` and use `TopologyMotionOptions.RoutePulseForScenario(...)` when a scenario route should become a script-free animated asset. SVG output adds native `<animate>` route pulses without JavaScript, while GIF output samples deterministic PNG frames from the same topology model. The presentation reuses detached prepared geometry for route tours, map arcs, replication flow, failover paths, and README/documentation previews. Static topology render options remain in core.
 
 ```csharp
+using ChartForgeX.Topology;
+using System.IO;
+
 var motion = TopologyMotionOptions.RoutePulseForScenario("client-request-europe")
     .WithDuration(4)
     .WithFrameRate(10)
     .WithFrameLimit(80)
     .WithMarker(5);
 
-var motionOptions = new TopologyRenderOptions { IncludeLegend = false }
-    .WithActiveScenario("client-request-europe")
-    .WithMotion(motion);
+var staticOptions = new TopologyRenderOptions { IncludeLegend = false }
+    .WithActiveScenario("client-request-europe");
+var presentation = chart.WithMotion(motion, staticOptions);
 
-chart.SaveSvg("route-tour.svg", motionOptions);
-chart.SaveGif("route-tour.gif", motionOptions);
-chart.SaveApng("route-tour.apng", motionOptions);
-chart.Save("route-tour.gif", motionOptions);
-chart.Save("route-tour.apng", motionOptions);
+File.WriteAllText("route-tour.svg", presentation.ToSvg());
+File.WriteAllBytes("route-tour.gif", presentation.ToGif());
+File.WriteAllBytes("route-tour.apng", presentation.ToApng());
 using var gifStream = File.Create("route-tour.gif");
-chart.WriteGif(gifStream, motionOptions);
+chart.WriteGif(gifStream, staticOptions, motion);
 using var apngStream = File.Create("route-tour.apng");
-chart.WriteApng(apngStream, motionOptions);
+chart.WriteApng(apngStream, staticOptions, motion);
 ```
 
 GIF export uses a deterministic adaptive palette, error diffusion, and cropped delta frames so brand colors, gradients, and soft route polish survive much better than a fixed web-safe palette without forcing every animation step to store the full canvas. GIF is still an 8-bit indexed format, so it remains a compatibility export for README, documentation, email, and chat surfaces. APNG preserves full RGBA color and crops unchanged frame regions for higher-fidelity animated raster output when the target surface supports it. Animated raster export refuses to sample more than `MaximumRasterFrames`, so long or high-frame-rate route tours fail early with a clear error instead of allocating an unexpectedly large frame set.
@@ -90,11 +91,10 @@ GIF export uses a deterministic adaptive palette, error diffusion, and cropped d
 Motion can also target explicit edge ids, which keeps route animation reusable for geographic topology maps or generated route sets that do not need a named scenario:
 
 ```csharp
-var mapMotion = new TopologyRenderOptions()
-    .WithMotion(TopologyMotionOptions.RoutePulseForEdges("emea-apac", "apac-amer"));
+var mapMotion = TopologyMotionOptions.RoutePulseForEdges("emea-apac", "apac-amer");
 
-chart.SaveGif("wan-routes.gif", mapMotion);
-chart.SaveApng("wan-routes.apng", mapMotion);
+chart.SaveGif("wan-routes.gif", motion: mapMotion);
+chart.SaveApng("wan-routes.apng", motion: mapMotion);
 ```
 
 `TopologyLegend.Default()` is intentionally product-neutral and only adds health-status entries. Add node-kind and edge-kind legend entries explicitly for the domain being rendered, for example service dependencies, transport links, replication paths, mappings, ownership, or team relationships. Legend entries can also use `symbol` overrides.

@@ -2,7 +2,7 @@
 
 ChartForgeX renders polished charts, animated visual stories, visual blocks, topology diagrams, and static report visuals from .NET without adding runtime chart dependencies to generated output.
 
-The core package renders SVG, script-free HTML, PNG, GIF, APNG, JPEG, BMP, PPM, and TIFF. `TerminalStory` creates PowerShell, Bash, command prompt, Python, C#, or custom console presentations from structured commands and output, with independent palettes and macOS, Windows Terminal, minimal, or chrome-free window styles. `VisualStory` generalizes that model to source, terminal, text, image, SVG, and result panels, with declared outcomes that must remain visible in the completed scene. The core consumes resolved artifacts and renderer-neutral syntax spans; it never executes showcased code or depends on a language parser. PNG, print, and reduced-motion output keep the exact completed state. Optional browser behavior lives in adapter packages, so generated reports can stay static while dashboard hosts can opt into tooltips, selection, zoom, pan, synchronized charts, and export controls.
+The core package renders charts and diagrams to SVG, script-free HTML, PNG, JPEG, BMP, PPM and TIFF. `ChartForgeX.Visuals` adds static canvases, image composition, factual blocks and watermarks. `ChartForgeX.Stories` adds scene playback, terminal stories, motion and GIF/APNG encoding; both optional packages depend on core and remain independent of each other. `TerminalStory` creates PowerShell, Bash, command prompt, Python, C#, or custom console presentations from structured commands and output, with independent palettes and macOS, Windows Terminal, minimal, or chrome-free window styles. `VisualStory` generalizes that model to source, terminal, text, image, SVG, and result panels, with declared outcomes that must remain visible in the completed scene. The core consumes resolved artifacts and renderer-neutral syntax spans; it never executes showcased code or depends on a language parser. PNG, print, and reduced-motion output keep the exact completed state. Optional browser behavior lives in adapter packages, so generated reports can stay static while dashboard hosts can opt into tooltips, selection, zoom, pan, synchronized charts, and export controls.
 
 ## Install
 
@@ -10,11 +10,15 @@ The core package renders SVG, script-free HTML, PNG, GIF, APNG, JPEG, BMP, PPM, 
 dotnet add package ChartForgeX
 ```
 
+For canvas and factual-block examples, also install `ChartForgeX.Visuals`. For stories, terminal playback and GIF/APNG output, install `ChartForgeX.Stories`.
+
 ChartForgeX targets `net472`, `netstandard2.0`, `net8.0`, and `net10.0`. The core package has no runtime package dependencies.
 
 | Package | Purpose |
 | --- | --- |
-| `ChartForgeX` | Static SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering. |
+| `ChartForgeX` | Charts, genuine diagrams, prepared scenes, semantic artifacts and still-image codecs. |
+| `ChartForgeX.Visuals` | Static canvas, image composition, metric tiles, tables, lists and ordered watermark decoration. |
+| `ChartForgeX.Stories` | Visual and terminal stories, transcripts, motion, animated topology and GIF/APNG output. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained chart and topology interaction adapter, including interactive topology pages, the stencil browser, and the graph explorer with SVG, Canvas, WebGL, hierarchy navigation, compact large-scene documents, and runtime patches. |
 
@@ -98,9 +102,9 @@ record Sample(double Index, double Value);
 | Interactive topology HTML | `topology.ToInteractiveHtmlFragment()`, `topology.ToInteractiveHtmlPage()`, or `topology.SaveInteractiveHtml("topology.html")` from `ChartForgeX.Interactivity.Html` |
 | Interactive relationship graph | `graph.ToGraphExplorerHtmlFragment()`, `graph.ToGraphExplorerHtmlPage()`, premium system/light/dark themes, accessible keyboard navigation, SVG/Canvas/WebGL backends, worker physics, direct hierarchy navigation, static stage images, and `GraphScenePatch` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
-| GIF, JPEG, and raster file output | `chart.Save("chart.gif")`, `chart.Save("chart.jpg", rasterOptions)`, `chart.SaveRasterImage("chart.tiff")`, or `ImageComposition.FromFile("wallpaper.jpg").Save("wallpaper-output.gif")` |
-| Reusable image composition | `ImageComposition.TryFromBytes(bytes, out var composition)`, `composition.StrokeRectangle(...)`, `composition.DrawCallout(...)`, `composition.Write(stream, RasterImageFormat.Png)`, or `composition.Save(path, RasterImageFormat.Gif)` |
-| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.gif")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")` |
+| Still raster file output | `chart.Save("chart.jpg", rasterOptions)` or `chart.SaveRasterImage("chart.tiff")`; add Stories for `chart.ToRgbaImage().ToGif()` |
+| Reusable image composition | Add Visuals for `ImageComposition.TryFromBytes(bytes, out var composition)`, `composition.StrokeRectangle(...)`, `composition.DrawCallout(...)` and `composition.Write(stream, RasterImageFormat.Png)`; add Stories for `composition.ToImage().ToGif()` |
+| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")` |
 
 `RasterImageOptions` controls JPEG quality, PNG compression level, and the flattening background for opaque formats.
 

@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -22,6 +22,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Mermaid", "ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj", "{077FA950-293F-49D7-88C9-8D60B511126C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Markup.Mermaid", "ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj", "{80A84861-0178-4564-8023-B402AF8B132C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Visuals", "ChartForgeX.Visuals\ChartForgeX.Visuals.csproj", "{A3A9B65B-11EF-4AF2-808C-31BBC9359717}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartForgeX.Stories", "ChartForgeX.Stories\ChartForgeX.Stories.csproj", "{60265264-6412-45FA-830F-1050C97C6321}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +157,30 @@ Global
 		{80A84861-0178-4564-8023-B402AF8B132C}.Release|x64.Build.0 = Release|Any CPU
 		{80A84861-0178-4564-8023-B402AF8B132C}.Release|x86.ActiveCfg = Release|Any CPU
 		{80A84861-0178-4564-8023-B402AF8B132C}.Release|x86.Build.0 = Release|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Release|x64.Build.0 = Release|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3A9B65B-11EF-4AF2-808C-31BBC9359717}.Release|x86.Build.0 = Release|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Debug|x64.Build.0 = Debug|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Debug|x86.Build.0 = Debug|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Release|x64.ActiveCfg = Release|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Release|x64.Build.0 = Release|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Release|x86.ActiveCfg = Release|Any CPU
+		{60265264-6412-45FA-830F-1050C97C6321}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

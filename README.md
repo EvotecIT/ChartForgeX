@@ -35,7 +35,7 @@ Charts and topology share measured label placement across SVG and PNG. Labels tr
 
 ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, visual canvases, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, social preview images, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
 
-The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
+The core package renders SVG, script-free static HTML, PNG, JPEG, BMP, PPM, and TIFF without runtime package dependencies. `ChartForgeX.Stories` adds GIF/APNG encoding. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
 
 ## Shared prepared rendering
 
@@ -189,20 +189,24 @@ dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Relea
 dotnet add package ChartForgeX
 ```
 
+For canvas and factual-block examples, also install `ChartForgeX.Visuals`. For stories, terminal playback and GIF/APNG output, install `ChartForgeX.Stories`.
+
 ChartForgeX targets `net472`, `netstandard2.0`, `net8.0`, and `net10.0`. The core package has no runtime package dependencies. The `net472` target uses `Microsoft.NETFramework.ReferenceAssemblies.net472` as a private build-time reference only.
 
 Optional visual artifact, markup, Mermaid, and interaction support is split into separate packages:
 
 | Package | Purpose |
 | --- | --- |
-| `ChartForgeX` | Static SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering. |
+| `ChartForgeX` | Charts, genuine diagrams, prepared scenes, semantic artifacts and still-image codecs. |
+| `ChartForgeX.Visuals` | Static canvas, image composition, metric tiles, tables, lists and ordered watermark decoration. |
+| `ChartForgeX.Stories` | Visual and terminal stories, transcripts, motion, animated topology and GIF/APNG output. |
 | `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap rendering. |
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
 | `ChartForgeX.Interactivity.Html` | Self-contained chart and topology interaction adapter, including interactive topology pages, the stencil browser, and the graph explorer with SVG, Canvas, WebGL, hierarchy navigation, compact large-scene documents, and atomic runtime updates. |
 
-The core package also includes product-neutral visual artifact models for reusable visuals. `Chart` models can be wrapped as artifacts, `FlowArtifact` keeps authored process flows distinct from topology previews, `SequenceArtifact` models interaction diagrams, `TableArtifact` declares capabilities such as search, sort, filter, selection, copy, export, and virtualization, and static previews render deterministically from the core package. Rich interaction belongs in native hosts and adapter packages. See `docs/visual-artifacts.md`, `docs/markup.md`, `docs/markup-v1-reference.md`, and `docs/mermaid.md` for the current contracts.
+The core package also includes product-neutral visual artifact models for reusable visuals. `Chart` models can be wrapped as artifacts, `FlowArtifact` keeps authored process flows distinct from topology previews, and `SequenceArtifact` models interaction diagrams; their static previews render deterministically from core. The core `TableArtifact` model declares capabilities such as search, sort, filter, selection, copy, export, and virtualization. Its static table previews use `ChartForgeX.Visuals`. Rich interaction belongs in native hosts and adapter packages. See `docs/visual-artifacts.md`, `docs/markup.md`, `docs/markup-v1-reference.md`, and `docs/mermaid.md` for the current contracts.
 
 ## Native AOT and Trimming
 
@@ -220,7 +224,7 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | Static HTML | `chart.ToHtmlFragment()`, `chart.ToHtmlPage()`, or `chart.SaveHtml("chart.html")` |
 | Interactive topology HTML | `topology.ToInteractiveHtmlFragment()`, `topology.ToInteractiveHtmlPage()`, or `topology.SaveInteractiveHtml("topology.html")` from `ChartForgeX.Interactivity.Html` |
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")`; `RasterImageOptions.Dpi` writes physical PNG density metadata without changing pixel dimensions |
-| Artifact watermark | `artifact.ToSvg(renderOptions)`, `artifact.ToHtmlPage(renderOptions)`, or `artifact.ToPng(renderOptions)` with one or more text/image `VisualWatermark` values |
+| Artifact watermark | Add `ChartForgeX.Visuals`, call `artifact.WithWatermarks(...)` with ordered text/image `VisualWatermark` values, then export SVG, HTML or PNG |
 | Office and Visio handoff | `ToVisualArtifact()` on charts, chart grids, canvases, stories, topology, flow, sequence, tables, and visual blocks; use `ToInterchangeUtf8Json()` for an ALC-safe semantic payload, then consume it through the optional `OfficeIMO.ChartForgeX` adapter for document placement or native editable Visio projection |
 | Direct RGBA pixels | `chart.ToRgbaImage()`, `topology.ToRgbaImage(options)`, or the equivalent grid, visual-block, and canvas helpers when a host will compose the result instead of saving it |
 | Layered visual canvas | `VisualCanvas.CreateSocialPreview()`, `VisualCanvas.CreateDesktopWallpaper()`, `canvas.ToSvg()`, `canvas.SavePng("social-preview.png")`, or `canvas.Save("social-preview.jpg", rasterOptions)` for fixed-size wallpaper, social image, report cover, and hero compositions |
@@ -232,11 +236,11 @@ The output API follows one rule: `To*` returns content, `Save*` writes a file, a
 | Font shaping in PNG output | Missing characters use the font stack, registered fonts, then platform fallback faces. Shared GSUB/GPOS layout provides font ligatures, contextual forms, kerning and mark attachment; Hebrew and Arabic use Unicode bidi ordering. Indic syllables, Thai/Lao AM vowels, Khmer coeng and split vowels, Sinhala joiner forms and modern Myanmar kinzi use script-specific feature stages and reordering. See [docs/visual-canvas.md](docs/visual-canvas.md#characters-the-face-does-not-have-right-to-left-text-and-arabic) |
 | Colour fonts and emoji | PNG and SVG rasterization paint COLR v0/v1 with the selected CPAL palette, including gradients, transforms, clipping and composites. CBDT/CBLC and sbix fonts use bitmap strikes at the output pixel size. Registered colour-only faces and font-provided ZWJ ligatures share text measurement, fitting and rotation; applications supply their font files |
 | Small text in PNG output | Labels at 12 output pixels and below align vertical landmarks by default. Choose `TextHinting.Full` through `TextStyle.Hinting` or `ChartOptions.PngTextHinting` to use exact-size horizontal EBDT monochrome strikes or fit narrow straight outline stems while retaining measured layout. Choose `TextHinting.None` for exact outlines, such as animation frames |
-| Topology animated raster | `topology.ToGif(options)`, `topology.ToApng(options)`, `topology.WriteGif(stream, options)`, `topology.WriteApng(stream, options)`, `topology.SaveGif("route.gif", options)`, or `topology.SaveApng("route.apng", options)` with `TopologyMotionOptions.RoutePulseForScenario(...)` or `.RoutePulseForEdges(...)` |
-| Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.gif")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")`; topology also supports animated `topology.Save("route.gif", options)` and `topology.Save("route.apng", options)` |
-| Advanced raster output | `ToRasterImage`, `WriteRasterImage`, and `SaveRasterImage` for PNG, GIF, JPEG, BMP, PPM, and TIFF; plus format helpers such as `ToBmp`, `ToPpm`, and `ToTiff` |
+| Topology animated raster | Add `ChartForgeX.Stories`, create `topology.WithMotion(motion, options)`, then call `ToGif()` or `ToApng()`; file helpers are `topology.SaveGif("route.gif", options, motion)` and `topology.SaveApng("route.apng", options, motion)` |
+| Extension-inferred still output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.jpg")` or `chart.Save("chart.tiff")` |
+| Advanced raster output | `ToRasterImage`, `WriteRasterImage` and `SaveRasterImage` for PNG, JPEG, BMP, PPM and TIFF; add Stories for `chart.ToRgbaImage().ToGif()` or `composition.ToImage().ToGif()` |
 
-`Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.gif`, `.jpg`, `.jpeg`, `.bmp`, `.ppm`, `.tiff`, and `.tif`. Topology `Save(path, options)` also infers animated `.gif` and `.apng` when `TopologyMotionOptions` describes a route. Animated GIF output uses an adaptive palette, error diffusion, and cropped delta frames for compatibility-friendly previews. APNG keeps full RGBA color and also crops unchanged frame regions for high-fidelity animated raster output, while SVG remains the highest-fidelity script-free animated surface. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` controls JPEG quality, PNG compression level, physical DPI metadata, and the background used when alpha must be flattened.
+`Save(path)` infers `.svg`, `.html`, `.htm`, `.png`, `.jpg`, `.jpeg`, `.bmp`, `.ppm`, `.tiff` and `.tif`. Stories owns GIF/APNG output, including a one-frame GIF from resolved RGBA pixels. Animated GIF output uses an adaptive palette, error diffusion and cropped delta frames. APNG keeps full RGBA color and crops unchanged frame regions. Unsupported or empty extensions fail before a file is opened. `RasterImageOptions` controls JPEG quality, PNG compression level, physical DPI metadata and the background used when alpha must be flattened.
 
 ## Typed Data, Axes, and Facets
 
@@ -541,28 +545,29 @@ story.SaveGif("chart-story.gif");
 
 ChartForgeX never executes the displayed source and has no parser dependencies. Optional hosts tokenize source through `IStorySourceTokenizer` and map parser-specific tokens to exact renderer-neutral `StorySourceSpan` ranges. Plain source remains valid when no adapter is supplied. This keeps the core dependency-free and lets PowerShell, Tree-sitter, Roslyn, or another host own the dependency appropriate to its environment.
 
-Turn a grid into a script-free visual story by assigning stable target IDs and a reusable motion timeline:
+Use `ChartForgeX.Stories` to add a script-free presentation to a static grid with stable target IDs and a reusable motion timeline:
 
 ```csharp
 using ChartForgeX.Motion;
+using System.IO;
 
 var motion = VisualMotionTimeline.Create()
     .Reveal("title", durationSeconds: 0.65)
     .Cascade(new[] { "projects", "users", "releases" }, initialDelaySeconds: 0.25)
     .Rise("portfolio", delaySeconds: 0.7);
 
-var story = VisualGrid.Create()
+var grid = VisualGrid.Create()
     .WithTitle("Engineering Portfolio")
     .WithColumns(3)
     .Add("projects", projectsCard)
     .Add("users", usersCard)
     .Add("releases", releasesCard)
-    .Add("portfolio", portfolioTable, columnSpan: 3)
-    .WithMotion(motion);
+    .Add("portfolio", portfolioTable, columnSpan: 3);
+var story = VisualMotionPresentation.Create(grid, motion);
 
-story.SaveSvg("portfolio.svg");
-story.SaveHtml("portfolio.html");
-story.SavePng("portfolio.png");
+File.WriteAllText("portfolio.svg", story.ToSvg());
+File.WriteAllText("portfolio.html", story.ToHtmlPage());
+File.WriteAllBytes("portfolio.png", story.ToPng());
 ```
 
 SVG and complete HTML pages animate without JavaScript. PNG, print, and reduced-motion rendering use the same completed state, so every fact remains available without motion.

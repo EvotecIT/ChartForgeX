@@ -20,13 +20,13 @@
     <PackageId>ChartForgeX</PackageId>
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
-    <Description>Dependency-free SVG, HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF rendering and image composition for .NET charts, animated terminal presentations, visual stories, visual blocks, report tables, metric cards, wallpapers, and topology diagrams.</Description>
+    <Description>Dependency-free charts and diagrams with shared SVG, HTML and native raster rendering, typography, theme/frame contracts and semantic artifact handoff.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>ChartForgeX 1.8.2 unifies text measurement and rendering, adds font fallback and styled SVG shaping, and improves SVG and native PNG stroke coverage.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
-    <PackageTags>charts;visualization;terminal;console;transcript;visual-blocks;visual-story;animation;motion;tables;lists;metric-cards;topology;diagrams;svg;html;png;jpeg;jpg;bmp;ppm;tiff;raster;image-composition;wallpaper;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
+    <PackageTags>charts;visualization;topology;diagrams;svg;html;png;jpeg;bmp;ppm;tiff;raster;reports;zero-dependency;aot;nativeaot;trimming</PackageTags>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

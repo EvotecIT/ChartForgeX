@@ -16,7 +16,11 @@ The entry point is `IVisualRenderable.Prepare(VisualRenderContext)`. Charts, gri
 
 Visuals and Stories are peers. A still wallpaper must not load an animation package. Stories accepts common static inputs without making the core dispatch over optional concrete types. Core retains static GIF input/first-frame decoding as an explicit input exception; GIF output belongs to Stories even when it has one frame.
 
-Package extraction is Phase 4. Phase 1 retains the existing six package projects and their framework assets. It adds a generic prepared handoff beside the legacy dispatch, then later phases remove replaced switches and optional concrete types from core. No compatibility forwarding framework or global renderer registry is planned.
+Phase 4 separates the eight runtime assemblies. Visuals and Stories each reference core only. Markup references Visuals because its existing table parser produces a static factual-table presentation; Mermaid remains core-only. Interactivity is host-neutral, and the HTML adapter keeps its existing core/interactivity direction. No compatibility forwarding framework or global renderer registry is used.
+
+`IStaticVisualSource` is the producer-owned export boundary for optional static presentations. It provides scoped SVG and native RGBA output without making core name canvas, factual block or story implementations. `VisualArtifact.RenderSource` can carry that presentation independently of its semantic `Model`. A watermark decorator captures the previous presentation and supplies an ordered Visuals-owned source. Prepared native scenes continue through `IVisualRenderable` and `PreparedVisual`; immediate image composition and legacy block layouts do not claim a native prepared-scene conversion merely because their assemblies move.
+
+Neutral `VisualStatus`, table semantics, common block contracts and the six genuine block diagrams stay in core. Canvas layout, factual block models and their concrete rendering move to Visuals. Stable static grid target IDs remain usable by a Stories motion presentation without a Visuals assembly reference. Topology motion samples a detached core geometry observation rather than re-running layout or reading geometry from SVG.
 
 Keep product data collection, dashboard shells, filters, inspectors, wallpaper templates and document placement in consumers. PowerBGInfo is a required consumer of both core and Visuals. Its designed wallpaper effects remain supported capabilities. Progress handles and completed-state markers are data marks; they are not removed with decorative menus, selection checkboxes, navigation arrows and action buttons baked into still images.
 
@@ -94,7 +98,7 @@ The [consumer capability ledger](consumer-capabilities.csv) covers [PowerBGInfo]
 
 ## API and catalog closure
 
-The [API conventions](api-conventions.md) define meaningful fluent verbs and purposeful exceptions. The [public member inventory](api-ledger.md) records the integrated source, exact overloads/defaults and planned ownership. It includes all six current runtime assemblies. Its fate column is a migration plan, not evidence that extraction is complete.
+The [API conventions](api-conventions.md) define meaningful fluent verbs and purposeful exceptions. The [public member inventory](api-ledger.md) records the integrated source, exact overloads/defaults and planned ownership. The original inventory describes six baseline runtime assemblies. Phase 4 adds a separate eight-assembly source inventory and an assembly/signature diff; packed dependency, resource and execution qualification remains independent evidence.
 
 The [chart capability roadmap](chart-capabilities.csv) records per-family existing capabilities, missing options, priority lanes, dependencies and acceptance fixtures. Priority is driven by real use and architectural reuse. Browser interaction, maps and advanced financial tooling have separate scope from static chart quality. Chart names alone do not establish completeness.
 
@@ -147,7 +151,7 @@ Phase 2 qualifies 18 complete-export pairs with 540 retained samples: timing imp
 
 These are representative local measurements, not an all-family, dense-layout or cross-platform guarantee. Topology retains legacy typography versus the candidate common frame. Flow and sequence are excluded from this paired performance set because the frozen public exporters cannot accept equivalent token/font inputs. Redesigned payload size remains a separate tradeoff: measured Phase 3 SVG changes range from 47.72% smaller to 111.38% larger, while PNG changes range from 49.41% smaller to 38.52% larger. Preserve source semantics and embedding isolation when reducing serialization overhead.
 
-The next architectural step is package extraction after the stacked implementation changes satisfy their merge gates. Native producer coverage does not close the family option roadmap: authored stack groups, normalized stacks, interpolation and step placement remain open. Keep consumer repositories read-only until their migration phase, and retain the package-only, installed-module, saved-document and wallpaper execution gates described below.
+The package boundary separates static compositions and animation into the peer owners described below. Native producer coverage does not close the family option roadmap: authored stack groups, normalized stacks, interpolation and step placement remain open. Keep consumer repositories read-only until their migration phase, and retain the package-only, installed-module, saved-document and wallpaper execution gates described below.
 
 ## Family migration and extraction boundary
 
@@ -155,12 +159,22 @@ All 49 chart kinds, chart grids, topology, flow and sequence have native prepare
 
 Fixed viewport fitting preserves graph geometry and source alternatives, but can make a dense diagram's text small. Compact topology therefore needs an appropriate source layout or a larger host viewport. Scaling does not provide automatic content reflow. Hosted image artwork remains an SVG resource with a diagnosed canonical-glyph raster fallback; embedded artwork is the self-contained paired-output path.
 
-Keep Visuals and Stories as peers depending on core. Extract static Visuals first, then animation ownership, in this order:
+Visuals and Stories are peers depending on core. Their ownership boundaries are:
 
-1. Close the public type/resource graph using the API ledger. Keep generic prepared artifacts, neutral semantics, text, geometry and pixels in core; move producer extensions with their optional models. Remove optional-concrete-type dispatch without adding a global registry.
-2. Move VisualCanvas, ImageComposition, factual tiles/tables/lists, static composite grids and ordered watermark decoration into Visuals. Adopt the common pipeline while preserving wallpaper layer order, alpha, text fitting, offsets and chosen raised/glass effects. Core render options must shed watermark-specific types.
-3. Move visual/terminal stories, transcripts/tokenizer contracts, motion timelines, topology animation and all GIF/APNG output into Stories. Move one-frame GIF output there too; keep image input decoding separate. Share existing image-fit geometry instead of making Stories depend on Visuals.
+1. Core owns generic prepared artifacts, neutral semantics, text, geometry and pixels. Producer extensions live with their optional models. `IStaticVisualSource` carries optional output through artifact dispatch without a global registry or concrete producer references.
+2. Visuals owns VisualCanvas, ImageComposition, factual tiles/tables/lists, static composite grids and ordered watermark decoration. It reuses core text/image services and preserves wallpaper layer order, alpha, text fitting, offsets and chosen raised/glass effects. Core render options contain no watermark-specific types. Legacy factual and composition producers expose their completed output through the common boundary; the extraction does not convert them into native chart scenes.
+3. Stories owns visual/terminal stories, transcripts/tokenizer contracts, motion timelines, topology animation and all GIF/APNG output, including single-frame GIF encoding. Core retains image input decoding. Stories reuses core image-fit geometry and resolved topology routes without depending on Visuals.
 4. Qualify core-only, core+Visuals and core+Stories from isolated packed assets across all four target frameworks. Verify resources, namespaces and assembly-load boundaries; compositions and animations need their own execution fixtures.
 5. Migrate consumers against the qualified owners in dependency order. PowerBGInfo needs wallpaper execution, ImagePlayground needs installed-module proof in both PowerShell runtimes, and OfficeIMO needs saved-document and editable-diagram proof. The HTML adapter and private reporting consumer retain separate package/dependency gates. Publication and consumer releases require their own authority.
 
 Retain semantic completion markers and deliberate progress handles when removing decorative static controls. Keep genuine browser interaction in its adapter and product shells/data collection in consumers. The extraction introduces no additional runtime dependency or public scene framework.
+
+## Phase 4 reassessment
+
+Retain the peer package split. Core-only charts and static diagrams load independently of Visuals and Stories. Wallpapers and factual layouts use Visuals; animation, transcripts and GIF/APNG output use Stories. Markup explicitly takes Visuals for its table preview. Shared text, pixels, image fitting and resolved topology geometry stay in core, while optional producers pass completed output through `IStaticVisualSource` without concrete core dispatch.
+
+Assembly moves require compiled callers to rebuild against package version `2.0.0`, even where domain namespaces stay stable. The separate [Phase 4 API inventory](api-ledger.md) records those moves and replacements. Isolated packed probes verify all four target assets, resources and dependency boundaries; execution covers net472, net8.0 and net10.0 for the three core/presentation lanes. The adapter lane executes on net8.0 and net10.0. Owner wallpapers, factual layouts, terminal output and animated stories have observed visual fixtures. This qualification preserves the retained producers' export contracts; it does not convert their legacy layouts into native chart scenes.
+
+Topology performance compares 22 paired workloads with identical full diagnostics and SVG. Twenty pairs meet the 10% elapsed/allocation gate in the initial 396-sample run. The two initial timing flags pass a controlled repeat with 21 samples per case and 30 warmups: mesh complete preparation is 4.10% faster and reused replication SVG is 5.74% faster, with stable allocations. Both original and confirmation results remain available; these local Windows measurements do not establish quiet-host or cross-platform performance.
+
+Phase 5 closes the downstream contracts in the [consumer migration guide](migration.md). PowerBGInfo needs actual wallpaper execution, ImagePlayground needs installed-module static and animated workflows in both PowerShell runtimes, and OfficeIMO needs saved-document and editable-diagram proof. Owner source, local packages and owner fixtures do not establish those results or package publication. The chart option roadmap and annotation polish remain separate work in [TODO.md](../../TODO.md).

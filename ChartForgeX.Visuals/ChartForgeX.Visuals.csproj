@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;netstandard2.0;net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PublishAot)' == 'true'">net8.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsAotCompatible Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
+    <PublishAot Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0'">false</PublishAot>
+    <EnableTrimAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableSingleFileAnalyzer>
+    <EnableAotAnalyzer Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net10.0'">true</EnableAotAnalyzer>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageId>ChartForgeX.Visuals</PackageId>
+    <Version>$(ChartForgeXProductVersion)</Version>
+    <Authors>Evotec</Authors>
+    <Description>Dependency-free static canvas, image composition, factual tiles, tables, lists and watermark decoration over ChartForgeX.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>ChartForgeX.png</PackageIcon>
+    <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
+    <PackageTags>canvas;image-composition;wallpaper;metric-cards;tables;svg;png;jpeg;aot</PackageTags>
+    <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Copyright>Copyright (c) Evotec</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />
+    <None Include="..\assets\ChartForgeX.png" Pack="true" PackagePath="\" />
+    <None Include="..\ChartForgeX\Typography\Unicode-LICENSE.txt" Pack="true" PackagePath="licenses/Unicode-LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
+  </ItemGroup>
+</Project>

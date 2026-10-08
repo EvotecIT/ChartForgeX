@@ -1,17 +1,17 @@
 # Visual Blocks
 
-`ChartGrid` remains a chart-only composition surface. Non-chart facts should use `ChartForgeX.VisualBlocks` so tables, lists, metric cards, status panels, and infographic snippets do not have to pretend they are chart series.
+`ChartGrid` remains a chart-only composition surface in core. Install `ChartForgeX.Visuals` and use the `ChartForgeX.VisualBlocks` namespace for tables, lists, metric cards, status panels, and infographic snippets.
 
 Current visual-block primitives:
 
 - `ChartTable` for structured rows, columns, headers, alignment, formattable values, row striping, status columns, conditional row/cell colors, dense mode, table-cell badges/chips, mini bars/sparklines, transparent backgrounds, and SVG/PNG/HTML export.
 - `ChartList` for bullets, numbered lists, key/value rows, checklists, status lists, and compact inventory summaries.
-- `MetricCard` for one KPI with label, value, trend, status, optional comparison/supporting text, footer action text, and embedded mini bars or sparklines for compact history/current-state cards.
+- `MetricCard` for one KPI with label, value, trend, status, optional comparison/supporting text, and embedded mini bars or sparklines for compact history/current-state cards.
 - `SegmentedMetricBlock` for fixed-count progress rows, ordered funnel columns, balanced capsule loops, part-to-whole strips, and distribution rows using one generic item model and a `SegmentedMetricStyle` visual-treatment enum.
-- `HeatmapInsightCard` for dashboard matrix cards with controls, value cells, a right-side insight rail, and a color key.
-- `WorkloadListBlock` for staff, ranked people, or merchant rows with avatar/initial slots, progress rails, status notes, optional checkbox controls, and right-aligned values.
+- `HeatmapInsightCard` for dashboard matrix cards with a reporting period, value cells, a right-side insight rail, and a color key.
+- `WorkloadListBlock` for staff, ranked people, or merchant rows with avatar/initial slots, progress rails, status notes, and right-aligned values.
 - `ActivityTimelineBlock` for static SVG/PNG timeline overlays with section labels, status nodes, connector spines, nested checklist rows, hidden-item summaries, timestamps, badges, compact event rows, and node symbols.
-- `ScheduleTimelineBlock` for dense time-of-day swimlanes with optional header action chips, rounded event pills, status stripes, current-time markers, clipped-event metadata, badges, and avatar stacks.
+- `ScheduleTimelineBlock` for dense time-of-day swimlanes with rounded event pills, status stripes, current-time markers, clipped-event metadata, badges, and avatar stacks.
 - `VisualGrid` for composing charts and visual blocks side by side without forcing non-chart content into `ChartGrid`.
 
 The first API is intentionally generic and bounded:
@@ -79,7 +79,6 @@ var cpu = MetricCard.Create()
     .WithSymbol("CPU")
     .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
     .WithStatus(VisualStatus.Positive)
-    .WithAction("View details", url: "#cpu-load")
     .WithMiniBars(new[] { 48d, 52d, 44d, 41d, 38d }, maximum: 100);
 ```
 
@@ -91,7 +90,6 @@ var latency = MetricCard.Create()
     .WithTrend("-12 ms")
     .WithCaption("last samples")
     .WithStatus(VisualStatus.Info)
-    .WithAction("Open samples", url: "#latency")
     .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
 ```
 
@@ -99,14 +97,14 @@ Metric strips provide a reusable section preset for PowerBGInfo-style card rows:
 
 ```csharp
 var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
-    MetricCard.Create().WithMetric("CPU Load", "38%").WithSymbol("CPU").WithBadgePlacement(MetricCardBadgePlacement.TopLeft).WithAction("View details", url: "#cpu-load").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
-    MetricCard.Create().WithMetric("Memory Used", "71%").WithAction("View details").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
+    MetricCard.Create().WithMetric("CPU Load", "38%").WithSymbol("CPU").WithBadgePlacement(MetricCardBadgePlacement.TopLeft).WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
+    MetricCard.Create().WithMetric("Memory Used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
 });
 ```
 
 ## Terminal Presentations
 
-`TerminalStory` creates a deterministic console presentation from structured commands and output. It does not execute commands. That separation makes the same renderer suitable for authored product demos, documentation, release evidence, and transcripts captured by a caller-controlled script:
+`TerminalStory`, in `ChartForgeX.Stories`, creates a deterministic console presentation from structured commands and output. It does not execute commands. That separation makes the same renderer suitable for authored product demos, documentation, release evidence, and transcripts captured by a caller-controlled script:
 
 ```csharp
 using ChartForgeX.Terminal;
@@ -141,14 +139,15 @@ Use `WithInitialTab`, `DeclareTab`, and `SelectTab` for an explicit multi-shell 
 
 Use `VisualStory` when the presentation contains more than a terminal transcript. Each scene contains named source, terminal, media, or text panels, while each declared outcome points at the panel that proves the promised result. The last scene must contain every outcome panel. This makes “code creates a chart,” “request returns this response,” and “filter produces this image” enforceable story contracts instead of captions that can drift from the rendered demo.
 
-The core accepts exact `StorySourceText` plus optional renderer-neutral syntax spans. It does not execute source or depend on PowerShell, Roslyn, Tree-sitter, or regex coloring. Hosts can implement `IStorySourceTokenizer`; production tooling can execute an explicitly trusted producer before it hands ChartForgeX the resolved artifacts.
+Stories accepts exact `StorySourceText` plus optional renderer-neutral syntax spans. It does not execute source or depend on PowerShell, Roslyn, Tree-sitter, or regex coloring. Hosts can implement `IStorySourceTokenizer`; production tooling can execute an explicitly trusted producer before it hands ChartForgeX the resolved artifacts.
 
 ## Script-Free Visual Stories
 
-`VisualMotionTimeline` turns any `VisualGrid` into a deterministic visual story without JavaScript. Assign stable target IDs when adding panels, then sequence restrained entrances or emphasis cues:
+`VisualMotionTimeline` and `VisualMotionPresentation`, in `ChartForgeX.Stories`, add a deterministic presentation to a static `VisualGrid` without JavaScript. Assign stable target IDs when adding panels, then sequence restrained entrances or emphasis cues:
 
 ```csharp
 using ChartForgeX.Motion;
+using System.IO;
 
 var motion = VisualMotionTimeline.Create()
     .Reveal("title", durationSeconds: 0.65)
@@ -156,24 +155,24 @@ var motion = VisualMotionTimeline.Create()
     .Cascade(new[] { "projects", "users", "releases" }, initialDelaySeconds: 0.28)
     .Rise("portfolio", delaySeconds: 0.72);
 
-var story = VisualGrid.Create()
+var grid = VisualGrid.Create()
     .WithTitle("Engineering Portfolio")
     .WithSubtitle("A reusable story for profiles, releases, reports, or dashboards")
     .WithColumns(3)
     .Add("projects", projectsCard)
     .Add("users", usersCard)
     .Add("releases", releasesCard)
-    .Add("portfolio", portfolioTable, columnSpan: 3)
-    .WithMotion(motion);
+    .Add("portfolio", portfolioTable, columnSpan: 3);
+var story = VisualMotionPresentation.Create(grid, motion);
 
-story.SaveSvg("portfolio.svg");
-story.SaveHtml("portfolio.html");
-story.SavePng("portfolio.png");
+File.WriteAllText("portfolio.svg", story.ToSvg());
+File.WriteAllText("portfolio.html", story.ToHtmlPage());
+File.WriteAllBytes("portfolio.png", story.ToPng());
 ```
 
 Motion applies to SVG and complete HTML-page output. PNG always renders the exact completed state. The generated CSS also exposes that completed state for `prefers-reduced-motion` and print, so motion stays decorative rather than becoming a content dependency.
 
-`WithAction(...)` is still static-renderer friendly. SVG/HTML outputs render safe relative, `http(s)`, and `mailto` action URLs when one is supplied; PNG keeps the same visual affordance without embedding a link.
+Action buttons, menus, checkboxes, and navigation belong in the host or an interaction adapter. Static blocks retain factual labels and values.
 
 The mini bar and mini sparkline geometry is shared by the SVG and PNG visual-block renderers, so improvements to compact line/bar polish can be applied once instead of redoing each output format separately.
 
@@ -231,17 +230,16 @@ var attendance = Chart.Create()
 
 Segmented metric blocks provide fixed-count progress rows, exact-value performance rows, capsule loops, part-to-whole status strips, funnel columns, and distribution rows without domain-specific card APIs. Items use the theme palette by default; provide a color or semantic status only when a specific item needs one. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep a polished report look in both SVG and PNG without hand-drawing rectangles:
 
-Header chrome is shared across styles: `WithHeaderSymbol()` and `WithMenu()` work the same way for progress rows, capsule loops, funnel columns, composition strips, and distribution rows.
+`WithHeaderSymbol()` adds a compact identity badge to progress rows, capsule loops, funnel columns, composition strips, and distribution rows.
 
 ```csharp
 var progress = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
     .WithTitle("Project Progress")
     .WithSubtitle("Overall completion rate all projects.")
     .WithHeaderSymbol("%")
-    .WithMenu()
     .AddItem("Performing Progress", 89, segments: 44, delta: "+10.2%", status: VisualStatus.Positive)
     .AddItem("Target Sales", 67, segments: 44, delta: "+2.2%", status: VisualStatus.Info)
-    .WithAction("Up by 6% compared to last week");
+    .WithCaption("Up by 6% compared to last week");
 ```
 
 When an item needs several options, pass a callback or a prebuilt `SegmentedMetricItem` instead of relying on more domain-specific overloads:
@@ -312,7 +310,7 @@ Heatmap insight cards cover the appointment-volume pattern where the matrix need
 ```csharp
 var appointmentVolume = HeatmapInsightCard.Create()
     .WithTitle("Appointment Volume")
-    .WithControls("Day", "Week", "Week 1 (Jan 1 - Jan 7, 2024)")
+    .WithPeriodLabel("Jan 7 - Jan 13, 2024")
     .WithColumns("S", "M", "T", "W", "T", "F", "S")
     .WithColorKey(0, 12, ChartColor.FromHex("#D7F5F7"), ChartColor.FromHex("#08798C"))
     .AddRow("9 AM", 9, 3, 2, 6, 4, 4, 12)
@@ -329,8 +327,7 @@ var tasks = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
     .WithMetric("Tasks", 23, "Task")
     .AddItem("On Going", 12, pattern: ChartFillPattern.DiagonalForward)
     .AddItem("Under Review", 6)
-    .AddItem("Finish", 4)
-    .WithAction("View details task");
+    .AddItem("Finish", 4);
 ```
 
 Distribution rows also use `SegmentedMetricBlock`; the optional symbol/display-value fields stay generic:
@@ -344,15 +341,14 @@ var currencies = SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRo
     .AddItem("British Pound Sterling (GBP)", 12.55, color: ChartColor.FromHex("#5FD3D9"), symbol: "GBP", displayValue: "EUR 10.00");
 ```
 
-Workload list blocks cover staff-capacity rows and selectable people lists:
+Workload list blocks cover staff-capacity rows and ranked people lists:
 
 ```csharp
 var workload = WorkloadListBlock.Create()
     .WithTitle("Today Staff Workload")
     .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, VisualStatus.Neutral, "PD", "4/8")
     .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, VisualStatus.Negative, "RF", "10/8", note: "Overload")
-    .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, VisualStatus.Positive, selected: true)
-    .WithSelectionControls();
+    .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, VisualStatus.Positive);
 ```
 
 Activity timelines provide the chart-like vertical event-spine pattern without flattening nested checklist rows into a generic list. App chrome such as tabs, notes, and action buttons belongs in semantic HTML/interactivity rather than this static SVG/PNG block:
@@ -379,7 +375,7 @@ var schedule = ScheduleTimelineBlock.Create()
     .WithTitle("Project Timeline")
     .WithTimeRange(8, 17, tickInterval: 1)
     .WithCurrentTime(14.2)
-    .WithHeaderActions("12/Feb/2025", "Filter", "+ Add Schedule")
+    .WithSubtitle("12 Feb 2025")
     .AddEvent("Meeting Brief Project", 8, 10, lane: 0, color: ChartColor.FromHex("#5EA2F6"), avatars: new[] { "AM", "RF", "PD" })
     .AddEvent("Research Analyze Content", 9, 11, lane: 1, color: ChartColor.FromHex("#8B5CF6"), avatars: new[] { "SC", "MR" })
     .AddEvent("Report Review", 16, 17.2, lane: 0, color: ChartColor.FromHex("#5EA2F6"), badge: "Report");

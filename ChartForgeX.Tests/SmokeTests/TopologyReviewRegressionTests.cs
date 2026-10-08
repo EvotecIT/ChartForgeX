@@ -169,9 +169,12 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(firstNamed[0].X - secondNamed[0].X) < 0.001 && Math.Abs(firstNamed[0].Y - secondNamed[0].Y) < 0.001 && Math.Abs(firstNamed[firstNamed.Count - 1].X - secondNamed[secondNamed.Count - 1].X) < 0.001 && Math.Abs(firstNamed[firstNamed.Count - 1].Y - secondNamed[secondNamed.Count - 1].Y) < 0.001, "Parallel route offsets should preserve the shared named-port attachment points.");
         Assert(firstNamed.Count == 4 && secondNamed.Count == 4 && (Math.Abs(firstNamed[1].X - secondNamed[1].X) > 0.01 || Math.Abs(firstNamed[1].Y - secondNamed[1].Y) > 0.01), "Parallel named-port routes should retain distinct interior geometry after restoring their shared endpoints.");
         foreach (var edge in named.Edges) edge.Routing = TopologyEdgeRouting.Curved;
-        var motionOptions = new TopologyRenderOptions { IncludeLegend = false, Motion = TopologyMotionOptions.RoutePulseForEdges("named-primary") };
-        var motionPlan = TopologyMotionPlanner.Build(named, motionOptions);
-        Assert(motionPlan?.Entries.Single().Points.Count > 4, "PNG motion planning should sample the same named-port cubic rendered by static SVG and PNG routes.");
+        var motionSvg = named.WithMotion(TopologyMotionOptions.RoutePulseForEdges("named-primary"),
+            new TopologyRenderOptions { IncludeLegend = false }).ToSvg();
+        var motionRoute = System.Xml.Linq.XDocument.Parse(motionSvg).Descendants().Single(element =>
+            (string?)element.Attribute("data-cfx-role") == "topology-motion-route");
+        var motionPoints = ChartMapPathParser.ParseSubpaths((string)motionRoute.Attribute("d")!, 1).Single().Points;
+        Assert(motionPoints.Count > 4, "Motion should sample the same named-port cubic rendered by static SVG and PNG routes.");
     }
 
     private static void TopologyExplicitZeroRouteLaneStaysCentered() {

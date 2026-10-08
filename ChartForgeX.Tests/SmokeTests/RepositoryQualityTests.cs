@@ -12,6 +12,8 @@ internal static partial class SmokeTests {
         var assembly = typeof(Chart).Assembly;
         var publicAssemblies = new[] {
             assembly,
+            typeof(ChartForgeX.Composition.VisualCanvas).Assembly,
+            typeof(ChartForgeX.Stories.VisualStory).Assembly,
             typeof(ChartForgeX.Interactivity.ChartInteractionFeatures).Assembly,
             typeof(ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer).Assembly,
             typeof(ChartForgeX.Markup.VisualMarkupKind).Assembly,
@@ -77,6 +79,8 @@ internal static partial class SmokeTests {
         var root = FindRepositoryRoot();
         var oversized = new[] {
                 "ChartForgeX",
+                "ChartForgeX.Visuals",
+                "ChartForgeX.Stories",
                 "ChartForgeX.AotSmoke",
                 "ChartForgeX.Examples",
                 "ChartForgeX.Interactivity",
@@ -337,6 +341,8 @@ internal static partial class SmokeTests {
         Assert(HasXmlProperty(libraryProject, "SymbolPackageFormat", "snupkg"), "Package symbols should use snupkg format.");
         var productVersion = CurrentProductVersion();
         foreach (var dependentProject in new[] {
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Visuals", "ChartForgeX.Visuals.csproj"),
+            Path.Combine(FindRepositoryRoot(), "ChartForgeX.Stories", "ChartForgeX.Stories.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity", "ChartForgeX.Interactivity.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "ChartForgeX.Interactivity.Html.csproj"),
             Path.Combine(FindRepositoryRoot(), "ChartForgeX.Markup", "ChartForgeX.Markup.csproj"),

@@ -1,0 +1,143 @@
+using System;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Svg;
+
+namespace ChartForgeX.VisualBlocks;
+
+/// <summary>
+/// Renders visual grids to self-contained SVG.
+/// </summary>
+public sealed class SvgVisualGridRenderer {
+    private readonly SvgVisualBlockRenderer _blockRenderer = new();
+
+    /// <summary>Renders a visual grid to SVG markup.</summary>
+    public string Render(VisualGrid grid) => Render(grid, string.Empty);
+    /// <summary>Renders a static visual grid with a caller-provided ID scope.</summary>
+    public string Render(VisualGrid grid, string idScope) {
+        if (grid == null) throw new ArgumentNullException(nameof(grid));
+        var provisionalId = SvgRenderedIdentity.CreateProvisionalId("cfx-visual-grid", idScope, grid.Title, grid.Items.Count.ToString(CultureInfo.InvariantCulture));
+        var svg = RenderCore(grid, provisionalId, provisionalId);
+        return SvgRenderedIdentity.Bind(svg, provisionalId, "cfx-visual-grid", idScope);
+    }
+
+    private string RenderCore(VisualGrid grid, string id, string childScopeRoot) {
+        var layout = VisualGridLayout.FromGrid(grid);
+        var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
+        var writer = new SvgMarkupWriter(4096);
+        writer.StartElement("svg")
+            .Attribute("xmlns", "http://www.w3.org/2000/svg")
+            .Attribute("id", id)
+            .Attribute("width", layout.Width)
+            .Attribute("height", layout.Height)
+            .Attribute("viewBox", "0 0 " + layout.Width.ToString(CultureInfo.InvariantCulture) + " " + layout.Height.ToString(CultureInfo.InvariantCulture))
+            .Attribute("role", "img")
+            .Attribute("aria-labelledby", id + "-title " + id + "-desc")
+            .Attribute("preserveAspectRatio", "xMidYMid meet")
+            .Attribute("shape-rendering", "geometricPrecision")
+            .Attribute("text-rendering", "geometricPrecision")
+            .Attribute("style", "max-width:100%;height:auto;display:block")
+            .EndStartElement()
+            .Line()
+            .StartElement("title").Attribute("id", id + "-title").Text(grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title).EndElement()
+            .Line()
+            .StartElement("desc").Attribute("id", id + "-desc").Text("Static visual grid containing charts and visual blocks.").EndElement()
+            .Line();
+        var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
+        writer.StartElement("defs").EndStartElement().Line();
+        SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
+        if (!theme.FlatMarks) SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualGridSurface", background);
+        writer.EndElement().Line();
+        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.FlatMarks ? background.ToCss() : "url(#" + id + "-visualGridSurface)").EndEmptyElement().Line();
+        if (grid.FrameVisible && !theme.FlatMarks) {
+            var inset = Math.Max(8, grid.Padding * 0.5);
+            writer.StartElement("rect")
+                .Attribute("data-cfx-role", "visual-grid-frame")
+                .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
+                .Attribute("x", inset)
+                .Attribute("y", inset)
+                .Attribute("width", Math.Max(1, layout.Width - inset * 2))
+                .Attribute("height", Math.Max(1, layout.Height - inset * 2))
+                .Attribute("rx", Math.Max(theme.CornerRadius, 26))
+                .Attribute("fill", "none")
+                .Attribute("stroke", theme.CardBorder.ToCss())
+                .Attribute("stroke-width", 1.4)
+                .EndEmptyElement()
+                .Line();
+            if (background.A > 0) {
+                writer.StartElement("rect")
+                    .Attribute("data-cfx-role", "visual-grid-frame-highlight")
+                    .Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass)
+                    .Attribute("x", inset + ChartVisualPrimitives.CardInnerHighlightInset)
+                    .Attribute("y", inset + ChartVisualPrimitives.CardInnerHighlightInset)
+                    .Attribute("width", Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
+                    .Attribute("height", Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2))
+                    .Attribute("rx", Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24))
+                    .Attribute("fill", "none")
+                    .Attribute("stroke", "#fff")
+                    .Attribute("stroke-opacity", ChartVisualPrimitives.CardInnerHighlightOpacity)
+                    .Attribute("stroke-width", 1)
+                    .EndEmptyElement()
+                    .Line();
+            }
+        }
+        if (layout.HeaderHeight > 0) {
+            var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
+            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("data-cfx-target", "title").Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", theme.UseGraphiteLayout ? "700" : "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
+            if (grid.Subtitle.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-subtitle").Attribute("data-cfx-target", "subtitle").Attribute("x", grid.Padding + 2).Attribute("y", grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(grid.Subtitle, theme.SubtitleFontSize, headerWidth)).EndElement().Line();
+        }
+
+        for (var i = 0; i < layout.Cells.Count; i++) {
+            var cell = layout.Cells[i];
+            var childScope = childScopeRoot + "-cell-" + i.ToString(CultureInfo.InvariantCulture);
+            var childSvg = cell.Item.Chart != null ? RenderChildChart(cell.Item.Chart, childScope) : RenderChildBlock(cell.Item.Block!, childScope);
+            writer.Raw(PositionChildSvg(childSvg, cell.X, cell.Y, cell.Width, cell.Height, grid.PanelFit == VisualPanelFit.Stretch, cell.Item.TargetId)).Line();
+        }
+
+        writer.EndElement().Line();
+        return writer.Build();
+    }
+
+    private static string RenderChildChart(Chart chart, string childScope) => VisualGridChartRendering.Svg(chart, childScope);
+
+    private string RenderChildBlock(IVisualBlock block, string childScope) {
+        var transparentBackground = block.Options.TransparentBackground;
+        var originalTheme = block.Options.Theme;
+        try {
+            block.Options.TransparentBackground = true;
+            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
+            return _blockRenderer.Render(block, childScope);
+        }
+        finally {
+            block.Options.TransparentBackground = transparentBackground;
+            block.Options.Theme = originalTheme;
+        }
+    }
+
+    private static string PositionChildSvg(string svg, double x, double y, double width, double height, bool stretch, string? targetId) {
+        var tagEnd = svg.IndexOf('>');
+        if (tagEnd < 0) return svg;
+        var open = svg.Substring(0, tagEnd);
+        open = SetSvgAttribute(open, "x", x.ToString(CultureInfo.InvariantCulture));
+        open = SetSvgAttribute(open, "y", y.ToString(CultureInfo.InvariantCulture));
+        open = SetSvgAttribute(open, "width", width.ToString(CultureInfo.InvariantCulture));
+        open = SetSvgAttribute(open, "height", height.ToString(CultureInfo.InvariantCulture));
+        open = SetSvgAttribute(open, "data-cfx-role", "visual-grid-panel");
+        if (targetId != null) open = SetSvgAttribute(open, "data-cfx-target", targetId);
+        if (stretch) open = SetSvgAttribute(open, "preserveAspectRatio", "none");
+        return open + svg.Substring(tagEnd);
+    }
+
+    private static string SetSvgAttribute(string openTag, string name, string value) {
+        var attribute = " " + name + "=\"";
+        var start = openTag.IndexOf(attribute, StringComparison.Ordinal);
+        if (start < 0) return openTag + attribute + VisualBlockRendering.Escape(value) + "\"";
+        var valueStart = start + attribute.Length;
+        var valueEnd = openTag.IndexOf('"', valueStart);
+        if (valueEnd < 0) return openTag;
+        return openTag.Substring(0, valueStart) + VisualBlockRendering.Escape(value) + openTag.Substring(valueEnd);
+    }
+
+}

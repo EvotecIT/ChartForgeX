@@ -3,6 +3,7 @@ using System.Text.Json;
 using ApiLedger;
 
 if (args.Length > 0 && args[0] == "--self-test") { SelfTest.Run(args.Length > 1 ? args[1] : null); return; }
+if (args.Length > 0 && args[0] == "--phase4") { Phase4Ledger.Run(args); return; }
 if (args.Length < 3) throw new ArgumentException("Usage: ApiLedger <repository> <output-directory> <integrated-ref> [consumer-root] [external-private-consumer-map.json]");
 string repository = Path.GetFullPath(args[0]);
 string output = Path.GetFullPath(args[1]);
@@ -74,5 +75,5 @@ var manifest = new { schemaVersion = 1, generator = "SDK-bundled Roslyn; Git arc
     consumerRepositories = evidence.Repositories, snapshots = summaries,
     baselineDifferences = changes.GroupBy(row => row["comparison"]).Select(group => new { comparison = group.Key, rows = group.Count() }),
     omissions = new[] { "Inherited members are represented by declaring-type/base/interface rows; accessors by property/event rows.", "Internal/private/private-protected implementation members and compiler-generated backing fields are not exported API.", "Explicit interface implementations are reachable through their exported interface member rows.", "CLI arguments and PowerShell cmdlet surfaces belong to separate consumer ledgers." } };
-File.WriteAllText(Path.Combine(output, "api-ledger-manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n", new UTF8Encoding(false));
+File.WriteAllText(Path.Combine(output, "api-ledger-manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n") + "\n", new UTF8Encoding(false));
 if (snapshots.Any(snapshot => snapshot.ConditionalSources.Length != 0)) throw new InvalidOperationException("Conditional source detected; inspect manifest and add target-specific symbol passes before declaring exhaustive framework coverage.");

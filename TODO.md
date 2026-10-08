@@ -1,52 +1,17 @@
 # ChartForgeX TODO
 
-This is the central place for active follow-up work. Keep feature ideas here until they are implemented, removed, or promoted into focused reference documentation. Avoid adding separate roadmap or "next plan" documents unless the topic needs a durable technical specification.
+## Consumer migration: Phase 5
 
-## Shared rendering migration: Phases 0–1
+All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
-Scope and later phases are defined in [the architecture](docs/v2/architecture.md). Consumer repositories remain read-only. Track implementation separately from validation and publication.
-
-- [x] Integrate main and label-placement on one implementation branch; pass 2,384 baseline tests and freeze the baseline assembly.
-- [x] Inventory all six current runtime APIs and map the five consumer areas to required retained capabilities.
-- [x] Close architecture, API conventions, versioned theme/interchange and migration documentation against the implemented proof.
-- [x] Implement shared prepared scene, frame/theme/text and selected Cartesian/donut compilers; pass focused contract tests.
-- [x] Prove tiny topology/sequence and generic static/semantic artifact handoff in focused tests; AOT/runtime qualification remains below.
-- [x] Close runtime gallery qualification: 56 proof cases, final SVG/native PNG inspection, 14 executed browser cases, compact/wide layout and pinned regular/bold font evidence.
-- [x] Pass focused/full quality, framework/package and AOT checks: 2,503 tests, 42 Mermaid conformance fixtures, 317 healthy visual pairs, six packages and isolated package consumption. Opaque viewport clearing preserves ordinary contour pixels across clipping, alpha, fractional sizes and raster density.
-- [x] Validate the consolidated review fixes: fractional raster allocation, semantic JSON export discovery, accessible model names with hidden headings, selection-only Reset visibility, fresh example output and exact-version package selection. Execute seven browser cases and the native AOT smoke.
-- [x] Confirm representative performance against the frozen baseline: 30 paired workloads within 10% elapsed/allocation, 756 retained samples and no failures. All 18 prepared-scene comparisons are faster; 12 unchanged-output comparisons preserve exact SVG/PNG bytes. Record the larger redesigned output payloads separately from timing gains.
-- [ ] Reassess Phases 0–1, settle one PR and clean task-owned disposable output.
-
-## Shared rendering migration: Phases 2–3
-
-All 49 chart kinds, ChartGrid, topology, flow and sequence compile into the shared native prepared scene. SVG and PNG consume the same measured geometry, text, paints and source semantics. The architecture and migration guide describe these contracts; the chart capability roadmap retains options that are not implemented. Consumer repositories remain read-only.
-
-- [x] Implement Cartesian/radial migration and shared formatting, sparse-data and axis-isolated stacking policies; qualify Phase 2 with 2,637 tests, 42 Mermaid fixtures, four target frameworks, 317 healthy visual pairs, native AOT and isolated package consumption. All 18 complete-export benchmark pairs pass the 10% elapsed/allocation gate.
-- [x] Implement native producers for the remaining chart families and diagrams; retire their replaced static rendering paths.
-- [x] Complete shared frame, theme, typography, paint, accessible source alternatives and semantic snapshot contracts needed by the migrated families.
-- [x] Complete independent contract reviews and reproduce their remediations, including typed paints, responsive topology, artwork, linked heatmap keyboard navigation, Flow lane/order semantics and animated topology natural sizing.
-- [x] Qualify integrated Phase 3: 3,009 tests, 42 Mermaid fixtures, four target frameworks without warnings, 317 healthy outputs, native AOT and isolated package consumption. All 24 complete-export benchmark pairs pass the 10% elapsed/allocation gate across 720 retained samples; larger SVG payloads remain a separate cost.
-- [x] Qualify the checked-in 122-artifact selected gallery for all 49 kinds in both themes, with final native output and two executed browser viewports; retain the full review matrix as private evidence.
-- [x] Close cross-platform CI findings: resolved-font topology symbols/badges, rotated heatmap labels, stack totals and endpoint callouts; qualify the consolidated corrections with 3,009 Windows and Linux tests, fresh native AOT, inspected light/dark artifacts and both benchmark groups.
-- [x] Preserve compact topology symbol readability across resolved fonts and make natural-height gallery baselines font-aware without relaxing fixed canvases or actual SVG/PNG allocation checks; pass 3,016 Windows/Linux tests and both 317-output baseline evaluators.
-- [x] Publish the dependent ready PR layers on one coordinated stack.
-- [ ] Settle validated feedback and current-head CI, merge the qualified stack and remove merged task worktrees.
-- [x] Record the Phases 2–3 reassessment and clean superseded task output; preserve open chart options and keep package extraction and consumer execution as separate gates.
-
-## Shared rendering migration: Phases 4–5
-
-- [ ] Close the public type/resource graph, removing core dispatch and options that require optional composition or animation types.
-- [ ] Extract VisualCanvas, ImageComposition, factual tiles/tables/lists, static composition grids and watermark decoration into ChartForgeX.Visuals. Preserve wallpaper layout, alpha, text, image fitting and existing effects through shared owners.
-- [ ] Extract VisualStory, TerminalStory, transcripts, motion timelines, animated topology and GIF/APNG encoding into ChartForgeX.Stories. Visuals and Stories remain peers depending on core; still wallpapers must not load Stories.
-- [ ] Remove decorative menus, checkboxes, navigation arrows and action buttons from static compositions after checking the retained-capability ledger. Preserve meaningful completion markers and progress handles.
-- [ ] Qualify isolated packed core-only, core+Visuals and core+Stories assets, including resources, dependencies, namespace/type moves and all four target frameworks.
-- [ ] Qualify adapter and consumer candidates in dependency order with saved-document, installed-module and wallpaper fixtures. Owner source and local packs do not establish downstream execution.
-- [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Preserve package-only proof without temporary project references or copied owners.
+- [ ] Qualify adapter and consumer candidates in dependency order with saved-document, installed-module and wallpaper fixtures.
+- [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Owner source and local packs do not establish downstream execution.
 
 ## Rendering Pipeline
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
+- Keep annotation captions clear of data marks in compact plots; the appointment peak-hour example has a caption overlapping bar caps.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
 

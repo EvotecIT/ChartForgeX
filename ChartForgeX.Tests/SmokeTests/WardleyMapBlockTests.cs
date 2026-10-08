@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using ChartForgeX;
+using ChartForgeX.Raster;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
@@ -52,21 +54,8 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => markerMap.ToSvg(), "Wardley maps should reject invalid marker coordinates.");
     }
 
-    private static void WardleyMapPngStageLabelsUseCenteredSlots() {
-        var source = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX", "VisualBlocks", "PngVisualBlockRenderer.WardleyMap.cs"));
-        Assert(source.Contains("(index + 0.5) / stages.Count", StringComparison.Ordinal), "Wardley map PNG stage labels should use the same centered stage slots as SVG rendering.");
-    }
-
     private static void WardleyMapRendersDashedAndFlowLinksAcrossSvgAndPng() {
-        var map = WardleyMapBlock.Create()
-            .WithTitle("Flow Map")
-            .WithSize(640, 420);
-        map.AddNode("Portal", "Portal", 0.80, 0.35);
-        map.AddNode("API", "API", 0.70, 0.45);
-        map.AddNode("Database", "Database", 0.55, 0.65);
-        map.AddLink("Portal", "API", dashed: true);
-        map.AddLink("API", "Database", flow: VisualLinkDirection.Forward);
-        map.AddLink("Database", "Portal", flow: VisualLinkDirection.Bidirectional);
+        var map = CreateMap();
 
         var svg = map.ToSvg();
         var png = map.ToPng();
@@ -74,10 +63,24 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("stroke-dasharray=\"5 5\"", StringComparison.Ordinal), "Wardley map SVG rendering should preserve dashed dependency links.");
         Assert(svg.Contains("data-cfx-role=\"wardley-flow-forward\"", StringComparison.Ordinal), "Wardley map SVG rendering should include forward flow hints.");
         Assert(svg.Contains("data-cfx-role=\"wardley-flow-backward\"", StringComparison.Ordinal), "Wardley map SVG rendering should include backward flow hints for bidirectional links.");
-        Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Wardley map PNG rendering should emit a valid PNG with dashed and flow link styling.");
+        var styled = RasterImageDecoder.Decode(png);
+        var solid = RasterImageDecoder.Decode(CreateMap(dashed: false).ToPng());
+        Assert(!styled.Pixels.SequenceEqual(solid.Pixels), "Changing dashed links to solid must change the decoded Wardley pixels.");
+        var withoutForward = RasterImageDecoder.Decode(CreateMap(false, VisualLinkDirection.None).ToPng());
+        Assert(!solid.Pixels.SequenceEqual(withoutForward.Pixels), "Removing forward flow hints must change the decoded Wardley pixels.");
+        var withoutBidirectional = RasterImageDecoder.Decode(CreateMap(false, VisualLinkDirection.None, VisualLinkDirection.None).ToPng());
+        Assert(!withoutForward.Pixels.SequenceEqual(withoutBidirectional.Pixels), "Removing bidirectional flow hints must change the decoded Wardley pixels.");
 
-        var pngSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX", "VisualBlocks", "PngVisualBlockRenderer.WardleyMap.cs"));
-        Assert(pngSource.Contains("DrawDashedLine(from.X, from.Y, to.X, to.Y", StringComparison.Ordinal), "Wardley map PNG rendering should preserve dashed dependency links.");
-        Assert(pngSource.Contains("DrawWardleyFlowHint(canvas, link", StringComparison.Ordinal), "Wardley map PNG rendering should preserve flow hints.");
+        static WardleyMapBlock CreateMap(bool dashed = true, VisualLinkDirection forward = VisualLinkDirection.Forward,
+            VisualLinkDirection bidirectional = VisualLinkDirection.Bidirectional) {
+            var map = WardleyMapBlock.Create().WithTitle("Flow Map").WithSize(640, 420);
+            map.AddNode("Portal", "Portal", 0.80, 0.35);
+            map.AddNode("API", "API", 0.70, 0.45);
+            map.AddNode("Database", "Database", 0.55, 0.65);
+            map.AddLink("Portal", "API", dashed: dashed);
+            map.AddLink("API", "Database", flow: forward);
+            map.AddLink("Database", "Portal", flow: bidirectional);
+            return map;
+        }
     }
 }

@@ -27,7 +27,6 @@ internal static partial class SmokeTests {
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(360, 190)
             .WithMetric("Tiny", 12)
-            .WithAction("Open")
             .AddItem("One", 1)
             .AddItem("Two", 1)
             .AddItem("Three", 1)
@@ -45,16 +44,15 @@ internal static partial class SmokeTests {
         var compactLegendY = GetAttribute(compactCompositionSvg, "data-cfx-role=\"segmented-metric-composition\"", "data-cfx-legend-y");
         var compactLegendRowHeight = GetAttribute(compactCompositionSvg, "data-cfx-role=\"segmented-metric-composition\"", "data-cfx-row-height");
         var compactLegendBottom = GetAttribute(compactCompositionSvg, "data-cfx-role=\"segmented-metric-composition\"", "data-cfx-legend-bottom");
-        Assert(compactLegendRows < 12, "SegmentedMetricBlock compact composition legends should clip overflowing rows before the footer.");
+        Assert(compactLegendRows < 12, "SegmentedMetricBlock compact composition legends should clip overflowing rows inside the card.");
         Assert(compactLegendY + compactLegendRows * compactLegendRowHeight <= compactLegendBottom + 1.1, "SegmentedMetricBlock compact composition legends should reserve the full row height before drawing.");
         Assert(compactCompositionLegend.ToPng().Length > 64, "SegmentedMetricBlock compact composition legends should render PNG output.");
 
         var compactProgressRows = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTitle("Compact Progress")
-            .WithSubtitle("Tight footer")
+            .WithSubtitle("Compact card")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(420, 250)
-            .WithAction("Open")
             .AddItem("One", 8, item => item.Segments = 12)
             .AddItem("Two", 7, item => item.Segments = 12)
             .AddItem("Three", 6, item => item.Segments = 12)
@@ -68,16 +66,15 @@ internal static partial class SmokeTests {
         var progressStripHeights = ExtractAttributeValues(compactProgressSvg, "data-cfx-strip-height=\"");
         var lastStripY = double.Parse(progressStripYs[progressStripYs.Length - 1], CultureInfo.InvariantCulture);
         var lastStripHeight = double.Parse(progressStripHeights[progressStripHeights.Length - 1], CultureInfo.InvariantCulture);
-        Assert(renderedProgressRows > 0 && renderedProgressRows < 6, "SegmentedMetricBlock compact progress rows should clip overflowing rows before footer actions.");
+        Assert(renderedProgressRows > 0 && renderedProgressRows < 6, "SegmentedMetricBlock compact progress rows should clip overflowing rows inside the card.");
         Assert(lastStripY + lastStripHeight <= progressBottom + 1.1, "SegmentedMetricBlock compact progress rows should reserve the full strip height before drawing.");
         Assert(compactProgressRows.ToPng().Length > 64, "SegmentedMetricBlock compact progress rows should render PNG output.");
 
         var compactCapsuleLoop = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
             .WithTitle("Compact Capsule")
-            .WithSubtitle("Tight footer")
+            .WithSubtitle("Compact card")
             .WithTheme(ChartTheme.ReportLight())
             .WithSize(360, 170)
-            .WithAction("Open")
             .AddItem("First", 10)
             .AddItem("Second", 8)
             .AddItem("Third", 6);
@@ -85,7 +82,7 @@ internal static partial class SmokeTests {
         var capsuleBottom = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-bottom");
         var capsuleY = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-loop-y");
         var capsuleHeight = GetAttribute(compactCapsuleSvg, "data-cfx-role=\"segmented-metric-capsule-loop\"", "data-cfx-loop-height");
-        Assert(capsuleY + capsuleHeight <= capsuleBottom + 1.1, "SegmentedMetricBlock compact capsule loops should clamp loop geometry before the footer.");
+        Assert(capsuleY + capsuleHeight <= capsuleBottom + 1.1, "SegmentedMetricBlock compact capsule loops should clamp loop geometry inside the card.");
         Assert(compactCapsuleLoop.ToPng().Length > 64, "SegmentedMetricBlock compact capsule loops should render PNG output.");
     }
 }

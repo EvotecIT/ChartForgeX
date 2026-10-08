@@ -15,7 +15,7 @@ internal sealed record Snapshot(string Ref, string Sha, List<ApiSymbol> Symbols,
 
 /// <summary>Reads immutable Git objects and resolves exported symbols without executing product code.</summary>
 internal static class Inventory {
-    internal static readonly string[] Packages = ["ChartForgeX", "ChartForgeX.Interactivity",
+    internal static readonly string[] Packages = ["ChartForgeX", "ChartForgeX.Visuals", "ChartForgeX.Stories", "ChartForgeX.Interactivity",
         "ChartForgeX.Interactivity.Html", "ChartForgeX.Markup", "ChartForgeX.Mermaid", "ChartForgeX.Markup.Mermaid"];
 
     private static readonly SymbolDisplayFormat Display = new(
@@ -44,6 +44,7 @@ internal static class Inventory {
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
         var conditions = new List<string>();
         foreach (string package in Packages) {
+            if (!files.ContainsKey(package + "/" + package + ".csproj")) continue;
             var sources = files.Where(pair => pair.Key.StartsWith(package + "/", StringComparison.Ordinal) && pair.Key.EndsWith(".cs", StringComparison.Ordinal)).ToArray();
             counts[package] = sources.Length;
             var trees = sources.Select(pair => CSharpSyntaxTree.ParseText(pair.Value, new CSharpParseOptions(LanguageVersion.Latest), pair.Key)).ToArray();
@@ -150,7 +151,10 @@ internal static class Inventory {
     }
 
     private static Dictionary<string, string> ReadArchive(string repository, string sha) {
-        using var process = StartGit(repository, ["archive", "--format=tar", sha, .. Packages]);
+        var paths = Git(repository, "ls-tree", "--name-only", sha).Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(path => path.TrimEnd('\r')).ToHashSet(StringComparer.Ordinal);
+        var selected = Packages.Where(paths.Contains).ToArray();
+        using var process = StartGit(repository, ["archive", "--format=tar", sha, .. selected]);
         using var tar = new TarReader(process.StandardOutput.BaseStream);
         var files = new Dictionary<string, string>(StringComparer.Ordinal);
         TarEntry? entry;
