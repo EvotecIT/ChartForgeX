@@ -1,19 +1,5 @@
 # ChartForgeX TODO
 
-## Visual acceptance before consumer migration
-
-- [x] Inventory the 49 chart kinds and the gallery against the approved typography, layout and canonical color contracts.
-- [x] Apply consistent frame, heading, legend, scalar, annotation and label defaults while preserving authored overrides.
-- [x] Finish the curated family gallery with readable native previews, meaningful titles, paired themes and working example/export/source navigation.
-- [x] Inspect SVG and PNG in light/dark and compact/wide layouts, including dense, empty and long-label fixtures; record omissions and supported limits honestly.
-- [x] Complete independent review and the targeted confirmation of layout and gallery fixes.
-- [x] Qualify the full quality loop, package/framework boundaries and native AOT execution.
-- [x] Complete comparable rendering performance checks with retained samples and regression flags; record the shared-host timing limits.
-- [ ] Settle current-head CI and feedback, merge and clean scoped output.
-- [ ] Reassess visual acceptance before opening consumer migrations.
-
-The visual system and gallery are the active goal. Consumer migration follows observed visual acceptance, rather than package extraction alone.
-
 ## Consumer migration: Phase 5
 
 All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
