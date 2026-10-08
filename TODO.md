@@ -5,8 +5,12 @@
 All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
 - [x] Inspect current owner and consumer branches, package boundaries and the public package state.
-- [ ] Qualify adapter and consumer candidates in dependency order with saved-document, installed-module and wallpaper fixtures.
-- [ ] Settle candidate review and CI, and prepare coordinated release inputs and migration notes.
+- [x] Qualify the PowerBGInfo candidate with installed PowerShell 5.1/7 module types and observed wallpapers.
+- [x] Qualify the OfficeIMO candidate with saved-document, accessibility, placement and editable-diagram fixtures.
+- [x] Qualify the private HTML and reporting candidates with isolated package consumers and generated report layouts.
+- [ ] Complete ImagePlayground's installed-module qualification after resolving its existing imaging security and PowerShell 5.1 compatibility gate.
+- [x] Prepare unsigned eight-package release archives and matching source/archive API bundles.
+- [ ] Settle owner and consumer PR review/CI and merge qualified candidates in dependency order. Public-package-only consumer checks retain their feed-availability gate.
 - [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Owner source and local packs do not establish downstream execution.
 
 ## Rendering Pipeline

@@ -273,11 +273,17 @@ Color intake alone does not establish universal status-treatment rendering. Hatc
 - [x] Close the [integrated public type/member ledger](api-ledger.md): 773 public types and 7,678 records across the six existing runtime assemblies. Its planned API fates guide later removals and package extraction; they do not claim those migrations are implemented.
 - [x] Complete the Phase 1 representative performance comparison: all 30 paired workloads remain within 10% elapsed/allocation, with 756 retained samples and no failures. Earlier flags were investigated before qualifying the stable runtime. Larger redesigned SVG/PNG payloads remain an explicit cost in the [reassessment](architecture.md#phase-1-reassessment).
 - [x] Qualify the integrated Phase 2–3 core producers with framework/package/AOT checks, observed SVG/native PNG and representative performance; see the [reassessment](architecture.md#phases-2-3-reassessment) for scope and limits.
-- [ ] Qualify the core-focused private HTML adapter and OfficeIMO candidates, preserving artifact/interchange contracts.
+- [x] Qualify the core-focused private HTML adapter and OfficeIMO candidates from isolated local packages, preserving artifact/interchange contracts. Normal feed-only release builds remain separate gates.
 - [x] Extract the peer Visuals and Stories owners, preserving static compositions, factual blocks, completed story output, transcripts and animation exports.
-- [ ] Qualify PowerBGInfo wallpapers and ImagePlayground's static and animated workflows against the published owners during consumer migration.
-- [ ] Restore the private reporting consumer's reproducible dependency closure and qualify representative reports.
+- [x] Qualify PowerBGInfo's installed candidate on PowerShell 5.1/7, including ultrawide/4K wallpapers, retained composition styles, mini charts and topology overlays.
+- [ ] Qualify ImagePlayground's installed static and animated workflows after its imaging security/compatibility gate is resolved.
+- [x] Restore the private reporting candidate's reproducible local dependency closure and observe representative reports. The coordinated locked release graph remains a feed-only qualification gate.
 - [x] Qualify all eight packed libraries and their dependency/resource boundaries. Isolated core-only, core+Visuals and core+Stories probes compile all four frameworks and execute on net472, net8.0 and net10.0; adapter probes execute on net8.0 and net10.0. These owner probes do not establish downstream consumer execution.
+- [x] Prepare the unsigned eight-package release archives and validate matching source/archive API payloads.
 - [ ] With separate release authority, publish/verify owner packages, then repin and release consumers in dependency order.
 
 Do not publish consumers against a locally packed or unpublished owner candidate. Local-source proof is useful and must be labeled separately. No compatibility probes, fallback copies of rendering logic or temporary project references should conceal package publication lag.
+
+The consumer candidates exercise real output boundaries. PowerBGInfo preserves module-visible authoring types as well as the pixels in its installed wallpaper exports. OfficeIMO saves and reopens Word, Excel, PowerPoint, PDF and Visio output; native topology projection retains resolved routes and labels, while recomputed flow/sequence layout reports its fidelity limits. A saved document or native SVG preview does not establish appearance in every Office application.
+
+The private HTML adapter separates its core, Visuals and Stories hosts and consumes the matching producer packages. The reporting candidate uses those shared hosts for compact/wide, light/dark assessment and monitoring reports. Bounded summaries retain complete views, omitted-content notes and detail links. Its local fixture graph proves these paths without claiming that an older committed release lock or an unpublished package is ready for distribution.
