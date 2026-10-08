@@ -8,8 +8,8 @@
 - [x] Inspect SVG and PNG in light/dark and compact/wide layouts, including dense, empty and long-label fixtures; record omissions and supported limits honestly.
 - [x] Complete independent review and the targeted confirmation of layout and gallery fixes.
 - [x] Qualify the full quality loop, package/framework boundaries and native AOT execution.
-- [ ] Complete comparable rendering performance checks with retained samples and regression flags.
-- [ ] Publish the qualified changes, settle current-head CI and feedback, merge and clean scoped output.
+- [x] Complete comparable rendering performance checks with retained samples and regression flags; record the shared-host timing limits.
+- [ ] Settle current-head CI and feedback, merge and clean scoped output.
 - [ ] Reassess visual acceptance before opening consumer migrations.
 
 The visual system and gallery are the active goal. Consumer migration follows observed visual acceptance, rather than package extraction alone.
