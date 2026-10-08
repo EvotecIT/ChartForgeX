@@ -121,8 +121,13 @@ internal sealed partial class VisualTopologyCompiler {
         }
         var accessibility = _source.Accessibility.Clone();
         accessibility.Name ??= HeadingOrSource(_context.Frame.Title, SourceTitle) ?? _source.Labels.UntitledTopology;
-        accessibility.Description ??= HeadingOrSource(_context.Frame.Subtitle, SourceSubtitle)
-            ?? VisualArtifactInterchangeMapping.BoundedGeneratedText(_source.Labels.Describe(HeadingOrSource(_context.Frame.Title, SourceTitle), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count), string.Empty);
+        if (accessibility.Description == null) {
+            // A host's language formatter describes the resolved facts independently of its presentation subtitle.
+            var description = _source.Labels.AccessibleTextFormatter == null
+                ? HeadingOrSource(_context.Frame.Subtitle, SourceSubtitle) : null;
+            accessibility.Description = description ?? VisualArtifactInterchangeMapping.BoundedGeneratedText(
+                _source.Labels.Describe(HeadingOrSource(_context.Frame.Title, SourceTitle), _chart.Groups.Count, _chart.Nodes.Count, _chart.Edges.Count), string.Empty);
+        }
         var semantics = SemanticSnapshot(accessibility);
         if (flow != null) semantics = VisualArtifactInterchangeMapping.FromPreparedFlow(flow, semantics);
         var svgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(_options.IdScope), _options.SvgColorVariables,

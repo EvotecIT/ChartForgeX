@@ -65,6 +65,20 @@ public sealed class ArtifactHostHandoffTests {
         Assert.Equal("translate(" + x + " " + y + ")", (string?)layer.Attribute("transform"));
     }
 
+    [Theory]
+    [InlineData("bad")]
+    [InlineData("0 0 -100 100")]
+    [InlineData("NaN 0 100 100")]
+    [InlineData("0 0 Infinity 100")]
+    [InlineData("0 0 100 100 100")]
+    public void SvgWatermarksUseNumericDimensionsWhenViewBoxIsUnusable(string viewBox) {
+        var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\" viewBox=\"" + viewBox + "\"></svg>";
+        var decorated = XDocument.Parse(VisualWatermarkDecoration.ApplyToSvg(svg, VisualWatermark.FromText("CENTER")));
+        var layer = decorated.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "watermarks");
+        Assert.Null(layer.Attribute("transform"));
+        Assert.Contains(layer.Descendants(), e => e.Name.LocalName == "text" && e.Value == "CENTER");
+    }
+
     [Fact]
     public void InteractiveMotionPreservesLabelsAndGroupsNeededByInitiallyDisabledControls() {
         var chart = TopologyFixture().WithLayout(TopologyLayoutMode.RelationshipRadial)
