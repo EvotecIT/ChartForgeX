@@ -6,7 +6,8 @@
 - [x] Apply consistent frame, heading, legend, scalar, annotation and label defaults while preserving authored overrides.
 - [x] Finish the curated family gallery with readable native previews, meaningful titles, paired themes and working example/export/source navigation.
 - [x] Inspect SVG and PNG in light/dark and compact/wide layouts, including dense, empty and long-label fixtures; record omissions and supported limits honestly.
-- [ ] Qualify the quality loop, package/framework boundaries and performance; complete independent review, CI settlement and scoped cleanup.
+- [x] Complete independent review and the targeted confirmation of layout and gallery fixes.
+- [ ] Qualify the quality loop, package/framework boundaries and performance; settle current-head CI and feedback, merge and clean scoped output.
 - [ ] Reassess visual acceptance before opening consumer migrations.
 
 The visual system and gallery are the active goal. Consumer migration follows observed visual acceptance, rather than package extraction alone.

@@ -1,6 +1,6 @@
 # Public API ownership ledger
 
-The Phase 4 extraction has a separate inventory across eight assemblies:
+The post-extraction inventory covers eight assemblies, including the shared visual-default contracts:
 
 | Artifact | Purpose |
 | --- | --- |
