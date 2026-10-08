@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "baselineSha": "9cd02a52af97426eab4bf64b9775ce93057e5986",
-  "candidateSha": "dde212476007fd911ae7ff6bdb4581ad7b85891c",
+  "candidateSha": "de8ab2a75330edc93f7c3b529463a05c5d2c1b7e",
   "assemblies": {
     "ChartForgeX": 780,
     "ChartForgeX.Visuals": 79,
-    "ChartForgeX.Stories": 55,
+    "ChartForgeX.Stories": 59,
     "ChartForgeX.Interactivity": 30,
     "ChartForgeX.Interactivity.Html": 43,
     "ChartForgeX.Markup": 22,
     "ChartForgeX.Mermaid": 106,
     "ChartForgeX.Markup.Mermaid": 4
   },
-  "exportedRows": 7858,
+  "exportedRows": 7873,
   "changes": {
     "assembly-move": 1124,
     "retained": 6546,
