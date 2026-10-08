@@ -5,6 +5,7 @@ using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
 using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
 
 internal static class Program {
     private static void Main() {
