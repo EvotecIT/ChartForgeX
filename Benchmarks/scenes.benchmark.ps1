@@ -1,6 +1,9 @@
 $candidate = Get-BenchmarkInput AssemblyPath -Required
 $baseline = Get-BenchmarkInput BaselineAssemblyPath -Required
 $fixtures = Get-BenchmarkInput FixtureAssemblyPath -Required
+$baselineRendering = Get-BenchmarkInput BaselineRendering -Default 'Public'
+if ($baselineRendering -notin 'Public', 'Direct') { throw 'BaselineRendering must be Public or Direct.' }
+$baselineFixtures = if ($baselineRendering -eq 'Direct') { Get-BenchmarkInput BaselineFixtureAssemblyPath -Required } else { $fixtures }
 $tokens = Get-BenchmarkInput TokenPath -Required
 $font = Get-BenchmarkInput FontPath -Required
 $boldFont = Get-BenchmarkInput BoldFontPath -Required
@@ -15,7 +18,9 @@ elseif ($sceneGroup -eq 'All') { $fixtureNames += $phase3FixtureNames }
 foreach ($lane in 'Baseline', 'Candidate') {
     foreach ($fixture in $fixtureNames) {
         $path = if ($lane -eq 'Baseline') { $baseline } else { $candidate }
-        $lanes["$lane-$fixture"] = [SceneBenchmarkLane]::new($path, $fixtures, $tokens, $font, $boldFont, $fixture, $lane -eq 'Candidate')
+        $adapter = if ($lane -eq 'Baseline') { $baselineFixtures } else { $fixtures }
+        $direct = $lane -eq 'Candidate' -or $baselineRendering -eq 'Direct'
+        $lanes["$lane-$fixture"] = [SceneBenchmarkLane]::new($path, $adapter, $tokens, $font, $boldFont, $fixture, $direct)
     }
 }
 foreach ($fixture in $fixtureNames) {
@@ -54,6 +59,8 @@ New-BenchmarkSuite $suiteName {
     Add-BenchmarkMetadata BaselineSha256 (Get-FileHash -LiteralPath $baseline).Hash
     Add-BenchmarkMetadata CandidateSha256 (Get-FileHash -LiteralPath $candidate).Hash
     Add-BenchmarkMetadata FixtureSha256 (Get-FileHash -LiteralPath $fixtures).Hash
+    Add-BenchmarkMetadata BaselineFixtureSha256 (Get-FileHash -LiteralPath $baselineFixtures).Hash
+    Add-BenchmarkMetadata BaselineRendering $baselineRendering
     Add-BenchmarkMetadata ThemeSha256 (Get-FileHash -LiteralPath $tokens).Hash
     Add-BenchmarkMetadata FontSha256 (Get-FileHash -LiteralPath $font).Hash
     Add-BenchmarkMetadata BoldFontSha256 (Get-FileHash -LiteralPath $boldFont).Hash
@@ -61,7 +68,7 @@ New-BenchmarkSuite $suiteName {
     Add-BenchmarkMetadata FixtureNames ($fixtureNames -join ',')
     foreach ($fixture in $fixtureNames) { Add-BenchmarkMetadata ("SourceSha256-" + $fixture) $lanes["Candidate-$fixture"].SourceDigest }
     Add-BenchmarkMetadata Scope 'Baseline and candidate Svg/Rgba/Png include complete layout and export. Candidate Compile measures preparation only; Prepared exports reuse a scene prepared outside timing. Models, canonical tokens, logical 800x440 size and scale 1 match. Frame and renderer changes intentionally differ; validation requires dimensions/content and within-lane determinism, not old/new byte equality.'
-    Add-BenchmarkMetadata Phase3Scope 'Matrix 8x12, calendar 120-day interval with missing/zero days, six scalar progress rows, two 24-point polar series, six weighted world-map locations, twelve positive treemap tiles, eight Sankey links, and a twelve-node/eleven-edge layered topology. Phase3 chart padding24, typography22/13/11/12/11, registered Carlito and raster supersampling2 are explicit in both lanes. Topology shares tokens/font and fixed viewport but retains legacy topology typography versus the common candidate frame. Flow/sequence are excluded: frozen public exporters cannot accept equivalent token/font inputs. No new family is a complete-family or dense-scale performance claim.'
+    Add-BenchmarkMetadata Phase3Scope 'Matrix 8x12, calendar120days with missing/zero days, six progress rows, two24point polar series, six weighted map locations, twelve treemap tiles, eight Sankey links and twelve-node/eleven-edge topology. Chart padding24, typography22/13/11/12/11, Carlito and supersampling2 are explicit. Direct baseline mode compiles the same adapter source against each product binary, matching requested frame, theme and raster contracts including topology. Public baseline mode retains its historical convenience-export mapping, whose topology surface/typography can differ. Flow/sequence are excluded because historical public exporters cannot accept equivalent token/font inputs. These bounded fixtures do not establish dense-scale or all-family performance.'
     Add-BenchmarkMetadata LogicalProcessors ([Environment]::ProcessorCount)
     Add-BenchmarkMetadata ProcessorPlacement 'Both lanes run in one process with rotated ordering; record power policy and processor placement with qualification.'
     Set-BenchmarkArtifacts Json, Csv, Markdown

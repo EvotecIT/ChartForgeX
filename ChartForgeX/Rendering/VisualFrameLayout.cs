@@ -58,6 +58,7 @@ internal static class VisualFrameLayout {
             if (top > headingTop) top += gap * 5 / 6;
         }
         if (context.Frame.ShowLegend && entries.Count > 0) {
+            Dictionary<VisualLegendEntry, (double Value, double Percentage)>? numericWidths = null;
             var position = context.Frame.LegendPosition;
             var side = position == ChartLegendPosition.Left || position == ChartLegendPosition.Right;
             var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
@@ -149,7 +150,7 @@ internal static class VisualFrameLayout {
                             builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: VisualChartPaint.Text(legendStyle));
                             if (valueWidth > 0) {
                                 var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
-                                var percentageWidth = string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width;
+                                var percentageWidth = NumericWidths(entry).Percentage;
                                 var valueRight = cursor + width - 4;
                                 if (percentageWidth > 0) {
                                     var percentageStyle = valueStyle.Clone(); percentageStyle.Color = colors.MutedForeground;
@@ -185,9 +186,22 @@ internal static class VisualFrameLayout {
                 var length = ChartTextFitting.PrefixLength(label, availableWidth, text => builder.MeasureText(text, legendStyle).Width);
                 return length == label.Length ? Math.Min(legendWidth, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : legendWidth;
             }
-            double ValueWidth(VisualLegendEntry entry) => string.IsNullOrEmpty(entry.Value) ? 0
-                : builder.MeasureText(entry.Value!, legendStyle).Width + (string.IsNullOrEmpty(entry.Percentage) ? 0
-                    : builder.MeasureText(entry.Percentage!, legendStyle).Width + gap * 2 / 3);
+            double ValueWidth(VisualLegendEntry entry) {
+                if (string.IsNullOrEmpty(entry.Value)) return 0;
+                var widths = NumericWidths(entry);
+                return widths.Value + (string.IsNullOrEmpty(entry.Percentage) ? 0 : widths.Percentage + gap * 2 / 3);
+            }
+            (double Value, double Percentage) NumericWidths(VisualLegendEntry entry) {
+                if (string.IsNullOrEmpty(entry.Value)) return default;
+                numericWidths ??= new Dictionary<VisualLegendEntry, (double Value, double Percentage)>();
+                if (!numericWidths.TryGetValue(entry, out var widths)) {
+                    // Wrapping, row alignment and paint placement share this frame's unchanged legend style.
+                    widths = (builder.MeasureText(entry.Value!, legendStyle).Width,
+                        string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width);
+                    numericWidths.Add(entry, widths);
+                }
+                return widths;
+            }
         }
         if (bottom <= top || right <= left) {
             builder.AddDiagnostic(new VisualDiagnostic("frame.insufficient-space", "The frame leaves no content viewport."));
